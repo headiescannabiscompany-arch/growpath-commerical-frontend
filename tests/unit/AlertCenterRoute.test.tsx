@@ -124,6 +124,56 @@ describe("AlertCenterRoute", () => {
               sourceType: "product",
               sourceId: "input-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-10",
+              title: "Recipe timeline needs review",
+              severity: "warning",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "recipe",
+              sourceId: "recipe-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-11",
+              title: "Feed campaign destination is broken",
+              severity: "critical",
+              status: "active",
+              workspaceType: "commercial",
+              sourceType: "feed_campaign",
+              sourceId: "campaign-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-12",
+              title: "Product trial follow-up overdue",
+              severity: "warning",
+              status: "active",
+              workspaceType: "commercial",
+              sourceType: "product_trial",
+              sourceId: "trial-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-13",
+              title: "Order needs fulfillment",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "commercial",
+              sourceType: "order",
+              sourceId: "order-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-14",
+              title: "Sensor alert follow-up",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "sensor_alert",
+              sourceId: "sensor-alert-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -155,6 +205,15 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByLabelText("Alert link /store?q=veg-mix-1")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/personal/courses")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/inventory")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/personal/tools/saved-runs")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/commercial/feed")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/commercial/trials/trial-1")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/commercial/orders")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/alerts")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(

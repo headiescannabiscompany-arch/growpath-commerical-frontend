@@ -13,6 +13,7 @@ import { Link } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AlertRow = Record<string, any>;
 type FilterKey = "active" | "today" | "critical" | "resolved";
@@ -49,38 +50,7 @@ function isToday(alert: AlertRow) {
 }
 
 function sourceHref(alert: AlertRow) {
-  const sourceType = String(alert.sourceType || "");
-  const sourceId = String(alert.sourceId || "");
-  const workspace = String(alert.workspaceType || "");
-  if (sourceType === "product" && sourceId && workspace === "commercial")
-    return `/home/commercial/products/${sourceId}`;
-  if (sourceType === "product" && workspace === "facility")
-    return "/home/facility/inventory";
-  if (sourceType === "product" && sourceId)
-    return `/store?q=${encodeURIComponent(sourceId)}`;
-  if (sourceType === "course" && sourceId && workspace === "commercial")
-    return `/home/commercial/courses/${sourceId}`;
-  if (sourceType === "course")
-    return workspace === "facility"
-      ? "/home/facility/sop-runs"
-      : "/home/personal/courses";
-  if (sourceType === "live")
-    return workspace === "commercial"
-      ? "/home/commercial/lives"
-      : `/feed${sourceId ? `?liveId=${encodeURIComponent(sourceId)}` : ""}`;
-  if (sourceType === "storefront")
-    return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
-  if (sourceType === "task" && sourceId) {
-    if (workspace === "commercial") return `/home/commercial/tasks/${sourceId}`;
-    if (workspace === "facility") return `/home/facility/tasks/${sourceId}`;
-    return "/home/personal/tasks";
-  }
-  if (sourceType === "room") return "/home/facility/rooms";
-  if (sourceType === "facility_run")
-    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
-  if (sourceType === "sop") return "/home/facility/sop-runs";
-  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
-  return "";
+  return sourceObjectHref(alert);
 }
 
 function linkedFieldsForAlertSource(alert: AlertRow) {
@@ -96,6 +66,12 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
       return { linkedLiveId: sourceId };
     case "storefront":
       return { linkedStorefrontId: sourceId };
+    case "grow":
+      return { linkedGrowId: sourceId };
+    case "plant":
+      return { linkedPlantId: sourceId };
+    case "grow_log":
+      return { linkedGrowLogId: sourceId };
     case "task":
       return { linkedTaskId: sourceId };
     case "room":
@@ -106,6 +82,24 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
       return { linkedFacilityRunId: sourceId };
     case "sop":
       return { linkedSopId: sourceId };
+    case "toolrun":
+      return { linkedToolRunId: sourceId };
+    case "recipe":
+      return { linkedRecipeId: sourceId };
+    case "product_batch":
+      return { linkedProductBatchId: sourceId };
+    case "product_trial":
+      return { linkedProductTrialId: sourceId };
+    case "lesson":
+      return { linkedLessonId: sourceId };
+    case "course_assignment":
+      return { linkedCourseAssignmentId: sourceId };
+    case "feed_campaign":
+      return { linkedFeedPostId: sourceId };
+    case "order":
+      return { linkedOrderId: sourceId };
+    case "sensor_alert":
+      return { linkedSensorAlertId: sourceId };
     case "forum":
       return { linkedForumThreadId: sourceId };
     default:

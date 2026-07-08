@@ -44,6 +44,42 @@ describe("HomeScheduleRoute", () => {
               dueAt: "2099-07-16T10:00:00Z",
               status: "open",
               priority: "normal"
+            },
+            {
+              id: "task-3",
+              title: "Check saved recipe release curve",
+              dueAt: "2099-07-16T11:00:00Z",
+              status: "open",
+              workspaceType: "personal",
+              sourceType: "recipe",
+              sourceId: "recipe-1"
+            },
+            {
+              id: "task-4",
+              title: "Review product trial evidence",
+              dueAt: "2099-07-16T12:00:00Z",
+              status: "open",
+              workspaceType: "commercial",
+              sourceType: "product_trial",
+              sourceId: "trial-1"
+            },
+            {
+              id: "task-5",
+              title: "Fulfill storefront order",
+              dueAt: "2099-07-16T13:00:00Z",
+              status: "open",
+              workspaceType: "commercial",
+              sourceType: "order",
+              sourceId: "order-1"
+            },
+            {
+              id: "task-6",
+              title: "Inspect sensor alert",
+              dueAt: "2099-07-16T14:00:00Z",
+              status: "open",
+              workspaceType: "facility",
+              sourceType: "sensor_alert",
+              sourceId: "sensor-alert-1"
             }
           ]
         });
@@ -129,6 +165,10 @@ describe("HomeScheduleRoute", () => {
     );
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
     expect(screen.getByText("Review personal grow task")).toBeTruthy();
+    expect(screen.getByText("Check saved recipe release curve")).toBeTruthy();
+    expect(screen.getByText("Review product trial evidence")).toBeTruthy();
+    expect(screen.getByText("Fulfill storefront order")).toBeTruthy();
+    expect(screen.getByText("Inspect sensor alert")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -143,7 +183,11 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText(/Repeats monthly/)).toBeTruthy();
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/products/product-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/personal/tools/saved-runs")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/trials/trial-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/orders")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/alerts")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
     expect(screen.getByTestId("link-/feed?liveId=live-public-1")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();

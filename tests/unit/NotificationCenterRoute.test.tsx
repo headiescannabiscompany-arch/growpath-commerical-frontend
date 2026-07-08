@@ -118,6 +118,51 @@ describe("NotificationCenterRoute", () => {
               sourceId: "live-public-1",
               workspaceType: "personal",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-11",
+              title: "Recipe task created",
+              message: "Review the saved soil recipe.",
+              sourceType: "recipe",
+              sourceId: "recipe-1",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-12",
+              title: "Campaign scheduled",
+              message: "The feed campaign is ready.",
+              sourceType: "feed_campaign",
+              sourceId: "campaign-1",
+              workspaceType: "commercial",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-13",
+              title: "Trial evidence ready",
+              message: "Review the product trial.",
+              sourceType: "product_trial",
+              sourceId: "trial-1",
+              workspaceType: "commercial",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-14",
+              title: "Order paid",
+              message: "Fulfillment can start.",
+              sourceType: "order",
+              sourceId: "order-1",
+              workspaceType: "commercial",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-15",
+              title: "Facility tool run summary",
+              message: "AI tool output is ready.",
+              sourceType: "toolrun",
+              sourceId: "toolrun-1",
+              workspaceType: "facility",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -174,6 +219,19 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /feed?liveId=live-public-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/personal/tools/saved-runs")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Notification link /home/commercial/feed")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/commercial/trials/trial-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/commercial/orders")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/ai-tools")
     ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter unread"));

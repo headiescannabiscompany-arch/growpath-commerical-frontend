@@ -11,6 +11,7 @@ import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CalendarItem = {
   id: string;
@@ -107,6 +108,16 @@ function taskHref(task: any, id: string) {
 function taskToItem(task: any): CalendarItem {
   const id = taskId(task);
   const sourceType = String(task?.sourceType || "task");
+  const rawSourceId = task?.sourceId || task?.sourceObjectId;
+  const sourceHref =
+    sourceType !== "task" || rawSourceId
+      ? sourceObjectHref({
+          ...task,
+          sourceType,
+          sourceId: rawSourceId,
+          workspaceType: task?.workspaceType || "personal"
+        })
+      : "";
   return {
     id,
     itemType: "task",
@@ -120,7 +131,7 @@ function taskToItem(task: any): CalendarItem {
     sourceId: String(task?.sourceId || task?.sourceObjectId || ""),
     reminder: reminderLabel(task),
     recurrence: recurrenceLabel(task),
-    href: taskHref(task, id)
+    href: sourceHref || taskHref(task, id)
   };
 }
 
@@ -141,10 +152,7 @@ function liveToItem(live: any): CalendarItem {
     sourceId: id,
     reminder: String(live?.reminderPreference || ""),
     recurrence: String(live?.recurrenceRule || ""),
-    href:
-      workspaceType === "commercial"
-        ? "/home/commercial/lives"
-        : `/feed?liveId=${encodeURIComponent(id)}`
+    href: sourceObjectHref({ sourceType: "live", sourceId: id, workspaceType })
   };
 }
 
@@ -167,12 +175,7 @@ function courseToItem(course: any): CalendarItem {
     workspaceType,
     sourceType: "course",
     sourceId: id,
-    href:
-      workspaceType === "commercial"
-        ? `/home/commercial/courses/${id}`
-        : workspaceType === "facility"
-          ? "/home/facility/sop-runs"
-          : "/home/personal/courses"
+    href: sourceObjectHref({ sourceType: "course", sourceId: id, workspaceType })
   };
 }
 
@@ -193,7 +196,7 @@ function campaignToItem(campaign: any): CalendarItem {
     sourceId: id,
     reminder: String(campaign?.reminderPreference || ""),
     recurrence: String(campaign?.recurrenceRule || ""),
-    href: workspaceType === "facility" ? "/home/facility/feed" : "/home/commercial/feed"
+    href: sourceObjectHref({ sourceType: "feed_campaign", sourceId: id, workspaceType })
   };
 }
 

@@ -10,6 +10,7 @@ import {
 import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type NotificationRow = {
   id?: string;
@@ -47,42 +48,7 @@ function rowId(row: NotificationRow) {
 }
 
 function sourceHref(row: NotificationRow) {
-  if (row.actionUrl) return row.actionUrl;
-  const id = row.sourceId;
-  const workspace = String(row.workspaceType || "");
-  switch (row.sourceType) {
-    case "task":
-      if (!id) return "/home/schedule";
-      if (workspace === "commercial") return `/home/commercial/tasks/${id}`;
-      if (workspace === "facility") return `/home/facility/tasks/${id}`;
-      return "/home/personal/tasks";
-    case "alert":
-      return "/home/alerts";
-    case "live":
-      return workspace === "commercial"
-        ? "/home/commercial/lives"
-        : `/feed${id ? `?liveId=${encodeURIComponent(id)}` : ""}`;
-    case "course":
-      if (workspace === "commercial" && id) return `/home/commercial/courses/${id}`;
-      if (workspace === "facility") return "/home/facility/sop-runs";
-      return "/home/personal/courses";
-    case "product":
-      if (workspace === "commercial" && id) return `/home/commercial/products/${id}`;
-      if (workspace === "facility") return "/home/facility/inventory";
-      return id ? `/store?q=${encodeURIComponent(id)}` : "/store";
-    case "storefront":
-      return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
-    case "room":
-      return "/home/facility/rooms";
-    case "facility_run":
-      return id ? `/home/facility/grows/${id}` : "/home/facility/grows";
-    case "sop":
-      return "/home/facility/sop-runs";
-    case "forum":
-      return id ? `/forum/post/${id}` : "/forum";
-    default:
-      return "/home/schedule";
-  }
+  return sourceObjectHref(row) || "/home/schedule";
 }
 
 function notificationText(row: NotificationRow) {
