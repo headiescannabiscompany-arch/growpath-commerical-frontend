@@ -151,7 +151,7 @@ export default function CommercialCommunityRoute() {
             </Text>
           </View>
           <View style={styles.headerActions}>
-            <ActionLink href="/communities" label="Open Communities" />
+            <ActionLink href="/communities" label="Open Forum Directory" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/profile" label="Brand Profile" />
           </View>

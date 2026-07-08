@@ -559,6 +559,7 @@ Completed and pushed:
 283. Public support routing now gives every live alias its own shared support-topic row: support, billing, privacy, legal, security, commercial, and facility @growpathai.com all appear as first-class contact destinations.
 284. Commercial Forum/Q&A owner copy now says Brand Forum / Q&A instead of commercial community, keeping discussion/support language separate from Feed / Campaigns outreach.
 285. Commercial course and analytics copy now labels support discussion as Forum/Q&A instead of community, so creator education loops and forum-reply metrics do not blur into Feed/Campaigns.
+286. Commercial Brand Forum/Q&A now labels the legacy community directory handoff as Open Forum Directory, keeping owner navigation discussion-oriented without exposing community/feed ambiguity.
 
 ## Working Rule For Codex
 

@@ -911,6 +911,8 @@ describe("commercial workflow pages", () => {
       screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)
     ).toBeTruthy();
     expect(screen.queryByText(/Commercial community/)).toBeNull();
+    expect(screen.getByText("Open Forum Directory")).toBeTruthy();
+    expect(screen.queryByText("Open Communities")).toBeNull();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
