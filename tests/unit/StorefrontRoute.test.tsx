@@ -131,6 +131,20 @@ function apiResponseFor(path: string, options?: any) {
       ]
     });
   }
+  if (path === "/api/commercial/product-lines" && !options) {
+    return Promise.resolve({
+      productLines: [
+        {
+          id: "line-1",
+          name: "Living Soil Line",
+          category: "soil",
+          status: "active",
+          publicSummary: "Base soils and dry amendments by stage.",
+          growInterests: ["living soil", "dry amendments"]
+        }
+      ]
+    });
+  }
   if (path === "/api/commercial/courses" && !options) {
     return Promise.resolve({
       courses: [
@@ -233,6 +247,9 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses")
     );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("View as User: Store Page")).toBeTruthy();
     expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
@@ -242,8 +259,15 @@ describe("Storefront route", () => {
     expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
+    expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0);
+    expect(screen.getByText("Living Soil Line")).toBeTruthy();
+    expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Open Line")).toBeTruthy();
+    expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("link-/home/commercial/product-lines/line-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/store/grow-shop?line=line-1")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
-    expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
+    expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/forum/post/thread-course")).toBeTruthy();

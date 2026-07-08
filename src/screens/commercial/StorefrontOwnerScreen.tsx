@@ -29,6 +29,7 @@ type AnyRec = Record<string, any>;
 const commercialEndpoints = {
   storefront: "/api/commercial/storefront",
   products: "/api/commercial/products",
+  productLines: "/api/commercial/product-lines",
   courses: "/api/commercial/courses",
   lives: "/api/commercial/lives",
   feed: "/api/commercial/feed",
@@ -254,6 +255,7 @@ export default function Storefront({
 
   const [storefront, setStorefront] = useState<AnyRec | null>(null);
   const [products, setProducts] = useState<AnyRec[]>([]);
+  const [productLines, setProductLines] = useState<AnyRec[]>([]);
   const [courses, setCourses] = useState<AnyRec[]>([]);
   const [lives, setLives] = useState<AnyRec[]>([]);
   const [campaigns, setCampaigns] = useState<AnyRec[]>([]);
@@ -308,10 +310,19 @@ export default function Storefront({
       setFeedback("");
       try {
         clearError();
-        const [storeRes, productRes, courseRes, liveRes, feedRes, inventoryRes] =
+        const [
+          storeRes,
+          productRes,
+          productLineRes,
+          courseRes,
+          liveRes,
+          feedRes,
+          inventoryRes
+        ] =
           await Promise.all([
             apiRequest(commercialEndpoints.storefront),
             apiRequest(commercialEndpoints.products),
+            apiRequest(commercialEndpoints.productLines),
             apiRequest(commercialEndpoints.courses),
             apiRequest(commercialEndpoints.lives),
             apiRequest(commercialEndpoints.feed),
@@ -320,6 +331,7 @@ export default function Storefront({
         const nextStorefront = storeRes?.storefront ?? storeRes ?? null;
         setStorefront(nextStorefront);
         setProducts(asArray(productRes, "products"));
+        setProductLines(asArray(productLineRes, "productLines"));
         setCourses(asArray(courseRes, "courses").filter(courseIsPublic));
         setLives(asArray(liveRes, "lives").filter(liveIsPublic));
         setCampaigns(asArray(feedRes, "items").filter(campaignIsActive));
@@ -720,6 +732,10 @@ export default function Storefront({
               <Text style={styles.metricLabel}>Products</Text>
             </View>
             <View style={styles.metric}>
+              <Text style={styles.metricValue}>{productLines.length}</Text>
+              <Text style={styles.metricLabel}>Lines</Text>
+            </View>
+            <View style={styles.metric}>
               <Text style={styles.metricValue}>{publishedProducts.length}</Text>
               <Text style={styles.metricLabel}>Published</Text>
             </View>
@@ -772,6 +788,64 @@ export default function Storefront({
               </Text>
             </Pressable>
           ) : null}
+        </AppCard>
+
+        <AppCard>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Product Lines</Text>
+            <Text style={styles.statusPill}>Storefront section</Text>
+          </View>
+          <Text style={styles.helperText}>
+            Product lines organize storefront products into public families. Keep them
+            tagged with grow interests so users can browse by category, use case, and
+            campaign context.
+          </Text>
+          {productLines.length ? (
+            <View style={styles.eventList}>
+              {productLines.slice(0, 4).map((line) => (
+                <View
+                  key={String(line.id ?? line._id ?? line.name)}
+                  style={styles.eventRow}
+                >
+                  <Text style={styles.eventTitle}>
+                    {line.name || "Commercial product line"}
+                  </Text>
+                  <Text style={styles.muted}>
+                    {[line.category, line.status || "draft"].filter(Boolean).join(" | ")}
+                  </Text>
+                  {line.publicSummary || line.description ? (
+                    <Text style={styles.eventBody}>
+                      {line.publicSummary || line.description}
+                    </Text>
+                  ) : null}
+                  {Array.isArray(line.growInterests) && line.growInterests.length ? (
+                    <Text style={styles.muted}>
+                      Interests {line.growInterests.join(", ")}
+                    </Text>
+                  ) : null}
+                  <View style={styles.objectActions}>
+                    <ObjectActionLink
+                      href={`/home/commercial/product-lines/${encodeURIComponent(
+                        String(line.id ?? line._id ?? line.name)
+                      )}`}
+                      label="Open Line"
+                    />
+                    <ObjectActionLink
+                      href={`${publicStorePath}?line=${encodeURIComponent(
+                        String(line.id ?? line._id ?? line.name)
+                      )}`}
+                      label="View as User"
+                    />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.muted}>
+              No product lines yet. Use Product Lines inside Products to organize
+              storefront families without creating separate stores.
+            </Text>
+          )}
         </AppCard>
 
         <AppCard>
