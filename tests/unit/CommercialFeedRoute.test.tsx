@@ -62,6 +62,7 @@ describe("CommercialFeedRoute", () => {
               body: "RSVP for the live mixing demo.",
               tags: ["living soil"],
               growInterests: ["living soil", "dry amendments"],
+              linkedProductLineId: "line-1",
               linkedLiveId: "live-1",
               linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
@@ -98,6 +99,7 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByText("12 campaign engagements")).toBeTruthy();
     expect(screen.getByLabelText("Selected feed campaign campaign-1")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
+    expect(screen.getByText("Product line: line-1")).toBeTruthy();
     expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Evidence run: trial-1")).toBeTruthy();
@@ -126,6 +128,7 @@ describe("CommercialFeedRoute", () => {
               campaignKind: "Live event ad",
               destinationLabel: "View Live",
               growInterests: ["living soil", "dry amendments"],
+              linkedProductLineId: "line-1",
               linkedLiveId: "live-1",
               linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
@@ -203,6 +206,7 @@ describe("CommercialFeedRoute", () => {
       "living soil, recipe building"
     );
     fireEvent.changeText(screen.getByLabelText("Linked live"), "live-demo-1");
+    fireEvent.changeText(screen.getByLabelText("Linked product line"), "line-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
     fireEvent.changeText(
       screen.getByLabelText("Commercial feed campaign image URL"),
@@ -230,6 +234,7 @@ describe("CommercialFeedRoute", () => {
           tags: ["dry amendments"],
           growInterests: ["living soil", "recipe building"],
           linkedLiveId: "live-demo-1",
+          linkedProductLineId: "line-demo-1",
           linkedTrialId: "trial-demo-1",
           linkedGrowId: "trial-demo-1",
           linkedForumThreadId: "thread-q-and-a",

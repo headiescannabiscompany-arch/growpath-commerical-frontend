@@ -74,6 +74,7 @@ function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedCampaignT
 function campaignReadinessWarnings({
   campaignKind,
   linkedProductId,
+  linkedProductLineId,
   linkedCourseId,
   linkedLiveId,
   storefrontSlug,
@@ -83,6 +84,7 @@ function campaignReadinessWarnings({
 }: {
   campaignKind: CampaignKind;
   linkedProductId: string;
+  linkedProductLineId: string;
   linkedCourseId: string;
   linkedLiveId: string;
   storefrontSlug: string;
@@ -93,13 +95,18 @@ function campaignReadinessWarnings({
   const warnings: string[] = [];
   const hasDestination =
     linkedProductId.trim() ||
+    linkedProductLineId.trim() ||
     linkedCourseId.trim() ||
     linkedLiveId.trim() ||
     storefrontSlug.trim() ||
     linkedForumThreadId.trim() ||
     externalLinkUrl.trim();
-  if (campaignKind === "product_ad" && !linkedProductId.trim()) {
-    warnings.push("Product ad should link to a product.");
+  if (
+    campaignKind === "product_ad" &&
+    !linkedProductId.trim() &&
+    !linkedProductLineId.trim()
+  ) {
+    warnings.push("Product ad should link to a product or product line.");
   }
   if (campaignKind === "course_ad" && !linkedCourseId.trim()) {
     warnings.push("Course ad should link to a course.");
@@ -147,6 +154,7 @@ function visibleCampaignType(post: CommercialFeedCampaign) {
   if (post.linkedProductId) return campaignKindLabels.product_ad;
   if (post.linkedCourseId) return campaignKindLabels.course_ad;
   if (post.linkedLiveId) return campaignKindLabels.live_ad;
+  if (post.linkedProductLineId) return campaignKindLabels.product_ad;
   if (post.storefrontSlug) return campaignKindLabels.storefront_ad;
   if (post.authorType === "facility" || post.workspaceType === "facility") {
     return campaignKindLabels.facility_outreach;
@@ -194,6 +202,20 @@ function campaignDestination(post: CommercialFeedCampaign) {
     return {
       label: "View Live",
       href: `/feed?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
+    };
+  }
+  if (post.linkedProductLineId) {
+    const lineId = encodeURIComponent(String(post.linkedProductLineId));
+    if (post.storefrontSlug) {
+      const slug = encodeURIComponent(String(post.storefrontSlug));
+      return {
+        label: "View Product Line",
+        href: `/store/${slug}?line=${lineId}`
+      };
+    }
+    return {
+      label: "View Product Line",
+      href: `/store?line=${lineId}`
     };
   }
   if (post.storefrontSlug) {
@@ -248,6 +270,7 @@ export default function CommercialFeedRoute() {
   const [growInterests, setGrowInterests] = useState("");
   const [location, setLocation] = useState("");
   const [linkedProductId, setLinkedProductId] = useState("");
+  const [linkedProductLineId, setLinkedProductLineId] = useState("");
   const [linkedCourseId, setLinkedCourseId] = useState("");
   const [linkedLiveId, setLinkedLiveId] = useState("");
   const [linkedGrowId, setLinkedGrowId] = useState("");
@@ -282,6 +305,7 @@ export default function CommercialFeedRoute() {
   const readinessWarnings = campaignReadinessWarnings({
     campaignKind,
     linkedProductId,
+    linkedProductLineId,
     linkedCourseId,
     linkedLiveId,
     storefrontSlug,
@@ -359,6 +383,7 @@ export default function CommercialFeedRoute() {
         growInterests: cleanGrowInterests,
         location: cleanLocation,
         linkedProductId: linkedProductId.trim() || undefined,
+        linkedProductLineId: linkedProductLineId.trim() || undefined,
         linkedCourseId: linkedCourseId.trim() || undefined,
         linkedLiveId: linkedLiveId.trim() || undefined,
         linkedTrialId: linkedGrowId.trim() || undefined,
@@ -380,6 +405,7 @@ export default function CommercialFeedRoute() {
       setGrowInterests("");
       setLocation("");
       setLinkedProductId("");
+      setLinkedProductLineId("");
       setLinkedCourseId("");
       setLinkedLiveId("");
       setLinkedGrowId("");
@@ -424,6 +450,7 @@ export default function CommercialFeedRoute() {
           campaignKind,
           campaignTitle: title.trim(),
           linkedProductId: linkedProductId.trim() || undefined,
+          linkedProductLineId: linkedProductLineId.trim() || undefined,
           linkedCourseId: linkedCourseId.trim() || undefined,
           linkedLiveId: linkedLiveId.trim() || undefined,
           linkedTrialId: linkedGrowId.trim() || undefined,
@@ -493,6 +520,7 @@ export default function CommercialFeedRoute() {
         campaignKind: post.campaignKind || visibleCampaignType(post),
         destinationLabel: destination.label,
         growInterests: post.growInterests,
+        linkedProductLineId: post.linkedProductLineId,
         linkedCourseId: post.linkedCourseId,
         linkedLiveId: post.linkedLiveId,
         linkedForumThreadId: post.linkedForumThreadId,
@@ -622,6 +650,14 @@ export default function CommercialFeedRoute() {
                 placeholder="Linked product ID or slug"
                 autoCapitalize="none"
                 accessibilityLabel="Linked product"
+              />
+              <TextInput
+                value={linkedProductLineId}
+                onChangeText={setLinkedProductLineId}
+                style={styles.input}
+                placeholder="Linked product line ID or slug"
+                autoCapitalize="none"
+                accessibilityLabel="Linked product line"
               />
               <TextInput
                 value={linkedCourseId}
@@ -926,6 +962,7 @@ export default function CommercialFeedRoute() {
               </Text>
             ) : null}
             {post.linkedProductId ||
+            post.linkedProductLineId ||
             post.linkedCourseId ||
             post.linkedLiveId ||
             campaignEvidenceRunId(post) ||
@@ -937,6 +974,11 @@ export default function CommercialFeedRoute() {
               <View style={styles.linkMetaRow}>
                 {post.linkedProductId ? (
                   <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
+                ) : null}
+                {post.linkedProductLineId ? (
+                  <Text style={styles.linkMeta}>
+                    Product line: {post.linkedProductLineId}
+                  </Text>
                 ) : null}
                 {post.linkedCourseId ? (
                   <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
