@@ -104,6 +104,7 @@ const manualChecks = [
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
       "Open Commercial > Courses and a course detail; verify thumbnail, banner, category, grow interests, setup warnings, and paid Stripe readiness before publish.",
+      "Create product, course, live, and feed setup tasks and verify task detail shows source links, related object IDs, grow interests, schedule fields, and reminder context.",
       "Open Commercial > Lives; verify Twitch channel/embed/EventSub warnings and reminder-plan language."
     ]
   },
