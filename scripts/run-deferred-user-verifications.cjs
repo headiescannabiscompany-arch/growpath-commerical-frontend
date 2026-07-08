@@ -165,7 +165,7 @@ const manualChecks = [
       "Open /store/:slug/courses/:courseId and /storefront/:slug/courses/:courseId and confirm the public course detail shows price, grow interests, related products, related lives, Feed campaign CTAs, Forum/Q&A links, and paid checkout routing.",
       "Create storefront, product, course, live, and feed setup tasks and verify task detail shows source links, related object IDs, grow interests, schedule fields, and reminder context.",
       "Open Commercial > Lives; verify Twitch channel/embed/EventSub warnings and reminder-plan language.",
-      "Open a public live from a Feed campaign, task, schedule item, notification, or alert and confirm it opens /live-session?sessionId=:id with Twitch embed, replay, linked product/course, and Forum/Q&A context."
+      "Open a public live from a Feed campaign, task, schedule item, notification, or alert and confirm it opens /live-session?sessionId=:id with Twitch embed, replay, and clickable linked product/course/Forum Q&A actions."
     ]
   },
   {

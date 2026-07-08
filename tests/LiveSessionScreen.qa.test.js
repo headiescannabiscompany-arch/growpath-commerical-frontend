@@ -72,6 +72,7 @@ describe("LiveSessionScreen QA", () => {
       status: "scheduled",
       visibility: "public",
       scheduledStart: "2026-07-17T21:00:00Z",
+      storefrontSlug: "living-soil-labs",
       relatedProductId: "product-1",
       relatedCourseId: "course-1",
       linkedForumThreadId: "thread-1",
@@ -93,6 +94,9 @@ describe("LiveSessionScreen QA", () => {
     expect(getByText("Product product-1")).toBeTruthy();
     expect(getByText("Course course-1")).toBeTruthy();
     expect(getByText("Forum/Q&A thread-1")).toBeTruthy();
+    expect(getByText("Open Product")).toBeTruthy();
+    expect(getByText("Open Course")).toBeTruthy();
+    expect(getByText("Open Q&A")).toBeTruthy();
     fireEvent.press(getByText("Open Replay"));
     expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
   });

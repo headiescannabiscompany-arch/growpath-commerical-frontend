@@ -8,7 +8,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "../api/apiRequest";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
@@ -67,7 +67,28 @@ export default function LiveSessionScreen({ route }) {
   const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
   const relatedProductId = session?.relatedProductId || session?.productId || "";
   const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
-  const startsAt = session?.scheduledStart || session?.startsAt || session?.startTime || "";
+  const storefrontSlug = session?.storefrontSlug || session?.brandSlug || "";
+  const startsAt =
+    session?.scheduledStart || session?.startsAt || session?.startTime || "";
+  const productHref =
+    relatedProductId && storefrontSlug
+      ? `/store/${encodeURIComponent(String(storefrontSlug))}/products/${encodeURIComponent(
+          String(relatedProductId)
+        )}`
+      : relatedProductId
+        ? `/store?productId=${encodeURIComponent(String(relatedProductId))}`
+        : "";
+  const courseHref =
+    relatedCourseId && storefrontSlug
+      ? `/store/${encodeURIComponent(String(storefrontSlug))}/courses/${encodeURIComponent(
+          String(relatedCourseId)
+        )}`
+      : relatedCourseId
+        ? `/courses?courseId=${encodeURIComponent(String(relatedCourseId))}`
+        : "";
+  const forumHref = forumThreadId
+    ? `/forum/post/${encodeURIComponent(String(forumThreadId))}`
+    : "";
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -101,7 +122,9 @@ export default function LiveSessionScreen({ route }) {
             {session.status ? (
               <Text style={styles.badge}>{String(session.status)}</Text>
             ) : null}
-            {startsAt ? <Text style={styles.badge}>Starts {String(startsAt)}</Text> : null}
+            {startsAt ? (
+              <Text style={styles.badge}>Starts {String(startsAt)}</Text>
+            ) : null}
             {session.visibility ? (
               <Text style={styles.badge}>{String(session.visibility)}</Text>
             ) : null}
@@ -132,6 +155,30 @@ export default function LiveSessionScreen({ route }) {
             ) : null}
             {forumThreadId ? (
               <Text style={styles.contextPill}>Forum/Q&A {String(forumThreadId)}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.actionRow}>
+            {productHref ? (
+              <Link href={productHref} asChild>
+                <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>Open Product</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+            {courseHref ? (
+              <Link href={courseHref} asChild>
+                <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>Open Course</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+            {forumHref ? (
+              <Link href={forumHref} asChild>
+                <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>Open Q&A</Text>
+                </Pressable>
+              </Link>
             ) : null}
           </View>
 
@@ -227,6 +274,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#020617"
   },
   linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   contextPill: {
     backgroundColor: "#EFF6FF",
     borderColor: "#BFDBFE",
