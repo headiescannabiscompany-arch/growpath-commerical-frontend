@@ -422,6 +422,7 @@ function main() {
   const legacyGlobalLogsRouteExists = routeSet.has("/logs");
   const legacyGlobalOrdersRouteExists = routeSet.has("/orders");
   const legacyGlobalCampaignsRouteExists = routeSet.has("/campaigns");
+  const legacyGlobalStorefrontRouteExists = routeSet.has("/storefront");
   const topLevelLogsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/home/personal/logs",
@@ -441,6 +442,11 @@ function main() {
     files.routes,
     "/campaigns",
     "/home/commercial/marketing"
+  );
+  const legacyGlobalStorefrontRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/storefront",
+    "/home/commercial/storefront"
   );
   const topLevelTasksRedirectOnly = routeIsRedirectOnly(
     files.routes,
@@ -468,6 +474,10 @@ function main() {
     legacyGlobalCampaignsRedirectOnly,
     legacyGlobalCampaignsVisibleModule:
       legacyGlobalCampaignsRouteExists && !legacyGlobalCampaignsRedirectOnly,
+    legacyGlobalStorefrontRouteExists,
+    legacyGlobalStorefrontRedirectOnly,
+    legacyGlobalStorefrontVisibleModule:
+      legacyGlobalStorefrontRouteExists && !legacyGlobalStorefrontRedirectOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -533,6 +543,8 @@ function main() {
     `- Legacy /orders redirect-only stale-link guard: ${decisionChecks.legacyGlobalOrdersRedirectOnly}`,
     `- Legacy /campaigns visible module: ${decisionChecks.legacyGlobalCampaignsVisibleModule}`,
     `- Legacy /campaigns redirect-only stale-link guard: ${decisionChecks.legacyGlobalCampaignsRedirectOnly}`,
+    `- Legacy /storefront visible module: ${decisionChecks.legacyGlobalStorefrontVisibleModule}`,
+    `- Legacy /storefront redirect-only stale-link guard: ${decisionChecks.legacyGlobalStorefrontRedirectOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
