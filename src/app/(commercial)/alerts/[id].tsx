@@ -39,6 +39,39 @@ function renderKV(obj: AnyRec | null, key: string) {
   );
 }
 
+function linkedFieldsForAlertSource(item: AnyRec | null) {
+  if (!item) return {};
+  const sourceType = String(item.sourceType || item.triggerSourceType || "");
+  const sourceId = String(item.sourceId || item.sourceObjectId || "");
+  if (!sourceId) return {};
+  switch (sourceType) {
+    case "product":
+      return { linkedProductId: sourceId };
+    case "course":
+      return { linkedCourseId: sourceId };
+    case "live":
+      return { linkedLiveId: sourceId };
+    case "storefront":
+      return { linkedStorefrontId: sourceId };
+    case "feed_campaign":
+      return { linkedFeedPostId: sourceId };
+    case "order":
+      return { linkedOrderId: sourceId };
+    case "room":
+      return { linkedRoomId: sourceId };
+    case "facility":
+      return { linkedFacilityId: sourceId };
+    case "facility_run":
+      return { linkedFacilityRunId: sourceId };
+    case "sop":
+      return { linkedSopId: sourceId };
+    case "forum":
+      return { linkedForumThreadId: sourceId };
+    default:
+      return {};
+  }
+}
+
 export default function CommercialAlertDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -119,7 +152,11 @@ export default function CommercialAlertDetailRoute() {
           dueAt: dueAt.toISOString(),
           sourceType: "alert",
           sourceId: id,
+          sourceObjectId: id,
           linkedAlertId: id,
+          alertSourceType: item.sourceType || item.triggerSourceType || undefined,
+          alertSourceId: item.sourceId || item.sourceObjectId || undefined,
+          ...linkedFieldsForAlertSource(item),
           status: "open"
         }
       });

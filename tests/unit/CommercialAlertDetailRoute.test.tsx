@@ -63,7 +63,11 @@ describe("CommercialAlertDetailRoute", () => {
             priority: "medium",
             sourceType: "alert",
             sourceId: "alert-1",
+            sourceObjectId: "alert-1",
             linkedAlertId: "alert-1",
+            alertSourceType: "product",
+            alertSourceId: "product-1",
+            linkedProductId: "product-1",
             status: "open"
           })
         })
