@@ -1779,7 +1779,7 @@ describe("commercial workflow pages", () => {
     );
     fireEvent.changeText(screen.getByLabelText("Trial product id"), "product-2");
     fireEvent.changeText(screen.getByLabelText("Trial batch id"), "batch-1");
-    fireEvent.changeText(screen.getByLabelText("Trial grow id"), "grow-1");
+    fireEvent.changeText(screen.getByLabelText("Trial evidence run id"), "grow-1");
     fireEvent.changeText(screen.getByLabelText("Trial plant count"), "8");
     fireEvent.press(screen.getByLabelText("Create product trial"));
 

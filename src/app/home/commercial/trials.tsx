@@ -138,7 +138,7 @@ export default function CommercialTrialsRoute() {
         <Text style={styles.cardTitle}>Create Product Trial</Text>
         <Text style={styles.body}>
           Trial record: connect CommercialProduct, ProductLine, SoilNutrientBatch, Recipe,
-          and underlying grow evidence before using the result as public proof.
+          and an underlying evidence run before using the result as public proof.
         </Text>
         <TextInput
           value={trialName}
@@ -182,8 +182,8 @@ export default function CommercialTrialsRoute() {
           <TextInput
             value={growId}
             onChangeText={setGrowId}
-            accessibilityLabel="Trial grow id"
-            placeholder="Grow id"
+            accessibilityLabel="Trial evidence run id"
+            placeholder="Evidence run id"
             autoCapitalize="none"
             style={[styles.input, styles.gridInput]}
           />
@@ -254,7 +254,7 @@ export default function CommercialTrialsRoute() {
                   {[
                     trial.productId && `Product ${trial.productId}`,
                     trial.batchId && `Batch ${trial.batchId}`,
-                    trial.growId && `Grow ${trial.growId}`,
+                    trial.growId && `Evidence run ${trial.growId}`,
                     trial.cultivar
                   ]
                     .filter(Boolean)
@@ -283,12 +283,14 @@ export default function CommercialTrialsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Evidence collection loop</Text>
         <Text style={styles.body}>
-          A trial should collect structured data through the same grow operating system
-          used by Pro users, then attach those records to the product/product line before
-          anything becomes marketing proof.
+          A trial should collect structured data through the same evidence-run operating
+          system used by Pro users, then attach those records to the product/product line
+          before anything becomes marketing proof.
         </Text>
         <View style={styles.bullets}>
-          <Text style={styles.bullet}>Link batch/formula/product to grow before use</Text>
+          <Text style={styles.bullet}>
+            Link batch/formula/product to an evidence run before use
+          </Text>
           <Text style={styles.bullet}>
             Log application date, stage, plant count, medium, and cultivar
           </Text>

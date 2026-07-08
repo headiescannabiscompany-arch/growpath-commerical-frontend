@@ -300,9 +300,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           </Text>
         </View>
         <Text style={styles.body}>
-          Trials stay private evidence until completion, linked product/batch/grow
-          records, measurement data, summaries, and AI review evidence support the public
-          claim.
+          Trials stay private evidence until completion, linked product, batch, evidence
+          run records, measurement data, summaries, and AI review evidence support the
+          public claim.
         </Text>
         {claimWarnings.length ? (
           <View style={styles.warningBox}>
