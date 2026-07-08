@@ -22,6 +22,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
@@ -66,9 +67,57 @@ const styles = StyleSheet.create({
   timelineMeta: { marginTop: 3, color: "#64748B", fontSize: 12 },
   timelineTitle: { fontWeight: "800", color: "#0F172A" },
   timelineSummary: { marginTop: 3, color: "#334155" },
+  sourceText: { marginTop: 6, fontWeight: "800", color: "#166534" },
   empty: { marginTop: 8, color: "#64748B" },
   error: { color: "#B91C1C", marginTop: 8 }
 });
+
+function hasExplicitSharedSource(event: PersonalGrowTimelineEvent) {
+  const row = event as any;
+  return Boolean(
+    row?.sourceType ||
+    row?.itemType ||
+    Object.keys(row || {}).some((key) => key.startsWith("linked"))
+  );
+}
+
+function timelinePreviewHref(event: PersonalGrowTimelineEvent) {
+  if (!hasExplicitSharedSource(event)) return "";
+  return sourceObjectHref({ ...(event as any), workspaceType: "personal" });
+}
+
+function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
+  const href = timelinePreviewHref(event);
+  const content = (
+    <>
+      <Text style={styles.timelineTitle}>{event.title}</Text>
+      <Text style={styles.timelineMeta}>
+        {event.type.replace(/_/g, " ")} | {fmtDate(event.timestamp)}
+      </Text>
+      {event.summary ? (
+        <Text numberOfLines={2} style={styles.timelineSummary}>
+          {event.summary}
+        </Text>
+      ) : null}
+      {href ? <Text style={styles.sourceText}>Open Source</Text> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} asChild>
+        <Pressable
+          style={styles.timelineItem}
+          accessibilityLabel={`Open source for ${event.title}`}
+        >
+          {content}
+        </Pressable>
+      </Link>
+    );
+  }
+
+  return <View style={styles.timelineItem}>{content}</View>;
+}
 
 export default function GrowOverviewScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
@@ -166,19 +215,7 @@ export default function GrowOverviewScreen() {
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Recent timeline</Text>
         {timeline.length ? (
-          timeline.map((event) => (
-            <View key={event.id} style={styles.timelineItem}>
-              <Text style={styles.timelineTitle}>{event.title}</Text>
-              <Text style={styles.timelineMeta}>
-                {event.type.replace(/_/g, " ")} | {fmtDate(event.timestamp)}
-              </Text>
-              {event.summary ? (
-                <Text numberOfLines={2} style={styles.timelineSummary}>
-                  {event.summary}
-                </Text>
-              ) : null}
-            </View>
-          ))
+          timeline.map((event) => <TimelinePreviewItem key={event.id} event={event} />)
         ) : (
           <Text style={styles.empty}>
             Logs, photos, tasks, tool runs, diagnoses, and automation events will appear
