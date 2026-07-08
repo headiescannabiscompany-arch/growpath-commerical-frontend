@@ -621,6 +621,7 @@ Completed and pushed:
 345. Deferred user verification now records that the owner confirmed support is live with all aliases, shifting the remaining support check to UI routing and sender-only visibility instead of treating alias creation as an open blocker.
 346. Active commercial menus and Commercial Tools no longer route creator-content/storefront-offer work into legacy Marketplace compatibility screens; owners now go to Storefront, Feed / Campaigns, and Marketing Planner while external-channel and influencer copy points to courses, lives, and storefront offers.
 347. The legacy Content Marketplace compatibility screen now presents visible upload/browse/analytics copy as Storefront Offers and offer drafts, while keeping old marketplace API calls only as compatibility plumbing.
+348. Shared card radius now uses the tighter 8px workspace token, applying more of Facility's operational visual polish to Personal and Commercial components that consume the common theme.
 
 ## Working Rule For Codex
 

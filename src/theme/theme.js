@@ -13,7 +13,7 @@ export const colors = {
 };
 
 export const radius = {
-  card: 24,
+  card: 8,
   pill: 999
 };
 
