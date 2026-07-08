@@ -30,6 +30,10 @@ export type CommercialFeedPost = {
   imageUrl?: string;
   creativeImageUrl?: string;
   bannerImageUrl?: string;
+  startsAt?: string;
+  endsAt?: string;
+  reminderPreference?: string;
+  recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
   likeCount?: number;
   commentCount?: number;
@@ -97,6 +101,10 @@ export async function createCommercialFeedPost(input: {
   linkedForumThreadId?: string;
   storefrontSlug?: string;
   imageUrl?: string;
+  startsAt?: string;
+  endsAt?: string;
+  reminderPreference?: string;
+  recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
 }) {
   const imageUrl = await persistImageUri(input.imageUrl);

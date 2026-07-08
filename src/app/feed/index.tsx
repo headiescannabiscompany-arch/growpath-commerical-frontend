@@ -23,6 +23,7 @@ import {
   type CommercialFeedPostType
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
+import SchedulePicker from "@/components/schedule/SchedulePicker";
 import {
   facilitySalesPolicyText,
   hasFacilitySalesLanguage
@@ -235,6 +236,10 @@ export default function CommercialFeedRoute() {
   const [imageUrl, setImageUrl] = useState("");
   const [externalLinkUrl, setExternalLinkUrl] = useState("");
   const [externalLinkLabel, setExternalLinkLabel] = useState("");
+  const [campaignStart, setCampaignStart] = useState("");
+  const [campaignEnd, setCampaignEnd] = useState("");
+  const [campaignReminder, setCampaignReminder] = useState("24 hours before");
+  const [campaignRecurrence, setCampaignRecurrence] = useState("");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -338,6 +343,10 @@ export default function CommercialFeedRoute() {
         linkedForumThreadId: linkedForumThreadId.trim() || undefined,
         storefrontSlug: storefrontSlug.trim() || undefined,
         imageUrl: imageUrl.trim() || undefined,
+        startsAt: campaignStart.trim() || undefined,
+        endsAt: campaignEnd.trim() || undefined,
+        reminderPreference: campaignReminder.trim() || undefined,
+        recurrenceRule: campaignRecurrence.trim() || undefined,
         externalLinks: cleanExternalUrl
           ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
           : undefined
@@ -356,6 +365,10 @@ export default function CommercialFeedRoute() {
       setImageUrl("");
       setExternalLinkUrl("");
       setExternalLinkLabel("");
+      setCampaignStart("");
+      setCampaignEnd("");
+      setCampaignReminder("24 hours before");
+      setCampaignRecurrence("");
       setFeedback(
         isFacility ? "Facility outreach campaign published." : "Feed campaign published."
       );
@@ -447,7 +460,9 @@ export default function CommercialFeedRoute() {
         linkedCourseId: post.linkedCourseId,
         linkedLiveId: post.linkedLiveId,
         linkedForumThreadId: post.linkedForumThreadId,
-        linkedGrowId: post.linkedGrowId
+        linkedGrowId: post.linkedGrowId,
+        startsAt: post.startsAt,
+        endsAt: post.endsAt
       }
     }).catch(() => undefined);
     router.push(destination.href as any);
@@ -693,6 +708,68 @@ export default function CommercialFeedRoute() {
                   accessibilityLabel="External link URL"
                 />
               </View>
+              <View style={styles.linkBox}>
+                <Text style={styles.linkBoxTitle}>Campaign schedule</Text>
+                <Text style={styles.linkBoxText}>
+                  Schedule launch timing, reminders, and recurring outreach using the
+                  shared GrowPath scheduler.
+                </Text>
+                <SchedulePicker
+                  dueDate={campaignStart}
+                  reminder={campaignReminder}
+                  recurrence={campaignRecurrence}
+                  onDueDateChange={setCampaignStart}
+                  onReminderChange={setCampaignReminder}
+                  onRecurrenceChange={setCampaignRecurrence}
+                  accessibilityPrefix="Feed campaign schedule"
+                  dueDateAccessibilityLabel="Feed campaign schedule start"
+                  reminderAccessibilityLabel="Feed campaign reminder"
+                  recurrenceAccessibilityLabel="Feed campaign recurrence"
+                  dueDatePlaceholder="Campaign start date/time"
+                  reminderPlaceholder="Campaign reminder"
+                  recurrencePlaceholder="Campaign recurrence"
+                />
+                <TextInput
+                  value={campaignEnd}
+                  onChangeText={setCampaignEnd}
+                  style={styles.input}
+                  placeholder="Campaign end date/time"
+                  autoCapitalize="none"
+                  accessibilityLabel="Feed campaign schedule end"
+                />
+              </View>
+            </View>
+          ) : null}
+          {isFacility ? (
+            <View style={styles.linkBox}>
+              <Text style={styles.linkBoxTitle}>Outreach schedule</Text>
+              <Text style={styles.linkBoxText}>
+                Schedule facility outreach, reminders, and recurring professional
+                education using the shared GrowPath scheduler.
+              </Text>
+              <SchedulePicker
+                dueDate={campaignStart}
+                reminder={campaignReminder}
+                recurrence={campaignRecurrence}
+                onDueDateChange={setCampaignStart}
+                onReminderChange={setCampaignReminder}
+                onRecurrenceChange={setCampaignRecurrence}
+                accessibilityPrefix="Feed campaign schedule"
+                dueDateAccessibilityLabel="Feed campaign schedule start"
+                reminderAccessibilityLabel="Feed campaign reminder"
+                recurrenceAccessibilityLabel="Feed campaign recurrence"
+                dueDatePlaceholder="Campaign start date/time"
+                reminderPlaceholder="Campaign reminder"
+                recurrencePlaceholder="Campaign recurrence"
+              />
+              <TextInput
+                value={campaignEnd}
+                onChangeText={setCampaignEnd}
+                style={styles.input}
+                placeholder="Campaign end date/time"
+                autoCapitalize="none"
+                accessibilityLabel="Feed campaign schedule end"
+              />
             </View>
           ) : null}
           <Pressable
@@ -800,6 +877,8 @@ export default function CommercialFeedRoute() {
             post.linkedGrowId ||
             post.linkedForumThreadId ||
             post.storefrontSlug ||
+            post.startsAt ||
+            post.endsAt ||
             post.externalLinks?.length ? (
               <View style={styles.linkMetaRow}>
                 {post.linkedProductId ? (
@@ -821,6 +900,12 @@ export default function CommercialFeedRoute() {
                 ) : null}
                 {post.storefrontSlug ? (
                   <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
+                ) : null}
+                {post.startsAt ? (
+                  <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>
+                ) : null}
+                {post.endsAt ? (
+                  <Text style={styles.linkMeta}>Ends: {post.endsAt}</Text>
                 ) : null}
                 {post.externalLinks?.map((link) => (
                   <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>

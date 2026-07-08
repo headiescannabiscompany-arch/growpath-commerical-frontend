@@ -61,6 +61,8 @@ describe("CommercialFeedRoute", () => {
               growInterests: ["living soil", "dry amendments"],
               linkedLiveId: "live-1",
               linkedForumThreadId: "thread-1",
+              startsAt: "2026-07-17T21:00:00Z",
+              endsAt: "2026-07-24T21:00:00Z",
               imageUrl: "https://example.com/live.jpg",
               author: { displayName: "Living Soil Labs" },
               createdAt: "2026-07-07T12:00:00Z"
@@ -92,6 +94,8 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
+    expect(screen.getByText("Starts: 2026-07-17T21:00:00Z")).toBeTruthy();
+    expect(screen.getByText("Ends: 2026-07-24T21:00:00Z")).toBeTruthy();
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(true);
@@ -115,7 +119,9 @@ describe("CommercialFeedRoute", () => {
               destinationLabel: "View Live",
               growInterests: ["living soil", "dry amendments"],
               linkedLiveId: "live-1",
-              linkedForumThreadId: "thread-1"
+              linkedForumThreadId: "thread-1",
+              startsAt: "2026-07-17T21:00:00Z",
+              endsAt: "2026-07-24T21:00:00Z"
             })
           })
         })
@@ -164,6 +170,16 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Commercial feed campaign image URL"),
       "https://example.com/demo.jpg"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign schedule start"),
+      "2026-07-17T21:00:00Z"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign schedule end"),
+      "2026-07-24T21:00:00Z"
+    );
+    fireEvent.changeText(screen.getByLabelText("Feed campaign reminder"), "1 hour before");
+    fireEvent.changeText(screen.getByLabelText("Feed campaign recurrence"), "weekly");
 
     await waitFor(() =>
       expect(screen.getByText("Campaign has destination and creative.")).toBeTruthy()
@@ -187,7 +203,11 @@ describe("CommercialFeedRoute", () => {
           linkedLiveId: "live-demo-1",
           linkedForumThreadId: "thread-q-and-a",
           imageUrl: "https://example.com/demo.jpg",
-          creativeImageUrl: "https://example.com/demo.jpg"
+          creativeImageUrl: "https://example.com/demo.jpg",
+          startsAt: "2026-07-17T21:00:00Z",
+          endsAt: "2026-07-24T21:00:00Z",
+          reminderPreference: "1 hour before",
+          recurrenceRule: "weekly"
         })
       })
     );

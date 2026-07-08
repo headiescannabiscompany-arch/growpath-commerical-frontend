@@ -25,6 +25,10 @@ describe("commercial feed API", () => {
         linkedGrowId: "grow-1",
         storefrontSlug: "living-soil-labs",
         imageUrl: "/uploads/feed-image.jpg",
+        startsAt: "2026-07-17T21:00:00Z",
+        endsAt: "2026-07-24T21:00:00Z",
+        reminderPreference: "24 hours before",
+        recurrenceRule: "weekly",
         externalLinks: [{ label: "Buy", url: "https://example.com" }]
       }
     });
@@ -45,6 +49,10 @@ describe("commercial feed API", () => {
       linkedGrowId: "grow-1",
       storefrontSlug: "living-soil-labs",
       imageUrl: "file:///tmp/feed-image.jpg",
+      startsAt: "2026-07-17T21:00:00Z",
+      endsAt: "2026-07-24T21:00:00Z",
+      reminderPreference: "24 hours before",
+      recurrenceRule: "weekly",
       externalLinks: [{ label: "Buy", url: "https://example.com" }]
     });
 
@@ -64,6 +72,10 @@ describe("commercial feed API", () => {
         storefrontSlug: "living-soil-labs",
         imageUrl: "/uploads/feed-image.jpg",
         creativeImageUrl: "/uploads/feed-image.jpg",
+        startsAt: "2026-07-17T21:00:00Z",
+        endsAt: "2026-07-24T21:00:00Z",
+        reminderPreference: "24 hours before",
+        recurrenceRule: "weekly",
         externalLinks: [{ label: "Buy", url: "https://example.com" }]
       }
     });
