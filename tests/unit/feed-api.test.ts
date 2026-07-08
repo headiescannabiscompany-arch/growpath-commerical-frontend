@@ -18,12 +18,13 @@ describe("feed API", () => {
     ]);
     mockApiRequest.mockResolvedValue({
       id: "post-1",
-      text: "Post",
+      title: "Post",
+      body: "Post",
       photos: ["/uploads/local.jpg", "/uploads/existing.jpg"]
     });
   });
 
-  it("persists local photos before creating feed posts", async () => {
+  it("keeps legacy create post calls on Forum/Q&A instead of the ad feed", async () => {
     const { createFeedPost } = require("@/api/feed");
 
     const result = await createFeedPost({
@@ -36,11 +37,12 @@ describe("feed API", () => {
       "file:///tmp/local.jpg",
       "/uploads/existing.jpg"
     ]);
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/posts", {
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/forum/create", {
       method: "POST",
       body: {
-        text: "Post",
-        plantId: "plant-1",
+        title: "Post",
+        body: "Post",
+        linkedPlantId: "plant-1",
         photos: ["/uploads/local.jpg", "/uploads/existing.jpg"]
       }
     });
