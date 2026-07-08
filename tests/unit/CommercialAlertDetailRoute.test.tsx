@@ -8,6 +8,7 @@ const mockApiRequest = jest.fn();
 const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
   toInlineError: jest.fn(() => null)
 });
+let alertPayload: Record<string, any>;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "alert-1" }),
@@ -25,16 +26,17 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
 describe("CommercialAlertDetailRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    alertPayload = {
+      id: "alert-1",
+      title: "Product missing Stripe price",
+      message: "Connect Stripe before publishing this campaign.",
+      severity: "warning",
+      sourceType: "product",
+      sourceId: "product-1"
+    };
     mockApiRequest.mockImplementation((url: string, options?: any) => {
       if (url === "/api/alerts/alert-1" && options?.method === "GET") {
-        return Promise.resolve({
-          id: "alert-1",
-          title: "Product missing Stripe price",
-          message: "Connect Stripe before publishing this campaign.",
-          severity: "warning",
-          sourceType: "product",
-          sourceId: "product-1"
-        });
+        return Promise.resolve(alertPayload);
       }
       if (url === "/api/tasks" && options?.method === "POST") {
         return Promise.resolve({ id: "task-1", ...options.body });
@@ -74,5 +76,46 @@ describe("CommercialAlertDetailRoute", () => {
       )
     );
     expect(screen.getByText("Task created from this alert.")).toBeTruthy();
+  });
+
+  it("creates a task from a linked-only product batch alert source", async () => {
+    alertPayload = {
+      id: "alert-1",
+      title: "Batch QA review",
+      message: "Review the latest product batch.",
+      severity: "warning",
+      sourceType: "product_batch",
+      linkedProductBatchId: "batch-linked-1"
+    };
+
+    const screen = render(<CommercialAlertDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Batch QA review").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("Create task from alert"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Batch QA review",
+            description: "Review the latest product batch.",
+            priority: "medium",
+            sourceType: "alert",
+            sourceId: "alert-1",
+            sourceObjectId: "alert-1",
+            linkedAlertId: "alert-1",
+            alertSourceType: "product_batch",
+            alertSourceId: "batch-linked-1",
+            linkedProductBatchId: "batch-linked-1",
+            status: "open"
+          })
+        })
+      )
+    );
   });
 });

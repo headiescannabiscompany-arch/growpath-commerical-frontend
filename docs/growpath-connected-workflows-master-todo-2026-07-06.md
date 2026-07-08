@@ -405,6 +405,7 @@ Completed and pushed:
 129. Schedule/Agenda task items now prefer linked-only source ids and allow source-link inference, so calendar tasks backed by product batches, recipes, ToolRuns, alerts, courses, lives, feed campaigns, orders, rooms/SOPs/runs, plants, or grows click back to the real workflow instead of generic task pages.
 130. Notification-created tasks now preserve linked-only source ids such as product batches, products/trials, courses, lives, feed campaigns, orders, forum threads, facility rooms/runs/SOPs, recipes, and ToolRuns, so reminders can become source-linked follow-up work even when `sourceId` is missing.
 131. Alert-created tasks now preserve linked-only source ids such as product batches, products/trials, storefronts, grows/plants/logs, tasks, rooms/facilities/runs/SOPs, ToolRuns, recipes, lessons/courses, feed campaigns, orders, sensor alerts, and forum threads, so alert-to-task keeps the real source context.
+132. Commercial alert detail task creation now preserves linked-only product batch/trial and campaign/order/source ids, so owners opening a single alert can still create source-linked follow-up work even when the alert detail lacks `sourceId`.
 
 ## Working Rule For Codex
 

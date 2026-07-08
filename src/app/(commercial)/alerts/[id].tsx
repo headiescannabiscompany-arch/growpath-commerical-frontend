@@ -42,11 +42,15 @@ function renderKV(obj: AnyRec | null, key: string) {
 function linkedFieldsForAlertSource(item: AnyRec | null) {
   if (!item) return {};
   const sourceType = String(item.sourceType || item.triggerSourceType || "");
-  const sourceId = String(item.sourceId || item.sourceObjectId || "");
+  const sourceId = alertSourceReference(item);
   if (!sourceId) return {};
   switch (sourceType) {
     case "product":
       return { linkedProductId: sourceId };
+    case "product_batch":
+      return { linkedProductBatchId: sourceId };
+    case "product_trial":
+      return { linkedProductTrialId: sourceId };
     case "course":
       return { linkedCourseId: sourceId };
     case "live":
@@ -70,6 +74,31 @@ function linkedFieldsForAlertSource(item: AnyRec | null) {
     default:
       return {};
   }
+}
+
+function alertSourceReference(item: AnyRec | null) {
+  if (!item) return "";
+  const values = [
+    item.sourceId,
+    item.sourceObjectId,
+    item.linkedProductId,
+    item.linkedProductBatchId,
+    item.linkedProductTrialId,
+    item.linkedCourseId,
+    item.linkedLiveId,
+    item.linkedStorefrontId,
+    item.linkedFeedPostId,
+    item.linkedOrderId,
+    item.linkedRoomId,
+    item.linkedFacilityId,
+    item.linkedFacilityRunId,
+    item.linkedSopId,
+    item.linkedForumThreadId
+  ];
+  const value = values.find(
+    (next) => next !== undefined && next !== null && String(next)
+  );
+  return value ? String(value) : "";
 }
 
 export default function CommercialAlertDetailRoute() {
@@ -154,7 +183,7 @@ export default function CommercialAlertDetailRoute() {
           sourceObjectId: id,
           linkedAlertId: id,
           alertSourceType: item.sourceType || item.triggerSourceType || undefined,
-          alertSourceId: item.sourceId || item.sourceObjectId || undefined,
+          alertSourceId: alertSourceReference(item) || undefined,
           ...linkedFieldsForAlertSource(item),
           status: "open"
         }
