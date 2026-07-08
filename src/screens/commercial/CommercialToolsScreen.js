@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import ScreenContainer from "../../components/ScreenContainer";
+import { radius } from "../../theme/theme";
 
 function ToolCard({ title, subtitle, onPress }) {
   return (
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e2e8f0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fff"
   },
