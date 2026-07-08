@@ -1244,12 +1244,17 @@ describe("commercial workflow pages", () => {
             forumThreadId: "thread-1",
             taskTemplate: expect.objectContaining({
               title: "Upload topdress photo",
+              workspaceType: "commercial",
               sourceType: "lesson",
+              priority: "normal",
+              status: "open",
               linkedCourseId: "course-1",
               linkedProductIds: ["product-1", "product-2"],
               linkedLiveIds: ["live-1"],
               linkedForumThreadId: "thread-1",
               dueOffsetDays: 7,
+              requiresProof: false,
+              requiresApproval: false,
               completionCriteria: "lesson_action"
             }),
             status: "draft"

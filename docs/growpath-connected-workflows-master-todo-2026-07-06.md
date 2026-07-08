@@ -438,6 +438,7 @@ Completed and pushed:
 162. Production export SEO copy and live-test fixture labels now avoid "commercial grow" wording, using commercial storefront and product-trial evidence language instead.
 163. App-store draft copy, product-trial evidence-run placeholders, and commercial fixture assertions now use storefront/product-trial language instead of commercial grow/crop wording.
 164. Commercial course lesson task templates now preserve linked course, product, live, and Forum/Q&A context so lesson-created tasks can route back to the right source workflow.
+165. Commercial course lesson task templates now carry shared Task defaults for commercial workspace, open status, normal priority, proof, and approval flags, so saved lesson actions can enter the Task Center with predictable behavior.
 
 ## Working Rule For Codex
 

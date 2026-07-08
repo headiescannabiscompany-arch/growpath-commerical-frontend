@@ -200,12 +200,17 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         taskTemplate: lessonTaskTitle.trim()
           ? {
               title: lessonTaskTitle.trim(),
+              workspaceType: "commercial",
               sourceType: "lesson",
+              priority: "normal",
+              status: "open",
               linkedCourseId: courseId,
               linkedProductIds: splitIds(lessonRelatedProductIds),
               linkedLiveIds: splitIds(lessonRelatedLiveIds),
               linkedForumThreadId: lessonForumThreadId.trim() || undefined,
               dueOffsetDays: Number(lessonTaskDueOffsetDays) || 0,
+              requiresProof: false,
+              requiresApproval: false,
               completionCriteria: "lesson_action"
             }
           : undefined,
