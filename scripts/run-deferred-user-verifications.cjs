@@ -22,6 +22,11 @@ const checks = [
     args: ["run", "verify:connected-workflows"]
   },
   {
+    label: "GrowPath connected system audit",
+    command: npmCmd,
+    args: ["run", "audit:growpath-system"]
+  },
+  {
     label: "Recent autonomous workflow slices",
     command: npmCmd,
     args: [
@@ -46,6 +51,7 @@ const checks = [
       "tests/unit/SoilNutrientBatchToolScreen.test.tsx",
       "tests/unit/HomeScheduleRoute.test.tsx",
       "tests/unit/AlertCenterRoute.test.tsx",
+      "tests/unit/sourceLinks.test.ts",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/CommercialTasksRoute.test.tsx",
       "tests/unit/CommercialTaskDetailRoute.test.tsx",
@@ -140,6 +146,13 @@ const manualChecks = [
       "Create tasks from a ToolRun and confirm they link back to the grow/tool result.",
       "Convert an alert to a task and confirm the source link remains visible."
     ]
+  },
+  {
+    area: "Source routing",
+    checks: [
+      "From Schedule, Alert Center, Notification Center, and task detail, confirm Open Source actions route product launches, product trials, inventory, orders, feed campaigns, lesson/course releases, live reminders, alert snoozes, facility SOPs, and grow milestones to the correct workspace.",
+      "Confirm Commercial dashboard action-item tasks preserve source ids for inventory, product trials, orders, feed campaigns, and alerts."
+    ]
   }
 ];
 
@@ -214,4 +227,6 @@ for (const check of checks) {
 }
 
 console.log("\n[deferred-user-verifications] automated checks passed");
-console.log(`[deferred-user-verifications] manual checklist: ${path.relative(root, outFile)}`);
+console.log(
+  `[deferred-user-verifications] manual checklist: ${path.relative(root, outFile)}`
+);

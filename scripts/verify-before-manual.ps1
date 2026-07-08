@@ -120,6 +120,12 @@ Invoke-Step `
   -Command "node" `
   -Arguments @("scripts\verify-delivery.mjs")
 
+Invoke-Step `
+  -Name "GrowPath connected system audit" `
+  -WorkingDirectory $frontendRoot `
+  -Command "node" `
+  -Arguments @("scripts\audit-growpath-system.cjs")
+
 Assert-NoMatches `
   -Name "Commercial terminology guard" `
   -Pattern "trial grow|Trial Grow|Commercial Grow|Commercial Post|Store in Trials|grow/trial" `
@@ -143,6 +149,11 @@ Invoke-Step `
     "tests\unit\CommercialProfileRoute.test.tsx",
     "tests\unit\CommercialReportsScreen.test.tsx",
     "tests\unit\CommercialToolsScreen.test.tsx",
+    "tests\unit\CommercialWorkflowPages.test.tsx",
+    "tests\unit\CommercialTaskDetailRoute.test.tsx",
+    "tests\unit\HomeScheduleRoute.test.tsx",
+    "tests\unit\AlertCenterRoute.test.tsx",
+    "tests\unit\sourceLinks.test.ts",
     "tests\unit\StorefrontScreen.test.tsx",
     "tests\unit\StoreIndex.test.tsx"
   )
@@ -168,3 +179,4 @@ Write-Host "- AI/tool workflows: run Soil Builder, NPK, Dry Amendment, Topdress,
 Write-Host "- Tool task plans: confirm IPM tasks preserve GrowPath AI plus GPT verification context, pH/EC tasks schedule calibration and follow-up, run comparison tasks create repeatable next-run actions, and crop identity tasks update crop-specific targets/tags."
 Write-Host "- Recipe/product workflow: convert a recipe to product draft and verify generated specs stay attached."
 Write-Host "- Task review: confirm ToolRun-created tasks link back to the source grow/tool result and appear in Task Center/Schedule."
+Write-Host "- Source routing: confirm Schedule, Alert Center, Notification Center, and task detail Open Source actions route inventory, product trials, orders, feed campaigns, lesson/course releases, live reminders, alert snoozes, facility SOPs, and grow milestones to the correct workspace."
