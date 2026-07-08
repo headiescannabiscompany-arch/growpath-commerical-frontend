@@ -48,8 +48,8 @@ import CommercialAnalyticsRoute from "../app/home/commercial/analytics";
 import CommercialOrdersRoute from "../app/home/commercial/orders";
 import CommercialTasksRoute from "../app/home/commercial/tasks";
 import CommercialInventoryRoute from "../app/home/commercial/inventory";
-import CommercialInventoryCreateRoute from "../app/home/commercial/inventory-create";
-import CommercialInventoryItemDetailRoute from "../app/home/commercial/inventory-item/[id]";
+import CommercialInventoryCreateRoute from "../app/home/commercial/inventory/new";
+import CommercialInventoryItemDetailRoute from "../app/home/commercial/inventory/[id]";
 import CommercialProfileRoute from "../app/home/commercial/profile";
 
 const Stack = createNativeStackNavigator();

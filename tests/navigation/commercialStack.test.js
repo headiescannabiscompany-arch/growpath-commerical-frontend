@@ -42,4 +42,18 @@ describe("CommercialStack", () => {
       'name="CommercialGrowDetail"\n        component={CommercialEvidenceRunDetailRoute}'
     );
   });
+
+  it("routes inventory stack entries through canonical wrappers with legacy screen names", () => {
+    expect(source).toContain("../app/home/commercial/inventory");
+    expect(source).toContain("../app/home/commercial/inventory/new");
+    expect(source).toContain("../app/home/commercial/inventory/[id]");
+    expect(source).not.toContain("../app/home/commercial/inventory-create");
+    expect(source).not.toContain("../app/home/commercial/inventory-item/[id]");
+    expect(source).toContain(
+      'name="CommercialInventoryCreate"\n        component={CommercialInventoryCreateRoute}'
+    );
+    expect(source).toContain(
+      'name="CommercialInventoryItemDetail"\n        component={CommercialInventoryItemDetailRoute}'
+    );
+  });
 });
