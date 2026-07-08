@@ -297,6 +297,8 @@ Completed and pushed:
 21. The shared `/feed` route is now viewable by Personal, Commercial, and Facility modes; campaign creation remains controlled inside the feed screen by current mode.
 22. Feed placement rails now try to load real commercial/facility campaigns from `/api/commercial/feed` and only use static promotional cards as fallback.
 23. The public plan feature matrix now compares Free, Pro, Commercial, and Facility only, removing the unpriced Creator Plus column from user-facing pricing.
+24. Commercial forum-backed tasks now route to the shared `/forum/post/:id` discussion route from both the commercial task list and detail page.
+25. Commercial dashboard now includes a GrowPath AI business-helper surface that routes owners toward task, campaign, and analytics workflows while keeping records as the source of truth.
 
 ## Working Rule For Codex
 
