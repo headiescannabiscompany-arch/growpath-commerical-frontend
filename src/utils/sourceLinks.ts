@@ -29,6 +29,8 @@ function inferSourceType(source: SourceLike) {
     return "tool_run";
   if (firstText(source?.linkedRecipeId, source?.recipeId)) return "recipe";
   if (firstText(source?.linkedLiveId, source?.liveId)) return "live";
+  if (firstText(source?.linkedCourseAssignmentId, source?.courseAssignmentId))
+    return "course_assignment";
   if (firstText(source?.linkedLessonId, source?.lessonId)) return "lesson";
   if (firstText(source?.linkedCourseId, source?.courseId)) return "course";
   if (firstText(source?.linkedProductBatchId, source?.productBatchId))

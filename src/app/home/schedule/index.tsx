@@ -118,6 +118,7 @@ function sourceReference(row: any) {
     row?.linkedToolRunId,
     row?.linkedRecipeId,
     row?.linkedLiveId,
+    row?.linkedCourseAssignmentId,
     row?.linkedLessonId,
     row?.linkedCourseId,
     row?.linkedProductBatchId,
@@ -149,6 +150,7 @@ function linkedSourceType(row: any) {
   if (row?.linkedToolRunId) return "tool_run";
   if (row?.linkedRecipeId) return "recipe";
   if (row?.linkedLiveId) return "live";
+  if (row?.linkedCourseAssignmentId) return "course_assignment";
   if (row?.linkedLessonId) return "lesson";
   if (row?.linkedCourseId) return "course";
   if (row?.linkedProductBatchId) return "product_batch";
