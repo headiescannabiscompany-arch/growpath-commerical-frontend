@@ -611,6 +611,7 @@ Completed and pushed:
 335. Personal grow-specific Tasks tabs now mirror the Task Center source behavior by keeping the original alert/source link while adding View Linked Object for product, course, live, storefront, and Forum context carried on the task.
 336. Commercial Task Detail now keeps alert/source routing intact while adding a separate View Linked Object action for product, product-batch, trial, course, lesson, live, feed-campaign, storefront, and Forum context when it differs from the task source.
 337. Commercial Task Center cards now expose the same source-plus-linked-object split as task detail, so alert-backed setup tasks can keep their Alert Center trail while jumping directly to the product/course/live/storefront/campaign object that needs work.
+338. Facility Task Detail now preserves alert/source routing while adding View Linked Object for product, product-batch, trial, SOP/course, lesson, live, feed-campaign, and Forum context, keeping facility users inside facility inventory/runs/SOP surfaces instead of commercial admin routes.
 
 ## Working Rule For Codex
 

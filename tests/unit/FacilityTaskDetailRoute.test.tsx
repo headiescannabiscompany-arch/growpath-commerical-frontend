@@ -121,6 +121,9 @@ describe("FacilityTaskDetail", () => {
   });
 
   it("opens alert-backed facility task sources in the shared alert center", async () => {
+    taskOverrides = {
+      linkedProductId: "input-1"
+    };
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
@@ -128,6 +131,23 @@ describe("FacilityTaskDetail", () => {
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
     expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=alert-1");
+
+    fireEvent.press(screen.getByLabelText("View facility task linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/inventory/input-1");
+  });
+
+  it("does not duplicate linked object action when facility source already opens it", async () => {
+    taskOverrides = {
+      sourceType: "product",
+      sourceObjectId: "input-1",
+      linkedProductId: "input-1"
+    };
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    expect(screen.queryByLabelText("View facility task linked object")).toBeNull();
   });
 
   it("opens linked-only sensor alert facility task sources in the shared alert center", async () => {
@@ -144,9 +164,7 @@ describe("FacilityTaskDetail", () => {
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      "/home/alerts?alertId=sensor-alert-linked-1"
-    );
+    expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=sensor-alert-linked-1");
   });
 
   it("opens forum-backed facility task sources in the shared forum route", async () => {
@@ -199,7 +217,10 @@ describe("FacilityTaskDetail", () => {
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText("Set task detail source feed_campaign"));
-    fireEvent.changeText(screen.getByLabelText("Task detail source object"), "campaign-7");
+    fireEvent.changeText(
+      screen.getByLabelText("Task detail source object"),
+      "campaign-7"
+    );
     fireEvent.changeText(screen.getByLabelText("Task detail room"), "media-room");
     fireEvent.press(screen.getByLabelText("Save task workflow context"));
 

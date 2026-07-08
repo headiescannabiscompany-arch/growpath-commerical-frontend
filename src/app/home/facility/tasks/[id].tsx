@@ -121,6 +121,63 @@ function taskSourcePath(item: AnyRec | null): string {
   });
 }
 
+function linkedObjectPath(item: AnyRec | null): string {
+  if (!item) return "";
+  const sourceByPriority = [
+    item.linkedProductId && {
+      sourceType: "product",
+      sourceId: item.linkedProductId,
+      linkedProductId: item.linkedProductId
+    },
+    item.linkedProductBatchId && {
+      sourceType: "product_batch",
+      sourceId: item.linkedProductBatchId,
+      linkedProductBatchId: item.linkedProductBatchId,
+      linkedProductId: item.linkedProductId || undefined
+    },
+    (item.linkedProductTrialId || item.linkedTrialId) && {
+      sourceType: "product_trial",
+      sourceId: item.linkedProductTrialId || item.linkedTrialId,
+      linkedProductTrialId: item.linkedProductTrialId || item.linkedTrialId
+    },
+    item.linkedCourseId && {
+      sourceType: "course",
+      sourceId: item.linkedCourseId,
+      linkedCourseId: item.linkedCourseId
+    },
+    item.linkedLessonId && {
+      sourceType: "lesson",
+      sourceId: item.linkedLessonId,
+      linkedLessonId: item.linkedLessonId,
+      linkedCourseId: item.linkedCourseId || undefined
+    },
+    item.linkedLiveId && {
+      sourceType: "live",
+      sourceId: item.linkedLiveId,
+      linkedLiveId: item.linkedLiveId
+    },
+    (item.linkedFeedCampaignId || item.feedCampaignId || item.campaignId) && {
+      sourceType: "feed_campaign",
+      sourceId: item.linkedFeedCampaignId || item.feedCampaignId || item.campaignId,
+      linkedFeedCampaignId:
+        item.linkedFeedCampaignId || item.feedCampaignId || item.campaignId
+    },
+    item.linkedForumThreadId && {
+      sourceType: "forum",
+      sourceId: item.linkedForumThreadId,
+      linkedForumThreadId: item.linkedForumThreadId
+    }
+  ].find(Boolean);
+
+  if (!sourceByPriority) return "";
+
+  return sourceObjectHref({
+    ...item,
+    ...(sourceByPriority as Record<string, string | undefined>),
+    workspaceType: "facility"
+  });
+}
+
 function canManageRole(role: unknown) {
   return role === "OWNER" || role === "MANAGER";
 }
@@ -356,6 +413,8 @@ export default function FacilityTaskDetail() {
   const title = useMemo(() => (item ? pickTitle(item) : "Task Detail"), [item]);
   const complete = isComplete(item);
   const sourcePath = taskSourcePath(item);
+  const targetPath = linkedObjectPath(item);
+  const showTargetPath = targetPath && (!sourcePath || targetPath !== sourcePath);
   const sourceReference = taskSourceReference(item);
 
   const keys = useMemo(() => {
@@ -429,6 +488,16 @@ export default function FacilityTaskDetail() {
                   style={styles.secondaryBtn}
                 >
                   <Text style={styles.secondaryBtnText}>View Source</Text>
+                </TouchableOpacity>
+              ) : null}
+              {showTargetPath ? (
+                <TouchableOpacity
+                  accessibilityRole="link"
+                  accessibilityLabel="View facility task linked object"
+                  onPress={() => router.push(targetPath as any)}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryBtnText}>View Linked Object</Text>
                 </TouchableOpacity>
               ) : null}
               {!canWrite ? (
