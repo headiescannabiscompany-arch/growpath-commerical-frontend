@@ -13,6 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type NotificationRow = {
+  [key: string]: any;
   id?: string;
   _id?: string;
   title?: string;
@@ -51,9 +52,36 @@ function sourceHref(row: NotificationRow) {
   return sourceObjectHref(row) || "/home/schedule";
 }
 
+function sourceReference(row: NotificationRow) {
+  const values = [
+    row.sourceId,
+    row.sourceObjectId,
+    row.linkedAlertId,
+    row.linkedTaskId,
+    row.linkedCourseId,
+    row.linkedLessonId,
+    row.linkedLiveId,
+    row.linkedProductBatchId,
+    row.linkedProductTrialId,
+    row.linkedProductId,
+    row.linkedFeedPostId,
+    row.linkedOrderId,
+    row.linkedForumThreadId,
+    row.linkedRoomId,
+    row.linkedFacilityRunId,
+    row.linkedSopId,
+    row.linkedRecipeId,
+    row.linkedToolRunId
+  ];
+  const value = values.find(
+    (item) => item !== undefined && item !== null && String(item)
+  );
+  return value ? String(value) : "";
+}
+
 function linkedFieldsForNotificationSource(row: NotificationRow) {
   const sourceType = String(row.sourceType || "");
-  const sourceId = String(row.sourceId || "");
+  const sourceId = sourceReference(row);
   if (!sourceId) return {};
   switch (sourceType) {
     case "task":
@@ -70,6 +98,8 @@ function linkedFieldsForNotificationSource(row: NotificationRow) {
       return { linkedLiveId: sourceId };
     case "product":
       return { linkedProductId: sourceId };
+    case "product_batch":
+      return { linkedProductBatchId: sourceId };
     case "product_trial":
       return { linkedProductTrialId: sourceId };
     case "feed_campaign":
@@ -220,7 +250,7 @@ export default function NotificationCenterRoute() {
           sourceId: id,
           linkedNotificationId: id,
           notificationSourceType: row.sourceType || undefined,
-          notificationSourceId: row.sourceId || undefined,
+          notificationSourceId: sourceReference(row) || undefined,
           ...linkedFieldsForNotificationSource(row),
           priority: ["alert", "task"].includes(String(row.sourceType || ""))
             ? "high"
