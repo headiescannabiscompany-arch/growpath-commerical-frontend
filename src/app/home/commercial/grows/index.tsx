@@ -137,7 +137,9 @@ export default function CommercialGrowsRoute({
     <AppPage
       routeKey={routeKey}
       backFallbackHref={
-        routeKey === "commercial-grow-create" ? "/home/commercial/grows" : undefined
+        routeKey === "commercial-grow-create"
+          ? "/home/commercial/evidence-runs"
+          : undefined
       }
       longContent
       header={
@@ -156,7 +158,10 @@ export default function CommercialGrowsRoute({
             </Text>
           </View>
           <View style={styles.headerActions}>
-            <ActionLink href="/home/commercial/grows/new" label="Create Evidence Run" />
+            <ActionLink
+              href="/home/commercial/evidence-runs/new"
+              label="Create Evidence Run"
+            />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
             <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
           </View>
@@ -362,7 +367,7 @@ export default function CommercialGrowsRoute({
                 ) : null}
                 <View style={styles.actions}>
                   <ActionLink
-                    href={`/home/commercial/grows/${encodeURIComponent(String(growId(grow)))}`}
+                    href={`/home/commercial/evidence-runs/${encodeURIComponent(String(growId(grow)))}`}
                     label="Open Detail"
                   />
                 </View>

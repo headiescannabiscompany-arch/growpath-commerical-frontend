@@ -295,8 +295,8 @@ export default function CommercialInventoryItemDetailRoute() {
                   accessibilityLabel="Open linked commercial product trial evidence run"
                   onPress={() =>
                     router.push({
-                      pathname: "/home/commercial/grows/[growId]",
-                      params: { growId: String(item.linkedTrialId || item.linkedGrowId) }
+                      pathname: "/home/commercial/evidence-runs/[id]",
+                      params: { id: String(item.linkedTrialId || item.linkedGrowId) }
                     })
                   }
                   style={styles.actionBtn}

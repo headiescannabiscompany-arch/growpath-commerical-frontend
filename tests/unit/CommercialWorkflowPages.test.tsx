@@ -17,9 +17,9 @@ import NewCommercialProductRoute from "@/app/home/commercial/products/new";
 import CommercialBatchPlannerRoute from "@/app/home/commercial/batch-planner";
 import CommercialBatchDetailRoute from "@/app/home/commercial/batch-planner/[batchId]";
 import CommercialAnalyticsRoute from "@/app/home/commercial/analytics";
-import CommercialGrowsRoute from "@/app/home/commercial/grows";
-import CommercialGrowDetailRoute from "@/app/home/commercial/grows/[growId]";
-import NewCommercialGrowRoute from "@/app/home/commercial/grows/new";
+import CommercialGrowsRoute from "@/app/home/commercial/evidence-runs";
+import CommercialGrowDetailRoute from "@/app/home/commercial/evidence-runs/[id]";
+import NewCommercialGrowRoute from "@/app/home/commercial/evidence-runs/new";
 import CommercialTrialsRoute from "@/app/home/commercial/trials";
 import CommercialTrialDetailRoute from "@/app/home/commercial/trials/[trialId]";
 import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory-item/[id]";
@@ -1765,7 +1765,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Publishable result")).toBeTruthy();
     expect(screen.getByText(/Run Comparison when/)).toBeTruthy();
     expect(screen.getByText("Create Evidence Run")).toBeTruthy();
-    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/grows/new" })).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/evidence-runs/new" })
+    ).toBeTruthy();
     expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
     expect(screen.queryByText("Create Personal Grow")).toBeNull();
 
@@ -2099,7 +2101,8 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
     expect(
-      screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows/new" }).length
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/evidence-runs/new" })
+        .length
     ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Grow Workspace")).toBeNull();
     expect(screen.queryByText("Open grow list")).toBeNull();

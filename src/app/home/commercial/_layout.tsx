@@ -15,6 +15,8 @@ export default function CommercialTabsLayout() {
     pathname.includes("/storefront/") ||
     pathname.includes("/products/new") ||
     pathname.includes("/products/") ||
+    pathname.includes("/evidence-runs/new") ||
+    pathname.includes("/evidence-runs/") ||
     pathname.includes("/grows/new") ||
     pathname.includes("/grows/") ||
     pathname.includes("/courses/") ||
@@ -103,6 +105,18 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="grows/[growId]"
+        options={{ href: null, title: "Product Trial Evidence Run Detail" }}
+      />
+      <Tabs.Screen
+        name="evidence-runs"
+        options={{ href: null, title: "Product Trial Evidence Runs" }}
+      />
+      <Tabs.Screen
+        name="evidence-runs/new"
+        options={{ href: null, title: "Create Product Trial Evidence Run" }}
+      />
+      <Tabs.Screen
+        name="evidence-runs/[id]"
         options={{ href: null, title: "Product Trial Evidence Run Detail" }}
       />
       <Tabs.Screen

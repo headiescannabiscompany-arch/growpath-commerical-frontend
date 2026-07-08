@@ -158,7 +158,9 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "dry_cure_check"
   ) {
     if (workspace === "commercial")
-      return sourceId ? `/home/commercial/grows/${sourceId}` : "/home/commercial/grows";
+      return sourceId
+        ? `/home/commercial/evidence-runs/${sourceId}`
+        : "/home/commercial/evidence-runs";
     if (workspace === "facility")
       return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
     return sourceId ? `/home/personal/grows/${sourceId}` : "/home/personal/grows";

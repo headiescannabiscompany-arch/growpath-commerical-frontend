@@ -41,10 +41,11 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialGrowDetailRoute({ route }: { route?: any } = {}) {
-  const params = useLocalSearchParams<{ growId?: string }>();
+  const params = useLocalSearchParams<{ growId?: string; id?: string }>();
   const growId = useMemo(
-    () => cleanId(params.growId || route?.params?.growId || route?.params?.id),
-    [params.growId, route?.params?.growId, route?.params?.id]
+    () =>
+      cleanId(params.growId || params.id || route?.params?.growId || route?.params?.id),
+    [params.growId, params.id, route?.params?.growId, route?.params?.id]
   );
   const [grow, setGrow] = useState<CommercialGrow | null>(null);
   const [status, setStatus] = useState("");
@@ -110,7 +111,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
   return (
     <AppPage
       routeKey="commercial-grow-detail"
-      backFallbackHref="/home/commercial/grows"
+      backFallbackHref="/home/commercial/evidence-runs"
       longContent
       header={
         <View style={styles.header}>
@@ -121,7 +122,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
             formula, trial, public-share, feed campaign, and report workflows around it.
           </Text>
           <View style={styles.actions}>
-            <ActionLink href="/home/commercial/grows" label="All Evidence Runs" />
+            <ActionLink href="/home/commercial/evidence-runs" label="All Evidence Runs" />
             <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
           </View>

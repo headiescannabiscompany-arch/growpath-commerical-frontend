@@ -185,7 +185,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
           ) : null}
           {batch?.linkedTrialId || batch?.trialGrowId ? (
             <ActionLink
-              href={`/home/commercial/grows/${encodeURIComponent(
+              href={`/home/commercial/evidence-runs/${encodeURIComponent(
                 batch.linkedTrialId || batch.trialGrowId || ""
               )}`}
               label="Open Evidence Run"
