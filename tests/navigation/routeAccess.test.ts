@@ -55,6 +55,7 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/analytics",
   "/home/commercial/profile",
   "/home/commercial/inventory",
+  "/home/commercial/inventory/new",
   "/home/commercial/inventory-create",
   "/home/commercial/inventory-item/item-1",
   "/alerts",
@@ -167,7 +168,22 @@ describe("route access policy", () => {
     ).toBe(false);
     expect(
       canAccessRoute(
+        "/home/commercial/inventory/new",
+        commercial({ [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]: true })
+      )
+    ).toBe(false);
+    expect(
+      canAccessRoute(
         "/home/commercial/inventory-create",
+        commercial({
+          [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]: true,
+          [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]: true
+        })
+      )
+    ).toBe(true);
+    expect(
+      canAccessRoute(
+        "/home/commercial/inventory/new",
         commercial({
           [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]: true,
           [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]: true

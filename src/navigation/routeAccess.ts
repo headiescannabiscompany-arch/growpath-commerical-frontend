@@ -22,6 +22,14 @@ const startsWith = (prefix: string) => (pathname: string) =>
 
 const COMMERCIAL_RULES: RouteRule[] = [
   {
+    matches: startsWith("/home/commercial/inventory/new"),
+    mode: "commercial",
+    capabilities: [
+      CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW,
+      CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE
+    ]
+  },
+  {
     matches: startsWith("/home/commercial/inventory-create"),
     mode: "commercial",
     capabilities: [
@@ -144,6 +152,7 @@ export function canAccessRoute(pathname: string, snapshot: RouteAccessSnapshot):
   const commercialPreview =
     snapshot.mode === "commercial" &&
     pathname.startsWith("/home/commercial") &&
+    !pathname.startsWith("/home/commercial/inventory/new") &&
     !pathname.startsWith("/home/commercial/inventory-create");
   if (commercialPreview) return true;
 

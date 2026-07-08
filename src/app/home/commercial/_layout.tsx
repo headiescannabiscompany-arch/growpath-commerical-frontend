@@ -11,6 +11,7 @@ export default function CommercialTabsLayout() {
   const compactTabs = width < 760;
   const hideTabBar =
     pathname.includes("/inventory-create") ||
+    pathname.includes("/inventory/new") ||
     pathname.includes("/inventory-item/") ||
     pathname.includes("/storefront/") ||
     pathname.includes("/products/new") ||
@@ -96,6 +97,10 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
       <Tabs.Screen
         name="inventory-create"
+        options={{ href: null, title: "Add Inventory Support Item" }}
+      />
+      <Tabs.Screen
+        name="inventory/new"
         options={{ href: null, title: "Add Inventory Support Item" }}
       />
       <Tabs.Screen name="inventory-item/[id]" options={{ href: null }} />

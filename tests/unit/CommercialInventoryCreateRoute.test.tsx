@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CommercialInventoryCreateRoute from "@/app/home/commercial/inventory-create";
+import CommercialInventoryCreateRoute from "@/app/home/commercial/inventory/new";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();

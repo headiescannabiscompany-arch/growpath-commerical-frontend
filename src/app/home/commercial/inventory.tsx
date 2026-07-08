@@ -155,7 +155,7 @@ export default function CommercialInventoryRoute() {
             <Text style={styles.muted}>{items.length} items</Text>
             {canCreate ? (
               <TouchableOpacity
-                onPress={() => router.push("/home/commercial/inventory-create")}
+                onPress={() => router.push("/home/commercial/inventory/new")}
                 style={styles.createBtn}
               >
                 <Text style={styles.createBtnText}>Create</Text>

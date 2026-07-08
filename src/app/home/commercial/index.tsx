@@ -156,7 +156,7 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     ],
     actions: [
       { label: "Open Inventory Support", href: "/home/commercial/inventory" },
-      { label: "Add Support Item", href: "/home/commercial/inventory-create" }
+      { label: "Add Support Item", href: "/home/commercial/inventory/new" }
     ]
   },
   {
