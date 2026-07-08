@@ -432,6 +432,7 @@ describe("commercial workflow pages", () => {
               price: 0,
               linkedProductIds: ["product-2"],
               linkedProductLineIds: ["line-1"],
+              linkedTrialIds: ["trial-2"],
               linkedGrowIds: ["grow-2"],
               linkedLiveIds: ["live-2"],
               linkedFeedCampaignIds: ["campaign-2"],
@@ -462,6 +463,7 @@ describe("commercial workflow pages", () => {
             stripePriceId: "price_course_existing",
             linkedProductIds: ["product-1"],
             linkedProductLineIds: ["line-1"],
+            linkedTrialIds: ["trial-1"],
             linkedGrowIds: ["grow-1"],
             linkedLiveIds: ["live-1"],
             lessons: [
@@ -941,6 +943,7 @@ describe("commercial workflow pages", () => {
             growInterests: [],
             linkedProductIds: ["product-2"],
             linkedProductLineIds: ["line-1"],
+            linkedTrialIds: ["trial-2"],
             linkedGrowIds: ["grow-2"],
             linkedLiveIds: ["live-2"],
             linkedFeedCampaignIds: ["campaign-2"],
@@ -1050,6 +1053,7 @@ describe("commercial workflow pages", () => {
             skillLevel: "intermediate",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
+            linkedTrialIds: ["grow-1"],
             linkedGrowIds: ["grow-1"],
             linkedLiveIds: ["live-1"],
             linkedVideoUrls: [
@@ -1146,6 +1150,9 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course detail Stripe price ID"),
       "price_course_updated"
     );
+    expect(
+      screen.getByLabelText("Commercial course detail linked evidence runs").props.value
+    ).toBe("trial-1");
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail linked products"),
       "product-1, product-2"
@@ -1182,6 +1189,7 @@ describe("commercial workflow pages", () => {
             stripePriceId: "price_course_updated",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
+            linkedTrialIds: ["grow-1"],
             linkedGrowIds: ["grow-1"],
             linkedLiveIds: ["live-1", "live-2"]
           })

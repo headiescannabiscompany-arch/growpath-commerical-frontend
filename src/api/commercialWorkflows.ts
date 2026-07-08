@@ -105,6 +105,7 @@ export type CommercialCourse = {
   stripePriceId?: string;
   linkedProductIds?: string[];
   linkedProductLineIds?: string[];
+  linkedTrialIds?: string[];
   linkedGrowIds?: string[];
   linkedLiveIds?: string[];
   linkedFeedCampaignIds?: string[];

@@ -130,7 +130,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setStripePriceId(next?.stripePriceId || "");
     setLinkedProductIds((next?.linkedProductIds || []).join(", "));
     setLinkedProductLineIds((next?.linkedProductLineIds || []).join(", "));
-    setLinkedGrowIds((next?.linkedGrowIds || []).join(", "));
+    setLinkedGrowIds((next?.linkedTrialIds || next?.linkedGrowIds || []).join(", "));
     setLinkedLiveIds((next?.linkedLiveIds || []).join(", "));
   }, []);
 
@@ -170,6 +170,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         stripePriceId: stripePriceId.trim() || undefined,
         linkedProductIds: splitIds(linkedProductIds),
         linkedProductLineIds: splitIds(linkedProductLineIds),
+        linkedTrialIds: splitIds(linkedGrowIds),
         linkedGrowIds: splitIds(linkedGrowIds),
         linkedLiveIds: splitIds(linkedLiveIds)
       });
@@ -265,6 +266,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     stripePriceId,
     linkedProductIds: splitIds(linkedProductIds),
     linkedProductLineIds: splitIds(linkedProductLineIds),
+    linkedTrialIds: splitIds(linkedGrowIds),
     linkedGrowIds: splitIds(linkedGrowIds),
     linkedLiveIds: splitIds(linkedLiveIds),
     lessons
@@ -316,7 +318,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Lessons" value={lessons.length} />
           <DetailRow label="Linked products" value={course?.linkedProductIds} />
           <DetailRow label="Linked product lines" value={course?.linkedProductLineIds} />
-          <DetailRow label="Evidence runs" value={course?.linkedGrowIds} />
+          <DetailRow
+            label="Evidence runs"
+            value={course?.linkedTrialIds || course?.linkedGrowIds}
+          />
           <DetailRow label="Linked lives" value={course?.linkedLiveIds} />
         </View>
         {setupWarnings.length ? (

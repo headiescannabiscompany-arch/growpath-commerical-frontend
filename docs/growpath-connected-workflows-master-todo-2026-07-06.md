@@ -447,6 +447,7 @@ Completed and pushed:
 171. Commercial Brand Forum/Q&A support posts now write and display `linkedTrialId` evidence-run aliases while preserving legacy `linkedGrowId`, keeping support answers tied to product trials without treating Forum/Q&A as Feed.
 172. Commercial Task Center and commercial task detail now display, route, and create product-trial tasks with the clearer `linkedTrialId` alias while preserving legacy `linkedProductTrialId`, keeping evidence-run tasks connected to commercial trial detail pages.
 173. Commercial inventory create/detail now preserve `linkedTrialId` product-trial evidence aliases while still writing legacy `linkedGrowId`, so stock support records stay connected to evidence runs without reviving commercial-grow language.
+174. Commercial courses now preserve `linkedTrialIds` evidence-run aliases on create, setup tasks, and detail updates while still writing legacy `linkedGrowIds`, keeping education content tied to product-trial evidence without commercial-grow wording.
 
 ## Working Rule For Codex
 
