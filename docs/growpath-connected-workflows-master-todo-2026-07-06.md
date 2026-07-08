@@ -318,6 +318,7 @@ Completed and pushed:
 42. Legacy facility home labels now use the quieter facility visual language without emoji/arrow clutter, keeping the polished facility style consistent with the broader app direction.
 43. Released Personal tool routes for Nutrient Source Comparison, Product / Ingredient Library, and Saved Tool Runs are now explicitly registered in the tools stack so nested tool navigation has consistent titles and back behavior.
 44. Store discovery and Commercial Product Lines no longer link owners to the blocked `/storefront` route; owner actions now use `/home/commercial/storefront` and `/home/commercial/products/new`.
+45. Product checkout return URLs now come back to the public store/product route that started checkout instead of the blocked owner `/storefront` route.
 
 ## Working Rule For Codex
 
