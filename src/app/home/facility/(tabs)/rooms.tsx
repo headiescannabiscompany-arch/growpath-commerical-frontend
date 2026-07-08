@@ -138,6 +138,52 @@ function inferDeviceMetrics(raw: string) {
   ].filter(Boolean) as string[];
 }
 
+function suggestedAlertRules(metrics: string[], roomType: string) {
+  return metrics.flatMap((metric) => {
+    if (metric === "high_humidity_alarm") {
+      return [
+        {
+          metric,
+          severity: "critical",
+          action: "inspect_room",
+          suggestedTaskTitle: `Inspect ${roomType || "room"} for high humidity risk`
+        }
+      ];
+    }
+    if (metric === "high_temp_alarm" || metric === "low_temp_alarm") {
+      return [
+        {
+          metric,
+          severity: "urgent",
+          action: "check_environment",
+          suggestedTaskTitle: `Check ${roomType || "room"} temperature alarm`
+        }
+      ];
+    }
+    if (metric === "device_offline" || metric === "sensor_fault") {
+      return [
+        {
+          metric,
+          severity: "warning",
+          action: "check_device",
+          suggestedTaskTitle: `Check ${roomType || "room"} sensor connection`
+        }
+      ];
+    }
+    if (metric === "leak_alarm") {
+      return [
+        {
+          metric,
+          severity: "critical",
+          action: "inspect_room",
+          suggestedTaskTitle: `Inspect ${roomType || "room"} for leak alarm`
+        }
+      ];
+    }
+    return [];
+  });
+}
+
 function buildRoomImportPreview(rawText: string) {
   const rooms = new Map<
     string,
@@ -390,6 +436,7 @@ export default function FacilityRoomsTab() {
                 provider: importProvider.trim() || undefined,
                 permissionLevel: "read-only",
                 normalizedMetrics: device.metrics,
+                suggestedAlertRules: suggestedAlertRules(device.metrics, room.roomType),
                 sensorStreams: device.metrics.map((metric) => ({
                   providerMetricKey: metric,
                   normalizedMetric: metric,

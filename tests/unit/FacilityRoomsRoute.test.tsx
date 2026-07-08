@@ -204,6 +204,14 @@ describe("FacilityRoomsTab", () => {
       integrationMapping: expect.objectContaining({
         normalizedMetrics: ["relative_humidity", "high_humidity_alarm", "sensor_alarm"],
         rawDeviceName: "Flower Room 1 High Humidity Alarm",
+        suggestedAlertRules: [
+          {
+            metric: "high_humidity_alarm",
+            severity: "critical",
+            action: "inspect_room",
+            suggestedTaskTitle: "Inspect flower for high humidity risk"
+          }
+        ],
         sensorStreams: expect.arrayContaining([
           expect.objectContaining({
             providerMetricKey: "high_humidity_alarm",

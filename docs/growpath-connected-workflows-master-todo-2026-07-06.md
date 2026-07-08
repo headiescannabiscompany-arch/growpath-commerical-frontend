@@ -432,6 +432,7 @@ Completed and pushed:
 156. Commercial product and course setup tasks now mirror canonical feed campaign ids into legacy feed-post compatibility arrays, so older source-link consumers stay connected while the active workflow uses Feed/Campaigns language.
 157. Commercial product/course setup regression coverage now uses canonical-only feed campaign fixtures and verifies legacy alias task fields are still populated, preventing old feed-post data assumptions from hiding drift.
 158. Personal Growlink import now saves suggested grow-space metadata alongside detected rooms, devices, normalized metrics, and read-only sensor streams, so controller imports can seed personal tents/rooms later instead of storing only telemetry numbers.
+159. Facility controller room import now attaches suggested alert/task rules for imported alarm metrics while preserving read-only mappings, helping facilities start with actionable room monitoring after import.
 
 ## Working Rule For Codex
 
