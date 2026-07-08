@@ -84,6 +84,21 @@ function productCheckoutReady(product: AnyRec) {
   return hasText(product.externalPurchaseUrl) || hasText(product.stripePriceId);
 }
 
+function storefrontStripeReady(storefront: AnyRec | null) {
+  if (!storefront) return false;
+  return (
+    hasText(storefront.stripeAccountId) ||
+    hasText(storefront.stripeConnectAccountId) ||
+    hasText(storefront.stripeCustomerId) ||
+    Boolean(storefront.stripeConnected) ||
+    ["connected", "active", "enabled", "ready"].includes(
+      String(
+        storefront.stripeStatus || storefront.stripeConnectionStatus || ""
+      ).toLowerCase()
+    )
+  );
+}
+
 function productMissingSetup(product: AnyRec) {
   const missing: string[] = [];
   if (!productImage(product)) missing.push("image");
@@ -372,6 +387,12 @@ export default function Storefront() {
         helper: "At least one product has an external checkout or Stripe price."
       },
       {
+        label: "Stripe connection",
+        complete: storefrontStripeReady(storefront),
+        helper:
+          "Connect Stripe from Profile & Billing before relying on in-app checkout, paid courses, or storefront payouts."
+      },
+      {
         label: "Published course",
         complete: storefrontCourses.length > 0,
         helper: "Storefront can show course cards for learning and product education."
@@ -390,6 +411,7 @@ export default function Storefront() {
     [
       products,
       publishedProducts.length,
+      storefront,
       storeDraft,
       storefrontCampaigns.length,
       storefrontCourses.length,

@@ -232,6 +232,8 @@ describe("Storefront route", () => {
     expect(screen.getByText(/add logo/)).toBeTruthy();
     expect(screen.getByText(/add banner/)).toBeTruthy();
     expect(screen.getByText(/add description/)).toBeTruthy();
+    expect(screen.getByText("Stripe connection")).toBeTruthy();
+    expect(screen.getByText(/Connect Stripe from Profile & Billing/)).toBeTruthy();
     expect(
       screen.getByLabelText("Publish storefront").props.accessibilityState?.disabled
     ).toBe(true);
@@ -254,7 +256,7 @@ describe("Storefront route", () => {
         })
       )
     );
-    expect(screen.getByText("Created 4 storefront setup tasks.")).toBeTruthy();
+    expect(screen.getByText("Created 5 storefront setup tasks.")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>
