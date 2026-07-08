@@ -32,6 +32,7 @@ import {
 } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { createProduct } from "@/api/products";
+import { radius } from "@/theme/theme";
 
 type ProductRow = {
   id: string;
@@ -1355,7 +1356,7 @@ const styles = StyleSheet.create({
   guidanceCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 6,
     padding: 12
@@ -1363,7 +1364,7 @@ const styles = StyleSheet.create({
   aiBriefBox: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 8,
     padding: 10
@@ -1373,7 +1374,7 @@ const styles = StyleSheet.create({
     minWidth: 130,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10
   },
   product: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 14, gap: 10 },
@@ -1384,13 +1385,13 @@ const styles = StyleSheet.create({
   },
   productTitle: { fontSize: 16, fontWeight: "700" },
   remove: { color: "#B91C1C", fontWeight: "600" },
-  fullInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 10 },
+  fullInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   input: {
     minWidth: 90,
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10
   },
   pill: {
@@ -1398,7 +1399,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10
   },
   pillOn: { backgroundColor: "#166534", borderColor: "#166534" },
@@ -1410,25 +1411,25 @@ const styles = StyleSheet.create({
   densityField: { minWidth: 180, flexGrow: 1, gap: 4 },
   analysisFieldWide: { width: 132 },
   analysisLabel: { fontSize: 12, fontWeight: "700", marginBottom: 4 },
-  analysisInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 9 },
+  analysisInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 9 },
   selectWrap: {
     minWidth: 180,
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden"
   },
   selectWrapFull: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden"
   },
   picker: { height: 44, backgroundColor: "#FFFFFF" },
   primaryButton: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 11,
     paddingHorizontal: 14,
     alignSelf: "flex-start"
@@ -1437,7 +1438,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 10,
     paddingHorizontal: 14,
     alignSelf: "flex-start"
@@ -1448,7 +1449,7 @@ const styles = StyleSheet.create({
   resultCard: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14,
     gap: 10,
     backgroundColor: "#F8FAFC"
@@ -1461,13 +1462,13 @@ const styles = StyleSheet.create({
   warning: { color: "#B45309", fontWeight: "600" },
   recommendation: { color: "#334155", lineHeight: 19 },
   savedSection: { gap: 8 },
-  savedRecipe: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 10 },
+  savedRecipe: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   savedRecipeOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
   timelineRow: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 8, gap: 4 },
   lockedCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#F8FAFC"
   },

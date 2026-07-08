@@ -665,6 +665,7 @@ Completed and pushed:
 389. Personal Forum/Q&A guidelines card now consumes the shared 8px card radius token, removing the last non-token card radius from the personal forum route family while keeping Feed/Campaign placements separate from discussion.
 390. Personal Tools hub context banner, tool cards, and saved-runs/recipe/ingredient utility actions now consume the shared 8px card radius token, extending Facility-style polish to the main AI/tool discovery surface.
 391. Personal AI reference/draft cards, AI action buttons, grow-context chips, Profile verification rows, email inputs, and account actions now consume the shared 8px card radius token, extending Facility-style polish to personal assistant and account-management surfaces.
+392. Personal NPK / Feed Recipe Builder guidance, AI brief, batch inputs, ingredient rows, analysis fields, selectors, action buttons, result cards, saved recipes, and locked panel now consume the shared 8px card radius token, applying Facility-style polish to the core recipe-calculation workflow.
 
 ## Working Rule For Codex
 
