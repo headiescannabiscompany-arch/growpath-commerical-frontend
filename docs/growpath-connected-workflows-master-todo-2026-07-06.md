@@ -328,6 +328,7 @@ Completed and pushed:
 52. The legacy native Personal dashboard no longer fetches `/api/posts/feed` as a discussion feed; it now uses shared campaign placements and sends conversation language to Forum/Q&A.
 53. The root `/create-post` route no longer opens a generic feed/social composer; Personal users go to Forum/Q&A post creation, Commercial users go to Feed/Campaigns, and Facility users go to shared outreach campaigns.
 54. The GrowPath system audit now checks `/create-post` as a workspace-aware redirect guard and flags it if a visible generic post composer returns.
+55. The legacy native Forum screen now frames itself as Forum/Q&A, uses `New Discussion` language, and labels commercial/facility authors as Brand or Facility instead of generic business/social-feed copy.
 
 ## Working Rule For Codex
 
