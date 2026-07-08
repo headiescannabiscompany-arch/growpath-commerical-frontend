@@ -156,7 +156,10 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign schedule end"),
       "2026-07-24T21:00:00Z"
     );
-    fireEvent.changeText(screen.getByLabelText("Feed campaign reminder"), "1 hour before");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign reminder"),
+      "1 hour before"
+    );
     fireEvent.changeText(screen.getByLabelText("Feed campaign recurrence"), "weekly");
     fireEvent.changeText(screen.getByLabelText("Linked evidence run"), "trial-demo-1");
     expect(
@@ -220,6 +223,8 @@ describe("CommercialFeedRoute", () => {
         body: expect.objectContaining({
           type: "drop",
           campaignKind: "live_ad",
+          authorType: "commercial",
+          workspaceType: "commercial",
           title: "Friday mix demo",
           body: "RSVP for the live dry amendment recipe build.",
           tags: ["dry amendments"],
@@ -320,6 +325,39 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText(/GrowPath member/)).toBeNull();
   });
 
+  it("creates facility outreach campaigns with facility author identity", async () => {
+    mockMode = "facility";
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Facility Outreach")).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "IPM training");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign body"),
+      "Public facility training on scout records."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign grow interests"),
+      "IPM, facility training"
+    );
+    fireEvent.press(screen.getByLabelText("Publish facility outreach"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
+        method: "POST",
+        body: expect.objectContaining({
+          type: "education",
+          campaignKind: "facility_outreach",
+          authorType: "facility",
+          workspaceType: "facility",
+          title: "IPM training",
+          body: "Public facility training on scout records.",
+          growInterests: ["IPM", "facility training"]
+        })
+      })
+    );
+  });
+
   it("renders a CTA for external-link-only campaigns", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/commercial/feed") {
@@ -375,13 +413,9 @@ describe("CommercialFeedRoute", () => {
 
     const screen = render(<CommercialFeedRoute />);
 
-    await waitFor(() =>
-      expect(screen.getByText("NPK recipe workshop Q&A")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("NPK recipe workshop Q&A")).toBeTruthy());
 
-    fireEvent.press(
-      screen.getByLabelText("Open Forum Q&A for NPK recipe workshop Q&A")
-    );
+    fireEvent.press(screen.getByLabelText("Open Forum Q&A for NPK recipe workshop Q&A"));
 
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
   });
@@ -428,8 +462,6 @@ describe("CommercialFeedRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("/store?q=veg-mix-1");
     expect(mockPush).toHaveBeenCalledWith("/courses?courseId=course-npk-1");
     expect(mockPush).not.toHaveBeenCalledWith("/home/commercial/products/veg-mix-1");
-    expect(mockPush).not.toHaveBeenCalledWith(
-      "/home/commercial/courses/course-npk-1"
-    );
+    expect(mockPush).not.toHaveBeenCalledWith("/home/commercial/courses/course-npk-1");
   });
 });

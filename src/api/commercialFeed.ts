@@ -93,6 +93,8 @@ export async function listCommercialFeedCampaigns(
 export async function createCommercialFeedCampaign(input: {
   type: CommercialFeedCampaignType;
   campaignKind?: string;
+  authorType?: "commercial" | "facility";
+  workspaceType?: "commercial" | "facility";
   title?: string;
   body: string;
   tags?: string[];

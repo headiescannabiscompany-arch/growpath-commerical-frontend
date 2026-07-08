@@ -17,6 +17,8 @@ describe("commercial feed API", () => {
       post: {
         id: "post-1",
         type: "update",
+        authorType: "commercial",
+        workspaceType: "commercial",
         body: "Trial update",
         tags: ["soil"],
         growInterests: ["living soil"],
@@ -40,6 +42,8 @@ describe("commercial feed API", () => {
 
     const result = await createCommercialFeedCampaign({
       type: "update",
+      authorType: "commercial",
+      workspaceType: "commercial",
       title: "Veg mix trial",
       body: "Trial update",
       tags: ["soil"],
@@ -63,6 +67,8 @@ describe("commercial feed API", () => {
       method: "POST",
       body: {
         type: "update",
+        authorType: "commercial",
+        workspaceType: "commercial",
         title: "Veg mix trial",
         body: "Trial update",
         tags: ["soil"],
@@ -84,6 +90,8 @@ describe("commercial feed API", () => {
     });
     expect(result).toMatchObject({
       id: "post-1",
+      authorType: "commercial",
+      workspaceType: "commercial",
       linkedProductId: "product-1",
       linkedCourseId: "course-1",
       linkedTrialId: "trial-1",

@@ -351,6 +351,8 @@ export default function CommercialFeedRoute() {
       await createCommercialFeedCampaign({
         type: isFacility ? "education" : backendTypeForCampaignKind(campaignKind),
         campaignKind,
+        authorType: isFacility ? "facility" : "commercial",
+        workspaceType: isFacility ? "facility" : "commercial",
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
