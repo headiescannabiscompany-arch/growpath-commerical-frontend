@@ -17,6 +17,7 @@ import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import { buildGrowTimeline, type GrowTimelineItem } from "@/features/grows/timeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 10,
     paddingHorizontal: 12
   },
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   cardTitle: { fontWeight: "700", color: "#0F172A" },

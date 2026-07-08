@@ -26,6 +26,7 @@ import type {
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   cardTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   button: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 9,
     paddingHorizontal: 11,
     backgroundColor: "#FFFFFF"
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#64748B",
     backgroundColor: "#F8FAFC"
   }
