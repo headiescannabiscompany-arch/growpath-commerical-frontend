@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import ScreenContainer from "../../components/ScreenContainer";
+import { radius } from "@/theme/theme";
 
 function ReportCard({ title, body, bullets = [], actionLabel, route, navigation }) {
   return (
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 14
   },
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 9

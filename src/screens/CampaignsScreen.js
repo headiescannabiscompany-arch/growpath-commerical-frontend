@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { radius } from "@/theme/theme";
 
 function itemId(item, idx) {
   return String(item?.id || item?._id || `campaign-${idx}`);
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#0f766e",
-    borderRadius: 10,
+    borderRadius: radius.card,
     justifyContent: "center",
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#fff"
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
   metricPill: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7
   },

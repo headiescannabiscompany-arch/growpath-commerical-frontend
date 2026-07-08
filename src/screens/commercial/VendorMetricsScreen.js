@@ -16,6 +16,7 @@ import {
   listVendorEquipment,
   listVendorSoilMixes
 } from "../../api/vendorMetrics";
+import { radius } from "@/theme/theme";
 
 const normalizeList = (value) => {
   const list =
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
   info: { fontSize: 16, color: "#374151", marginBottom: 16 },
   chartContainer: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 24,
     boxShadow: "0px 1px 4px rgba(0,0,0,0.08)",
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
   metricsRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
   metricBox: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     fontSize: 15,
     fontWeight: "bold",
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 24,
     boxShadow: "0px 1px 6px rgba(0,0,0,0.1)",
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     flexGrow: 1,
     flexShrink: 1,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   addBtn: {
     backgroundColor: "#0ea5e9",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     minWidth: 96
   },

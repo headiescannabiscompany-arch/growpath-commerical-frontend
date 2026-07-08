@@ -15,6 +15,7 @@ import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
+import { radius } from "@/theme/theme";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   refreshButton: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14
   },
   metricValue: {
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14,
     marginBottom: 12
   },

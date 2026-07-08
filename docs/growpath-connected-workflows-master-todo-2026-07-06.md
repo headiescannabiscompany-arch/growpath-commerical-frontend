@@ -741,6 +741,7 @@ Completed and pushed:
 465. Personal grow log calendar cells, selected-day panels, detail actions/photos/chips/tags, and entry form inputs/photos/tags/environment sections now consume shared radius tokens while preserving grow-log, stage-sync, and forum-share behavior.
 466. Legacy feeding label scan, nutrient confirmation, feeding plan setup, and schedule result cards/actions now consume shared radius tokens while preserving entitlement gates and feeding schedule/template API flow.
 467. Personal grow list search/cards, harvest estimator inputs/actions, light calculator panels/results, and legacy lesson viewer locked/video/complete controls now consume shared radius tokens while preserving grow navigation, ToolUsage save, calculator, and lesson completion behavior.
+468. Legacy campaign planner, personal analytics, commercial reports, and vendor metrics forms/cards/actions now consume shared radius tokens while preserving feed/campaign planning, real analytics summaries, report routing, and vendor soil/equipment metric workflows.
 
 ## Working Rule For Codex
 
