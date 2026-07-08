@@ -693,6 +693,7 @@ Completed and pushed:
 417. Shared Schedule / Agenda metric cards, refresh action, filters, feedback, agenda cards, and source links now consume the shared 8px card radius token while preserving count/type pills, extending Facility-style visual polish across personal, commercial, and facility timing workflows.
 418. Shared Notification Center header panel, filters, mark-read actions, notification cards, read badges, source links, and create-task controls now consume the shared 8px card radius token, aligning cross-workspace reminders with the Facility-style treatment.
 419. Shared Alert Center metric cards, schedule/action panel, filters, feedback, alert cards, create/resolve/snooze/source/AI actions, and assignee input now consume the shared 8px card radius token while preserving severity pills.
+420. Facility Dashboard hero, compliance/task pulse cards, refresh action, priority/action panels, and operational tiles now consume the shared 8px card radius token, keeping the original Facility visual language aligned with the cross-user polish pass.
 
 ## Working Rule For Codex
 

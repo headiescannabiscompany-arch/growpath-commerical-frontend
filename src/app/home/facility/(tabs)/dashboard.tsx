@@ -27,6 +27,7 @@ import { getSOPTemplates } from "@/api/sop";
 import { listTeamMembers } from "@/api/team";
 import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 type Tone = "green" | "amber" | "blue" | "violet" | "red" | "slate" | "cyan" | "orange";
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: "stretch",
     backgroundColor: "#0b1220",
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexDirection: "row",
     gap: 16,
     justifyContent: "space-between",
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
   pulse: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderColor: "rgba(255,255,255,0.16)",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 118,
     padding: 12
@@ -517,7 +518,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "900" },
   refreshButton: {
     backgroundColor: "#111827",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
@@ -525,7 +526,7 @@ const styles = StyleSheet.create({
   panel: {
     backgroundColor: "white",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 14
   },
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1.9,
     backgroundColor: "white",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.card,
     justifyContent: "space-between",
     minHeight: 118,
     padding: 14
