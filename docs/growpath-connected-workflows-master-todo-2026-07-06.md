@@ -616,6 +616,7 @@ Completed and pushed:
 340. Notification-created follow-up tasks now preserve specific lesson and course-assignment IDs instead of flattening them into generic course links, keeping course workflow reminders connected to the exact lesson or assignment that generated the notification.
 341. Alert-created follow-up tasks now preserve parent course, exact lesson, and course-assignment IDs so instructor/student alert workflows stay connected to the specific course child record that needs action.
 342. Schedule/Agenda and the shared source-link resolver now infer `linkedCourseAssignmentId` as course-assignment context, so assignment calendar items reopen the course workflow instead of falling back to generic task pages when `sourceType` is missing.
+343. Shared course source links now carry exact `lessonId` and `assignmentId` query context on commercial, personal/public storefront, and facility course/SOP routes, so task and schedule links can open the parent course while preserving the exact child record that caused the action.
 
 ## Working Rule For Codex
 

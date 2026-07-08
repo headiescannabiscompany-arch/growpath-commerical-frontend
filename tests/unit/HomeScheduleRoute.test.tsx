@@ -253,7 +253,9 @@ describe("HomeScheduleRoute", () => {
       screen.getByTestId("link-/home/commercial/evidence-runs/trial-linked-1")
     ).toBeTruthy();
     expect(
-      screen.getByTestId("link-/home/personal/courses?courseId=course-assignment-parent")
+      screen.getByTestId(
+        "link-/home/personal/courses?courseId=course-assignment-parent&assignmentId=assignment-linked-1"
+      )
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/live-session?sessionId=live-public-1")).toBeTruthy();

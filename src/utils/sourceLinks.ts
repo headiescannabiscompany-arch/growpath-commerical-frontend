@@ -16,6 +16,15 @@ function encoded(value: string) {
   return encodeURIComponent(value);
 }
 
+function withQuery(path: string, params: Record<string, string>) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) query.set(key, value);
+  });
+  const serialized = query.toString();
+  return serialized ? `${path}?${serialized}` : path;
+}
+
 function inferSourceType(source: SourceLike) {
   if (firstText(source?.linkedTaskId, source?.taskId)) return "task";
   if (firstText(source?.linkedAlertId, source?.linkedSensorAlertId, source?.alertId))
@@ -102,6 +111,16 @@ export function sourceObjectHref(source: SourceLike) {
   );
   const forumId = firstText(source?.linkedForumThreadId, source?.forumThreadId, sourceId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
+  const lessonId = firstText(
+    source?.linkedLessonId,
+    source?.lessonId,
+    sourceType === "lesson" && courseId !== sourceId ? sourceId : ""
+  );
+  const courseAssignmentId = firstText(
+    source?.linkedCourseAssignmentId,
+    source?.courseAssignmentId,
+    sourceType === "course_assignment" && courseId !== sourceId ? sourceId : ""
+  );
   const liveId = firstText(source?.linkedLiveId, source?.liveId, sourceId);
   const campaignId = firstText(
     source?.linkedFeedCampaignId,
@@ -143,11 +162,19 @@ export function sourceObjectHref(source: SourceLike) {
       : id
         ? `/store?q=${encoded(id)}`
         : "/store";
+  const courseQuery = () => ({
+    lessonId: lessonId && lessonId !== courseId ? lessonId : "",
+    assignmentId:
+      courseAssignmentId && courseAssignmentId !== courseId ? courseAssignmentId : ""
+  });
   const publicCourseHref = (id: string) =>
     storefrontSlug && id
-      ? `/store/${encoded(storefrontSlug)}/courses/${encoded(id)}`
+      ? withQuery(
+          `/store/${encoded(storefrontSlug)}/courses/${encoded(id)}`,
+          courseQuery()
+        )
       : id
-        ? `/home/personal/courses?courseId=${encoded(id)}`
+        ? withQuery("/home/personal/courses", { courseId: id, ...courseQuery() })
         : "/home/personal/courses";
 
   if (sourceType === "task") {
@@ -245,10 +272,10 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "lesson_release"
   ) {
     if (workspace === "commercial" && courseId)
-      return `/home/commercial/courses/${courseId}`;
+      return withQuery(`/home/commercial/courses/${courseId}`, courseQuery());
     if (workspace === "facility")
       return courseId
-        ? `/home/facility/sop-runs/${encoded(courseId)}`
+        ? withQuery(`/home/facility/sop-runs/${encoded(courseId)}`, courseQuery())
         : "/home/facility/sop-runs";
     return publicCourseHref(courseId);
   }

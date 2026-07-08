@@ -227,7 +227,9 @@ describe("CommercialTaskDetailRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/course-1");
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/courses/course-1?lessonId=lesson-1"
+    );
   });
 
   it("opens linked-only feed campaign task sources in the commercial feed workflow", async () => {

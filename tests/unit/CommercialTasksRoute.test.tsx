@@ -161,7 +161,9 @@ describe("CommercialTasksRoute", () => {
       screen.getByLabelText("Commercial task link /forum/post/thread-product")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Commercial task link /home/commercial/courses/course-1")
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/courses/course-1?lessonId=lesson-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText(

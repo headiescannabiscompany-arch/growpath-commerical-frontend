@@ -244,6 +244,16 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "lesson",
+        sourceId: "lesson-1",
+        linkedCourseId: "npk-course-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/courses/npk-course-1?lessonId=lesson-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "storefront",
         sourceId: "storefront-1",
         workspaceType: "commercial"
@@ -316,6 +326,15 @@ describe("sourceObjectHref", () => {
         workspaceType: "commercial"
       })
     ).toBe("/home/commercial/courses/course-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "lesson",
+        sourceId: "lesson-1",
+        linkedCourseId: "course-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/courses/course-1?lessonId=lesson-1");
 
     expect(
       sourceObjectHref({
@@ -545,7 +564,7 @@ describe("sourceObjectHref", () => {
         linkedCourseId: "course-1",
         workspaceType: "personal"
       })
-    ).toBe("/home/personal/courses?courseId=course-1");
+    ).toBe("/home/personal/courses?courseId=course-1&assignmentId=assignment-1");
 
     expect(
       sourceObjectHref({
