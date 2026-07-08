@@ -446,6 +446,7 @@ Completed and pushed:
 170. Alert Center, Notification Center, and Schedule/Agenda now preserve and infer `linkedTrialId` product-trial aliases when creating follow-up tasks or opening agenda sources, so the clearer evidence-run field stays connected beyond Feed/Campaigns.
 171. Commercial Brand Forum/Q&A support posts now write and display `linkedTrialId` evidence-run aliases while preserving legacy `linkedGrowId`, keeping support answers tied to product trials without treating Forum/Q&A as Feed.
 172. Commercial Task Center and commercial task detail now display, route, and create product-trial tasks with the clearer `linkedTrialId` alias while preserving legacy `linkedProductTrialId`, keeping evidence-run tasks connected to commercial trial detail pages.
+173. Commercial inventory create/detail now preserve `linkedTrialId` product-trial evidence aliases while still writing legacy `linkedGrowId`, so stock support records stay connected to evidence runs without reviving commercial-grow language.
 
 ## Working Rule For Codex
 

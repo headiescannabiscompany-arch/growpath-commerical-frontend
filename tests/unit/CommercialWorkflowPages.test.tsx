@@ -647,6 +647,7 @@ describe("commercial workflow pages", () => {
             reorderPoint: 5,
             vendor: "Amendment Supplier",
             linkedProductId: "product-1",
+            linkedTrialId: "trial-1",
             linkedGrowId: "grow-1",
             location: "Dry room shelf A",
             status: "active",
@@ -1914,6 +1915,11 @@ describe("commercial workflow pages", () => {
       "ingredient"
     );
 
+    expect(
+      screen.getByLabelText("Commercial detail linked product trial evidence run").props
+        .value
+    ).toBe("trial-1");
+
     fireEvent.changeText(
       screen.getByLabelText("Commercial detail notes"),
       "Restocked for trial batches."
@@ -1928,7 +1934,8 @@ describe("commercial workflow pages", () => {
           data: expect.objectContaining({
             notes: "Restocked for trial batches.",
             linkedProductId: "product-1",
-            linkedGrowId: "grow-1"
+            linkedTrialId: "trial-1",
+            linkedGrowId: "trial-1"
           })
         })
       )

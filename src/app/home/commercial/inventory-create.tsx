@@ -58,6 +58,7 @@ export default function CommercialInventoryCreateRoute() {
           linkedProductId: linkedProductId.trim() || undefined,
           linkedIngredientId: linkedIngredientId.trim() || undefined,
           linkedGeneticsId: linkedGeneticsId.trim() || undefined,
+          linkedTrialId: linkedGrowId.trim() || undefined,
           linkedGrowId: linkedGrowId.trim() || undefined,
           notes: notes.trim() || undefined
         }

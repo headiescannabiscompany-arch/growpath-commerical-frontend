@@ -61,7 +61,7 @@ function draftFromItem(item: AnyRec | null) {
     linkedProductId: String(item?.linkedProductId ?? ""),
     linkedIngredientId: String(item?.linkedIngredientId ?? ""),
     linkedGeneticsId: String(item?.linkedGeneticsId ?? ""),
-    linkedGrowId: String(item?.linkedGrowId ?? ""),
+    linkedGrowId: String(item?.linkedTrialId ?? item?.linkedGrowId ?? ""),
     status: String(item?.status ?? "active"),
     notes: String(item?.notes ?? "")
   };
@@ -155,6 +155,7 @@ export default function CommercialInventoryItemDetailRoute() {
         linkedProductId: draft.linkedProductId.trim() || undefined,
         linkedIngredientId: draft.linkedIngredientId.trim() || undefined,
         linkedGeneticsId: draft.linkedGeneticsId.trim() || undefined,
+        linkedTrialId: draft.linkedGrowId.trim() || undefined,
         linkedGrowId: draft.linkedGrowId.trim() || undefined,
         status: draft.status.trim() || "active",
         notes: draft.notes.trim() || undefined
@@ -288,14 +289,14 @@ export default function CommercialInventoryItemDetailRoute() {
                   <Text style={styles.actionText}>Linked Product</Text>
                 </TouchableOpacity>
               ) : null}
-              {item.linkedGrowId ? (
+              {item.linkedTrialId || item.linkedGrowId ? (
                 <TouchableOpacity
                   accessibilityRole="button"
                   accessibilityLabel="Open linked commercial product trial evidence run"
                   onPress={() =>
                     router.push({
                       pathname: "/home/commercial/grows/[growId]",
-                      params: { growId: String(item.linkedGrowId) }
+                      params: { growId: String(item.linkedTrialId || item.linkedGrowId) }
                     })
                   }
                   style={styles.actionBtn}

@@ -103,6 +103,7 @@ describe("CommercialInventoryCreateRoute", () => {
           linkedProductId: "product-1",
           linkedIngredientId: "ingredient-1",
           linkedGeneticsId: "genetics-1",
+          linkedTrialId: "grow-1",
           linkedGrowId: "grow-1"
         })
       });
