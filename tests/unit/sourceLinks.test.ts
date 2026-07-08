@@ -155,6 +155,25 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "product",
+        sourceId: "veg-mix-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/products/veg-mix-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "product_batch",
+        sourceId: "batch-1",
+        linkedProductId: "veg-mix-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/products/veg-mix-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "storefront",
         sourceId: "storefront-1",
         workspaceType: "commercial"

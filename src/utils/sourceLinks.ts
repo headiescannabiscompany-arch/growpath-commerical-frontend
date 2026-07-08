@@ -27,7 +27,7 @@ export function sourceObjectHref(source: SourceLike) {
     source?.linkedObjectId
   );
   const growId = firstText(source?.linkedGrowId, source?.growId);
-  const productId = firstText(sourceId, source?.linkedProductId);
+  const productId = firstText(source?.linkedProductId, source?.productId, sourceId);
   const productTrialId = firstText(sourceId, source?.linkedProductTrialId);
   const forumId = firstText(sourceId, source?.linkedForumThreadId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
@@ -36,9 +36,14 @@ export function sourceObjectHref(source: SourceLike) {
   const storefrontSlug = firstText(
     source?.storefrontSlug,
     source?.linkedStorefrontSlug,
-    source?.linkedStorefrontId,
-    sourceId
+    source?.linkedStorefrontId
   );
+  const publicProductHref = (id: string) =>
+    storefrontSlug && id
+      ? `/store/${encoded(storefrontSlug)}/products/${encoded(id)}`
+      : id
+        ? `/store?q=${encoded(id)}`
+        : "/store";
 
   if (sourceType === "task") {
     if (!sourceId) return "/home/schedule";
@@ -91,7 +96,7 @@ export function sourceObjectHref(source: SourceLike) {
       return productId
         ? `/home/facility/InventoryItemDetailScreen?id=${encoded(productId)}`
         : "/home/facility/inventory";
-    return productId ? `/store?q=${encoded(productId)}` : "/store";
+    return publicProductHref(productId);
   }
 
   if (sourceType === "product_batch") {
@@ -103,7 +108,7 @@ export function sourceObjectHref(source: SourceLike) {
       return sourceId
         ? `/home/commercial/batch-planner/${encoded(sourceId)}`
         : "/home/commercial/batch-planner";
-    return productId ? `/store?q=${encoded(productId)}` : "/store";
+    return publicProductHref(productId);
   }
 
   if (sourceType === "product_trial") {
@@ -164,7 +169,8 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "storefront") {
     if (workspace === "commercial") return "/home/commercial/storefront";
-    return storefrontSlug ? `/store/${encoded(storefrontSlug)}` : "/store";
+    const slug = firstText(storefrontSlug, sourceId);
+    return slug ? `/store/${encoded(slug)}` : "/store";
   }
 
   if (sourceType === "order") {
