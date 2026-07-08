@@ -76,7 +76,7 @@ export default function LiveSessionScreen({ route }) {
           String(relatedProductId)
         )}`
       : relatedProductId
-        ? `/store?productId=${encodeURIComponent(String(relatedProductId))}`
+        ? `/store?q=${encodeURIComponent(String(relatedProductId))}`
         : "";
   const courseHref =
     relatedCourseId && storefrontSlug

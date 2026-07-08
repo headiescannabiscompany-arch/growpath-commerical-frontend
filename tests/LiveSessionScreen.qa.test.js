@@ -27,6 +27,18 @@ jest.mock("../src/api/apiRequest", () => ({
 // Avoid rendering the real embed in tests
 jest.mock("../src/screens/LiveSessionTwitchEmbed", () => "LiveSessionTwitchEmbed");
 
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ href, children }) =>
+      React.cloneElement(React.Children.only(children), {
+        testID: `live-link-${href}`,
+        href
+      }),
+    useLocalSearchParams: () => ({})
+  };
+});
+
 import LiveSessionScreen from "../src/screens/LiveSessionScreen.js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -134,6 +146,25 @@ describe("LiveSessionScreen QA", () => {
       expect(queryByText(/Session 1/i)).toBeTruthy();
       expect(queryByText(/Open Twitch Moderation/i)).toBeNull();
     });
+  });
+
+  it("uses public Store search fallback for product links without a storefront slug", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+
+    mockApiRequest.mockResolvedValueOnce({
+      twitchChannel: "mychannel",
+      title: "Session 1",
+      relatedProductId: "product-1"
+    });
+
+    const { getByTestId, queryByText } = renderWithNav();
+
+    await waitFor(() => {
+      expect(queryByText(/Session 1/i)).toBeTruthy();
+    });
+
+    expect(getByTestId("live-link-/store?q=product-1")).toBeTruthy();
   });
 
   it("shows error if session not found", async () => {
