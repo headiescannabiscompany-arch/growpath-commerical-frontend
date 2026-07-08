@@ -18,6 +18,7 @@ export type CommercialFeedPost = {
   title?: string;
   body: string;
   tags: string[];
+  growInterests: string[];
   location?: string;
   linkedProductId?: string;
   linkedProductLineId?: string;
@@ -46,7 +47,10 @@ function normalizePost(row: any): CommercialFeedPost {
     id: String(row?.id || row?._id || ""),
     type: String(row?.type || "update") as CommercialFeedPostType,
     body: String(row?.body || row?.description || ""),
-    tags: Array.isArray(row?.tags) ? row.tags.map((tag: any) => String(tag)) : []
+    tags: Array.isArray(row?.tags) ? row.tags.map((tag: any) => String(tag)) : [],
+    growInterests: Array.isArray(row?.growInterests)
+      ? row.growInterests.map((interest: any) => String(interest))
+      : []
   };
 }
 
@@ -83,6 +87,7 @@ export async function createCommercialFeedPost(input: {
   title?: string;
   body: string;
   tags?: string[];
+  growInterests?: string[];
   location?: string;
   linkedProductId?: string;
   linkedProductLineId?: string;

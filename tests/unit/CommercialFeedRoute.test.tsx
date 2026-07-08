@@ -58,6 +58,7 @@ describe("CommercialFeedRoute", () => {
               title: "Live soil demo",
               body: "RSVP for the live mixing demo.",
               tags: ["living soil"],
+              growInterests: ["living soil", "dry amendments"],
               linkedLiveId: "live-1",
               linkedForumThreadId: "thread-1",
               imageUrl: "https://example.com/live.jpg",
@@ -87,6 +88,7 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
     expect(screen.getByText("0 campaign engagements")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
     expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
@@ -111,6 +113,7 @@ describe("CommercialFeedRoute", () => {
             metadata: expect.objectContaining({
               campaignKind: "Live event ad",
               destinationLabel: "View Live",
+              growInterests: ["living soil", "dry amendments"],
               linkedLiveId: "live-1",
               linkedForumThreadId: "thread-1"
             })
@@ -151,6 +154,10 @@ describe("CommercialFeedRoute", () => {
       screen.getByText("Created campaign setup task for Friday mix demo.")
     ).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Feed campaign tags"), "dry amendments");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign grow interests"),
+      "living soil, recipe building"
+    );
     fireEvent.changeText(screen.getByLabelText("Linked live"), "live-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
     fireEvent.changeText(
@@ -176,6 +183,7 @@ describe("CommercialFeedRoute", () => {
           title: "Friday mix demo",
           body: "RSVP for the live dry amendment recipe build.",
           tags: ["dry amendments"],
+          growInterests: ["living soil", "recipe building"],
           linkedLiveId: "live-demo-1",
           linkedForumThreadId: "thread-q-and-a",
           imageUrl: "https://example.com/demo.jpg",

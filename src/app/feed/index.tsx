@@ -224,6 +224,7 @@ export default function CommercialFeedRoute() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [tags, setTags] = useState("");
+  const [growInterests, setGrowInterests] = useState("");
   const [location, setLocation] = useState("");
   const [linkedProductId, setLinkedProductId] = useState("");
   const [linkedCourseId, setLinkedCourseId] = useState("");
@@ -312,6 +313,7 @@ export default function CommercialFeedRoute() {
     const cleanTitle = title.trim();
     const cleanBody = body.trim();
     const cleanTags = splitTags(tags);
+    const cleanGrowInterests = splitTags(growInterests);
     const cleanLocation = location.trim();
     const cleanExternalUrl = externalLinkUrl.trim();
     const cleanExternalLabel = externalLinkLabel.trim();
@@ -327,6 +329,7 @@ export default function CommercialFeedRoute() {
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
+        growInterests: cleanGrowInterests,
         location: cleanLocation,
         linkedProductId: linkedProductId.trim() || undefined,
         linkedCourseId: linkedCourseId.trim() || undefined,
@@ -342,6 +345,7 @@ export default function CommercialFeedRoute() {
       setTitle("");
       setBody("");
       setTags("");
+      setGrowInterests("");
       setLocation("");
       setLinkedProductId("");
       setLinkedCourseId("");
@@ -385,6 +389,7 @@ export default function CommercialFeedRoute() {
           linkedLiveId: linkedLiveId.trim() || undefined,
           linkedForumThreadId: linkedForumThreadId.trim() || undefined,
           linkedStorefrontSlug: storefrontSlug.trim() || undefined,
+          growInterests: splitTags(growInterests),
           priority: readinessWarnings.some(
             (warning) =>
               warning.includes("destination") || warning.includes("should link")
@@ -438,6 +443,7 @@ export default function CommercialFeedRoute() {
       metadata: {
         campaignKind: post.campaignKind || visibleCampaignType(post),
         destinationLabel: destination.label,
+        growInterests: post.growInterests,
         linkedCourseId: post.linkedCourseId,
         linkedLiveId: post.linkedLiveId,
         linkedForumThreadId: post.linkedForumThreadId,
@@ -534,6 +540,13 @@ export default function CommercialFeedRoute() {
             style={styles.input}
             placeholder="Tags, comma separated"
             accessibilityLabel="Feed campaign tags"
+          />
+          <TextInput
+            value={growInterests}
+            onChangeText={setGrowInterests}
+            style={styles.input}
+            placeholder="Grow interests for targeting, comma separated"
+            accessibilityLabel="Feed campaign grow interests"
           />
           <TextInput
             value={location}
@@ -776,6 +789,11 @@ export default function CommercialFeedRoute() {
                 {post.tags.map((tag) => `#${tag}`).join(" ")}
               </Text>
             ) : null}
+            {post.growInterests.length ? (
+              <Text style={styles.interests}>
+                Interests: {post.growInterests.join(", ")}
+              </Text>
+            ) : null}
             {post.linkedProductId ||
             post.linkedCourseId ||
             post.linkedLiveId ||
@@ -960,6 +978,7 @@ const styles = StyleSheet.create({
   },
   postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
   tags: { color: "#2563EB", fontSize: 12, fontWeight: "800" },
+  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
   linkMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   linkMeta: {
     backgroundColor: "#EEF2FF",
