@@ -1305,6 +1305,13 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Trial-to-content workflow")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use marketing product line Living Soil Line")
+    ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Mix Launch")).toBeTruthy());
     expect(screen.getByText("Ad clicks tracked")).toBeTruthy();
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
@@ -1327,9 +1334,8 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Marketing plan linked product"),
       "product-2"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Marketing plan linked product line"),
-      "line-1"
+    fireEvent.press(
+      screen.getByLabelText("Use marketing product line Living Soil Line")
     );
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan linked course"),

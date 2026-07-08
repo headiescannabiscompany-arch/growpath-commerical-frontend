@@ -530,6 +530,7 @@ Completed and pushed:
 254. Storefront owner product creation now offers quick-select buttons for existing Product Lines while preserving the product-line ID field, so commercial owners can attach products to storefront families without copying raw IDs.
 255. Commercial Product Line detail now loads attached products, shows their status, grow interests, and descriptions, and links back to owner product detail so Product Lines behave as connected product families instead of standalone labels.
 256. Commercial Soil & Nutrient Batch Planner now loads existing Product Lines and offers quick-select buttons on batch creation, keeping formula/production batches connected to storefront product families without manual ID copying.
+257. Commercial Marketing Planner now loads existing Product Lines, counts line-linked campaigns as connected plans, and offers quick-select buttons for product-family campaigns instead of making owners type raw line IDs.
 
 ## Working Rule For Codex
 

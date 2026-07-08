@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Campaign, createCampaign, fetchCampaigns } from "@/api/campaigns";
+import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -89,8 +90,13 @@ function campaignEvidenceRunId(campaign: Campaign) {
   return campaign.linkedTrialId || campaign.linkedGrowId || "";
 }
 
+function productLineId(line: ProductLine) {
+  return String(line.id || line._id || line.name || "").trim();
+}
+
 export default function CommercialMarketingRoute() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<CampaignForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -112,6 +118,7 @@ export default function CommercialMarketingRoute() {
       campaigns.filter(
         (campaign) =>
           campaign.linkedProductId ||
+          campaign.linkedProductLineId ||
           campaign.linkedCourseId ||
           campaignEvidenceRunId(campaign)
       ).length,
@@ -122,7 +129,12 @@ export default function CommercialMarketingRoute() {
     setLoading(true);
     setError(null);
     try {
-      setCampaigns(await fetchCampaigns());
+      const [nextCampaigns, nextLines] = await Promise.all([
+        fetchCampaigns(),
+        fetchProductLines()
+      ]);
+      setCampaigns(nextCampaigns);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
     } finally {
@@ -330,9 +342,36 @@ export default function CommercialMarketingRoute() {
               setForm((prev) => ({ ...prev, linkedProductLineId }))
             }
             accessibilityLabel="Marketing plan linked product line"
-            placeholder="Linked product line ID"
+            placeholder="Linked product line ID, or choose below"
             style={styles.input}
           />
+          {productLines.length ? (
+            <View style={styles.lineSelector}>
+              <Text style={styles.selectorLabel}>Choose Product Line</Text>
+              <View style={styles.selectorActions}>
+                {productLines.slice(0, 4).map((line) => {
+                  const id = productLineId(line);
+                  const name = line.name || "Product line";
+                  return (
+                    <Pressable
+                      key={`marketing-line-${id || name}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use marketing product line ${name}`}
+                      onPress={() =>
+                        setForm((prev) => ({ ...prev, linkedProductLineId: id }))
+                      }
+                      style={[
+                        styles.action,
+                        form.linkedProductLineId === id && styles.selectedAction
+                      ]}
+                    >
+                      <Text style={styles.actionText}>{name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={form.linkedCourseId}
             onChangeText={(linkedCourseId) =>
@@ -557,6 +596,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10
   },
+  selectedAction: { backgroundColor: "#e0f2df", borderColor: "#3f7f4f" },
   actionText: {
     color: "#1f4d2c",
     fontSize: 14,
@@ -615,6 +655,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10
   },
+  lineSelector: {
+    borderColor: "#b9d7ba",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexBasis: 240,
+    flexGrow: 1,
+    minHeight: 44,
+    padding: 10
+  },
+  selectorLabel: {
+    color: "#1f4d2c",
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   textArea: {
     minHeight: 88,
     textAlignVertical: "top"
