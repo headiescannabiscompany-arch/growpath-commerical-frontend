@@ -46,6 +46,9 @@ describe("CommercialLivesRoute", () => {
               status: "scheduled",
               visibility: "public",
               scheduledStart: "2026-07-10T20:00:00Z",
+              scheduledEnd: "2026-07-10T21:00:00Z",
+              reminderPreference: "1 hour before",
+              recurrenceRule: "monthly",
               twitchChannelName: "growpath",
               twitchChannelId: "12345",
               twitchEmbedUrl: "https://player.twitch.tv/?channel=growpath",
@@ -108,9 +111,13 @@ describe("CommercialLivesRoute", () => {
             linkedFeedPostId: "campaign-1",
             linkedForumThreadId: "thread-1",
             growInterests: ["living soil", "dry amendments"],
+            liveStartsAt: "2026-07-10T20:00:00Z",
+            liveEndsAt: "2026-07-10T21:00:00Z",
+            recurrenceRule: "monthly",
             priority: "high",
             status: "open",
-            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+            dueAt: "2026-07-10",
+            reminderPlan: { label: "1 hour before", channels: ["in_app"] }
           })
         })
       )

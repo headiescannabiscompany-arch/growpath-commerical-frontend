@@ -210,6 +210,9 @@ export default function CommercialLivesRoute() {
           linkedFeedPostId: live.relatedFeedPostId,
           linkedForumThreadId: live.forumThreadId,
           growInterests: live.growInterests,
+          liveStartsAt: live.scheduledStart,
+          liveEndsAt: live.scheduledEnd,
+          recurrenceRule: live.recurrenceRule,
           priority:
             warnings.includes("schedule date/time") ||
             warnings.includes("connect Twitch channel") ||
@@ -217,8 +220,13 @@ export default function CommercialLivesRoute() {
               ? "high"
               : "normal",
           status: "open",
-          dueAt: new Date().toISOString().slice(0, 10),
-          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          dueAt: live.scheduledStart
+            ? String(live.scheduledStart).slice(0, 10)
+            : new Date().toISOString().slice(0, 10),
+          reminderPlan: {
+            label: live.reminderPreference || "24 hours before",
+            channels: ["in_app"]
+          }
         }
       });
       setMessage(`Created setup task for ${live.title || "live"}.`);
