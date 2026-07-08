@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Button,
-  TextInput,
-  Modal,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Button,
+  Modal,
+  Platform,
   ScrollView,
-  Platform
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
-import { useAuth } from "@/auth/AuthContext";
+
+import {
+  getSocialAccounts,
+  getSocialMetrics,
+  schedulePost
+} from "../api/socialMedia.js";
 
 export default function SocialToolsScreen() {
-  // const { token } = useAuth(); // Not used in current API, but available if needed
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,28 +31,31 @@ export default function SocialToolsScreen() {
   const [scheduledTime, setScheduledTime] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
-
-  const fetchAccounts = async () => {
+  async function fetchAccounts() {
     setLoading(true);
     setError(null);
     try {
       const data = await getSocialAccounts();
       setAccounts(Array.isArray(data) ? data : data?.accounts || []);
     } catch (err) {
-      let details = err.message || "Error loading social accounts";
+      let details = err.message || "Error loading external channel accounts";
       if (err.status || err.data) {
-        details = `API Error${err.status ? ` (${err.status})` : ""}${err.data?.endpoint ? ` – ${err.data.endpoint}` : ""}${err.data?.message ? ` – ${err.data.message}` : ""}`;
+        const status = err.status ? ` (${err.status})` : "";
+        const endpoint = err.data?.endpoint ? ` - ${err.data.endpoint}` : "";
+        const message = err.data?.message ? ` - ${err.data.message}` : "";
+        details = `API Error${status}${endpoint}${message}`;
       }
       setError(details);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleShowMetrics = async (platform) => {
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  async function handleShowMetrics(platform) {
     setMetricsLoading(true);
     try {
       const data = await getSocialMetrics(platform);
@@ -60,96 +65,81 @@ export default function SocialToolsScreen() {
     } finally {
       setMetricsLoading(false);
     }
-  };
+  }
 
-  const openScheduleModal = () => {
+  function openScheduleModal() {
     setContent("");
     setSelectedPlatforms([]);
     setScheduledTime("");
     setModalVisible(true);
-  };
+  }
 
-  const handleTogglePlatform = (platform) => {
+  function handleTogglePlatform(platform) {
     setSelectedPlatforms((prev) =>
-      prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
+      prev.includes(platform) ? prev.filter((item) => item !== platform) : [...prev, platform]
     );
-  };
+  }
 
-  const handleSchedule = async () => {
+  async function handleSchedule() {
     if (!content.trim() || selectedPlatforms.length === 0) return;
     setSaving(true);
     try {
       await schedulePost(selectedPlatforms, content, scheduledTime || undefined);
       setModalVisible(false);
-      Alert.alert("Success", "Post scheduled successfully.");
+      Alert.alert("Success", "External channel post scheduled.");
     } catch (err) {
-      Alert.alert("Error", err.message || "Failed to schedule post");
+      Alert.alert("Error", err.message || "Failed to schedule external post");
     } finally {
       setSaving(false);
     }
-  };
+  }
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Social Tools</Text>
+      <Text style={styles.header}>External Channels</Text>
+      <Text style={styles.subheader}>
+        Schedule and review off-platform channel posts. GrowPath Feed / Campaigns is
+        the in-app advertising surface, and Forum/Q&A is where discussion lives.
+      </Text>
+
       {loading ? (
-        <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 40 }} />
+        <ActivityIndicator size="small" color="#10B981" style={styles.loader} />
       ) : error ? (
-        <View
-          style={{
-            marginTop: 40,
-            padding: 24,
-            borderRadius: 12,
-            backgroundColor: "#FEE2E2",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#FCA5A5"
-          }}
-        >
-          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>🚫</Text>
-          <Text
-            style={{
-              color: "#B91C1C",
-              fontWeight: "bold",
-              fontSize: 18,
-              marginBottom: 4
-            }}
-          >
+        <View style={styles.errorBox}>
+          <Text style={styles.errorTitle}>
             {error.includes("403")
-              ? "Access Denied"
+              ? "Access denied"
               : error.includes("404")
-                ? "Not Found"
-                : "API Error"}
+                ? "Not found"
+                : "API error"}
           </Text>
-          <Text style={{ color: "#B91C1C", textAlign: "center" }}>{error}</Text>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
       ) : (
         <>
           <Text style={styles.sectionTitle}>Connected Accounts</Text>
-          <FlatList
-            data={accounts}
-            keyExtractor={(item) => item.platform}
-            renderItem={({ item }) => (
-              <View style={styles.accountRow}>
-                <Text style={styles.accountName}>{item.platform}</Text>
-                <Button
-                  title="Metrics"
-                  onPress={() => handleShowMetrics(item.platform)}
-                />
-                {metrics[item.platform] && (
+          {accounts.length ? (
+            accounts.map((account) => (
+              <View key={account.platform} style={styles.accountRow}>
+                <Text style={styles.accountName}>{account.platform}</Text>
+                <Button title="Metrics" onPress={() => handleShowMetrics(account.platform)} />
+                {metrics[account.platform] ? (
                   <Text style={styles.metricsText}>
-                    {JSON.stringify(metrics[item.platform], null, 2)}
+                    {JSON.stringify(metrics[account.platform], null, 2)}
                   </Text>
-                )}
+                ) : null}
               </View>
-            )}
-            ListEmptyComponent={<Text>No social accounts connected.</Text>}
-          />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No external channel accounts connected.</Text>
+          )}
         </>
       )}
+
       <View style={styles.actions}>
-        <Button title="Schedule Post" onPress={openScheduleModal} />
+        <Button title="Schedule External Post" onPress={openScheduleModal} />
       </View>
+      {metricsLoading ? <Text style={styles.loadingText}>Loading metrics...</Text> : null}
 
       <Modal
         visible={modalVisible}
@@ -159,7 +149,7 @@ export default function SocialToolsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Schedule Social Post</Text>
+            <Text style={styles.modalTitle}>Schedule External Post</Text>
             <TextInput
               style={styles.input}
               placeholder="Content"
@@ -168,35 +158,30 @@ export default function SocialToolsScreen() {
               autoFocus
               multiline
             />
-            <Text style={{ marginTop: 8, fontWeight: "bold" }}>Platforms:</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", marginVertical: 8 }}>
-              {accounts.map((acc) => (
-                <TouchableOpacity
-                  key={acc.platform}
-                  style={
-                    selectedPlatforms.includes(acc.platform)
-                      ? styles.platformSelected
-                      : styles.platformBtn
-                  }
-                  onPress={() => handleTogglePlatform(acc.platform)}
-                >
-                  <Text
-                    style={{
-                      color: selectedPlatforms.includes(acc.platform) ? "#fff" : "#222"
-                    }}
+            <Text style={styles.label}>Platforms</Text>
+            <View style={styles.platformList}>
+              {accounts.map((account) => {
+                const selected = selectedPlatforms.includes(account.platform);
+                return (
+                  <TouchableOpacity
+                    key={account.platform}
+                    style={selected ? styles.platformSelected : styles.platformBtn}
+                    onPress={() => handleTogglePlatform(account.platform)}
                   >
-                    {acc.platform}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text style={selected ? styles.platformTextSelected : styles.platformText}>
+                      {account.platform}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
             <TextInput
               style={styles.input}
-              placeholder="Scheduled Time (optional, ISO)"
+              placeholder="Scheduled time (optional ISO)"
               value={scheduledTime}
               onChangeText={setScheduledTime}
             />
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
+            <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.saveBtn}
                 onPress={handleSchedule}
@@ -222,23 +207,37 @@ export default function SocialToolsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 16, marginBottom: 8 },
+  header: { color: "#111827", fontSize: 24, fontWeight: "800", marginBottom: 8 },
+  subheader: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 19,
+    marginBottom: 16
+  },
+  sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
+  loader: { marginTop: 40 },
+  errorBox: {
+    marginTop: 24,
+    padding: 20,
+    borderRadius: 8,
+    backgroundColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "#FCA5A5"
+  },
+  errorTitle: { color: "#B91C1C", fontSize: 18, fontWeight: "800", marginBottom: 4 },
+  errorText: { color: "#B91C1C" },
   accountRow: {
-    flexDirection: "column",
     alignItems: "flex-start",
-    justifyContent: "flex-start",
-    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#eee"
+    borderColor: "#E5E7EB",
+    paddingVertical: 12
   },
-  accountName: { fontSize: 18, fontWeight: "600" },
-  metricsText: { fontSize: 14, color: "#555", marginTop: 4 },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 24
-  },
+  accountName: { color: "#111827", fontSize: 18, fontWeight: "700" },
+  metricsText: { color: "#475569", fontSize: 13, marginTop: 6 },
+  emptyText: { color: "#64748B", fontWeight: "600" },
+  actions: { alignItems: "flex-end", marginTop: 24 },
+  loadingText: { color: "#047857", fontWeight: "700", marginTop: 8 },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -247,7 +246,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 8,
     padding: 24,
     width: 320,
     alignItems: "center",
@@ -261,18 +260,20 @@ const styles = StyleSheet.create({
           shadowRadius: 12
         })
   },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 12 },
+  modalTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 12 },
   input: {
     width: "100%",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#CBD5E1",
     borderRadius: 6,
     padding: 10,
     marginBottom: 12,
-    fontSize: 16
+    fontSize: 15
   },
+  label: { alignSelf: "flex-start", color: "#111827", fontWeight: "800", marginBottom: 8 },
+  platformList: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
   platformBtn: {
-    backgroundColor: "#eee",
+    backgroundColor: "#E5E7EB",
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -287,18 +288,21 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8
   },
+  platformText: { color: "#111827", fontWeight: "700" },
+  platformTextSelected: { color: "#FFFFFF", fontWeight: "800" },
+  modalActions: { flexDirection: "row", gap: 12, marginTop: 12 },
   saveBtn: {
     backgroundColor: "#10B981",
     borderRadius: 6,
     paddingHorizontal: 18,
     paddingVertical: 10
   },
-  saveBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
+  saveBtnText: { color: "white", fontWeight: "800", fontSize: 15 },
   cancelBtn: {
-    backgroundColor: "#ddd",
+    backgroundColor: "#E5E7EB",
     borderRadius: 6,
     paddingHorizontal: 18,
     paddingVertical: 10
   },
-  cancelBtnText: { color: "#333", fontWeight: "bold", fontSize: 15 }
+  cancelBtnText: { color: "#334155", fontWeight: "800", fontSize: 15 }
 });

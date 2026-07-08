@@ -23,8 +23,8 @@ export default function CommercialToolsScreen({ navigation }) {
         </Text>
 
         <ToolCard
-          title="Social Media"
-          subtitle="Plan and run social campaigns."
+          title="External Channels"
+          subtitle="Schedule off-platform posts; use Feed / Campaigns for in-app outreach."
           onPress={() => navigation.navigate("SocialTools")}
         />
         <ToolCard

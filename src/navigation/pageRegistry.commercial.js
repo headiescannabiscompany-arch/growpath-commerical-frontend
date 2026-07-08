@@ -88,11 +88,11 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "SocialTools",
-    label: "Social Tools",
+    label: "External Channels",
     icon: "share-social-outline",
     capabilityKey: "commercial.socialTools",
     primary: false,
-    group: "profile",
+    group: "feed",
     supportSurface: true,
     component: require("../screens/SocialToolsScreen").default
   },
