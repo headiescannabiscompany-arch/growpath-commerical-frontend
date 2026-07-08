@@ -17,6 +17,7 @@ import AppPage from "@/components/layout/AppPage";
 import AppCard from "@/components/layout/AppCard";
 import { useEntitlements } from "@/entitlements";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type FulfillmentStatus = "unfulfilled" | "fulfilled" | "canceled";
 
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   feedback: {
     backgroundColor: "#DCFCE7",
     borderColor: "#86EFAC",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#166534",
     fontSize: 13,
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 148,
     padding: 12
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   },
   metaPill: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#334155",
     fontSize: 12,
     fontWeight: "800",
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
   actionButton: {
     alignItems: "center",
     backgroundColor: "#2563EB",
-    borderRadius: 8,
+    borderRadius: radius.card,
     minHeight: 40,
     justifyContent: "center",
     paddingHorizontal: 12,
