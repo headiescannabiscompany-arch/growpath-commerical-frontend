@@ -714,7 +714,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Dashboard Guidance")).toBeTruthy();
-    expect(screen.getByText("GrowPath AI business helper")).toBeTruthy();
+    expect(screen.getByText("Commercial launch assistant")).toBeTruthy();
     expect(screen.getByText("Open Commercial Tasks")).toBeTruthy();
     expect(screen.getByText("Plan Campaign Work")).toBeTruthy();
     expect(screen.getAllByText("88").length).toBeGreaterThan(0);

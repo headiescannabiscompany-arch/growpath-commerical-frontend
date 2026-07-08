@@ -495,10 +495,10 @@ export default function CommercialHome() {
       ) : null}
 
       <AppCard style={styles.aiHelperCard}>
-        <Text style={styles.cardTitle}>GrowPath AI business helper</Text>
+        <Text style={styles.cardTitle}>Commercial launch assistant</Text>
         <Text style={styles.cardDesc}>
-          Ask AI to turn storefront warnings, product gaps, course launch work, live prep,
-          campaign follow-up, and analytics questions into reviewable tasks. AI explains
+          Turn storefront warnings, product gaps, course launch work, live prep, campaign
+          follow-up, and analytics questions into reviewable tasks. The assistant explains
           the workflow and drafts action plans; Stripe, product, course, live, feed, task,
           and analytics records remain the source of truth.
         </Text>
