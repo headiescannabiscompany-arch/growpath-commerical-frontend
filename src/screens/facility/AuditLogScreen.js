@@ -15,6 +15,7 @@ import {
 import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useAuditLogs } from "../../hooks/useAuditLogs";
+import { radius } from "../../theme/theme";
 
 const ACTION_TYPES = [
   "Inventory Check",
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
     margin: 16,
     marginBottom: 8,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   addButtonText: {
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
   logCard: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
@@ -302,8 +303,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
     padding: 24,
     maxHeight: "90%"
   },
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#e5e7eb"
   },
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 16,
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   cancelButton: {

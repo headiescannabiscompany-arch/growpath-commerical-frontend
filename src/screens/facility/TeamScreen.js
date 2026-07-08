@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView
 } from "react-native";
+import { radius } from "../../theme/theme";
 
 const TeamScreen = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     margin: 16,
     marginBottom: 8,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   addButtonText: {
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
   memberCard: {
     flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#dbeafe",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 6
+    borderRadius: radius.pill
   },
   roleBadgeText: {
     fontSize: 12,
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 16
   },
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 20
   },
   modalTitle: {
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     fontSize: 16,
     marginBottom: 16
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   roleButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#d1d5db",
     backgroundColor: "#fff"
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   cancelButton: {
