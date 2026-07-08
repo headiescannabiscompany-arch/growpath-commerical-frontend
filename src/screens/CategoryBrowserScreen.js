@@ -9,6 +9,8 @@ import {
   View
 } from "react-native";
 
+import { radius } from "../theme/theme";
+
 const DEFAULT_CATEGORIES = [
   { key: "inventory", title: "Inventory", subtitle: "Track supplies and stock" },
   { key: "light", title: "Light Tools", subtitle: "PPFD / DLI calculators" },
@@ -81,14 +83,14 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
   },
   input: {
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     paddingHorizontal: 12
@@ -96,7 +98,7 @@ const styles = StyleSheet.create({
   item: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff",

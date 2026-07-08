@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getSubcategories } from "../api/courses";
+import { radius } from "../theme/theme";
 
 export default function SubcategoryBrowserScreen({ navigation, route }) {
   const { category } = route.params;
@@ -48,7 +49,7 @@ const styles = {
   card: {
     padding: 14,
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 12,
     elevation: 2,
   },

@@ -750,6 +750,7 @@ Completed and pushed:
 474. Legacy task modal, schedule warning/intent panels, schedule detail modal actions, and QA diagnostic sections now consume shared radius tokens while preserving task CRUD, task completion gating, and runtime diagnostic behavior.
 475. Legacy personal/facility plant list and plant detail cards, search input, stage badge, chart frame, photo frames, timeline selectors, log cards, and export action now consume shared radius tokens while preserving plant navigation, chart rendering, and export behavior.
 476. Legacy storefront-offer marketplace search, offer cards, category chips, feedback panels, detail actions, and checkout CTA now consume shared radius tokens while preserving storefront-offer copy, detail navigation, and purchase handoff behavior.
+477. Legacy category and subcategory browser search panels, inputs, category rows, and subcategory cards now consume shared radius tokens while preserving discovery routing into inventory, tools, calendar, courses, certificates, campaigns, live sessions, and category course lists.
 
 ## Working Rule For Codex
 
