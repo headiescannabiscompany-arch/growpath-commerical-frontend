@@ -428,6 +428,28 @@ describe("sourceObjectHref", () => {
   it("infers source type from linked fields when sourceType is missing", () => {
     expect(
       sourceObjectHref({
+        linkedTaskId: "task-commercial-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/tasks/task-commercial-1");
+
+    expect(
+      sourceObjectHref({
+        linkedTaskId: "task-facility-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/tasks/task-facility-1");
+
+    expect(
+      sourceObjectHref({
+        linkedTaskId: "task-personal-1",
+        linkedGrowId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1/tasks");
+
+    expect(
+      sourceObjectHref({
         linkedAlertId: "alert-1",
         workspaceType: "personal"
       })

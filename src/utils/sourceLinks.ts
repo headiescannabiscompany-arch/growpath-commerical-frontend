@@ -17,6 +17,7 @@ function encoded(value: string) {
 }
 
 function inferSourceType(source: SourceLike) {
+  if (firstText(source?.linkedTaskId, source?.taskId)) return "task";
   if (firstText(source?.linkedAlertId, source?.alertId)) return "alert";
   if (firstText(source?.linkedNotificationId, source?.notificationId))
     return "notification";
@@ -63,6 +64,7 @@ export function sourceObjectHref(source: SourceLike) {
     source?.sourceObjectId,
     source?.linkedObjectId
   );
+  const taskId = firstText(source?.linkedTaskId, source?.taskId, sourceId);
   const logId = firstText(
     source?.linkedLogId,
     source?.linkedGrowLogId,
@@ -118,9 +120,9 @@ export function sourceObjectHref(source: SourceLike) {
         : "/store";
 
   if (sourceType === "task") {
-    if (!sourceId) return "/home/schedule";
-    if (workspace === "commercial") return `/home/commercial/tasks/${sourceId}`;
-    if (workspace === "facility") return `/home/facility/tasks/${sourceId}`;
+    if (!taskId) return "/home/schedule";
+    if (workspace === "commercial") return `/home/commercial/tasks/${taskId}`;
+    if (workspace === "facility") return `/home/facility/tasks/${taskId}`;
     return growId
       ? `/home/personal/grows/${encoded(growId)}/tasks`
       : "/home/personal/tasks";
