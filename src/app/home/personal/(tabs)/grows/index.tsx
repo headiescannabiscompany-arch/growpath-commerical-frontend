@@ -12,6 +12,7 @@ import {
 import { listPersonalGrows } from "@/api/grows";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
@@ -24,7 +25,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   panelTitle: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF"
   },
   growTitle: { fontSize: 16, fontWeight: "700" },
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   action: {
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     backgroundColor: "#FFFFFF"
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#166534",
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 10
+    borderRadius: radius.card
   },
   ctaText: { color: "#FFFFFF", fontWeight: "700" }
 });
