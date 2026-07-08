@@ -39,11 +39,11 @@ describe("CreatePostRoute", () => {
     expect(screen.getByLabelText("Redirect /home/commercial/feed")).toBeTruthy();
   });
 
-  it("sends facility users to shared outreach campaign feed", () => {
+  it("sends facility users to facility outreach campaigns", () => {
     mockEntitlements.mockReturnValue({ mode: "facility" });
 
     const screen = render(<CreatePostRoute />);
 
-    expect(screen.getByLabelText("Redirect /feed")).toBeTruthy();
+    expect(screen.getByLabelText("Redirect /home/facility/feed")).toBeTruthy();
   });
 });

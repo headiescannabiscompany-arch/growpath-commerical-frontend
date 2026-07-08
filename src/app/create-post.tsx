@@ -10,7 +10,7 @@ export default function CreatePostRoute() {
   }
 
   if (entitlements.mode === "facility") {
-    return <Redirect href="/feed" />;
+    return <Redirect href="/home/facility/feed" />;
   }
 
   return <Redirect href="/home/personal/forum/new-post" />;
