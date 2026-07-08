@@ -367,6 +367,18 @@ function commercialCommunityUsesForum(routes) {
   );
 }
 
+function facilityFeedCompatibilityUsesCampaignRoute() {
+  const file = path.join(SRC, "screens", "FacilityFeedScreen.js");
+  if (!fs.existsSync(file)) return false;
+  const source = read(file);
+  return (
+    source.includes('from "../app/feed"') &&
+    /\bCommercialFeedRoute\b/.test(source) &&
+    !source.includes('from "./FeedScreen"') &&
+    !/\bgetFeed\b|\bapiRoutes\.POSTS\.FEED\b|\/api\/posts\/feed/.test(source)
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -497,6 +509,8 @@ function main() {
     "/home/personal/forum"
   );
   const commercialCommunityForumOnly = commercialCommunityUsesForum(files.routes);
+  const facilityFeedCompatibilityCampaignOnly =
+    facilityFeedCompatibilityUsesCampaignRoute();
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -527,6 +541,7 @@ function main() {
     legacyPersonalSocialToolsVisibleModule:
       legacyPersonalSocialToolsRouteExists && !legacyPersonalSocialToolsRedirectOnly,
     commercialCommunityForumOnly,
+    facilityFeedCompatibilityCampaignOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -599,6 +614,7 @@ function main() {
     `- Legacy personal social-tools visible module: ${decisionChecks.legacyPersonalSocialToolsVisibleModule}`,
     `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
     `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
+    `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,

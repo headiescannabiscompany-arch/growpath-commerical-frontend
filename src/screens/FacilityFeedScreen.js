@@ -1,6 +1,6 @@
 import React from "react";
-import FeedScreen from "./FeedScreen";
+import CommercialFeedRoute from "../app/feed";
 
 export default function FacilityFeedScreen() {
-  return <FeedScreen />;
+  return <CommercialFeedRoute />;
 }
