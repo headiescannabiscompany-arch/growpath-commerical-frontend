@@ -684,6 +684,7 @@ Completed and pushed:
 408. Commercial Product Detail rows, evidence/action buttons, effectiveness metrics, focused-batch panel, product-line selectors, edit inputs, and save CTA now consume the shared 8px card radius token while preserving readiness and warning pills.
 409. Commercial Product Lines root/detail actions, forms, line rows, detail rows, linked-product rows, feedback, and save controls now consume the shared 8px card radius token, keeping storefront product grouping visually aligned with product cards.
 410. Commercial Courses root/detail metrics, inputs, product-line selectors, setup warning panels, course rows, thumbnails, lesson rows, and publish/save actions now consume the shared 8px card radius token while preserving course-product-live Forum/Q&A links.
+411. Commercial Lives metrics, Twitch/schedule inputs, visibility actions, setup warning panels, schedule CTA, and live rows now consume the shared 8px card radius token while preserving course/product/feed/forum/replay/reminder links.
 
 ## Working Rule For Codex
 

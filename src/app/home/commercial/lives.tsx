@@ -12,6 +12,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { radius } from "@/theme/theme";
 
 type LiveForm = {
   title: string;
@@ -641,7 +642,7 @@ const styles = StyleSheet.create({
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   metric: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 120,
     padding: 9
@@ -650,7 +651,7 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "800" },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     marginTop: 10,
@@ -664,7 +665,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   action: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -676,7 +677,7 @@ const styles = StyleSheet.create({
   warningBox: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FDBA74",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     padding: 10
@@ -692,7 +693,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingHorizontal: 14,
     paddingVertical: 10
@@ -703,7 +704,7 @@ const styles = StyleSheet.create({
   liveRow: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
