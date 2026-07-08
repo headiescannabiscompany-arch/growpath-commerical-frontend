@@ -321,6 +321,7 @@ Completed and pushed:
 45. Product checkout return URLs now come back to the public store/product route that started checkout instead of the blocked owner `/storefront` route.
 46. Route access home resolution now agrees with the canonical Facility workspace by sending selected facility users to `/home/facility` instead of stale `/home/facility/dashboard`.
 47. The legacy root `/logs` route is now a redirect-only stale-link guard to the commercial dashboard, while the contracted `/logs/[id]` detail route remains available with a valid commercial fallback.
+48. Legacy root `/orders` and `/campaigns` routes now redirect into canonical commercial workspace pages, with the orders workflow moved under the commercial screen module instead of living as a top-level orphan surface.
 
 ## Working Rule For Codex
 
