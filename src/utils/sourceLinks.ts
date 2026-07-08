@@ -27,6 +27,7 @@ export function sourceObjectHref(source: SourceLike) {
     source?.linkedObjectId
   );
   const growId = firstText(source?.linkedGrowId, source?.growId);
+  const plantId = firstText(source?.linkedPlantId, source?.plantId);
   const productId = firstText(source?.linkedProductId, source?.productId, sourceId);
   const productTrialId = firstText(sourceId, source?.linkedProductTrialId);
   const forumId = firstText(sourceId, source?.linkedForumThreadId);
@@ -219,9 +220,11 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "notification")
     return `/home/notifications${sourceId ? `?notificationId=${encoded(sourceId)}` : ""}`;
   if (sourceType === "ai_diagnosis") {
-    return growId
-      ? `/home/personal/diagnose?growId=${encoded(growId)}`
-      : "/home/personal/diagnose";
+    const params = new URLSearchParams();
+    if (growId) params.set("growId", growId);
+    if (plantId) params.set("plantId", plantId);
+    const query = params.toString();
+    return query ? `/home/personal/diagnose?${query}` : "/home/personal/diagnose";
   }
 
   if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {

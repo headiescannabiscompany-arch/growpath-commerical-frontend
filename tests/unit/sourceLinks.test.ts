@@ -63,6 +63,16 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "ai_diagnosis",
+        sourceId: "diag-1",
+        growId: "grow-1",
+        linkedPlantId: "plant-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/diagnose?growId=grow-1&plantId=plant-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "live_replay",
         sourceId: "live-1",
         workspaceType: "personal"
