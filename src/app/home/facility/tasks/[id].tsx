@@ -30,6 +30,7 @@ const sourceTypes = [
   "alert",
   "course",
   "lesson",
+  "course_assignment",
   "live",
   "feed_campaign",
   "toolrun",
@@ -92,6 +93,7 @@ function taskSourceId(item: AnyRec | null): string {
       item.linkedSopId,
       item.linkedAlertId,
       item.linkedSensorAlertId,
+      item.linkedCourseAssignmentId,
       item.linkedCourseId,
       item.linkedLessonId,
       item.linkedLiveId,
@@ -140,16 +142,23 @@ function linkedObjectPath(item: AnyRec | null): string {
       sourceId: item.linkedProductTrialId || item.linkedTrialId,
       linkedProductTrialId: item.linkedProductTrialId || item.linkedTrialId
     },
-    item.linkedCourseId && {
-      sourceType: "course",
-      sourceId: item.linkedCourseId,
-      linkedCourseId: item.linkedCourseId
+    item.linkedCourseAssignmentId && {
+      sourceType: "course_assignment",
+      sourceId: item.linkedCourseAssignmentId,
+      linkedCourseAssignmentId: item.linkedCourseAssignmentId,
+      linkedCourseId: item.linkedCourseId || undefined,
+      linkedLessonId: item.linkedLessonId || undefined
     },
     item.linkedLessonId && {
       sourceType: "lesson",
       sourceId: item.linkedLessonId,
       linkedLessonId: item.linkedLessonId,
       linkedCourseId: item.linkedCourseId || undefined
+    },
+    item.linkedCourseId && {
+      sourceType: "course",
+      sourceId: item.linkedCourseId,
+      linkedCourseId: item.linkedCourseId
     },
     item.linkedLiveId && {
       sourceType: "live",
@@ -214,6 +223,8 @@ function linkedFieldsForSource(
       return { ...roomLink, linkedCourseId: sourceObjectId || undefined };
     case "lesson":
       return { ...roomLink, linkedLessonId: sourceObjectId || undefined };
+    case "course_assignment":
+      return { ...roomLink, linkedCourseAssignmentId: sourceObjectId || undefined };
     case "live":
       return { ...roomLink, linkedLiveId: sourceObjectId || undefined };
     case "feed_campaign":

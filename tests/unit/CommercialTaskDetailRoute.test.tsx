@@ -232,6 +232,31 @@ describe("CommercialTaskDetailRoute", () => {
     );
   });
 
+  it("opens course-assignment-backed task sources in the commercial course workflow", async () => {
+    taskOverrides = {
+      sourceType: "course_assignment",
+      sourceId: "assignment-1",
+      linkedCourseId: "course-1",
+      linkedLessonId: "lesson-1",
+      linkedCourseAssignmentId: "assignment-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Course assignment")).toBeTruthy();
+    expect(screen.getAllByText("assignment-1").length).toBeGreaterThan(0);
+    expect(screen.getByText("Lesson")).toBeTruthy();
+    expect(screen.getAllByText("lesson-1").length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/courses/course-1?lessonId=lesson-1&assignmentId=assignment-1"
+    );
+  });
+
   it("opens linked-only feed campaign task sources in the commercial feed workflow", async () => {
     taskOverrides = {
       sourceType: "feed_campaign",

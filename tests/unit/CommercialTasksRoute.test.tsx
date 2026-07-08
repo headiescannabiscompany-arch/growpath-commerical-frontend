@@ -78,6 +78,16 @@ describe("CommercialTasksRoute", () => {
               linkedCourseId: "course-1"
             },
             {
+              id: "task-5b",
+              title: "Review course assignment",
+              status: "open",
+              sourceType: "course_assignment",
+              sourceId: "assignment-1",
+              linkedCourseId: "course-1",
+              linkedLessonId: "lesson-1",
+              linkedCourseAssignmentId: "assignment-1"
+            },
+            {
               id: "task-6",
               title: "Prepare live demo",
               status: "open",
@@ -144,6 +154,7 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Review launch alert")).toBeTruthy();
     expect(screen.getByText("Answer product Q&A")).toBeTruthy();
     expect(screen.getByText("Add lesson worksheet")).toBeTruthy();
+    expect(screen.getByText("Review course assignment")).toBeTruthy();
     expect(screen.getByText("Prepare live demo")).toBeTruthy();
     expect(screen.getByText("Review linked batch")).toBeTruthy();
     expect(screen.getByText("Review feed campaign")).toBeTruthy();
@@ -163,6 +174,11 @@ describe("CommercialTasksRoute", () => {
     expect(
       screen.getByLabelText(
         "Commercial task link /home/commercial/courses/course-1?lessonId=lesson-1"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/courses/course-1?lessonId=lesson-1&assignmentId=assignment-1"
       )
     ).toBeTruthy();
     expect(
@@ -314,6 +330,40 @@ describe("CommercialTasksRoute", () => {
             sourceId: "trial-7",
             linkedProductTrialId: "trial-7",
             linkedTrialId: "trial-7",
+            status: "open"
+          })
+        })
+      )
+    );
+  });
+
+  it("creates course-assignment linked commercial tasks with assignment ids", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Commercial Task Center")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Review course assignment"
+    );
+    fireEvent.press(screen.getByLabelText("Commercial task source course_assignment"));
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task source ID"),
+      "assignment-7"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Review course assignment",
+            sourceType: "course_assignment",
+            sourceId: "assignment-7",
+            linkedCourseAssignmentId: "assignment-7",
             status: "open"
           })
         })

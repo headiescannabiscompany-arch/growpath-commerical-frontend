@@ -32,6 +32,7 @@ const sourceTypes = [
   "alert",
   "course",
   "lesson",
+  "course_assignment",
   "live",
   "feed_campaign",
   "toolrun",
@@ -64,6 +65,7 @@ function sourceReference(x: AnyRec): string {
     x?.sourceObjectId ?? x?.sourceId,
     x?.linkedAlertId,
     x?.linkedSensorAlertId,
+    x?.linkedCourseAssignmentId,
     x?.linkedCourseId,
     x?.linkedLessonId,
     x?.linkedLiveId,
@@ -129,6 +131,8 @@ function linkedFieldsForSource(
       return { ...roomLink, linkedCourseId: sourceObjectId || undefined };
     case "lesson":
       return { ...roomLink, linkedLessonId: sourceObjectId || undefined };
+    case "course_assignment":
+      return { ...roomLink, linkedCourseAssignmentId: sourceObjectId || undefined };
     case "live":
       return { ...roomLink, linkedLiveId: sourceObjectId || undefined };
     case "feed_campaign":

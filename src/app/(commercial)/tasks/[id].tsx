@@ -81,6 +81,8 @@ function taskContextRows(task: AnyRec | null) {
     ["Product trial", firstLinkedValue(task.linkedProductTrialId, task.linkedTrialId)],
     ["Published products", task.linkedPublishedProductIds],
     ["Courses", firstLinkedValue(task.linkedCourseIds, task.linkedCourseId)],
+    ["Course assignment", task.linkedCourseAssignmentId],
+    ["Lesson", task.linkedLessonId],
     ["Lives", firstLinkedValue(task.linkedLiveIds, task.linkedLiveId)],
     [
       "Feed campaigns",
@@ -120,8 +122,14 @@ function taskSourceId(task: AnyRec | null): string {
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
   if (sourceType === "product_trial")
     return String(task.linkedProductTrialId || task.linkedTrialId || "");
-  if (sourceType === "course" || sourceType === "lesson") {
-    return String(task.linkedCourseId || task.linkedLessonId || "");
+  if (
+    sourceType === "course" ||
+    sourceType === "lesson" ||
+    sourceType === "course_assignment"
+  ) {
+    return String(
+      task.linkedCourseAssignmentId || task.linkedLessonId || task.linkedCourseId || ""
+    );
   }
   if (sourceType === "live" || sourceType === "live_replay") {
     return String(task.linkedLiveId || "");
@@ -179,16 +187,23 @@ function commercialLinkedObjectPath(task: AnyRec | null): string {
       sourceId: task.linkedProductTrialId || task.linkedTrialId,
       linkedProductTrialId: task.linkedProductTrialId || task.linkedTrialId
     },
-    task.linkedCourseId && {
-      sourceType: "course",
-      sourceId: task.linkedCourseId,
-      linkedCourseId: task.linkedCourseId
+    task.linkedCourseAssignmentId && {
+      sourceType: "course_assignment",
+      sourceId: task.linkedCourseAssignmentId,
+      linkedCourseAssignmentId: task.linkedCourseAssignmentId,
+      linkedCourseId: task.linkedCourseId || undefined,
+      linkedLessonId: task.linkedLessonId || undefined
     },
     task.linkedLessonId && {
       sourceType: "lesson",
       sourceId: task.linkedLessonId,
       linkedLessonId: task.linkedLessonId,
       linkedCourseId: task.linkedCourseId || undefined
+    },
+    task.linkedCourseId && {
+      sourceType: "course",
+      sourceId: task.linkedCourseId,
+      linkedCourseId: task.linkedCourseId
     },
     task.linkedLiveId && {
       sourceType: "live",

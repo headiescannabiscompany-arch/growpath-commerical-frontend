@@ -34,6 +34,7 @@ const sourceTypes = [
   "product_batch",
   "course",
   "lesson",
+  "course_assignment",
   "live",
   "live_replay",
   "alert",
@@ -90,6 +91,7 @@ function sourceReference(task: PersonalTask) {
     task.linkedProductTrialId ||
     task.linkedStorefrontId ||
     task.linkedOrderId ||
+    task.linkedCourseAssignmentId ||
     task.linkedCourseId ||
     task.linkedLessonId ||
     task.linkedLiveId ||
@@ -119,6 +121,9 @@ function taskLinks(task: PersonalTask) {
     task.linkedCourseId &&
       linkedSource !== task.linkedCourseId &&
       `Course: ${task.linkedCourseId}`,
+    task.linkedCourseAssignmentId &&
+      linkedSource !== task.linkedCourseAssignmentId &&
+      `Assignment: ${task.linkedCourseAssignmentId}`,
     task.linkedLiveId &&
       linkedSource !== task.linkedLiveId &&
       `Live: ${task.linkedLiveId}`,
@@ -191,6 +196,13 @@ function explicitLinkedObjectPath(task: PersonalTask) {
       sourceType: "product_trial",
       sourceId: task.linkedProductTrialId,
       linkedProductTrialId: task.linkedProductTrialId
+    },
+    task.linkedCourseAssignmentId && {
+      sourceType: "course_assignment",
+      sourceId: task.linkedCourseAssignmentId,
+      linkedCourseAssignmentId: task.linkedCourseAssignmentId,
+      linkedCourseId: task.linkedCourseId || undefined,
+      linkedLessonId: task.linkedLessonId || undefined
     },
     task.linkedCourseId && {
       sourceType: "course",
@@ -268,6 +280,8 @@ function linkedFieldsForSource(
       return { ...toolRunLink, linkedCourseId: sourceObjectId || undefined };
     case "lesson":
       return { ...toolRunLink, linkedLessonId: sourceObjectId || undefined };
+    case "course_assignment":
+      return { ...toolRunLink, linkedCourseAssignmentId: sourceObjectId || undefined };
     case "live":
     case "live_replay":
       return { ...toolRunLink, linkedLiveId: sourceObjectId || undefined };

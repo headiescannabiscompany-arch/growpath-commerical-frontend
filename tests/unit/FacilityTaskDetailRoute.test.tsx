@@ -184,6 +184,25 @@ describe("FacilityTaskDetail", () => {
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-facility");
   });
 
+  it("opens course-assignment-backed facility task sources in the SOP workflow", async () => {
+    taskOverrides = {
+      sourceType: "course_assignment",
+      sourceObjectId: "assignment-1",
+      linkedCourseId: "course-1",
+      linkedLessonId: "lesson-1",
+      linkedCourseAssignmentId: "assignment-1"
+    };
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("View facility task source"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/facility/sop-runs/course-1?lessonId=lesson-1&assignmentId=assignment-1"
+    );
+  });
+
   it.each([
     ["room", "flower-1", "/home/facility/rooms?roomId=flower-1"],
     ["course", "course-1", "/home/facility/sop-runs/course-1"],

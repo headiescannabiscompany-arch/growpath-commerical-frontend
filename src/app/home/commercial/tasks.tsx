@@ -26,6 +26,7 @@ const sourceTypes = [
   "product_trial",
   "course",
   "lesson",
+  "course_assignment",
   "live",
   "feed_campaign",
   "order",
@@ -107,16 +108,23 @@ function linkedObjectPath(task: CommercialTask) {
       sourceId: task.linkedProductTrialId || task.linkedTrialId,
       linkedProductTrialId: task.linkedProductTrialId || task.linkedTrialId
     },
-    task.linkedCourseId && {
-      sourceType: "course",
-      sourceId: task.linkedCourseId,
-      linkedCourseId: task.linkedCourseId
+    task.linkedCourseAssignmentId && {
+      sourceType: "course_assignment",
+      sourceId: task.linkedCourseAssignmentId,
+      linkedCourseAssignmentId: task.linkedCourseAssignmentId,
+      linkedCourseId: task.linkedCourseId || undefined,
+      linkedLessonId: task.linkedLessonId || undefined
     },
     task.linkedLessonId && {
       sourceType: "lesson",
       sourceId: task.linkedLessonId,
       linkedLessonId: task.linkedLessonId,
       linkedCourseId: task.linkedCourseId || undefined
+    },
+    task.linkedCourseId && {
+      sourceType: "course",
+      sourceId: task.linkedCourseId,
+      linkedCourseId: task.linkedCourseId
     },
     task.linkedLiveId && {
       sourceType: "live",
@@ -164,8 +172,14 @@ function sourceReference(task: CommercialTask) {
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
   if (sourceType === "product_trial")
     return String(task.linkedProductTrialId || task.linkedTrialId || "");
-  if (sourceType === "course" || sourceType === "lesson") {
-    return String(task.linkedCourseId || task.linkedLessonId || "");
+  if (
+    sourceType === "course" ||
+    sourceType === "lesson" ||
+    sourceType === "course_assignment"
+  ) {
+    return String(
+      task.linkedCourseAssignmentId || task.linkedLessonId || task.linkedCourseId || ""
+    );
   }
   if (sourceType === "live" || sourceType === "live_replay") {
     return String(task.linkedLiveId || "");
@@ -210,6 +224,8 @@ function linkedFieldsForSource(sourceType: string, sourceId: string) {
       return { linkedCourseId: sourceId };
     case "lesson":
       return { linkedLessonId: sourceId };
+    case "course_assignment":
+      return { linkedCourseAssignmentId: sourceId };
     case "live":
       return { linkedLiveId: sourceId };
     case "feed_campaign":

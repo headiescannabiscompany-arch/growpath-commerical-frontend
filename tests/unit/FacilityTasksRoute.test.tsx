@@ -188,4 +188,36 @@ describe("FacilityTasksRoute", () => {
       )
     );
   });
+
+  it("creates facility tasks linked to course assignments", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task title"),
+      "Review SOP assignment"
+    );
+    fireEvent.press(screen.getByLabelText("Set facility task source course_assignment"));
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task source object"),
+      "assignment-7"
+    );
+    fireEvent.changeText(screen.getByLabelText("Facility task room"), "training-room");
+    fireEvent.press(screen.getByLabelText("Create facility task"));
+
+    await waitFor(() =>
+      expect(mockCreateTask).toHaveBeenCalledWith(
+        "facility-1",
+        expect.objectContaining({
+          title: "Review SOP assignment",
+          sourceType: "course_assignment",
+          sourceObjectId: "assignment-7",
+          linkedCourseAssignmentId: "assignment-7",
+          linkedRoomId: "training-room",
+          scope: "facility"
+        })
+      )
+    );
+  });
 });

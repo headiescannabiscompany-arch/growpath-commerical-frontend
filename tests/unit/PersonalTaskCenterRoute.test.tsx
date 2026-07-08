@@ -113,6 +113,21 @@ describe("PersonalTaskCenterRoute", () => {
         createdAt: "2026-07-07T00:00:00Z"
       },
       {
+        id: "task-course-assignment",
+        growId: "grow-1",
+        title: "Upload course worksheet",
+        description: "Finish the dry amendment worksheet.",
+        dueDate: "2026-07-10",
+        completed: false,
+        priority: "medium",
+        sourceType: "course_assignment",
+        sourceObjectId: "assignment-1",
+        linkedCourseId: "course-1",
+        linkedLessonId: "lesson-1",
+        linkedCourseAssignmentId: "assignment-1",
+        createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
         id: "task-live",
         growId: "grow-1",
         title: "Watch live replay",
@@ -189,7 +204,7 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Sensor Alert: sensor-alert-linked-1/)).toBeTruthy();
     expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
     expect(screen.getAllByText("product batch").length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(9);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(10);
     expect(screen.getByText("Review alert-linked product")).toBeTruthy();
     expect(screen.getByText(/Product: veg-mix-1/)).toBeTruthy();
     expect(
@@ -197,6 +212,11 @@ describe("PersonalTaskCenterRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Personal task link /home/personal/courses?courseId=course-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Personal task link /home/personal/courses?courseId=course-1&lessonId=lesson-1&assignmentId=assignment-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Personal task link /live-session?sessionId=live-1")
@@ -293,6 +313,28 @@ describe("PersonalTaskCenterRoute", () => {
           sourceType: "sensor_alert",
           sourceObjectId: "sensor-alert-2",
           linkedSensorAlertId: "sensor-alert-2"
+        })
+      )
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
+    fireEvent.changeText(
+      screen.getByLabelText("Task center title"),
+      "Upload course assignment"
+    );
+    fireEvent.press(screen.getByLabelText("Task center source course_assignment"));
+    fireEvent.changeText(
+      screen.getByLabelText("Task center source object"),
+      "assignment-2"
+    );
+    fireEvent.press(screen.getByLabelText("Create task center task"));
+
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sourceType: "course_assignment",
+          sourceObjectId: "assignment-2",
+          linkedCourseAssignmentId: "assignment-2"
         })
       )
     );
