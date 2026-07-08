@@ -9,6 +9,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import { radius } from "@/theme/theme";
 
 type CampaignForm = {
   name: string;
@@ -601,7 +602,7 @@ const styles = StyleSheet.create({
   action: {
     alignItems: "center",
     borderColor: "#b9c8b9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -633,7 +634,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     borderColor: "#d6e1d5",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 140,
     padding: 12
@@ -657,7 +658,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderColor: "#c8d6c7",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#172317",
     flexBasis: 240,
@@ -669,7 +670,7 @@ const styles = StyleSheet.create({
   },
   lineSelector: {
     borderColor: "#b9d7ba",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: 240,
     flexGrow: 1,
@@ -690,7 +691,7 @@ const styles = StyleSheet.create({
   submit: {
     alignItems: "center",
     backgroundColor: "#1f4d2c",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 14,
     minHeight: 44,
     justifyContent: "center",
@@ -709,7 +710,7 @@ const styles = StyleSheet.create({
   uploadButton: {
     alignItems: "center",
     borderColor: "#b9c8b9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -720,7 +721,7 @@ const styles = StyleSheet.create({
   clearButton: {
     alignItems: "center",
     borderColor: "#e2c4c4",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -732,7 +733,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 520,
     aspectRatio: 16 / 7,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 12,
     backgroundColor: "#edf5ec"
   },
@@ -751,7 +752,7 @@ const styles = StyleSheet.create({
   },
   row: {
     borderColor: "#d6e1d5",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -760,7 +761,7 @@ const styles = StyleSheet.create({
   rowImage: {
     width: 128,
     height: 82,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#edf5ec"
   },
   rowMain: {
@@ -785,7 +786,7 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
     backgroundColor: "#edf5ec",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8
   },
