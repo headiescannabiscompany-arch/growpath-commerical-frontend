@@ -309,7 +309,7 @@ export default function CommercialCommunityRoute() {
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/feed" label="Create linked campaign" />
-          <ActionLink href="/courses/add-lesson" label="Create course lesson" />
+          <ActionLink href="/home/commercial/courses" label="Create course lesson" />
         </View>
       </AppCard>
 

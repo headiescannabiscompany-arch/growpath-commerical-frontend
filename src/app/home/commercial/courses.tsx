@@ -259,7 +259,7 @@ export default function CommercialCoursesRoute() {
           </View>
           <View style={styles.headerActions}>
             <ActionLink href="/courses" label="Open Course Catalog" />
-            <ActionLink href="/courses/create" label="Universal Course Creator" />
+            <ActionLink href="/home/commercial/courses" label="Create Course" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/products" label="Products" />
           </View>
