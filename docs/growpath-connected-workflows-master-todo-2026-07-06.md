@@ -753,6 +753,7 @@ Completed and pushed:
 477. Legacy category and subcategory browser search panels, inputs, category rows, and subcategory cards now consume shared radius tokens while preserving discovery routing into inventory, tools, calendar, courses, certificates, campaigns, live sessions, and category course lists.
 478. Commercial content marketplace inputs, filter chips, create-offer actions, thumbnails, badges, media upload controls, and publish CTA now consume shared radius tokens while preserving storefront-offer upload, thumbnail upload, sales data, and draft-save behavior.
 479. Legacy personal nutrient calculator, pH/EC calculator, and pest/disease identifier inputs, actions, and result cards now consume shared radius tokens while preserving deterministic calculations and ToolUsage save behavior.
+480. Facility AI tools home and Nutrient Tools dashboard cards, stat boxes, select-grow action, tool tiles, and badges now consume shared radius tokens while preserving AI feature matrix routing and nutrient tool navigation.
 
 ## Working Rule For Codex
 

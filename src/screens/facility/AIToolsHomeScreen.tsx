@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { AI_FEATURES, type AIFeature } from "@/features/ai/aiFeatureMatrix";
+import { radius } from "@/theme/theme";
 
 /**
  * AIToolsHomeScreen
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 12,
     backgroundColor: "#fff",
@@ -138,14 +139,14 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     paddingVertical: 4,
     paddingHorizontal: 8,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     flexShrink: 0
   },
   selectGrowBtn: {
     alignSelf: "flex-start",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     marginBottom: 12

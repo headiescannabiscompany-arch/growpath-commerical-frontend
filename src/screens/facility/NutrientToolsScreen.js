@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "../../components/Card.js";
-import { Colors, Typography, Spacing } from "../../theme/theme.js";
+import { Colors, Typography, Spacing, radius } from "../../theme/theme.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
 
 /**
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: radius.card,
     minWidth: "28%",
     boxShadow: "0px 2px 8px rgba(0,0,0,0.10)",
     elevation: 3
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     width: "48%",
     marginBottom: Spacing.md,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.card,
     overflow: "hidden"
   },
   toolHeader: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: Spacing.xs,
     paddingVertical: 2,
-    borderRadius: 8
+    borderRadius: radius.pill
   },
   badgeText: {
     fontSize: Typography.size.caption,
