@@ -102,7 +102,7 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/commercial/lives?liveId=live-1");
+    expect(mockPush).toHaveBeenCalledWith("/feed?liveId=live-1");
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/commercial/analytics/events",
@@ -112,7 +112,7 @@ describe("CommercialFeedRoute", () => {
             eventType: "feed_campaign_click",
             objectType: "feed_campaign",
             objectId: "campaign-1",
-            targetUrl: "/home/commercial/lives?liveId=live-1",
+            targetUrl: "/feed?liveId=live-1",
             source: "commercial_feed",
             metadata: expect.objectContaining({
               campaignKind: "Live event ad",
@@ -359,5 +359,52 @@ describe("CommercialFeedRoute", () => {
     );
 
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
+  });
+
+  it("routes product and course campaign fallbacks to public discovery pages", async () => {
+    mockMode = "personal";
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-product",
+              type: "listing",
+              campaignKind: "product_ad",
+              title: "3-1-1 Veg Mix",
+              body: "A product ad without a storefront slug still stays public.",
+              linkedProductId: "veg-mix-1",
+              author: { displayName: "Living Soil Labs" },
+              createdAt: "2026-07-07T12:00:00Z"
+            },
+            {
+              id: "campaign-course",
+              type: "education",
+              campaignKind: "course_ad",
+              title: "NPK Recipe Builder",
+              body: "A course ad without a storefront slug uses the public course catalog.",
+              linkedCourseId: "course-npk-1",
+              author: { displayName: "Living Soil Labs" },
+              createdAt: "2026-07-07T13:00:00Z"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("3-1-1 Veg Mix")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("View Product for 3-1-1 Veg Mix"));
+    fireEvent.press(screen.getByLabelText("View Course for NPK Recipe Builder"));
+
+    expect(mockPush).toHaveBeenCalledWith("/store?q=veg-mix-1");
+    expect(mockPush).toHaveBeenCalledWith("/courses?courseId=course-npk-1");
+    expect(mockPush).not.toHaveBeenCalledWith("/home/commercial/products/veg-mix-1");
+    expect(mockPush).not.toHaveBeenCalledWith(
+      "/home/commercial/courses/course-npk-1"
+    );
   });
 });

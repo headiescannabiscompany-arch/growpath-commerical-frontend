@@ -74,4 +74,47 @@ describe("FeedRail", () => {
       })
     );
   });
+
+  it("keeps product campaign fallbacks on public discovery routes", async () => {
+    mockListCommercialFeedPosts.mockResolvedValue({
+      items: [
+        {
+          id: "campaign-product",
+          type: "listing",
+          title: "3-1-1 Veg Mix",
+          body: "Promoted product discovery.",
+          linkedProductId: "veg-mix-1",
+          createdAt: "2026-07-07T12:00:00Z",
+          likeCount: 4,
+          author: { displayName: "Living Soil Labs" },
+          tags: [],
+          growInterests: ["living soil"]
+        }
+      ],
+      nextCursor: null
+    });
+
+    const screen = render(<FeedRail slots={1} railMode="promo-only" placement="top" />);
+
+    await waitFor(() => expect(screen.getByText("3-1-1 Veg Mix")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("View Product for 3-1-1 Veg Mix"));
+
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "ad_click",
+        objectType: "feed_ad",
+        targetUrl: "/store?q=veg-mix-1",
+        source: "feed_banner",
+        metadata: expect.objectContaining({
+          title: "3-1-1 Veg Mix",
+          cta: "View Product"
+        })
+      })
+    );
+    expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUrl: "/home/commercial/products/veg-mix-1"
+      })
+    );
+  });
 });
