@@ -40,6 +40,8 @@ describe("pricing constants", () => {
     expect(source).toContain("COMMERCIAL_PLAN_PRICE_DISPLAY");
     expect(source).toContain("FACILITY_PLAN_PRICE_DISPLAY");
     expect(source).not.toContain("Facility ($50/mo)");
+    expect(source).not.toContain("Creator Plus");
+    expect(source).not.toContain("pricing TBD");
     expect(source).not.toMatch(/â/);
   });
 });
