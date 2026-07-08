@@ -37,4 +37,26 @@ describe("FeedItemCard route helper", () => {
       getRouteForItem(item({ id: "task-2", type: "task", scope: { facilityId: "" } }))
     ).toBe("/home/commercial/tasks/task-2");
   });
+
+  it("routes storefront metadata to the public storefront, not the legacy brand profile", () => {
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-1",
+          type: "alert",
+          metadata: { storefrontSlug: "living-soil-labs" }
+        })
+      )
+    ).toBe("/store/living-soil-labs");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-2",
+          type: "alert",
+          metadata: { brandSlug: "living-soil-labs" }
+        })
+      )
+    ).toBe("/brands/living-soil-labs");
+  });
 });

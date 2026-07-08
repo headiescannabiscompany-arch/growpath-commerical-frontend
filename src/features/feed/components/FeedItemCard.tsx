@@ -14,9 +14,11 @@ try {
 } catch {}
 
 export function getRouteForItem(item: FeedItem): string {
+  const storefrontSlug = item.metadata?.storefrontSlug;
+  if (storefrontSlug) return `/store/${encodeURIComponent(String(storefrontSlug))}`;
+
   const brandSlug =
     item.metadata?.commercialSlug ||
-    item.metadata?.storefrontSlug ||
     item.metadata?.brandSlug ||
     item.metadata?.actorSlug;
   if (brandSlug) return `/brands/${encodeURIComponent(String(brandSlug))}`;
