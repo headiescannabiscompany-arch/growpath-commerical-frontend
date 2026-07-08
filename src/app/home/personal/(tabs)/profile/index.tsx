@@ -16,6 +16,7 @@ import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     marginBottom: 12
   },
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 14,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#E2E8F0"

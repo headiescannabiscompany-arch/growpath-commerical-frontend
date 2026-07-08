@@ -627,6 +627,7 @@ Completed and pushed:
 351. Commercial Alert Detail now matches the same shared 8px card radius treatment as Commercial Task Detail, and both routes use ASCII loading copy to avoid visible encoding drift.
 352. Commercial Log Detail now uses the shared 8px workspace card radius and has focused route coverage proving the nested log detail loads from the global log endpoint.
 353. Active Commercial Tools cards now consume the shared 8px workspace radius token while preserving Storefront Offers, Feed / Campaigns, and Marketing Planner navigation coverage.
+354. Personal Profile cards and primary account actions now consume the shared 8px workspace radius token, extending the Facility-level visual polish to the Personal account/support surface without changing profile behavior.
 
 ## Working Rule For Codex
 
