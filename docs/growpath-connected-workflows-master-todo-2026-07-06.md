@@ -550,6 +550,8 @@ Completed and pushed:
 274. Commercial workflow regression fixtures now use campaign-placement language instead of "post to feed" copy, keeping tests aligned with Feed as advertising/outreach and Forum as discussion.
 275. Shared source-link routing now sends commercial `product_trial` evidence sources to canonical `/home/commercial/evidence-runs/:id` routes across Schedule, Alerts, Notifications, and Commercial task views, leaving Product Trials as an owner workflow instead of the generic evidence destination.
 276. Commercial Product Trials list now exposes a direct `Open Evidence Run` action whenever a trial has linked evidence, preserving the owner trial detail route while making the underlying evidence-run workflow reachable from the list.
+277. Support aliases are confirmed live for `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com, matching the shared support-contact config and deferred browser verification checklist.
+278. Legacy CommercialStack Campaigns/Advertising screen copy now frames the page as a marketing planner that hands off real outreach to Feed / Campaigns, removing old feed-post/platform-campaign ambiguity from compatibility navigation.
 
 ## Working Rule For Codex
 

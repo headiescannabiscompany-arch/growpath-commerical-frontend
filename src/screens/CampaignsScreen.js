@@ -62,8 +62,8 @@ export default function CampaignsScreen() {
       <Text style={styles.title}>Marketing Planner</Text>
       <Text style={styles.subtitle}>
         Plan product drops, course announcements, product trial evidence updates, feed
-        posts, and external links. Track clicks for ads/marketing links here; this does
-        not execute ad spend or platform campaigns.
+        campaigns, and external links. Track clicks for ads/marketing links here; use
+        Feed / Campaigns when you are ready to publish promotional placements.
       </Text>
       {error ? <Text style={styles.error}>Failed to load campaigns.</Text> : null}
 

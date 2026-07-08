@@ -52,7 +52,7 @@ describe("commercial legacy screens", () => {
     const screen = render(<CampaignsScreen />);
 
     expect(screen.getByText("Marketing Planner")).toBeTruthy();
-    expect(screen.getByText(/does not execute ad spend/i)).toBeTruthy();
+    expect(screen.getByText(/Feed \/ Campaigns/i)).toBeTruthy();
     expect(screen.getByText("Ad clicks")).toBeTruthy();
     expect(screen.getByText("42")).toBeTruthy();
     expect(screen.getByText("Link clicks")).toBeTruthy();
@@ -66,7 +66,7 @@ describe("commercial legacy screens", () => {
     fireEvent.changeText(screen.getByPlaceholderText("Launch date or window"), "April");
     fireEvent.changeText(
       screen.getByPlaceholderText("Content notes, platform notes, budget notes, or CTA"),
-      "Announce trial results in feed"
+      "Announce trial results through a feed campaign"
     );
     fireEvent.press(screen.getByText("Add Marketing Plan"));
 
@@ -77,7 +77,7 @@ describe("commercial legacy screens", () => {
           objective: "content_plan",
           linkedTarget: "product-1",
           launchDate: "April",
-          notes: "Announce trial results in feed"
+          notes: "Announce trial results through a feed campaign"
         })
       )
     );
