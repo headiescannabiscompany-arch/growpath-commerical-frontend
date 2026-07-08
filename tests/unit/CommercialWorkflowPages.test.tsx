@@ -553,6 +553,7 @@ describe("commercial workflow pages", () => {
               status: "scheduled",
               linkedProductId: "product-1",
               linkedCourseId: "course-1",
+              linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
               targetUrl: "https://example.com/bloom",
               clickCount: 42,
@@ -1287,6 +1288,7 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Bloom Mix Launch")).toBeTruthy());
     expect(screen.getByText("Ad clicks tracked")).toBeTruthy();
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Evidence run trial-1/)).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Marketing plan name"), "Veg Mix Drop");
     fireEvent.changeText(
@@ -1346,6 +1348,7 @@ describe("commercial workflow pages", () => {
             linkedProductId: "product-2",
             linkedProductLineId: "line-1",
             linkedCourseId: "course-2",
+            linkedTrialId: "grow-2",
             linkedGrowId: "grow-2",
             storefrontSlug: "living-soil-labs",
             targetUrl: "https://example.com/veg",

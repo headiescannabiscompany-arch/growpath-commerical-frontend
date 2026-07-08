@@ -85,6 +85,10 @@ function campaignImage(campaign: Campaign) {
   return resolveImageUri(creativeImage);
 }
 
+function campaignEvidenceRunId(campaign: Campaign) {
+  return campaign.linkedTrialId || campaign.linkedGrowId || "";
+}
+
 export default function CommercialMarketingRoute() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [form, setForm] = useState<CampaignForm>(EMPTY_FORM);
@@ -107,7 +111,9 @@ export default function CommercialMarketingRoute() {
     () =>
       campaigns.filter(
         (campaign) =>
-          campaign.linkedProductId || campaign.linkedCourseId || campaign.linkedGrowId
+          campaign.linkedProductId ||
+          campaign.linkedCourseId ||
+          campaignEvidenceRunId(campaign)
       ).length,
     [campaigns]
   );
@@ -151,6 +157,7 @@ export default function CommercialMarketingRoute() {
         linkedProductId: form.linkedProductId.trim() || undefined,
         linkedProductLineId: form.linkedProductLineId.trim() || undefined,
         linkedCourseId: form.linkedCourseId.trim() || undefined,
+        linkedTrialId: form.linkedGrowId.trim() || undefined,
         linkedGrowId: form.linkedGrowId.trim() || undefined,
         platformNotes: form.platformNotes.trim() || undefined,
         budget: {
@@ -478,7 +485,7 @@ export default function CommercialMarketingRoute() {
                   <Text style={styles.rowMeta}>
                     Product {campaign.linkedProductId || "none"} / Course{" "}
                     {campaign.linkedCourseId || "none"} / Evidence run{" "}
-                    {campaign.linkedGrowId || "none"}
+                    {campaignEvidenceRunId(campaign) || "none"}
                   </Text>
                   {campaign.targetUrl || campaign.externalUrl ? (
                     <Text style={styles.rowMeta}>

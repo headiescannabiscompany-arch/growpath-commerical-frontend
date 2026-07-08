@@ -32,6 +32,7 @@ export type Campaign = {
   linkedProductId?: string;
   linkedProductLineId?: string;
   linkedCourseId?: string;
+  linkedTrialId?: string;
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   platformNotes?: string;
