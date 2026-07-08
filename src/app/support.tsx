@@ -11,7 +11,7 @@ export default function SupportPage() {
   return (
     <PublicInfoPage
       title="Support"
-      intro="Use this page to route account, billing, technical, privacy, legal, security, commercial, and facility support requests to the GrowPath team."
+      intro="Use this page to route account, billing, orders, sales, technical, privacy, legal, security, commercial, courses, live events, partner, and facility support requests to the GrowPath team."
       sections={[
         ...SUPPORT_CONTACT_ROUTING.map((item) => ({
           title: item.title,

@@ -127,7 +127,8 @@ const manualChecks = [
   {
     area: "Live support aliases",
     checks: [
-      "Open Support and confirm general, billing, commercial, facility, privacy, legal, and security requests show the live @growpathai.com aliases.",
+      "Open Support and confirm general, billing, orders, sales, commercial, courses, live, facility, partners, contact, privacy, legal, and security requests show the live @growpathai.com aliases.",
+      "Confirm sender-only aliases noreply@growpathai.com and notifications@growpathai.com are configured for system email use but are not displayed as public support destinations.",
       "Open Privacy, Terms, and payment help surfaces and confirm they route privacy/legal/security/billing copy to the live aliases instead of placeholders."
     ]
   },
