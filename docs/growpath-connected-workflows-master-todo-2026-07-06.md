@@ -286,6 +286,10 @@ Completed and pushed:
 10. Legacy facility onboarding and `/facilities/:id/*` shims now redirect to canonical facility workspace URLs, not Expo group-segment URLs.
 11. Legacy feed activity cards now open workspace task, alert, log, and grow pages instead of dead root `/tasks`, `/alerts`, `/logs`, or `/app` paths.
 12. Commercial task source links now open alert-backed tasks in the shared Alert Center.
+13. Storefront owner preview actions now use explicit `View as User` language for the public store page and brand profile.
+14. Commercial Product Trials now keep owners in commercial routes for evidence runs, products, batches, and storefront work instead of sending them into Personal grow creation.
+15. Commercial product trial evidence-run detail now links back to commercial products/trials rather than the Personal grow workspace.
+16. Free feed placement policy now explicitly treats `longContent` as two or more scrolling screens: free users get top and bottom placements, plus one middle placement only on those longer pages.
 
 ## Working Rule For Codex
 
