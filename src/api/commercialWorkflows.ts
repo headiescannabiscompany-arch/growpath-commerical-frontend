@@ -9,6 +9,7 @@ export type ProductLine = {
   publicSummary?: string;
   description?: string;
   coverImageUrl?: string;
+  growInterests?: string[];
   status?: "draft" | "testing" | "active" | "archived";
   createdAt?: string;
   updatedAt?: string;

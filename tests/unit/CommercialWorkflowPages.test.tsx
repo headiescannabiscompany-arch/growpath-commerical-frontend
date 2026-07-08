@@ -156,7 +156,8 @@ describe("commercial workflow pages", () => {
               name: "Living Soil Line",
               category: "soil",
               status: "draft",
-              publicSummary: "Purpose-built soil products"
+              publicSummary: "Purpose-built soil products",
+              growInterests: ["living soil", "dry amendments"]
             }
           ]
         });
@@ -173,7 +174,8 @@ describe("commercial workflow pages", () => {
             status: "testing",
             publicSummary: "Purpose-built soil products",
             description: "Seedling, veg, flower, and topdress products.",
-            coverImageUrl: "https://example.com/line.jpg"
+            coverImageUrl: "https://example.com/line.jpg",
+            growInterests: ["living soil", "dry amendments"]
           }
         });
       }
@@ -1701,6 +1703,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product line public summary"),
       "Flower support products"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Product line grow interests"),
+      "flower, dry amendments"
+    );
     fireEvent.press(screen.getByLabelText("Create product line"));
 
     await waitFor(() =>
@@ -1712,6 +1718,7 @@ describe("commercial workflow pages", () => {
             name: "Bloom Line",
             category: "nutrient",
             publicSummary: "Flower support products",
+            growInterests: ["flower", "dry amendments"],
             status: "draft"
           })
         })
@@ -1740,6 +1747,10 @@ describe("commercial workflow pages", () => {
       "https://example.com/new-line.jpg"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product line detail grow interests"),
+      "living soil, topdress"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product line detail description"),
       "Updated line description."
     );
@@ -1754,6 +1765,7 @@ describe("commercial workflow pages", () => {
             status: "active",
             publicSummary: "Updated public line summary.",
             coverImageUrl: "https://example.com/new-line.jpg",
+            growInterests: ["living soil", "topdress"],
             description: "Updated line description."
           })
         })

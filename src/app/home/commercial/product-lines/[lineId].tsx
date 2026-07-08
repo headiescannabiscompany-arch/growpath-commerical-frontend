@@ -19,8 +19,17 @@ function lineTitle(line: ProductLine | null) {
   return line?.name || "Commercial Product Line";
 }
 
+function splitList(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
-  const display = String(value || "").trim();
+  const display = Array.isArray(value)
+    ? value.filter(Boolean).join(", ")
+    : String(value || "").trim();
   if (!display) return null;
   return (
     <View style={styles.detailRow}>
@@ -53,6 +62,7 @@ export default function CommercialProductLineDetailRoute({
   const [publicSummary, setPublicSummary] = useState("");
   const [description, setDescription] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [growInterests, setGrowInterests] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -64,6 +74,7 @@ export default function CommercialProductLineDetailRoute({
     setPublicSummary(next?.publicSummary || "");
     setDescription(next?.description || "");
     setCoverImageUrl((next as any)?.coverImageUrl || "");
+    setGrowInterests(next?.growInterests?.join(", ") || "");
   }, []);
 
   const load = useCallback(async () => {
@@ -93,7 +104,8 @@ export default function CommercialProductLineDetailRoute({
         status: (status.trim() || "draft") as ProductLine["status"],
         publicSummary: publicSummary.trim(),
         description: description.trim(),
-        coverImageUrl: coverImageUrl.trim()
+        coverImageUrl: coverImageUrl.trim(),
+        growInterests: splitList(growInterests)
       });
       hydrate(updated);
       setMessage("Product line updated.");
@@ -141,6 +153,7 @@ export default function CommercialProductLineDetailRoute({
           <DetailRow label="Status" value={line?.status} />
           <DetailRow label="Public summary" value={line?.publicSummary} />
           <DetailRow label="Cover image" value={(line as any)?.coverImageUrl} />
+          <DetailRow label="Grow interests" value={line?.growInterests} />
         </View>
       </AppCard>
 
@@ -182,6 +195,13 @@ export default function CommercialProductLineDetailRoute({
           placeholder="Cover image URL"
           style={styles.input}
           value={coverImageUrl}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product line detail grow interests"
+          onChangeText={setGrowInterests}
+          placeholder="Grow interests, comma separated"
+          style={styles.input}
+          value={growInterests}
         />
         <TextInput
           accessibilityLabel="Commercial product line detail description"

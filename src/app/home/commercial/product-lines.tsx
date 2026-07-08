@@ -25,6 +25,13 @@ function idOf(item: AnyRec, index: number) {
   return String(item.id ?? item._id ?? `line-${index}`);
 }
 
+function splitList(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default function CommercialProductLinesRoute() {
   const [lines, setLines] = useState<ProductLine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +44,7 @@ export default function CommercialProductLinesRoute() {
   const [publicSummary, setPublicSummary] = useState("");
   const [description, setDescription] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [growInterests, setGrowInterests] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -68,6 +76,7 @@ export default function CommercialProductLinesRoute() {
         publicSummary: publicSummary.trim() || undefined,
         description: description.trim() || undefined,
         coverImageUrl: coverImageUrl.trim() || undefined,
+        growInterests: splitList(growInterests),
         status: "draft"
       });
       setLines((current) => [created, ...current].filter(Boolean));
@@ -76,6 +85,7 @@ export default function CommercialProductLinesRoute() {
       setPublicSummary("");
       setDescription("");
       setCoverImageUrl("");
+      setGrowInterests("");
       setFeedback("Product line created.");
     } catch (err) {
       setError(err);
@@ -162,6 +172,13 @@ export default function CommercialProductLinesRoute() {
           autoCapitalize="none"
           style={styles.input}
         />
+        <TextInput
+          value={growInterests}
+          onChangeText={setGrowInterests}
+          accessibilityLabel="Product line grow interests"
+          placeholder="Grow interests, comma separated"
+          style={styles.input}
+        />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create product line"
@@ -190,6 +207,9 @@ export default function CommercialProductLinesRoute() {
                 <Text style={styles.muted}>
                   {[line.category, line.status || "draft"].filter(Boolean).join(" | ")}
                 </Text>
+                {line.growInterests?.length ? (
+                  <Text style={styles.tags}>{line.growInterests.join(", ")}</Text>
+                ) : null}
                 {line.publicSummary || line.description ? (
                   <Text style={styles.body} numberOfLines={2}>
                     {line.publicSummary || line.description}
@@ -302,6 +322,7 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.55 },
   loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
   muted: { color: "#64748B", fontWeight: "700" },
+  tags: { color: "#166534", fontSize: 12, fontWeight: "900", marginTop: 6 },
   list: { gap: 10, marginTop: 10 },
   lineRow: {
     borderColor: "rgba(15,23,42,0.12)",
