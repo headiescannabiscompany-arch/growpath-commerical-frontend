@@ -26,7 +26,9 @@ jest.mock("@/components/layout/AppPage", () => {
     React.createElement(
       View,
       null,
-      showBack ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`) : null,
+      showBack
+        ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+        : null,
       header,
       children
     );
@@ -231,8 +233,10 @@ describe("Storefront route", () => {
     );
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("View as User: Store Page")).toBeTruthy();
+    expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
     expect(screen.getByText("View as User: Brand Profile")).toBeTruthy();
     expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
+    expect(screen.getByTestId("link-/storefront/grow-shop")).toBeTruthy();
     expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
@@ -430,21 +434,15 @@ describe("Storefront route", () => {
   it("redirects the legacy root storefront route to the commercial workspace", () => {
     const screen = render(<LegacyStorefrontRoute />);
 
-    expect(
-      screen.getByLabelText("Redirect /home/commercial/storefront")
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Redirect /home/commercial/storefront")).toBeTruthy();
   });
 
   it("gives nested edit and preview routes shared back behavior", async () => {
     const editScreen = render(<StorefrontEdit />);
 
-    await waitFor(() =>
-      expect(editScreen.getByText("Edit Storefront")).toBeTruthy()
-    );
+    await waitFor(() => expect(editScreen.getByText("Edit Storefront")).toBeTruthy());
     await waitFor(() => expect(editScreen.getByDisplayValue("Grow Shop")).toBeTruthy());
-    expect(
-      editScreen.getByText("Shared Back /home/commercial/storefront")
-    ).toBeTruthy();
+    expect(editScreen.getByText("Shared Back /home/commercial/storefront")).toBeTruthy();
     editScreen.unmount();
 
     const previewScreen = render(<StorefrontPreview />);

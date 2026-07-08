@@ -357,6 +357,7 @@ export default function Storefront({
   const publicSlug = storeDraft.slug.trim() || "your-brand";
   const publicProfilePath = `/brands/${publicSlug}`;
   const publicStorePath = `/store/${publicSlug}`;
+  const publicStorefrontAliasPath = `/storefront/${publicSlug}`;
   const publishedProducts = useMemo(
     () => products.filter((product) => productIsPublished(product)),
     [products]
@@ -1047,8 +1048,18 @@ export default function Storefront({
               {currentPublicUrl(publicStorePath)}
             </Text>
           </View>
+          <View style={styles.publicLinkBox}>
+            <Text style={styles.publicLinkLabel}>Storefront alias</Text>
+            <Text selectable style={styles.publicLinkText}>
+              {currentPublicUrl(publicStorefrontAliasPath)}
+            </Text>
+          </View>
           <View style={styles.previewActions}>
             <PublicPreviewLink href={publicStorePath} label="View as User: Store Page" />
+            <PublicPreviewLink
+              href={publicStorefrontAliasPath}
+              label="View as User: Storefront Alias"
+            />
             <PublicPreviewLink
               href={publicProfilePath}
               label="View as User: Brand Profile"
