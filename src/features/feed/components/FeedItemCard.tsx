@@ -30,11 +30,15 @@ export function getRouteForItem(item: FeedItem): string {
   if (item.type === "alert")
     return `/home/alerts?alertId=${encodeURIComponent(item.id)}`;
   if (item.type === "log") {
+    if (item.id) return `/home/facility/logs/${encodeURIComponent(item.id)}`;
     if (item.entityLinks?.growId)
       return `/home/facility/grows/${encodeURIComponent(item.entityLinks.growId)}`;
-    if (item.entityLinks?.plantId) return "/home/facility/plants";
+    if (item.entityLinks?.plantId)
+      return `/home/facility/plants/${encodeURIComponent(item.entityLinks.plantId)}`;
     return "/home/facility/logs";
   }
+  if (item.entityLinks?.plantId)
+    return `/home/facility/plants/${encodeURIComponent(item.entityLinks.plantId)}`;
   return "";
 }
 

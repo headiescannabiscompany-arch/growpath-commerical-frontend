@@ -29,7 +29,7 @@ describe("FeedItemCard route helper", () => {
           entityLinks: { growId: "grow-1" }
         })
       )
-    ).toBe("/home/facility/grows/grow-1");
+    ).toBe("/home/facility/logs/log-1");
   });
 
   it("keeps commercial activity out of dead root task URLs", () => {
@@ -58,5 +58,17 @@ describe("FeedItemCard route helper", () => {
         })
       )
     ).toBe("/brands/living-soil-labs");
+  });
+
+  it("preserves plant ids for facility source cards", () => {
+    expect(
+      getRouteForItem(
+        item({
+          id: "note-1",
+          type: "note",
+          entityLinks: { plantId: "plant-1" }
+        })
+      )
+    ).toBe("/home/facility/plants/plant-1");
   });
 });
