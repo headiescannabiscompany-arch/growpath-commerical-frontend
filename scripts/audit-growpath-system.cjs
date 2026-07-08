@@ -392,6 +392,19 @@ function legacyFeedScreenUsesCampaignRoute() {
   );
 }
 
+function legacyToolsScreenUsesPersonalToolsHub() {
+  const file = path.join(SRC, "screens", "ToolsScreen.js");
+  if (!fs.existsSync(file)) return false;
+  const source = read(file);
+  return (
+    source.includes('from "../app/home/personal/(tabs)/tools"') &&
+    /\bToolsHubScreen\b/.test(source) &&
+    !/Single-User Tools|VPDCalculator|NutrientCalculator|Locked.*Upgrade to access/.test(
+      source
+    )
+  );
+}
+
 function facilityIntegrationsUsesRoomImport(routes) {
   const source = routeSource(routes, "/home/facility/integrations");
   if (!source) return false;
@@ -540,6 +553,7 @@ function main() {
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
+  const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
   const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(
     files.routes
   );
@@ -575,6 +589,7 @@ function main() {
     commercialCommunityForumOnly,
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
+    legacyToolsScreenPersonalHub,
     facilityIntegrationsRoomImport,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
@@ -650,6 +665,7 @@ function main() {
     `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
+    `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
     `- Facility integrations entry uses read-only room import preview: ${decisionChecks.facilityIntegrationsRoomImport}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
