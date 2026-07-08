@@ -358,6 +358,14 @@ export default function Profile() {
           </Text>
           <View style={styles.actionRow}>
             <Pressable
+              onPress={() => router.push("/account/mode")}
+              accessibilityRole="button"
+              accessibilityLabel="Switch workspace mode"
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Switch workspace</Text>
+            </Pressable>
+            <Pressable
               onPress={() => router.push("/register")}
               accessibilityRole="button"
               accessibilityLabel="Create another account type"

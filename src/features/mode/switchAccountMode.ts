@@ -4,16 +4,18 @@ export type SwitchModeDeps = {
   currentMode: AccountMode;
   setMode: (mode: AccountMode) => void;
   router: { replace: (href: string) => void };
+  setPreferredMode?: (mode: AccountMode) => void | Promise<void>;
 };
 
 /**
  * Deterministic mode switcher.
  * Mode strings follow entitlements/state: "personal" | "commercial" | "facility".
  */
-export function switchAccountMode(nextMode: AccountMode, deps: SwitchModeDeps) {
+export async function switchAccountMode(nextMode: AccountMode, deps: SwitchModeDeps) {
   const { currentMode, setMode, router } = deps;
   if (nextMode === currentMode) return;
 
+  await deps.setPreferredMode?.(nextMode);
   setMode(nextMode);
 
   const href =

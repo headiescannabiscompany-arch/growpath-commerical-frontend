@@ -484,6 +484,7 @@ Completed and pushed:
 208. Legacy billing Upgrade Plan now uses the shared Pro, Commercial, and Facility pricing constants, shows monthly and annual options with annual billed-once/yearly equivalent copy, and sends the selected interval to checkout with focused regression coverage.
 209. Public Privacy and Terms pages now route contact copy through the live support alias config for privacy, legal, security, and general account support, with regression coverage proving the aliases remain visible.
 210. Release go/no-go support escalation evidence now uses the live `support@growpathai.com` mailbox instead of a placeholder fixture, with the focused release gate test passing.
+211. Account mode switching now has a visible `/account/mode` workspace switcher with current identity, Personal / Commercial / Facility selector cards, manage-vs-create actions, Profile entry point, and persisted preferred-mode switching through the entitlement layer instead of a local-only toggle.
 
 ## Working Rule For Codex
 
