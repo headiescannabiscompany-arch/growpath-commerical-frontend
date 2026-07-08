@@ -748,6 +748,7 @@ Completed and pushed:
 472. Facility harvest window, Harvest AI MVP, and trichome analysis cards/inputs/photo previews/actions now consume shared radius tokens while preserving canonical harvest AI function names, photo upload, and calendar writeback behavior.
 473. Facility audit logs, SOP templates, and legacy team invitation/member surfaces now consume shared radius tokens while preserving facility access checks, audit log creation, SOP CRUD, and team invite workflow behavior.
 474. Legacy task modal, schedule warning/intent panels, schedule detail modal actions, and QA diagnostic sections now consume shared radius tokens while preserving task CRUD, task completion gating, and runtime diagnostic behavior.
+475. Legacy personal/facility plant list and plant detail cards, search input, stage badge, chart frame, photo frames, timeline selectors, log cards, and export action now consume shared radius tokens while preserving plant navigation, chart rendering, and export behavior.
 
 ## Working Rule For Codex
 

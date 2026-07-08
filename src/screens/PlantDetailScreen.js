@@ -14,6 +14,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { getPlantWithLogs, exportPlantPdf } from "../api/plants";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
+import { radius } from "../theme/theme";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -112,7 +113,7 @@ export default function PlantDetailScreen({ route, navigation }) {
           color: (opacity = 1) => `rgba(40, 167, 69, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: {
-            borderRadius: 16
+            borderRadius: radius.card
           },
           propsForDots: {
             r: "4",
@@ -329,7 +330,7 @@ const styles = {
     backgroundColor: "#28A745",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16
+    borderRadius: radius.pill
   },
   stageText: {
     fontSize: 12,
@@ -340,7 +341,7 @@ const styles = {
     backgroundColor: "#FFF",
     marginHorizontal: 20,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 20,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
@@ -372,12 +373,12 @@ const styles = {
   },
   chart: {
     marginVertical: 8,
-    borderRadius: 16
+    borderRadius: radius.card
   },
   chartPlaceholder: {
     backgroundColor: "#FFF",
     padding: 40,
-    borderRadius: 12,
+    borderRadius: radius.card,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -408,7 +409,7 @@ const styles = {
   photo: {
     width: "100%",
     aspectRatio: 1,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#FFF"
   },
   photoPlaceholder: {
@@ -436,7 +437,7 @@ const styles = {
   timelineItem: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     backgroundColor: "#EEE",
     justifyContent: "center",
     alignItems: "center",
@@ -466,7 +467,7 @@ const styles = {
   logCard: {
     backgroundColor: "#FFF",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8
   },
   logDate: {
@@ -492,7 +493,7 @@ const styles = {
   exportButton: {
     backgroundColor: "#FFF",
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: 10,
     borderWidth: 1,

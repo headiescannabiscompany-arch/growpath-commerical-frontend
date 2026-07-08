@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { usePlants } from "@/hooks/usePlants";
+import { radius } from "@/theme/theme";
 
 function normId(item, idx) {
   return String(item?.id || item?._id || `plant-${idx}`);
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   search: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 10
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#fff"
