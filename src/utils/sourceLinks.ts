@@ -32,6 +32,7 @@ export function sourceObjectHref(source: SourceLike) {
   const forumId = firstText(sourceId, source?.linkedForumThreadId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
+  const sopId = firstText(sourceId, source?.linkedSopId, source?.sopId);
 
   if (sourceType === "task") {
     if (!sourceId) return "/home/schedule";
@@ -171,7 +172,9 @@ export function sourceObjectHref(source: SourceLike) {
       : "/home/personal/grows";
   }
   if (sourceType === "sop" || sourceType === "facility_sop" || sourceType === "sop_task")
-    return "/home/facility/sop-runs";
+    return sopId
+      ? `/home/facility/sop-runs/${encoded(sopId)}`
+      : "/home/facility/sop-runs";
   if (
     sourceType === "sensor_alert" ||
     sourceType === "alert" ||

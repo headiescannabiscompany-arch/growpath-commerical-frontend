@@ -201,7 +201,9 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByLabelText("Alert link /home/facility/tasks/task-1")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /forum/post/thread-sop")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/grows/run-1")).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /home/facility/sop-runs")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/facility/sop-runs/sop-1")
+    ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /store?q=veg-mix-1")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/personal/courses")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/inventory")).toBeTruthy();

@@ -150,6 +150,7 @@ describe("FacilityTaskDetail", () => {
     ["room", "flower-1", "/home/facility/rooms?roomId=flower-1"],
     ["course", "course-1", "/home/facility/sop-runs"],
     ["lesson", "lesson-1", "/home/facility/sop-runs"],
+    ["sop", "sop-7", "/home/facility/sop-runs/sop-7"],
     ["live", "live-1", "/feed?liveId=live-1"],
     ["product", "input-1", "/home/facility/inventory"],
     ["product_batch", "batch-1", "/home/facility/inventory"],

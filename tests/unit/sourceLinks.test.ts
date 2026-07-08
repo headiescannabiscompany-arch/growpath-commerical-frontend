@@ -208,7 +208,15 @@ describe("sourceObjectHref", () => {
         sourceId: "sop-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/sop-runs");
+    ).toBe("/home/facility/sop-runs/sop-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "sop_task",
+        linkedSopId: "sop-linked-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/sop-runs/sop-linked-1");
 
     expect(
       sourceObjectHref({
