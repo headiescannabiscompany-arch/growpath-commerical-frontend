@@ -370,6 +370,7 @@ Completed and pushed:
 94. Alert Center now supports assigning alert-created tasks and provides Ask AI links with alert/source/workspace context for Personal AI, Facility AI, and the Commercial launch assistant surface, alongside resolve, snooze, create-task, and view-source actions.
 95. Notification Center now lets users create source-linked follow-up tasks from notifications, preserving the notification id plus the original task, alert, course, live, product, product trial, feed campaign, order, forum, room, facility run, SOP, recipe, or ToolRun source context.
 96. Schedule / Agenda now has workspace and source filters, so users can narrow the shared calendar to Personal, Commercial, Facility, tasks, lives, course releases, or feed campaigns without losing the connected Open Source actions.
+97. Facility room-backed source links now preserve the room id in `/home/facility/rooms?roomId=...`, and the Facility Rooms workspace reads that route parameter so task, alert, schedule, and notification links can land on the intended room context.
 
 ## Working Rule For Codex
 

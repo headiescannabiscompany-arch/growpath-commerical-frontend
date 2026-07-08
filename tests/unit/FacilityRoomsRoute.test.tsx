@@ -13,8 +13,10 @@ const mockCreateEquipment = jest.fn();
 const mockDeleteBatchCycle = jest.fn();
 const mockListBatchCycles = jest.fn();
 const mockListEquipment = jest.fn();
+let mockRoomParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockRoomParams,
   useRouter: () => ({ replace: mockReplace, push: jest.fn() })
 }));
 
@@ -50,6 +52,7 @@ jest.mock("@/api/facilityWorkflows", () => ({
 describe("FacilityRoomsTab", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockRoomParams = {};
     mockFetchRooms.mockResolvedValue([
       {
         id: "room-existing",
@@ -199,11 +202,7 @@ describe("FacilityRoomsTab", () => {
       provider: "Pulse",
       metrics: ["relative_humidity", "high_humidity_alarm", "sensor_alarm"],
       integrationMapping: expect.objectContaining({
-        normalizedMetrics: [
-          "relative_humidity",
-          "high_humidity_alarm",
-          "sensor_alarm"
-        ],
+        normalizedMetrics: ["relative_humidity", "high_humidity_alarm", "sensor_alarm"],
         rawDeviceName: "Flower Room 1 High Humidity Alarm",
         sensorStreams: expect.arrayContaining([
           expect.objectContaining({
@@ -243,11 +242,7 @@ describe("FacilityRoomsTab", () => {
       provider: "Pulse",
       metrics: ["air_temperature", "reservoir_ph", "reservoir_temperature"],
       integrationMapping: expect.objectContaining({
-        normalizedMetrics: [
-          "air_temperature",
-          "reservoir_ph",
-          "reservoir_temperature"
-        ],
+        normalizedMetrics: ["air_temperature", "reservoir_ph", "reservoir_temperature"],
         rawDeviceName: "Existing Dry Room Reservoir pH Temp",
         sensorStreams: expect.arrayContaining([
           expect.objectContaining({
@@ -262,6 +257,29 @@ describe("FacilityRoomsTab", () => {
     await waitFor(() =>
       expect(screen.getByText("Created 2 rooms and 7 devices from Pulse.")).toBeTruthy()
     );
+  });
+
+  it("opens a room workspace from the roomId route parameter", async () => {
+    mockRoomParams = { roomId: "room-veg" };
+    mockFetchRooms.mockResolvedValueOnce([
+      {
+        id: "room-existing",
+        name: "Existing Dry Room",
+        roomType: "dry",
+        createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "room-veg",
+        name: "Veg Room",
+        roomType: "veg",
+        createdAt: "2026-07-07T00:00:00Z"
+      }
+    ]);
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() => expect(screen.getByText("Room Workspace")).toBeTruthy());
+    expect(screen.getAllByText("Veg Room").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Type: veg/)).toBeTruthy();
   });
 
   it("cleans provider/controller prefixes when suggesting imported facility rooms", async () => {

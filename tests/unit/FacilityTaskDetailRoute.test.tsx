@@ -147,6 +147,7 @@ describe("FacilityTaskDetail", () => {
   });
 
   it.each([
+    ["room", "flower-1", "/home/facility/rooms?roomId=flower-1"],
     ["course", "course-1", "/home/facility/sop-runs"],
     ["lesson", "lesson-1", "/home/facility/sop-runs"],
     ["live", "live-1", "/feed?liveId=live-1"],

@@ -9,7 +9,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   createBatchCycle,
@@ -175,8 +175,10 @@ function buildRoomImportPreview(rawText: string) {
 
 export default function FacilityRoomsTab() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ roomId?: string }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
+  const routeRoomId = String(params.roomId || "");
 
   const apiErrorMapper = useApiErrorHandler();
   const [error, setError] = useState<UiErrorState | null>(null);
@@ -200,7 +202,7 @@ export default function FacilityRoomsTab() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [cycles, setCycles] = useState<BatchCycle[]>([]);
-  const [activeRoomId, setActiveRoomId] = useState("");
+  const [activeRoomId, setActiveRoomId] = useState(routeRoomId);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -273,7 +275,9 @@ export default function FacilityRoomsTab() {
         const nextActive =
           activeRoomId && roomRows.some((room) => rowId(room) === activeRoomId)
             ? activeRoomId
-            : rowId(roomRows[0]);
+            : routeRoomId && roomRows.some((room) => rowId(room) === routeRoomId)
+              ? routeRoomId
+              : rowId(roomRows[0]);
         setActiveRoomId(nextActive);
       } catch (e) {
         handleApiError(e);
@@ -282,7 +286,7 @@ export default function FacilityRoomsTab() {
         setRefreshing(false);
       }
     },
-    [activeRoomId, facilityId, clearError, handleApiError]
+    [activeRoomId, facilityId, routeRoomId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -299,6 +303,13 @@ export default function FacilityRoomsTab() {
       activeRoom.trackingMode === "individual" ? "individual" : "batch"
     );
   }, [activeRoom]);
+
+  useEffect(() => {
+    if (!routeRoomId || activeRoomId === routeRoomId) return;
+    if (rooms.some((room) => rowId(room) === routeRoomId)) {
+      setActiveRoomId(routeRoomId);
+    }
+  }, [activeRoomId, rooms, routeRoomId]);
 
   async function addRoom() {
     if (!facilityId || !canEditRooms || !roomName.trim()) return;

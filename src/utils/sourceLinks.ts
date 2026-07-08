@@ -158,7 +158,9 @@ export function sourceObjectHref(source: SourceLike) {
     return "/home/personal/profile";
   }
   if (sourceType === "room" || sourceType === "room_task")
-    return roomId ? "/home/facility/rooms" : "/home/facility/rooms";
+    return roomId
+      ? `/home/facility/rooms?roomId=${encoded(roomId)}`
+      : "/home/facility/rooms";
   if (sourceType === "facility") return "/home/facility";
   if (sourceType === "facility_run") {
     return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";

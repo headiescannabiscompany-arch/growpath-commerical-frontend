@@ -25,6 +25,14 @@ describe("sourceObjectHref", () => {
         workspaceType: "facility"
       })
     ).toBe("/home/facility/grows/trial-run-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "room",
+        sourceId: "flower-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/rooms?roomId=flower-1");
   });
 
   it("recognizes personal task aliases used by grow tools and AI diagnosis", () => {
