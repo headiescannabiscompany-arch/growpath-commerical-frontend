@@ -672,6 +672,7 @@ Completed and pushed:
 396. VPD Calculator, PPFD / DLI Planner, and Watering Planner inputs and locked states now consume the shared 8px card radius token while preserving VPD selector pills, extending Facility-style polish across core environment and irrigation tools.
 397. Bud Rot Risk, Harvest Estimator, AI Feeding Schedule, AI Environment Analysis, Timeline Planner, and PDF / Export inputs, actions, preview cards, milestone cards, and locked states now consume the shared 8px card radius token across legacy personal planning/export tools.
 398. Saved Tool Runs cards, note editor, save action, and Pheno Matrix candidate cards, score inputs, ranked rows, score badges, and locked state now consume the shared 8px card radius token while preserving saved-run filter pills.
+399. Nutrient Chemistry context panels, recommendation cards, compatibility warnings, rate/lab inputs, release groups, evidence tags, form cards, and action buttons now consume the shared 8px card radius token while preserving nutrient/compare pills.
 
 ## Working Rule For Codex
 

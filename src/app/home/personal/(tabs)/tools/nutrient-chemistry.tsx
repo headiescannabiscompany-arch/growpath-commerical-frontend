@@ -42,6 +42,7 @@ import {
 } from "@/features/personal/tools/nutrientChemistry/engine";
 import { nutrientContextState } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -906,14 +907,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0FDF4",
     borderWidth: 1,
     borderColor: "#BBF7D0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10
   },
   contextPanel: {
     borderWidth: 1,
     borderColor: "#FBBF24",
     backgroundColor: "#FFFBEB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 4
   },
@@ -925,7 +926,7 @@ const styles = StyleSheet.create({
   panel: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 16,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 14,
     gap: 10
@@ -949,7 +950,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF"
@@ -958,7 +959,7 @@ const styles = StyleSheet.create({
   toggle: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF"
@@ -969,7 +970,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#BBF7D0",
-    borderRadius: 16,
+    borderRadius: radius.card,
     backgroundColor: "#ECFDF5",
     padding: 14,
     gap: 6
@@ -982,12 +983,12 @@ const styles = StyleSheet.create({
     color: "#9A3412",
     backgroundColor: "#FFF7ED",
     padding: 10,
-    borderRadius: 10
+    borderRadius: radius.card
   },
   compatibilityIssue: {
     borderWidth: 1,
     borderColor: "#FED7AA",
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#FFF7ED",
     padding: 10,
     gap: 6
@@ -1010,7 +1011,7 @@ const styles = StyleSheet.create({
   recommendationCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 14,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 12,
     gap: 8
@@ -1034,7 +1035,7 @@ const styles = StyleSheet.create({
   releaseGroup: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#FFFFFF"
   },
@@ -1062,7 +1063,7 @@ const styles = StyleSheet.create({
     width: 78,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF",
@@ -1072,7 +1073,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -1082,7 +1083,7 @@ const styles = StyleSheet.create({
   labInput: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -1095,7 +1096,7 @@ const styles = StyleSheet.create({
   evidenceText: {
     color: "#166534",
     backgroundColor: "#F0FDF4",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 8,
     textTransform: "capitalize"
   },
@@ -1103,7 +1104,7 @@ const styles = StyleSheet.create({
   formCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 10,
     gap: 4
@@ -1112,7 +1113,7 @@ const styles = StyleSheet.create({
   formMeta: { color: "#64748B", fontSize: 12 },
   formNotes: { color: "#334155", fontSize: 13, lineHeight: 18 },
   primaryButton: {
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#14532D",
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -1123,7 +1124,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#14532D",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingVertical: 12,
     paddingHorizontal: 14,
