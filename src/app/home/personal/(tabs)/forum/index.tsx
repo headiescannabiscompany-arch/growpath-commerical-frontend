@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   photoThumb: {
     width: 96,
     height: 72,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
