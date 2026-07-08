@@ -407,6 +407,7 @@ Completed and pushed:
 131. Alert-created tasks now preserve linked-only source ids such as product batches, products/trials, storefronts, grows/plants/logs, tasks, rooms/facilities/runs/SOPs, ToolRuns, recipes, lessons/courses, feed campaigns, orders, sensor alerts, and forum threads, so alert-to-task keeps the real source context.
 132. Commercial alert detail task creation now preserves linked-only product batch/trial and campaign/order/source ids, so owners opening a single alert can still create source-linked follow-up work even when the alert detail lacks `sourceId`.
 133. Commercial task detail source routing now prefers linked ids that match the task `sourceType`, so linked-only feed campaign and product batch tasks open the commercial feed campaign or batch workflow instead of falling back to a less specific product/source id.
+134. Commercial Task Center source labels now prefer linked ids that match the task `sourceType`, so linked-only product batch and feed campaign cards show the batch/campaign id and route to the matching workflow instead of displaying a broader product id.
 
 ## Working Rule For Codex
 

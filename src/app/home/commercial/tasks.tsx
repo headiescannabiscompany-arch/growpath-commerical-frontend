@@ -90,22 +90,40 @@ function sourcePath(task: CommercialTask) {
 }
 
 function sourceReference(task: CommercialTask) {
+  const sourceType = String(task.sourceType || "");
+  const directSource = task.sourceId || task.sourceObjectId;
+  if (directSource) return String(directSource);
+  if (sourceType === "storefront")
+    return String(
+      task.linkedStorefrontSlug || task.linkedStorefrontId || task.storefrontSlug || ""
+    );
+  if (sourceType === "product") return String(task.linkedProductId || "");
+  if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
+  if (sourceType === "product_trial") return String(task.linkedProductTrialId || "");
+  if (sourceType === "course" || sourceType === "lesson") {
+    return String(task.linkedCourseId || task.linkedLessonId || "");
+  }
+  if (sourceType === "live" || sourceType === "live_replay") {
+    return String(task.linkedLiveId || "");
+  }
+  if (sourceType === "feed_campaign" || sourceType === "feed_post") {
+    return String(
+      task.linkedFeedCampaignId ||
+        task.feedCampaignId ||
+        task.campaignId ||
+        task.linkedFeedPostId ||
+        ""
+    );
+  }
   const value =
-    task.sourceId ||
-    task.sourceObjectId ||
-    task.linkedProductId ||
+    task.linkedAlertId ||
+    task.linkedOrderId ||
+    task.linkedForumThreadId ||
     task.linkedProductBatchId ||
     task.linkedProductTrialId ||
+    task.linkedProductId ||
     task.linkedCourseId ||
-    task.linkedLessonId ||
     task.linkedLiveId ||
-    task.linkedFeedCampaignId ||
-    task.feedCampaignId ||
-    task.campaignId ||
-    task.linkedFeedPostId ||
-    task.linkedOrderId ||
-    task.linkedAlertId ||
-    task.linkedForumThreadId ||
     task.linkedStorefrontSlug ||
     task.linkedStorefrontId ||
     task.storefrontSlug;

@@ -83,6 +83,22 @@ describe("CommercialTasksRoute", () => {
               status: "open",
               sourceType: "live",
               linkedLiveId: "live-linked-1"
+            },
+            {
+              id: "task-7",
+              title: "Review linked batch",
+              status: "open",
+              sourceType: "product_batch",
+              linkedProductId: "product-1",
+              linkedProductBatchId: "batch-linked-1"
+            },
+            {
+              id: "task-8",
+              title: "Review feed campaign",
+              status: "open",
+              sourceType: "feed_campaign",
+              linkedProductId: "product-1",
+              linkedFeedPostId: "campaign-linked-1"
             }
           ]
         });
@@ -113,8 +129,12 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Answer product Q&A")).toBeTruthy();
     expect(screen.getByText("Add lesson worksheet")).toBeTruthy();
     expect(screen.getByText("Prepare live demo")).toBeTruthy();
+    expect(screen.getByText("Review linked batch")).toBeTruthy();
+    expect(screen.getByText("Review feed campaign")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: live-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Source ID: batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Source ID: campaign-linked-1/)).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-1")
     ).toBeTruthy();
@@ -126,6 +146,16 @@ describe("CommercialTasksRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /home/commercial/lives?liveId=live-linked-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/batch-planner/batch-linked-1"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/feed?campaignId=campaign-linked-1"
+      )
     ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
