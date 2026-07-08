@@ -161,10 +161,21 @@ export default function ForumScreen() {
   function renderPost({ item }) {
     const authorType = item.authorType || item.user?.type || "user";
     const workspace = item.workspaceContext || item.workspace || "personal";
-    const identityLabel = authorType === "business" ? "Business" : "Member";
-    const workspaceLabel = workspace === "commercial" ? "Commercial" : workspace;
+    const identityLabel =
+      authorType === "business" || authorType === "commercial"
+        ? "Brand"
+        : authorType === "facility"
+          ? "Facility"
+          : "Member";
+    const workspaceLabel =
+      workspace === "commercial"
+        ? "Commercial"
+        : workspace === "facility"
+          ? "Facility"
+          : "Personal";
     const avatarUri = resolveImageUrl(item.user?.avatar);
-    const displayName = item.user?.name || "Anonymous";
+    const displayName =
+      item.author?.displayName || item.user?.displayName || item.user?.name || "Anonymous";
     return (
       <TouchableOpacity
         style={styles.card}
@@ -263,13 +274,12 @@ export default function ForumScreen() {
                     marginBottom: 2
                   }}
                 >
-                  Community & Shared Wisdom
+                  Forum / Q&A
                 </Text>
                 <Text style={{ color: "#222", fontSize: 13 }}>
-                  The Growers Forum is a space for learning, sharing, and supporting each
-                  other. There are no experts, only fellow growers on their own journeys.
-                  Ask questions, offer insights, and remember: every experience helps the
-                  community grow stronger.
+                  Discussion, grow help, course questions, product Q&A, and live Q&A
+                  belong here. Feed / Campaigns is for commercial and facility
+                  outreach, ads, products, courses, lives, and storefront promotion.
                 </Text>
               </View>
               <View style={styles.guildHeader}>
@@ -348,7 +358,7 @@ export default function ForumScreen() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleCreatePost} style={styles.createBtn}>
-                    <Text style={styles.createBtnText}>+ Create Post</Text>
+                    <Text style={styles.createBtnText}>+ New Discussion</Text>
                   </TouchableOpacity>
                 </View>
               </View>
