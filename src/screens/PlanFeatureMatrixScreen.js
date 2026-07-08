@@ -1,46 +1,51 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
+import {
+  COMMERCIAL_PLAN_PRICE_DISPLAY,
+  FACILITY_PLAN_PRICE_DISPLAY,
+  PRO_PLAN_PRICE_DISPLAY
+} from "../constants/pricing.js";
 
 const featureMatrix = [
   [
     "Feature / Tool",
     "Free User",
-    "Pro Grower ($10/mo)",
-    "Creator Plus ($25/mo)",
-    "Commercial Partner ($50/mo)",
-    "Facility ($50/mo)"
+    `Pro Grower (${PRO_PLAN_PRICE_DISPLAY})`,
+    "Creator Plus (pricing TBD)",
+    `Commercial Partner (${COMMERCIAL_PLAN_PRICE_DISPLAY})`,
+    `Facility (${FACILITY_PLAN_PRICE_DISPLAY})`
   ],
-  ["Create Courses", "✅", "✅", "✅", "✅", "✅"],
-  ["Sell Paid Courses", "✅*", "✅", "✅", "✅", "✅"],
-  ["Max Paid Courses", "1", "3–5", "Unlimited", "Unlimited", "Unlimited"],
+  ["Create Courses", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Sell Paid Courses", "Yes*", "Yes", "Yes", "Yes", "Yes"],
+  ["Max Paid Courses", "1", "3-5", "Unlimited", "Unlimited", "Unlimited"],
   ["Lessons per Course", "7", "20", "Unlimited", "Unlimited", "Unlimited"],
-  ["Certificates", "❌", "❌", "✅", "✅", "✅"],
-  ["Course Analytics", "❌", "Basic", "Advanced", "Advanced", "Advanced"],
-  ["Education Feed Boost", "❌", "Low", "Medium", "Medium", "Medium"],
+  ["Certificates", "No", "No", "Yes", "Yes", "Yes"],
+  ["Course Analytics", "No", "Basic", "Advanced", "Advanced", "Advanced"],
+  ["Education Feed Boost", "No", "Low", "Medium", "Medium", "Medium"],
   ["Course Approval Required", "Yes*", "Yes*", "No", "No", "No"],
-  ["Soil Calculator", "✅", "✅", "✅", "✅", "✅"],
-  ["NPK Calculator", "✅", "✅", "✅", "✅", "✅"],
-  ["VPD Tool", "✅", "✅", "✅", "✅", "✅"],
-  ["Feed Scheduler", "❌", "✅", "✅", "✅", "✅"],
-  ["Harvest Estimator", "❌", "✅", "✅", "✅", "✅"],
-  ["Timeline Planner", "❌", "✅", "✅", "✅", "✅"],
-  ["PDF/CSV Export", "❌", "✅", "✅", "✅", "✅"],
-  ["Pheno Matrix", "❌", "✅", "✅", "✅", "✅"],
-  ["Post Offers", "❌", "❌", "❌", "✅", "❌"],
-  ["Advertise Products", "❌", "❌", "❌", "✅", "❌"],
-  ["Capture Leads", "❌", "❌", "❌", "✅", "❌"],
-  ["Facility Dashboard", "❌", "❌", "❌", "❌", "✅"],
-  ["Compliance Tools", "❌", "❌", "❌", "❌", "✅"],
-  ["Team Roles", "❌", "❌", "❌", "❌", "✅"],
-  ["SOPs", "❌", "❌", "❌", "❌", "✅"],
-  ["Audit Logs", "❌", "❌", "❌", "❌", "✅"],
-  ["METRC Integration", "❌", "❌", "❌", "❌", "✅"],
-  ["Task Verification", "❌", "❌", "❌", "❌", "✅"],
-  ["Operational Analytics", "❌", "❌", "❌", "❌", "✅"]
+  ["Soil Calculator", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["NPK Calculator", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["VPD Tool", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Feed Scheduler", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Harvest Estimator", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Timeline Planner", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["PDF/CSV Export", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Pheno Matrix", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Post Offers", "No", "No", "No", "Yes", "No"],
+  ["Advertise Products", "No", "No", "No", "Yes", "No"],
+  ["Capture Leads", "No", "No", "No", "Yes", "No"],
+  ["Facility Dashboard", "No", "No", "No", "No", "Yes"],
+  ["Compliance Tools", "No", "No", "No", "No", "Yes"],
+  ["Team Roles", "No", "No", "No", "No", "Yes"],
+  ["SOPs", "No", "No", "No", "No", "Yes"],
+  ["Audit Logs", "No", "No", "No", "No", "Yes"],
+  ["METRC Integration", "No", "No", "No", "No", "Yes"],
+  ["Task Verification", "No", "No", "No", "No", "Yes"],
+  ["Operational Analytics", "No", "No", "No", "No", "Yes"]
 ];
 
-export default function PlanFeatureMatrixScreen({ navigation, route }) {
+export default function PlanFeatureMatrixScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.header}>Compare GrowPath Plans</Text>

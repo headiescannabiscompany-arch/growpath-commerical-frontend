@@ -6,6 +6,8 @@ import {
   PLAN_PRICING,
   PRO_PLAN_PRICE_DISPLAY
 } from "../../src/constants/pricing";
+import fs from "fs";
+import path from "path";
 
 describe("pricing constants", () => {
   it("keeps published monthly and yearly plan prices exact", () => {
@@ -26,5 +28,18 @@ describe("pricing constants", () => {
     expect(formatPlanBillingNote("commercial", "yearly")).toBe(
       "Billed once yearly. Equivalent to $41.67/month."
     );
+  });
+
+  it("keeps the public plan feature matrix tied to shared pricing", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/screens/PlanFeatureMatrixScreen.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("PRO_PLAN_PRICE_DISPLAY");
+    expect(source).toContain("COMMERCIAL_PLAN_PRICE_DISPLAY");
+    expect(source).toContain("FACILITY_PLAN_PRICE_DISPLAY");
+    expect(source).not.toContain("Facility ($50/mo)");
+    expect(source).not.toMatch(/â/);
   });
 });
