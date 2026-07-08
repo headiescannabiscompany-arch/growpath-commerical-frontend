@@ -232,6 +232,7 @@ describe("Storefront route", () => {
     expect(screen.getByText(/add logo/)).toBeTruthy();
     expect(screen.getByText(/add banner/)).toBeTruthy();
     expect(screen.getByText(/add description/)).toBeTruthy();
+    expect(screen.getByText(/add grow interests/)).toBeTruthy();
     expect(screen.getByText("Stripe connection")).toBeTruthy();
     expect(screen.getByText(/Connect Stripe from Profile & Billing/)).toBeTruthy();
     expect(
@@ -256,7 +257,20 @@ describe("Storefront route", () => {
         })
       )
     );
-    expect(screen.getByText("Created 5 storefront setup tasks.")).toBeTruthy();
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tasks",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.objectContaining({
+          title: "Complete storefront setup: Grow interests",
+          sourceType: "storefront",
+          sourceId: "store-1",
+          linkedStorefrontId: "store-1",
+          priority: "high"
+        })
+      })
+    );
+    expect(screen.getByText("Created 6 storefront setup tasks.")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>
@@ -279,6 +293,10 @@ describe("Storefront route", () => {
       screen.getByLabelText("Storefront social links"),
       "Instagram: https://instagram.example.com/grow-shop"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront grow interests"),
+      "living soil, dry amendments"
+    );
     fireEvent.press(screen.getByLabelText("Save storefront settings"));
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -289,7 +307,8 @@ describe("Storefront route", () => {
             logoUrl: "/uploads/logo.jpg",
             websiteUrl: "https://shop.example.com",
             supportEmail: "support@example.com",
-            socialLinksText: "Instagram: https://instagram.example.com/grow-shop"
+            socialLinksText: "Instagram: https://instagram.example.com/grow-shop",
+            growInterests: ["living soil", "dry amendments"]
           })
         })
       )

@@ -55,6 +55,13 @@ function hasText(value: any) {
   return String(value ?? "").trim().length > 0;
 }
 
+function splitTextList(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function productImage(product: AnyRec) {
   return (
     product.imageUrl ||
@@ -170,6 +177,7 @@ function storefrontPublishBlockers(args: {
   if (!hasText(args.draft.logoUrl)) blockers.push("add logo");
   if (!hasText(args.draft.bannerUrl)) blockers.push("add banner");
   if (!hasText(args.draft.description)) blockers.push("add description");
+  if (!hasText(args.draft.growInterestsText)) blockers.push("add grow interests");
   if (
     !args.publishedProducts.length &&
     !args.courses.length &&
@@ -238,6 +246,7 @@ export default function Storefront() {
     websiteUrl: "",
     supportEmail: "",
     socialLinksText: "",
+    growInterestsText: "",
     isPublished: false
   });
   const [productDraft, setProductDraft] = useState({
@@ -313,6 +322,9 @@ export default function Storefront() {
             .map((link: AnyRec) => [link.label, link.url].filter(Boolean).join(": "))
             .join("\n")
         : String(storefront.socialLinksText ?? ""),
+      growInterestsText: Array.isArray(storefront.growInterests)
+        ? storefront.growInterests.join(", ")
+        : String(storefront.growInterestsText ?? ""),
       isPublished: Boolean(storefront.isPublished)
     });
   }, [storefront]);
@@ -365,6 +377,12 @@ export default function Storefront() {
         label: "Description",
         complete: hasText(storeDraft.description),
         helper: "Users can understand what the brand sells or teaches."
+      },
+      {
+        label: "Grow interests",
+        complete: hasText(storeDraft.growInterestsText),
+        helper:
+          "Storefront discovery, campaign targeting, course recommendations, and analytics have real grow-interest data."
       },
       {
         label: "Published storefront",
@@ -435,9 +453,13 @@ export default function Storefront() {
     setFeedback("");
     try {
       clearError();
+      const { growInterestsText, ...storefrontPayload } = storeDraft;
       const res = await apiRequest(commercialEndpoints.storefront, {
         method: storefront ? "PATCH" : "POST",
-        body: storeDraft
+        body: {
+          ...storefrontPayload,
+          growInterests: splitTextList(growInterestsText)
+        }
       });
       setStorefront(res?.storefront ?? res ?? null);
       setFeedback("Storefront saved.");
@@ -802,6 +824,16 @@ export default function Storefront() {
             }
             accessibilityLabel="Storefront description"
             placeholder="Storefront description"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={storeDraft.growInterestsText}
+            onChangeText={(growInterestsText) =>
+              setStoreDraft((draft) => ({ ...draft, growInterestsText }))
+            }
+            accessibilityLabel="Storefront grow interests"
+            placeholder="Grow interests, comma separated"
             multiline
             style={[styles.input, styles.notesInput]}
           />
