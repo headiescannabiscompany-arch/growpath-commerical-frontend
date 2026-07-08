@@ -1261,19 +1261,31 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("keeps the legacy campaigns route framed as Marketing Planner", () => {
+  it("keeps the legacy campaigns route as a canonical marketing redirect", () => {
     const routeSource = fs.readFileSync(
       path.join(process.cwd(), "src", "app", "campaigns", "index.tsx"),
       "utf8"
     );
 
-    expect(routeSource).toContain("Marketing Planner");
-    expect(routeSource).toContain("Create Marketing Plan");
-    expect(routeSource).toContain('objective: "content_plan"');
-    expect(routeSource).toContain('accessibilityLabel="Create marketing plan"');
-    expect(routeSource).toContain("No Marketing Plans Yet");
+    expect(routeSource).toContain("<Redirect href=\"/home/commercial/marketing\" />");
+    expect(routeSource).not.toContain("Marketing Planner");
+    expect(routeSource).not.toContain("Create Marketing Plan");
+    expect(routeSource).not.toContain('objective: "content_plan"');
+    expect(routeSource).not.toContain('accessibilityLabel="Create marketing plan"');
+    expect(routeSource).not.toContain("No Marketing Plans Yet");
     expect(routeSource).not.toContain(">Create Campaign<");
     expect(routeSource).not.toContain(">No Campaigns Yet<");
+  });
+
+  it("keeps the legacy orders route as a canonical commercial orders redirect", () => {
+    const routeSource = fs.readFileSync(
+      path.join(process.cwd(), "src", "app", "orders", "index.tsx"),
+      "utf8"
+    );
+
+    expect(routeSource).toContain("<Redirect href=\"/home/commercial/orders\" />");
+    expect(routeSource).not.toContain("apiRequest");
+    expect(routeSource).not.toContain("endpoints.commercial.orders");
   });
 
   it("manages products with public storefront fields", async () => {

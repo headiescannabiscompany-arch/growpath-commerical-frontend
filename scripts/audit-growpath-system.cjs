@@ -420,6 +420,8 @@ function main() {
   const topLevelLogsRouteExists = routeSet.has("/home/personal/logs");
   const topLevelTasksRouteExists = routeSet.has("/home/personal/tasks");
   const legacyGlobalLogsRouteExists = routeSet.has("/logs");
+  const legacyGlobalOrdersRouteExists = routeSet.has("/orders");
+  const legacyGlobalCampaignsRouteExists = routeSet.has("/campaigns");
   const topLevelLogsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/home/personal/logs",
@@ -429,6 +431,16 @@ function main() {
     files.routes,
     "/logs",
     "/home/commercial"
+  );
+  const legacyGlobalOrdersRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/orders",
+    "/home/commercial/orders"
+  );
+  const legacyGlobalCampaignsRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/campaigns",
+    "/home/commercial/marketing"
   );
   const topLevelTasksRedirectOnly = routeIsRedirectOnly(
     files.routes,
@@ -448,6 +460,14 @@ function main() {
     legacyGlobalLogsRedirectOnly,
     legacyGlobalLogsVisibleModule:
       legacyGlobalLogsRouteExists && !legacyGlobalLogsRedirectOnly,
+    legacyGlobalOrdersRouteExists,
+    legacyGlobalOrdersRedirectOnly,
+    legacyGlobalOrdersVisibleModule:
+      legacyGlobalOrdersRouteExists && !legacyGlobalOrdersRedirectOnly,
+    legacyGlobalCampaignsRouteExists,
+    legacyGlobalCampaignsRedirectOnly,
+    legacyGlobalCampaignsVisibleModule:
+      legacyGlobalCampaignsRouteExists && !legacyGlobalCampaignsRedirectOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -509,6 +529,10 @@ function main() {
     `- Top-level Logs redirect-only stale-link guard: ${decisionChecks.topLevelLogsRedirectOnly}`,
     `- Legacy /logs visible module: ${decisionChecks.legacyGlobalLogsVisibleModule}`,
     `- Legacy /logs redirect-only stale-link guard: ${decisionChecks.legacyGlobalLogsRedirectOnly}`,
+    `- Legacy /orders visible module: ${decisionChecks.legacyGlobalOrdersVisibleModule}`,
+    `- Legacy /orders redirect-only stale-link guard: ${decisionChecks.legacyGlobalOrdersRedirectOnly}`,
+    `- Legacy /campaigns visible module: ${decisionChecks.legacyGlobalCampaignsVisibleModule}`,
+    `- Legacy /campaigns redirect-only stale-link guard: ${decisionChecks.legacyGlobalCampaignsRedirectOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
