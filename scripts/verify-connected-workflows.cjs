@@ -43,6 +43,7 @@ const checks = [
       "tests/unit/AlertCenterRoute.test.tsx",
       "tests/unit/NotificationCenterRoute.test.tsx",
       "tests/unit/pricingConstants.test.js",
+      "tests/unit/toolRuns-api.test.ts",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/navigation/commercialPageRegistry.test.js",
       "tests/navigation/commercialTabs.test.js",
@@ -79,6 +80,8 @@ const checks = [
       "tests/unit/RunComparisonToolScreen.test.tsx",
       "tests/unit/PhEcToolScreen.test.tsx",
       "tests/unit/SpeciesCropIdToolScreen.test.tsx",
+      "src/features/personal/__tests__/homeModel.test.ts",
+      "src/features/personal/tools/__tests__/saveToolRunAndOpenJournal.test.ts",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
     ]
