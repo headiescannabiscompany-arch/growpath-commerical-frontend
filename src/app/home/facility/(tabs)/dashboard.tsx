@@ -342,7 +342,7 @@ export default function FacilityDashboardTab() {
         <View style={[styles.hero, isTv ? styles.heroTv : null]}>
           <View style={styles.heroCopy}>
             <Text style={[styles.kicker, isTv ? styles.kickerTv : null]}>
-              Facility command
+              Facility workspace
             </Text>
             <Text style={[styles.h1, isTv ? styles.h1Tv : null]}>Operations Live</Text>
             <Text style={[styles.muted, isTv ? styles.mutedTv : null]}>

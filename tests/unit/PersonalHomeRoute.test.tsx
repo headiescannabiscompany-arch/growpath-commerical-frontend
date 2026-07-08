@@ -151,6 +151,7 @@ describe("PersonalHomeRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Blue Dream Run")).toBeTruthy());
 
+    expect(screen.getByText("Personal workspace")).toBeTruthy();
     expect(screen.getByText("Personal command center")).toBeTruthy();
     expect(screen.getByText("Stage")).toBeTruthy();
     expect(screen.getAllByText("Open tasks").length).toBeGreaterThan(0);

@@ -113,6 +113,7 @@ export default function PersonalHomeTab() {
       routeKey="home"
       header={
         <View>
+          <Text style={styles.kicker}>Personal workspace</Text>
           <Text style={styles.headerTitle}>Your Garden</Text>
           <Text style={styles.headerSubtitle}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
@@ -372,6 +373,13 @@ export default function PersonalHomeTab() {
 }
 
 const styles = StyleSheet.create({
+  kicker: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 4,
+    textTransform: "uppercase"
+  },
   headerTitle: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
   headerSubtitle: { fontSize: 14, color: "#64748B" },
   section: { gap: 10 },
