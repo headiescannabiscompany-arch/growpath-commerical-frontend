@@ -572,6 +572,7 @@ Completed and pushed:
 296. Personal Forum/Q&A membership fallbacks now say forum groups instead of guilds, preserving the user-facing discussion vocabulary while leaving backend guild API contracts untouched.
 297. Shared Forum Directory and onboarding group picker fallbacks now say Forum group when backend rows are unnamed, so first-run and directory screens no longer surface stale Guild vocabulary.
 298. Storefront owner setup now uses the live `support@growpathai.com` alias as its support-email placeholder, matching the already-live support alias map and brand profile guidance.
+299. Feed live campaign CTAs and shared non-commercial live source links now open the public Live Session surface instead of looping back into Feed, keeping Feed promotional and giving live reminders, schedule items, and tasks a real event destination.
 
 ## Working Rule For Codex
 

@@ -251,7 +251,7 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/facility/inventory/input-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /feed?liveId=live-public-1")
+      screen.getByLabelText("Notification link /live-session?sessionId=live-public-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText(

@@ -252,7 +252,7 @@ export function sourceObjectHref(source: SourceLike) {
   ) {
     return workspace === "commercial"
       ? `/home/commercial/lives${liveId ? `?liveId=${encoded(liveId)}` : ""}`
-      : `/feed${liveId ? `?liveId=${encoded(liveId)}` : ""}`;
+      : `/live-session${liveId ? `?sessionId=${encoded(liveId)}` : ""}`;
   }
 
   if (

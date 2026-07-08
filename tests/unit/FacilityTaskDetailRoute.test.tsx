@@ -171,7 +171,7 @@ describe("FacilityTaskDetail", () => {
     ["course", "course-1", "/home/facility/sop-runs/course-1"],
     ["lesson", "lesson-1", "/home/facility/sop-runs/lesson-1"],
     ["sop", "sop-7", "/home/facility/sop-runs/sop-7"],
-    ["live", "live-1", "/feed?liveId=live-1"],
+    ["live", "live-1", "/live-session?sessionId=live-1"],
     ["feed_campaign", "campaign-1", "/home/facility/feed?campaignId=campaign-1"],
     ["product", "input-1", "/home/facility/inventory/input-1"],
     ["product_batch", "batch-1", "/home/facility/inventory/batch-1"],

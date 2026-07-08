@@ -85,7 +85,7 @@ describe("sourceObjectHref", () => {
         sourceId: "live-1",
         workspaceType: "personal"
       })
-    ).toBe("/feed?liveId=live-1");
+    ).toBe("/live-session?sessionId=live-1");
 
     expect(
       sourceObjectHref({
@@ -321,7 +321,7 @@ describe("sourceObjectHref", () => {
         sourceId: "live-1",
         workspaceType: "personal"
       })
-    ).toBe("/feed?liveId=live-1");
+    ).toBe("/live-session?sessionId=live-1");
 
     expect(
       sourceObjectHref({
