@@ -12,7 +12,10 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) =>
+      React.isValidElement(children)
+        ? React.cloneElement(children, { testID: `link-${href}` })
+        : React.createElement(React.Fragment, null, children)
   };
 });
 
@@ -106,5 +109,6 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText(/Repeats monthly/)).toBeTruthy();
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
   });
 });

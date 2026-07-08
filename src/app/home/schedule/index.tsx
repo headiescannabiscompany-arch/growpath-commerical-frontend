@@ -100,6 +100,7 @@ function taskHref(task: any, id: string) {
     const growId = String(task?.linkedGrowId || task?.growId || "");
     return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/more/tasks";
   }
+  if (workspace === "commercial") return `/home/commercial/tasks/${id}`;
   return `/tasks/${id}`;
 }
 
