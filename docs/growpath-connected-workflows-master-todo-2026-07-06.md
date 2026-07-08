@@ -421,6 +421,7 @@ Completed and pushed:
 145. Deferred/manual verification scripts now include the latest connected source-routing tests for grow overview/timeline, personal tasks, commercial tasks, commercial alert detail, facility tasks, Schedule, Alert Center, Notification Center, and the shared source-link resolver.
 146. Facility task detail now preserves linked sensor alert and feed campaign ids while editing workflow context, so operators can reopen controller alerts and facility outreach campaigns from detail pages without falling back to generic alert or legacy feed-post links.
 147. Commercial product, course, and live setup tasks now emit canonical feed campaign ids while still reading legacy feed-post fields, so storefront readiness work stays tied to Feed/Campaigns outreach instead of discussion posts.
+148. Commercial storefront setup tasks now emit canonical feed campaign ids for active campaigns while preserving legacy feed-post compatibility fields, so storefront launch checklists remain tied to Feed/Campaigns outreach.
 
 ## Working Rule For Codex
 
