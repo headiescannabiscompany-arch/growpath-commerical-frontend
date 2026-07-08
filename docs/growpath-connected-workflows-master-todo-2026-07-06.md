@@ -346,6 +346,7 @@ Completed and pushed:
 70. The legacy native `ToolsScreen` no longer shows a flat calculator list; it now delegates to the connected Personal Tools / AI hub with workflow categories, feed placements, saved runs, recipes, and ingredient access.
 71. Full-suite verification gaps from Feed placements are stabilized: photo upload mocks now include image resolution, log-photo tests target the journal image by label, reports expectations match the current Orders card, and facility feed policy text explicitly says educational/outreach content is required.
 72. The legacy native `StorefrontScreen` no longer owns a duplicate storefront/product editor; it now delegates to the canonical Commercial Storefront owner workspace, with a focused unit test and GrowPath system audit guard to keep storefront management unified.
+73. Stale feed test contracts no longer model Feed as `/api/posts/feed` or a user post composer: acceptance fixtures now exercise `/api/commercial/feed` campaign placements, and old Playwright social-feed specs are retired until the harness supports the current workspace shell.
 
 ## Working Rule For Codex
 
