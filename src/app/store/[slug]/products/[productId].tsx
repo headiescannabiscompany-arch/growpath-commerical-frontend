@@ -225,7 +225,8 @@ export default function PublicProductRoute() {
       objectId: id,
       productId: id,
       storefrontSlug: slug,
-      source: "public_product"
+      source: "public_product",
+      metadata: { growInterests: publicGrowInterests(product) }
     });
   }, [product, slug]);
 
@@ -240,7 +241,8 @@ export default function PublicProductRoute() {
       objectId: id,
       productId: id,
       storefrontSlug: slug,
-      source: "public_product"
+      source: "public_product",
+      metadata: { growInterests: publicGrowInterests(product) }
     });
     try {
       const checkout: any = await checkoutProduct(id);

@@ -58,6 +58,7 @@ const publicPayload = {
     description: "Purpose-built soil and nutrient products.",
     websiteUrl: "https://example.com",
     supportEmail: "support@example.com",
+    growInterests: ["living soil", "dry amendments"],
     socialLinks: [{ label: "Instagram", url: "https://instagram.com/example" }]
   },
   products: [
@@ -167,7 +168,8 @@ describe("public commercial routes", () => {
         expect.objectContaining({
           eventType: "brand_profile_view",
           storefrontSlug: "living-soil-labs",
-          source: "public_brand_profile"
+          source: "public_brand_profile",
+          metadata: { growInterests: ["living soil", "dry amendments"] }
         })
       )
     );
@@ -206,7 +208,8 @@ describe("public commercial routes", () => {
         expect.objectContaining({
           eventType: "storefront_view",
           storefrontSlug: "living-soil-labs",
-          source: "public_storefront"
+          source: "public_storefront",
+          metadata: { growInterests: ["living soil", "dry amendments"] }
         })
       )
     );
@@ -264,7 +267,8 @@ describe("public commercial routes", () => {
           eventType: "product_view",
           productId: "product-1",
           storefrontSlug: "living-soil-labs",
-          source: "public_product"
+          source: "public_product",
+          metadata: { growInterests: ["living soil", "veg"] }
         })
       )
     );

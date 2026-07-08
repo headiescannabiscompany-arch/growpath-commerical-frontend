@@ -83,7 +83,8 @@ export default function PublicBrandProfileRoute() {
       objectType: "storefront",
       objectId: storefront?.id || storefront?._id || slug,
       storefrontSlug: slug,
-      source: "public_brand_profile"
+      source: "public_brand_profile",
+      metadata: { growInterests: publicGrowInterests(storefront) }
     });
   }, [slug, storefront]);
 

@@ -96,7 +96,8 @@ export default function PublicStorefrontRoute() {
       objectType: "storefront",
       objectId: storefront?.id || storefront?._id || slug,
       storefrontSlug: slug,
-      source: "public_storefront"
+      source: "public_storefront",
+      metadata: { growInterests: publicGrowInterests(storefront) }
     });
   }, [slug, storefront]);
 
@@ -111,7 +112,8 @@ export default function PublicStorefrontRoute() {
       objectId: id,
       productId: id,
       storefrontSlug: slug,
-      source: "public_storefront"
+      source: "public_storefront",
+      metadata: { growInterests: publicGrowInterests(product) }
     });
     try {
       const checkout: any = await checkoutProduct(id);
