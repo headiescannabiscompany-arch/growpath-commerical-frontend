@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   outlineButton: {
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
