@@ -176,4 +176,21 @@ describe("CommercialTaskDetailRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/home/alerts");
   });
+
+  it("opens forum-backed task sources in the shared forum route", async () => {
+    taskOverrides = {
+      sourceType: "forum",
+      sourceId: "",
+      linkedForumThreadId: "thread-product"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-product");
+  });
 });

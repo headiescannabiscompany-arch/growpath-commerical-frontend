@@ -99,6 +99,7 @@ function sourcePath(task: CommercialTask) {
   if (sourceType === "feed_campaign") return "/home/commercial/feed";
   if (sourceType === "order") return "/home/commercial/orders";
   if (sourceType === "alert") return "/home/alerts";
+  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
   return "";
 }
 

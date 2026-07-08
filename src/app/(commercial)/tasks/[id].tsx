@@ -103,6 +103,10 @@ function taskContextRows(task: AnyRec | null) {
 
 function taskSourceId(task: AnyRec | null): string {
   if (!task) return "";
+  const sourceType = String(task.sourceType || "");
+  if (sourceType === "forum") {
+    return String(task.sourceId || task.sourceObjectId || task.linkedForumThreadId || "");
+  }
   return String(
     task.sourceId ||
       task.sourceObjectId ||
@@ -112,6 +116,7 @@ function taskSourceId(task: AnyRec | null): string {
       task.linkedOrderId ||
       task.linkedAlertId ||
       task.linkedStorefrontId ||
+      task.linkedForumThreadId ||
       ""
   );
 }
@@ -130,6 +135,7 @@ function taskSourcePath(task: AnyRec | null): string {
   if (sourceType === "feed_campaign") return "/home/commercial/feed";
   if (sourceType === "order") return "/home/commercial/orders";
   if (sourceType === "alert") return "/home/alerts";
+  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
   return "";
 }
 

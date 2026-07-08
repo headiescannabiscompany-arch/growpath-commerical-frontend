@@ -61,6 +61,13 @@ describe("CommercialTasksRoute", () => {
               status: "open",
               sourceType: "alert",
               sourceId: "alert-1"
+            },
+            {
+              id: "task-4",
+              title: "Answer product Q&A",
+              status: "open",
+              sourceType: "forum",
+              sourceId: "thread-product"
             }
           ]
         });
@@ -88,8 +95,12 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
     expect(screen.getByText("Publish storefront")).toBeTruthy();
     expect(screen.getByText("Review launch alert")).toBeTruthy();
+    expect(screen.getByText("Answer product Q&A")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
     expect(screen.getByLabelText("Commercial task link /home/alerts")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial task link /forum/post/thread-product")
+    ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
 
