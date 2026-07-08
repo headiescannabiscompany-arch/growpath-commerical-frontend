@@ -1245,6 +1245,10 @@ describe("commercial workflow pages", () => {
             taskTemplate: expect.objectContaining({
               title: "Upload topdress photo",
               sourceType: "lesson",
+              linkedCourseId: "course-1",
+              linkedProductIds: ["product-1", "product-2"],
+              linkedLiveIds: ["live-1"],
+              linkedForumThreadId: "thread-1",
               dueOffsetDays: 7,
               completionCriteria: "lesson_action"
             }),

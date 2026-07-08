@@ -201,6 +201,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           ? {
               title: lessonTaskTitle.trim(),
               sourceType: "lesson",
+              linkedCourseId: courseId,
+              linkedProductIds: splitIds(lessonRelatedProductIds),
+              linkedLiveIds: splitIds(lessonRelatedLiveIds),
+              linkedForumThreadId: lessonForumThreadId.trim() || undefined,
               dueOffsetDays: Number(lessonTaskDueOffsetDays) || 0,
               completionCriteria: "lesson_action"
             }
@@ -603,7 +607,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           Attach products and product lines before public launch.
         </Text>
         <Text style={styles.bullet}>
-          Use trial/grow evidence in lessons when making product claims.
+          Use product-trial evidence runs in lessons when making product claims.
         </Text>
         <Text style={styles.bullet}>
           Announce published courses in feed and link them from storefront/profile.

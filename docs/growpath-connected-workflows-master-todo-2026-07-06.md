@@ -437,6 +437,7 @@ Completed and pushed:
 161. Deferred verification now runs the IPM Scout regression that proves GrowPath AI and GPT verification answers are displayed, saved, and carried into follow-up task plans.
 162. Production export SEO copy and live-test fixture labels now avoid "commercial grow" wording, using commercial storefront and product-trial evidence language instead.
 163. App-store draft copy, product-trial evidence-run placeholders, and commercial fixture assertions now use storefront/product-trial language instead of commercial grow/crop wording.
+164. Commercial course lesson task templates now preserve linked course, product, live, and Forum/Q&A context so lesson-created tasks can route back to the right source workflow.
 
 ## Working Rule For Codex
 
