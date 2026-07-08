@@ -100,7 +100,7 @@ function taskHref(task: any, id: string) {
     const growId = String(task?.linkedGrowId || task?.growId || "");
     return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/more/tasks";
   }
-  return `/app/(commercial)/tasks/${id}`;
+  return `/tasks/${id}`;
 }
 
 function taskToItem(task: any): CalendarItem {

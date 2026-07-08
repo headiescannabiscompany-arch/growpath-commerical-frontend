@@ -56,7 +56,7 @@ function sourceHref(alert: AlertRow) {
   if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
   if (sourceType === "live") return "/home/commercial/lives";
   if (sourceType === "storefront") return "/home/commercial/storefront";
-  if (sourceType === "task" && sourceId) return `/app/(commercial)/tasks/${sourceId}`;
+  if (sourceType === "task" && sourceId) return `/tasks/${sourceId}`;
   if (sourceType === "room") return "/home/facility/rooms";
   return "";
 }

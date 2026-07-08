@@ -20,12 +20,12 @@ function getRouteForItem(item: FeedItem): string {
     item.metadata?.brandSlug ||
     item.metadata?.actorSlug;
   if (brandSlug) return `/brands/${encodeURIComponent(String(brandSlug))}`;
-  if (item.type === "task") return `/app/(commercial)/tasks/${item.id}`;
-  if (item.type === "alert") return `/app/(commercial)/alerts/${item.id}`;
+  if (item.type === "task") return `/tasks/${item.id}`;
+  if (item.type === "alert") return `/alerts/${item.id}`;
   if (item.type === "log") {
     if (item.entityLinks?.growId) return `/app/grows/${item.entityLinks.growId}`;
     if (item.entityLinks?.plantId) return `/app/plants/${item.entityLinks.plantId}`;
-    return `/app/(commercial)/logs/${item.id}`;
+    return `/logs/${item.id}`;
   }
   return "";
 }

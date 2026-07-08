@@ -98,7 +98,7 @@ function sourcePath(task: CommercialTask) {
   if (sourceType === "live") return "/home/commercial/lives";
   if (sourceType === "feed_campaign") return "/home/commercial/feed";
   if (sourceType === "order") return "/home/commercial/orders";
-  if (sourceType === "alert" && sourceId) return `/app/(commercial)/alerts/${sourceId}`;
+  if (sourceType === "alert" && sourceId) return `/alerts/${sourceId}`;
   return "";
 }
 
