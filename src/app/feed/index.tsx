@@ -389,7 +389,7 @@ export default function CommercialFeedRoute() {
       await apiRequest("/api/tasks", {
         method: "POST",
         body: {
-          workspaceType: "commercial",
+          workspaceType: isFacility ? "facility" : "commercial",
           title: `Complete feed campaign setup: ${title.trim()}`,
           description: [
             `Campaign type: ${campaignKindLabels[campaignKind]}.`,
@@ -397,6 +397,9 @@ export default function CommercialFeedRoute() {
           ].join(" "),
           sourceType: "feed_campaign",
           sourceId: title.trim(),
+          sourceObjectId: title.trim(),
+          campaignKind,
+          campaignTitle: title.trim(),
           linkedProductId: linkedProductId.trim() || undefined,
           linkedCourseId: linkedCourseId.trim() || undefined,
           linkedLiveId: linkedLiveId.trim() || undefined,
