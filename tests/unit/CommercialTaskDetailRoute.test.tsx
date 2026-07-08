@@ -141,7 +141,7 @@ describe("CommercialTaskDetailRoute", () => {
     expect(screen.getByText("Courses")).toBeTruthy();
     expect(screen.getByText("Lives")).toBeTruthy();
     expect(screen.getByText("Feed campaigns")).toBeTruthy();
-    expect(screen.getByText("Grow evidence")).toBeTruthy();
+    expect(screen.getByText("Evidence run")).toBeTruthy();
     expect(screen.getAllByText("product-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("line-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("recipe-1").length).toBeGreaterThan(0);

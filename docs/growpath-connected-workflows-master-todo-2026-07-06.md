@@ -454,6 +454,7 @@ Completed and pushed:
 178. Commercial dashboard action tasks now preserve `linkedTrialId` when action items point at product-trial evidence, keeping command-center follow-up work aligned with the clearer evidence-run alias.
 179. Commercial live setup tasks now preserve live visibility, Twitch channel/embed/EventSub context, replay URL, and notification-plan metadata, so setup work can route and explain the actual live workflow instead of becoming a generic live todo.
 180. Commercial Product Trials now label linked private run context as evidence runs in the create form, list cards, and claim-readiness copy while preserving backend `growId` compatibility, reducing the visible Commercial-vs-Personal grow confusion.
+181. Commercial task detail now labels linked run context as `Evidence run` instead of `Grow evidence`, keeping owner task context aligned with Product Trial evidence language while preserving legacy linked-grow fields.
 
 ## Working Rule For Codex
 

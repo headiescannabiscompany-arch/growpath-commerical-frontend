@@ -92,7 +92,7 @@ function taskContextRows(task: AnyRec | null) {
       )
     ],
     ["Forum/Q&A", task.linkedForumThreadId],
-    ["Grow evidence", firstLinkedValue(task.linkedGrowIds, task.linkedGrowId)],
+    ["Evidence run", firstLinkedValue(task.linkedGrowIds, task.linkedGrowId)],
     ["Facility", task.linkedFacilityId],
     ["Room", task.linkedRoomId],
     ["Order", task.linkedOrderId],
