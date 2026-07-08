@@ -639,6 +639,7 @@ Completed and pushed:
 363. Personal Tools now labels the recipe/product handoff area as Products & Production instead of Business & Production, keeping Personal mode focused on tools while still supporting product/facility handoffs.
 364. Shared tab navigation now labels the discussion destination as Forum / Q&A while keeping FeedTab labeled Campaigns, with regression coverage proving Feed remains the promotional campaign route and Forum remains the discussion route.
 365. Public Offers pricing copy now describes the Commercial plan as Brand-focused and says brand operations instead of business operations, keeping upgrade language aligned with storefront-first commercial accounts.
+366. Shared capability menus now label discussion as Forum / Q&A and commercial metrics as Commercial Analytics, removing another generic Business Metrics label from user-facing navigation.
 
 ## Working Rule For Codex
 

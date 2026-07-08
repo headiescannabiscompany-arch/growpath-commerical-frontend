@@ -95,4 +95,25 @@ describe("feed/forum navigation separation", () => {
     expect(menuItems.map((item) => item.label)).not.toContain("Marketplace");
     expect(menuItems.map((item) => item.route)).not.toContain("MarketplaceScreen");
   });
+
+  it("uses discussion and commercial analytics labels in shared menus", () => {
+    const menuItems = getMenuItems({
+      capabilities: {
+        canUseCommercial: true,
+        canUseCommercialMetrics: true,
+        canUseForum: true
+      },
+      mode: "commercial"
+    });
+
+    expect(menuItems.find((item) => item.key === "forum")).toMatchObject({
+      label: "Forum / Q&A",
+      route: "ForumScreen"
+    });
+    expect(menuItems.find((item) => item.key === "metrics")).toMatchObject({
+      label: "Commercial Analytics",
+      route: "MetricsScreen"
+    });
+    expect(menuItems.map((item) => item.label)).not.toContain("Business Metrics");
+  });
 });

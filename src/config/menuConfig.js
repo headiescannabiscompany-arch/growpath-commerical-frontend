@@ -93,7 +93,7 @@ export function getMenuItems({ capabilities, mode }) {
   if (capabilities.canUseForum) {
     items.push({
       key: "forum",
-      label: "Forum",
+      label: "Forum / Q&A",
       icon: "message-circle",
       route: "ForumScreen"
     });
@@ -140,7 +140,7 @@ export function getMenuItems({ capabilities, mode }) {
     if (capabilities.canUseCommercialMetrics) {
       items.push({
         key: "metrics",
-        label: "Business Metrics",
+        label: "Commercial Analytics",
         icon: "bar-chart",
         route: "MetricsScreen"
       });
