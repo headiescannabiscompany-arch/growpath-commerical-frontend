@@ -67,6 +67,17 @@ describe("AppPage back behavior", () => {
     expect(screen.getByText("Orders root")).toBeTruthy();
   });
 
+  it("hides the shared back button on the canonical evidence-runs root page", () => {
+    const screen = render(
+      <AppPage routeKey="commercial-evidence-runs">
+        <Text>Evidence runs root</Text>
+      </AppPage>
+    );
+
+    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Evidence runs root")).toBeTruthy();
+  });
+
   it("shows the shared back button on nested pages by default", () => {
     const screen = render(
       <AppPage routeKey="commercial-product-detail">
@@ -99,11 +110,11 @@ describe("AppPage back behavior", () => {
     );
     expect(productScreen.getByText("Shared Back default")).toBeTruthy();
 
-    const growScreen = render(
-      <AppPage routeKey="commercial-grow-create">
+    const evidenceRunScreen = render(
+      <AppPage routeKey="commercial-evidence-run-create">
         <Text>Create evidence run</Text>
       </AppPage>
     );
-    expect(growScreen.getByText("Shared Back default")).toBeTruthy();
+    expect(evidenceRunScreen.getByText("Shared Back default")).toBeTruthy();
   });
 });

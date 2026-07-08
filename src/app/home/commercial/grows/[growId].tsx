@@ -40,7 +40,13 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function CommercialGrowDetailRoute({ route }: { route?: any } = {}) {
+export default function CommercialGrowDetailRoute({
+  route,
+  routeKey = "commercial-grow-detail"
+}: {
+  route?: any;
+  routeKey?: string;
+} = {}) {
   const params = useLocalSearchParams<{ growId?: string; id?: string }>();
   const growId = useMemo(
     () =>
@@ -110,7 +116,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
 
   return (
     <AppPage
-      routeKey="commercial-grow-detail"
+      routeKey={routeKey}
       backFallbackHref="/home/commercial/evidence-runs"
       longContent
       header={

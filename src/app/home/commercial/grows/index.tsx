@@ -137,7 +137,8 @@ export default function CommercialGrowsRoute({
     <AppPage
       routeKey={routeKey}
       backFallbackHref={
-        routeKey === "commercial-grow-create"
+        routeKey === "commercial-grow-create" ||
+        routeKey === "commercial-evidence-run-create"
           ? "/home/commercial/evidence-runs"
           : undefined
       }

@@ -30,6 +30,7 @@ const NO_BACK_ROUTE_KEYS = new Set([
   "commercial_home",
   "commercial-analytics",
   "commercial-batch-planner",
+  "commercial-evidence-runs",
   "commercial-community",
   "commercial-courses",
   "commercial-grows",
