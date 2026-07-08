@@ -21,6 +21,7 @@ import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 export default function GrowPlantsScreen() {
   const entitlements = useEntitlements();
@@ -517,7 +518,7 @@ const styles = StyleSheet.create({
   form: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 12,
     gap: 8
@@ -526,7 +527,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 10
   },
@@ -537,13 +538,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 10
   },
   primaryButton: {
     alignSelf: "flex-start",
-    borderRadius: 9,
+    borderRadius: radius.card,
     backgroundColor: "#166534",
     paddingHorizontal: 12,
     paddingVertical: 9
@@ -553,7 +554,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -564,7 +565,7 @@ const styles = StyleSheet.create({
   empty: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 14,
     gap: 5
@@ -572,7 +573,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 12,
     gap: 4
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
   quickAction: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: "#F0FDF4"
