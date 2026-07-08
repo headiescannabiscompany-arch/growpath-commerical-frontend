@@ -52,11 +52,24 @@ function sourceHref(alert: AlertRow) {
   const sourceType = String(alert.sourceType || "");
   const sourceId = String(alert.sourceId || "");
   const workspace = String(alert.workspaceType || "");
-  if (sourceType === "product" && sourceId)
+  if (sourceType === "product" && sourceId && workspace === "commercial")
     return `/home/commercial/products/${sourceId}`;
-  if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
-  if (sourceType === "live") return "/home/commercial/lives";
-  if (sourceType === "storefront") return "/home/commercial/storefront";
+  if (sourceType === "product" && workspace === "facility")
+    return "/home/facility/inventory";
+  if (sourceType === "product" && sourceId)
+    return `/store?q=${encodeURIComponent(sourceId)}`;
+  if (sourceType === "course" && sourceId && workspace === "commercial")
+    return `/home/commercial/courses/${sourceId}`;
+  if (sourceType === "course")
+    return workspace === "facility"
+      ? "/home/facility/sop-runs"
+      : "/home/personal/courses";
+  if (sourceType === "live")
+    return workspace === "commercial"
+      ? "/home/commercial/lives"
+      : `/feed${sourceId ? `?liveId=${encodeURIComponent(sourceId)}` : ""}`;
+  if (sourceType === "storefront")
+    return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
   if (sourceType === "task" && sourceId) {
     if (workspace === "commercial") return `/home/commercial/tasks/${sourceId}`;
     if (workspace === "facility") return `/home/facility/tasks/${sourceId}`;

@@ -94,6 +94,36 @@ describe("AlertCenterRoute", () => {
               sourceType: "sop",
               sourceId: "sop-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-7",
+              title: "Product reply from followed brand",
+              severity: "info",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "product",
+              sourceId: "veg-mix-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-8",
+              title: "Course lesson unlocked",
+              severity: "info",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "course",
+              sourceId: "course-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-9",
+              title: "Facility input stock alert",
+              severity: "warning",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "product",
+              sourceId: "input-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -114,7 +144,7 @@ describe("AlertCenterRoute", () => {
     await waitFor(() => expect(screen.getByText("Alert Center")).toBeTruthy());
     expect(screen.getByText("Paid product missing Stripe price")).toBeTruthy();
     expect(screen.getByText(/Publish is blocked/)).toBeTruthy();
-    expect(screen.getByText(/Source product/)).toBeTruthy();
+    expect(screen.getAllByText(/Source product/).length).toBeGreaterThan(0);
     expect(
       screen.getByLabelText("Alert link /home/commercial/products/product-1")
     ).toBeTruthy();
@@ -122,6 +152,9 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByLabelText("Alert link /forum/post/thread-sop")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/grows/run-1")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/sop-runs")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /store?q=veg-mix-1")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/personal/courses")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/inventory")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(

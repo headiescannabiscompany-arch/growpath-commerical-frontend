@@ -59,13 +59,19 @@ function sourceHref(row: NotificationRow) {
     case "alert":
       return "/home/alerts";
     case "live":
-      return "/home/commercial/lives";
+      return workspace === "commercial"
+        ? "/home/commercial/lives"
+        : `/feed${id ? `?liveId=${encodeURIComponent(id)}` : ""}`;
     case "course":
-      return id ? `/home/commercial/courses/${id}` : "/home/personal/courses";
+      if (workspace === "commercial" && id) return `/home/commercial/courses/${id}`;
+      if (workspace === "facility") return "/home/facility/sop-runs";
+      return "/home/personal/courses";
     case "product":
-      return id ? `/home/commercial/products/${id}` : "/home/commercial/products";
+      if (workspace === "commercial" && id) return `/home/commercial/products/${id}`;
+      if (workspace === "facility") return "/home/facility/inventory";
+      return id ? `/store?q=${encodeURIComponent(id)}` : "/store";
     case "storefront":
-      return "/home/commercial/storefront";
+      return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
     case "room":
       return "/home/facility/rooms";
     case "facility_run":

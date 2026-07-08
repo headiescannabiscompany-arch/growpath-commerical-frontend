@@ -91,6 +91,33 @@ describe("NotificationCenterRoute", () => {
               sourceId: "sop-1",
               workspaceType: "facility",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-8",
+              title: "Public product update",
+              message: "A followed product has an update.",
+              sourceType: "product",
+              sourceId: "veg-mix-1",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-9",
+              title: "Facility inventory alert",
+              message: "Input stock needs review.",
+              sourceType: "product",
+              sourceId: "input-1",
+              workspaceType: "facility",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-10",
+              title: "Personal live reminder",
+              message: "A followed live starts soon.",
+              sourceType: "live",
+              sourceId: "live-public-1",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -122,17 +149,32 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task overdue")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));
-    expect(screen.getByLabelText("Notification link /home/commercial/lives")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/commercial/lives")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/tasks/task-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /home/personal/courses")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/personal/courses")
+    ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /forum/post/thread-product")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /forum/post/thread-product")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/grows/run-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /home/facility/sop-runs")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/sop-runs")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Notification link /store?q=veg-mix-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/inventory")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /feed?liveId=live-public-1")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter unread"));
     fireEvent.press(screen.getByLabelText("Mark notification read"));
