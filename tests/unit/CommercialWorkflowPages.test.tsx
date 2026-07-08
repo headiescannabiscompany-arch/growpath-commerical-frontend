@@ -1630,6 +1630,12 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Living Soil Base").length).toBeGreaterThan(0);
     expect(screen.getByText("Effectiveness Snapshot")).toBeTruthy();
     expect(screen.getByText("Linked Evidence")).toBeTruthy();
+    expect(screen.getByText("Focused product batch")).toBeTruthy();
+    expect(screen.getByText("batch-1")).toBeTruthy();
+    expect(screen.getByText(/opened from a batch-linked task/)).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/batch-planner/batch-1" })
+    ).toBeTruthy();
     expect(screen.getByText("Label / Use Specs")).toBeTruthy();
     expect(screen.getByText("soil-builder")).toBeTruthy();
     expect(screen.getByText("3-1-1")).toBeTruthy();

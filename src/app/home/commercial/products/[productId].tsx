@@ -134,10 +134,14 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialProductDetailRoute({ route }: { route?: any } = {}) {
-  const params = useLocalSearchParams<{ productId?: string }>();
+  const params = useLocalSearchParams<{ productId?: string; batchId?: string }>();
   const productId = useMemo(
     () => cleanId(params.productId || route?.params?.productId || route?.params?.id),
     [params.productId, route?.params?.productId, route?.params?.id]
+  );
+  const focusedBatchId = useMemo(
+    () => cleanId(params.batchId || route?.params?.batchId),
+    [params.batchId, route?.params?.batchId]
   );
   const [product, setProduct] = useState<Product | null>(null);
   const [effectiveness, setEffectiveness] = useState<any>(null);
@@ -430,6 +434,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
       <AppCard>
         <Text style={styles.cardTitle}>Linked Evidence</Text>
+        {focusedBatchId ? (
+          <View style={styles.focusBox}>
+            <Text style={styles.focusLabel}>Focused product batch</Text>
+            <Text style={styles.focusValue}>{focusedBatchId}</Text>
+            <Text style={styles.focusBody}>
+              This product opened from a batch-linked task, alert, schedule item, or
+              notification. Keep the batch inside the product workspace, then open the
+              full batch record when you need production details.
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.detailGrid}>
           <DetailRow label="Linked batches" value={linked.batches?.length || 0} />
           <DetailRow label="Linked trials" value={linked.trials?.length || 0} />
@@ -437,6 +452,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow label="Linked courses" value={linked.courses?.length || 0} />
         </View>
         <View style={styles.actions}>
+          {focusedBatchId ? (
+            <ActionLink
+              href={`/home/commercial/batch-planner/${encodeURIComponent(focusedBatchId)}`}
+              label="Open Focused Batch"
+            />
+          ) : null}
           <ActionLink href="/home/commercial/batch-planner" label="Open Batch Planner" />
           <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
           <ActionLink href="/home/commercial/evidence-runs" label="Open Evidence Runs" />
@@ -638,6 +659,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   readyPill: { backgroundColor: "#DCFCE7", color: "#166534" },
+  focusBox: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 12
+  },
+  focusLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  focusValue: { color: "#0F172A", fontSize: 18, fontWeight: "900", marginTop: 4 },
+  focusBody: { color: "#475569", fontSize: 13, lineHeight: 19, marginTop: 6 },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   selectorRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" },
   selectorButton: {
