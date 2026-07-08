@@ -204,7 +204,7 @@ describe("commercial workflow pages", () => {
               linkedRecipeId: "recipe-1",
               linkedCourseIds: ["course-1"],
               linkedLiveIds: ["live-1"],
-              linkedFeedPostIds: ["campaign-1"],
+              linkedFeedCampaignIds: ["campaign-1"],
               forumThreadId: "thread-product",
               externalPurchaseUrl: "https://example.com/base"
             }
@@ -434,7 +434,7 @@ describe("commercial workflow pages", () => {
               linkedProductLineIds: ["line-1"],
               linkedGrowIds: ["grow-2"],
               linkedLiveIds: ["live-2"],
-              linkedFeedPostIds: ["campaign-2"],
+              linkedFeedCampaignIds: ["campaign-2"],
               forumThreadId: "thread-course",
               modules: [],
               lessons: [],
