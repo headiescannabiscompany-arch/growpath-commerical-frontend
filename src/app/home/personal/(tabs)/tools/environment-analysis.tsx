@@ -3,7 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { analyzeEnvironment } from "@/api/environment";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   ToolPlantContextPicker,
@@ -194,274 +194,281 @@ export default function EnvironmentAnalysisToolScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>AI Environment Analysis</Text>
-      <Text style={styles.subtitle}>
-        Send grow-room readings to the environment analysis endpoint for target ranges,
-        risk flags, and adjustment recommendations.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_environment_analysis"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-
-      <Text style={styles.label}>Stage</Text>
-      <TextInput
-        accessibilityLabel="Environment stage"
-        style={styles.input}
-        value={stage}
-        onChangeText={setStage}
-      />
-      <View style={styles.grid}>
-        <View style={styles.field}>
-          <Text style={styles.label}>Day temp C</Text>
-          <TextInput
-            accessibilityLabel="Environment day temperature Celsius"
-            style={styles.input}
-            value={tempDayC}
-            onChangeText={setTempDayC}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>Night temp C</Text>
-          <TextInput
-            accessibilityLabel="Environment night temperature Celsius"
-            style={styles.input}
-            value={tempNightC}
-            onChangeText={setTempNightC}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>Humidity %</Text>
-          <TextInput
-            accessibilityLabel="Environment humidity percent"
-            style={styles.input}
-            value={humidity}
-            onChangeText={setHumidity}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>VPD kPa</Text>
-          <TextInput
-            accessibilityLabel="Environment VPD kPa"
-            style={styles.input}
-            value={vpd}
-            onChangeText={setVpd}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>PPFD</Text>
-          <TextInput
-            accessibilityLabel="Environment PPFD"
-            style={styles.input}
-            value={ppfd}
-            onChangeText={setPpfd}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>DLI</Text>
-          <TextInput
-            accessibilityLabel="Environment DLI"
-            style={styles.input}
-            value={dli}
-            onChangeText={setDli}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>CO2 ppm</Text>
-          <TextInput
-            accessibilityLabel="Environment CO2 ppm"
-            style={styles.input}
-            value={co2}
-            onChangeText={setCo2}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>Light hours</Text>
-          <TextInput
-            accessibilityLabel="Environment light hours"
-            style={styles.input}
-            value={lightHours}
-            onChangeText={setLightHours}
-            keyboardType="numeric"
-          />
-        </View>
-      </View>
-
-      {!enabled ? (
-        <Text style={styles.locked}>Environment AI is unavailable for this plan.</Text>
-      ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Analyze environment"
-        style={[styles.button, (!enabled || running) && styles.disabled]}
-        disabled={!enabled || running}
-        onPress={run}
-      >
-        <Text style={styles.buttonText}>
-          {running ? "Analyzing..." : "Analyze Environment"}
+    <ScreenBoundary
+      title="AI Environment Analysis"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>AI Environment Analysis</Text>
+        <Text style={styles.subtitle}>
+          Send grow-room readings to the environment analysis endpoint for target ranges,
+          risk flags, and adjustment recommendations.
         </Text>
-      </Pressable>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_environment_analysis"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_environment_analysis"
-        longContent
-      />
+        <Text style={styles.label}>Stage</Text>
+        <TextInput
+          accessibilityLabel="Environment stage"
+          style={styles.input}
+          value={stage}
+          onChangeText={setStage}
+        />
+        <View style={styles.grid}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Day temp C</Text>
+            <TextInput
+              accessibilityLabel="Environment day temperature Celsius"
+              style={styles.input}
+              value={tempDayC}
+              onChangeText={setTempDayC}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>Night temp C</Text>
+            <TextInput
+              accessibilityLabel="Environment night temperature Celsius"
+              style={styles.input}
+              value={tempNightC}
+              onChangeText={setTempNightC}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>Humidity %</Text>
+            <TextInput
+              accessibilityLabel="Environment humidity percent"
+              style={styles.input}
+              value={humidity}
+              onChangeText={setHumidity}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>VPD kPa</Text>
+            <TextInput
+              accessibilityLabel="Environment VPD kPa"
+              style={styles.input}
+              value={vpd}
+              onChangeText={setVpd}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>PPFD</Text>
+            <TextInput
+              accessibilityLabel="Environment PPFD"
+              style={styles.input}
+              value={ppfd}
+              onChangeText={setPpfd}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>DLI</Text>
+            <TextInput
+              accessibilityLabel="Environment DLI"
+              style={styles.input}
+              value={dli}
+              onChangeText={setDli}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>CO2 ppm</Text>
+            <TextInput
+              accessibilityLabel="Environment CO2 ppm"
+              style={styles.input}
+              value={co2}
+              onChangeText={setCo2}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>Light hours</Text>
+            <TextInput
+              accessibilityLabel="Environment light hours"
+              style={styles.input}
+              value={lightHours}
+              onChangeText={setLightHours}
+              keyboardType="numeric"
+            />
+          </View>
+        </View>
 
-      <ToolResultSurface
-        title="Environment analysis"
-        status={
-          result ? String(assessment.status || "AI ENDPOINT").toUpperCase() : "READY"
-        }
-        summary={
-          result?.data?.notes || result?.notes || "Run the endpoint to analyze readings."
-        }
-        metrics={[
-          {
-            key: "day-temp",
-            label: "Target day temp",
-            value: targetValue(result, "tempDayC")
-          },
-          {
-            key: "rh-min",
-            label: "Target RH min",
-            value: targetValue(result, "humidityMin")
-          },
-          {
-            key: "rh-max",
-            label: "Target RH max",
-            value: targetValue(result, "humidityMax")
-          },
-          { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") },
-          {
-            key: "local-risk",
-            label: "Local risk",
-            value: environmentReview.riskLevel.toUpperCase(),
-            detail:
-              environmentReview.dewPointC == null
-                ? `${environmentReview.warnings.length} warnings`
-                : `Dew point ${environmentReview.dewPointC}C, spread ${environmentReview.dewPointSpreadC}C`
+        {!enabled ? (
+          <Text style={styles.locked}>Environment AI is unavailable for this plan.</Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Analyze environment"
+          style={[styles.button, (!enabled || running) && styles.disabled]}
+          disabled={!enabled || running}
+          onPress={run}
+        >
+          <Text style={styles.buttonText}>
+            {running ? "Analyzing..." : "Analyze Environment"}
+          </Text>
+        </Pressable>
+
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_environment_analysis"
+          longContent
+        />
+
+        <ToolResultSurface
+          title="Environment analysis"
+          status={
+            result ? String(assessment.status || "AI ENDPOINT").toUpperCase() : "READY"
           }
-        ]}
-        notices={[
-          ...buildEnvironmentContextNotices(plantContext.selectedPlantContext),
-          ...environmentReview.warnings.map((warning, index) => ({
-            key: `local-warning-${index}`,
-            severity:
-              environmentReview.riskLevel === "high"
-                ? ("high" as const)
-                : ("medium" as const),
-            message: warning
-          })),
-          ...list(assessment.issues).map((issue, index) => ({
-            key: `issue-${index}`,
-            severity: "medium" as const,
-            message: issue
-          })),
-          ...list(assessment.riskFlags).map((risk, index) => ({
-            key: `risk-${index}`,
-            severity: "high" as const,
-            message: risk
-          }))
-        ]}
-        recommendations={recommendations}
-        assumptions={[
-          "The backend environment endpoint supplies the targets and recommendations.",
-          ...environmentReview.recommendations,
-          buildEnvironmentContextAssumption(plantContext.selectedPlantContext),
-          "Confirm sensor calibration, canopy position, and plant response before changing controls."
-        ]}
-        actions={
-          result && growId
-            ? [
-                {
-                  key: "save-log",
-                  label: "Save to Grow Log",
-                  onPress: saveLog,
-                  pendingLabel: "Saving..."
-                },
-                {
-                  key: "create-task",
-                  label: "Create Environment Task",
-                  variant: "secondary",
-                  pendingLabel: "Creating...",
-                  onPress: async () => {
-                    const issues = list(assessment.issues);
-                    const riskFlags = list(assessment.riskFlags);
-                    const taskResult = await saveToolRunAndCreateTask({
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "environment-analysis",
-                      input: {
-                        stage,
-                        tempDayC: numeric(tempDayC),
-                        tempNightC: numeric(tempNightC),
-                        humidity: numeric(humidity),
-                        vpd: numeric(vpd),
-                        ppfd: numeric(ppfd),
-                        dli: numeric(dli),
-                        co2: numeric(co2),
-                        lightHours: numeric(lightHours)
-                      },
-                      output: result,
-                      title:
-                        environmentReview.riskLevel === "high"
-                          ? "Inspect environment risk zones"
-                          : "Review environment analysis",
-                      description: [
-                        `Status: ${assessment.status || "analysis complete"}`,
-                        `Local risk: ${environmentReview.riskLevel}`,
-                        ...environmentReview.warnings.map(
-                          (warning) => `Warning: ${warning}`
-                        ),
-                        issues.length ? `Issues: ${issues.join("; ")}` : "",
-                        riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
-                        recommendations.length
-                          ? `Recommended actions: ${recommendations.join("; ")}`
-                          : ""
-                      ]
-                        .filter(Boolean)
-                        .join("\n"),
-                      priority:
-                        riskFlags.length || environmentReview.riskLevel === "high"
-                          ? "high"
-                          : "medium",
-                      dueDate: dueTomorrow()
-                    });
-                    if (!taskResult.ok) throw new Error(taskResult.error);
-                    setFeedback("Created environment review task.");
+          summary={
+            result?.data?.notes ||
+            result?.notes ||
+            "Run the endpoint to analyze readings."
+          }
+          metrics={[
+            {
+              key: "day-temp",
+              label: "Target day temp",
+              value: targetValue(result, "tempDayC")
+            },
+            {
+              key: "rh-min",
+              label: "Target RH min",
+              value: targetValue(result, "humidityMin")
+            },
+            {
+              key: "rh-max",
+              label: "Target RH max",
+              value: targetValue(result, "humidityMax")
+            },
+            { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") },
+            {
+              key: "local-risk",
+              label: "Local risk",
+              value: environmentReview.riskLevel.toUpperCase(),
+              detail:
+                environmentReview.dewPointC == null
+                  ? `${environmentReview.warnings.length} warnings`
+                  : `Dew point ${environmentReview.dewPointC}C, spread ${environmentReview.dewPointSpreadC}C`
+            }
+          ]}
+          notices={[
+            ...buildEnvironmentContextNotices(plantContext.selectedPlantContext),
+            ...environmentReview.warnings.map((warning, index) => ({
+              key: `local-warning-${index}`,
+              severity:
+                environmentReview.riskLevel === "high"
+                  ? ("high" as const)
+                  : ("medium" as const),
+              message: warning
+            })),
+            ...list(assessment.issues).map((issue, index) => ({
+              key: `issue-${index}`,
+              severity: "medium" as const,
+              message: issue
+            })),
+            ...list(assessment.riskFlags).map((risk, index) => ({
+              key: `risk-${index}`,
+              severity: "high" as const,
+              message: risk
+            }))
+          ]}
+          recommendations={recommendations}
+          assumptions={[
+            "The backend environment endpoint supplies the targets and recommendations.",
+            ...environmentReview.recommendations,
+            buildEnvironmentContextAssumption(plantContext.selectedPlantContext),
+            "Confirm sensor calibration, canopy position, and plant response before changing controls."
+          ]}
+          actions={
+            result && growId
+              ? [
+                  {
+                    key: "save-log",
+                    label: "Save to Grow Log",
+                    onPress: saveLog,
+                    pendingLabel: "Saving..."
+                  },
+                  {
+                    key: "create-task",
+                    label: "Create Environment Task",
+                    variant: "secondary",
+                    pendingLabel: "Creating...",
+                    onPress: async () => {
+                      const issues = list(assessment.issues);
+                      const riskFlags = list(assessment.riskFlags);
+                      const taskResult = await saveToolRunAndCreateTask({
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "environment-analysis",
+                        input: {
+                          stage,
+                          tempDayC: numeric(tempDayC),
+                          tempNightC: numeric(tempNightC),
+                          humidity: numeric(humidity),
+                          vpd: numeric(vpd),
+                          ppfd: numeric(ppfd),
+                          dli: numeric(dli),
+                          co2: numeric(co2),
+                          lightHours: numeric(lightHours)
+                        },
+                        output: result,
+                        title:
+                          environmentReview.riskLevel === "high"
+                            ? "Inspect environment risk zones"
+                            : "Review environment analysis",
+                        description: [
+                          `Status: ${assessment.status || "analysis complete"}`,
+                          `Local risk: ${environmentReview.riskLevel}`,
+                          ...environmentReview.warnings.map(
+                            (warning) => `Warning: ${warning}`
+                          ),
+                          issues.length ? `Issues: ${issues.join("; ")}` : "",
+                          riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
+                          recommendations.length
+                            ? `Recommended actions: ${recommendations.join("; ")}`
+                            : ""
+                        ]
+                          .filter(Boolean)
+                          .join("\n"),
+                        priority:
+                          riskFlags.length || environmentReview.riskLevel === "high"
+                            ? "high"
+                            : "medium",
+                        dueDate: dueTomorrow()
+                      });
+                      if (!taskResult.ok) throw new Error(taskResult.error);
+                      setFeedback("Created environment review task.");
+                    }
                   }
-                }
-              ]
-            : []
-        }
-        feedback={feedback}
-        contextMessage={!growId ? "Select a grow to save this analysis." : undefined}
-      />
+                ]
+              : []
+          }
+          feedback={feedback}
+          contextMessage={!growId ? "Select a grow to save this analysis." : undefined}
+        />
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_environment_analysis"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_environment_analysis"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

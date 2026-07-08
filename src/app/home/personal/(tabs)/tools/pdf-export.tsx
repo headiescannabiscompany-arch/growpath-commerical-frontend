@@ -6,7 +6,7 @@ import { listPersonalLogs, type PersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { listPersonalTasks, type PersonalTask } from "@/api/tasks";
 import { listToolRuns, type ToolRun } from "@/api/toolRuns";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { buildExportRows } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
@@ -72,85 +72,86 @@ export default function PdfExportScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>PDF / Export</Text>
-      <Text style={styles.subtitle}>
-        Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_pdf_export"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-
-      {!enabled ? (
-        <LockedToolCard
-          title="PDF / Export"
-          capability={CAPABILITY_KEYS.TOOL_PDF_EXPORT}
-          description="Enable this capability to prepare grow records for export."
+    <ScreenBoundary title="PDF / Export" showBack backFallbackHref="/home/personal/tools">
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>PDF / Export</Text>
+        <Text style={styles.subtitle}>
+          Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_pdf_export"
+          longContent
         />
-      ) : (
-        <>
-          <PersonalFeedPlacement
-            placement="middle"
-            routeKey="personal_tools_pdf_export"
-            longContent
-          />
-          <ToolResultSurface
-            title="Export package"
-            status="READY"
-            summary="CSV export is available now with browser download and native share support."
-            metrics={[
-              { key: "logs", label: "Logs", value: String(logs.length) },
-              { key: "tasks", label: "Tasks", value: String(tasks.length) },
-              { key: "plants", label: "Plants", value: String(plants.length) },
-              { key: "runs", label: "Tool runs", value: String(toolRuns.length) }
-            ]}
-            details={
-              rows.length ? (
-                <View style={styles.preview}>
-                  {rows.slice(0, 8).map((row, index) => (
-                    <View
-                      key={`${row.type}-${row.date}-${index}`}
-                      style={styles.previewRow}
-                    >
-                      <Text style={styles.previewTitle}>
-                        {row.date || "No date"} | {row.type} | {row.title}
-                      </Text>
-                      <Text style={styles.previewDetail} numberOfLines={2}>
-                        {row.detail || "No detail"}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              ) : undefined
-            }
-            assumptions={[
-              "This export uses records visible to the current account and optional grow context.",
-              "PDF rendering is represented as an export-ready package until backend or native PDF support is connected."
-            ]}
-            actions={[
-              {
-                key: "csv",
-                label: "Export CSV",
-                pendingLabel: "Preparing...",
-                disabled: !rows.length,
-                onPress: exportCsv
-              }
-            ]}
-            feedback={feedback}
-          />
-        </>
-      )}
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_pdf_export"
-        longContent
-      />
-    </ScrollView>
+        {!enabled ? (
+          <LockedToolCard
+            title="PDF / Export"
+            capability={CAPABILITY_KEYS.TOOL_PDF_EXPORT}
+            description="Enable this capability to prepare grow records for export."
+          />
+        ) : (
+          <>
+            <PersonalFeedPlacement
+              placement="middle"
+              routeKey="personal_tools_pdf_export"
+              longContent
+            />
+            <ToolResultSurface
+              title="Export package"
+              status="READY"
+              summary="CSV export is available now with browser download and native share support."
+              metrics={[
+                { key: "logs", label: "Logs", value: String(logs.length) },
+                { key: "tasks", label: "Tasks", value: String(tasks.length) },
+                { key: "plants", label: "Plants", value: String(plants.length) },
+                { key: "runs", label: "Tool runs", value: String(toolRuns.length) }
+              ]}
+              details={
+                rows.length ? (
+                  <View style={styles.preview}>
+                    {rows.slice(0, 8).map((row, index) => (
+                      <View
+                        key={`${row.type}-${row.date}-${index}`}
+                        style={styles.previewRow}
+                      >
+                        <Text style={styles.previewTitle}>
+                          {row.date || "No date"} | {row.type} | {row.title}
+                        </Text>
+                        <Text style={styles.previewDetail} numberOfLines={2}>
+                          {row.detail || "No detail"}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : undefined
+              }
+              assumptions={[
+                "This export uses records visible to the current account and optional grow context.",
+                "PDF rendering is represented as an export-ready package until backend or native PDF support is connected."
+              ]}
+              actions={[
+                {
+                  key: "csv",
+                  label: "Export CSV",
+                  pendingLabel: "Preparing...",
+                  disabled: !rows.length,
+                  onPress: exportCsv
+                }
+              ]}
+              feedback={feedback}
+            />
+          </>
+        )}
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_pdf_export"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

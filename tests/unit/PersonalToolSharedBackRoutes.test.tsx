@@ -2,8 +2,10 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import BudRotRiskToolScreen from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
+import EnvironmentAnalysisToolScreen from "@/app/home/personal/(tabs)/tools/environment-analysis";
 import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
 import HarvestEstimatorScreen from "@/app/home/personal/(tabs)/tools/harvest-estimator";
+import PdfExportScreen from "@/app/home/personal/(tabs)/tools/pdf-export";
 import PpfdToolScreen from "@/app/home/personal/(tabs)/tools/ppfd";
 import TimelinePlannerScreen from "@/app/home/personal/(tabs)/tools/timeline-planner";
 import WateringToolScreen from "@/app/home/personal/(tabs)/tools/watering";
@@ -42,9 +44,11 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: {
+    AI_ASSISTANT: "AI_ASSISTANT",
     DIAGNOSE_ADVANCED: "DIAGNOSE_ADVANCED",
     FEEDING_SCHEDULE: "FEEDING_SCHEDULE",
     TOOL_HARVEST_ESTIMATOR: "TOOL_HARVEST_ESTIMATOR",
+    TOOL_PDF_EXPORT: "TOOL_PDF_EXPORT",
     TOOL_TIMELINE_PLANNER: "TOOL_TIMELINE_PLANNER"
   },
   useEntitlements: () => ({
@@ -54,6 +58,26 @@ jest.mock("@/entitlements", () => ({
 
 jest.mock("@/api/feeding", () => ({
   generateSchedule: jest.fn()
+}));
+
+jest.mock("@/api/environment", () => ({
+  analyzeEnvironment: jest.fn()
+}));
+
+jest.mock("@/api/logs", () => ({
+  listPersonalLogs: jest.fn(() => Promise.resolve([]))
+}));
+
+jest.mock("@/api/plants", () => ({
+  listPersonalPlants: jest.fn(() => Promise.resolve([]))
+}));
+
+jest.mock("@/api/tasks", () => ({
+  listPersonalTasks: jest.fn(() => Promise.resolve([]))
+}));
+
+jest.mock("@/api/toolRuns", () => ({
+  listToolRuns: jest.fn(() => Promise.resolve([]))
 }));
 
 jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
@@ -125,5 +149,19 @@ describe("legacy personal tool shared back routes", () => {
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("Timeline Planner")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on AI Environment Analysis", () => {
+    const screen = render(<EnvironmentAnalysisToolScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("AI Environment Analysis")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on PDF / Export", () => {
+    const screen = render(<PdfExportScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("PDF / Export")).toBeTruthy();
   });
 });
