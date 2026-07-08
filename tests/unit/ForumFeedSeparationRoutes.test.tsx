@@ -3,6 +3,7 @@ import { render, waitFor } from "@testing-library/react-native";
 
 import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
+import ForumCodeRoute from "@/app/home/personal/(tabs)/forum/code";
 import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 
 const mockListForumPosts = jest.fn();
@@ -50,6 +51,26 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   return () => React.createElement(View, { testID: "personal-feed-placement" });
 });
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref, name }: any) =>
+      React.createElement(
+        View,
+        { testID: `screen-boundary-${name || "unknown"}` },
+        showBack
+          ? React.createElement(
+              Text,
+              { accessibilityLabel: `Shared back ${backFallbackHref}` },
+              `Shared Back ${backFallbackHref}`
+            )
+          : null,
+        children
+      )
+  };
+});
+
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: {
     FORUM_VIEW: "forum_view",
@@ -80,12 +101,20 @@ describe("Forum and feed separation copy", () => {
   it("keeps the new forum post composer out of Feed / Campaigns", () => {
     const screen = render(<ForumNewPostRoute />);
 
+    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+  });
+
+  it("keeps forum guidelines as a nested forum page with shared back behavior", () => {
+    const screen = render(<ForumCodeRoute />);
+
+    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByText("Forum Guidelines")).toBeTruthy();
   });
 
   it("opens personal forum list posts through the shared forum detail route", async () => {

@@ -5,7 +5,11 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 export default function ForumCodeRoute() {
   return (
-    <ScreenBoundary name="personal.forum.code">
+    <ScreenBoundary
+      name="personal.forum.code"
+      showBack
+      backFallbackHref="/home/personal/forum"
+    >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         <PersonalFeedPlacement
           placement="top"

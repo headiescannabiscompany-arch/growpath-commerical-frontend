@@ -458,6 +458,7 @@ Completed and pushed:
 182. Commercial evidence-run list/detail copy now treats the linked run as a private evidence-run record rather than a generic grow workspace, while keeping the compatibility route and API fields intact.
 183. Payment support now uses the real `support@growpathai.com` address, removes corrupted placeholder icon text from the payment help dialog, and has regression coverage for the visible email plus `mailto:` target.
 184. Facility inventory item detail now uses the shared back control with `/home/facility/inventory` as its fallback, with focused route coverage, so nested inventory records obey the workspace back-arrow rule.
+185. Personal Forum new-post and guidelines pages now use the shared back control with `/home/personal/forum` fallbacks, with route coverage proving nested Forum pages return to the Forum root while Feed placements remain campaign/ad surfaces.
 
 ## Working Rule For Codex
 

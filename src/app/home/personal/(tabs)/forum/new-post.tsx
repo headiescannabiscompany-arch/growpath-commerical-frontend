@@ -88,7 +88,11 @@ export default function ForumNewPostRoute() {
   const disabled = !title.trim() || !body.trim() || submitting || !canPost;
 
   return (
-    <ScreenBoundary name="personal.forum.newPost">
+    <ScreenBoundary
+      name="personal.forum.newPost"
+      showBack
+      backFallbackHref="/home/personal/forum"
+    >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View>
           <Text style={styles.title}>New Discussion</Text>
