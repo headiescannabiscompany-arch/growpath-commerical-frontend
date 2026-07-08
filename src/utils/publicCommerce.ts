@@ -77,3 +77,9 @@ export function publicItemSummary(item: any) {
       ""
   );
 }
+
+export function publicGrowInterests(item: any) {
+  return Array.isArray(item?.growInterests)
+    ? item.growInterests.map((interest: any) => String(interest)).filter(Boolean)
+    : [];
+}

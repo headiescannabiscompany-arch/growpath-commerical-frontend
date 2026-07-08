@@ -67,6 +67,7 @@ const publicPayload = {
       description: "Nitrogen-forward veg support.",
       priceCents: 2500,
       unitSize: "5 lb bag",
+      growInterests: ["living soil", "veg"],
       usageInstructions: "Topdress during veg and water in.",
       externalPurchaseUrl: "https://example.com/veg-mix",
       specs: {
@@ -94,6 +95,7 @@ const publicPayload = {
       id: "course-1",
       title: "Using Veg Mix",
       summary: "A short setup course for the veg blend.",
+      growInterests: ["living soil", "product education"],
       linkedProductIds: ["product-1"]
     }
   ],
@@ -102,6 +104,7 @@ const publicPayload = {
       id: "post-1",
       title: "Trial update",
       summary: "Week three plants are pushing clean growth.",
+      growInterests: ["living soil", "product trials"],
       linkedProductId: "product-1"
     }
   ],
@@ -182,11 +185,14 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("$25.00")).toBeTruthy();
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getByText("Open Campaign")).toBeTruthy();
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();

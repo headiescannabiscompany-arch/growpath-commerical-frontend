@@ -17,6 +17,7 @@ import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import AppPage from "@/components/layout/AppPage";
 import {
   extractPublicCommercialPayload,
+  publicGrowInterests,
   publicItemId,
   publicItemSummary,
   publicItemTitle,
@@ -233,6 +234,11 @@ export default function PublicStorefrontRoute() {
                     {product?.description ? (
                       <Text style={styles.meta}>{product.description}</Text>
                     ) : null}
+                    {publicGrowInterests(product).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(product).join(", ")}
+                      </Text>
+                    ) : null}
                     <Text style={styles.price}>{money(product)}</Text>
                   </View>
                   <View style={styles.productActions}>
@@ -283,6 +289,11 @@ export default function PublicStorefrontRoute() {
                       {publicItemSummary(course) ? (
                         <Text style={styles.meta}>{publicItemSummary(course)}</Text>
                       ) : null}
+                      {publicGrowInterests(course).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(course).join(", ")}
+                        </Text>
+                      ) : null}
                     </View>
                     <Link
                       href={
@@ -318,6 +329,11 @@ export default function PublicStorefrontRoute() {
                     </Text>
                     {publicItemSummary(post) ? (
                       <Text style={styles.meta}>{publicItemSummary(post)}</Text>
+                    ) : null}
+                    {publicGrowInterests(post).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(post).join(", ")}
+                      </Text>
                     ) : null}
                   </View>
                   <Link href={returnFeedHref as any} asChild>
@@ -405,6 +421,7 @@ const styles = StyleSheet.create({
     padding: 8
   },
   meta: { color: "#64748B" },
+  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
   product: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
