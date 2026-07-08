@@ -86,6 +86,11 @@ function publicProductUrl(slug: string, product: any) {
   return `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(String(id))}`;
 }
 
+function forumThreadHref(thread: any) {
+  const id = String(thread?.id || thread?._id || thread?.threadId || "");
+  return id ? `/forum/post/${encodeURIComponent(id)}` : "/forum";
+}
+
 function publicLinks(storefront: any) {
   const links: Array<{ label: string; url: string }> = [];
   if (storefront?.websiteUrl)
@@ -498,7 +503,10 @@ export default function PublicProductRoute() {
                 linked Forum/Q&A thread.
               </Text>
               {relatedThreads.map((thread) => (
-                <View key={thread?.id || thread?.title} style={styles.linkedRow}>
+                <View
+                  key={thread?.id || thread?._id || thread?.threadId || thread?.title}
+                  style={styles.linkedRow}
+                >
                   <View style={styles.linkedCopy}>
                     <Text style={styles.relatedName}>
                       {thread?.title || thread?.headline || "Discussion"}
@@ -507,7 +515,7 @@ export default function PublicProductRoute() {
                       <Text style={styles.meta}>{thread.summary || thread.body}</Text>
                     ) : null}
                   </View>
-                  <Link href="/home/personal/forum" asChild>
+                  <Link href={forumThreadHref(thread) as any} asChild>
                     <Pressable style={styles.secondaryButton}>
                       <Text style={styles.secondaryButtonText}>Open Q&A</Text>
                     </Pressable>

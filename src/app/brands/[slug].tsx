@@ -320,26 +320,32 @@ export default function PublicBrandProfileRoute() {
           {forumThreads.length ? (
             <AppCard>
               <Text style={styles.cardTitle}>Support Discussions</Text>
-              {forumThreads.slice(0, 3).map((thread) => (
-                <View
-                  key={publicItemId(thread) || publicItemTitle(thread, "Discussion")}
-                  style={styles.listRow}
-                >
-                  <View style={styles.productCopy}>
-                    <Text style={styles.productName}>
-                      {publicItemTitle(thread, "Discussion")}
-                    </Text>
-                    {publicItemSummary(thread) ? (
-                      <Text style={styles.meta}>{publicItemSummary(thread)}</Text>
-                    ) : null}
+              {forumThreads.slice(0, 3).map((thread) => {
+                const threadId = publicItemId(thread);
+                const threadHref = threadId
+                  ? `/forum/post/${encodeURIComponent(threadId)}`
+                  : "/forum";
+                return (
+                  <View
+                    key={threadId || publicItemTitle(thread, "Discussion")}
+                    style={styles.listRow}
+                  >
+                    <View style={styles.productCopy}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(thread, "Discussion")}
+                      </Text>
+                      {publicItemSummary(thread) ? (
+                        <Text style={styles.meta}>{publicItemSummary(thread)}</Text>
+                      ) : null}
+                    </View>
+                    <Link href={threadHref as any} asChild>
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Forum</Text>
+                      </Pressable>
+                    </Link>
                   </View>
-                  <Link href="/home/personal/forum" asChild>
-                    <Pressable style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonText}>Forum</Text>
-                    </Pressable>
-                  </Link>
-                </View>
-              ))}
+                );
+              })}
             </AppCard>
           ) : null}
         </>

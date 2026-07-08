@@ -377,26 +377,32 @@ export default function PublicStorefrontRoute() {
                 Discussion, support, and product questions live in Forum/Q&A instead of
                 inside feed campaign placements.
               </Text>
-              {forumThreads.slice(0, 3).map((thread) => (
-                <View
-                  key={publicItemId(thread) || publicItemTitle(thread, "Discussion")}
-                  style={styles.linkRow}
-                >
-                  <View style={styles.productBody}>
-                    <Text style={styles.productName}>
-                      {publicItemTitle(thread, "Discussion")}
-                    </Text>
-                    {publicItemSummary(thread) ? (
-                      <Text style={styles.meta}>{publicItemSummary(thread)}</Text>
-                    ) : null}
+              {forumThreads.slice(0, 3).map((thread) => {
+                const threadId = publicItemId(thread);
+                const threadHref = threadId
+                  ? `/forum/post/${encodeURIComponent(threadId)}`
+                  : "/forum";
+                return (
+                  <View
+                    key={threadId || publicItemTitle(thread, "Discussion")}
+                    style={styles.linkRow}
+                  >
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(thread, "Discussion")}
+                      </Text>
+                      {publicItemSummary(thread) ? (
+                        <Text style={styles.meta}>{publicItemSummary(thread)}</Text>
+                      ) : null}
+                    </View>
+                    <Link href={threadHref as any} asChild>
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Open Q&A</Text>
+                      </Pressable>
+                    </Link>
                   </View>
-                  <Link href="/home/personal/forum" asChild>
-                    <Pressable style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonText}>Open Q&A</Text>
-                    </Pressable>
-                  </Link>
-                </View>
-              ))}
+                );
+              })}
             </View>
           ) : null}
         </>
