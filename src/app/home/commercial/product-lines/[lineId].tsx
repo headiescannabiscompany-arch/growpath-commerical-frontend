@@ -3,7 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
+  CommercialProduct,
   fetchProductLine,
+  fetchProducts,
   ProductLine,
   updateProductLine
 } from "@/api/commercialWorkflows";
@@ -24,6 +26,20 @@ function splitList(value: string) {
     .split(/[\n,]+/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function productId(product: CommercialProduct) {
+  return String(product.id || product._id || "").trim();
+}
+
+function productMatchesLine(product: CommercialProduct, lineId: string) {
+  const ids = [
+    product.productLineId,
+    product.linkedProductLineId,
+    ...(Array.isArray(product.productLineIds) ? product.productLineIds : []),
+    ...(Array.isArray(product.linkedProductLineIds) ? product.linkedProductLineIds : [])
+  ];
+  return ids.some((id) => String(id || "") === lineId);
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
@@ -58,6 +74,7 @@ export default function CommercialProductLineDetailRoute({
     [params.lineId, route?.params?.lineId, route?.params?.id]
   );
   const [line, setLine] = useState<ProductLine | null>(null);
+  const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [status, setStatus] = useState("");
   const [publicSummary, setPublicSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -82,7 +99,12 @@ export default function CommercialProductLineDetailRoute({
     setLoading(true);
     setError(null);
     try {
-      hydrate(await fetchProductLine(lineId));
+      const [nextLine, nextProducts] = await Promise.all([
+        fetchProductLine(lineId),
+        fetchProducts()
+      ]);
+      hydrate(nextLine);
+      setProducts(nextProducts.filter((product) => productMatchesLine(product, lineId)));
     } catch (err) {
       setError(err);
     } finally {
@@ -171,6 +193,54 @@ export default function CommercialProductLineDetailRoute({
           <ActionLink href="/home/commercial/feed" label="Feed" />
           <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Products In This Line</Text>
+        <Text style={styles.body}>
+          These products are attached to this storefront family and should appear together
+          in public line browsing, feed campaigns, batches, and product education.
+        </Text>
+        {products.length ? (
+          <View style={styles.productList}>
+            {products.map((product) => (
+              <View key={productId(product) || product.name} style={styles.productRow}>
+                <View style={styles.productCopy}>
+                  <Text style={styles.productTitle}>{product.name || "Product"}</Text>
+                  <Text style={styles.muted}>
+                    {[product.category, product.status || "draft"]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                  {product.shortDescription || product.description ? (
+                    <Text style={styles.body}>
+                      {product.shortDescription || product.description}
+                    </Text>
+                  ) : null}
+                  {Array.isArray(product.growInterests) &&
+                  product.growInterests.length ? (
+                    <Text style={styles.muted}>
+                      Interests {product.growInterests.join(", ")}
+                    </Text>
+                  ) : null}
+                </View>
+                {productId(product) ? (
+                  <ActionLink
+                    href={`/home/commercial/products/${encodeURIComponent(
+                      productId(product)
+                    )}`}
+                    label="Open Product"
+                  />
+                ) : null}
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.muted}>
+            No products are attached to this line yet. Add or edit products and choose
+            this Product Line so the public storefront can group them.
+          </Text>
+        )}
       </AppCard>
 
       <AppCard>
@@ -281,6 +351,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   actionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
+  productList: { gap: 10, marginTop: 12 },
+  productRow: {
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "space-between",
+    padding: 10
+  },
+  productCopy: { flex: 1, gap: 4, minWidth: 190 },
+  productTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   input: {
     borderColor: "#CBD5E1",
     borderRadius: 8,

@@ -1731,6 +1731,14 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Living Soil Line")).toBeTruthy());
     expect(screen.getByText("Commercial Links")).toBeTruthy();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/products")
+    );
+    expect(screen.getByText("Products In This Line")).toBeTruthy();
+    expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByText("Seedling-safe base soil")).toBeTruthy();
+    expect(screen.getAllByText(/Interests living soil, seedlings/).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products/product-1" })).toBeTruthy();
     expect(screen.getByText("Public Use")).toBeTruthy();
     expect(screen.getByText("Purpose-built soil products")).toBeTruthy();
 

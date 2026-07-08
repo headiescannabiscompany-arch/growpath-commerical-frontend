@@ -155,6 +155,8 @@ export const endpoints = {
     order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
     campaigns: `${BASE}/commercial/campaigns`,
     campaign: (id: string) => `${BASE}/commercial/campaigns/${encodeURIComponent(id)}`,
+    products: `${BASE}/commercial/products`,
+    product: (id: string) => `${BASE}/commercial/products/${encodeURIComponent(id)}`,
     productLines: `${BASE}/commercial/product-lines`,
     productLine: (id: string) =>
       `${BASE}/commercial/product-lines/${encodeURIComponent(id)}`,

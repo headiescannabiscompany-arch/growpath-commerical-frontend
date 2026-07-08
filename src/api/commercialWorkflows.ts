@@ -15,6 +15,25 @@ export type ProductLine = {
   updatedAt?: string;
 };
 
+export type CommercialProduct = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  category?: string;
+  status?: string;
+  shortDescription?: string;
+  description?: string;
+  productLineId?: string;
+  linkedProductLineId?: string;
+  productLineIds?: string[];
+  linkedProductLineIds?: string[];
+  growInterests?: string[];
+  externalPurchaseUrl?: string;
+  stripePriceId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type ProductTrial = {
   id?: string;
   _id?: string;
@@ -194,6 +213,11 @@ export async function updateProductLine(id: string, data: Partial<ProductLine>) 
     body: data
   });
   return res?.productLine ?? res?.line ?? res?.updated ?? res;
+}
+
+export async function fetchProducts(): Promise<CommercialProduct[]> {
+  const res = await apiRequest(endpoints.commercial.products);
+  return listFromEnvelope(res, ["products", "items"]);
 }
 
 export async function fetchProductTrials(): Promise<ProductTrial[]> {

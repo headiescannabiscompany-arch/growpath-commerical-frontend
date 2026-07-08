@@ -528,6 +528,7 @@ Completed and pushed:
 252. Deferred user verification now includes Product Line checks across Storefront owner home, public brand/storefront pages, and `/store/:slug?line=:lineId` filtered product-card behavior.
 253. Public product detail pages now preserve Product Line context with line summary, grow interests, and Browse Line routing back to the filtered storefront, so buyers do not lose product-family navigation after opening a product.
 254. Storefront owner product creation now offers quick-select buttons for existing Product Lines while preserving the product-line ID field, so commercial owners can attach products to storefront families without copying raw IDs.
+255. Commercial Product Line detail now loads attached products, shows their status, grow interests, and descriptions, and links back to owner product detail so Product Lines behave as connected product families instead of standalone labels.
 
 ## Working Rule For Codex
 
