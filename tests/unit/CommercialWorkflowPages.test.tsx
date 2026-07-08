@@ -927,6 +927,11 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
     expect(screen.getByText(/add banner/)).toBeTruthy();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(screen.getByLabelText("Use course product line Living Soil Line")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
@@ -999,10 +1004,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course linked products"),
       "product-1, product-2"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course linked product lines"),
-      "line-1"
-    );
+    fireEvent.press(screen.getByLabelText("Use course product line Living Soil Line"));
     fireEvent.changeText(
       screen.getByLabelText("Commercial course linked evidence runs"),
       "grow-1"

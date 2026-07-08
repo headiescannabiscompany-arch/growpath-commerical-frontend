@@ -532,6 +532,7 @@ Completed and pushed:
 256. Commercial Soil & Nutrient Batch Planner now loads existing Product Lines and offers quick-select buttons on batch creation, keeping formula/production batches connected to storefront product families without manual ID copying.
 257. Commercial Marketing Planner now loads existing Product Lines, counts line-linked campaigns as connected plans, and offers quick-select buttons for product-family campaigns instead of making owners type raw line IDs.
 258. Canonical Product Trial Evidence Run creation now loads existing Product Lines and offers quick-select buttons so private evidence records can attach to storefront product families without raw ID lookup.
+259. Commercial Course creation now loads existing Product Lines and offers quick-select buttons for product-family course links, making product education easier to connect to storefront families without manual ID entry.
 
 ## Working Rule For Codex
 

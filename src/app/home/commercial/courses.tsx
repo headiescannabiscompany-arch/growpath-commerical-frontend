@@ -6,7 +6,9 @@ import { apiRequest } from "@/api/apiRequest";
 import {
   CommercialCourse,
   createCommercialCourse,
-  fetchCommercialCourses
+  fetchCommercialCourses,
+  fetchProductLines,
+  ProductLine
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -77,6 +79,16 @@ function courseId(course: CommercialCourse) {
   return course.id || course._id || course.title || "course";
 }
 
+function productLineId(line: ProductLine) {
+  return String(line.id || line._id || line.name || "").trim();
+}
+
+function appendIdList(value: string, id: string) {
+  if (!id) return value;
+  const ids = splitIds(value);
+  return ids.includes(id) ? ids.join(", ") : [...ids, id].join(", ");
+}
+
 function outlineItems(value: string, type: "module" | "lesson" | "task") {
   return splitList(value).map((title, index) => ({
     title,
@@ -117,6 +129,7 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 
 export default function CommercialCoursesRoute() {
   const [courses, setCourses] = useState<CommercialCourse[]>([]);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<CourseForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -150,7 +163,12 @@ export default function CommercialCoursesRoute() {
     setLoading(true);
     setError(null);
     try {
-      setCourses(await fetchCommercialCourses());
+      const [nextCourses, nextLines] = await Promise.all([
+        fetchCommercialCourses(),
+        fetchProductLines()
+      ]);
+      setCourses(nextCourses);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
     } finally {
@@ -373,9 +391,40 @@ export default function CommercialCoursesRoute() {
               setForm((prev) => ({ ...prev, linkedProductLineIds }))
             }
             accessibilityLabel="Commercial course linked product lines"
-            placeholder="Linked product line IDs"
+            placeholder="Linked product line IDs, or choose below"
             style={styles.input}
           />
+          {productLines.length ? (
+            <View style={styles.lineSelector}>
+              <Text style={styles.selectorLabel}>Choose Product Line</Text>
+              <View style={styles.selectorActions}>
+                {productLines.slice(0, 4).map((line) => {
+                  const id = productLineId(line);
+                  const name = line.name || "Product line";
+                  const selected = splitIds(form.linkedProductLineIds).includes(id);
+                  return (
+                    <Pressable
+                      key={`course-line-${id || name}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use course product line ${name}`}
+                      onPress={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          linkedProductLineIds: appendIdList(
+                            prev.linkedProductLineIds,
+                            id
+                          )
+                        }))
+                      }
+                      style={[styles.action, selected && styles.actionSelected]}
+                    >
+                      <Text style={styles.actionText}>{name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={form.linkedGrowIds}
             onChangeText={(linkedGrowIds) =>
@@ -791,6 +840,22 @@ const styles = StyleSheet.create({
   actionTextSelected: {
     color: "#FFFFFF"
   },
+  lineSelector: {
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    marginTop: 8,
+    minWidth: 220,
+    padding: 9
+  },
+  selectorLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   warningBox: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FDBA74",
