@@ -687,6 +687,7 @@ Completed and pushed:
 411. Commercial Lives metrics, Twitch/schedule inputs, visibility actions, setup warning panels, schedule CTA, and live rows now consume the shared 8px card radius token while preserving course/product/feed/forum/replay/reminder links.
 412. Commercial Marketing Planner metrics, campaign inputs, product-line selector, creative upload/clear actions, creative previews, campaign rows/images, budget badges, and CTA buttons now consume the shared 8px card radius token, keeping Feed/Campaign outreach visually aligned but distinct from Forum/Q&A.
 413. Commercial Analytics action links now consume the shared 8px card radius token, keeping event-backed storefront, product, course, feed, live, and order metrics visually aligned with the Facility-style page treatment.
+414. Commercial Batch Planner root/detail metrics, formula inputs, product-line selectors, batch rows, evidence fields, and save/actions now consume the shared 8px card radius token so recipe-to-product-to-trial production planning keeps the Facility-style polish.
 
 ## Working Rule For Codex
 

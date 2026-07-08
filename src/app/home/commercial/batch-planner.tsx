@@ -12,6 +12,7 @@ import {
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 
 type BatchForm = {
   batchName: string;
@@ -532,7 +533,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 130,
     padding: 9
@@ -555,7 +556,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     flexGrow: 1,
@@ -572,7 +573,7 @@ const styles = StyleSheet.create({
   primaryAction: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 9
@@ -591,7 +592,7 @@ const styles = StyleSheet.create({
   },
   batchRow: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
   },
@@ -621,7 +622,7 @@ const styles = StyleSheet.create({
   action: {
     backgroundColor: "#FFFFFF",
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -634,7 +635,7 @@ const styles = StyleSheet.create({
   },
   lineSelector: {
     borderColor: "#BBF7D0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 220,
