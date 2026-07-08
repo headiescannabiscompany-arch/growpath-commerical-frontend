@@ -6,6 +6,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 
 export default function CommercialInventoryCreateRoute() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function CommercialInventoryCreateRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text style={styles.h1}>Create Inventory Support Item</Text>
+          <Text style={styles.h1}>Create Inventory Support Record</Text>
           <Text style={styles.helpText}>
             Commercial inventory support tracks stock behind products, batches/lots,
             plants, ingredients, packaging, genetics, equipment, courses, services, and
@@ -206,7 +207,7 @@ export default function CommercialInventoryCreateRoute() {
           style={[styles.button, !canSave && styles.disabled]}
         >
           <Text style={styles.buttonText}>
-            {saving ? "Saving..." : "Create Support Item"}
+            {saving ? "Saving..." : "Create Inventory Record"}
           </Text>
         </Pressable>
       </AppCard>
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 6,
     backgroundColor: "#2563eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },

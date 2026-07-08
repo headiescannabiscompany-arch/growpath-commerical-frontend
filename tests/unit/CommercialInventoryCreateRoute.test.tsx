@@ -53,7 +53,10 @@ describe("CommercialInventoryCreateRoute", () => {
     const screen = render(<CommercialInventoryCreateRoute />);
 
     expect(screen.getByText("Shared Back /home/commercial/inventory")).toBeTruthy();
+    expect(screen.getByText("Create Inventory Support Record")).toBeTruthy();
+    expect(screen.getByText("Create Inventory Record")).toBeTruthy();
     expect(screen.getByText(/Commercial inventory support tracks stock/)).toBeTruthy();
+    expect(screen.queryByText("Create Support Item")).toBeNull();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item name"),
