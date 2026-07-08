@@ -73,7 +73,7 @@ describe("CommercialFeedRoute", () => {
           ]
         });
       }
-      if (path === "/api/commercial/posts" && options?.method === "POST") {
+      if (path === "/api/commercial/feed" && options?.method === "POST") {
         return Promise.resolve({ post: { id: "campaign-new", ...options.body } });
       }
       if (path === "/api/tasks" && options?.method === "POST") {
@@ -206,7 +206,7 @@ describe("CommercialFeedRoute", () => {
     fireEvent.press(screen.getByLabelText("Publish feed campaign"));
 
     await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/posts", {
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
         method: "POST",
         body: expect.objectContaining({
           type: "drop",

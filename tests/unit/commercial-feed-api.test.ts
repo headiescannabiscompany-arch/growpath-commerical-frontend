@@ -57,7 +57,7 @@ describe("commercial feed API", () => {
     });
 
     expect(mockPersistImageUri).toHaveBeenCalledWith("file:///tmp/feed-image.jpg");
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/posts", {
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
       method: "POST",
       body: {
         type: "update",

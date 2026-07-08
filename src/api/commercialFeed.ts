@@ -108,7 +108,7 @@ export async function createCommercialFeedPost(input: {
   externalLinks?: Array<{ label: string; url: string }>;
 }) {
   const imageUrl = await persistImageUri(input.imageUrl);
-  const res: any = await apiRequest("/api/commercial/posts", {
+  const res: any = await apiRequest("/api/commercial/feed", {
     method: "POST",
     body: {
       ...input,

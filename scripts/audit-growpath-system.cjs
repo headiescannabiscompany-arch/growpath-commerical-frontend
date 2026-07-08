@@ -392,6 +392,16 @@ function legacyFeedScreenUsesCampaignRoute() {
   );
 }
 
+function commercialFeedApiUsesCampaignEndpoint() {
+  const file = path.join(SRC, "api", "commercialFeed.ts");
+  if (!fs.existsSync(file)) return false;
+  const source = read(file);
+  return (
+    source.includes('apiRequest("/api/commercial/feed"') &&
+    !source.includes('apiRequest("/api/commercial/posts"')
+  );
+}
+
 function legacyPostsApiUsesForumEndpoints() {
   const file = path.join(SRC, "api", "posts.js");
   if (!fs.existsSync(file)) return false;
@@ -632,6 +642,7 @@ function main() {
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
+  const commercialFeedApiCampaignEndpoint = commercialFeedApiUsesCampaignEndpoint();
   const legacyPostsApiForumOnly = legacyPostsApiUsesForumEndpoints();
   const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
   const legacyStorefrontScreenCommercialOwner =
@@ -670,6 +681,7 @@ function main() {
     commercialCommunityForumOnly,
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
+    commercialFeedApiCampaignEndpoint,
     legacyPostsApiForumOnly,
     legacyToolsScreenPersonalHub,
     legacyStorefrontScreenCommercialOwner,
@@ -749,6 +761,7 @@ function main() {
     `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
+    `- Commercial Feed API creates campaigns through /api/commercial/feed: ${decisionChecks.commercialFeedApiCampaignEndpoint}`,
     `- Legacy api/posts client uses Forum/Q&A endpoints, not /api/posts: ${decisionChecks.legacyPostsApiForumOnly}`,
     `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
     `- Legacy native Storefront screen uses canonical commercial storefront owner workspace: ${decisionChecks.legacyStorefrontScreenCommercialOwner}`,
