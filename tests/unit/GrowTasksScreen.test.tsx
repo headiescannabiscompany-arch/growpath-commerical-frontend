@@ -26,9 +26,20 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
-jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-task-1" })
-}));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return {
+    useLocalSearchParams: () => ({ growId: "grow-task-1" }),
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Grow task link ${href}` })
+      )
+  };
+});
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -87,6 +98,13 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Source: ai diagnosis")).toBeTruthy();
     expect(screen.getByText("AI Diagnosis: diag-1")).toBeTruthy();
     expect(screen.getByText("Source: tool run")).toBeTruthy();
+    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(2);
+    expect(
+      screen.getByLabelText("Grow task link /home/personal/diagnose?growId=grow-task-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow task link /home/personal/tools/saved-runs")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Complete task"));
     await waitFor(() =>

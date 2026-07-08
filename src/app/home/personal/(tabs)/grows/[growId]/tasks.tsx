@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -23,6 +23,7 @@ import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
@@ -145,6 +146,35 @@ function taskLinks(task: PersonalTask) {
   ]
     .filter(Boolean)
     .join(" | ");
+}
+
+function taskSourcePath(task: PersonalTask, growId: string) {
+  let sourceType = String(task.sourceType || "");
+  if (!sourceType && task.linkedLogId) sourceType = "grow_log";
+  else if (!sourceType && (task.sourceToolRunId || task.linkedToolRunId)) {
+    sourceType = "tool_run";
+  } else if (!sourceType && task.sourceDiagnosisId) sourceType = "ai_diagnosis";
+  else if (!sourceType && task.linkedForumThreadId) sourceType = "forum";
+
+  if (!sourceType || sourceType === "manual") return "";
+
+  const sourceId = String(
+    task.sourceObjectId ||
+      task.linkedForumThreadId ||
+      task.linkedLogId ||
+      task.sourceToolRunId ||
+      task.linkedToolRunId ||
+      task.sourceDiagnosisId ||
+      growId ||
+      ""
+  );
+  return sourceObjectHref({
+    ...task,
+    sourceType,
+    sourceId,
+    growId,
+    workspaceType: "personal"
+  });
 }
 
 function scheduleSummary(task: PersonalTask) {
@@ -488,6 +518,7 @@ export default function GrowTasksScreen() {
           const done = Boolean(task?.completed);
           const source = taskSource(task);
           const links = taskLinks(task);
+          const sourcePath = taskSourcePath(task, growId);
           return (
             <View key={id || `${task.title}-${task.dueDate}`} style={styles.card}>
               <Text style={styles.taskTitle}>
@@ -552,6 +583,17 @@ export default function GrowTasksScreen() {
                         >
                           <Text style={styles.actionText}>Snooze</Text>
                         </Pressable>
+                      ) : null}
+                      {sourcePath ? (
+                        <Link href={sourcePath as any} asChild>
+                          <Pressable
+                            style={styles.actionBtn}
+                            accessibilityRole="link"
+                            accessibilityLabel="View grow task source"
+                          >
+                            <Text style={styles.actionText}>View Source</Text>
+                          </Pressable>
+                        </Link>
                       ) : null}
                       <Pressable
                         style={styles.dangerBtn}
