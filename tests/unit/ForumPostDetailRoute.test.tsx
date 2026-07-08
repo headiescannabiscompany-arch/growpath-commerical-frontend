@@ -117,4 +117,22 @@ describe("ForumPostDetailRoute", () => {
     );
     expect(screen.getByText("Forum follow-up task created.")).toBeTruthy();
   });
+
+  it("uses Forum member as the anonymous author fallback", async () => {
+    mockGetForumPost.mockResolvedValueOnce({
+      id: "post-1",
+      title: "Anonymous forum question",
+      body: "What should I check next?"
+    });
+    mockListForumComments.mockResolvedValueOnce([
+      { id: "comment-1", body: "Check the underside of the leaves." }
+    ]);
+
+    const screen = render(<ForumPostDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Anonymous forum question")).toBeTruthy());
+
+    expect(screen.getAllByText("Forum member").length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText("Community member")).toBeNull();
+  });
 });
