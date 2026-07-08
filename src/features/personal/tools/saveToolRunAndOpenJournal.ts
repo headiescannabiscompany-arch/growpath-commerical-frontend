@@ -183,8 +183,11 @@ export async function saveToolRunAndCreateLog(
 
   const log = await createPersonalLog({
     growId,
+    linkedGrowId: growId,
     plantId: args.plantId,
+    linkedPlantId: args.plantId,
     toolRunId: ensured.toolRunId,
+    linkedToolRunId: ensured.toolRunId,
     type: args.type,
     date: args.date,
     title: args.title,

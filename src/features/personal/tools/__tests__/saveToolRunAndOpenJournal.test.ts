@@ -272,8 +272,11 @@ describe("saveToolRunAndOpenJournal", () => {
     );
     expect(mockedCreatePersonalLog).toHaveBeenCalledWith({
       growId: "grow-log",
+      linkedGrowId: "grow-log",
       plantId: "plant-log",
+      linkedPlantId: "plant-log",
       toolRunId: "log-run-1",
+      linkedToolRunId: "log-run-1",
       type: "environment",
       date: "2026-07-01",
       title: "Environment analysis",

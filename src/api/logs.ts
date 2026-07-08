@@ -5,8 +5,11 @@ export interface PersonalLog {
   id: string;
   growId: string;
   plantId?: string;
+  linkedPlantId?: string;
   diagnosisId?: string;
   toolRunId?: string;
+  linkedToolRunId?: string;
+  linkedGrowId?: string;
   type?: string;
   date: string;
   title: string;
@@ -72,8 +75,11 @@ export async function listPersonalLogs(options?: {
 export async function createPersonalLog(data: {
   growId: string;
   plantId?: string;
+  linkedPlantId?: string;
   diagnosisId?: string;
   toolRunId?: string;
+  linkedToolRunId?: string;
+  linkedGrowId?: string;
   type?: string;
   date?: string;
   title: string;
@@ -121,8 +127,11 @@ export async function updatePersonalLog(
       | "photoMetadata"
       | "type"
       | "plantId"
+      | "linkedPlantId"
       | "diagnosisId"
       | "toolRunId"
+      | "linkedToolRunId"
+      | "linkedGrowId"
       | "tags"
       | "rejectedTags"
       | "aiInsight"
