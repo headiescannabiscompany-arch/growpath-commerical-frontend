@@ -61,6 +61,36 @@ function sourceHref(alert: AlertRow) {
   return "";
 }
 
+function linkedFieldsForAlertSource(alert: AlertRow) {
+  const sourceType = String(alert.sourceType || "");
+  const sourceId = String(alert.sourceId || "");
+  if (!sourceId) return {};
+  switch (sourceType) {
+    case "product":
+      return { linkedProductId: sourceId };
+    case "course":
+      return { linkedCourseId: sourceId };
+    case "live":
+      return { linkedLiveId: sourceId };
+    case "storefront":
+      return { linkedStorefrontId: sourceId };
+    case "task":
+      return { linkedTaskId: sourceId };
+    case "room":
+      return { linkedRoomId: sourceId };
+    case "facility":
+      return { linkedFacilityId: sourceId };
+    case "facility_run":
+      return { linkedFacilityRunId: sourceId };
+    case "sop":
+      return { linkedSopId: sourceId };
+    case "forum":
+      return { linkedForumThreadId: sourceId };
+    default:
+      return {};
+  }
+}
+
 function filterAlert(alert: AlertRow, filter: FilterKey) {
   if (filter === "resolved") return isResolved(alert);
   if (filter === "critical") return !isResolved(alert) && isCritical(alert);
@@ -160,6 +190,10 @@ export default function AlertCenterRoute() {
           priority: isCritical(alert) ? "critical" : "normal",
           sourceType: "alert",
           sourceId: id,
+          linkedAlertId: id,
+          alertSourceType: alert.sourceType || undefined,
+          alertSourceId: alert.sourceId || undefined,
+          ...linkedFieldsForAlertSource(alert),
           status: "open",
           reminderPlan: reminder.trim()
             ? { label: reminder.trim(), channels: ["in_app"] }

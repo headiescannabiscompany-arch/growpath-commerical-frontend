@@ -87,6 +87,10 @@ describe("AlertCenterRoute", () => {
             priority: "critical",
             sourceType: "alert",
             sourceId: "alert-1",
+            linkedAlertId: "alert-1",
+            alertSourceType: "product",
+            alertSourceId: "product-1",
+            linkedProductId: "product-1",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
