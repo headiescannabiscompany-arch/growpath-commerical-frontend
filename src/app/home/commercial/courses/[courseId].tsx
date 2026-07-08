@@ -102,6 +102,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonBody, setLessonBody] = useState("");
   const [lessonType, setLessonType] = useState("video");
+  const [lessonExternalVideoUrl, setLessonExternalVideoUrl] = useState("");
+  const [lessonDocumentUrls, setLessonDocumentUrls] = useState("");
   const [lessonRelatedProductIds, setLessonRelatedProductIds] = useState("");
   const [lessonRelatedLiveIds, setLessonRelatedLiveIds] = useState("");
   const [lessonForumThreadId, setLessonForumThreadId] = useState("");
@@ -190,6 +192,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         title: lessonTitle.trim(),
         body: lessonBody.trim(),
         lessonType: lessonType.trim() || "video",
+        externalVideoUrl: lessonExternalVideoUrl.trim() || undefined,
+        documentUrls: splitIds(lessonDocumentUrls),
         relatedProductIds: splitIds(lessonRelatedProductIds),
         relatedLiveIds: splitIds(lessonRelatedLiveIds),
         forumThreadId: lessonForumThreadId.trim() || undefined,
@@ -207,6 +211,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       setLessonTitle("");
       setLessonBody("");
       setLessonType("video");
+      setLessonExternalVideoUrl("");
+      setLessonDocumentUrls("");
       setLessonRelatedProductIds("");
       setLessonRelatedLiveIds("");
       setLessonForumThreadId("");
@@ -483,6 +489,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                         lesson.relatedLiveIds.length &&
                         `Lives ${lesson.relatedLiveIds.join(", ")}`,
                       lesson.forumThreadId && `Forum/Q&A ${lesson.forumThreadId}`,
+                      lesson.externalVideoUrl && `Video ${lesson.externalVideoUrl}`,
+                      Array.isArray(lesson.documentUrls) &&
+                        lesson.documentUrls.length &&
+                        `Docs ${lesson.documentUrls.length}`,
                       lesson.taskTemplate?.title && `Task ${lesson.taskTemplate.title}`
                     ]
                       .filter(Boolean)
@@ -524,6 +534,22 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             placeholder="Related product IDs"
             style={styles.input}
             value={lessonRelatedProductIds}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson external video URL"
+            autoCapitalize="none"
+            onChangeText={setLessonExternalVideoUrl}
+            placeholder="External video URL"
+            style={styles.input}
+            value={lessonExternalVideoUrl}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson documents"
+            autoCapitalize="none"
+            onChangeText={setLessonDocumentUrls}
+            placeholder="Document URLs, comma separated"
+            style={styles.input}
+            value={lessonDocumentUrls}
           />
           <TextInput
             accessibilityLabel="Commercial course lesson related lives"

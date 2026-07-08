@@ -187,10 +187,7 @@ describe("commercial workflow pages", () => {
       if (path === "/api/commercial/products" && options?.method === "POST") {
         return Promise.resolve({ product: { id: "product-new", ...options.body } });
       }
-      if (
-        path === "/api/commercial/orders" &&
-        (!options || options?.method === "GET")
-      ) {
+      if (path === "/api/commercial/orders" && (!options || options?.method === "GET")) {
         return Promise.resolve({
           orders: [
             {
@@ -1087,6 +1084,14 @@ describe("commercial workflow pages", () => {
       "product-1, product-2"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson external video URL"),
+      "https://example.com/water-in-demo"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson documents"),
+      "https://example.com/water-in-sop.pdf, https://example.com/topdress-chart.pdf"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson related lives"),
       "live-1"
     );
@@ -1113,6 +1118,11 @@ describe("commercial workflow pages", () => {
             title: "Water-in schedule",
             body: "Water in the topdress and check response.",
             lessonType: "assignment",
+            externalVideoUrl: "https://example.com/water-in-demo",
+            documentUrls: [
+              "https://example.com/water-in-sop.pdf",
+              "https://example.com/topdress-chart.pdf"
+            ],
             relatedProductIds: ["product-1", "product-2"],
             relatedLiveIds: ["live-1"],
             forumThreadId: "thread-1",
