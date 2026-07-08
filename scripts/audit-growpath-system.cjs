@@ -419,10 +419,16 @@ function main() {
 
   const topLevelLogsRouteExists = routeSet.has("/home/personal/logs");
   const topLevelTasksRouteExists = routeSet.has("/home/personal/tasks");
+  const legacyGlobalLogsRouteExists = routeSet.has("/logs");
   const topLevelLogsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/home/personal/logs",
     "/home/personal/grows"
+  );
+  const legacyGlobalLogsRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/logs",
+    "/home/commercial"
   );
   const topLevelTasksRedirectOnly = routeIsRedirectOnly(
     files.routes,
@@ -438,6 +444,10 @@ function main() {
     topLevelLogsRouteExists,
     topLevelLogsRedirectOnly,
     topLevelLogsVisibleModule: topLevelLogsRouteExists && !topLevelLogsRedirectOnly,
+    legacyGlobalLogsRouteExists,
+    legacyGlobalLogsRedirectOnly,
+    legacyGlobalLogsVisibleModule:
+      legacyGlobalLogsRouteExists && !legacyGlobalLogsRedirectOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -497,6 +507,8 @@ function main() {
     "## Decision Checks",
     `- Top-level Logs visible module: ${decisionChecks.topLevelLogsVisibleModule}`,
     `- Top-level Logs redirect-only stale-link guard: ${decisionChecks.topLevelLogsRedirectOnly}`,
+    `- Legacy /logs visible module: ${decisionChecks.legacyGlobalLogsVisibleModule}`,
+    `- Legacy /logs redirect-only stale-link guard: ${decisionChecks.legacyGlobalLogsRedirectOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,

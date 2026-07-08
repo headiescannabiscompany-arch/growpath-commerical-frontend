@@ -83,7 +83,7 @@ export default function CommercialLogDetailRoute() {
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
 
   return (
-    <ScreenBoundary title="Log" showBack backFallbackHref="/home/commercial/logs">
+    <ScreenBoundary title="Log" showBack backFallbackHref="/home/commercial">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -103,7 +103,7 @@ export default function CommercialLogDetailRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading log…</Text>
+            <Text style={styles.muted}>Loading log...</Text>
           </View>
         ) : null}
 
