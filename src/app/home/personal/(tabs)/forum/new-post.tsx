@@ -17,6 +17,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF"
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "#F8FAFC",
     gap: 6
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   identityCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 11
   },
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 11
   },
@@ -317,13 +318,13 @@ const styles = StyleSheet.create({
   photoPreview: {
     width: 118,
     height: 88,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
   removePhoto: {
     alignItems: "center",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingVertical: 6
   },
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }

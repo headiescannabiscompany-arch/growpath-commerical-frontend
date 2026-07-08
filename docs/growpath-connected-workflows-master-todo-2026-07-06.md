@@ -648,6 +648,7 @@ Completed and pushed:
 372. Commercial Analytics metric and breakdown cards now consume the shared 8px card radius token, extending Facility-style visual polish to the event-backed commercial analytics surface.
 373. Commercial Inventory list cards, summary cards, guide cards, and create action now consume the shared 8px card radius token, aligning the full inventory support surface with Facility-style visual polish.
 374. Personal Forum/Q&A compatibility tab cards, membership actions, discussion actions, and feedback now consume the shared 8px card radius token, extending the Facility-style visual polish to the legacy personal discussion surface.
+375. Personal Forum/Q&A new-post inputs, identity/setup cards, photo controls, action buttons, previews, and feedback now consume the shared 8px card radius token, applying the Facility-style visual polish to the user-facing discussion composer.
 
 ## Working Rule For Codex
 
