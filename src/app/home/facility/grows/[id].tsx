@@ -15,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 10,
     padding: 14

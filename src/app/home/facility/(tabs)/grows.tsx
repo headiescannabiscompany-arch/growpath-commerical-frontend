@@ -4,6 +4,7 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"

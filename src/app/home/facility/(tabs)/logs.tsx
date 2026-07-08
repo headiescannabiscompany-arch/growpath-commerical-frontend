@@ -16,6 +16,7 @@ import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"

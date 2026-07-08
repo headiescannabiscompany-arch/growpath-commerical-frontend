@@ -19,6 +19,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700",
     marginBottom: 10
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#dbeafe",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#eff6ff",
     flexDirection: "row",
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     gap: 10,
@@ -402,7 +403,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "white"
   },
@@ -421,7 +422,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"
