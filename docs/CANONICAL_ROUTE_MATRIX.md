@@ -13,7 +13,8 @@ This file has older generated sections below. Use these current route rules firs
 - Commercial dashboard: `/home/commercial`
 - Commercial Storefront owner route: `/home/commercial/storefront`
 - Public storefront route: `/store/:slug`
-- Legacy `/storefront` is a redirect-only stale-link guard, not a visible owner module.
+- Public storefront alias routes: `/storefront/:slug` and `/storefront/:slug/products/:productId` mirror the `/store` public URL family.
+- Exact legacy `/storefront` is a redirect-only stale-link guard, not a visible owner module.
 - Commercial Feed / Campaigns owner route: `/home/commercial/feed`
 - Shared Feed viewer route: `/feed`
 - Feed is commercial/facility advertising and outreach, not discussion.

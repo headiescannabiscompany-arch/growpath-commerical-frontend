@@ -506,6 +506,7 @@ Completed and pushed:
 230. Public storefront slugs now have a `/storefront/:slug` alias that renders the same public storefront as `/store/:slug`, while exact `/storefront` remains the commercial owner redirect/gated route.
 231. Public storefront product detail slugs now have a `/storefront/:slug/products/:productId` alias that renders the same product page as `/store/:slug/products/:productId`, keeping public storefront URL families consistent.
 232. Deferred user verification now asks the browser pass to compare `/storefront/:slug` and `/storefront/:slug/products/:productId` against the canonical `/store` public storefront URL family.
+233. The canonical route matrix now documents `/storefront/:slug` and `/storefront/:slug/products/:productId` as public aliases while preserving exact `/storefront` as the commercial owner redirect-only stale-link guard.
 
 ## Working Rule For Codex
 

@@ -11,6 +11,12 @@ describe("canonical route matrix current corrections", () => {
     expect(doc).toContain("Commercial dashboard: `/home/commercial`");
     expect(doc).toContain("Commercial Storefront owner route: `/home/commercial/storefront`");
     expect(doc).toContain("Public storefront route: `/store/:slug`");
+    expect(doc).toContain(
+      "Public storefront alias routes: `/storefront/:slug` and `/storefront/:slug/products/:productId` mirror the `/store` public URL family."
+    );
+    expect(doc).toContain(
+      "Exact legacy `/storefront` is a redirect-only stale-link guard, not a visible owner module."
+    );
     expect(doc).toContain("Commercial Feed / Campaigns owner route: `/home/commercial/feed`");
     expect(doc).toContain("Shared Feed viewer route: `/feed`");
     expect(doc).toContain("Feed is commercial/facility advertising and outreach, not discussion.");
