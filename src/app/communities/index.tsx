@@ -199,7 +199,7 @@ export default function Communities() {
           return (
             <AppCard key={id || guild.name}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{guild.name || "Guild"}</Text>
+                <Text style={styles.cardTitle}>{guild.name || "Forum group"}</Text>
                 <Text style={[styles.categoryPill, joined && styles.joinedPill]}>
                   {joined ? "Joined" : guildCategory(guild)}
                 </Text>

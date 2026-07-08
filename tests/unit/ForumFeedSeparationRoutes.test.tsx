@@ -181,6 +181,23 @@ describe("Forum and feed separation copy", () => {
     expect(screen.queryByText("Search communities")).toBeNull();
   });
 
+  it("uses forum group fallback copy in the shared directory", async () => {
+    mockListGuilds.mockResolvedValue([
+      {
+        id: "unnamed-group",
+        name: "",
+        description: "A sparse backend forum group row.",
+        memberCount: 0
+      }
+    ]);
+
+    const screen = render(<CommunitiesDirectoryRoute />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
+    expect(screen.getByText("Forum group")).toBeTruthy();
+    expect(screen.queryByText("Guild")).toBeNull();
+  });
+
   it("opens personal forum list posts through the shared forum detail route", async () => {
     mockListForumPosts.mockResolvedValue([
       { id: "thread-grow-help", title: "Leaf help", body: "What changed?" }

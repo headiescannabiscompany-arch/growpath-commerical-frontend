@@ -60,7 +60,7 @@ export default function GuildOnboardingScreen() {
         const rows = await listGuilds();
         if (mounted) setGuilds(rows);
       } catch (e: any) {
-        if (mounted) setError(e?.message || "Unable to load guilds.");
+        if (mounted) setError(e?.message || "Unable to load forum groups.");
       } finally {
         if (mounted) setLoadingGuilds(false);
       }
@@ -214,7 +214,7 @@ export default function GuildOnboardingScreen() {
                   }`}
                   style={[styles.guildRow, active && styles.guildRowActive]}
                 >
-                  <Text style={styles.guildTitle}>{guild.name || "Guild"}</Text>
+                  <Text style={styles.guildTitle}>{guild.name || "Forum group"}</Text>
                   <Text style={styles.guildMeta}>
                     {guild.description || "No description"} | {guild.memberCount || 0}{" "}
                     members

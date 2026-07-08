@@ -570,6 +570,7 @@ Completed and pushed:
 294. Register-account E2E expectations now look for Forum group onboarding labels instead of stale guild-selection copy, keeping browser coverage aligned with the visible onboarding flow.
 295. Legacy commercial community compatibility screen now presents Forum/Q&A groups, avoids corrupted member glyphs, and renders featured groups from loaded data instead of the imported API function.
 296. Personal Forum/Q&A membership fallbacks now say forum groups instead of guilds, preserving the user-facing discussion vocabulary while leaving backend guild API contracts untouched.
+297. Shared Forum Directory and onboarding group picker fallbacks now say Forum group when backend rows are unnamed, so first-run and directory screens no longer surface stale Guild vocabulary.
 
 ## Working Rule For Codex
 

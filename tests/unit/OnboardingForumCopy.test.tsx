@@ -48,14 +48,29 @@ describe("onboarding Forum/Q&A copy", () => {
     expect(screen.queryByText("Select your guilds")).toBeNull();
   });
 
+  it("uses forum group fallback copy for unnamed onboarding groups", async () => {
+    mockListGuilds.mockResolvedValue([
+      {
+        id: "unnamed-group",
+        name: "",
+        description: "Sparse group row.",
+        memberCount: 0
+      }
+    ]);
+
+    const screen = render(<GuildOnboardingScreen />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
+    expect(screen.getByText("Forum group")).toBeTruthy();
+    expect(screen.queryByText("Guild")).toBeNull();
+  });
+
   it("keeps the Pro walkthrough explicit about Forum/Q&A separation", () => {
     mockParams = { plan: "pro" };
     const screen = render(<WalkthroughsScreen />);
 
     expect(screen.getByText("Keep Forum/Q&A separated")).toBeTruthy();
-    expect(
-      screen.getByText(/forum-group selections shape Feed campaigns/)
-    ).toBeTruthy();
+    expect(screen.getByText(/forum-group selections shape Feed campaigns/)).toBeTruthy();
     expect(screen.queryByText("Keep community separated")).toBeNull();
   });
 });
