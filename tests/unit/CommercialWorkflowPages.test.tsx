@@ -807,6 +807,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
+    expect(screen.getByText(/add banner/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
@@ -987,6 +988,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("prod_course_existing")).toBeTruthy();
     expect(screen.getByText("price_course_existing")).toBeTruthy();
     expect(screen.getByText("https://example.com/course-banner.jpg")).toBeTruthy();
+    expect(screen.queryByText(/add banner/)).toBeNull();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail status"),
