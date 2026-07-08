@@ -21,6 +21,7 @@ describe("pricing constants", () => {
     expect(PRO_PLAN_PRICE_DISPLAY).toBe("$10/month or $100/year");
     expect(COMMERCIAL_PLAN_PRICE_DISPLAY).toBe("$50/month or $500/year");
     expect(FACILITY_PLAN_PRICE_DISPLAY).toBe("$100/month or $1,000/year");
+    expect(PLAN_PRICING.commercial.eyebrow).toBe("Brand");
   });
 
   it("shows annual billing as billed yearly with clear monthly equivalent", () => {

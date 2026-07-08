@@ -638,6 +638,7 @@ Completed and pushed:
 362. Public Marketplace compatibility copy now says Storefront Offers only, removing the remaining visible creator-content wording while keeping old marketplace API names as compatibility plumbing.
 363. Personal Tools now labels the recipe/product handoff area as Products & Production instead of Business & Production, keeping Personal mode focused on tools while still supporting product/facility handoffs.
 364. Shared tab navigation now labels the discussion destination as Forum / Q&A while keeping FeedTab labeled Campaigns, with regression coverage proving Feed remains the promotional campaign route and Forum remains the discussion route.
+365. Public Offers pricing copy now describes the Commercial plan as Brand-focused and says brand operations instead of business operations, keeping upgrade language aligned with storefront-first commercial accounts.
 
 ## Working Rule For Codex
 

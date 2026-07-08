@@ -13,7 +13,7 @@ export const PLAN_PRICING = {
     monthly: 50,
     yearly: 500,
     title: "Commercial",
-    eyebrow: "Business"
+    eyebrow: "Brand"
   },
   facility: {
     monthly: 100,
