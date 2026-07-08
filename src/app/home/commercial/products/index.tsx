@@ -253,7 +253,7 @@ export default function CommercialProductsRoute({
           linkedCourseIds: (product as any).linkedCourseIds || [],
           linkedLiveIds: (product as any).linkedLiveIds || [],
           linkedFeedCampaignIds: feedCampaignIds(product),
-          linkedFeedPostIds: (product as any).linkedFeedPostIds || [],
+          linkedFeedPostIds: feedCampaignIds(product),
           linkedForumThreadId: (product as any).forumThreadId,
           priority:
             missing.includes("checkout") || missing.includes("published")

@@ -429,6 +429,7 @@ Completed and pushed:
 153. Active Feed/Campaigns UI now uses canonical campaign API types and functions, leaving old feed-post names only as compatibility aliases for legacy callers.
 154. Active Feed/Campaigns audit coverage now requires campaign API names in the UI, acceptance coverage uses the canonical campaign list API, and legacy like-count data is normalized to campaign engagement counts at the API edge.
 155. Commercial live scheduling now uses canonical related feed campaign form state while still writing the legacy feed-post alias for backend compatibility, keeping live outreach tied to Feed/Campaigns language.
+156. Commercial product and course setup tasks now mirror canonical feed campaign ids into legacy feed-post compatibility arrays, so older source-link consumers stay connected while the active workflow uses Feed/Campaigns language.
 
 ## Working Rule For Codex
 

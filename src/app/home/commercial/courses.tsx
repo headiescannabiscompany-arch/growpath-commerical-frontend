@@ -222,7 +222,7 @@ export default function CommercialCoursesRoute() {
           linkedGrowIds: course.linkedGrowIds || [],
           linkedLiveIds: course.linkedLiveIds || [],
           linkedFeedCampaignIds: feedCampaignIds(course),
-          linkedFeedPostIds: course.linkedFeedPostIds || [],
+          linkedFeedPostIds: feedCampaignIds(course),
           linkedForumThreadId: course.forumThreadId,
           priority: warnings.some((warning) =>
             [
