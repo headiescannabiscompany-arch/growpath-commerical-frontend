@@ -1000,6 +1000,7 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getByText("Commercial Course Builder")).toBeTruthy();
     expect(screen.getByText("Course creation workflow")).toBeTruthy();
+    expect(screen.getByText(/Commercial courses should add storefront context/)).toBeTruthy();
     expect(screen.getByText("Product education")).toBeTruthy();
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);

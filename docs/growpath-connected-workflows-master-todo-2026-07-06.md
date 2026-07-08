@@ -634,6 +634,7 @@ Completed and pushed:
 358. Connected workflow verification now passes after cleaning the Personal Forum post detail formatting drift that was blocking lint; the gate completed lint, focused connected tests, and production web export successfully.
 359. Legacy Commercial Profile compatibility copy now uses Commercial Brand Profile and Brand labels instead of Business, keeping fallback profile surfaces aligned with the storefront-first commercial workspace language.
 360. Legacy Commercial Forum/Q&A group topics now use Commercial Ops instead of Business, keeping commercial discussion vocabulary aligned with brand/storefront operations rather than generic business labels.
+361. Commercial Course workflow copy now says storefront context instead of business context, keeping commercial courses tied to products, support, onboarding, and storefront education.
 
 ## Working Rule For Codex
 
