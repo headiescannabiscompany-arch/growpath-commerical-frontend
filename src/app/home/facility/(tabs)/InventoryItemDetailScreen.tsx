@@ -200,7 +200,11 @@ export default function InventoryItemDetailScreen() {
         : "stock ok";
 
   return (
-    <ScreenBoundary title="Inventory Item">
+    <ScreenBoundary
+      title="Inventory Item"
+      showBack
+      backFallbackHref="/home/facility/inventory"
+    >
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

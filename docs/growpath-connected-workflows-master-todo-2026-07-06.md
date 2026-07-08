@@ -457,6 +457,7 @@ Completed and pushed:
 181. Commercial task detail now labels linked run context as `Evidence run` instead of `Grow evidence`, keeping owner task context aligned with Product Trial evidence language while preserving legacy linked-grow fields.
 182. Commercial evidence-run list/detail copy now treats the linked run as a private evidence-run record rather than a generic grow workspace, while keeping the compatibility route and API fields intact.
 183. Payment support now uses the real `support@growpathai.com` address, removes corrupted placeholder icon text from the payment help dialog, and has regression coverage for the visible email plus `mailto:` target.
+184. Facility inventory item detail now uses the shared back control with `/home/facility/inventory` as its fallback, with focused route coverage, so nested inventory records obey the workspace back-arrow rule.
 
 ## Working Rule For Codex
 
