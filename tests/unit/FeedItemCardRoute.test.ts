@@ -19,7 +19,7 @@ describe("FeedItemCard route helper", () => {
       "/home/facility/tasks/task-1"
     );
     expect(getRouteForItem(item({ id: "alert-1", type: "alert" }))).toBe(
-      "/home/alerts"
+      "/home/alerts?alertId=alert-1"
     );
     expect(
       getRouteForItem(

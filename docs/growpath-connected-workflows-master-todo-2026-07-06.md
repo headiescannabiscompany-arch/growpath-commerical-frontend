@@ -386,6 +386,7 @@ Completed and pushed:
 110. Public storefront source links now preserve storefront slugs in `/store/:slug`, while commercial owner storefront links stay in `/home/commercial/storefront`, so storefront alerts, campaign CTAs, and schedule items can reopen the actual brand page without leaking owners into the public route.
 111. The canonical route matrix now carries an explicit current-corrections block for Commercial Storefront, public storefronts, shared Feed/Campaigns, and Forum/Q&A, preventing future work from treating legacy `/storefront` or Feed-as-discussion notes as canonical truth.
 112. Legacy feed item routing now treats explicit `storefrontSlug` metadata as a public storefront link to `/store/:slug`, while preserving `brandSlug`/commercial profile metadata for `/brands/:slug`, so promotional cards do not send storefront traffic to the wrong public surface.
+113. Legacy feed item alert routing now preserves alert ids in `/home/alerts?alertId=...`, so feed-derived alert cards reopen the relevant Alert Center row instead of dropping users at the generic alert inbox.
 
 ## Working Rule For Codex
 

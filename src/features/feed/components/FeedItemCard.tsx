@@ -27,7 +27,8 @@ export function getRouteForItem(item: FeedItem): string {
       ? `/home/facility/tasks/${encodeURIComponent(item.id)}`
       : `/home/commercial/tasks/${encodeURIComponent(item.id)}`;
   }
-  if (item.type === "alert") return "/home/alerts";
+  if (item.type === "alert")
+    return `/home/alerts?alertId=${encodeURIComponent(item.id)}`;
   if (item.type === "log") {
     if (item.entityLinks?.growId)
       return `/home/facility/grows/${encodeURIComponent(item.entityLinks.growId)}`;
