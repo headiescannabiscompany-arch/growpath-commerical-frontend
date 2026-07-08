@@ -149,8 +149,8 @@ export default function CommercialBatchPlannerRoute() {
           </View>
           <View style={styles.headerActions}>
             <ActionLink
-              href="/home/personal/tools/soil-nutrient-batch"
-              label="Open Personal Batch Tool"
+              href="/home/commercial/products/new"
+              label="Create Product Draft"
             />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
             <ActionLink href="/home/commercial/products" label="Products" />

@@ -1819,6 +1819,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Effectiveness loop")).toBeTruthy();
     expect(screen.getByText("Naming rule")).toBeTruthy();
     expect(screen.getByText("Product Lines")).toBeTruthy();
+    expect(screen.getByText("Create Product Draft")).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })).toBeTruthy();
+    expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
