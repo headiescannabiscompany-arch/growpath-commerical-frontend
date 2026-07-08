@@ -147,6 +147,7 @@ const publicPayload = {
       title: "Veg Mix Live Demo",
       description: "Walk through the course recipe and product application.",
       relatedCourseId: "course-1",
+      relatedProductId: "product-1",
       scheduledStart: "2026-08-01T18:00:00.000Z"
     }
   ],
@@ -156,6 +157,7 @@ const publicPayload = {
       title: "Veg Mix Live Demo",
       description: "Walk through the course recipe and product application.",
       relatedCourseId: "course-1",
+      relatedProductId: "product-1",
       scheduledStart: "2026-08-01T18:00:00.000Z"
     }
   ],
@@ -370,6 +372,10 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(screen.getByText("Open Course")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
+    expect(screen.getByText("Product Lives")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Live Demo")).toBeTruthy();
+    expect(screen.getByText("Open Live")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/live-session?sessionId=live-1");
     expect(screen.getByText("Promoted Product Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();

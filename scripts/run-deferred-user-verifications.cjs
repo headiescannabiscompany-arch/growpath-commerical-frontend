@@ -149,6 +149,7 @@ const manualChecks = [
       "From Commercial > Storefront, verify product, course, live, campaign, and Q&A cards link back to their owner workspaces.",
       "Open the public brand profile, public storefront, and public product detail and confirm product/course/campaign grow interests display and still route to Store, Feed Campaigns, and Forum/Q&A correctly.",
       "Open the public storefront and confirm Upcoming Lives render from the storefront payload and route to /live-session?sessionId=:id.",
+      "Open public product detail and confirm product-linked lives render as Product Lives with Open Live actions to /live-session?sessionId=:id.",
       "Open the same public storefront and product detail through /storefront/:slug and /storefront/:slug/products/:productId and confirm they match the /store URL family.",
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",

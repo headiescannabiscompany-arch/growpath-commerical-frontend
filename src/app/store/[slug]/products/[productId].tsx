@@ -154,6 +154,7 @@ export default function PublicProductRoute() {
   const [products, setProducts] = useState<any[]>([]);
   const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [lives, setLives] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
@@ -172,6 +173,16 @@ export default function PublicProductRoute() {
       setCourses(
         asArray(
           res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
+        )
+      );
+      setLives(
+        asArray(
+          res?.lives ||
+            data?.lives ||
+            res?.liveEvents ||
+            data?.liveEvents ||
+            res?.featuredLives ||
+            data?.featuredLives
         )
       );
       setFeedPosts(
@@ -234,6 +245,9 @@ export default function PublicProductRoute() {
   const productLine = productLines.find((line) => productLineIds.includes(lineKey(line)));
   const relatedCourses = courses
     .filter((course) => itemLinksProduct(course, productId))
+    .slice(0, 3);
+  const relatedLives = lives
+    .filter((live) => itemLinksProduct(live, productId))
     .slice(0, 3);
   const relatedCampaigns = feedPosts
     .filter((post) => itemLinksProduct(post, productId))
@@ -528,6 +542,48 @@ export default function PublicProductRoute() {
                   </Link>
                 </View>
               ))}
+            </AppCard>
+          ) : null}
+
+          {relatedLives.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Product Lives</Text>
+              <Text style={styles.meta}>
+                Product demos, launch sessions, Q&A lives, and replays connect through the
+                public Live Session surface.
+              </Text>
+              {relatedLives.map((live) => {
+                const liveId = String(live?.id || live?._id || live?.liveId || "");
+                return (
+                  <View key={liveId || live?.title || "live"} style={styles.linkedRow}>
+                    <View style={styles.linkedCopy}>
+                      <Text style={styles.relatedName}>
+                        {live?.title || live?.name || "Live"}
+                      </Text>
+                      {live?.summary || live?.description ? (
+                        <Text style={styles.meta}>
+                          {live.summary || live.description}
+                        </Text>
+                      ) : null}
+                      {live?.scheduledStart ? (
+                        <Text style={styles.meta}>
+                          Starts: {String(live.scheduledStart)}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Link
+                      href={
+                        `/live-session?sessionId=${encodeURIComponent(liveId)}` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Open Live</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
             </AppCard>
           ) : null}
 
