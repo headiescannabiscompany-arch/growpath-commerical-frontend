@@ -636,6 +636,7 @@ Completed and pushed:
 360. Legacy Commercial Forum/Q&A group topics now use Commercial Ops instead of Business, keeping commercial discussion vocabulary aligned with brand/storefront operations rather than generic business labels.
 361. Commercial Course workflow copy now says storefront context instead of business context, keeping commercial courses tied to products, support, onboarding, and storefront education.
 362. Public Marketplace compatibility copy now says Storefront Offers only, removing the remaining visible creator-content wording while keeping old marketplace API names as compatibility plumbing.
+363. Personal Tools now labels the recipe/product handoff area as Products & Production instead of Business & Production, keeping Personal mode focused on tools while still supporting product/facility handoffs.
 
 ## Working Rule For Codex
 

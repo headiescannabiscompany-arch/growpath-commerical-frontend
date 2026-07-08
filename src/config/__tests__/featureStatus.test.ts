@@ -22,6 +22,26 @@ describe("personal feature status manifest", () => {
     expect(personalFeatures.community.description).not.toMatch(/feed|campaign|ad/i);
   });
 
+  test("keeps personal production tools product-oriented instead of business-mode copy", () => {
+    const toolsHubSource = require("fs").readFileSync(
+      require("path").join(
+        __dirname,
+        "..",
+        "..",
+        "app",
+        "home",
+        "personal",
+        "(tabs)",
+        "tools",
+        "index.tsx"
+      ),
+      "utf8"
+    );
+
+    expect(toolsHubSource).toContain('business_production: "Products & Production"');
+    expect(toolsHubSource).not.toContain('business_production: "Business & Production"');
+  });
+
   test("only release tools are navigable by default", () => {
     expect(
       getNavigablePersonalTools().every((feature) => isFeatureNavigable(feature))

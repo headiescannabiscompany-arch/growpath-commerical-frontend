@@ -97,7 +97,7 @@ const AREA_LABELS: Record<FeatureArea, string> = {
   genetics: "Genetics & Selection",
   lab_tc: "Lab / Tissue Culture",
   integrations: "Integrations",
-  business_production: "Business & Production"
+  business_production: "Products & Production"
 };
 
 function ToolCard({
