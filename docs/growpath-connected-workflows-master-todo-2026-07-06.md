@@ -583,6 +583,7 @@ Completed and pushed:
 307. Personal feature metadata now titles the legacy `personal.community` route as Forum / Q&A and the shared menu comment names Forum/Q&A as the separate discussion surface, keeping compatibility keys while removing visible Feed-vs-Forum ambiguity.
 308. Public Store discovery now presents Storefront offers and routes to `/offers` instead of sending users into `/marketplace`, and the Commercial plan offer copy now starts with storefront/products/campaigns rather than marketplace language.
 309. Paywall, global Search, Commercial Tools, and shared capability menus now use Storefront Offers, Creator Content, and External Channel Integrations labels while preserving legacy Marketplace route names only as compatibility targets.
+310. Storefront owner quick product creation now accepts and posts a Stripe price ID alongside external purchase URL, so product checkout readiness can be completed from the storefront workflow instead of forcing owners to leave the brand setup surface.
 
 ## Working Rule For Codex
 

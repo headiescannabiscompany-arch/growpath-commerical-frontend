@@ -436,6 +436,10 @@ describe("Storefront route", () => {
       screen.getByLabelText("Product external purchase URL"),
       "https://shop.example.com/living-soil"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Product Stripe price ID"),
+      "price_storefront_quick"
+    );
     fireEvent.press(screen.getByLabelText("Use product line Living Soil Line"));
     fireEvent.changeText(screen.getByLabelText("Linked recipe id"), "recipe-1");
     fireEvent.changeText(screen.getByLabelText("Linked batch id"), "batch-1");
@@ -457,6 +461,7 @@ describe("Storefront route", () => {
             usageInstructions: "Use 1 gallon per small container.",
             warnings: "Do not use as fast calcium rescue.",
             externalPurchaseUrl: "https://shop.example.com/living-soil",
+            stripePriceId: "price_storefront_quick",
             productLineId: "line-1",
             linkedRecipeId: "recipe-1",
             linkedBatchId: "batch-1",

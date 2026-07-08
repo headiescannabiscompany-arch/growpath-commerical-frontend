@@ -304,6 +304,7 @@ export default function Storefront({
     inventoryItemId: "",
     imageUrl: "",
     externalPurchaseUrl: "",
+    stripePriceId: "",
     usageInstructions: "",
     warnings: "",
     productLineId: "",
@@ -643,6 +644,7 @@ export default function Storefront({
           inventoryItemId: productDraft.inventoryItemId.trim() || undefined,
           imageUrl: productDraft.imageUrl.trim() || undefined,
           externalPurchaseUrl: productDraft.externalPurchaseUrl.trim() || undefined,
+          stripePriceId: productDraft.stripePriceId.trim() || undefined,
           usageInstructions: productDraft.usageInstructions.trim() || undefined,
           warnings: productDraft.warnings.trim() || undefined,
           productLineId: productDraft.productLineId.trim() || undefined,
@@ -669,6 +671,7 @@ export default function Storefront({
         inventoryItemId: "",
         imageUrl: "",
         externalPurchaseUrl: "",
+        stripePriceId: "",
         usageInstructions: "",
         warnings: "",
         productLineId: "",
@@ -1405,6 +1408,16 @@ export default function Storefront({
             }
             accessibilityLabel="Product external purchase URL"
             placeholder="External purchase URL"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <TextInput
+            value={productDraft.stripePriceId}
+            onChangeText={(stripePriceId) =>
+              setProductDraft((draft) => ({ ...draft, stripePriceId }))
+            }
+            accessibilityLabel="Product Stripe price ID"
+            placeholder="Stripe price ID"
             autoCapitalize="none"
             style={styles.input}
           />
