@@ -246,6 +246,7 @@ describe("commercial workflow pages", () => {
             shortDescription: "Seedling-safe base soil",
             externalPurchaseUrl: "https://example.com/base",
             unitSize: "1 cu ft bag",
+            growInterests: ["living soil", "seedlings"],
             specs: {
               sourceTool: "soil-builder",
               npk: "3-1-1",
@@ -1583,6 +1584,10 @@ describe("commercial workflow pages", () => {
       "2 cu ft bag"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail grow interests"),
+      "living soil, dry amendments"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product detail external URL"),
       "https://example.com/new-base"
     );
@@ -1606,6 +1611,7 @@ describe("commercial workflow pages", () => {
             imageUrl: "https://example.com/base-updated.jpg",
             price: 39,
             unitSize: "2 cu ft bag",
+            growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
             stripePriceId: "price_product_updated",
             shortDescription: "Updated product copy.",

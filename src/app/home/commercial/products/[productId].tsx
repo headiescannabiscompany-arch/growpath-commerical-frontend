@@ -57,6 +57,13 @@ function parsePrice(value: string) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
+function splitList(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function productMissingSetup(product: Product | null) {
   const missing: string[] = [];
   if (!productImage(product)) missing.push("image");
@@ -67,6 +74,7 @@ function productMissingSetup(product: Product | null) {
   if (!hasText((product as any)?.unitSize) && !hasText(product?.specs?.unitSize)) {
     missing.push("size/weight");
   }
+  if (!product?.growInterests?.length) missing.push("grow interests");
   if (
     !hasText((product as any)?.externalPurchaseUrl) &&
     !hasText((product as any)?.stripePriceId)
@@ -132,6 +140,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [imageUrl, setImageUrl] = useState("");
   const [price, setPrice] = useState("");
   const [unitSize, setUnitSize] = useState("");
+  const [growInterests, setGrowInterests] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
@@ -146,6 +155,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setImageUrl(productImage(next));
     setPrice(priceInputValue(next));
     setUnitSize(next?.unitSize || next?.specs?.unitSize || "");
+    setGrowInterests(next?.growInterests?.join(", ") || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
     setStripePriceId(next?.stripePriceId || "");
@@ -182,6 +192,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       imageUrl: imageUrl.trim(),
       price: parsePrice(price),
       unitSize: unitSize.trim(),
+      growInterests: splitList(growInterests),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
       externalPurchaseUrl: externalPurchaseUrl.trim(),
@@ -209,6 +220,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         imageUrl: imageUrl.trim() || undefined,
         price: parsePrice(price),
         unitSize: unitSize.trim() || undefined,
+        growInterests: splitList(growInterests),
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
         externalPurchaseUrl: externalPurchaseUrl.trim(),
@@ -273,6 +285,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             label="Size / weight"
             value={(product as any)?.unitSize || specs.unitSize}
           />
+          <DetailRow label="Grow interests" value={product?.growInterests} />
           <DetailRow label="External URL" value={product?.externalPurchaseUrl} />
           <DetailRow label="Stripe price" value={product?.stripePriceId} />
         </View>
@@ -447,6 +460,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             placeholder="Size / weight, e.g. 5 lb bag"
             style={styles.input}
             value={unitSize}
+          />
+          <TextInput
+            accessibilityLabel="Commercial product detail grow interests"
+            onChangeText={setGrowInterests}
+            placeholder="Grow interests, comma separated"
+            style={styles.input}
+            value={growInterests}
           />
           <TextInput
             accessibilityLabel="Commercial product detail external URL"
