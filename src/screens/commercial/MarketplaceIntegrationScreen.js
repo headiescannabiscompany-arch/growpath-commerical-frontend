@@ -4,10 +4,11 @@ import { View, Text, StyleSheet } from "react-native";
 export default function MarketplaceIntegrationScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Marketplace & Social Integrations</Text>
+      <Text style={styles.header}>Marketplace & External Channels</Text>
       <Text style={styles.info}>
-        Connect your vendor account to social media and marketplace platforms for enhanced
-        reach and sales.
+        Connect vendor accounts to external marketplaces and off-platform channels.
+        GrowPath Feed / Campaigns remains the in-app outreach system, and Forum / Q&A
+        remains the discussion system.
       </Text>
       <View style={styles.statusCard}>
         <Text style={styles.statusTitle}>Available now</Text>
