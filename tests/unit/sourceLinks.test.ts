@@ -235,6 +235,15 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "course",
+        sourceId: "npk-course-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/courses/npk-course-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "storefront",
         sourceId: "storefront-1",
         workspaceType: "commercial"

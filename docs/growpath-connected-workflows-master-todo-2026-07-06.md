@@ -593,6 +593,8 @@ Completed and pushed:
 317. Public Live Session pages now turn related product, course, and Forum/Q&A IDs into clickable actions, using storefront-aware product/course routes when a storefront slug is available and preserving Twitch/replay controls.
 318. Public storefront product CTAs now reflect checkout readiness: Stripe-ready products show Buy, external-only products show External Link, and products with no checkout destination do not expose a fake Buy action.
 319. Public product detail pages now render product-linked lives as Product Lives with Open Live actions, so product demos, launch sessions, Q&A lives, and replays are connected from the buyer-facing product record.
+320. Support aliases are live for the full shared alias set: support, help, contact, hello, info, admin, billing, orders, sales, partners, privacy, legal, security, commercial, facility, courses, live, noreply, and notifications @growpathai.com, with public routes exposing only user-contact destinations.
+321. Shared source-link routing now opens viewer course sources on `/store/:slug/courses/:courseId` when storefront metadata exists, so course ads, live context, reminders, alerts, and schedule items can land on the public brand course page instead of only the personal course query route.
 
 ## Working Rule For Codex
 

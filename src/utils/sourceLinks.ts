@@ -141,6 +141,12 @@ export function sourceObjectHref(source: SourceLike) {
       : id
         ? `/store?q=${encoded(id)}`
         : "/store";
+  const publicCourseHref = (id: string) =>
+    storefrontSlug && id
+      ? `/store/${encoded(storefrontSlug)}/courses/${encoded(id)}`
+      : id
+        ? `/home/personal/courses?courseId=${encoded(id)}`
+        : "/home/personal/courses";
 
   if (sourceType === "task") {
     if (!taskId) return "/home/schedule";
@@ -242,9 +248,7 @@ export function sourceObjectHref(source: SourceLike) {
       return courseId
         ? `/home/facility/sop-runs/${encoded(courseId)}`
         : "/home/facility/sop-runs";
-    return courseId
-      ? `/home/personal/courses?courseId=${encoded(courseId)}`
-      : "/home/personal/courses";
+    return publicCourseHref(courseId);
   }
 
   if (
