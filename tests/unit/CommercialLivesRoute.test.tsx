@@ -103,6 +103,8 @@ describe("CommercialLivesRoute", () => {
             linkedLiveId: "live-1",
             linkedCourseId: "course-1",
             linkedProductId: "product-1",
+            linkedFeedPostId: "campaign-1",
+            linkedForumThreadId: "thread-1",
             priority: "high",
             status: "open",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }

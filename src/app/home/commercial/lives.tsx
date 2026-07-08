@@ -187,6 +187,8 @@ export default function CommercialLivesRoute() {
           linkedLiveId: String(id),
           linkedCourseId: live.relatedCourseId,
           linkedProductId: live.relatedProductId,
+          linkedFeedPostId: live.relatedFeedPostId,
+          linkedForumThreadId: live.forumThreadId,
           priority:
             warnings.includes("schedule date/time") ||
             warnings.includes("connect Twitch channel") ||
