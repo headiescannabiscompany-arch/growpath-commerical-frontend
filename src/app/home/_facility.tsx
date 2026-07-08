@@ -86,7 +86,7 @@ export default function FacilityHome() {
     >
       {!facility.selectedId ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚠️ Action Required</Text>
+          <Text style={styles.sectionTitle}>Action Required</Text>
           <AppCard style={styles.warningCard}>
             <Text style={styles.cardTitle}>Select a Facility</Text>
             <Text style={styles.cardDesc}>
@@ -95,7 +95,7 @@ export default function FacilityHome() {
             </Text>
 
             <Link href="/home/facility/select" asChild>
-              <Text style={styles.link}>Select Facility →</Text>
+              <Text style={styles.link}>Select Facility</Text>
             </Link>
           </AppCard>
         </View>
@@ -107,46 +107,46 @@ export default function FacilityHome() {
             <Text style={styles.sectionTitle}>Operations</Text>
 
             <AppCard>
-              <Text style={styles.cardTitle}>📊 Dashboard</Text>
+              <Text style={styles.cardTitle}>Dashboard</Text>
               <Text style={styles.cardDesc}>
                 Overview, metrics, alerts, and quick actions
               </Text>
 
               <Link href="/home/facility" asChild>
-                <Text style={styles.link}>Open Dashboard →</Text>
+                <Text style={styles.link}>Open Dashboard</Text>
               </Link>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.cardTitle}>🏢 Rooms</Text>
+              <Text style={styles.cardTitle}>Rooms</Text>
               <Text style={styles.cardDesc}>
                 Manage grow rooms, zones, and environmental controls
               </Text>
 
               <Link href="/home/facility/rooms" asChild>
-                <Text style={styles.link}>Manage Rooms →</Text>
+                <Text style={styles.link}>Manage Rooms</Text>
               </Link>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.cardTitle}>✅ Tasks</Text>
+              <Text style={styles.cardTitle}>Tasks</Text>
               <Text style={styles.cardDesc}>
                 Daily tasks, assignments, verification, and SOPs
               </Text>
 
               <Link href="/home/facility/tasks" asChild>
-                <Text style={styles.link}>View Tasks →</Text>
+                <Text style={styles.link}>View Tasks</Text>
               </Link>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.cardTitle}>📦 Inventory</Text>
+              <Text style={styles.cardTitle}>Inventory</Text>
               <Text style={styles.cardDesc}>
                 Track inventory, supplies, and stock levels
               </Text>
 
               <Link href="/home/facility/inventory" asChild>
-                <Text style={styles.link}>Manage Inventory →</Text>
+                <Text style={styles.link}>Manage Inventory</Text>
               </Link>
             </AppCard>
           </View>
@@ -155,35 +155,35 @@ export default function FacilityHome() {
             <Text style={styles.sectionTitle}>Team & Compliance</Text>
 
             <AppCard>
-              <Text style={styles.cardTitle}>👥 Team</Text>
+              <Text style={styles.cardTitle}>Team</Text>
               <Text style={styles.cardDesc}>
                 Manage team members, roles, and permissions
               </Text>
 
               <Link href="/home/facility/team" asChild>
-                <Text style={styles.link}>Manage Team →</Text>
+                <Text style={styles.link}>Manage Team</Text>
               </Link>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.cardTitle}>📋 Compliance</Text>
+              <Text style={styles.cardTitle}>Compliance</Text>
               <Text style={styles.cardDesc}>
                 Compliance tracking, audit logs, and reports
               </Text>
 
               <Link href="/home/facility/compliance" asChild>
-                <Text style={styles.link}>View Compliance →</Text>
+                <Text style={styles.link}>View Compliance</Text>
               </Link>
             </AppCard>
 
             <AppCard>
-              <Text style={styles.cardTitle}>📝 SOPs</Text>
+              <Text style={styles.cardTitle}>SOPs</Text>
               <Text style={styles.cardDesc}>
                 Standard operating procedures and protocols
               </Text>
 
               <Link href="/home/facility/sop-runs" asChild>
-                <Text style={styles.link}>Manage SOPs →</Text>
+                <Text style={styles.link}>Manage SOPs</Text>
               </Link>
             </AppCard>
           </View>
@@ -194,13 +194,13 @@ export default function FacilityHome() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Facility</Text>
           <AppCard>
-            <Text style={styles.cardTitle}>🏭 Switch Facility</Text>
+            <Text style={styles.cardTitle}>Switch Facility</Text>
             <Text style={styles.cardDesc}>
               You have access to {facility.facilities.length} facilities
             </Text>
 
             <Link href="/home/facility/select" asChild>
-              <Text style={styles.link}>Switch Facility →</Text>
+              <Text style={styles.link}>Switch Facility</Text>
             </Link>
           </AppCard>
         </View>
@@ -209,13 +209,13 @@ export default function FacilityHome() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
         <AppCard>
-          <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
+          <Text style={styles.cardTitle}>Profile & Settings</Text>
           <Text style={styles.cardDesc}>
             Account settings, preferences, notifications
           </Text>
 
           <Link href="/home/facility/profile" asChild>
-            <Text style={styles.link}>Open Profile →</Text>
+            <Text style={styles.link}>Open Profile</Text>
           </Link>
         </AppCard>
       </View>
