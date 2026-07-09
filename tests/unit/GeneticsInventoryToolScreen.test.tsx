@@ -121,15 +121,24 @@ describe("GeneticsInventoryToolRoute", () => {
           }),
           tasks: [
             expect.objectContaining({
-              title: "Verify genetics record for Blueberry Keeper"
+              title: "Verify genetics record for Blueberry Keeper",
+              allDay: true,
+              calendarType: "genetics_preservation_followup",
+              sourceStage: "genetics_record_review",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
+              })
             }),
             expect.objectContaining({
               title: "Plan preservation for Blueberry Keeper",
               priority: "high",
+              sourceStage: "preservation_planning",
               description: expect.stringContaining("Keep a mother backup")
             }),
             expect.objectContaining({
-              title: "Link Blueberry Keeper to grow, pheno, or clone records"
+              title: "Link Blueberry Keeper to grow, pheno, or clone records",
+              sourceStage: "genetics_record_linking"
             })
           ]
         })

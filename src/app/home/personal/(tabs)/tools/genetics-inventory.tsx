@@ -13,12 +13,22 @@ function geneticsTaskPlan(outputs: Record<string, any>) {
   const keeperSignals = Array.isArray(outputs.keeperSignals)
     ? outputs.keeperSignals.join(", ")
     : "";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "genetics_preservation_followup",
+    sourceStage: "genetics_record_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
 
   return [
     {
       title: `Verify genetics record for ${cultivar}`,
       priority: "medium" as const,
       dueDate: tomorrow(1),
+      ...calendarMetadata,
       description:
         "Confirm breeder/source, parentage, material type, flower timing, and any missing provenance before relying on this record."
     },
@@ -26,6 +36,8 @@ function geneticsTaskPlan(outputs: Record<string, any>) {
       title: `Plan preservation for ${cultivar}`,
       priority: recommendations.length ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(3),
+      ...calendarMetadata,
+      sourceStage: "preservation_planning",
       description: [
         recommendations.length
           ? `Preservation notes: ${recommendations.slice(0, 3).join("; ")}`
@@ -39,6 +51,8 @@ function geneticsTaskPlan(outputs: Record<string, any>) {
       title: `Link ${cultivar} to grow, pheno, or clone records`,
       priority: "medium" as const,
       dueDate: tomorrow(7),
+      ...calendarMetadata,
+      sourceStage: "genetics_record_linking",
       description:
         "Attach this genetics record to active plants, clone rooting notes, pheno hunt scores, mother stock, or tissue culture records."
     }
