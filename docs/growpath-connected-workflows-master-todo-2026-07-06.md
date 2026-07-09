@@ -854,6 +854,7 @@ Completed and pushed:
 578. pH / EC Range Check task plans and default retest tasks now carry all-day pH/EC calendar metadata, source-stage values, and 12-hour reminders so retests, plant-response logging, source-water/feed review, and calculator-provided follow-ups appear in the shared Schedule with measurement context.
 579. Harvest Readiness decision plans and default recheck tasks now carry all-day harvest-readiness calendar metadata, source-stage values, and 12-hour reminders so maturity rechecks, top/lower trichome photos, harvest-window decisions, and dry/cure setup appear in the shared Schedule with harvest context.
 580. Dry / Cure Guard monitoring plans and default condition-check tasks now carry all-day dry/cure calendar metadata, source-stage values, and 12-hour reminders so dry-room checks, bud quality inspections, jar RH/burp reviews, and outcome notes appear in the shared Schedule with harvest-batch context.
+581. Run-To-Run Comparison next-run tasks now use specific source-stage values for post-run decision review, next-run template updates, missing-data backfill, and cultivar/environment separation while preserving all-day run-comparison calendar metadata and 24-hour reminders.
 
 ## Working Rule For Codex
 

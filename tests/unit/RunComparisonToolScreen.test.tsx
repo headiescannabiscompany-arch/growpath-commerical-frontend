@@ -130,7 +130,7 @@ describe("RunComparisonToolRoute", () => {
               title: "Record run comparison decisions",
               allDay: true,
               calendarType: "run_comparison_followup",
-              sourceStage: "post_run_review",
+              sourceStage: "post_run_decision_review",
               reminderPlan: {
                 label: "24 hours before",
                 channels: ["in_app"],
@@ -141,15 +141,18 @@ describe("RunComparisonToolRoute", () => {
             expect.objectContaining({
               title: "Update next-run task template",
               calendarType: "run_comparison_followup",
+              sourceStage: "next_run_template_update",
               description: expect.stringContaining("VPD")
             }),
             expect.objectContaining({
               title: "Fill missing comparison data",
               priority: "high",
+              sourceStage: "comparison_data_backfill",
               description: expect.stringContaining("missing yield")
             }),
             expect.objectContaining({
               title: "Separate cultivar and environment effects",
+              sourceStage: "cultivar_environment_effect_review",
               description: expect.stringContaining("genetics/pheno")
             })
           ]

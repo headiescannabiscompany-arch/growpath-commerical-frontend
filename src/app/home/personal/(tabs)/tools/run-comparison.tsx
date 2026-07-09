@@ -51,22 +51,22 @@ function parseRuns(value: string) {
 
 function runComparisonTaskPlan(outputs: Record<string, any>) {
   const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
-  const metadata = {
+  const metadata = (sourceStage: string) => ({
     allDay: true,
     calendarType: "run_comparison_followup",
-    sourceStage: "post_run_review",
+    sourceStage,
     reminderPlan: {
       label: "24 hours before",
       channels: ["in_app"],
       reminders: [{ offsetMinutes: -1440 }]
     }
-  };
+  });
   if (planned.length) {
     return planned.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `Run comparison follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
-      ...metadata,
+      ...metadata(String(task?.sourceStage || `run_comparison_followup_${index + 1}`)),
       description:
         task?.description ||
         "Use this run comparison result to update next-run planning, notes, environment targets, and task templates."
@@ -85,14 +85,14 @@ function runComparisonTaskPlan(outputs: Record<string, any>) {
       title: "Record run comparison decisions",
       priority: "medium" as const,
       dueDate: tomorrow(1),
-      ...metadata,
+      ...metadata("post_run_decision_review"),
       description: `Compare ${bestRun} against ${worstRun}; save the environment, feeding, IPM, dry/cure, and quality lessons that should change the next run.`
     },
     {
       title: "Update next-run task template",
       priority: "medium" as const,
       dueDate: tomorrow(3),
-      ...metadata,
+      ...metadata("next_run_template_update"),
       description:
         "Turn the comparison into concrete next-run actions for VPD, DLI, feeding, IPM checks, dry/cure timing, harvest timing, and pheno scoring."
     }
@@ -103,7 +103,7 @@ function runComparisonTaskPlan(outputs: Record<string, any>) {
       title: "Fill missing comparison data",
       priority: "high",
       dueDate: tomorrow(2),
-      ...metadata,
+      ...metadata("comparison_data_backfill"),
       description:
         "Add missing yield, quality, issue, environment, task, dry/cure, or smoke-note data before trusting the comparison."
     });
@@ -114,7 +114,7 @@ function runComparisonTaskPlan(outputs: Record<string, any>) {
       title: "Separate cultivar and environment effects",
       priority: "medium",
       dueDate: tomorrow(4),
-      ...metadata,
+      ...metadata("cultivar_environment_effect_review"),
       description:
         "Review whether the result is driven by genetics/pheno differences or by grow process differences before changing SOPs."
     });
