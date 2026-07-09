@@ -169,9 +169,12 @@ function notificationScheduleMetadata(row: NotificationRow) {
     course: "course_notice_review",
     course_assignment: "course_assignment_followup",
     feed_campaign: "campaign_notification_followup",
+    forum: "forum_notification_followup",
+    lesson: "lesson_notification_followup",
     live: "live_notification_followup",
     live_event: "live_notification_followup",
     notification: "notification_followup",
+    order: "order_notification_followup",
     product: "product_notification_followup",
     product_batch: "batch_notification_followup",
     product_trial: "trial_notification_followup",
@@ -185,7 +188,8 @@ function notificationScheduleMetadata(row: NotificationRow) {
     sourceStage: stageBySource[normalized] || `${normalized}_notification_followup`,
     dueAt: row.scheduledFor
       ? String(row.scheduledFor).slice(0, 10)
-      : new Date().toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10),
+    reminderPlan: { label: "24 hours before", channels: ["in_app"] }
   };
 }
 

@@ -344,6 +344,7 @@ describe("NotificationCenterRoute", () => {
             allDay: true,
             calendarType: "live_notification_followup",
             sourceStage: "live_notification_followup",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] },
             priority: "normal",
             status: "open"
           })
@@ -416,6 +417,7 @@ describe("NotificationCenterRoute", () => {
             allDay: true,
             calendarType: "feed_campaign_notification_followup",
             sourceStage: "campaign_notification_followup",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] },
             priority: "normal",
             status: "open"
           })
@@ -470,6 +472,10 @@ describe("NotificationCenterRoute", () => {
             notificationSourceId: "lesson-2",
             linkedCourseId: "course-2",
             linkedLessonId: "lesson-2",
+            allDay: true,
+            calendarType: "lesson_notification_followup",
+            sourceStage: "lesson_notification_followup",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] },
             priority: "normal",
             status: "open"
           })
@@ -501,6 +507,7 @@ describe("NotificationCenterRoute", () => {
             allDay: true,
             calendarType: "course_assignment_notification_followup",
             sourceStage: "course_assignment_followup",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] },
             priority: "high",
             status: "open"
           })
@@ -531,7 +538,8 @@ describe("NotificationCenterRoute", () => {
             linkedStorefrontSlug: "living-soil-labs",
             allDay: true,
             calendarType: "storefront_notification_followup",
-            sourceStage: "storefront_notification_followup"
+            sourceStage: "storefront_notification_followup",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
       )
