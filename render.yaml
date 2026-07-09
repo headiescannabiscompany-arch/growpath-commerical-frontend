@@ -11,6 +11,14 @@ services:
         value: https://api.growpathai.com
       - key: EXPO_PUBLIC_SENTRY_DSN
         sync: false
+      - key: EXPO_PUBLIC_PRIVACY_URL
+        value: https://growpathai.com/privacy
+      - key: EXPO_PUBLIC_TERMS_URL
+        value: https://growpathai.com/terms
+      - key: EXPO_PUBLIC_SUPPORT_URL
+        value: https://growpathai.com/support
+      - key: EXPO_PUBLIC_DELETE_ACCOUNT_URL
+        value: https://growpathai.com/account/delete
     routes:
       - type: rewrite
         source: /*
