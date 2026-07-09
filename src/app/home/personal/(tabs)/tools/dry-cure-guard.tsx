@@ -15,6 +15,18 @@ function n(value: string, fallback?: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function dryCureCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "dry_cure_monitoring",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
   const mode = String(payload.mode || "drying").toLowerCase();
   const firstSuggestion = Array.isArray(outputs.taskSuggestions)
@@ -34,6 +46,7 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
       title: firstSuggestion?.title || "Check dry/cure conditions",
       priority: firstSuggestion?.priority || "medium",
       dueDate: tomorrow(1),
+      ...dryCureCalendarMetadata("dry_cure_condition_check"),
       description:
         riskSummary ||
         "Check dry-room temp/RH, airflow, bud density risk, and jar RH if curing."
@@ -42,6 +55,7 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
       title: "Inspect buds for dry/cure quality",
       priority: mode === "drying" ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(mode === "drying" ? 2 : 1),
+      ...dryCureCalendarMetadata("dry_cure_bud_inspection"),
       description:
         "Check stem flex/snap, exterior crispness, interior moisture, aroma, and any ammonia or hay notes."
     },
@@ -50,6 +64,7 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
         mode === "curing" ? "Check jar RH and burp response" : "Prepare jar RH check",
       priority: "medium" as const,
       dueDate: tomorrow(mode === "curing" ? 1 : 5),
+      ...dryCureCalendarMetadata("dry_cure_jar_rh_review"),
       description:
         "Record jar or bag RH, burp timing, aroma trend, texture, and whether material is stabilizing or over-drying."
     },
@@ -57,6 +72,7 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
       title: "Record dry/cure outcome notes",
       priority: "medium" as const,
       dueDate: tomorrow(mode === "curing" ? 3 : 7),
+      ...dryCureCalendarMetadata("dry_cure_outcome_notes"),
       description:
         "Save smell, texture, moisture, trim readiness, and cure quality notes back to the grow timeline."
     }
@@ -166,7 +182,8 @@ export default function DryCureGuardToolScreen() {
         title: outputs.taskSuggestions?.[0]?.title || "Check dry/cure conditions",
         description: outputs.nextAction || "Check dry/cure conditions.",
         priority: outputs.taskSuggestions?.[0]?.priority || "medium",
-        dueDate: tomorrow(1)
+        dueDate: tomorrow(1),
+        ...dryCureCalendarMetadata("dry_cure_condition_check")
       })}
       buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
         {

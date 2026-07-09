@@ -149,16 +149,26 @@ describe("DryCureGuardToolScreen", () => {
             expect.objectContaining({
               title: "Check dry room tomorrow",
               priority: "high",
+              allDay: true,
+              calendarType: "dry_cure_monitoring",
+              sourceStage: "dry_cure_condition_check",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("Mold risk: medium")
             }),
             expect.objectContaining({
-              title: "Inspect buds for dry/cure quality"
+              title: "Inspect buds for dry/cure quality",
+              sourceStage: "dry_cure_bud_inspection"
             }),
             expect.objectContaining({
-              title: "Check jar RH and burp response"
+              title: "Check jar RH and burp response",
+              sourceStage: "dry_cure_jar_rh_review"
             }),
             expect.objectContaining({
-              title: "Record dry/cure outcome notes"
+              title: "Record dry/cure outcome notes",
+              sourceStage: "dry_cure_outcome_notes"
             })
           ]
         })
