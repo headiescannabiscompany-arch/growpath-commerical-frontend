@@ -885,6 +885,10 @@ Completed and pushed:
 609. Source routing now lets alert follow-up tasks open the underlying alert source when `alertSourceType` is present, so product, feed campaign, and lesson/course alerts route to storefront, commercial campaign, or course workspaces instead of stopping at Alert Center.
 610. Public storefront product detail and NPK / Feed Recipe Builder copy now consistently use label N-P2O5-K2O wording, and public product detail prefers the `labelNpk` alias before legacy `npk`, preventing soil/amendment guaranteed-analysis math from being shown as vague N-P-K.
 611. Commercial page registry support navigation now labels commercial inventory as Inventory Support while keeping it demoted from primary tabs, matching the product-generated inventory rule and avoiding a separate-store inventory implication.
+612. Frontend CI and Production Build Preflight were restored to green on `main` after fixing the NPK builder Prettier failure and aligning the commercial task detail test with alert-source routing to the underlying commercial object.
+613. Public live URL verification passed against the production support, privacy, terms, delete-account, API health, and API readiness endpoints after the Render deploy gate was cleared.
+614. The build TODO and ledger now record that Facility workspace visual polish is the standard for Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces.
+615. Live-session campaign links are now workspace-aware: commercial-owned live sessions open `/home/commercial/feed?campaignId=...`, facility-owned sessions open `/home/facility/feed?campaignId=...`, and public sessions keep `/feed?campaignId=...` placement routing.
 
 ## Working Rule For Codex
 
