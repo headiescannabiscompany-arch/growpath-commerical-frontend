@@ -311,6 +311,42 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "alert",
+        sourceId: "alert-2",
+        linkedAlertId: "alert-2",
+        alertSourceType: "product",
+        alertSourceId: "veg-mix-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/products/veg-mix-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "alert",
+        sourceId: "alert-3",
+        linkedAlertId: "alert-3",
+        alertSourceType: "feed_campaign",
+        alertSourceId: "campaign-3",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/feed?campaignId=campaign-3");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "alert",
+        sourceId: "alert-4",
+        linkedAlertId: "alert-4",
+        alertSourceType: "lesson",
+        alertSourceId: "lesson-4",
+        linkedCourseId: "course-4",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/courses/course-4?lessonId=lesson-4");
+
+    expect(
+      sourceObjectHref({
         sourceType: "notification",
         linkedNotificationId: "notification-linked-1",
         workspaceType: "personal"

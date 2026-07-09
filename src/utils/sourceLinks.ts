@@ -197,6 +197,22 @@ export function sourceObjectHref(source: SourceLike) {
     }
   }
 
+  if (sourceType === "alert" && text(source?.alertSourceType)) {
+    const alertSourceType = text(source.alertSourceType).toLowerCase();
+    if (alertSourceType && alertSourceType !== "alert") {
+      return sourceObjectHref({
+        ...source,
+        actionUrl: "",
+        sourceType: alertSourceType,
+        sourceId: firstText(
+          source?.alertSourceId,
+          source?.alertSourceObjectId,
+          source?.sourceObjectId
+        )
+      });
+    }
+  }
+
   if (sourceType === "task") {
     if (!taskId) return "/home/schedule";
     if (workspace === "commercial") return `/home/commercial/tasks/${taskId}`;

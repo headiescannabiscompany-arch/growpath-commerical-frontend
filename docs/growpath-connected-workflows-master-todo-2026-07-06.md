@@ -882,6 +882,7 @@ Completed and pushed:
 606. Commercial course lesson task templates now include all-day Schedule metadata, a `course_lesson_task` calendar type, lesson-type source stage, and a 24-hour in-app reminder while preserving course, product, live, and Forum/Q&A links, so lesson actions enter the shared Task/Schedule system instead of remaining bare course-only metadata.
 607. Notification-created tasks now always carry a 24-hour in-app reminder plan and classify lesson, order, and Forum notification source stages, keeping inbox-driven live, feed, lesson, course, storefront, and commercial follow-ups visible in the shared Schedule with reminder context.
 608. Source routing now lets notification follow-up tasks open the underlying notification source when `notificationSourceType` is present, so live, feed campaign, and lesson/course notifications route to their commercial, public storefront, or course workspaces instead of stopping at the Notification Center.
+609. Source routing now lets alert follow-up tasks open the underlying alert source when `alertSourceType` is present, so product, feed campaign, and lesson/course alerts route to storefront, commercial campaign, or course workspaces instead of stopping at Alert Center.
 
 ## Working Rule For Codex
 
