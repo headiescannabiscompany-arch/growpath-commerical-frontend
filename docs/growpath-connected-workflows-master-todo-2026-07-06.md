@@ -799,6 +799,7 @@ Completed and pushed:
 523. Public storefront detail copy now frames the storefront itself as the public brand home base and labels the older brand-profile route as a legacy secondary profile link, preserving compatibility without making Profile look primary.
 524. Public storefront product and course detail pages now label the older brand-profile link as Legacy Profile, keeping Back to Store as the primary public commerce/education navigation while preserving profile compatibility.
 525. Storefront owner Public Discovery now labels `/brands/:slug` as a legacy brand-profile compatibility view while keeping Store Page and Storefront Alias as the primary View-as-User destinations.
+526. Deferred user verification now includes storefront-primary checks for owner Public Discovery plus public storefront/product/course pages, covering Storefront/Back-to-Store priority and Legacy Profile compatibility labels in the later browser pass.
 
 ## Working Rule For Codex
 

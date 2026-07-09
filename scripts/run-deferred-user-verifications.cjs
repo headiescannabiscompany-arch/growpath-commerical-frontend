@@ -173,10 +173,12 @@ const manualChecks = [
     area: "Storefront and commercial readiness",
     checks: [
       "Open Commercial > Storefront and verify Storefront is a top-level destination with View as User and setup status.",
+      "In Commercial > Storefront Public Discovery, confirm Store Page and Storefront Alias are the primary View-as-User destinations and /brands/:slug is labeled as a legacy brand-profile compatibility view.",
       "Open active Commercial Tools/capability menu entries and confirm Storefront Offers opens Storefront and Feed / Campaigns opens the campaign builder; Marketplace compatibility screens should not appear in active navigation.",
       "From Commercial > Storefront, verify product, course, live, campaign, and Q&A cards link back to their owner workspaces.",
       "Open the public brand profile, public storefront, and public product detail and confirm product/course/campaign grow interests display and still route to Store, Feed Campaigns, and Forum/Q&A correctly.",
       "Open the public storefront and confirm Upcoming Lives render from the storefront payload and route to /live-session?sessionId=:id.",
+      "Open public storefront, product detail, and course detail pages and confirm Storefront/Back to Store is primary while the older brand-profile route is labeled Legacy Profile.",
       "Open public product detail and confirm product-linked lives render as Product Lives with Open Live actions to /live-session?sessionId=:id.",
       "Open the same public storefront and product detail through /storefront/:slug and /storefront/:slug/products/:productId and confirm they match the /store URL family.",
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
