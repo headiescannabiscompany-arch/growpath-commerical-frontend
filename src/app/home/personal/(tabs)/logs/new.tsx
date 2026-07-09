@@ -559,7 +559,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
   subtitle: { color: "#64748B" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   notes: {
     minHeight: 110,
     borderWidth: 1,
@@ -633,7 +638,12 @@ const styles = StyleSheet.create({
     padding: 9,
     fontWeight: "700"
   },
-  warning: { color: "#9A3412", backgroundColor: "#FFEDD5", borderRadius: radius.card, padding: 8 },
+  warning: {
+    color: "#9A3412",
+    backgroundColor: "#FFEDD5",
+    borderRadius: radius.card,
+    padding: 8
+  },
   helper: { color: "#64748B", lineHeight: 19 },
   insightCard: {
     borderWidth: 1,

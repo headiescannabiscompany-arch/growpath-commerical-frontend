@@ -115,7 +115,8 @@ function taskSourceId(item: AnyRec | null): string {
     return String(item.linkedToolRunId || item.toolRunId || "");
   if (sourceType === "recipe")
     return String(item.linkedRecipeId || item.recipeId || item.linkedToolRunId || "");
-  if (sourceType === "product") return String(item.linkedProductId || item.productId || "");
+  if (sourceType === "product")
+    return String(item.linkedProductId || item.productId || "");
   if (sourceType === "product_batch")
     return String(item.linkedProductBatchId || item.productBatchId || "");
   if (sourceType === "product_trial")

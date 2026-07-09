@@ -240,7 +240,8 @@ function buildSuggestedAutomationRules(
         ...base,
         ruleType: "task_suggestion",
         triggerMetric: "irrigation_event",
-        action: "Create follow-up tasks from irrigation events when plant response is due."
+        action:
+          "Create follow-up tasks from irrigation events when plant response is due."
       });
     }
 

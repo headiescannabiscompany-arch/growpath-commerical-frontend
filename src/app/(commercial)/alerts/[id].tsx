@@ -80,7 +80,10 @@ function linkedFieldsForAlertSource(item: AnyRec | null) {
 
 function storefrontMetadata(item: AnyRec | null) {
   const slug =
-    item?.storefrontSlug || item?.linkedStorefrontSlug || item?.brandSlug || item?.publicSlug;
+    item?.storefrontSlug ||
+    item?.linkedStorefrontSlug ||
+    item?.brandSlug ||
+    item?.publicSlug;
   return slug
     ? {
         storefrontSlug: String(slug),

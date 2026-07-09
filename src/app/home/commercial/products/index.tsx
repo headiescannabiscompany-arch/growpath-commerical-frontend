@@ -639,7 +639,8 @@ export default function CommercialProductsRoute({
           Product cards should link to Details instead of dead-ending in a storefront list
         </Text>
         <Text style={styles.bullet}>
-          Storefront should expose featured products; legacy brand profile remains secondary
+          Storefront should expose featured products; legacy brand profile remains
+          secondary
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/store" label="Public Store Directory" />

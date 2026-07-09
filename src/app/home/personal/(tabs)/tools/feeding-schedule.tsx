@@ -427,7 +427,12 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", lineHeight: 20 },
   context: { color: "#166534", fontWeight: "800" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

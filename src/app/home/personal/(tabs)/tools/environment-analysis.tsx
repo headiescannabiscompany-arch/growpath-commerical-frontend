@@ -481,7 +481,12 @@ const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   field: { minWidth: 140, flexGrow: 1, flexBasis: "45%" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
@@ -491,5 +496,10 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   disabled: { opacity: 0.5 },
-  locked: { color: "#991B1B", backgroundColor: "#FEE2E2", borderRadius: radius.card, padding: 9 }
+  locked: {
+    color: "#991B1B",
+    backgroundColor: "#FEE2E2",
+    borderRadius: radius.card,
+    padding: 9
+  }
 });

@@ -22,7 +22,7 @@
       },
       {
         "file": "src/app/home/personal/(tabs)/tasks.tsx",
-        "mustContain": "Redirect href=\"/home/personal/grows\""
+        "mustContain": "SchedulePicker"
       }
     ]
   },
@@ -207,11 +207,11 @@
     "safetyAssertions": [
       {
         "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
-        "mustContain": "NPK Label Ratio (Preview)"
+        "mustContain": "NPK / Feed Recipe Builder"
       },
       {
         "file": "src/app/home/personal/(tabs)/tools/_layout.tsx",
-        "mustContain": "NPK Label Ratio (Preview)"
+        "mustContain": "NPK / Feed Recipe Builder"
       }
     ]
   },

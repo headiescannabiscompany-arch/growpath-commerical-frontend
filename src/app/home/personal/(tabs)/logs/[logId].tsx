@@ -402,7 +402,12 @@ const styles = StyleSheet.create({
   notes: { color: "#334155", lineHeight: 20 },
   linkMeta: { color: "#475569", lineHeight: 19 },
   label: { color: "#334155", fontWeight: "800" },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   notesInput: {
     minHeight: 130,
     borderWidth: 1,

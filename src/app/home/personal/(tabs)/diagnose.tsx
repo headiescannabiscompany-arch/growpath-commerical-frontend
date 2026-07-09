@@ -1084,7 +1084,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: 12
   },
-  photo: { width: "100%", height: 240, borderRadius: radius.card, backgroundColor: "#E2E8F0" },
+  photo: {
+    width: "100%",
+    height: 240,
+    borderRadius: radius.card,
+    backgroundColor: "#E2E8F0"
+  },
   photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
   primaryButton: {
     alignSelf: "flex-start",
@@ -1103,7 +1108,12 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: "#166534", fontWeight: "800" },
   disabled: { opacity: 0.5 },
-  locked: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: radius.card },
+  locked: {
+    color: "#9A3412",
+    backgroundColor: "#FFF7ED",
+    padding: 10,
+    borderRadius: radius.card
+  },
   feedback: { color: "#334155", fontWeight: "700" },
   readinessPanel: {
     borderWidth: 1,

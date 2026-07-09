@@ -296,8 +296,8 @@ export default function CommercialCoursesRoute() {
         <Text style={styles.cardTitle}>Course creation workflow</Text>
         <Text style={styles.body}>
           All user types can create courses. Commercial courses should add storefront
-          context: product use, grow methods, plant care, seasonal gardening, support,
-          and customer onboarding.
+          context: product use, grow methods, plant care, seasonal gardening, support, and
+          customer onboarding.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>

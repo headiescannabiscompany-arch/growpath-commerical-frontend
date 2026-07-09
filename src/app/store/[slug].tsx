@@ -232,9 +232,9 @@ export default function PublicStorefrontRoute() {
           <View style={styles.profilePanel}>
             <Text style={styles.profileTitle}>Storefront profile</Text>
             <Text style={styles.meta}>
-              This storefront is the public brand home base for products, courses,
-              lives, campaigns, and Q&A. The legacy profile view remains available for
-              extra public links.
+              This storefront is the public brand home base for products, courses, lives,
+              campaigns, and Q&A. The legacy profile view remains available for extra
+              public links.
             </Text>
             <Link href={`/brands/${encodeURIComponent(slug)}` as any} asChild>
               <Pressable style={styles.secondaryButton}>

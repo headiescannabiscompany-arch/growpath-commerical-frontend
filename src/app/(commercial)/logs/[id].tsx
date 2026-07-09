@@ -118,7 +118,10 @@ export default function CommercialLogDetailRoute() {
             <View style={styles.kvWrap}>
               {sourcePath ? (
                 <Link href={sourcePath as any} asChild>
-                  <Text accessibilityLabel="View commercial log source" style={styles.link}>
+                  <Text
+                    accessibilityLabel="View commercial log source"
+                    style={styles.link}
+                  >
                     View source
                   </Text>
                 </Link>

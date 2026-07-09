@@ -307,7 +307,8 @@ export default function CommercialProfileRoute() {
             Public product alias: /storefront/:slug/products/:productId
           </Text>
           <Text style={styles.urlText}>
-            Similar storefronts and return-to-feed actions stay available from public pages.
+            Similar storefronts and return-to-feed actions stay available from public
+            pages.
           </Text>
         </View>
         <View style={styles.actions}>
