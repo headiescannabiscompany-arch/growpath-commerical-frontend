@@ -45,7 +45,7 @@ describe("StoreIndex", () => {
       storefronts: [
         {
           name: "Living Soil Labs",
-          slug: "living-soil-labs",
+          linkedStorefrontSlug: "living-soil-labs",
           description: "Soil and nutrient products."
         }
       ]
@@ -78,6 +78,8 @@ describe("StoreIndex", () => {
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Profile")).toBeTruthy();
     expect(screen.getAllByText("Storefront").length).toBeGreaterThan(0);
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs");
+    expect(mockLinkHrefs).toContain("/brands/living-soil-labs");
   });
 
   it("searches public brands by query", async () => {

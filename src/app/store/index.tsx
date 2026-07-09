@@ -19,7 +19,14 @@ function asArray(payload: any) {
 }
 
 function rowSlug(row: any) {
-  return String(row?.slug || row?.storefrontSlug || row?.brandSlug || "");
+  return String(
+    row?.slug ||
+      row?.storefrontSlug ||
+      row?.linkedStorefrontSlug ||
+      row?.brandSlug ||
+      row?.publicSlug ||
+      ""
+  );
 }
 
 export default function StoreIndex() {
