@@ -7,6 +7,10 @@ export type CommercialFeedPostType = CommercialFeedCampaignType | "iso" | "quest
 
 export type CommercialFeedCampaign = {
   id: string;
+  campaignId?: string;
+  feedCampaignId?: string;
+  linkedFeedCampaignId?: string;
+  linkedFeedPostId?: string;
   type: CommercialFeedPostType;
   campaignKind?: string;
   authorType?: string;
@@ -52,7 +56,15 @@ export type CommercialFeedPost = CommercialFeedCampaign;
 function normalizeCampaign(row: any): CommercialFeedCampaign {
   return {
     ...row,
-    id: String(row?.id || row?._id || ""),
+    id: String(
+      row?.id ||
+        row?._id ||
+        row?.campaignId ||
+        row?.feedCampaignId ||
+        row?.linkedFeedCampaignId ||
+        row?.linkedFeedPostId ||
+        ""
+    ),
     type: String(row?.type || "update") as CommercialFeedPostType,
     body: String(row?.body || row?.description || ""),
     engagementCount: Number(row?.engagementCount ?? row?.likeCount ?? 0),

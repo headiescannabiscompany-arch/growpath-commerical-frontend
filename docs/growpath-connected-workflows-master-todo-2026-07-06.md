@@ -783,6 +783,7 @@ Completed and pushed:
 507. Personal Growlink import previews now save suggested automation/tool handoffs with the account structure, including VPD/Dew Point Guard and high-humidity/dew-point alert suggestions when imported room streams include temperature and RH.
 508. Facility controller room imports now save suggested automation/tool handoffs on imported equipment mappings, including VPD/Dew Point Guard, high-humidity/dew-point checks, crop steering/dryback review, and irrigation follow-up task suggestions from normalized read-only streams.
 509. Live session detail now preserves linked Feed/Campaign outreach context with `/feed?campaignId=...` routing, keeping live product/course/Q&A/replay actions connected to the exact promotional campaign instead of the generic Feed root.
+510. Feed/Campaign normalization now treats `campaignId`, `feedCampaignId`, `linkedFeedCampaignId`, and `linkedFeedPostId` as canonical campaign identity aliases, so exact campaign links from storefronts, lives, alerts, tasks, notifications, and schedules can focus the intended outreach card even when the backend does not return `id`.
 
 ## Working Rule For Codex
 

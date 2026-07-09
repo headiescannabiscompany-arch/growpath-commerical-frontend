@@ -259,6 +259,40 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByLabelText("Selected feed live live-1")).toBeTruthy();
   });
 
+  it("focuses exact campaign routes when the API returns campaign id aliases", async () => {
+    mockRouteParams = { campaignId: "campaign-alias-1" };
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              campaignId: "campaign-alias-1",
+              type: "update",
+              campaignKind: "storefront_ad",
+              title: "Alias storefront campaign",
+              body: "Campaign id came back under a campaign alias.",
+              tags: ["storefront"],
+              growInterests: ["education"],
+              storefrontSlug: "living-soil-labs",
+              authorType: "commercial"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Alias storefront campaign")).toBeTruthy()
+    );
+
+    expect(
+      screen.getByLabelText("Selected feed campaign campaign-alias-1")
+    ).toBeTruthy();
+  });
+
   it("limits facility feed creation to facility outreach", async () => {
     mockMode = "facility";
     const screen = render(<CommercialFeedRoute />);
