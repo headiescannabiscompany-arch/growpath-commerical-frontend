@@ -861,6 +861,7 @@ Completed and pushed:
 585. Watering Planner task creation now carries all-day watering calendar metadata, watering-application source stage, and 12-hour reminders so watering volume/runoff actions appear in the shared Schedule with ToolRun context.
 586. PPFD / DLI Planner task creation now carries all-day lighting calendar metadata, PPFD/DLI source-stage values, and 12-hour reminders so light checks and stress-response follow-ups appear in the shared Schedule with ToolRun context.
 587. AI Feeding Schedule review tasks now carry all-day feeding-review calendar metadata, risk-aware source-stage values, and 12-hour reminders so generated feed plans create schedule-visible review work with ToolRun context.
+588. Harvest Estimator check tasks now carry all-day harvest-estimator calendar metadata, harvest review source-stage values, and 12-hour reminders so estimated readiness checks appear in the shared Schedule with ToolRun context.
 
 ## Working Rule For Codex
 

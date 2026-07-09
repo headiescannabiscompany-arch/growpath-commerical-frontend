@@ -36,6 +36,21 @@ function dueInDays(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function harvestEstimatorTaskMetadata(taskTitle?: string) {
+  const normalizedTitle = String(taskTitle || "").toLowerCase();
+  return {
+    allDay: true,
+    calendarType: "harvest_estimator_followup",
+    sourceStage: normalizedTitle.includes("trichome")
+      ? "harvest_trichome_recheck"
+      : "harvest_window_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function HarvestEstimatorScreen() {
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -302,7 +317,8 @@ export default function HarvestEstimatorScreen() {
                         ...result.warnings.map((warning) => `Warning: ${warning}`)
                       ].join("\n"),
                       priority: result.tasksToCreate[0]?.priority || "medium",
-                      dueDate: dueInDays(result.tasksToCreate[0]?.dueInDays ?? 1)
+                      dueDate: dueInDays(result.tasksToCreate[0]?.dueInDays ?? 1),
+                      ...harvestEstimatorTaskMetadata(result.tasksToCreate[0]?.title)
                     });
                     if (!taskResult.ok) throw new Error(taskResult.error);
                     setFeedback("Created harvest check task.");
