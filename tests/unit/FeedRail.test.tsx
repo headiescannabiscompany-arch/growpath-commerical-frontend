@@ -34,6 +34,35 @@ describe("FeedRail", () => {
       .mockResolvedValue({});
   });
 
+  it("keeps fallback promotional rail cards on storefront routes", async () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({ items: [], nextCursor: null });
+
+    const screen = render(<FeedRail slots={1} railMode="promo-only" placement="top" />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Living Soil Labs: full-spectrum soil")).toBeTruthy()
+    );
+    fireEvent.press(
+      screen.getByLabelText("View soil line for Living Soil Labs: full-spectrum soil")
+    );
+
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "ad_click",
+        objectType: "feed_ad",
+        targetUrl: "/store/living-soil-labs",
+        source: "feed_banner",
+        metadata: expect.objectContaining({
+          title: "Living Soil Labs: full-spectrum soil",
+          cta: "View soil line"
+        })
+      })
+    );
+    expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ targetUrl: "/brands/living-soil-labs" })
+    );
+  });
+
   it("uses real feed campaigns when available and keeps Q&A links shared", async () => {
     mockListCommercialFeedCampaigns.mockResolvedValue({
       items: [

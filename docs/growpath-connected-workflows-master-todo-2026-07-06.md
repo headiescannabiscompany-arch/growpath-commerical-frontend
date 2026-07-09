@@ -803,6 +803,7 @@ Completed and pushed:
 527. Store-facing discovery copy now says Find/Similar Storefronts on Store index, public storefront, and product detail pages while preserving Similar Brands language only on the true brand-profile route.
 528. Schedule / Agenda source-link inference now recognizes `storefrontSlug`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases, so storefront launch tasks and scheduled items can open the exact public storefront instead of falling back to generic task/source routes.
 529. Alert Center and Notification Center task creation now preserve direct storefront slug aliases as source IDs and linked storefront fields, so storefront reminders can become tasks without losing the public storefront route context.
+530. FeedRail fallback promotional and education placements now point to public Storefront routes instead of legacy Brand Profile routes, keeping offline/default outreach cards aligned with Feed as storefront/product/course/live promotion.
 
 ## Working Rule For Codex
 

@@ -131,19 +131,19 @@ const EDUCATION_ITEMS = [
     title: "Triple Bag: clones in production",
     body: "Follow how production clones are selected, stabilized, and tracked before release.",
     cta: "Open update",
-    href: "/brands/triple-bag-genetics"
+    href: "/store/triple-bag-genetics"
   },
   {
     title: "Triple Bag: terpene target notes",
     body: "How breeders think about myrcene, limonene, pinene, esters, thiols, and flavor goals.",
     cta: "Open notes",
-    href: "/brands/triple-bag-genetics"
+    href: "/store/triple-bag-genetics"
   },
   {
     title: "Triple Bag: phenotype chemistry",
     body: "A practical look at traits that may shape blank flavor profiles across a line.",
     cta: "Read breakdown",
-    href: "/brands/triple-bag-genetics"
+    href: "/store/triple-bag-genetics"
   }
 ];
 
@@ -152,7 +152,7 @@ const AD_ITEMS = [
     title: "Living Soil Labs: full-spectrum soil",
     body: "Living soil and nutrient lines for gardeners across every grow interest.",
     cta: "View soil line",
-    href: "/brands/living-soil-labs",
+    href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-05T10:00:00.000Z",
     engagementCount: 81,
@@ -206,8 +206,8 @@ const FACILITY_AD_ITEMS = [
   {
     title: "Living Soil Labs: production soil programs",
     body: "Soil and nutrient planning for commercial benches, mothers, and production rooms.",
-    cta: "View profile",
-    href: "/brands/living-soil-labs",
+    cta: "Visit Storefront",
+    href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-05T12:00:00.000Z",
     engagementCount: 44,
