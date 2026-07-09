@@ -49,6 +49,18 @@ function dueTomorrow() {
   return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
+function feedingReviewTaskMetadata(riskLevel: string) {
+  return {
+    allDay: true,
+    calendarType: "feeding_schedule_review",
+    sourceStage: riskLevel === "high" ? "feeding_risk_review" : "feeding_schedule_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function FeedingScheduleToolScreen() {
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -398,7 +410,8 @@ export default function FeedingScheduleToolScreen() {
                           .filter(Boolean)
                           .join("\n"),
                         priority: "medium",
-                        dueDate: dueTomorrow()
+                        dueDate: dueTomorrow(),
+                        ...feedingReviewTaskMetadata(review.riskLevel)
                       });
                       if (!taskResult.ok) throw new Error(taskResult.error);
                       setFeedback("Created feeding review task.");
