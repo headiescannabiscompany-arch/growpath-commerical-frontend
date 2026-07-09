@@ -100,4 +100,67 @@ describe("commercial feed API", () => {
       imageUrl: "/uploads/feed-image.jpg"
     });
   });
+
+  it("normalizes campaign and storefront identity aliases when listing campaigns", async () => {
+    const { listCommercialFeedCampaigns } = require("@/api/commercialFeed");
+    mockApiRequest.mockResolvedValueOnce({
+      items: [
+        {
+          campaignId: "campaign-alias-1",
+          type: "listing",
+          description: "Product campaign body",
+          tags: [123, "soil"],
+          growInterests: ["living soil"],
+          linkedStorefrontSlug: "living-soil-labs",
+          likeCount: 7
+        },
+        {
+          linkedFeedCampaignId: "campaign-alias-2",
+          type: "education",
+          body: "Course campaign body",
+          brandSlug: "soil-school"
+        },
+        {
+          linkedFeedPostId: "campaign-alias-3",
+          type: "drop",
+          body: "Live campaign body",
+          publicSlug: "live-lab"
+        }
+      ],
+      nextCursor: "cursor-2"
+    });
+
+    const result = await listCommercialFeedCampaigns({
+      type: "all",
+      q: "soil",
+      limit: 3
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
+      params: { q: "soil", limit: 3 }
+    });
+    expect(result.nextCursor).toBe("cursor-2");
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        id: "campaign-alias-1",
+        body: "Product campaign body",
+        tags: ["123", "soil"],
+        growInterests: ["living soil"],
+        storefrontSlug: "living-soil-labs",
+        engagementCount: 7
+      }),
+      expect.objectContaining({
+        id: "campaign-alias-2",
+        body: "Course campaign body",
+        storefrontSlug: "soil-school",
+        tags: [],
+        growInterests: []
+      }),
+      expect.objectContaining({
+        id: "campaign-alias-3",
+        body: "Live campaign body",
+        storefrontSlug: "live-lab"
+      })
+    ]);
+  });
 });
