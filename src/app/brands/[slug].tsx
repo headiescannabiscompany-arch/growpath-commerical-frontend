@@ -299,7 +299,11 @@ export default function PublicBrandProfileRoute() {
                     </View>
                     <Link
                       href={
-                        `/courses${id ? `?courseId=${encodeURIComponent(id)}` : ""}` as any
+                        id
+                          ? (`/store/${encodeURIComponent(slug)}/courses/${encodeURIComponent(
+                              id
+                            )}` as any)
+                          : ("/courses" as any)
                       }
                       asChild
                     >

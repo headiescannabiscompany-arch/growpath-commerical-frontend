@@ -233,6 +233,7 @@ describe("public commercial routes", () => {
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();

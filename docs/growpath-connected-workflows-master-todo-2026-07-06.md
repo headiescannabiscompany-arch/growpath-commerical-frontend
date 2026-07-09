@@ -779,6 +779,7 @@ Completed and pushed:
 503. Deferred backend persistence verification now includes the dedicated IPM GPT verifier service test alongside the IPM Scout route storage test.
 504. Public storefront product and course detail campaign CTAs now preserve the feed campaign id in `/feed?campaignId=...`, so related outreach cards reopen the exact promotional campaign instead of dropping users on the generic Feed root.
 505. Public brand profile and storefront root campaign CTAs now also preserve `/feed?campaignId=...`, keeping all public commercial campaign cards tied to the exact Feed/Campaigns outreach record.
+506. Public brand profile course cards now open the brand storefront course detail route instead of the generic course catalog, preserving product/course/live/campaign/Stripe storefront context.
 
 ## Working Rule For Codex
 
