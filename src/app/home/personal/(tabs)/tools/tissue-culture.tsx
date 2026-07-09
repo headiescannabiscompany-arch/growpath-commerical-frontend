@@ -10,6 +10,18 @@ function numberOrFallback(value: unknown, fallback: number) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function tissueCultureCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "tissue_culture_workflow",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
+}
+
 function tissueCultureTaskPlan(
   outputs: Record<string, any>,
   payload: Record<string, any>
@@ -26,15 +38,7 @@ function tissueCultureTaskPlan(
     Array.isArray(failureModes) && failureModes.length
       ? `Likely failure modes: ${failureModes.map((item: any) => item?.issue || item).join("; ")}`
       : "";
-  const calendarMetadata = {
-    allDay: true,
-    calendarType: "tissue_culture_workflow",
-    sourceStage: stage,
-    reminderPlan: {
-      channels: ["in_app"],
-      reminders: [{ offsetMinutes: -24 * 60 }]
-    }
-  };
+  const calendarMetadata = tissueCultureCalendarMetadata(stage);
 
   return [
     {
@@ -210,6 +214,7 @@ export default function TissueCultureToolRoute() {
         title: outputs.nextTransferTasks?.[0]?.title || "Review TC vessels for transfer",
         priority: outputs.nextTransferTasks?.[0]?.priority || "medium",
         dueDate: tomorrow(outputs.nextTransferTasks?.[0]?.dueInDays || 14),
+        ...tissueCultureCalendarMetadata("transfer_review"),
         description:
           "Review vessel IDs, contamination, rooting status, media, and transfer notes."
       })}

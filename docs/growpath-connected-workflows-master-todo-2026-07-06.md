@@ -866,6 +866,7 @@ Completed and pushed:
 590. Bud Rot Risk inspection tasks now carry bud-rot calendar metadata, canopy/urgent source-stage values, and risk-aware reminders so canopy inspections appear in the shared Schedule with ToolRun context.
 591. Dew Point Guard inspection tasks now carry dew-point calendar metadata, window/condensation source-stage values, and risk-aware reminders so manual and sensor-backed dew point reviews appear in the shared Schedule with ToolRun context.
 592. Nutrient Chemistry review tasks now carry all-day nutrient-chemistry calendar metadata, source/compatibility source-stage values, and 12-hour reminders so nutrient source decisions appear in the shared Schedule with ToolRun context.
+593. Stress Test and Tissue Culture default follow-up tasks now reuse their workflow calendar metadata, source-stage values, and reminders so generic follow-up actions match their multi-task plans in the shared Schedule.
 
 ## Working Rule For Codex
 

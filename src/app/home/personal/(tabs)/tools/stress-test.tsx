@@ -12,6 +12,18 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
+function stressTestCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "stress_test_followup",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 function stressTestTaskPlan(outputs: Record<string, any>) {
   const highRisk = outputs.riskLevel === "high";
   const shouldRetest = Boolean(outputs.selectionSignals?.rejectOrRetest);
@@ -20,15 +32,9 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
     outputs.stressResponseScore === undefined
       ? "not scored"
       : String(outputs.stressResponseScore);
-  const calendarMetadata = {
-    allDay: true,
-    calendarType: "stress_test_followup",
-    sourceStage: String(outputs.stage || "stress_recovery"),
-    reminderPlan: {
-      channels: ["in_app"],
-      reminders: [{ offsetMinutes: -12 * 60 }]
-    }
-  };
+  const calendarMetadata = stressTestCalendarMetadata(
+    String(outputs.stage || "stress_recovery")
+  );
 
   const tasks = [
     {
@@ -181,6 +187,7 @@ export default function StressTestToolRoute() {
         title: outputs.taskSuggestion?.title || "Recheck stress recovery",
         priority: outputs.taskSuggestion?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 2),
+        ...stressTestCalendarMetadata("stress_recovery"),
         description:
           "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
       })}

@@ -5,6 +5,7 @@ import StressTestToolRoute from "@/app/home/personal/(tabs)/tools/stress-test";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockSaveToolRunAndCreateTask = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -56,7 +57,7 @@ jest.mock("@/api/growpathModules", () => ({
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: jest.fn(),
+  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args),
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
@@ -85,6 +86,11 @@ describe("StressTestToolRoute", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockSaveToolRunAndCreateTask.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskId: "task-1"
+    });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -156,6 +162,36 @@ describe("StressTestToolRoute", () => {
               description: expect.stringContaining("crop steering")
             })
           ]
+        })
+      )
+    );
+  });
+
+  it("creates default stress follow-up task with shared Schedule metadata", async () => {
+    const screen = render(<StressTestToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Run Stress Testing"));
+
+    await waitFor(() => expect(screen.getByText("Stress Testing result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Follow-up Task"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "stress-test",
+          toolRunId: "toolrun-1",
+          title: "Inspect recovery photos",
+          priority: "high",
+          allDay: true,
+          calendarType: "stress_test_followup",
+          sourceStage: "stress_recovery",
+          reminderPlan: expect.objectContaining({
+            channels: ["in_app"],
+            reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+          }),
+          description: expect.stringContaining("Review recovery")
         })
       )
     );
