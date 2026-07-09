@@ -2,7 +2,7 @@
 
 > **Status**: CANONICAL TRUTH
 > **Last Updated**: 2026-07-08
-> **Source**: Generated from docs/FRONTEND_SCREEN_MAP.md + backend/entitlements.js + actual routes
+> **Source**: Generated from docs/FRONTEND_ROUTE_MAP.md + backend/entitlements.js + actual routes
 
 ---
 
@@ -19,6 +19,8 @@ This file has older generated sections below. Use these current route rules firs
 - Shared Feed viewer route: `/feed`
 - Feed is commercial/facility advertising and outreach, not discussion.
 - Forum/Q&A discussion routes are `/forum` and `/forum/post/:id`.
+- Legacy community route `/communities` is a Forum/Q&A directory compatibility route. It may show forum groups and memberships, but it is not a Feed, campaign, or separate social/community product.
+- Workspace "community" entry points, such as `/home/personal/community` and `/home/commercial/community`, are Forum/Q&A support surfaces. They must use forum/discussion APIs and link discussion detail pages through `/forum/post/:id`.
 - Commercial routes should keep products, product lines, batches/lots, inventory, trials, courses, lives, orders, analytics, and campaigns connected to the commercial workspace.
 - Generated sections below this correction block are historical context only when they mention `/feed` as a commercial dashboard, `/storefront` as the owner storefront, or `/dashboard` as the facility dashboard.
 - Current root routing is `/home/personal`, `/home/commercial`, `/home/facility/select`, and `/home/facility`.
@@ -127,7 +129,7 @@ src/app/
 - `/orders` → OrdersScreen
 - `/inventory` → InventoryScreen (commercial)
 - `/courses` → CoursesScreen (create/sell)
-- `/communities` → CommunitiesScreen
+- `/communities` → Forum Directory compatibility route (legacy community path; uses forum groups, not Feed/Campaigns)
 - `/social` → SocialMediaScreen
 - `/analytics` → AnalyticsScreen
 - `/profile` → ProfileScreen

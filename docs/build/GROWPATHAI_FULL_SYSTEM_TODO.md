@@ -124,3 +124,4 @@ Legend:
 - [x] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
 - [x] Production export sanity check.
 - [x] Route pollution guard: stale underscored `/home/_personal` and `/home/_facility` route files removed, and `scripts/inventory-ui-routes.cjs` now fails on underscored non-layout files under `src/app`.
+- [x] Forum/Q&A route naming guard: `/forum` and `/forum/post/:id` are canonical discussion routes; `/communities` and workspace `community` entry points are documented/tested as Forum/Q&A compatibility/support surfaces, not Feed/Campaigns.

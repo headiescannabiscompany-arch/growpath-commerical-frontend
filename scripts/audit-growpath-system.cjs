@@ -410,6 +410,33 @@ function commercialCommunityUsesForum(routes) {
   );
 }
 
+function legacyCommunitiesRouteIsForumDirectory(routes) {
+  const source = routeSource(routes, "/communities");
+  if (!source) return false;
+  return (
+    /Forum Directory/.test(source) &&
+    /Search forum groups/.test(source) &&
+    /\blistGuilds\b/.test(source) &&
+    !/Search communities|Community Feed|Feed \/ Campaigns|commercialFeed/.test(source)
+  );
+}
+
+function personalCommunityUsesForumAndCampaignPlacements(routes) {
+  const source = routeSource(routes, "/home/personal/community");
+  if (!source) return false;
+  return (
+    /Forum \/ Q&A/.test(source) &&
+    /\blistForumPosts\b/.test(source) &&
+    /\blistGuilds\b/.test(source) &&
+    source.includes('href={`/forum/post/${encodeURIComponent(id)}`}') &&
+    /\bPersonalFeedPlacement\b/.test(source) &&
+    /commercial\/facility outreach, not discussion/.test(source) &&
+    !/createCommercialFeedPost|listCommercialFeedCampaigns|from "@\/api\/commercialFeed"/.test(
+      source
+    )
+  );
+}
+
 function facilityFeedCompatibilityUsesCampaignRoute() {
   const file = path.join(SRC, "screens", "FacilityFeedScreen.js");
   if (!fs.existsSync(file)) return false;
@@ -698,6 +725,10 @@ function main() {
     "/home/personal/forum"
   );
   const commercialCommunityForumOnly = commercialCommunityUsesForum(files.routes);
+  const legacyCommunitiesForumDirectory =
+    legacyCommunitiesRouteIsForumDirectory(files.routes);
+  const personalCommunityForumOnly =
+    personalCommunityUsesForumAndCampaignPlacements(files.routes);
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
@@ -739,6 +770,8 @@ function main() {
     legacyPersonalSocialToolsVisibleModule:
       legacyPersonalSocialToolsRouteExists && !legacyPersonalSocialToolsRedirectOnly,
     commercialCommunityForumOnly,
+    legacyCommunitiesForumDirectory,
+    personalCommunityForumOnly,
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
     commercialFeedApiCampaignEndpoint,
@@ -820,6 +853,8 @@ function main() {
     `- Legacy personal social-tools visible module: ${decisionChecks.legacyPersonalSocialToolsVisibleModule}`,
     `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
     `- Commercial Forum/Q&A uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
+    `- Legacy /communities route is Forum/Q&A directory, not Feed/Campaigns: ${decisionChecks.legacyCommunitiesForumDirectory}`,
+    `- Personal community tab uses Forum/Q&A APIs plus campaign placements: ${decisionChecks.personalCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
     `- Commercial Feed API creates campaigns through /api/commercial/feed: ${decisionChecks.commercialFeedApiCampaignEndpoint}`,

@@ -57,10 +57,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 
 ### ROUTE/PATH DRIFT
 
-8. Community vs forum canonical route naming
+8. Community vs forum canonical route naming - DONE 2026-07-09
 - Problem: runtime contract and route docs use different canonical labels.
-- Action: define canonical route key + alias strategy; update docs to show canonical and alias explicitly.
-- Done when: route contracts and tab labels are consistent and testable.
+- Action completed: defined `/forum` and `/forum/post/:id` as canonical Forum/Q&A discussion routes; documented `/communities` as a legacy Forum/Q&A directory compatibility route; kept workspace `community` entry points as Forum/Q&A support surfaces, not Feed/Campaigns.
+- Evidence: `ForumFeedSeparationRoutes.test.tsx` covers `/communities`, personal community, forum detail links, and composer copy. `audit:growpath-system` now checks legacy community route copy plus personal/commercial community API separation.
+- Guardrail: Feed remains commercial/facility advertising and outreach. Forum/Q&A remains discussion, support, and Q&A.
 
 9. Personal logs/tasks behavior mismatch
 - Problem: docs disagree on whether logs/tasks are functional vs redirected/disabled.
