@@ -74,6 +74,9 @@ export default function LiveSessionScreen({ route }) {
     session?.campaignId ||
     session?.linkedFeedPostId ||
     "";
+  const campaignWorkspace = String(
+    session?.workspaceType || session?.ownerType || session?.accountType || ""
+  ).toLowerCase();
   const storefrontSlug =
     session?.storefrontSlug ||
     session?.linkedStorefrontSlug ||
@@ -101,8 +104,14 @@ export default function LiveSessionScreen({ route }) {
   const forumHref = forumThreadId
     ? `/forum/post/${encodeURIComponent(String(forumThreadId))}`
     : "";
+  const campaignBaseHref =
+    campaignWorkspace === "commercial"
+      ? "/home/commercial/feed"
+      : campaignWorkspace === "facility"
+        ? "/home/facility/feed"
+        : "/feed";
   const feedHref = feedCampaignId
-    ? `/feed?campaignId=${encodeURIComponent(String(feedCampaignId))}`
+    ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
 
   return (

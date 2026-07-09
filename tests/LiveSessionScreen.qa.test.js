@@ -89,6 +89,7 @@ describe("LiveSessionScreen QA", () => {
       relatedCourseId: "course-1",
       linkedForumThreadId: "thread-1",
       linkedFeedCampaignId: "campaign-1",
+      ownerType: "commercial",
       replayUrl: "https://www.twitch.tv/videos/123"
     });
 
@@ -114,9 +115,30 @@ describe("LiveSessionScreen QA", () => {
     expect(getByText("Open Course")).toBeTruthy();
     expect(getByText("Open Q&A")).toBeTruthy();
     expect(getByText("Open Campaign")).toBeTruthy();
-    expect(getByTestId("live-link-/feed?campaignId=campaign-1")).toBeTruthy();
+    expect(
+      getByTestId("live-link-/home/commercial/feed?campaignId=campaign-1")
+    ).toBeTruthy();
     fireEvent.press(getByText("Open Replay"));
     expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
+  });
+
+  it("keeps public campaign links on the public feed placement route", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+
+    mockApiRequest.mockResolvedValueOnce({
+      twitchChannel: "mychannel",
+      title: "Public Session",
+      linkedFeedCampaignId: "campaign-public"
+    });
+
+    const { getByTestId, queryByText } = renderWithNav();
+
+    await waitFor(() => {
+      expect(queryByText(/Public Session/i)).toBeTruthy();
+    });
+
+    expect(getByTestId("live-link-/feed?campaignId=campaign-public")).toBeTruthy();
   });
 
   it("hides moderation UI for non-admin", async () => {
