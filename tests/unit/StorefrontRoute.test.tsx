@@ -436,9 +436,22 @@ describe("Storefront route", () => {
       "living soil, seedlings"
     );
     fireEvent.changeText(screen.getByLabelText("Product size or weight"), "5 lb bag");
+    fireEvent.changeText(screen.getByLabelText("Product label N-P2O5-K2O"), "3-1-1");
     fireEvent.changeText(
       screen.getByLabelText("Product short description"),
       "Seedling-safe living soil"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product guaranteed analysis"),
+      "N 3\nP2O5 1\nK2O 1"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product ingredients"),
+      "Compost\nAeration\nAlfalfa meal"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product application rate"),
+      "1 cup per cubic foot"
     );
     fireEvent.changeText(
       screen.getByLabelText("Product usage instructions"),
@@ -477,9 +490,25 @@ describe("Storefront route", () => {
             category: "soil mix",
             growInterests: ["living soil", "seedlings"],
             unitSize: "5 lb bag",
+            npk: "3-1-1",
+            labelNpk: "3-1-1",
+            guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
+            ingredients: ["Compost", "Aeration", "Alfalfa meal"],
+            applicationRate: "1 cup per cubic foot",
             shortDescription: "Seedling-safe living soil",
             usageInstructions: "Use 1 gallon per small container.",
+            directions: "Use 1 gallon per small container.",
             warnings: "Do not use as fast calcium rescue.",
+            specs: {
+              unitSize: "5 lb bag",
+              npk: "3-1-1",
+              labelNpk: "3-1-1",
+              guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
+              ingredients: ["Compost", "Aeration", "Alfalfa meal"],
+              directions: "Use 1 gallon per small container.",
+              applicationRate: "1 cup per cubic foot",
+              warnings: "Do not use as fast calcium rescue."
+            },
             externalPurchaseUrl: "https://shop.example.com/living-soil",
             stripeProductId: "prod_storefront_quick",
             stripePriceId: "price_storefront_quick",

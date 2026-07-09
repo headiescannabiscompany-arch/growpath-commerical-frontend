@@ -307,6 +307,10 @@ export default function Storefront({
     externalPurchaseUrl: "",
     stripeProductId: "",
     stripePriceId: "",
+    npk: "",
+    guaranteedAnalysis: "",
+    ingredients: "",
+    applicationRate: "",
     usageInstructions: "",
     warnings: "",
     productLineId: "",
@@ -655,8 +659,24 @@ export default function Storefront({
           externalPurchaseUrl: productDraft.externalPurchaseUrl.trim() || undefined,
           stripeProductId: productDraft.stripeProductId.trim() || undefined,
           stripePriceId: productDraft.stripePriceId.trim() || undefined,
+          npk: productDraft.npk.trim() || undefined,
+          labelNpk: productDraft.npk.trim() || undefined,
+          guaranteedAnalysis: productDraft.guaranteedAnalysis.trim() || undefined,
+          ingredients: splitTextList(productDraft.ingredients),
+          applicationRate: productDraft.applicationRate.trim() || undefined,
           usageInstructions: productDraft.usageInstructions.trim() || undefined,
+          directions: productDraft.usageInstructions.trim() || undefined,
           warnings: productDraft.warnings.trim() || undefined,
+          specs: {
+            unitSize: productDraft.unitSize.trim() || undefined,
+            npk: productDraft.npk.trim() || undefined,
+            labelNpk: productDraft.npk.trim() || undefined,
+            guaranteedAnalysis: productDraft.guaranteedAnalysis.trim() || undefined,
+            ingredients: splitTextList(productDraft.ingredients),
+            directions: productDraft.usageInstructions.trim() || undefined,
+            applicationRate: productDraft.applicationRate.trim() || undefined,
+            warnings: productDraft.warnings.trim() || undefined
+          },
           productLineId: productDraft.productLineId.trim() || undefined,
           linkedRecipeId: productDraft.linkedRecipeId.trim() || undefined,
           linkedBatchId: productDraft.linkedBatchId.trim() || undefined,
@@ -683,6 +703,10 @@ export default function Storefront({
         externalPurchaseUrl: "",
         stripeProductId: "",
         stripePriceId: "",
+        npk: "",
+        guaranteedAnalysis: "",
+        ingredients: "",
+        applicationRate: "",
         usageInstructions: "",
         warnings: "",
         productLineId: "",
@@ -1357,6 +1381,13 @@ export default function Storefront({
             style={styles.input}
           />
           <TextInput
+            value={productDraft.npk}
+            onChangeText={(npk) => setProductDraft((draft) => ({ ...draft, npk }))}
+            accessibilityLabel="Product label N-P2O5-K2O"
+            placeholder="Label N-P2O5-K2O, e.g. 3-1-1"
+            style={styles.input}
+          />
+          <TextInput
             value={productDraft.shortDescription}
             onChangeText={(shortDescription) =>
               setProductDraft((draft) => ({ ...draft, shortDescription }))
@@ -1374,6 +1405,35 @@ export default function Storefront({
             placeholder="Product description"
             multiline
             style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={productDraft.guaranteedAnalysis}
+            onChangeText={(guaranteedAnalysis) =>
+              setProductDraft((draft) => ({ ...draft, guaranteedAnalysis }))
+            }
+            accessibilityLabel="Product guaranteed analysis"
+            placeholder="Guaranteed analysis: N, P2O5, K2O, Ca, Mg, S, micros"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={productDraft.ingredients}
+            onChangeText={(ingredients) =>
+              setProductDraft((draft) => ({ ...draft, ingredients }))
+            }
+            accessibilityLabel="Product ingredients"
+            placeholder="Ingredients, one per line or comma separated"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={productDraft.applicationRate}
+            onChangeText={(applicationRate) =>
+              setProductDraft((draft) => ({ ...draft, applicationRate }))
+            }
+            accessibilityLabel="Product application rate"
+            placeholder="Application rate, e.g. 1 cup per cubic foot"
+            style={styles.input}
           />
           <TextInput
             value={productDraft.usageInstructions}
