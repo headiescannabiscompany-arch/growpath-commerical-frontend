@@ -3,6 +3,7 @@ import { render } from "@testing-library/react-native";
 
 import FacilityAuditLogDetailRoute from "@/app/home/facility/audit-logs/[id]";
 import FacilityAuditLogEntityRoute from "@/app/home/facility/audit-logs/[entity]/[entityId]";
+import FacilityComplianceAiDashboardRoute from "@/app/home/facility/compliance/ai4.dashboard";
 import FacilityComplianceReportDetailRoute from "@/app/home/facility/compliance/report-detail";
 
 const mockUseAuditLogs = jest.fn();
@@ -31,7 +32,9 @@ jest.mock("@/components/ScreenBoundary", () => {
       React.createElement(
         View,
         { accessibilityLabel: `screen-${title}` },
-        showBack ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`) : null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
         children
       )
   };
@@ -102,5 +105,13 @@ describe("facility audit and compliance nested back behavior", () => {
     expect(screen.getByText("Shared Back /home/facility/compliance")).toBeTruthy();
     expect(screen.getByText("Compliance Report Detail")).toBeTruthy();
     expect(screen.getByText("reportId: latest")).toBeTruthy();
+  });
+
+  it("uses the shared back fallback on compliance AI dashboard drill-in", () => {
+    const screen = render(<FacilityComplianceAiDashboardRoute />);
+
+    expect(screen.getByText("Shared Back /home/facility/compliance")).toBeTruthy();
+    expect(screen.getByText("Compliance AI Dashboard")).toBeTruthy();
+    expect(screen.getByText(/"status": "ready"/)).toBeTruthy();
   });
 });

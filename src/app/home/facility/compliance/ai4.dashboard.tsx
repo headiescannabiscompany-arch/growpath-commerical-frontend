@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacilityReport } from "@/hooks/useFacilityReport";
 import { radius } from "@/theme/theme";
 
@@ -22,17 +23,23 @@ export default function FacilityComplianceAiDashboardRoute() {
     );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>Compliance AI Dashboard</Text>
-      <Text style={styles.sub}>
-        Live report-derived status for compliance operations.
-      </Text>
-      <View style={styles.card}>
-        <Text selectable style={styles.json}>
-          {JSON.stringify(summary, null, 2)}
+    <ScreenBoundary
+      title="Compliance AI Dashboard"
+      showBack
+      backFallbackHref="/home/facility/compliance"
+    >
+      <View style={styles.container}>
+        <Text style={styles.h1}>Compliance AI Dashboard</Text>
+        <Text style={styles.sub}>
+          Live report-derived status for compliance operations.
         </Text>
+        <View style={styles.card}>
+          <Text selectable style={styles.json}>
+            {JSON.stringify(summary, null, 2)}
+          </Text>
+        </View>
       </View>
-    </View>
+    </ScreenBoundary>
   );
 }
 
