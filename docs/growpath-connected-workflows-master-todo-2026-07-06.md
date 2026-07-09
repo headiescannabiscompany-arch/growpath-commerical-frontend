@@ -766,6 +766,7 @@ Completed and pushed:
 490. Creator influencer metrics and social scheduling cards, charts, platform chips, modal forms, and campaign actions now consume shared radius tokens while preserving external-channel metrics, scheduled post creation, and Feed/Campaign outreach behavior.
 491. App intro onboarding controls, course release-hold badges/panels/actions, and plan feature matrix table frames now consume shared radius tokens while preserving grow-interest onboarding, course-release gating, and shared pricing copy behavior.
 492. Links management, Growers Forum rule/role panels, and AI token balance/progress/action surfaces now consume shared radius tokens while preserving link CRUD, Forum positioning copy, and token balance upgrade behavior.
+493. Facility vendor dashboard cards/forms/rows, login mode chips, and debug diagnostic cards/actions now consume shared radius tokens while preserving vendor CRUD, auth mode selection, and debug API checks.
 
 ## Working Rule For Codex
 

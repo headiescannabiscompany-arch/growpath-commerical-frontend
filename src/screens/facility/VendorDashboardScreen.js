@@ -12,6 +12,7 @@ import {
 import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useVendors } from "../../hooks/useVendors";
+import { radius } from "../../theme/theme";
 
 export default function VendorDashboardScreen() {
   const { activeFacilityId } = useFacility();
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
   },
   analyticsWidget: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 12,
     width: "47%",
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   analyticsLabel: { fontSize: 13, color: "#374151", marginTop: 4 },
   form: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 24,
     boxShadow: "0px 1px 6px rgba(0,0,0,0.1)"
@@ -245,14 +246,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     marginTop: 4
   },
   addBtn: {
     backgroundColor: "#0ea5e9",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 16,
     alignItems: "center"
   },
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },
   vendorRow: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 12,
     boxShadow: "0px 1px 3px rgba(0,0,0,0.06)"

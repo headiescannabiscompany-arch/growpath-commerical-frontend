@@ -11,6 +11,7 @@ import {
 
 import { handleApiError } from "@/ui/handleApiError";
 import { useDebugApi } from "@/hooks/useDebugApi";
+import { radius } from "@/theme/theme";
 
 export default function DebugScreen() {
   const [ping, setPing] = useState(null);
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   btn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#111827",
     alignItems: "center"
   },

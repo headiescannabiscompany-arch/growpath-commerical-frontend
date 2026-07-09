@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     marginHorizontal: 4
   },
   modeButtonSelected: {
