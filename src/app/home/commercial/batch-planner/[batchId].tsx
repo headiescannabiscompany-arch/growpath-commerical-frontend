@@ -7,6 +7,7 @@ import {
   SoilNutrientBatch,
   updateSoilNutrientBatch
 } from "@/api/commercialWorkflows";
+import { apiRequest } from "@/api/apiRequest";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -57,6 +58,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
 
@@ -110,6 +112,51 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       setError(err);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function createProductionTask() {
+    if (!batchId || !batch || creatingTask) return;
+    setCreatingTask(true);
+    setMessage("");
+    setError(null);
+    const name = batchTitle(batch);
+    const evidenceRunId = batch.linkedTrialId || batch.trialGrowId || "";
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Run production batch: ${name}`,
+          description: [
+            `Use the saved ingredient pull sheet, guaranteed analysis notes, release timeline, and mixing instructions for ${name}.`,
+            batch.batchCode ? `Batch code: ${batch.batchCode}.` : "",
+            batch.formulaVersion ? `Formula version: ${batch.formulaVersion}.` : "",
+            batch.ingredientSummary ? `Pull sheet: ${batch.ingredientSummary}` : "",
+            batch.mixingInstructions ? `Mixing/QC: ${batch.mixingInstructions}` : ""
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          sourceType: "product_batch",
+          sourceId: batchId,
+          sourceObjectId: batchId,
+          linkedProductBatchId: batchId,
+          linkedBatchId: batchId,
+          linkedProductId: batch.productId || "",
+          linkedProductLineId: batch.productLineId || "",
+          linkedTrialId: evidenceRunId,
+          linkedGrowId: evidenceRunId,
+          priority: "high",
+          status: "open",
+          requiresProof: true,
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setMessage(`Created production task for ${name}.`);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreatingTask(false);
     }
   }
 
@@ -193,6 +240,20 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             />
           ) : null}
           <ActionLink href="/home/commercial/trials" label="Open Trials" />
+          <Pressable
+            accessibilityLabel="Create batch production task"
+            accessibilityRole="button"
+            disabled={!batchId || !batch || creatingTask}
+            onPress={createProductionTask}
+            style={[
+              styles.action,
+              !batchId || !batch || creatingTask ? styles.disabled : null
+            ]}
+          >
+            <Text style={styles.actionText}>
+              {creatingTask ? "Creating..." : "Create Production Task"}
+            </Text>
+          </Pressable>
         </View>
       </AppCard>
 

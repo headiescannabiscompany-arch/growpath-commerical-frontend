@@ -2327,6 +2327,36 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial batch detail guaranteed analysis notes").props
         .value
     ).toBe("3-1-1 label target with elemental estimate.");
+    fireEvent.press(screen.getByLabelText("Create batch production task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Run production batch: Seedling Soil Batch",
+            sourceType: "product_batch",
+            sourceId: "batch-1",
+            sourceObjectId: "batch-1",
+            linkedProductBatchId: "batch-1",
+            linkedBatchId: "batch-1",
+            linkedProductId: "product-1",
+            linkedProductLineId: "line-1",
+            linkedTrialId: "trial-1",
+            linkedGrowId: "trial-1",
+            priority: "high",
+            status: "open",
+            requiresProof: true,
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByText("Created production task for Seedling Soil Batch.")
+    ).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Commercial batch detail status"), "used");
     fireEvent.changeText(

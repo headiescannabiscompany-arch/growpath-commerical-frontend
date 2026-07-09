@@ -834,6 +834,7 @@ Completed and pushed:
 558. Personal diagnosis follow-up now preserves accepted and rejected auto-tags in the grow-log AI insight audit trail, and diagnosis-created follow-up tasks include next-check context, priority, and due dates instead of loose unscheduled notes.
 559. Plant growth overlays now carry pheno plant record fields and stage scorecards, including keeper status/reason, clone and mother status, pheno score history, and stage-specific scoring data through the backend model, route contract, and frontend API helper.
 560. Personal harvest batches now have a backend model, personal CRUD routes, frontend API helper, dry/cure record fields, linked ToolRun ids, and merged grow timeline events so harvest and dry/cure history can persist as connected grow records.
+561. Commercial batch detail now creates source-linked production tasks from a saved Soil & Nutrient Batch Planner record, carrying product batch, product, product line, evidence run, proof requirement, reminder plan, pull-sheet, guaranteed-analysis, release-timing, and mixing/QC context into the shared task engine.
 
 ## Working Rule For Codex
 
