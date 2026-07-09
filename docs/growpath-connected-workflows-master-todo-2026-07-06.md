@@ -801,6 +801,7 @@ Completed and pushed:
 525. Storefront owner Public Discovery now labels `/brands/:slug` as a legacy brand-profile compatibility view while keeping Store Page and Storefront Alias as the primary View-as-User destinations.
 526. Deferred user verification now includes storefront-primary checks for owner Public Discovery plus public storefront/product/course pages, covering Storefront/Back-to-Store priority and Legacy Profile compatibility labels in the later browser pass.
 527. Store-facing discovery copy now says Find/Similar Storefronts on Store index, public storefront, and product detail pages while preserving Similar Brands language only on the true brand-profile route.
+528. Schedule / Agenda source-link inference now recognizes `storefrontSlug`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases, so storefront launch tasks and scheduled items can open the exact public storefront instead of falling back to generic task/source routes.
 
 ## Working Rule For Codex
 
