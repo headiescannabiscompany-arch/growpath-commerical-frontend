@@ -173,6 +173,32 @@ describe("LiveSessionScreen QA", () => {
     expect(getByTestId("live-link-/store?q=product-1")).toBeTruthy();
   });
 
+  it("routes live product and course CTAs through storefront slug aliases", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+
+    mockApiRequest.mockResolvedValueOnce({
+      twitchChannel: "mychannel",
+      title: "Session 1",
+      linkedStorefrontSlug: "living-soil-labs",
+      relatedProductId: "product-1",
+      relatedCourseId: "course-1"
+    });
+
+    const { getByTestId, queryByText } = renderWithNav();
+
+    await waitFor(() => {
+      expect(queryByText(/Session 1/i)).toBeTruthy();
+    });
+
+    expect(
+      getByTestId("live-link-/store/living-soil-labs/products/product-1")
+    ).toBeTruthy();
+    expect(
+      getByTestId("live-link-/store/living-soil-labs/courses/course-1")
+    ).toBeTruthy();
+  });
+
   it("shows error if session not found", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
     mockUseEntitlements.mockReturnValue({ can: () => false });

@@ -74,7 +74,12 @@ export default function LiveSessionScreen({ route }) {
     session?.campaignId ||
     session?.linkedFeedPostId ||
     "";
-  const storefrontSlug = session?.storefrontSlug || session?.brandSlug || "";
+  const storefrontSlug =
+    session?.storefrontSlug ||
+    session?.linkedStorefrontSlug ||
+    session?.brandSlug ||
+    session?.publicSlug ||
+    "";
   const startsAt =
     session?.scheduledStart || session?.startsAt || session?.startTime || "";
   const productHref =

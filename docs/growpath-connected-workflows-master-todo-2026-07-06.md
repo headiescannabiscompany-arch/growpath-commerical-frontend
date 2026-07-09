@@ -785,6 +785,7 @@ Completed and pushed:
 509. Live session detail now preserves linked Feed/Campaign outreach context with `/feed?campaignId=...` routing, keeping live product/course/Q&A/replay actions connected to the exact promotional campaign instead of the generic Feed root.
 510. Feed/Campaign normalization now treats `campaignId`, `feedCampaignId`, `linkedFeedCampaignId`, and `linkedFeedPostId` as canonical campaign identity aliases, so exact campaign links from storefronts, lives, alerts, tasks, notifications, and schedules can focus the intended outreach card even when the backend does not return `id`.
 511. Feed/Campaign normalization now also promotes `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` into `storefrontSlug`, so product/course campaign CTAs open exact public storefront detail pages instead of falling back to generic product or course discovery when the backend returns a slug alias.
+512. Live session product/course CTAs now also recognize `linkedStorefrontSlug` and `publicSlug` storefront aliases, preserving exact public storefront detail routes from live events even when the live API returns a slug alias instead of `storefrontSlug`.
 
 ## Working Rule For Codex
 
