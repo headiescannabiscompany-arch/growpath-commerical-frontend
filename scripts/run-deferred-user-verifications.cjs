@@ -95,6 +95,7 @@ const checks = [
       "tests/unit/SupportContactsConfig.test.ts",
       "tests/unit/PaymentHelpDialog.test.js",
       "tests/unit/CommercialFeedCard.test.tsx",
+      "tests/unit/SearchScreen.test.tsx",
       "tests/unit/CommercialToolsScreen.test.tsx",
       "tests/unit/CommercialExternalChannelCopy.test.js",
       "tests/unit/ContentMarketplaceScreen.test.tsx",
@@ -174,7 +175,8 @@ const manualChecks = [
     checks: [
       "Open Commercial > Storefront and verify Storefront is a top-level destination with View as User and setup status.",
       "In Commercial > Storefront Public Discovery, confirm Store Page and Storefront Alias are the primary View-as-User destinations and /brands/:slug is labeled as a legacy brand-profile compatibility view.",
-      "Open active Commercial Tools/capability menu entries and confirm Storefront Offers opens Storefront and Feed / Campaigns opens the campaign builder; Marketplace compatibility screens should not appear in active navigation.",
+      "Open active Commercial Tools/capability menu entries and confirm Storefront opens Storefront and Feed / Campaigns opens the campaign builder; Marketplace compatibility screens should not appear in active navigation.",
+      "Open global Search and confirm Storefront routes to the Storefront workspace, Tools is discoverable through NPK/soil/IPM/VPD keywords, Feed / Campaigns is discoverable through advertising/campaign keywords, and top/bottom promotional placements render without turning Search into Forum/Q&A.",
       "From Commercial > Storefront, verify product, course, live, campaign, and Q&A cards link back to their owner workspaces.",
       "Open the public brand profile, public storefront, and public product detail and confirm product/course/campaign grow interests display and still route to Store, Feed Campaigns, and Forum/Q&A correctly.",
       "Open the public storefront and confirm Upcoming Lives render from the storefront payload and route to /live-session?sessionId=:id.",

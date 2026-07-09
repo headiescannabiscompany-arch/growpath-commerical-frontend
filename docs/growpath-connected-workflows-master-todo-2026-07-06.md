@@ -823,6 +823,7 @@ Completed and pushed:
 547. Global Search now exposes the missing Tools surface and matches workflow/grow-interest keywords such as NPK, soil, IPM, VPD, advertising, campaigns, and brands, routing users to the connected tool, storefront, Feed/Campaigns, or Forum surfaces instead of relying only on visible titles.
 548. Production launch support handoff now records that GrowPath support aliases are live and centralized in the shared support-contact config instead of only being planned/configured.
 549. Global Search now uses the shared personal Feed placement component for top and bottom promotional campaign slots, keeping search aligned with the app-wide Feed placement rule without turning search results into forum/discussion content.
+550. Deferred user verification now includes the Search regression test and manual Search checks for Storefront routing, workflow keyword discovery, and top/bottom Feed placements, while updating active menu wording from Storefront Offers to Storefront.
 
 ## Working Rule For Codex
 
