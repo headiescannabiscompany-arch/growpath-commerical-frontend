@@ -773,6 +773,7 @@ Completed and pushed:
 497. Soil Builder and Dry Amendment Mix Builder now label target/amendment analysis and AI guidance as label N-P2O5-K2O, while preserving existing payload compatibility and adding a product-draft `estimatedLabelAnalysis` alias for storefront/product clarity.
 498. Soil & Nutrient Batch Planner now carries label N-P2O5-K2O wording through production QA tasks, AI batch briefs, and regression tests so facility/commercial batch planning does not collapse guaranteed analysis into vague NPK language.
 499. Commercial product creation now labels soil/nutrient/amendment product analysis as label N-P2O5-K2O and writes a `labelNpk` specs alias while preserving the existing `npk` field for compatibility.
+500. Legacy feeding label-scan confirmation now displays scanned fertilizer values as label N-P2O5-K2O and has a focused regression test before handing data into the feeding schedule workflow.
 
 ## Working Rule For Codex
 

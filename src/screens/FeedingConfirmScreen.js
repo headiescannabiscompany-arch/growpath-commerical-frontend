@@ -17,7 +17,7 @@ export default function FeedingConfirmScreen({ route, navigation }) {
       <Text style={styles.label}>Product:</Text>
       <Text>{nutrientData.productName}</Text>
 
-      <Text style={styles.label}>NPK:</Text>
+      <Text style={styles.label}>Label N-P2O5-K2O:</Text>
       <Text>
         {nutrientData.npk.n}-{nutrientData.npk.p}-{nutrientData.npk.k}
       </Text>
