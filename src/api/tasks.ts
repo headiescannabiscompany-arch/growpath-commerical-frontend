@@ -136,6 +136,8 @@ export interface PersonalTask {
   linkedStorefrontId?: string | null;
   linkedStorefrontSlug?: string | null;
   storefrontSlug?: string | null;
+  brandSlug?: string | null;
+  publicSlug?: string | null;
   linkedOrderId?: string | null;
   linkedCourseId?: string | null;
   linkedLessonId?: string | null;
