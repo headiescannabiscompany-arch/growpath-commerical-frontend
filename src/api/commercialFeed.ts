@@ -28,6 +28,9 @@ export type CommercialFeedCampaign = {
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
+  linkedStorefrontSlug?: string;
+  brandSlug?: string;
+  publicSlug?: string;
   imageUrl?: string;
   creativeImageUrl?: string;
   bannerImageUrl?: string;
@@ -67,6 +70,13 @@ function normalizeCampaign(row: any): CommercialFeedCampaign {
     ),
     type: String(row?.type || "update") as CommercialFeedPostType,
     body: String(row?.body || row?.description || ""),
+    storefrontSlug: String(
+      row?.storefrontSlug ||
+        row?.linkedStorefrontSlug ||
+        row?.brandSlug ||
+        row?.publicSlug ||
+        ""
+    ),
     engagementCount: Number(row?.engagementCount ?? row?.likeCount ?? 0),
     tags: Array.isArray(row?.tags) ? row.tags.map((tag: any) => String(tag)) : [],
     growInterests: Array.isArray(row?.growInterests)

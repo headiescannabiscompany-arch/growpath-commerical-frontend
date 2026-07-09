@@ -784,6 +784,7 @@ Completed and pushed:
 508. Facility controller room imports now save suggested automation/tool handoffs on imported equipment mappings, including VPD/Dew Point Guard, high-humidity/dew-point checks, crop steering/dryback review, and irrigation follow-up task suggestions from normalized read-only streams.
 509. Live session detail now preserves linked Feed/Campaign outreach context with `/feed?campaignId=...` routing, keeping live product/course/Q&A/replay actions connected to the exact promotional campaign instead of the generic Feed root.
 510. Feed/Campaign normalization now treats `campaignId`, `feedCampaignId`, `linkedFeedCampaignId`, and `linkedFeedPostId` as canonical campaign identity aliases, so exact campaign links from storefronts, lives, alerts, tasks, notifications, and schedules can focus the intended outreach card even when the backend does not return `id`.
+511. Feed/Campaign normalization now also promotes `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` into `storefrontSlug`, so product/course campaign CTAs open exact public storefront detail pages instead of falling back to generic product or course discovery when the backend returns a slug alias.
 
 ## Working Rule For Codex
 

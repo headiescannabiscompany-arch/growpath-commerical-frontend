@@ -459,7 +459,7 @@ describe("CommercialFeedRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
   });
 
-  it("routes product and course campaign fallbacks to public discovery pages", async () => {
+  it("routes product and course campaigns through storefront slug aliases when present", async () => {
     mockMode = "personal";
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/commercial/feed") {
@@ -470,8 +470,9 @@ describe("CommercialFeedRoute", () => {
               type: "listing",
               campaignKind: "product_ad",
               title: "3-1-1 Veg Mix",
-              body: "A product ad without a storefront slug still stays public.",
+              body: "A product ad with a brand slug opens the storefront product page.",
               linkedProductId: "veg-mix-1",
+              brandSlug: "living-soil-labs",
               author: { displayName: "Living Soil Labs" },
               createdAt: "2026-07-07T12:00:00Z"
             },
@@ -480,8 +481,9 @@ describe("CommercialFeedRoute", () => {
               type: "education",
               campaignKind: "course_ad",
               title: "NPK Recipe Builder",
-              body: "A course ad without a storefront slug uses the public course catalog.",
+              body: "A course ad with a linked storefront slug opens the storefront course page.",
               linkedCourseId: "course-npk-1",
+              linkedStorefrontSlug: "living-soil-labs",
               author: { displayName: "Living Soil Labs" },
               createdAt: "2026-07-07T13:00:00Z"
             },
@@ -510,8 +512,12 @@ describe("CommercialFeedRoute", () => {
     fireEvent.press(screen.getByLabelText("View Course for NPK Recipe Builder"));
     fireEvent.press(screen.getByLabelText("View Course for Soil Builder Masterclass"));
 
-    expect(mockPush).toHaveBeenCalledWith("/store?q=veg-mix-1");
-    expect(mockPush).toHaveBeenCalledWith("/courses?courseId=course-npk-1");
+    expect(mockPush).toHaveBeenCalledWith(
+      "/store/living-soil-labs/products/veg-mix-1"
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      "/store/living-soil-labs/courses/course-npk-1"
+    );
     expect(mockPush).toHaveBeenCalledWith(
       "/store/living-soil-labs/courses/course-soil-1"
     );
