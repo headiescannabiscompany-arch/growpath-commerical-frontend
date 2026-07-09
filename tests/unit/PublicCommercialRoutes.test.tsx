@@ -394,7 +394,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();
     expect(screen.getByText("Back to Store")).toBeTruthy();
-    expect(screen.getByText("Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Similar Brands")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(screen.getByText("Website")).toBeTruthy();
@@ -494,7 +494,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Open Q&A")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/forum/post/thread-1");
     expect(screen.getByText("Back to Store")).toBeTruthy();
-    expect(screen.getByText("Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Course Directory")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Buy storefront course"));

@@ -797,6 +797,7 @@ Completed and pushed:
 521. Public Store discovery now also recognizes `linkedStorefrontSlug` and `publicSlug` result aliases, so storefront search/similar-brand rows can route to exact Storefront/Profile URLs even when the backend does not return `slug`.
 522. Legacy CommercialFeedCard now recognizes `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` as storefront campaign destinations, preventing older campaign-card usage from labeling storefront outreach as generic Learn More content.
 523. Public storefront detail copy now frames the storefront itself as the public brand home base and labels the older brand-profile route as a legacy secondary profile link, preserving compatibility without making Profile look primary.
+524. Public storefront product and course detail pages now label the older brand-profile link as Legacy Profile, keeping Back to Store as the primary public commerce/education navigation while preserving profile compatibility.
 
 ## Working Rule For Codex
 
