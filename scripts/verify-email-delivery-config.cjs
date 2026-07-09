@@ -2,9 +2,10 @@
 const REQUIRED = [
   "REQUIRE_EMAIL_VERIFICATION",
   "EMAIL_PROVIDER",
-  "RESEND_API_KEY",
-  "EMAIL_FROM"
+  "RESEND_API_KEY"
 ];
+
+const DEFAULT_EMAIL_FROM = "GrowPathAI <noreply@growpathai.com>";
 
 const strict = process.argv.includes("--strict");
 
@@ -40,7 +41,7 @@ if (value("RESEND_API_KEY") && !value("RESEND_API_KEY").startsWith("re_")) {
 
 if (value("EMAIL_FROM") && !/^.+<[^@\s]+@[^@\s]+\.[^@\s]+>$/.test(value("EMAIL_FROM"))) {
   findings.push(
-    'EMAIL_FROM must use display-name format, for example: GrowPathAI <noreply@growpathai.com>.'
+    `EMAIL_FROM must use display-name format, for example: ${DEFAULT_EMAIL_FROM}.`
   );
 }
 
@@ -53,7 +54,8 @@ console.log("");
 console.log("[email-delivery-config] Expected sender setup:");
 console.log("- Provider: Resend");
 console.log("- Verified sending domain: growpathai.com in Resend");
-console.log("- Recommended EMAIL_FROM: GrowPathAI <noreply@growpathai.com>");
+console.log(`- Default sender when EMAIL_FROM is omitted: ${DEFAULT_EMAIL_FROM}`);
+console.log(`- Optional EMAIL_FROM override: ${DEFAULT_EMAIL_FROM}`);
 console.log("- Public support fallback: support@growpathai.com");
 
 if (findings.length) {

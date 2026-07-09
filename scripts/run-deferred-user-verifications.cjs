@@ -168,8 +168,8 @@ const manualChecks = [
   {
     area: "Transactional email delivery",
     checks: [
-      "In the live API backend environment, run npm run verify:email-delivery-config:strict or equivalent and confirm REQUIRE_EMAIL_VERIFICATION=true, EMAIL_PROVIDER=resend, RESEND_API_KEY is present, and EMAIL_FROM uses display-name format.",
-      "In Resend, confirm growpathai.com is a verified sending domain and the EMAIL_FROM address, preferably GrowPathAI <noreply@growpathai.com>, is allowed to send.",
+      "In the live API backend environment, run npm run verify:email-delivery-config:strict or equivalent and confirm REQUIRE_EMAIL_VERIFICATION=true, EMAIL_PROVIDER=resend, RESEND_API_KEY is present, and any EMAIL_FROM override uses display-name format.",
+      "In Resend, confirm growpathai.com is a verified sending domain and the default sender GrowPathAI <noreply@growpathai.com>, or any EMAIL_FROM override, is allowed to send.",
       "Create or register a test account and confirm the API returns emailSent=true for verification email delivery.",
       "Use Forgot Password for a known account and confirm the API returns emailSent=true and the reset email arrives with a /reset-password link.",
       "If emails still do not arrive, check the API logs for [AUTH][EMAIL_VERIFICATION_SEND_FAIL] or password-reset send errors and confirm Resend has no domain, DNS, rate-limit, or suppression-list rejection."

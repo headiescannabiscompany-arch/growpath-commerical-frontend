@@ -889,7 +889,7 @@ Completed and pushed:
 613. Public live URL verification passed against the production support, privacy, terms, delete-account, API health, and API readiness endpoints after the Render deploy gate was cleared.
 614. The build TODO and ledger now record that Facility workspace visual polish is the standard for Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces.
 615. Live-session campaign links are now workspace-aware: commercial-owned live sessions open `/home/commercial/feed?campaignId=...`, facility-owned sessions open `/home/facility/feed?campaignId=...`, and public sessions keep `/feed?campaignId=...` placement routing.
-616. Transactional email delivery is now tracked separately from live support aliases, with a non-secret Resend config verifier, deferred production delivery checks, and launch checklist steps for `REQUIRE_EMAIL_VERIFICATION`, `EMAIL_PROVIDER`, `RESEND_API_KEY`, `EMAIL_FROM`, verified `growpathai.com` sending domain, registration verification email, and forgot-password delivery.
+616. Transactional email delivery is now tracked separately from live support aliases, with a non-secret Resend config verifier, deferred production delivery checks, backend default sender alignment for `GrowPathAI <noreply@growpathai.com>`, and launch checklist steps for `REQUIRE_EMAIL_VERIFICATION`, `EMAIL_PROVIDER`, `RESEND_API_KEY`, verified `growpathai.com` sending domain, registration verification email, and forgot-password delivery.
 
 ## Working Rule For Codex
 

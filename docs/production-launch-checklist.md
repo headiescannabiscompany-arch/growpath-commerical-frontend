@@ -73,5 +73,5 @@ Status policy: each item is `DONE` or `NOT DONE` with owner, next action, and ev
 
 - NOT DONE: Transactional email delivery verified in production.
 - Owner: Backend/DevOps
-- Next action: In the live API backend environment, confirm `REQUIRE_EMAIL_VERIFICATION=true`, `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` is present, and `EMAIL_FROM` uses display-name format such as `GrowPathAI <noreply@growpathai.com>`. Confirm the `growpathai.com` sending domain is verified in Resend, then test registration verification and forgot-password delivery until the API returns `emailSent=true` and messages arrive.
+- Next action: In the live API backend environment, confirm `REQUIRE_EMAIL_VERIFICATION=true`, `EMAIL_PROVIDER=resend`, and `RESEND_API_KEY` are present. The backend defaults to `GrowPathAI <noreply@growpathai.com>` when `EMAIL_FROM` is omitted; any override must use display-name format. Confirm the `growpathai.com` sending domain is verified in Resend, then test registration verification and forgot-password delivery until the API returns `emailSent=true` and messages arrive.
 - Evidence target: `tmp/spec/transactional_email_delivery_2026-07-09.md`

@@ -31,7 +31,7 @@ This guide walks you through every step needed to launch your app to production,
 - [ ] Test production builds on real devices
 - [ ] Fill out app store submission forms and upload builds
 - [ ] Review and confirm all app store requirements are met
-- [ ] Configure transactional email in the live API backend: `REQUIRE_EMAIL_VERIFICATION=true`, `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM="GrowPathAI <noreply@growpathai.com>"`.
+- [ ] Configure transactional email in the live API backend: `REQUIRE_EMAIL_VERIFICATION=true`, `EMAIL_PROVIDER=resend`, and `RESEND_API_KEY`. The backend defaults to `EMAIL_FROM="GrowPathAI <noreply@growpathai.com>"` when no override is set.
 - [ ] Verify the `growpathai.com` sending domain in Resend, then run `npm run verify:email-delivery-config:strict` in the backend environment and test registration verification plus forgot-password delivery.
 
 ## 4. Monitoring & Analytics
