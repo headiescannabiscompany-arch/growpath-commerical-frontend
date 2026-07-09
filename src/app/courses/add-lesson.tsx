@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import AddLessonScreen from "@/screens/AddLessonScreen";
 
 export default function AddLessonRoute() {
@@ -10,9 +11,11 @@ export default function AddLessonRoute() {
   const courseId = Array.isArray(rawCourseId) ? rawCourseId[0] : rawCourseId;
 
   return (
-    <AddLessonScreen
-      route={{ params: { courseId } }}
-      navigation={{ goBack: () => router.replace("/courses") }}
-    />
+    <ScreenBoundary title="Add Lesson" showBack backFallbackHref="/courses">
+      <AddLessonScreen
+        route={{ params: { courseId } }}
+        navigation={{ goBack: () => router.replace("/courses") }}
+      />
+    </ScreenBoundary>
   );
 }

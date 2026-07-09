@@ -814,6 +814,7 @@ Completed and pushed:
 538. Personal task API contracts now document `brandSlug` and `publicSlug` storefront aliases, matching the task-center routing behavior for imported and alert-generated task payloads.
 539. Commercial log detail now uses the shared source-link router to expose a View Source action, including storefront alias payloads that route owner-side logs back to the commercial Storefront workspace.
 540. Facility task detail source resolution now prefers source-type-specific linked IDs before room context, keeping linked-only course/product/live/feed/forum tasks routed to their true source while still showing the linked room.
+541. Legacy course create and add-lesson routes now use shared `ScreenBoundary` back behavior with `/courses` fallback, keeping course authoring nested pages aligned with the app-wide back-arrow rule.
 
 ## Working Rule For Codex
 
