@@ -170,7 +170,7 @@ export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
   return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
 }
 
-function applyFacilityRoleCapabilities(
+export function applyFacilityRoleCapabilities(
   normalized: Record<string, boolean>,
   facilityRole: string | null
 ) {
@@ -190,15 +190,21 @@ function applyFacilityRoleCapabilities(
 
   if (
     facilityRole === "OWNER" ||
+    facilityRole === "MANAGER"
+  ) {
+    normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
+    normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE] = true;
+  }
+
+  if (
+    facilityRole === "OWNER" ||
     facilityRole === "MANAGER" ||
     facilityRole === "STAFF"
   ) {
     normalized[CAPABILITY_KEYS.TASKS_WRITE] = true;
-    normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
-    normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
     normalized[CAPABILITY_KEYS.GROWLOGS_WRITE] = true;
-    normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
-    normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE] = true;
   }
 
   if (facilityRole === "OWNER" || facilityRole === "MANAGER") {

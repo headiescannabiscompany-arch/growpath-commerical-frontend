@@ -116,9 +116,12 @@ MANAGER:
 - same as OWNER, optionally exclude FACILITY_SETTINGS_EDIT if you want owner-only settings
 
 STAFF:
-- TASKS_WRITE, PLANTS_WRITE, GROWLOGS_WRITE, INVENTORY_WRITE, GROWS_READ
+- TASKS_WRITE, GROWLOGS_WRITE
+- read-only access to facility grows, plants, and inventory
 - no TEAM_* admin keys
 - no GROWS_WRITE
+- no PLANTS_WRITE
+- no INVENTORY_WRITE
 
 VIEWER:
 - *_READ keys only (no writes)

@@ -80,6 +80,7 @@ Hide or skip it if it requires deep analytics, prediction, or a new commercial-h
 - Canonicalized the personal grows endpoint family: frontend route constants and grow-photo helpers use `/api/personal/grows`, backend route tests mount `grows.personal` at `/api/personal/grows`, and the remaining `/api/grows/:id/entries` usage is documented as legacy entry-helper compatibility.
 - Canonicalized the AI transport envelope: `{ tool, fn, args, context }` with bare `fn` is the contract; backend normalization rejects `functionName` / `inputs` envelopes and treats fully-qualified `tool.fn` only as compatibility input.
 - Locked facility context to path params: production docs/code must use `/api/facility/:facilityId/...` instead of facility-id headers, enforced by `scripts/validate-facility-context.cjs` in the guard chain.
+- Reconciled the STAFF write policy: STAFF keeps task and grow-log write access, while core facility grows/plants/inventory writes are MANAGER+ and SOP/compliance/team/settings writes stay privileged.
 
 ### 2026-07-02
 

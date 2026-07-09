@@ -25,7 +25,7 @@ Facility is a role-based, multi-user ops app. Permissions come from OWNER/MANAGE
 ## Roles (locked)
 - OWNER: all capabilities
 - MANAGER: all ops, invite/manage team
-- STAFF: ops work only, no team admin
+- STAFF: task/log work only, read-only core grow/plant/inventory records, no team admin
 - VIEWER: read-only
 - Legacy alias: TECH -> STAFF
 

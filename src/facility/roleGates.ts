@@ -34,7 +34,7 @@ function atLeast(role: FacilityRole, min: FacilityRole) {
   return R[role] >= R[min];
 }
 
-// NOTE: mirror docs/ROLE_MATRIX.md exactly.
+// NOTE: mirror docs/frontend/contracts/* facility role requirements exactly.
 export function can(role: FacilityRole | null | undefined, action: Action): boolean {
   if (!role) return false;
 
@@ -47,9 +47,9 @@ export function can(role: FacilityRole | null | undefined, action: Action): bool
       return role === "OWNER"; // if your matrix differs, change here
 
     case "PLANTS_CREATE":
-      return atLeast(role, "STAFF");
+      return role === "OWNER" || role === "MANAGER";
     case "PLANTS_UPDATE":
-      return atLeast(role, "STAFF");
+      return role === "OWNER" || role === "MANAGER";
     case "PLANTS_DELETE":
       return role === "OWNER";
 
@@ -61,9 +61,9 @@ export function can(role: FacilityRole | null | undefined, action: Action): bool
       return role === "OWNER" || role === "MANAGER";
 
     case "INVENTORY_CREATE":
-      return atLeast(role, "STAFF");
+      return role === "OWNER" || role === "MANAGER";
     case "INVENTORY_UPDATE":
-      return atLeast(role, "STAFF");
+      return role === "OWNER" || role === "MANAGER";
     case "INVENTORY_DELETE":
       return role === "OWNER";
 

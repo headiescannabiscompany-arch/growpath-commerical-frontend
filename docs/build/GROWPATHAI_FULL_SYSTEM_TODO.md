@@ -133,3 +133,4 @@ Legend:
 - [x] Personal grows endpoint canonicalized: `/api/personal/grows` is the list/create/timeline/photo route family, with `/api/grows/:id/entries` left only as explicit legacy entry-helper compatibility.
 - [x] AI transport envelope canonicalized: `{ tool, fn, args, context }` with bare `fn` is the current contract, while obsolete `functionName` / `inputs` envelopes are rejected.
 - [x] Facility context source locked: production facility context comes from `/api/facility/:facilityId/...` path params, with a guard blocking `X-Facility-Id` style headers.
+- [x] Facility STAFF write policy reconciled: STAFF can write tasks and grow logs, while grows/plants/inventory writes are MANAGER+ and privileged facility surfaces remain blocked.

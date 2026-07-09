@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
   applyDefaultCourseLimits,
+  applyFacilityRoleCapabilities,
   applyPlanCapabilities,
   applyUniversalCapabilities,
   getEffectivePlan,
@@ -85,6 +86,37 @@ describe("entitlement mode access", () => {
     expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("commercial", "facility")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("personal", "facility")).toBe(false);
+  });
+
+  it("keeps STAFF facility writes limited to tasks and grow logs", () => {
+    const normalized: Record<string, boolean> = {};
+
+    applyFacilityRoleCapabilities(normalized, "STAFF");
+
+    expect(normalized[CAPABILITY_KEYS.TASKS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.GROWLOGS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.GROWS_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.PLANTS_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.INVENTORY_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).not.toBe(true);
+  });
+
+  it("grants managers operational, team, compliance, and settings writes", () => {
+    const normalized: Record<string, boolean> = {};
+
+    applyFacilityRoleCapabilities(normalized, "MANAGER");
+
+    expect(normalized[CAPABILITY_KEYS.TASKS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.GROWS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.PLANTS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.INVENTORY_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).toBe(true);
   });
 
   it("grants commercial inventory write to active commercial workspaces", () => {

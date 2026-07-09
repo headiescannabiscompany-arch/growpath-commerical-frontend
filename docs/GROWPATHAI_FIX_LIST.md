@@ -60,11 +60,12 @@ Scope: Frontend repo plus cross-repo contract alignment items
 
 ### ROLE/CAPABILITY DRIFT
 
-7. STAFF write permission conflict
+7. STAFF write permission conflict - DONE 2026-07-09
 
 - Problem: backend policy notes and capability bundles disagree on STAFF write access (grows/tasks/plants/inventory).
-- Action: decide authoritative policy, then sync capability keys, role bundles, and enforcement docs.
-- Done when: CAPABILITIES, route guards, and server-side expectations match exactly.
+- Action completed: route contracts are authoritative for the V1 conflict. STAFF can write tasks and grow logs, but grows/plants/inventory create/update remain MANAGER+ and deletes remain scoped by their existing gates.
+- Evidence: `applyFacilityRoleCapabilities`, `roleCapabilities`, and `roleGates` now match the contract; `modeAccess.test.ts` and `rolePolicy.test.ts` cover the STAFF regression.
+- Guardrail: do not grant STAFF `GROWS_WRITE`, `PLANTS_WRITE`, `INVENTORY_WRITE`, `SOP_RUNS_WRITE`, `COMPLIANCE_WRITE`, team admin, or facility settings capabilities without changing the route contracts and tests in the same patch.
 
 ### ROUTE/PATH DRIFT
 
