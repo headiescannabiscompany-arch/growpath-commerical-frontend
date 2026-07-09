@@ -88,10 +88,13 @@ describe("LiveSessionScreen QA", () => {
       relatedProductId: "product-1",
       relatedCourseId: "course-1",
       linkedForumThreadId: "thread-1",
+      linkedFeedCampaignId: "campaign-1",
       replayUrl: "https://www.twitch.tv/videos/123"
     });
 
-    const { getByText, queryByText } = renderWithNav({ sessionId: "abc123" });
+    const { getByTestId, getByText, queryByText } = renderWithNav({
+      sessionId: "abc123"
+    });
 
     await waitFor(() => {
       expect(queryByText(/Open Twitch Moderation/i)).toBeTruthy();
@@ -106,9 +109,12 @@ describe("LiveSessionScreen QA", () => {
     expect(getByText("Product product-1")).toBeTruthy();
     expect(getByText("Course course-1")).toBeTruthy();
     expect(getByText("Forum/Q&A thread-1")).toBeTruthy();
+    expect(getByText("Feed Campaign campaign-1")).toBeTruthy();
     expect(getByText("Open Product")).toBeTruthy();
     expect(getByText("Open Course")).toBeTruthy();
     expect(getByText("Open Q&A")).toBeTruthy();
+    expect(getByText("Open Campaign")).toBeTruthy();
+    expect(getByTestId("live-link-/feed?campaignId=campaign-1")).toBeTruthy();
     fireEvent.press(getByText("Open Replay"));
     expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
   });

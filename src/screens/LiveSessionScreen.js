@@ -68,6 +68,12 @@ export default function LiveSessionScreen({ route }) {
   const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
   const relatedProductId = session?.relatedProductId || session?.productId || "";
   const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
+  const feedCampaignId =
+    session?.linkedFeedCampaignId ||
+    session?.feedCampaignId ||
+    session?.campaignId ||
+    session?.linkedFeedPostId ||
+    "";
   const storefrontSlug = session?.storefrontSlug || session?.brandSlug || "";
   const startsAt =
     session?.scheduledStart || session?.startsAt || session?.startTime || "";
@@ -89,6 +95,9 @@ export default function LiveSessionScreen({ route }) {
         : "";
   const forumHref = forumThreadId
     ? `/forum/post/${encodeURIComponent(String(forumThreadId))}`
+    : "";
+  const feedHref = feedCampaignId
+    ? `/feed?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
 
   return (
@@ -157,6 +166,11 @@ export default function LiveSessionScreen({ route }) {
             {forumThreadId ? (
               <Text style={styles.contextPill}>Forum/Q&A {String(forumThreadId)}</Text>
             ) : null}
+            {feedCampaignId ? (
+              <Text style={styles.contextPill}>
+                Feed Campaign {String(feedCampaignId)}
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.actionRow}>
@@ -178,6 +192,13 @@ export default function LiveSessionScreen({ route }) {
               <Link href={forumHref} asChild>
                 <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
                   <Text style={styles.secondaryBtnText}>Open Q&A</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+            {feedHref ? (
+              <Link href={feedHref} asChild>
+                <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>Open Campaign</Text>
                 </Pressable>
               </Link>
             ) : null}
