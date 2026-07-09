@@ -13,11 +13,8 @@ import {
   View
 } from "react-native";
 
-import {
-  getSocialAccounts,
-  getSocialMetrics,
-  schedulePost
-} from "../api/socialMedia.js";
+import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
+import { radius } from "../theme/theme";
 
 export default function SocialToolsScreen() {
   const [accounts, setAccounts] = useState([]);
@@ -76,7 +73,9 @@ export default function SocialToolsScreen() {
 
   function handleTogglePlatform(platform) {
     setSelectedPlatforms((prev) =>
-      prev.includes(platform) ? prev.filter((item) => item !== platform) : [...prev, platform]
+      prev.includes(platform)
+        ? prev.filter((item) => item !== platform)
+        : [...prev, platform]
     );
   }
 
@@ -98,8 +97,8 @@ export default function SocialToolsScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.header}>External Channels</Text>
       <Text style={styles.subheader}>
-        Schedule and review off-platform channel posts. GrowPath Feed / Campaigns is
-        the in-app advertising surface, and Forum/Q&A is where discussion lives.
+        Schedule and review off-platform channel posts. GrowPath Feed / Campaigns is the
+        in-app advertising surface, and Forum/Q&A is where discussion lives.
       </Text>
 
       {loading ? (
@@ -122,7 +121,10 @@ export default function SocialToolsScreen() {
             accounts.map((account) => (
               <View key={account.platform} style={styles.accountRow}>
                 <Text style={styles.accountName}>{account.platform}</Text>
-                <Button title="Metrics" onPress={() => handleShowMetrics(account.platform)} />
+                <Button
+                  title="Metrics"
+                  onPress={() => handleShowMetrics(account.platform)}
+                />
                 {metrics[account.platform] ? (
                   <Text style={styles.metricsText}>
                     {JSON.stringify(metrics[account.platform], null, 2)}
@@ -168,7 +170,9 @@ export default function SocialToolsScreen() {
                     style={selected ? styles.platformSelected : styles.platformBtn}
                     onPress={() => handleTogglePlatform(account.platform)}
                   >
-                    <Text style={selected ? styles.platformTextSelected : styles.platformText}>
+                    <Text
+                      style={selected ? styles.platformTextSelected : styles.platformText}
+                    >
                       {account.platform}
                     </Text>
                   </TouchableOpacity>
@@ -220,7 +224,7 @@ const styles = StyleSheet.create({
   errorBox: {
     marginTop: 24,
     padding: 20,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FEE2E2",
     borderWidth: 1,
     borderColor: "#FCA5A5"
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 24,
     width: 320,
     alignItems: "center",
@@ -265,16 +269,21 @@ const styles = StyleSheet.create({
     width: "100%",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 10,
     marginBottom: 12,
     fontSize: 15
   },
-  label: { alignSelf: "flex-start", color: "#111827", fontWeight: "800", marginBottom: 8 },
+  label: {
+    alignSelf: "flex-start",
+    color: "#111827",
+    fontWeight: "800",
+    marginBottom: 8
+  },
   platformList: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
   platformBtn: {
     backgroundColor: "#E5E7EB",
-    borderRadius: 6,
+    borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 8,
@@ -282,7 +291,7 @@ const styles = StyleSheet.create({
   },
   platformSelected: {
     backgroundColor: "#10B981",
-    borderRadius: 6,
+    borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 8,
@@ -293,14 +302,14 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: "row", gap: 12, marginTop: 12 },
   saveBtn: {
     backgroundColor: "#10B981",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 18,
     paddingVertical: 10
   },
   saveBtnText: { color: "white", fontWeight: "800", fontSize: 15 },
   cancelBtn: {
     backgroundColor: "#E5E7EB",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 18,
     paddingVertical: 10
   },

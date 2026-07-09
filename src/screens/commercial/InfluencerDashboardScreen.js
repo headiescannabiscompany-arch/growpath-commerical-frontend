@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "../../components/Card.js";
-import { Colors, Typography, Spacing } from "../../theme/theme.js";
+import { Colors, Typography, Spacing, radius } from "../../theme/theme.js";
 import { getSocialMetrics } from "../../api/socialMedia.js";
 import SkeletonLoader from "../../components/SkeletonLoader.js";
 import EmptyState from "../../components/EmptyState.js";
@@ -331,7 +331,7 @@ const InfluencerDashboardScreen = ({ navigation }) => {
             content to your followers.
           </Text>
           <TouchableOpacity style={styles.ctaBtn}>
-            <Text style={styles.ctaBtnText}>Create Course -></Text>
+            <Text style={styles.ctaBtnText}>{"Create Course ->"}</Text>
           </TouchableOpacity>
         </Card>
 
@@ -472,13 +472,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 20,
     backgroundColor: "#f0f0f0",
-    borderRadius: 4,
+    borderRadius: radius.pill,
     marginHorizontal: Spacing.sm,
     overflow: "hidden"
   },
   chartBar: {
     height: "100%",
-    borderRadius: 4
+    borderRadius: radius.pill
   },
   chartValue: {
     width: 100,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFE5E5",
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     marginLeft: Spacing.sm
   },
   postEngagementValue: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingVertical: Spacing.sm,
     backgroundColor: "#f9fafb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: Spacing.sm
   },
   postMetric: {
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.primary,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   ctaBtnText: {
     color: "#FFF",
