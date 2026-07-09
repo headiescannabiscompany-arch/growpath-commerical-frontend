@@ -81,10 +81,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 
 ### AUTO-GENERATED NOISE
 
-11. Matrix quality cleanup and state labeling
+11. Matrix quality cleanup and state labeling - DONE 2026-07-09
 - Problem: malformed paths, duplicate rows, unknown-mode rows, and mixed canonical/alias/planned entries.
-- Action: prune and normalize matrix rows; add explicit `status` field (`canonical`, `compat_alias`, `deprecated`, `planned`).
-- Done when: matrices are deterministic, deduplicated, and decision-grade.
+- Action completed: added explicit `rowStatus` labels (`canonical`, `compat_alias`, `deprecated`, `planned`) across `docs/product/V1_FEATURE_BACKEND_MATRIX.json`, then hardened `scripts/validate-v1-feature-matrix.cjs` to reject invalid labels, malformed modes, unexplained duplicate routes, duplicate feature IDs, and user-visible unknown-mode rows.
+- Evidence: `npm run validate:v1-matrix` passes with 226 checked rows; `v1.release.matrix.test.js` passes. Current row status distribution is 39 canonical, 121 compatibility/internal, 65 planned, and 1 deprecated.
+- Guardrail: `unknown` mode is only allowed for non-visible internal `auto.*` inventory rows; duplicate UI routes must have one canonical row plus compatibility/deprecated companion rows.
 
 12. ID format policy clarification
 - Problem: UUID-v4 contract language vs `_id`/Mongo-shaped compatibility behavior is ambiguous.

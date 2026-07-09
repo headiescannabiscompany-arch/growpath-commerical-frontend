@@ -17,6 +17,20 @@ const VALID_RELEASE_DECISIONS = new Set([
   "backlog",
   "remove"
 ]);
+const VALID_ROW_STATUSES = new Set([
+  "canonical",
+  "compat_alias",
+  "deprecated",
+  "planned"
+]);
+const VALID_UI_MODES = new Set([
+  "personal",
+  "commercial",
+  "facility",
+  "public",
+  "system",
+  "unknown"
+]);
 
 function readJson(p) {
   const raw = fs.readFileSync(p, "utf8").replace(/^\uFEFF/, "");
@@ -79,18 +93,38 @@ function main() {
   const plannedAllowed = !!matrix?.policy?.plannedEndpointsAllowed;
   const requireUiForAll = !!matrix?.policy?.requireUiRouteForAll;
   const features = Array.isArray(matrix?.features) ? matrix.features : [];
+  const featureIds = new Map();
+  const routeOwners = new Map();
+
+  const policyStatuses = Array.isArray(matrix?.policy?.validRowStatuses)
+    ? new Set(matrix.policy.validRowStatuses)
+    : new Set();
+  for (const status of policyStatuses) {
+    if (!VALID_ROW_STATUSES.has(status)) {
+      failures.push(`policy.validRowStatuses contains invalid row status: ${status}`);
+    }
+  }
 
   for (const feature of features) {
     const id = feature?.featureId || "(missing-id)";
     const status = String(feature?.status || "Unspecified");
+    const uiMode = String(feature?.ui?.mode || "");
     const uiRoute = String(feature?.ui?.route || "");
     const releaseScope = String(feature?.releaseScope || "");
     const releaseDecision = String(feature?.releaseDecision || "");
+    const rowStatus = String(feature?.rowStatus || "");
     const userVisible = feature?.userVisible === true;
     const apiRows = Array.isArray(feature?.api) ? feature.api : [];
     const evidence = Array.isArray(feature?.evidence?.tests)
       ? feature.evidence.tests
       : [];
+
+    featureIds.set(id, (featureIds.get(id) || 0) + 1);
+    if (uiRoute) {
+      const owners = routeOwners.get(uiRoute) || [];
+      owners.push({ id, rowStatus });
+      routeOwners.set(uiRoute, owners);
+    }
 
     if (!VALID_RELEASE_SCOPES.has(releaseScope)) {
       failures.push(
@@ -104,6 +138,49 @@ function main() {
     }
     if (typeof feature?.userVisible !== "boolean") {
       failures.push(`[${id}] missing boolean userVisible`);
+    }
+    if (!VALID_ROW_STATUSES.has(rowStatus)) {
+      failures.push(`[${id}] invalid or missing rowStatus: ${rowStatus || "(missing)"}`);
+    }
+    if (!VALID_UI_MODES.has(uiMode)) {
+      failures.push(`[${id}] invalid or missing ui.mode: ${uiMode || "(missing)"}`);
+    }
+    if (
+      uiMode === "unknown" &&
+      !(String(id).startsWith("auto.") && !userVisible && releaseScope === "internal")
+    ) {
+      failures.push(
+        `[${id}] ui.mode=unknown is only allowed for internal auto inventory rows`
+      );
+    }
+    if (rowStatus === "canonical" && (releaseScope !== "v1" || !userVisible)) {
+      failures.push(
+        `[${id}] rowStatus=canonical requires releaseScope=v1 and userVisible=true`
+      );
+    }
+    if (rowStatus === "canonical" && (!uiRoute || uiMode === "unknown")) {
+      failures.push(`[${id}] rowStatus=canonical requires a concrete UI mode and route`);
+    }
+    if (
+      rowStatus === "planned" &&
+      !(status === "Planned" || releaseDecision === "backlog")
+    ) {
+      failures.push(
+        `[${id}] rowStatus=planned requires status=Planned or releaseDecision=backlog`
+      );
+    }
+    if (
+      rowStatus === "deprecated" &&
+      !["Disabled", "Removed"].includes(status) &&
+      !["hide", "remove"].includes(releaseDecision) &&
+      !["removed", "post_v1"].includes(releaseScope)
+    ) {
+      failures.push(
+        `[${id}] rowStatus=deprecated requires disabled/removed/hide/post_v1 metadata`
+      );
+    }
+    if (rowStatus === "compat_alias" && userVisible) {
+      failures.push(`[${id}] rowStatus=compat_alias rows must not be userVisible`);
     }
     if (userVisible && releaseScope !== "v1") {
       failures.push(`[${id}] userVisible rows must use releaseScope=v1`);
@@ -158,6 +235,24 @@ function main() {
           failures.push(`[${id}] missing public v1 evidence file: ${testPath}`);
         }
       }
+    }
+  }
+
+  for (const [id, count] of featureIds) {
+    if (count > 1) failures.push(`[${id}] duplicate featureId appears ${count} times`);
+  }
+  for (const [route, owners] of routeOwners) {
+    if (owners.length <= 1) continue;
+    const hasCanonical = owners.some((owner) => owner.rowStatus === "canonical");
+    const allExplained = owners.every((owner) =>
+      ["canonical", "compat_alias", "deprecated"].includes(owner.rowStatus)
+    );
+    if (!hasCanonical || !allExplained) {
+      failures.push(
+        `[${route}] duplicate ui.route must have one canonical row and compatibility/deprecated companion rows: ${owners
+          .map((owner) => `${owner.id}:${owner.rowStatus}`)
+          .join(", ")}`
+      );
     }
   }
 
