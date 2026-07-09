@@ -759,6 +759,11 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Storefront: Living Soil Labs /living-soil-labs")
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Your storefront is the public brand home base. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe."
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Restock base soil bags")).toBeTruthy();

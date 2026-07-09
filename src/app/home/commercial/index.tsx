@@ -96,7 +96,7 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
     title: "Storefront Launch",
     description:
-      "Your storefront is the public brand profile. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe.",
+      "Your storefront is the public brand home base. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe.",
     status: "Active",
     metrics: [
       { label: "Storefront status", key: "storefrontConfigured" },
