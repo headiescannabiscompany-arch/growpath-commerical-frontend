@@ -26,10 +26,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 - Evidence: route inventory now reports 205 routes / 220 files; `npm run inventory:ui-routes`, focused route tests, Frontend CI, and Production Build Preflight passed for `45e846d8`.
 - Guardrail: Expo `_layout` files remain allowed; private/helper route-tree files must move outside `src/app` or become explicit canonical routes.
 
-3. Auth boot contract enforcement
+3. Auth boot contract enforcement - DONE 2026-07-09
 - Problem: fallback behavior after `/api/me` failure can violate boot contract expectations.
-- Action: lock startup behavior so no entitlement-gated screen renders before readiness; handle `/api/me` failures with explicit auth/error state rather than silent role fallback.
-- Done when: startup behavior matches canonical boot contract across cold start and failed-me scenarios.
+- Action completed: `RequireAuth` now blocks redirect while `/api/me` is loading or retryable-failed, and `RouteAccessGuard` renders the explicit bootstrap error on protected deep routes instead of an infinite spinner.
+- Evidence: `AuthBootstrapGuard.test.tsx` covers token-present `/api/me` failure in both guard layers and verifies retry stays available without redirecting.
+- Guardrail: token-present bootstrap errors must keep the session retryable until the user explicitly clears the session.
 
 ### CANONICAL CONTRACT DRIFT
 

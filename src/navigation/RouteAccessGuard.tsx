@@ -16,6 +16,43 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
   if (!policy) return <>{children}</>;
 
   if (!entitlements.ready) {
+    if (auth.token && entitlements.bootstrapError) {
+      return (
+        <View accessibilityRole="alert" style={styles.centered}>
+          <Text style={styles.title}>Session check failed</Text>
+          <Text style={styles.message}>{entitlements.bootstrapError}</Text>
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry /api/me"
+              onPress={() => auth.retryMe()}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryText}>Retry /api/me</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear session and sign in"
+              onPress={async () => {
+                await auth.logout();
+                router.replace("/login");
+              }}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>Clear session and sign in</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Contact support"
+              onPress={() => router.push("/support")}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>Contact support</Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    }
     return (
       <View style={styles.centered}>
         <ActivityIndicator />

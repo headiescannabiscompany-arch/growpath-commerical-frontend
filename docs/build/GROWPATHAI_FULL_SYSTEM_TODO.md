@@ -129,3 +129,4 @@ Legend:
 - [x] AI function count canonicalized: hardened tool-function spec Section 5 now has a generated 44-function / 15-tool inventory and a guard that also blocks the known `cultivarId` typo regression.
 - [x] V1 feature/backend matrix quality hardened: every row now carries `rowStatus`, and validation blocks duplicate feature IDs, malformed modes, unexplained duplicate UI routes, and user-visible unknown-mode rows.
 - [x] ID policy clarified: API IDs are opaque strings, `_id` is a Mongo/persistence compatibility fallback, and docs now reject UUID-only wording.
+- [x] Auth bootstrap route guard hardened: token-present `/api/me` failures render a retryable session error in auth and route-access guards instead of redirecting, silently falling back, or spinning forever.
