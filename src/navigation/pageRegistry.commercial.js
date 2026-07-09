@@ -106,7 +106,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "CommercialInventory",
-    label: "Inventory",
+    label: "Inventory Support",
     icon: "cube-outline",
     capabilityKey: "commercial.inventory",
     primary: false,

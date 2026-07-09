@@ -884,6 +884,7 @@ Completed and pushed:
 608. Source routing now lets notification follow-up tasks open the underlying notification source when `notificationSourceType` is present, so live, feed campaign, and lesson/course notifications route to their commercial, public storefront, or course workspaces instead of stopping at the Notification Center.
 609. Source routing now lets alert follow-up tasks open the underlying alert source when `alertSourceType` is present, so product, feed campaign, and lesson/course alerts route to storefront, commercial campaign, or course workspaces instead of stopping at Alert Center.
 610. Public storefront product detail and NPK / Feed Recipe Builder copy now consistently use label N-P2O5-K2O wording, and public product detail prefers the `labelNpk` alias before legacy `npk`, preventing soil/amendment guaranteed-analysis math from being shown as vague N-P-K.
+611. Commercial page registry support navigation now labels commercial inventory as Inventory Support while keeping it demoted from primary tabs, matching the product-generated inventory rule and avoiding a separate-store inventory implication.
 
 ## Working Rule For Codex
 

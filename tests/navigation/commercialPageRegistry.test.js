@@ -29,6 +29,7 @@ describe("commercial page registry", () => {
     expect(labels).not.toContain("Batch Planner");
     expect(labels).not.toContain("Product Trials");
     expect(labels).not.toContain("Inventory");
+    expect(labels).not.toContain("Inventory Support");
     expect(labels.slice(0, 3)).toEqual(["Dashboard", "Storefront", "Products"]);
   });
 
@@ -56,6 +57,7 @@ describe("commercial page registry", () => {
     const labels = PAGE_REGISTRY_COMMERCIAL.map((entry) => entry.label);
 
     expect(labels).toContain("Marketing Planner");
+    expect(labels).toContain("Inventory Support");
     expect(labels).toContain("Orders");
     expect(labels).not.toContain("Campaigns");
     expect(labels).not.toContain("Orders / External Tracking");
