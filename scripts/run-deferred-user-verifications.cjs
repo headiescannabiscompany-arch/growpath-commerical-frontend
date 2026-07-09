@@ -87,6 +87,7 @@ const checks = [
       "tests/unit/FacilityProfileRoute.test.tsx",
       "tests/unit/aiFeatureMatrix.test.ts",
       "tests/unit/ai-call-normalize.test.ts",
+      "tests/unit/PaywallScreen.test.tsx",
       "tests/unit/pricingConstants.test.js",
       "tests/unit/SubscribeScreenPricing.test.js",
       "tests/unit/SubscriptionScreenPricing.test.js",

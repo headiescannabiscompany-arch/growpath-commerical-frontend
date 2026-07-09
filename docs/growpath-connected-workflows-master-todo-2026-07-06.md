@@ -826,6 +826,7 @@ Completed and pushed:
 550. Deferred user verification now includes the Search regression test and manual Search checks for Storefront routing, workflow keyword discovery, and top/bottom Feed placements, while updating active menu wording from Storefront Offers to Storefront.
 551. Legacy Commercial Brand Profile compatibility screen now exposes Storefront as the primary action before pricing/subscription controls, so stale commercial profile entry points still point owners toward the public storefront home base.
 552. Paywall PRO benefits now describe storefront discovery instead of the older Storefront Offers destination label, while preserving the plans/pricing navigation for subscription comparison.
+553. Deferred user verification now includes the Paywall storefront-discovery regression so subscription upsell copy stays aligned with Storefront discovery rather than the old Storefront Offers destination wording.
 
 ## Working Rule For Codex
 
