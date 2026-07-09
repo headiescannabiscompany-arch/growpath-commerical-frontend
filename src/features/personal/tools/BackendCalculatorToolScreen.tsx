@@ -57,6 +57,12 @@ type BackendCalculatorToolScreenProps = {
         description?: string;
         priority?: "low" | "medium" | "high";
         dueDate?: string;
+        endAt?: string;
+        allDay?: boolean;
+        calendarType?: string;
+        sourceStage?: string;
+        reminderPlan?: Record<string, any>;
+        recurrence?: Record<string, any> | string;
       }
     | undefined;
   buildActions?: (context: {
@@ -282,7 +288,13 @@ export default function BackendCalculatorToolScreen({
             title: task.title,
             description: task.description,
             priority: task.priority,
-            dueDate: task.dueDate
+            dueDate: task.dueDate,
+            endAt: task.endAt,
+            allDay: task.allDay,
+            calendarType: task.calendarType,
+            sourceStage: task.sourceStage,
+            reminderPlan: task.reminderPlan,
+            recurrence: task.recurrence
           });
           if (!result.ok) throw new Error(result.error);
         }

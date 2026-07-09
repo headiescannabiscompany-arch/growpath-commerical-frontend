@@ -158,6 +158,13 @@ describe("IpmScoutToolRoute", () => {
           toolKey: "ipm-scout",
           toolRunId: "toolrun-1",
           title: "Repeat IPM scout",
+          allDay: true,
+          calendarType: "ipm_scout_followup",
+          sourceStage: "ipm_inspection",
+          reminderPlan: expect.objectContaining({
+            channels: ["in_app"],
+            reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+          }),
           description: expect.stringContaining(
             "GPT verification: GPT verification agrees mites are plausible"
           )
@@ -197,14 +204,23 @@ describe("IpmScoutToolRoute", () => {
           tasks: [
             expect.objectContaining({
               title: "Repeat IPM scout",
+              allDay: true,
+              calendarType: "ipm_scout_followup",
+              sourceStage: "ipm_inspection",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("GPT verification")
             }),
             expect.objectContaining({
               title: "Document IPM evidence and treatment decision",
+              sourceStage: "ipm_treatment_decision",
               description: expect.stringContaining("trap counts")
             }),
             expect.objectContaining({
               title: "Review IPM outcome",
+              sourceStage: "ipm_outcome_review",
               description: expect.stringContaining("whether the response worked")
             })
           ]

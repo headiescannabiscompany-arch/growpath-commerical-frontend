@@ -45,11 +45,21 @@ function normalizePriority(
 
 function ipmTaskPlan(outputs: Record<string, any>) {
   const planned = Array.isArray(outputs.taskSuggestions) ? outputs.taskSuggestions : [];
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "ipm_scout_followup",
+    sourceStage: "ipm_inspection",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
   if (planned.length > 1) {
     return planned.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `IPM follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      ...calendarMetadata,
       description:
         task?.description ||
         "Follow up on IPM scout evidence, verification context, inspection steps, and treatment outcome."
@@ -73,6 +83,7 @@ function ipmTaskPlan(outputs: Record<string, any>) {
         highSeverity ? "high" : "medium"
       ),
       dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
+      ...calendarMetadata,
       description: [
         `Suspected issue: ${issue}.`,
         `Suspected organism: ${organism}.`,
@@ -91,6 +102,8 @@ function ipmTaskPlan(outputs: Record<string, any>) {
       title: "Document IPM evidence and treatment decision",
       priority: highSeverity ? "high" : ("medium" as const),
       dueDate: tomorrow(4),
+      ...calendarMetadata,
+      sourceStage: "ipm_treatment_decision",
       description:
         "Save leaf top/bottom photos, trap counts, affected plant locations, treatment decision, product/rate if used, and safety notes."
     },
@@ -98,6 +111,8 @@ function ipmTaskPlan(outputs: Record<string, any>) {
       title: "Review IPM outcome",
       priority: "medium" as const,
       dueDate: tomorrow(7),
+      ...calendarMetadata,
+      sourceStage: "ipm_outcome_review",
       description:
         "Record whether the response worked, whether pest pressure changed, and whether another scout or escalation is needed."
     }
@@ -195,6 +210,13 @@ export default function IpmScoutToolRoute() {
         title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
         priority: outputs.taskSuggestions?.[0]?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
+        allDay: true,
+        calendarType: "ipm_scout_followup",
+        sourceStage: "ipm_inspection",
+        reminderPlan: {
+          channels: ["in_app"],
+          reminders: [{ offsetMinutes: -12 * 60 }]
+        },
         description: [
           `Suspected issue: ${outputs.suspectedIssue || "unknown"}.`,
           outputs.suspectedOrganism
