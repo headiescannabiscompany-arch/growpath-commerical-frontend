@@ -185,6 +185,57 @@ function suggestedAlertRules(metrics: string[], roomType: string) {
   });
 }
 
+function suggestedAutomationRules(metrics: string[], roomName: string, roomType: string) {
+  const metricSet = new Set(metrics);
+  const base = {
+    roomName,
+    roomType,
+    source: "facility_room_import_preview"
+  };
+  const rules = [];
+
+  if (metricSet.has("air_temperature") && metricSet.has("relative_humidity")) {
+    rules.push(
+      {
+        ...base,
+        ruleType: "tool_suggestion",
+        toolType: "vpd_dew_point_guard",
+        requiredMetrics: ["air_temperature", "relative_humidity"],
+        action: "Use imported room readings in VPD and Dew Point Guard."
+      },
+      {
+        ...base,
+        ruleType: "alert_suggestion",
+        triggerMetric: "relative_humidity",
+        action: "Create high-humidity and dew-point-risk room checks after lights out."
+      }
+    );
+  }
+
+  if (metricSet.has("substrate_moisture") || metricSet.has("substrate_ec")) {
+    rules.push({
+      ...base,
+      ruleType: "tool_suggestion",
+      toolType: "crop_steering_dryback_review",
+      requiredMetrics: ["substrate_moisture", "substrate_ec"].filter((metric) =>
+        metricSet.has(metric)
+      ),
+      action: "Use imported root-zone readings for dryback and crop-steering review."
+    });
+  }
+
+  if (metricSet.has("irrigation_event")) {
+    rules.push({
+      ...base,
+      ruleType: "task_suggestion",
+      triggerMetric: "irrigation_event",
+      action: "Create follow-up facility tasks from irrigation events."
+    });
+  }
+
+  return rules;
+}
+
 function buildRoomImportPreview(rawText: string) {
   const rooms = new Map<
     string,
@@ -444,6 +495,11 @@ export default function FacilityRoomsTab() {
                 permissionLevel: "read-only",
                 normalizedMetrics: device.metrics,
                 suggestedAlertRules: suggestedAlertRules(device.metrics, room.roomType),
+                suggestedAutomationRules: suggestedAutomationRules(
+                  device.metrics,
+                  room.name,
+                  room.roomType
+                ),
                 sensorStreams: device.metrics.map((metric) => ({
                   providerMetricKey: metric,
                   normalizedMetric: metric,

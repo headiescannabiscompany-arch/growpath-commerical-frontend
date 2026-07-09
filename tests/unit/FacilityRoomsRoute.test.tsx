@@ -134,6 +134,26 @@ describe("FacilityRoomsTab", () => {
         suggestedRoomName: "Flower Room 1",
         suggestedRoomType: "flower",
         normalizedMetrics: ["air_temperature", "relative_humidity"],
+        suggestedAutomationRules: expect.arrayContaining([
+          expect.objectContaining({
+            roomName: "Flower Room 1",
+            roomType: "flower",
+            source: "facility_room_import_preview",
+            ruleType: "tool_suggestion",
+            toolType: "vpd_dew_point_guard",
+            requiredMetrics: ["air_temperature", "relative_humidity"],
+            action: "Use imported room readings in VPD and Dew Point Guard."
+          }),
+          expect.objectContaining({
+            roomName: "Flower Room 1",
+            roomType: "flower",
+            source: "facility_room_import_preview",
+            ruleType: "alert_suggestion",
+            triggerMetric: "relative_humidity",
+            action:
+              "Create high-humidity and dew-point-risk room checks after lights out."
+          })
+        ]),
         sensorStreams: [
           expect.objectContaining({
             providerMetricKey: "air_temperature",
