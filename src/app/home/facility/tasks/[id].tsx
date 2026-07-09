@@ -80,15 +80,51 @@ function firstSourceValue(...values: unknown[]) {
 function taskSourceId(item: AnyRec | null): string {
   if (!item) return "";
   const sourceType = String(item.sourceType || "");
-  if (sourceType === "forum") {
+  const directSource = firstSourceValue(item.sourceObjectId, item.sourceId);
+  if (directSource) return String(directSource);
+  if (sourceType === "room") return String(item.linkedRoomId || item.roomId || "");
+  if (sourceType === "facility_run")
+    return String(item.linkedFacilityRunId || item.facilityRunId || "");
+  if (sourceType === "sop") return String(item.linkedSopId || item.sopId || "");
+  if (sourceType === "alert") return String(item.linkedAlertId || item.alertId || "");
+  if (sourceType === "sensor_alert")
+    return String(item.linkedSensorAlertId || item.sensorAlertId || "");
+  if (sourceType === "course") return String(item.linkedCourseId || item.courseId || "");
+  if (sourceType === "lesson")
+    return String(item.linkedLessonId || item.lessonId || item.linkedCourseId || "");
+  if (sourceType === "course_assignment")
     return String(
-      firstSourceValue(item.sourceObjectId, item.sourceId, item.linkedForumThreadId) || ""
+      item.linkedCourseAssignmentId ||
+        item.courseAssignmentId ||
+        item.linkedLessonId ||
+        item.linkedCourseId ||
+        ""
     );
+  if (sourceType === "live") return String(item.linkedLiveId || item.liveId || "");
+  if (sourceType === "feed_campaign" || sourceType === "feed_post") {
+    return String(
+      firstSourceValue(
+        item.linkedFeedCampaignId,
+        item.feedCampaignId,
+        item.campaignId,
+        item.linkedFeedPostId
+      ) || ""
+    );
+  }
+  if (sourceType === "toolrun" || sourceType === "tool_run")
+    return String(item.linkedToolRunId || item.toolRunId || "");
+  if (sourceType === "recipe")
+    return String(item.linkedRecipeId || item.recipeId || item.linkedToolRunId || "");
+  if (sourceType === "product") return String(item.linkedProductId || item.productId || "");
+  if (sourceType === "product_batch")
+    return String(item.linkedProductBatchId || item.productBatchId || "");
+  if (sourceType === "product_trial")
+    return String(item.linkedProductTrialId || item.linkedTrialId || "");
+  if (sourceType === "forum") {
+    return String(item.linkedForumThreadId || item.forumThreadId || "");
   }
   return String(
     firstSourceValue(
-      item.sourceObjectId,
-      item.sourceId,
       item.linkedRoomId,
       item.linkedFacilityRunId,
       item.linkedSopId,
@@ -485,7 +521,7 @@ export default function FacilityTaskDetail() {
                 {sourceObjectLabel(item.sourceType)}{" "}
                 {sourceReference || "source not linked"}
                 {item.roomId || item.linkedRoomId
-                  ? ` | Room: ${String(item.roomId ?? item.linkedRoomId)}`
+                  ? ` | Room: ${String(item.linkedRoomId ?? item.roomId)}`
                   : ""}
               </Text>
               <Text style={styles.summaryLine}>

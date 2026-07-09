@@ -203,6 +203,27 @@ describe("FacilityTaskDetail", () => {
     );
   });
 
+  it("keeps linked-only course task source ids ahead of room context", async () => {
+    taskOverrides = {
+      sourceType: "course",
+      sourceObjectId: "",
+      sourceId: "",
+      linkedCourseId: "course-linked-1",
+      linkedRoomId: "room-linked-1"
+    };
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+    expect(screen.getByText(/Course course-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Room: room-linked-1/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("View facility task source"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/facility/sop-runs/course-linked-1"
+    );
+  });
+
   it.each([
     ["room", "flower-1", "/home/facility/rooms?roomId=flower-1"],
     ["course", "course-1", "/home/facility/sop-runs/course-1"],
