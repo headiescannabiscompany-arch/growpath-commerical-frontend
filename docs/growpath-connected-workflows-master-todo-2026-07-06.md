@@ -825,6 +825,7 @@ Completed and pushed:
 549. Global Search now uses the shared personal Feed placement component for top and bottom promotional campaign slots, keeping search aligned with the app-wide Feed placement rule without turning search results into forum/discussion content.
 550. Deferred user verification now includes the Search regression test and manual Search checks for Storefront routing, workflow keyword discovery, and top/bottom Feed placements, while updating active menu wording from Storefront Offers to Storefront.
 551. Legacy Commercial Brand Profile compatibility screen now exposes Storefront as the primary action before pricing/subscription controls, so stale commercial profile entry points still point owners toward the public storefront home base.
+552. Paywall PRO benefits now describe storefront discovery instead of the older Storefront Offers destination label, while preserving the plans/pricing navigation for subscription comparison.
 
 ## Working Rule For Codex
 
