@@ -122,6 +122,14 @@ describe("HomeScheduleRoute", () => {
               workspaceType: "personal",
               linkedCourseId: "course-assignment-parent",
               linkedCourseAssignmentId: "assignment-linked-1"
+            },
+            {
+              id: "task-12",
+              title: "Review public storefront launch",
+              dueAt: "2099-07-16T20:00:00Z",
+              status: "open",
+              workspaceType: "personal",
+              linkedStorefrontSlug: "living-soil-labs"
             }
           ]
         });
@@ -217,6 +225,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Launch linked campaign follow-up")).toBeTruthy();
     expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
     expect(screen.getByText("Complete linked course assignment")).toBeTruthy();
+    expect(screen.getByText("Review public storefront launch")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -257,6 +266,7 @@ describe("HomeScheduleRoute", () => {
         "link-/home/personal/courses?courseId=course-assignment-parent&assignmentId=assignment-linked-1"
       )
     ).toBeTruthy();
+    expect(screen.getByTestId("link-/store/living-soil-labs")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/live-session?sessionId=live-public-1")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();

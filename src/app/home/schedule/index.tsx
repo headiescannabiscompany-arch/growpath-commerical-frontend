@@ -126,6 +126,10 @@ function sourceReference(row: any) {
     row?.linkedProductTrialId,
     row?.linkedTrialId,
     row?.linkedProductId,
+    row?.storefrontSlug,
+    row?.linkedStorefrontSlug,
+    row?.brandSlug,
+    row?.publicSlug,
     row?.linkedStorefrontId,
     row?.linkedFeedCampaignId,
     row?.linkedFeedPostId,
@@ -157,7 +161,14 @@ function linkedSourceType(row: any) {
   if (row?.linkedProductBatchId) return "product_batch";
   if (row?.linkedProductTrialId || row?.linkedTrialId) return "product_trial";
   if (row?.linkedProductId) return "product";
-  if (row?.linkedStorefrontId) return "storefront";
+  if (
+    row?.storefrontSlug ||
+    row?.linkedStorefrontSlug ||
+    row?.brandSlug ||
+    row?.publicSlug ||
+    row?.linkedStorefrontId
+  )
+    return "storefront";
   if (row?.linkedOrderId) return "order";
   if (row?.linkedRoomId) return "room";
   if (row?.linkedSopId) return "sop";
