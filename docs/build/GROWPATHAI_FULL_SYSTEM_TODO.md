@@ -16,6 +16,7 @@ Legend:
 - [~] Keep release surface policy: release surfaces visible, beta opt-in only, hidden/planned/disabled not visible.
 - [x] Add or update validation so planned modules cannot leak into public navigation.
 - [x] Record all module decisions in this TODO and ledger before implementation changes.
+- [~] Apply the Facility workspace visual polish standard across Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces so all user types feel equally professional.
 
 ## Phase 1 - Foundation Contracts
 

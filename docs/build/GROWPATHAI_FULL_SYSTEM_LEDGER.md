@@ -11,6 +11,7 @@ This ledger is the current build source of truth for the full GrowPathAI system.
 - Facility Insights is allowed only as a simple read-only summary from existing data. Do not build forecasting, labor analytics, yield analytics, financial analytics, or AI business advice under that name.
 - Big GrowPathAI systems are in the first serious build scope. Do not fake completion, and do not expose placeholder tools.
 - Internal feature status may keep `release`, `beta`, `hidden`, `planned`, and `disabled`, but hidden/planned/disabled surfaces must not be user-visible.
+- The Facility workspace visual standard applies to every user type. Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces should inherit the same polished operational quality instead of letting Facility be the only visually strong area.
 
 ## Definition Of Done For Every Module
 
@@ -65,6 +66,11 @@ Build only if it can read existing records and summarize:
 Hide or skip it if it requires deep analytics, prediction, or a new commercial-helper concept.
 
 ## Work Log
+
+### 2026-07-09
+
+- Confirmed the current production deploy gate after Render appeared stalled: latest Frontend CI and Production Build Preflight passed on `main`, and live URL verification returned 200 for public policy/support/delete-account pages plus API health/readiness endpoints.
+- Added the cross-user visual standard decision: Facility's visual appeal and polish should apply to Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces.
 
 ### 2026-07-02
 
