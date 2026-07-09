@@ -87,11 +87,11 @@ export default function StoreIndex() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Public brand profiles</Text>
+        <Text style={styles.cardTitle}>Public storefronts</Text>
         <Text style={styles.cardText}>
-          Commercial profiles can be opened from feed campaigns, forum content, products,
-          courses, and storefront links. A profile gives users a public brand page with a
-          direct path to the store.
+          Commercial storefronts are the public brand home base for products, courses,
+          lives, campaigns, and Q&A links. Legacy brand profiles remain available as a
+          secondary profile view.
         </Text>
         <TextInput
           accessibilityLabel="Public brand slug"
@@ -106,18 +106,18 @@ export default function StoreIndex() {
           <Pressable
             accessibilityRole="button"
             disabled={!cleanSlug}
-            onPress={() => openPublicRoute("profile")}
+            onPress={() => openPublicRoute("store")}
             style={[styles.primaryButton, !cleanSlug && styles.disabled]}
           >
-            <Text style={styles.primaryButtonText}>Open Profile</Text>
+            <Text style={styles.primaryButtonText}>Open Storefront</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             disabled={!cleanSlug}
-            onPress={() => openPublicRoute("store")}
+            onPress={() => openPublicRoute("profile")}
             style={[styles.secondaryButton, !cleanSlug && styles.disabled]}
           >
-            <Text style={styles.secondaryButtonText}>Open Store</Text>
+            <Text style={styles.secondaryButtonText}>Open Profile</Text>
           </Pressable>
         </View>
       </AppCard>
@@ -127,9 +127,9 @@ export default function StoreIndex() {
           {similarTo ? "Similar Brands" : "Find Brands"}
         </Text>
         <Text style={styles.cardText}>
-          Search public commercial profiles by brand, category, product line, or store
-          slug. Similar-brand results use the current storefront as context when opened
-          from a store page.
+          Search public commercial storefronts by brand, category, product line, or store
+          slug. Similar-storefront results use the current storefront as context when
+          opened from a store page.
         </Text>
         <TextInput
           accessibilityLabel="Search public brands"
@@ -168,14 +168,14 @@ export default function StoreIndex() {
               </View>
               {publicSlug ? (
                 <View style={styles.brandActions}>
+                  <Link href={`/store/${encodeURIComponent(publicSlug)}` as any} asChild>
+                    <Pressable style={styles.primaryButton}>
+                      <Text style={styles.primaryButtonText}>Storefront</Text>
+                    </Pressable>
+                  </Link>
                   <Link href={`/brands/${encodeURIComponent(publicSlug)}` as any} asChild>
                     <Pressable style={styles.secondaryButton}>
                       <Text style={styles.secondaryButtonText}>Profile</Text>
-                    </Pressable>
-                  </Link>
-                  <Link href={`/store/${encodeURIComponent(publicSlug)}` as any} asChild>
-                    <Pressable style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonText}>Store</Text>
                     </Pressable>
                   </Link>
                 </View>

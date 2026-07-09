@@ -53,15 +53,15 @@ describe("StoreIndex", () => {
     mockParams = {};
   });
 
-  it("opens public brand profile and storefront from a slug", () => {
+  it("opens public storefront first and keeps profile secondary from a slug", () => {
     const screen = render(<StoreIndex />);
 
     fireEvent.changeText(screen.getByLabelText("Public brand slug"), "living-soil-labs");
+    fireEvent.press(screen.getByText("Open Storefront"));
     fireEvent.press(screen.getByText("Open Profile"));
-    fireEvent.press(screen.getByText("Open Store"));
 
-    expect(mockPush).toHaveBeenNthCalledWith(1, "/brands/living-soil-labs");
-    expect(mockPush).toHaveBeenNthCalledWith(2, "/store/living-soil-labs");
+    expect(mockPush).toHaveBeenNthCalledWith(1, "/store/living-soil-labs");
+    expect(mockPush).toHaveBeenNthCalledWith(2, "/brands/living-soil-labs");
   });
 
   it("loads similar public brands from a storefront context", async () => {
@@ -77,7 +77,7 @@ describe("StoreIndex", () => {
     expect(screen.getByText("Similar Brands")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Profile")).toBeTruthy();
-    expect(screen.getAllByText("Store").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Storefront").length).toBeGreaterThan(0);
   });
 
   it("searches public brands by query", async () => {
