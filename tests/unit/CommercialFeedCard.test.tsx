@@ -36,4 +36,19 @@ describe("CommercialFeedCard", () => {
     expect(screen.queryByText("Like")).toBeNull();
     expect(screen.queryByText(/comments/i)).toBeNull();
   });
+
+  it("recognizes storefront slug aliases as storefront campaign destinations", () => {
+    const screen = render(
+      <CommercialFeedCard
+        post={{
+          ...basePost,
+          linkedLiveId: undefined,
+          brandSlug: "living-soil-labs"
+        }}
+      />
+    );
+
+    expect(screen.getByText("Visit Storefront")).toBeTruthy();
+    expect(screen.queryByText("Learn More")).toBeNull();
+  });
 });

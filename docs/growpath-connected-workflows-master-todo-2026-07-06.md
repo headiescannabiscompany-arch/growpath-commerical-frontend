@@ -795,6 +795,7 @@ Completed and pushed:
 519. The Feed/Campaigns route now uses the same storefront alias resolver for campaign CTA destinations, rendered store metadata, and click analytics payloads, preventing route-level fallbacks from losing exact public storefront context.
 520. Public Store discovery now leads with Storefront as the primary public brand route and keeps legacy Profile as a secondary option, aligning storefront search and similar-brand results with the commercial home-base model.
 521. Public Store discovery now also recognizes `linkedStorefrontSlug` and `publicSlug` result aliases, so storefront search/similar-brand rows can route to exact Storefront/Profile URLs even when the backend does not return `slug`.
+522. Legacy CommercialFeedCard now recognizes `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` as storefront campaign destinations, preventing older campaign-card usage from labeling storefront outreach as generic Learn More content.
 
 ## Working Rule For Codex
 

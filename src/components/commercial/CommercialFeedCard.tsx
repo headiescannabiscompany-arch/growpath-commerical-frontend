@@ -27,6 +27,9 @@ type CommercialPost = {
   linkedLiveId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
+  linkedStorefrontSlug?: string;
+  brandSlug?: string;
+  publicSlug?: string;
   createdAt: string;
 };
 
@@ -38,13 +41,15 @@ export default function CommercialFeedCard({ post }: Props) {
   const { user } = useAuth();
   const isOwnPost = user?.id === post.author?.id;
   const engagementCount = Number(post.engagementCount ?? post.likeCount ?? 0);
+  const storefrontSlug =
+    post.storefrontSlug || post.linkedStorefrontSlug || post.brandSlug || post.publicSlug;
   const destinationLabel = post.linkedProductId
     ? "View Product"
     : post.linkedCourseId
       ? "View Course"
       : post.linkedLiveId
         ? "View Live"
-        : post.storefrontSlug
+        : storefrontSlug
           ? "Visit Storefront"
           : post.linkedForumThreadId
             ? "Open Forum Q&A"
