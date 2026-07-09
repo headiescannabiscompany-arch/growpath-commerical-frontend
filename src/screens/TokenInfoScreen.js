@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getTokenBalance } from "../api/tokens";
 import FeatureGate from "../components/FeatureGate";
+import { radius } from "../theme/theme";
 
 export default function TokenInfoScreen({ navigation }) {
   const [balance, setBalance] = useState(null);
@@ -149,7 +150,7 @@ const styles = {
   balanceCard: {
     backgroundColor: "#f8f9fa",
     padding: 24,
-    borderRadius: 16,
+    borderRadius: radius.card,
     marginBottom: 24,
     borderWidth: 2,
     borderColor: "#27ae60",
@@ -170,13 +171,13 @@ const styles = {
     width: "100%",
     height: 12,
     backgroundColor: "#e0e0e0",
-    borderRadius: 6,
+    borderRadius: radius.pill,
     overflow: "hidden"
   },
   progressFill: {
     height: "100%",
     backgroundColor: "#27ae60",
-    borderRadius: 6
+    borderRadius: radius.pill
   },
   section: {
     marginBottom: 24
@@ -231,7 +232,7 @@ const styles = {
     backgroundColor: "#27ae60",
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginTop: 16,
     alignItems: "center"
   },

@@ -2,6 +2,7 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 
 export default function GuildCodeScreen() {
   return (
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   rule: {
     backgroundColor: "#f8f9fa",
     padding: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#27ae60"
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   role: {
     backgroundColor: "#fff",
     padding: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#e0e0e0"

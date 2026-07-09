@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { addLink, getLinks, removeLink, updateLink } from "../api/links.js";
+import { radius } from "../theme/theme";
 
 function linkId(link, idx = 0) {
   return String(link?.id || link?._id || link?.linkId || `link-${idx}`);
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", marginTop: 4 },
   error: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#991B1B",
     marginBottom: 10,
     padding: 10
@@ -228,21 +229,21 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
   button: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   secondaryButton: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   secondaryButtonText: { color: "#334155", fontWeight: "800" },
   dangerButton: {
     backgroundColor: "#991B1B",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     gap: 12,
     padding: 16,
     width: "100%",
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   modalTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     padding: 10
