@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 const dryRun = process.argv.includes("--dry-run");
@@ -83,22 +84,62 @@ async function requestUrl(entry, method) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20000);
   try {
-    const response = await fetch(entry.url, {
-      method,
-      redirect: "follow",
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "growpath-release-url-verifier/1.0"
-      }
-    });
-    await response.arrayBuffer();
-    return {
-      status: response.status,
-      finalUrl: response.url || entry.url
-    };
+    try {
+      const response = await fetch(entry.url, {
+        method,
+        redirect: "follow",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "growpath-release-url-verifier/1.0"
+        }
+      });
+      await response.arrayBuffer();
+      return {
+        status: response.status,
+        finalUrl: response.url || entry.url
+      };
+    } catch (err) {
+      const fallback = requestUrlWithPowerShell(entry, method);
+      if (fallback) return fallback;
+      throw err;
+    }
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function requestUrlWithPowerShell(entry, method) {
+  if (process.platform !== "win32") return null;
+
+  const psUrl = entry.url.replace(/'/g, "''");
+  const psMethod = method.replace(/'/g, "''");
+  const command = [
+    "$ProgressPreference='SilentlyContinue'",
+    `$r=Invoke-WebRequest -Uri '${psUrl}' -Method '${psMethod}' -UseBasicParsing -MaximumRedirection 5 -TimeoutSec 20`,
+    "[Console]::WriteLine($r.StatusCode)"
+  ].join("; ");
+
+  const result = spawnSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      command
+    ],
+    { encoding: "utf8" }
+  );
+
+  const status = Number(String(result.stdout || "").trim());
+  if (result.status === 0 && Number.isFinite(status)) {
+    return {
+      status,
+      finalUrl: entry.url
+    };
+  }
+
+  return null;
 }
 
 async function checkUrl(entry) {
