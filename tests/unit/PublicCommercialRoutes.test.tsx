@@ -422,6 +422,7 @@ describe("public commercial routes", () => {
     );
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Label / Use Information")).toBeTruthy();
+    expect(screen.getByText("Label N-P2O5-K2O")).toBeTruthy();
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Buy")).toBeTruthy();
   });

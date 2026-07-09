@@ -489,7 +489,10 @@ export default function PublicProductRoute() {
                 label="Size / weight"
                 value={product?.unitSize || specs.unitSize}
               />
-              <SpecRow label="N-P-K" value={product?.npk || specs.npk} />
+              <SpecRow
+                label="Label N-P2O5-K2O"
+                value={product?.labelNpk || specs.labelNpk || product?.npk || specs.npk}
+              />
               <SpecRow
                 label="Guaranteed analysis"
                 value={product?.guaranteedAnalysis || specs.guaranteedAnalysis}

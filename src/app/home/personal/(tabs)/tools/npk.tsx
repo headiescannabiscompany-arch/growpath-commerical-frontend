@@ -616,16 +616,17 @@ export default function NpkToolScreen() {
         <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
         <Text style={styles.subtitle}>
           Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
-          N-P-K, source water, and release timing. Fertilizer label P and K are entered as
-          P2O5 and K2O, then converted to elemental P/K where appropriate.
+          label N-P2O5-K2O, source water, and release timing. Fertilizer label P
+          and K are entered as P2O5 and K2O, then converted to elemental P/K where
+          appropriate.
         </Text>
         <View style={styles.guidanceCard}>
           <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
           <Text style={styles.fieldHint}>
             Use the target profile and ingredient rows for recipe-building conversations.
             GrowPath AI should collect missing inputs and explain tradeoffs, while this
-            deterministic tool preserves label N-P-K, converts P2O5/K2O for elemental
-            math, tracks release timing, and saves the ToolRun for review.
+            deterministic tool preserves label N-P2O5-K2O, converts P2O5/K2O for
+            elemental math, tracks release timing, and saves the ToolRun for review.
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -783,9 +784,9 @@ export default function NpkToolScreen() {
         </View>
         <Text style={styles.label}>Target profile</Text>
         <Text style={styles.fieldHint}>
-          Optional target N-P-K lets AI and the calculator compare the recipe goal to the
-          actual label math. Use label N-P2O5-K2O here; elemental P/K conversion stays
-          inside the deterministic tool output.
+          Optional target label N-P2O5-K2O lets AI and the calculator compare the
+          recipe goal to the actual label math. Elemental P/K conversion stays inside
+          the deterministic tool output.
         </Text>
         <View style={styles.analysisGrid}>
           {[
