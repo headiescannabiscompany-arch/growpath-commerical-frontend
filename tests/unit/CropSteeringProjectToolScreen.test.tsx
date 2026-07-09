@@ -133,11 +133,20 @@ describe("CropSteeringProjectToolRoute", () => {
             expect.objectContaining({
               title: "Check morning dryback",
               priority: "high",
+              allDay: true,
+              calendarType: "crop_steering_followup",
+              sourceStage: "P1",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("dryback")
             }),
             expect.objectContaining({
               title: "Compare runoff EC and pH",
               priority: "medium",
+              calendarType: "crop_steering_followup",
+              sourceStage: "P1",
               description: expect.stringContaining("runoff")
             })
           ]

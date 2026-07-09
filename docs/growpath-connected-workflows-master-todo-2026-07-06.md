@@ -845,6 +845,7 @@ Completed and pushed:
 569. Clone Rooting follow-up tasks now carry all-day clone-rooting calendar metadata, source-stage values, and 12-hour reminders so tray checks, photo reviews, environment adjustments, and transplant decisions show up in the shared Schedule with clone-batch context.
 570. Genetics Inventory follow-up tasks now carry all-day genetics-preservation calendar metadata, source-stage values, and 24-hour reminders so provenance review, preservation planning, and grow/pheno/clone linking appear in the shared Schedule with genetics context.
 571. Stress Testing follow-up tasks now carry all-day stress-test calendar metadata, retest/source-stage values, and 12-hour reminders so recovery checks, pheno score updates, keeper retest decisions, and crop-steering candidate notes surface in the shared Schedule.
+572. Crop Steering Project task plans now carry all-day crop-steering calendar metadata, phase/source-stage values, and 12-hour reminders so dryback, runoff, target-fit, and pheno-response follow-ups appear in the shared Schedule as steering work.
 
 ## Working Rule For Codex
 

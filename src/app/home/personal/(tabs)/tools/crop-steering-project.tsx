@@ -11,11 +11,21 @@ function normalizePriority(value: unknown): "low" | "medium" | "high" {
 
 function cropSteeringTaskPlan(outputs: Record<string, any>) {
   const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "crop_steering_followup",
+    sourceStage: String(outputs.phase || outputs.stage || "crop_steering_review"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
   if (planned.length) {
     return planned.slice(0, 8).map((item: any, index: number) => ({
       title: String(item?.title || `Crop steering follow-up ${index + 1}`),
       priority: normalizePriority(item?.priority),
       dueDate: tomorrow(Number(item?.dueInDays || index + 1)),
+      ...calendarMetadata,
       description:
         item?.description ||
         "Follow up on crop steering response with dryback, EC, pH, environment, and plant response notes."
@@ -27,6 +37,7 @@ function cropSteeringTaskPlan(outputs: Record<string, any>) {
       title: "Log crop steering response",
       priority: normalizePriority(outputs.pressureLevel === "high" ? "high" : "medium"),
       dueDate: tomorrow(1),
+      ...calendarMetadata,
       description:
         "Record plant response, dryback, EC, runoff, root-zone behavior, and comparison notes."
     },
@@ -34,6 +45,8 @@ function cropSteeringTaskPlan(outputs: Record<string, any>) {
       title: "Review crop steering target fit",
       priority: "medium" as const,
       dueDate: tomorrow(2),
+      ...calendarMetadata,
+      sourceStage: "crop_steering_target_review",
       description:
         "Compare steering intent, phase, DLI, VPD, EC, pH, and recovery before increasing pressure."
     },
@@ -41,6 +54,8 @@ function cropSteeringTaskPlan(outputs: Record<string, any>) {
       title: "Update pheno response notes",
       priority: "medium" as const,
       dueDate: tomorrow(3),
+      ...calendarMetadata,
+      sourceStage: "pheno_steering_response",
       description:
         outputs.phenoImpact ||
         outputs.notesForPhenoScore ||
