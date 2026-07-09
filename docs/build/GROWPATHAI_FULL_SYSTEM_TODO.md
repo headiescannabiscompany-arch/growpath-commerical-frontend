@@ -13,7 +13,7 @@ Legend:
 
 - [x] Create current implementation audit comparing planned modules to frontend routes, API clients, backend routes, backend models, tests, and docs.
 - [x] Convert audit into a machine-readable report and a short markdown report.
-- [~] Keep release surface policy: release surfaces visible, beta opt-in only, hidden/planned/disabled not visible.
+- [x] Keep release surface policy: release surfaces visible, beta opt-in only, hidden/planned/disabled not visible.
 - [x] Add or update validation so planned modules cannot leak into public navigation.
 - [x] Record all module decisions in this TODO and ledger before implementation changes.
 - [~] Apply the Facility workspace visual polish standard across Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces so all user types feel equally professional.
@@ -123,3 +123,4 @@ Legend:
 - [x] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [x] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
 - [x] Production export sanity check.
+- [x] Route pollution guard: stale underscored `/home/_personal` and `/home/_facility` route files removed, and `scripts/inventory-ui-routes.cjs` now fails on underscored non-layout files under `src/app`.

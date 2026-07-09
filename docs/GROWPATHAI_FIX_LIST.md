@@ -20,10 +20,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 - Action: ensure backend is running/reachable in test environments; document exact startup path for E2E.
 - Done when: `/api/me` and create-grow succeed in smoke flow; `npm run e2e` passes in a networked environment.
 
-2. Expo Router route pollution under `src/app`
+2. Expo Router route pollution under `src/app` - DONE 2026-07-09
 - Problem: utility modules under route tree can be treated as routes.
-- Action: move non-screen utilities out of `src/app/**` into feature modules (for example `src/features/...`).
-- Done when: route inventory contains only intentional screens/layout/error/not-found entries.
+- Action completed: removed stale underscored `/home/_personal` and `/home/_facility` route files, then made `scripts/inventory-ui-routes.cjs` fail on any underscored non-layout file under `src/app`.
+- Evidence: route inventory now reports 205 routes / 220 files; `npm run inventory:ui-routes`, focused route tests, Frontend CI, and Production Build Preflight passed for `45e846d8`.
+- Guardrail: Expo `_layout` files remain allowed; private/helper route-tree files must move outside `src/app` or become explicit canonical routes.
 
 3. Auth boot contract enforcement
 - Problem: fallback behavior after `/api/me` failure can violate boot contract expectations.
