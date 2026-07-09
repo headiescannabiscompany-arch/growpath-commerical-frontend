@@ -53,6 +53,7 @@ const checks = [
       "tests/unit/DryAmendmentMixToolScreen.test.tsx",
       "tests/unit/TopdressToolScreen.test.tsx",
       "tests/unit/SoilNutrientBatchToolScreen.test.tsx",
+      "tests/unit/FeedingConfirmScreen.test.js",
       "tests/unit/IpmScoutToolScreen.test.tsx",
       "tests/unit/HomeScheduleRoute.test.tsx",
       "tests/unit/AlertCenterRoute.test.tsx",
@@ -199,7 +200,9 @@ const manualChecks = [
     checks: [
       "Run NPK / Feed Recipe Builder with label N-P2O5-K2O values and verify elemental P/K, density assumptions, release timing, the AI recipe brief, ToolRun tasks, and product draft conversion.",
       "Create an Ingredient Library entry and verify supplier, cost, release window, document URL, label photo URL, application notes, and micronutrient notes remain visible after reload.",
-      "Run Soil Builder, Dry Amendment Mix Builder, Topdress Planner, and Soil & Nutrient Batch Planner and verify AI recipe/plan briefs, release timing, task plans, and product-draft/commercial/facility handoff language where available.",
+      "Run Soil Builder, Dry Amendment Mix Builder, Topdress Planner, and Soil & Nutrient Batch Planner and verify label N-P2O5-K2O wording, AI recipe/plan briefs, release timing, task plans, and product-draft/commercial/facility handoff language where available.",
+      "Create a commercial soil/nutrient/amendment product and verify the form labels product analysis as label N-P2O5-K2O while preserving product specs for storefront display.",
+      "Use the legacy feeding label-scan confirmation and verify scanned fertilizer values are displayed as label N-P2O5-K2O before scheduling.",
       "Run IPM Scout and verify GrowPath AI and GPT verification are shown and saved together."
     ]
   },

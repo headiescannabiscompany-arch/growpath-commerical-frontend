@@ -774,6 +774,7 @@ Completed and pushed:
 498. Soil & Nutrient Batch Planner now carries label N-P2O5-K2O wording through production QA tasks, AI batch briefs, and regression tests so facility/commercial batch planning does not collapse guaranteed analysis into vague NPK language.
 499. Commercial product creation now labels soil/nutrient/amendment product analysis as label N-P2O5-K2O and writes a `labelNpk` specs alias while preserving the existing `npk` field for compatibility.
 500. Legacy feeding label-scan confirmation now displays scanned fertilizer values as label N-P2O5-K2O and has a focused regression test before handing data into the feeding schedule workflow.
+501. Deferred user verification now includes the feeding label-scan regression and manual checks for label N-P2O5-K2O wording across recipe tools and commercial soil/nutrient/amendment product creation.
 
 ## Working Rule For Codex
 
