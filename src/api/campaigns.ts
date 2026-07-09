@@ -29,6 +29,9 @@ export type Campaign = {
   creativeImageUrl?: string;
   bannerImageUrl?: string;
   storefrontSlug?: string;
+  linkedStorefrontSlug?: string;
+  brandSlug?: string;
+  publicSlug?: string;
   linkedProductId?: string;
   linkedProductLineId?: string;
   linkedCourseId?: string;

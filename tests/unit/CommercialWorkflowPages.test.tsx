@@ -580,6 +580,7 @@ describe("commercial workflow pages", () => {
               linkedCourseId: "course-1",
               linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
+              brandSlug: "living-soil-labs",
               targetUrl: "https://example.com/bloom",
               clickCount: 42,
               budget: { totalBudget: 125 }
@@ -1409,6 +1410,18 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
     expect(screen.getByText(/Evidence run trial-1/)).toBeTruthy();
     expect(screen.getByText(/Product line line-1/)).toBeTruthy();
+    expect(screen.getByText(/Storefront living-soil-labs/)).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/store/living-soil-labs" })).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/store/living-soil-labs/products/product-1"
+      })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/store/living-soil-labs/courses/course-1"
+      })
+    ).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Marketing plan name"), "Veg Mix Drop");
     fireEvent.changeText(

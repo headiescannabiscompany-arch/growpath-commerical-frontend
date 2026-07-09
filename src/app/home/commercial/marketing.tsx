@@ -100,6 +100,16 @@ function campaignProductLineId(campaign: Campaign) {
   );
 }
 
+function campaignStorefrontSlug(campaign: Campaign) {
+  return String(
+    campaign.storefrontSlug ||
+      campaign.linkedStorefrontSlug ||
+      campaign.brandSlug ||
+      campaign.publicSlug ||
+      ""
+  ).trim();
+}
+
 function productLineId(line: ProductLine) {
   return String(line.id || line._id || line.name || "").trim();
 }
@@ -539,10 +549,41 @@ export default function CommercialMarketingRoute() {
                   <Text style={styles.rowMeta}>
                     Product line {campaignProductLineId(campaign) || "none"}
                   </Text>
+                  {campaignStorefrontSlug(campaign) ? (
+                    <Text style={styles.rowMeta}>
+                      Storefront {campaignStorefrontSlug(campaign)}
+                    </Text>
+                  ) : null}
                   {campaign.targetUrl || campaign.externalUrl ? (
                     <Text style={styles.rowMeta}>
                       Target: {campaign.targetUrl || campaign.externalUrl}
                     </Text>
+                  ) : null}
+                  {campaignStorefrontSlug(campaign) ? (
+                    <View style={styles.actions}>
+                      <ActionLink
+                        href={`/store/${encodeURIComponent(
+                          campaignStorefrontSlug(campaign)
+                        )}`}
+                        label="View Storefront"
+                      />
+                      {campaign.linkedProductId ? (
+                        <ActionLink
+                          href={`/store/${encodeURIComponent(
+                            campaignStorefrontSlug(campaign)
+                          )}/products/${encodeURIComponent(campaign.linkedProductId)}`}
+                          label="View Product"
+                        />
+                      ) : null}
+                      {campaign.linkedCourseId ? (
+                        <ActionLink
+                          href={`/store/${encodeURIComponent(
+                            campaignStorefrontSlug(campaign)
+                          )}/courses/${encodeURIComponent(campaign.linkedCourseId)}`}
+                          label="View Course"
+                        />
+                      ) : null}
+                    </View>
                   ) : null}
                 </View>
                 <View style={styles.badge}>

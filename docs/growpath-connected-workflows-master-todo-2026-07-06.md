@@ -791,6 +791,7 @@ Completed and pushed:
 515. Shared source-link routing now recognizes `brandSlug` and `publicSlug` storefront aliases for inferred storefront, product, and course links, so alerts, notifications, tasks, schedule items, and other source-linked records can preserve exact public storefront routes without each page hand-coding alias handling.
 516. Deferred user verification checklist now includes exact Feed campaign deep-link focusing and storefront slug alias route checks across Feed, Live Session, and Brand Forum/Q&A so the later browser pass validates the alias-routing work in one batch.
 517. Direct Feed item cards and shared FeedRail promotional placements now treat `brandSlug`, `commercialSlug`, `actorSlug`, `linkedStorefrontSlug`, and `publicSlug` as Storefront destinations, so outreach cards route to `/store/:slug` and exact storefront product/course pages instead of the older `/brands/:slug` or generic discovery fallbacks.
+518. Commercial Marketing Planner campaign rows now resolve `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases into public Storefront/Product/Course action links, keeping campaign planning connected to the same exact storefront destinations used by Feed placements.
 
 ## Working Rule For Codex
 
