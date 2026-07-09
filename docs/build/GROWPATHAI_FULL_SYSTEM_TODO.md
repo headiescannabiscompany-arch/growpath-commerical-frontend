@@ -121,4 +121,4 @@ Legend:
 - [x] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [x] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [x] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
-- [ ] Production export sanity check.
+- [x] Production export sanity check.
