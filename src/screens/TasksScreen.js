@@ -67,6 +67,16 @@ export default function TasksScreen() {
     setModalVisible(true);
   };
 
+  const manualTaskPayload = () => ({
+    title,
+    completed,
+    allDay: true,
+    calendarType: "manual_task",
+    sourceStage: "manual_followup",
+    sourceType: "manual",
+    reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+  });
+
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
@@ -88,10 +98,10 @@ export default function TasksScreen() {
         // For title change, delete and re-create (workaround for demo)
         if (editTask.title !== title) {
           await deleteTask(editTask.id, token);
-          await createCustomTask({ title, completed }, token);
+          await createCustomTask(manualTaskPayload(), token);
         }
       } else {
-        await createCustomTask({ title, completed }, token);
+        await createCustomTask(manualTaskPayload(), token);
       }
       setModalVisible(false);
       fetchTasks();

@@ -49,7 +49,12 @@ export default function CreateTaskScreen({ route }) {
     const payload = {
       title,
       description: desc,
-      dueDate: finalDate
+      dueDate: finalDate,
+      allDay: true,
+      calendarType: "manual_task",
+      sourceStage: "manual_followup",
+      sourceType: "manual",
+      reminderPlan: { label: "24 hours before", channels: ["in_app"] }
     };
 
     if (selectedGrowId) {

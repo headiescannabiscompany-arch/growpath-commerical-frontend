@@ -135,6 +135,12 @@ export async function saveToolRunAndCreateTask(
       `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
     priority: args.priority || "medium",
     dueDate: args.dueDate,
+    allDay: true,
+    calendarType: `${String(args.toolKey || args.toolType || "tool_run")
+      .replace(/[^a-z0-9]+/gi, "_")
+      .toLowerCase()}_followup`,
+    sourceStage: "tool_run_followup",
+    reminderPlan: { label: "12 hours before", channels: ["in_app"] },
     sourceType: "tool_run",
     sourceObjectId: ensured.toolRunId,
     sourceToolRunId: ensured.toolRunId,
