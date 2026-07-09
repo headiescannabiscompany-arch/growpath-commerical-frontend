@@ -68,7 +68,7 @@ type SuggestedAutomationRule = {
   roomName: string;
   source: string;
   ruleType: string;
-  toolType?: string;
+  suggestedToolType?: string;
   triggerMetric?: string;
   requiredMetrics?: string[];
   action: string;
@@ -210,7 +210,7 @@ function buildSuggestedAutomationRules(
         {
           ...base,
           ruleType: "tool_suggestion",
-          toolType: "vpd_dew_point_guard",
+          suggestedToolType: "vpd_dew_point_guard",
           requiredMetrics: ["air_temperature", "relative_humidity"],
           action: "Use imported room readings in VPD and Dew Point Guard."
         },
@@ -227,7 +227,7 @@ function buildSuggestedAutomationRules(
       rules.push({
         ...base,
         ruleType: "tool_suggestion",
-        toolType: "watering_dryback_review",
+        suggestedToolType: "watering_dryback_review",
         requiredMetrics: ["substrate_moisture", "substrate_ec"].filter((metric) =>
           metrics.has(metric)
         ),
