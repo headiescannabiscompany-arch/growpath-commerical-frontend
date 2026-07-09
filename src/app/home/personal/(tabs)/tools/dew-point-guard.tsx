@@ -185,6 +185,21 @@ function normalizeCsvTimestampToIso(
   return new Date(ms).toISOString();
 }
 
+function dewPointInspectionTaskMetadata(riskBand: string) {
+  const highRisk = riskBand === "high";
+  return {
+    allDay: !highRisk,
+    calendarType: "dew_point_guard_followup",
+    sourceStage: highRisk
+      ? "dew_point_condensation_inspection"
+      : "dew_point_window_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: highRisk ? -60 : -12 * 60 }]
+    }
+  };
+}
+
 export default function DewPointGuardTool() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -1017,7 +1032,10 @@ export default function DewPointGuardTool() {
           .filter(Boolean)
           .join("\n"),
         priority: highRisk ? "high" : "medium",
-        dueDate: new Date(Date.now() + (highRisk ? 2 : 24) * 60 * 60 * 1000).toISOString()
+        dueDate: new Date(
+          Date.now() + (highRisk ? 2 : 24) * 60 * 60 * 1000
+        ).toISOString(),
+        ...dewPointInspectionTaskMetadata(riskBand)
       });
       if (!result.ok) throw new Error(result.error);
       setResultFeedback("Created dew point inspection task.");

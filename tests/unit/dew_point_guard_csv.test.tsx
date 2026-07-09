@@ -254,4 +254,34 @@ describe("Dew Point Guard CSV flow", () => {
       })
     );
   });
+
+  it("creates dew point inspection tasks with shared Schedule metadata", async () => {
+    const { getByLabelText } = render(<DewPointGuard />);
+
+    await waitFor(() =>
+      expect(mockListPersonalPlants).toHaveBeenCalledWith({ growId: "g1" })
+    );
+
+    fireEvent.press(getByLabelText("Create Inspection Task"));
+
+    await waitFor(() => expect(mockSaveToolRunAndCreateTask).toHaveBeenCalled());
+    expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "g1",
+        plantId: "plant-blueberry-1",
+        cropProfileId: "crop-blueberry-1",
+        toolKey: "dew-point-guard",
+        title: "Review dew point risk window",
+        priority: "medium",
+        allDay: true,
+        calendarType: "dew_point_guard_followup",
+        sourceStage: "dew_point_window_review",
+        reminderPlan: expect.objectContaining({
+          channels: ["in_app"],
+          reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+        }),
+        description: expect.stringContaining("Dew Point Guard risk")
+      })
+    );
+  });
 });
