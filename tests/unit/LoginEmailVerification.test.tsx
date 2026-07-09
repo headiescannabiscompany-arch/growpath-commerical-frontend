@@ -101,4 +101,27 @@ describe("LoginScreen email verification", () => {
       expect(mockReplace).not.toHaveBeenCalled();
     });
   });
+
+  it("separates server connectivity failures from bad credentials", async () => {
+    const networkError = new ApiError("NETWORK_ERROR", null, {
+      message: "Unable to reach the server."
+    });
+    networkError.message = "Unable to reach the server.";
+    mockLogin.mockRejectedValueOnce(networkError);
+
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "grower@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Unable to reach GrowPath AI right now. Check your connection and try again. If it keeps happening, email support@growpathai.com."
+        )
+      ).toBeTruthy();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+  });
 });

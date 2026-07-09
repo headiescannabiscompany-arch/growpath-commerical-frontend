@@ -15,6 +15,7 @@ import { ApiError } from "@/api/apiRequest";
 import { requestEmailVerification } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import LegalLinks from "@/components/LegalLinks";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { radius } from "@/theme/theme";
 
 export default function LoginScreen() {
@@ -44,9 +45,7 @@ export default function LoginScreen() {
       router.replace("/");
     } catch (e: any) {
       if (e instanceof ApiError) {
-        const backendMessage =
-          e.data?.error?.message || e.data?.message || "Invalid email or password";
-        setErrMsg(backendMessage);
+        setErrMsg(loginErrorMessage(e));
         if (e.code === "EMAIL_NOT_VERIFIED") {
           setVerificationEmail(email.trim().toLowerCase());
         }
@@ -197,6 +196,25 @@ export default function LoginScreen() {
       </View>
     </ScrollView>
   );
+}
+
+function loginErrorMessage(error: ApiError) {
+  const backendMessage = error.data?.error?.message || error.data?.message;
+  if (error.code === "EMAIL_NOT_VERIFIED") {
+    return backendMessage || "Please verify your email address before signing in.";
+  }
+
+  if (
+    error.code === "NETWORK_ERROR" ||
+    error.code === "OFFLINE" ||
+    error.code === "TIMEOUT" ||
+    error.code === "API_URL_NOT_CONFIGURED" ||
+    (typeof error.status === "number" && error.status >= 500)
+  ) {
+    return `Unable to reach GrowPath AI right now. Check your connection and try again. If it keeps happening, email ${SUPPORT_CONTACTS.general}.`;
+  }
+
+  return backendMessage || error.message || "Invalid email or password";
 }
 
 const styles = StyleSheet.create({

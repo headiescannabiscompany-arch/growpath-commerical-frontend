@@ -875,6 +875,7 @@ Completed and pushed:
 599. Legacy manual task screens and the single ToolRun task helper now create schedule-visible follow-ups with all-day metadata, calendar type, source stage, and reminders so older task entry points no longer produce bare task rows.
 600. Schedule source filters now cover storefront, notification, product, order, alert, recipe, ToolRun, and facility workflow categories so the shared Agenda can separate outreach, readiness, grow, commercial, and facility work instead of burying everything under generic tasks.
 601. Commercial page registry order now matches the Storefront-first tab layout, with Dashboard, Storefront, then Products locked by navigation coverage so menu-driven commercial surfaces keep Storefront as the brand home base instead of letting Products become the first public-workflow destination.
+602. Login now separates network, timeout, offline, misconfigured API, and server-side auth outages from bad credentials, showing actionable retry/support copy with the live support alias while preserving unverified-email resend and invalid-password behavior.
 
 ## Working Rule For Codex
 
