@@ -827,6 +827,7 @@ Completed and pushed:
 551. Legacy Commercial Brand Profile compatibility screen now exposes Storefront as the primary action before pricing/subscription controls, so stale commercial profile entry points still point owners toward the public storefront home base.
 552. Paywall PRO benefits now describe storefront discovery instead of the older Storefront Offers destination label, while preserving the plans/pricing navigation for subscription comparison.
 553. Deferred user verification now includes the Paywall storefront-discovery regression so subscription upsell copy stays aligned with Storefront discovery rather than the old Storefront Offers destination wording.
+554. Nutrient recipe use now preserves explicit save-log intent, safely increments missing use counts, and has backend route coverage proving a saved recipe can become a linked NPK ToolRun plus FEEDING grow-history event.
 
 ## Working Rule For Codex
 

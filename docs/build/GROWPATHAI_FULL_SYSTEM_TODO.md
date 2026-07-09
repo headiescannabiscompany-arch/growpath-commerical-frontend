@@ -120,5 +120,5 @@ Legend:
 - [x] Tool workflow E2E covered by `e2e/personal-core-loop.spec.ts` and `e2e/toolrun-log-release.spec.ts`; both are now release preflight gates.
 - [x] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
-- [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
+- [x] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
 - [ ] Production export sanity check.

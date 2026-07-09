@@ -543,6 +543,7 @@ router.delete("/recipes/:id", async (req, res, next) => {
 router.post("/recipes/:id/use", async (req, res, next) => {
   try {
     const uid = getRawUserId(req);
+    const shouldSaveLog = req.body?.saveLog !== false;
     const recipe = await NutrientRecipe.findOne({
       _id: req.params.id,
       user: toObjectId(uid)
@@ -562,11 +563,12 @@ router.post("/recipes/:id/use", async (req, res, next) => {
     req.body = {
       ...input,
       growId: req.body?.growId || recipe.growId,
-      recipeId: String(recipe._id)
+      recipeId: String(recipe._id),
+      saveLog: shouldSaveLog
     };
     const toolRun = await createRun(req, "npk_recipe", input, outputs);
     let log = null;
-    if (req.body.growId && req.body.saveLog !== false) {
+    if (req.body.growId && shouldSaveLog) {
       const measuredLine =
         outputs.measured?.ec != null || outputs.measured?.ph != null
           ? `\nMeasured: EC ${outputs.measured.ec ?? "-"} / pH ${outputs.measured.ph ?? "-"}`
@@ -587,7 +589,7 @@ router.post("/recipes/:id/use", async (req, res, next) => {
       await toolRun.save();
     }
     recipe.lastUsedAt = new Date();
-    recipe.useCount += 1;
+    recipe.useCount = Number(recipe.useCount || 0) + 1;
     await recipe.save();
     return res.status(201).json({ recipe, toolRun: toolRunDto(toolRun), outputs, log });
   } catch (error) {

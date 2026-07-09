@@ -1744,4 +1744,100 @@ describe("Tools Router (tools.js)", () => {
       })
     );
   });
+
+  test("records nutrient recipe use as a linked ToolRun and feeding history event", async () => {
+    const recipe = {
+      _id: RECIPE_ID,
+      user: "object-user",
+      growId: "grow_1",
+      name: "Veg Feed",
+      description: "",
+      version: 3,
+      stage: "veg",
+      medium: "soil",
+      batchVolume: 5,
+      batchUnit: "gal",
+      products: [{ name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }],
+      releaseEnvironment: {},
+      waterBaseline: {},
+      measuredEC: null,
+      measuredPH: null,
+      sourceRecords: [],
+      notes: "",
+      active: true,
+      useCount: 2,
+      toObject: function toObject() {
+        return {
+          growId: this.growId,
+          name: this.name,
+          version: this.version,
+          stage: this.stage,
+          medium: this.medium,
+          batchVolume: this.batchVolume,
+          batchUnit: this.batchUnit,
+          products: this.products,
+          releaseEnvironment: this.releaseEnvironment,
+          waterBaseline: this.waterBaseline,
+          measuredEC: this.measuredEC,
+          measuredPH: this.measuredPH,
+          sourceRecords: this.sourceRecords,
+          notes: this.notes
+        };
+      },
+      save: jest.fn().mockResolvedValue(null)
+    };
+    mockNutrientRecipeModel.findOne.mockResolvedValue(recipe);
+    mockToolRun.create.mockImplementation(async (payload) => {
+      const row = {
+        _id: RUN_ID,
+        ...payload,
+        save: jest.fn().mockResolvedValue(null)
+      };
+      row.toObject = () => ({ ...row });
+      return row;
+    });
+    mockGrowLog.create.mockResolvedValue({ _id: "log_recipe_use_1", type: "FEEDING" });
+
+    const res = await authed(
+      request(app)
+        .post(`/api/tools/recipes/${RECIPE_ID}/use`)
+        .send({ measuredEC: 1.4, measuredPH: 6.4, saveLog: true })
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockToolRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow_1",
+        toolName: "npk_recipe",
+        toolType: "npk_recipe",
+        linkedRecipeId: RECIPE_ID,
+        inputs: expect.objectContaining({
+          measuredEC: 1.4,
+          measuredPH: 6.4,
+          products: [expect.objectContaining({ name: "Base" })]
+        })
+      })
+    );
+    expect(mockGrowLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        facilityId: `personal:${TEST_USER}`,
+        userId: TEST_USER,
+        growId: "grow_1",
+        title: "Feeding: Veg Feed",
+        type: "FEEDING",
+        tags: ["feeding", "nutrient-recipe"],
+        linkedToolRunId: RUN_ID,
+        notes: expect.stringContaining("Applied recipe: Veg Feed v3")
+      })
+    );
+    expect(recipe.useCount).toBe(3);
+    expect(recipe.lastUsedAt).toBeInstanceOf(Date);
+    expect(recipe.save).toHaveBeenCalled();
+    expect(res.body.toolRun).toMatchObject({
+      id: RUN_ID,
+      linkedRecipeId: RECIPE_ID,
+      linkedLogId: "log_recipe_use_1"
+    });
+    expect(res.body.log).toMatchObject({ _id: "log_recipe_use_1" });
+  });
 });
