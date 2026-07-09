@@ -181,6 +181,22 @@ export function sourceObjectHref(source: SourceLike) {
         ? withQuery("/home/personal/courses", { courseId: id, ...courseQuery() })
         : "/home/personal/courses";
 
+  if (sourceType === "notification" && text(source?.notificationSourceType)) {
+    const notificationSourceType = text(source.notificationSourceType).toLowerCase();
+    if (notificationSourceType && notificationSourceType !== "notification") {
+      return sourceObjectHref({
+        ...source,
+        actionUrl: "",
+        sourceType: notificationSourceType,
+        sourceId: firstText(
+          source?.notificationSourceId,
+          source?.notificationSourceObjectId,
+          source?.sourceObjectId
+        )
+      });
+    }
+  }
+
   if (sourceType === "task") {
     if (!taskId) return "/home/schedule";
     if (workspace === "commercial") return `/home/commercial/tasks/${taskId}`;

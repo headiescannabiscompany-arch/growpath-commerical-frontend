@@ -316,6 +316,41 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/notifications?notificationId=notification-linked-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "notification",
+        sourceId: "notification-2",
+        linkedNotificationId: "notification-2",
+        notificationSourceType: "live",
+        notificationSourceId: "live-2",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/lives?liveId=live-2");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "notification",
+        sourceId: "notification-3",
+        linkedNotificationId: "notification-3",
+        notificationSourceType: "feed_campaign",
+        notificationSourceId: "campaign-3",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/feed?campaignId=campaign-3");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "notification",
+        sourceId: "notification-4",
+        linkedNotificationId: "notification-4",
+        notificationSourceType: "lesson",
+        notificationSourceId: "lesson-4",
+        linkedCourseId: "course-4",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/courses/course-4?lessonId=lesson-4");
   });
 
   it("recognizes schedule and calendar item aliases across workspaces", () => {
