@@ -38,19 +38,19 @@ Legend:
 
 - [~] NPK / Nutrient Recipe Calculator.
 - [~] Nutrient Release Chemistry.
-- [ ] Compatibility Checker.
+- [~] Compatibility Checker.
 - [~] Nutrient Source Comparison.
 - [~] Soil Builder.
 - [~] Dry Amendment Mix Builder.
 - [~] Topdress Planner.
 - [~] pH / EC Range Check.
 - [~] Feeding Schedule.
-- [ ] Product / Ingredient Library UI and backend reconciliation.
+- [x] Product / Ingredient Library UI and backend reconciliation.
 
 ## Phase 3 - Plant Diagnosis / IPM / Crop ID
 
 - [~] AI Diagnosis.
-- [ ] ETGU Diagnosis Rules.
+- [~] ETGU Diagnosis Rules.
 - [ ] Grow Log Auto-Tagging approval flow.
 - [~] IPM Scout.
 - [~] Organism Library.

@@ -830,6 +830,7 @@ Completed and pushed:
 554. Nutrient recipe use now preserves explicit save-log intent, safely increments missing use counts, and has backend route coverage proving a saved recipe can become a linked NPK ToolRun plus FEEDING grow-history event.
 555. Release preflight now gates the diagnosis ETGU Playwright workflow covering diagnosis intake, accepted tags, save-to-grow-log, source-linked follow-up task creation, feedback, and grow timeline visibility.
 556. Production web export sanity passed, with the export verifier confirming `dist` uses `https://api.growpathai.com`; generated `dist` staging was left out after Git object permission errors.
+557. Personal tool manifest coverage now recognizes explicit special-case tool POST routes such as IPM Scout, while the full-system TODO reflects verified Ingredient Library completion plus existing Compatibility Checker and ETGU Diagnosis foundations.
 
 ## Working Rule For Codex
 

@@ -116,9 +116,12 @@ describe("personal feature status manifest", () => {
       "utf8"
     );
     const backendRoutes = new Set(
-      Array.from(routeSource.matchAll(/calculatorRoute\(\s*["']\/([^"']+)["']/g)).map(
-        (match) => match[1]
-      )
+      [
+        ...Array.from(
+          routeSource.matchAll(/calculatorRoute\(\s*["']\/([^"']+)["']/g)
+        ),
+        ...Array.from(routeSource.matchAll(/router\.post\(\s*["']\/([^"']+)["']/g))
+      ].map((match) => match[1])
     );
 
     for (const [toolKey, featureKey] of Object.entries(TOOL_FEATURE_KEY_BY_TOOL_KEY)) {
