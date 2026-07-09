@@ -6,6 +6,8 @@ import HarvestReadinessToolRoute from "@/app/home/personal/(tabs)/tools/harvest-
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockGetHarvestBatch = jest.fn();
+const mockUpdateHarvestBatch = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -60,6 +62,11 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+jest.mock("@/api/harvestBatches", () => ({
+  getHarvestBatch: (...args: any[]) => mockGetHarvestBatch(...args),
+  updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
+}));
+
 describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -90,6 +97,20 @@ describe("HarvestReadinessToolRoute", () => {
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4"]
     });
+    mockGetHarvestBatch.mockResolvedValue({
+      id: "harvest-1",
+      growId: "grow-1",
+      name: "Harvest A",
+      dryCureRecords: [
+        {
+          stage: "drying",
+          qualityNotes: "Initial hang check.",
+          linkedToolRunId: "toolrun-old"
+        }
+      ],
+      linkedToolRunIds: ["toolrun-old"]
+    });
+    mockUpdateHarvestBatch.mockResolvedValue({ id: "harvest-1" });
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {
@@ -151,6 +172,52 @@ describe("HarvestReadinessToolRoute", () => {
           ]
         })
       )
+    );
+  });
+
+  it("saves harvest readiness review to a harvest batch record", async () => {
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("Harvest Readiness AI Flower day"), "56");
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness AI Trichome sample location"),
+      "top and lower buds"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness AI Harvest batch ID (optional)"),
+      "harvest-1"
+    );
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness AI"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Harvest Readiness AI result")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Save Harvest Review"));
+
+    await waitFor(() => expect(mockGetHarvestBatch).toHaveBeenCalledWith("harvest-1"));
+    expect(mockUpdateHarvestBatch).toHaveBeenCalledWith(
+      "harvest-1",
+      expect.objectContaining({
+        qualityNotes: expect.stringContaining("Readiness: approaching window."),
+        linkedToolRunIds: ["toolrun-old", "toolrun-1"],
+        dryCureRecords: [
+          expect.objectContaining({
+            stage: "drying",
+            linkedToolRunId: "toolrun-old"
+          }),
+          expect.objectContaining({
+            stage: "quality_review",
+            linkedToolRunId: "toolrun-1",
+            qualityNotes: expect.stringContaining(
+              "Trichomes: cloudy 65%, amber 8%, clear 10%."
+            )
+          })
+        ]
+      })
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Saved harvest review to batch.")).toBeTruthy()
     );
   });
 });

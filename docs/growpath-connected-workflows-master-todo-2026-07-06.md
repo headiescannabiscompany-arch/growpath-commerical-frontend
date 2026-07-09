@@ -838,6 +838,7 @@ Completed and pushed:
 562. Dry / Cure Guard now accepts an optional Harvest Batch ID and can append the calculated dry/cure reading, dew point, jar RH, risk notes, and linked ToolRun id onto the saved harvest batch, while shared tool result action feedback now surfaces action success instead of being masked by stale calculation feedback.
 563. Personal tasks now persist all-day, end date, reminder plan, calendar type, source stage, and recurrence metadata, and Auto Grow Calendar task generation carries grow milestone stage plus a 24-hour in-app reminder into the shared task/schedule engine.
 564. The shared Schedule / Agenda page now surfaces task all-day, calendar type, source stage, reminder, and recurrence metadata so Auto Grow Calendar milestones read as grow-stage schedule items instead of generic task rows.
+565. Harvest Readiness AI now accepts an optional Harvest Batch ID and can save the readiness window, trichome percentages, sample location, effect goal, warnings, and linked ToolRun id as a harvest-batch quality review record.
 
 ## Working Rule For Codex
 

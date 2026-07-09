@@ -4,6 +4,11 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  getHarvestBatch,
+  updateHarvestBatch,
+  type DryCureRecordInput
+} from "@/api/harvestBatches";
 
 function numberOrFallback(value: unknown, fallback: number) {
   const number = Number(value);
@@ -75,6 +80,39 @@ function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string,
   ];
 }
 
+function harvestReviewNotes(outputs: Record<string, any>, payload: Record<string, any>) {
+  const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+  return [
+    `Readiness: ${String(outputs.readinessStatus || "unknown").replaceAll("_", " ")}.`,
+    outputs.estimatedWindow
+      ? `Window: flower day ${outputs.estimatedWindow.startDay ?? "-"} to ${
+          outputs.estimatedWindow.endDay ?? "-"
+        }, target ${outputs.estimatedWindow.targetDay ?? "-"}.`
+      : "",
+    `Trichomes: cloudy ${payload.cloudyPercent || "-"}%, amber ${
+      payload.amberPercent || "-"
+    }%, clear ${payload.clearPercent || "-"}%.`,
+    `Sample: ${payload.sampleLocation || "mixed bud sites"}.`,
+    `Goal: ${payload.userGoal || "balanced"}.`,
+    warnings.length ? `Warnings: ${warnings.join("; ")}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function harvestReviewRecord(
+  outputs: Record<string, any>,
+  payload: Record<string, any>,
+  toolRunId: string
+): DryCureRecordInput {
+  return {
+    recordedAt: new Date().toISOString(),
+    stage: "quality_review",
+    qualityNotes: harvestReviewNotes(outputs, payload),
+    linkedToolRunId: toolRunId
+  };
+}
+
 export default function HarvestReadinessToolRoute() {
   return (
     <BackendCalculatorToolScreen
@@ -124,13 +162,19 @@ export default function HarvestReadinessToolRoute() {
           label: "Trichome sample location",
           defaultValue: "mixed_bud_sites"
         },
+        {
+          key: "harvestBatchId",
+          label: "Harvest batch ID (optional)",
+          defaultValue: ""
+        },
         { key: "aromaIntensity", label: "Aroma intensity", defaultValue: "building" },
         { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
-        ...values
+        ...values,
+        harvestBatchId: values.harvestBatchId.trim() || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "status", label: "Readiness", value: outputs.readinessStatus },
@@ -186,6 +230,37 @@ export default function HarvestReadinessToolRoute() {
               tasks: readinessTaskPlan(outputs, payload)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "save-harvest-review",
+          label: "Save Harvest Review",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          disabled: !growId || !payload.harvestBatchId,
+          successMessage: "Saved harvest review to batch.",
+          onPress: async () => {
+            const harvestBatchId = String(payload.harvestBatchId || "").trim();
+            const linkedToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
+            if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
+            if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
+            const batch = await getHarvestBatch(harvestBatchId);
+            if (!batch) throw new Error("Harvest batch not found.");
+            const existingRecords = Array.isArray(batch.dryCureRecords)
+              ? batch.dryCureRecords
+              : [];
+            const existingRunIds = Array.isArray(batch.linkedToolRunIds)
+              ? batch.linkedToolRunIds
+              : [];
+            const updated = await updateHarvestBatch(harvestBatchId, {
+              dryCureRecords: [
+                ...existingRecords,
+                harvestReviewRecord(outputs, payload, linkedToolRunId)
+              ],
+              qualityNotes: harvestReviewNotes(outputs, payload),
+              linkedToolRunIds: Array.from(new Set([...existingRunIds, linkedToolRunId]))
+            });
+            if (!updated) throw new Error("Unable to update harvest batch.");
           }
         }
       ]}
