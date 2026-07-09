@@ -11,6 +11,7 @@ const TASK_ID = "507f1f77bcf86cd799439014";
 const TOOL_RUN_ID = "507f1f77bcf86cd799439015";
 const DIAGNOSIS_ID = "507f1f77bcf86cd799439016";
 const TELEMETRY_SOURCE_ID = "507f1f77bcf86cd799439017";
+const HARVEST_BATCH_ID = "507f1f77bcf86cd799439026";
 
 const mockGrow = {
   exists: jest.fn(),
@@ -55,6 +56,13 @@ const mockDiagnosisFeedback = {
   find: jest.fn()
 };
 
+const mockHarvestBatch = {
+  find: jest.fn(),
+  findOne: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  create: jest.fn()
+};
+
 const mockAutomationEvent = {
   find: jest.fn()
 };
@@ -83,6 +91,7 @@ jest.mock("../models/Task", () => mockTask);
 jest.mock("../models/ToolRun", () => mockToolRun);
 jest.mock("../models/Diagnosis", () => mockDiagnosis);
 jest.mock("../models/DiagnosisFeedback", () => mockDiagnosisFeedback);
+jest.mock("../models/HarvestBatch", () => mockHarvestBatch);
 jest.mock("../models/AutomationEvent", () => mockAutomationEvent);
 jest.mock("../models/CropProfile", () => mockCropProfile);
 jest.mock("../models/PlantGrowthProfile", () => mockPlantGrowthProfile);
@@ -439,6 +448,113 @@ describe("Personal grow workspace routes", () => {
     );
   });
 
+  test("creates, lists, updates, and archives harvest batches with dry/cure records", async () => {
+    const dryCureRecords = [
+      {
+        recordedAt: "2026-07-09T12:00:00.000Z",
+        stage: "drying",
+        tempF: 66,
+        rh: 60,
+        aromaNotes: "loud citrus",
+        qualityNotes: "slow clean dry",
+        linkedToolRunId: TOOL_RUN_ID
+      }
+    ];
+    const existingBatch = {
+      _id: HARVEST_BATCH_ID,
+      facilityId: `personal:${TEST_USER}`,
+      userId: TEST_USER,
+      growId: GROW_ID,
+      plantIds: [PLANT_ID],
+      name: "Flower harvest A",
+      batchCode: "FH-A",
+      status: "drying",
+      harvestedAt: "2026-07-08T12:00:00.000Z",
+      wetWeight: 450,
+      weightUnit: "g",
+      dryCureRecords,
+      linkedToolRunIds: [TOOL_RUN_ID],
+      deletedAt: null
+    };
+    const createdBatch = doc(existingBatch);
+    const updatedBatch = doc({
+      ...existingBatch,
+      status: "curing",
+      dryWeight: 112,
+      qualityNotes: "Clean dry, ready for cure."
+    });
+    const deletedBatch = doc({
+      ...existingBatch,
+      status: "archived",
+      deletedAt: new Date()
+    });
+
+    mockHarvestBatch.create.mockResolvedValue(createdBatch);
+    mockHarvestBatch.find.mockReturnValue(leanChain([existingBatch]));
+    mockHarvestBatch.findOne.mockResolvedValue(doc(existingBatch));
+    mockHarvestBatch.findOneAndUpdate
+      .mockResolvedValueOnce(updatedBatch)
+      .mockResolvedValueOnce(deletedBatch);
+
+    const created = await request(app)
+      .post("/api/personal/harvest-batches")
+      .send({
+        growId: GROW_ID,
+        plantIds: [PLANT_ID],
+        name: "Flower harvest A",
+        batchCode: "FH-A",
+        status: "drying",
+        harvestedAt: "2026-07-08T12:00:00.000Z",
+        wetWeight: 450,
+        weightUnit: "g",
+        dryCureRecords,
+        linkedToolRunIds: [TOOL_RUN_ID]
+      });
+    const listed = await request(app).get(
+      `/api/personal/harvest-batches?growId=${GROW_ID}`
+    );
+    const detail = await request(app).get(
+      `/api/personal/harvest-batches/${HARVEST_BATCH_ID}`
+    );
+    const updated = await request(app)
+      .patch(`/api/personal/harvest-batches/${HARVEST_BATCH_ID}`)
+      .send({
+        status: "curing",
+        dryWeight: 112,
+        qualityNotes: "Clean dry, ready for cure."
+      });
+    const archived = await request(app).delete(
+      `/api/personal/harvest-batches/${HARVEST_BATCH_ID}`
+    );
+
+    expect(created.status).toBe(201);
+    expect(created.body.harvestBatch).toMatchObject({
+      id: HARVEST_BATCH_ID,
+      growId: GROW_ID,
+      status: "drying",
+      dryCureRecords: [expect.objectContaining({ stage: "drying", rh: 60 })]
+    });
+    expect(listed.status).toBe(200);
+    expect(listed.body.harvestBatches).toHaveLength(1);
+    expect(detail.body.harvestBatch.id).toBe(HARVEST_BATCH_ID);
+    expect(updated.body.harvestBatch).toMatchObject({
+      status: "curing",
+      dryWeight: 112
+    });
+    expect(archived.body.archived).toBe(true);
+    expect(mockHarvestBatch.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        facilityId: `personal:${TEST_USER}`,
+        userId: TEST_USER,
+        growId: GROW_ID,
+        plantIds: [PLANT_ID],
+        name: "Flower harvest A",
+        wetWeight: 450,
+        dryCureRecords
+      })
+    );
+  });
+
   test("creates grow-scoped source-linked tasks and links them back to ToolRuns", async () => {
     const createdTask = doc({
       _id: TASK_ID,
@@ -674,6 +790,34 @@ describe("Personal grow workspace routes", () => {
         }
       ])
     );
+    mockHarvestBatch.find.mockReturnValue(
+      leanChain([
+        {
+          _id: HARVEST_BATCH_ID,
+          userId: TEST_USER,
+          facilityId: `personal:${TEST_USER}`,
+          growId: GROW_ID,
+          plantIds: [PLANT_ID],
+          name: "Flower harvest A",
+          batchCode: "FH-A",
+          status: "drying",
+          harvestedAt: "2026-06-06T13:00:00.000Z",
+          wetWeight: 450,
+          weightUnit: "g",
+          dryCureRecords: [
+            {
+              recordedAt: "2026-06-07T12:00:00.000Z",
+              stage: "drying",
+              tempF: 66,
+              rh: 60,
+              qualityNotes: "Clean slow dry"
+            }
+          ],
+          linkedToolRunIds: [TOOL_RUN_ID],
+          createdAt: "2026-06-06T13:00:00.000Z"
+        }
+      ])
+    );
     mockAutomationEvent.find.mockReturnValue(
       leanChain([
         {
@@ -725,10 +869,22 @@ describe("Personal grow workspace routes", () => {
         "tool_run_created",
         "diagnosis_created",
         "diagnosis_feedback",
+        "harvest_batch_created",
         "automation_event",
         "environment_reading"
       ])
     );
+    const harvestEvent = res.body.timeline.find(
+      (event) => event.type === "harvest_batch_created"
+    );
+    expect(harvestEvent).toMatchObject({
+      title: "Flower harvest A",
+      payload: expect.objectContaining({
+        batchCode: "FH-A",
+        dryCureRecords: [expect.objectContaining({ stage: "drying", rh: 60 })],
+        linkedToolRunIds: [TOOL_RUN_ID]
+      })
+    });
     expect(res.body.timeline[0].timestamp).toBe("2026-06-08T12:00:00.000Z");
   });
 });

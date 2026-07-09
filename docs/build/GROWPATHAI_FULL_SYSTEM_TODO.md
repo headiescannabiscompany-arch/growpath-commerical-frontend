@@ -87,7 +87,7 @@ Legend:
 - [~] Dry / Cure Guard.
 - [~] Run-To-Run Comparison.
 - [~] Auto Grow Calendar.
-- [ ] Harvest batch and dry/cure records.
+- [~] Harvest batch and dry/cure records.
 - [~] PDF/export/report surfaces.
 
 ## Phase 7 - Business / Production

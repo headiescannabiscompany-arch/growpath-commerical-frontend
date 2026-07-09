@@ -11,6 +11,7 @@ const Task = require("../models/Task");
 const ToolRun = require("../models/ToolRun");
 const Diagnosis = require("../models/Diagnosis");
 const DiagnosisFeedback = require("../models/DiagnosisFeedback");
+const HarvestBatch = require("../models/HarvestBatch");
 const AutomationEvent = require("../models/AutomationEvent");
 const CropProfile = require("../models/CropProfile");
 const PlantGrowthProfile = require("../models/PlantGrowthProfile");
@@ -357,6 +358,44 @@ function taskDto(row) {
   };
 }
 
+function harvestBatchDto(row) {
+  const value = row?.toObject ? row.toObject() : row;
+  return {
+    ...value,
+    id: String(value._id),
+    harvestedAt: value.harvestedAt || null,
+    dryStartedAt: value.dryStartedAt || null,
+    dryEndedAt: value.dryEndedAt || null,
+    cureStartedAt: value.cureStartedAt || null,
+    dryCureRecords: Array.isArray(value.dryCureRecords) ? value.dryCureRecords : [],
+    plantIds: Array.isArray(value.plantIds) ? value.plantIds : [],
+    linkedToolRunIds: Array.isArray(value.linkedToolRunIds) ? value.linkedToolRunIds : []
+  };
+}
+
+function harvestBatchPatch(body = {}) {
+  const patch = {};
+  ["batchCode", "name", "status", "weightUnit", "qualityNotes", "dryCureRecords"].forEach(
+    (key) => {
+      if (body?.[key] !== undefined) patch[key] = body[key];
+    }
+  );
+  if (Array.isArray(body?.plantIds)) patch.plantIds = body.plantIds.map(String);
+  if (Array.isArray(body?.linkedToolRunIds)) {
+    patch.linkedToolRunIds = body.linkedToolRunIds.filter(Boolean).map(String);
+  }
+  ["wetWeight", "dryWeight"].forEach((key) => {
+    if (body?.[key] !== undefined) {
+      const numeric = Number(body[key]);
+      patch[key] = Number.isFinite(numeric) ? numeric : null;
+    }
+  });
+  ["harvestedAt", "dryStartedAt", "dryEndedAt", "cureStartedAt"].forEach((key) => {
+    if (body?.[key] !== undefined) patch[key] = body[key] ? new Date(body[key]) : null;
+  });
+  return patch;
+}
+
 function growthProfileDto(row) {
   if (!row) return null;
   const value = row?.toObject ? row.toObject() : row;
@@ -599,6 +638,130 @@ router.post("/plants", async (req, res, next) => {
   }
 });
 
+router.get("/harvest-batches", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    const query = { userId: uid, facilityId: personalFacilityId(uid), deletedAt: null };
+    if (req.query.growId) query.growId = String(req.query.growId);
+    const rows = await HarvestBatch.find(query)
+      .sort({ harvestedAt: -1, createdAt: -1 })
+      .limit(100)
+      .lean();
+    const harvestBatches = rows.map(harvestBatchDto);
+    return res.status(200).json({
+      success: true,
+      items: harvestBatches,
+      harvestBatches,
+      data: { harvestBatches }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/harvest-batches", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    const growId = String(req.body?.growId || "");
+    if (!(await ownsGrow(uid, growId))) {
+      return res.status(404).json({ success: false, message: "Grow not found" });
+    }
+    const name = String(req.body?.name || req.body?.batchCode || "").trim();
+    if (!name) {
+      return res.status(400).json({ success: false, message: "Batch name is required" });
+    }
+    const row = await HarvestBatch.create({
+      facilityId: personalFacilityId(uid),
+      userId: uid,
+      growId,
+      ...harvestBatchPatch(req.body),
+      name
+    });
+    return res.status(201).json({
+      success: true,
+      harvestBatch: harvestBatchDto(row),
+      data: { harvestBatch: harvestBatchDto(row) }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/harvest-batches/:id", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    if (!validObjectId(req.params.id)) {
+      return res.status(404).json({ message: "Harvest batch not found" });
+    }
+    const row = await HarvestBatch.findOne({
+      _id: req.params.id,
+      userId: uid,
+      facilityId: personalFacilityId(uid),
+      deletedAt: null
+    });
+    if (!row) return res.status(404).json({ message: "Harvest batch not found" });
+    return res.json({
+      success: true,
+      harvestBatch: harvestBatchDto(row),
+      item: harvestBatchDto(row),
+      data: { harvestBatch: harvestBatchDto(row) }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/harvest-batches/:id", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    if (!validObjectId(req.params.id)) {
+      return res.status(404).json({ message: "Harvest batch not found" });
+    }
+    const patch = harvestBatchPatch(req.body);
+    const row = await HarvestBatch.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: uid,
+        facilityId: personalFacilityId(uid),
+        deletedAt: null
+      },
+      patch,
+      { new: true, runValidators: true }
+    );
+    if (!row) return res.status(404).json({ message: "Harvest batch not found" });
+    return res.json({
+      success: true,
+      harvestBatch: harvestBatchDto(row),
+      data: { harvestBatch: harvestBatchDto(row) }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/harvest-batches/:id", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    if (!validObjectId(req.params.id)) {
+      return res.status(404).json({ message: "Harvest batch not found" });
+    }
+    const row = await HarvestBatch.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: uid,
+        facilityId: personalFacilityId(uid),
+        deletedAt: null
+      },
+      { deletedAt: new Date(), status: "archived" },
+      { new: true }
+    );
+    if (!row) return res.status(404).json({ message: "Harvest batch not found" });
+    return res.json({ success: true, deleted: true, archived: true });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get("/grows/:growId/timeline", async (req, res, next) => {
   try {
     const uid = userId(req);
@@ -619,6 +782,7 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
       toolRuns,
       diagnoses,
       diagnosisFeedback,
+      harvestBatches,
       automationEvents
     ] = await Promise.all([
       Grow.findOne({
@@ -657,6 +821,15 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
         .lean(),
       DiagnosisFeedback.find({ user: userObject, growId, deletedAt: null })
         .sort({ createdAt: -1 })
+        .limit(100)
+        .lean(),
+      HarvestBatch.find({
+        userId: uid,
+        facilityId: personalFacilityId(uid),
+        growId,
+        deletedAt: null
+      })
+        .sort({ harvestedAt: -1, createdAt: -1 })
         .limit(100)
         .lean(),
       AutomationEvent.find({ user: userObject, userId: uid, growId })
@@ -902,6 +1075,55 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
             observedAfterDays: feedback.observedAfterDays ?? null,
             outcomeWindowDays: feedback.outcomeWindowDays ?? null,
             consentForModelTraining: Boolean(feedback.consentForModelTraining)
+          }
+        })
+      );
+    }
+
+    for (const batch of harvestBatches) {
+      const recordCount = Array.isArray(batch.dryCureRecords)
+        ? batch.dryCureRecords.length
+        : 0;
+      events.push(
+        timelineEvent({
+          row: batch,
+          type: "harvest_batch_created",
+          sourceModel: "HarvestBatch",
+          title: batch.name || batch.batchCode || "Harvest batch",
+          summary: [
+            batch.status ? `Status: ${batch.status}` : "",
+            batch.wetWeight != null
+              ? `Wet: ${batch.wetWeight} ${batch.weightUnit || "g"}`
+              : "",
+            batch.dryWeight != null
+              ? `Dry: ${batch.dryWeight} ${batch.weightUnit || "g"}`
+              : "",
+            recordCount
+              ? `${recordCount} dry/cure record${recordCount === 1 ? "" : "s"}`
+              : "",
+            batch.qualityNotes || ""
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          timestamp: batch.harvestedAt || batch.createdAt,
+          tags: ["harvest", "dry_cure", batch.status].filter(Boolean),
+          severity:
+            batch.status === "drying" || batch.status === "curing" ? "watch" : null,
+          payload: {
+            batchCode: batch.batchCode || "",
+            plantIds: Array.isArray(batch.plantIds) ? batch.plantIds : [],
+            wetWeight: batch.wetWeight ?? null,
+            dryWeight: batch.dryWeight ?? null,
+            weightUnit: batch.weightUnit || "g",
+            dryStartedAt: batch.dryStartedAt || null,
+            dryEndedAt: batch.dryEndedAt || null,
+            cureStartedAt: batch.cureStartedAt || null,
+            dryCureRecords: Array.isArray(batch.dryCureRecords)
+              ? batch.dryCureRecords
+              : [],
+            linkedToolRunIds: Array.isArray(batch.linkedToolRunIds)
+              ? batch.linkedToolRunIds
+              : []
           }
         })
       );
