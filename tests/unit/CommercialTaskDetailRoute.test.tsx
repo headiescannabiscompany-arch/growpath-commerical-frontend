@@ -164,7 +164,7 @@ describe("CommercialTaskDetailRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
   });
 
-  it("opens alert-backed task sources in the canonical alert center", async () => {
+  it("opens alert-backed task sources at the underlying commercial object", async () => {
     taskOverrides = {
       sourceType: "alert",
       sourceId: "alert-1",
@@ -178,11 +178,8 @@ describe("CommercialTaskDetailRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=alert-1");
-
-    fireEvent.press(screen.getByLabelText("View commercial task linked object"));
-
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
+    expect(screen.queryByLabelText("View commercial task linked object")).toBeNull();
   });
 
   it("does not duplicate linked object action when the source already opens it", async () => {
