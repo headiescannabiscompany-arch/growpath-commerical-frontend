@@ -42,6 +42,18 @@ function coerceParam(value?: string | string[]) {
   return "";
 }
 
+function wateringTaskMetadata() {
+  return {
+    allDay: true,
+    calendarType: "watering_followup",
+    sourceStage: "watering_application",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function WateringToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
@@ -169,7 +181,8 @@ export default function WateringToolScreen() {
             title: "Water plants",
             description: `Target ${model.targetLiters} L with ${runoffPct}% runoff. Pressure: ${model.pressureLevel}.`,
             priority: "medium",
-            dueDate: model.nextWaterDate
+            dueDate: model.nextWaterDate,
+            ...wateringTaskMetadata()
           });
           if (!result.ok) throw new Error(result.error);
           if (!savedRunId) setSavedRunId(result.toolRunId);
