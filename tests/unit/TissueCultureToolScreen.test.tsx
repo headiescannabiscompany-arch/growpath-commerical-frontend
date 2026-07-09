@@ -134,17 +134,28 @@ describe("TissueCultureToolRoute", () => {
             expect.objectContaining({
               title: "Review contamination and browning: TC-042",
               priority: "high",
+              allDay: true,
+              calendarType: "tissue_culture_workflow",
+              sourceStage: "initiation",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
+              }),
               description: expect.stringContaining("possible media contamination")
             }),
             expect.objectContaining({
               title: "Transfer clean TC vessels",
-              priority: "high"
+              priority: "high",
+              calendarType: "tissue_culture_workflow",
+              sourceStage: "initiation"
             }),
             expect.objectContaining({
-              title: "Record rooting and acclimation counts: TC-042"
+              title: "Record rooting and acclimation counts: TC-042",
+              sourceStage: "rooting_acclimation_review"
             }),
             expect.objectContaining({
-              title: "Update TC SOP notes: TC-042"
+              title: "Update TC SOP notes: TC-042",
+              sourceStage: "sop_media_review"
             })
           ]
         })

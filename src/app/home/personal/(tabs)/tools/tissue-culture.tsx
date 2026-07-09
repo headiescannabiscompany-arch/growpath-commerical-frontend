@@ -26,12 +26,22 @@ function tissueCultureTaskPlan(
     Array.isArray(failureModes) && failureModes.length
       ? `Likely failure modes: ${failureModes.map((item: any) => item?.issue || item).join("; ")}`
       : "";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "tissue_culture_workflow",
+    sourceStage: stage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
 
   return [
     {
       title: `Review contamination and browning: ${batchNumber}`,
       priority: outputs.contaminationRate > 10 ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(1),
+      ...calendarMetadata,
       description: [
         `${projectName} is in ${stage}.`,
         `Contaminated vessels: ${payload.contaminatedVessels || 0}; browning vessels: ${payload.browningVessels || 0}.`,
@@ -45,6 +55,7 @@ function tissueCultureTaskPlan(
       title: outputs.nextTransferTasks?.[0]?.title || `Transfer review: ${batchNumber}`,
       priority: outputs.nextTransferTasks?.[0]?.priority || "medium",
       dueDate: tomorrow(transferDueDays),
+      ...calendarMetadata,
       description:
         "Review vessel IDs, media recipe, multiplication/rooting readiness, contamination, and transfer notes before moving cultures."
     },
@@ -52,6 +63,8 @@ function tissueCultureTaskPlan(
       title: `Record rooting and acclimation counts: ${batchNumber}`,
       priority: "medium" as const,
       dueDate: tomorrow(Math.max(1, Math.min(transferDueDays, 7))),
+      ...calendarMetadata,
+      sourceStage: "rooting_acclimation_review",
       description:
         "Update rooted vessels, acclimated plants, stalled vessels, and survival rate so the protocol can be compared over time."
     },
@@ -59,6 +72,8 @@ function tissueCultureTaskPlan(
       title: `Update TC SOP notes: ${batchNumber}`,
       priority: "medium" as const,
       dueDate: tomorrow(Math.max(1, transferDueDays + 1)),
+      ...calendarMetadata,
+      sourceStage: "sop_media_review",
       description: [
         `SOP version: ${payload.SOPVersion || "not set"}.`,
         `Media recipe: ${payload.mediaRecipe || "not set"}.`,
