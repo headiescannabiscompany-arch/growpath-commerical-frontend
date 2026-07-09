@@ -9,36 +9,33 @@ export default function FacilityComplianceAiDashboardRoute() {
   const { data, isLoading, error } = useFacilityReport();
   const summary = useMemo(() => data ?? {}, [data]);
 
-  if (isLoading)
-    return (
-      <View style={styles.container}>
-        <Text>Loading AI dashboard...</Text>
-      </View>
-    );
-  if (error)
-    return (
-      <View style={styles.container}>
-        <Text>Failed to load AI dashboard.</Text>
-      </View>
-    );
-
   return (
     <ScreenBoundary
       title="Compliance AI Dashboard"
       showBack
       backFallbackHref="/home/facility/compliance"
     >
-      <View style={styles.container}>
-        <Text style={styles.h1}>Compliance AI Dashboard</Text>
-        <Text style={styles.sub}>
-          Live report-derived status for compliance operations.
-        </Text>
-        <View style={styles.card}>
-          <Text selectable style={styles.json}>
-            {JSON.stringify(summary, null, 2)}
-          </Text>
+      {isLoading ? (
+        <View style={styles.container}>
+          <Text>Loading AI dashboard...</Text>
         </View>
-      </View>
+      ) : error ? (
+        <View style={styles.container}>
+          <Text>Failed to load AI dashboard.</Text>
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.h1}>Compliance AI Dashboard</Text>
+          <Text style={styles.sub}>
+            Live report-derived status for compliance operations.
+          </Text>
+          <View style={styles.card}>
+            <Text selectable style={styles.json}>
+              {JSON.stringify(summary, null, 2)}
+            </Text>
+          </View>
+        </View>
+      )}
     </ScreenBoundary>
   );
 }

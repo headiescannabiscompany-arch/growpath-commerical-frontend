@@ -114,4 +114,17 @@ describe("facility audit and compliance nested back behavior", () => {
     expect(screen.getByText("Compliance AI Dashboard")).toBeTruthy();
     expect(screen.getByText(/"status": "ready"/)).toBeTruthy();
   });
+
+  it("keeps the shared back fallback while the compliance AI dashboard loads", () => {
+    mockUseFacilityReport.mockReturnValue({
+      data: null,
+      isLoading: true,
+      error: null
+    });
+
+    const screen = render(<FacilityComplianceAiDashboardRoute />);
+
+    expect(screen.getByText("Shared Back /home/facility/compliance")).toBeTruthy();
+    expect(screen.getByText("Loading AI dashboard...")).toBeTruthy();
+  });
 });

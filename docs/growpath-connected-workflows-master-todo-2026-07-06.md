@@ -816,6 +816,7 @@ Completed and pushed:
 540. Facility task detail source resolution now prefers source-type-specific linked IDs before room context, keeping linked-only course/product/live/feed/forum tasks routed to their true source while still showing the linked room.
 541. Legacy course create and add-lesson routes now use shared `ScreenBoundary` back behavior with `/courses` fallback, keeping course authoring nested pages aligned with the app-wide back-arrow rule.
 542. Facility Compliance AI dashboard now uses shared `ScreenBoundary` back behavior with `/home/facility/compliance` fallback, keeping the compliance AI drill-in aligned with nested facility page navigation.
+543. Facility Compliance AI dashboard now keeps the shared back header during loading, error, and loaded states, preventing transient compliance drill-in states from bypassing nested navigation.
 
 ## Working Rule For Codex
 
