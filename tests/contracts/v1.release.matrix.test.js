@@ -53,7 +53,7 @@ describe("v1 release matrix scope", () => {
     }
   });
 
-  test("grow-scoped personal logs and tasks stay out of top-level v1 navigation", () => {
+  test("personal logs stay grow-scoped while tasks use the out-of-nav Task Center", () => {
     const matrix = readJson(MATRIX_PATH);
     const surface = readJson(UI_SURFACE_PATH);
     const personal = surface.modes.personal;
@@ -62,14 +62,25 @@ describe("v1 release matrix scope", () => {
     expect(personal.nav).not.toContain("Tasks");
     expect(personal.routes).not.toContain("/home/personal/logs");
     expect(personal.routes).not.toContain("/home/personal/tasks");
+    expect(personal.outOfNavRoutes).toContain("/home/personal/tasks");
 
-    for (const route of ["/home/personal/logs", "/home/personal/tasks"]) {
-      const rows = (matrix.features || []).filter((row) => row.ui?.route === route);
-      expect(rows.length).toBeGreaterThan(0);
-      for (const row of rows) {
-        expect(row.userVisible).toBe(false);
-        expect(row.releaseScope).not.toBe("v1");
-      }
+    const logRows = (matrix.features || []).filter(
+      (row) => row.ui?.route === "/home/personal/logs"
+    );
+    expect(logRows.length).toBeGreaterThan(0);
+    for (const row of logRows) {
+      expect(row.userVisible).toBe(false);
+      expect(row.releaseScope).not.toBe("v1");
+    }
+
+    const taskRows = (matrix.features || []).filter(
+      (row) => row.ui?.route === "/home/personal/tasks"
+    );
+    expect(taskRows.length).toBeGreaterThan(0);
+    for (const row of taskRows) {
+      expect(row.userVisible).toBe(true);
+      expect(row.releaseScope).toBe("v1");
+      expect(row.releaseDecision).toBe("complete");
     }
   });
 });

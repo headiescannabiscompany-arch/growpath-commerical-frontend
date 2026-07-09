@@ -6,7 +6,7 @@ This ledger is the current build source of truth for the full GrowPathAI system.
 
 ## Product Decisions
 
-- Logs and Tasks stay inside Grows. A log or task needs grow, plant, bed, room, batch, harvest, or facility context. Do not create top-level Logs or Tasks modules as redirects.
+- Logs stay inside Grows. Personal tasks use the shared out-of-nav Task Center/Schedule action layer and must keep source links back to grow, plant, bed, room, batch, harvest, ToolRun, recipe, course, live, forum, alert, sensor, or facility context. Do not create a separate top-level Logs tab or disconnected task system.
 - Commercial AI/business helper is out of scope. Do not expose it in UI, release copy, or navigation.
 - Facility Insights is allowed only as a simple read-only summary from existing data. Do not build forecasting, labor analytics, yield analytics, financial analytics, or AI business advice under that name.
 - Big GrowPathAI systems are in the first serious build scope. Do not fake completion, and do not expose placeholder tools.

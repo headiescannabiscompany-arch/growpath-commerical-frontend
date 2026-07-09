@@ -63,10 +63,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 - Evidence: `ForumFeedSeparationRoutes.test.tsx` covers `/communities`, personal community, forum detail links, and composer copy. `audit:growpath-system` now checks legacy community route copy plus personal/commercial community API separation.
 - Guardrail: Feed remains commercial/facility advertising and outreach. Forum/Q&A remains discussion, support, and Q&A.
 
-9. Personal logs/tasks behavior mismatch
+9. Personal logs/tasks behavior mismatch - DONE 2026-07-09
 - Problem: docs disagree on whether logs/tasks are functional vs redirected/disabled.
-- Action: align ROUTES + runtime contract to actual behavior; clearly mark planned/deferred states.
-- Done when: route behavior in docs equals runtime behavior for personal mode.
+- Action completed: clarified that `/home/personal/logs` remains a grow-scoped stale-link redirect to Grows, while `/home/personal/tasks` is the functional out-of-nav Personal Task Center/Schedule route.
+- Evidence: `V1_UI_SURFACE.json`, `V1_FEATURE_BACKEND_MATRIX.json`, and `v1.release.matrix.test.js` now agree with runtime behavior; `PersonalTaskCenterRoute.test.tsx` covers personal task listing, creation, scheduling, source links, and linked-object routing.
+- Guardrail: Personal tasks may be globally reviewable/actionable, but they must stay source-linked. Personal logs remain grow-scoped and out of top-level navigation.
 
 ### DOC TYPO / COUNT ERROR
 

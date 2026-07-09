@@ -14,7 +14,7 @@
         "/home/personal/profile",
         "/home/personal/ai"
       ],
-      "outOfNavRoutes": []
+      "outOfNavRoutes": ["/home/personal/tasks"]
     },
     "facility": {
       "nav": [
@@ -71,6 +71,6 @@
       "Planned",
       "Disabled"
     ],
-    "rule": "Every user-visible v1 route must be mapped to a matrix row with releaseScope=v1, userVisible=true, and releaseDecision=complete or beta. Hidden, planned, disabled, and grow-scoped redirect routes must not appear in top-level navigation."
+    "rule": "Every user-visible v1 route must be mapped to a matrix row with releaseScope=v1, userVisible=true, and releaseDecision=complete or beta. Hidden, planned, disabled, and grow-scoped redirect routes must not appear in top-level navigation. Personal logs remain grow-scoped redirects; personal tasks use the out-of-nav Task Center/Schedule action layer."
   }
 }
