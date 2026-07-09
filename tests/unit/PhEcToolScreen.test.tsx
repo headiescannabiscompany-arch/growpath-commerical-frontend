@@ -123,15 +123,24 @@ describe("PhEcToolScreen", () => {
             expect.objectContaining({
               title: "Retest runoff after next watering",
               priority: "high",
+              allDay: true,
+              calendarType: "ph_ec_followup",
+              sourceStage: "ph_ec_retest",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("Runoff EC is high")
             }),
             expect.objectContaining({
               title: "Log plant response to pH / EC trend",
               priority: "high",
+              sourceStage: "ph_ec_plant_response",
               description: expect.stringContaining("photos")
             }),
             expect.objectContaining({
               title: "Review source water and feed assumptions",
+              sourceStage: "ph_ec_source_review",
               description: expect.stringContaining("meter calibration")
             })
           ]

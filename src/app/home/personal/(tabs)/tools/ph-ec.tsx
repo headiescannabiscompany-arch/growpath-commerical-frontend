@@ -17,6 +17,18 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
+function phEcCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "ph_ec_followup",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 function phEcTaskPlan(outputs: Record<string, any>) {
   const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
   if (planned.length) {
@@ -24,6 +36,7 @@ function phEcTaskPlan(outputs: Record<string, any>) {
       title: String(task?.title || `pH / EC follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      ...phEcCalendarMetadata(String(task?.sourceStage || `ph_ec_followup_${index + 1}`)),
       description:
         task?.description ||
         "Follow up on pH/EC readings with fresh measurements, plant response, and watering/feed notes."
@@ -45,6 +58,7 @@ function phEcTaskPlan(outputs: Record<string, any>) {
         highPriority ? "high" : "medium"
       ),
       dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1),
+      ...phEcCalendarMetadata("ph_ec_retest"),
       description:
         warnings.join(" ") ||
         "Retest input and runoff pH/EC before changing feed strength or pH adjustment."
@@ -53,6 +67,7 @@ function phEcTaskPlan(outputs: Record<string, any>) {
       title: "Log plant response to pH / EC trend",
       priority: highPriority ? "high" : ("medium" as const),
       dueDate: tomorrow(2),
+      ...phEcCalendarMetadata("ph_ec_plant_response"),
       description:
         "Record leaf posture, color, tip burn, clawing, deficiency signs, watering volume, runoff amount, and photos."
     },
@@ -60,6 +75,7 @@ function phEcTaskPlan(outputs: Record<string, any>) {
       title: "Review source water and feed assumptions",
       priority: "medium" as const,
       dueDate: tomorrow(3),
+      ...phEcCalendarMetadata("ph_ec_source_review"),
       description:
         "Check water source, alkalinity/minerals if known, meter calibration, input recipe, EC unit, and whether runoff drift is repeating."
     }
@@ -134,7 +150,8 @@ export default function PhEcToolScreen() {
           ? outputs.warnings.join(" ")
           : "Retest pH and EC.",
         priority: outputs.retestTaskSuggestion?.priority || "medium",
-        dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1)
+        dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1),
+        ...phEcCalendarMetadata("ph_ec_retest")
       })}
       buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
         {
