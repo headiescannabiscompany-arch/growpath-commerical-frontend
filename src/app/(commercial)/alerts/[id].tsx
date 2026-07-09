@@ -78,6 +78,17 @@ function linkedFieldsForAlertSource(item: AnyRec | null) {
   }
 }
 
+function storefrontMetadata(item: AnyRec | null) {
+  const slug =
+    item?.storefrontSlug || item?.linkedStorefrontSlug || item?.brandSlug || item?.publicSlug;
+  return slug
+    ? {
+        storefrontSlug: String(slug),
+        linkedStorefrontSlug: String(slug)
+      }
+    : {};
+}
+
 function alertSourceReference(item: AnyRec | null) {
   if (!item) return "";
   const values = [
@@ -88,6 +99,10 @@ function alertSourceReference(item: AnyRec | null) {
     item.linkedProductTrialId,
     item.linkedCourseId,
     item.linkedLiveId,
+    item.storefrontSlug,
+    item.linkedStorefrontSlug,
+    item.brandSlug,
+    item.publicSlug,
     item.linkedStorefrontId,
     item.linkedFeedCampaignId,
     item.linkedFeedPostId,
@@ -204,6 +219,7 @@ export default function CommercialAlertDetailRoute() {
           alertSourceType: item.sourceType || item.triggerSourceType || undefined,
           alertSourceId: alertSourceReference(item) || undefined,
           ...linkedFieldsForAlertSource(item),
+          ...storefrontMetadata(item),
           status: "open"
         }
       });

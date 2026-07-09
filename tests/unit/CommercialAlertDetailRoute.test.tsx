@@ -191,4 +191,51 @@ describe("CommercialAlertDetailRoute", () => {
       "/home/commercial/feed?campaignId=campaign-linked-1"
     );
   });
+
+  it("creates a task from a storefront slug alias alert source", async () => {
+    alertPayload = {
+      id: "alert-1",
+      title: "Storefront launch review",
+      message: "Confirm public storefront launch readiness.",
+      severity: "warning",
+      sourceType: "storefront",
+      linkedStorefrontSlug: "living-soil-labs"
+    };
+
+    const screen = render(<CommercialAlertDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Storefront launch review").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("Create task from alert"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Storefront launch review",
+            description: "Confirm public storefront launch readiness.",
+            priority: "medium",
+            sourceType: "alert",
+            sourceId: "alert-1",
+            sourceObjectId: "alert-1",
+            linkedAlertId: "alert-1",
+            alertSourceType: "storefront",
+            alertSourceId: "living-soil-labs",
+            linkedStorefrontId: "living-soil-labs",
+            storefrontSlug: "living-soil-labs",
+            linkedStorefrontSlug: "living-soil-labs",
+            status: "open"
+          })
+        })
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial alert linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/storefront");
+  });
 });
