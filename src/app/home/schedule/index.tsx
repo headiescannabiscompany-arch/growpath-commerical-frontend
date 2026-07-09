@@ -27,6 +27,9 @@ type CalendarItem = {
   sourceId?: string;
   reminder?: string;
   recurrence?: string;
+  allDay?: boolean;
+  calendarType?: string;
+  sourceStage?: string;
   href?: string;
 };
 
@@ -204,6 +207,9 @@ function taskToItem(task: any): CalendarItem {
     sourceId: rawSourceId,
     reminder: reminderLabel(task),
     recurrence: recurrenceLabel(task),
+    allDay: Boolean(task?.allDay),
+    calendarType: String(task?.calendarType || ""),
+    sourceStage: String(task?.sourceStage || ""),
     href: sourceHref || taskHref(task, id)
   };
 }
@@ -371,6 +377,9 @@ export default function HomeScheduleRoute() {
             item.endAt && `Ends ${item.endAt.slice(0, 16)}`,
             item.status && `Status ${item.status}`,
             item.priority && `Priority ${item.priority}`,
+            item.allDay && "All day",
+            item.calendarType && `Calendar ${item.calendarType.replace(/_/g, " ")}`,
+            item.sourceStage && `Stage ${item.sourceStage}`,
             item.reminder && `Reminder ${item.reminder}`,
             item.recurrence && `Repeats ${item.recurrence}`
           ]

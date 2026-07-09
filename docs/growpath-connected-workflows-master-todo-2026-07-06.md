@@ -837,6 +837,7 @@ Completed and pushed:
 561. Commercial batch detail now creates source-linked production tasks from a saved Soil & Nutrient Batch Planner record, carrying product batch, product, product line, evidence run, proof requirement, reminder plan, pull-sheet, guaranteed-analysis, release-timing, and mixing/QC context into the shared task engine.
 562. Dry / Cure Guard now accepts an optional Harvest Batch ID and can append the calculated dry/cure reading, dew point, jar RH, risk notes, and linked ToolRun id onto the saved harvest batch, while shared tool result action feedback now surfaces action success instead of being masked by stale calculation feedback.
 563. Personal tasks now persist all-day, end date, reminder plan, calendar type, source stage, and recurrence metadata, and Auto Grow Calendar task generation carries grow milestone stage plus a 24-hour in-app reminder into the shared task/schedule engine.
+564. The shared Schedule / Agenda page now surfaces task all-day, calendar type, source stage, reminder, and recurrence metadata so Auto Grow Calendar milestones read as grow-stage schedule items instead of generic task rows.
 
 ## Working Rule For Codex
 

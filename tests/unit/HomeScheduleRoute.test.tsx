@@ -130,6 +130,23 @@ describe("HomeScheduleRoute", () => {
               status: "open",
               workspaceType: "personal",
               linkedStorefrontSlug: "living-soil-labs"
+            },
+            {
+              id: "task-13",
+              title: "Flip to flower",
+              dueAt: "2099-07-16T21:00:00Z",
+              status: "open",
+              priority: "high",
+              workspaceType: "personal",
+              growId: "grow-1",
+              linkedGrowId: "grow-1",
+              sourceType: "tool_run",
+              sourceObjectId: "toolrun-calendar-1",
+              linkedToolRunId: "toolrun-calendar-1",
+              allDay: true,
+              calendarType: "grow_milestone",
+              sourceStage: "transition",
+              reminderPlan: { label: "24 hours before", channels: ["in_app"] }
             }
           ]
         });
@@ -226,6 +243,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
     expect(screen.getByText("Complete linked course assignment")).toBeTruthy();
     expect(screen.getByText("Review public storefront launch")).toBeTruthy();
+    expect(screen.getByText("Flip to flower")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -237,6 +255,9 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText(/Ends 2099-07-26T12:00/)).toBeTruthy();
     expect(screen.getByText(/Reminder 1 hour before/)).toBeTruthy();
     expect(screen.getAllByText(/Reminder 24 hours before/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/All day/)).toBeTruthy();
+    expect(screen.getByText(/Calendar grow milestone/)).toBeTruthy();
+    expect(screen.getByText(/Stage transition/)).toBeTruthy();
     expect(screen.getByText(/Repeats monthly/)).toBeTruthy();
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
@@ -267,6 +288,11 @@ describe("HomeScheduleRoute", () => {
       )
     ).toBeTruthy();
     expect(screen.getByTestId("link-/store/living-soil-labs")).toBeTruthy();
+    expect(
+      screen.getByTestId(
+        "link-/home/personal/tools/saved-runs?toolRunId=toolrun-calendar-1"
+      )
+    ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/live-session?sessionId=live-public-1")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
