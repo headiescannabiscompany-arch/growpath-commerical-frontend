@@ -80,10 +80,11 @@ describe("CommercialProfileRoute", () => {
 
     expect(screen.getByText("Brand Profile & Billing")).toBeTruthy();
     expect(screen.getByText("Brand identity checklist")).toBeTruthy();
-    expect(screen.getByText("Public profile discovery")).toBeTruthy();
+    expect(screen.getByText("Public storefront discovery")).toBeTruthy();
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
-    expect(screen.getByText("Public profile: /brands/:slug")).toBeTruthy();
+    expect(screen.getByText("Public storefront: /store/:slug")).toBeTruthy();
+    expect(screen.getByText("Legacy brand profile: /brands/:slug")).toBeTruthy();
     expect(
       screen.getByText("Public product detail: /store/:slug/products/:productId")
     ).toBeTruthy();
@@ -95,8 +96,10 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
-    expect(screen.getByText("Public profile: /brands/living-soil-labs")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
+    expect(
+      screen.getByText("Legacy brand profile: /brands/living-soil-labs")
+    ).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial brand name"),

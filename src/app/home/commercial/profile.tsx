@@ -91,7 +91,7 @@ export default function CommercialProfileRoute() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  const publicProfileUrl = useMemo(
+  const legacyProfileUrl = useMemo(
     () => (form.slug.trim() ? `/brands/${form.slug.trim()}` : "/brands/:slug"),
     [form.slug]
   );
@@ -289,15 +289,16 @@ export default function CommercialProfileRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Public profile discovery</Text>
+        <Text style={styles.cardTitle}>Public storefront discovery</Text>
         <Text style={styles.body}>
           Free, Pro, commercial, and facility users should be able to discover this brand
           from feed campaigns, product cards, courses, forum threads, store search,
-          similar brands, and direct public URLs.
+          similar storefronts, and direct public Storefront URLs. The older Brand Profile
+          URL remains available only as a legacy compatibility route.
         </Text>
         <View style={styles.urlList}>
-          <Text style={styles.urlText}>Public profile: {publicProfileUrl}</Text>
           <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
+          <Text style={styles.urlText}>Legacy brand profile: {legacyProfileUrl}</Text>
           <Text style={styles.urlText}>Public storefront alias: /storefront/:slug</Text>
           <Text style={styles.urlText}>
             Public product detail: /store/:slug/products/:productId
@@ -306,7 +307,7 @@ export default function CommercialProfileRoute() {
             Public product alias: /storefront/:slug/products/:productId
           </Text>
           <Text style={styles.urlText}>
-            Similar brands and return-to-feed actions stay available from public pages.
+            Similar storefronts and return-to-feed actions stay available from public pages.
           </Text>
         </View>
         <View style={styles.actions}>
