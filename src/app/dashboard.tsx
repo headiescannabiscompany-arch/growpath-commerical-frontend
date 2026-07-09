@@ -9,5 +9,5 @@ export default function DashboardShim() {
     return <Redirect href="/home/facility/select" />;
   }
 
-  return <Redirect href="/home/facility" />;
+  return <Redirect href="/home/facility/dashboard" />;
 }

@@ -817,6 +817,7 @@ Completed and pushed:
 541. Legacy course create and add-lesson routes now use shared `ScreenBoundary` back behavior with `/courses` fallback, keeping course authoring nested pages aligned with the app-wide back-arrow rule.
 542. Facility Compliance AI dashboard now uses shared `ScreenBoundary` back behavior with `/home/facility/compliance` fallback, keeping the compliance AI drill-in aligned with nested facility page navigation.
 543. Facility Compliance AI dashboard now keeps the shared back header during loading, error, and loaded states, preventing transient compliance drill-in states from bypassing nested navigation.
+544. Legacy root `/dashboard` shim now sends selected facility users directly to `/home/facility/dashboard` instead of adding an extra `/home/facility` redirect hop, while still sending unselected facility users to facility selection.
 
 ## Working Rule For Codex
 
