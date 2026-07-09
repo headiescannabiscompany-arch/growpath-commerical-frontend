@@ -131,7 +131,7 @@ export async function appendGrowPhotos(
     .filter(Boolean);
   if (!id || !photoUrls.length) return null;
 
-  const res = await apiRequest(`/api/grows/${encodeURIComponent(id)}/photos`, {
+  const res = await apiRequest(`/api/personal/grows/${encodeURIComponent(id)}/photos`, {
     method: "PATCH",
     body: { photos: photoUrls }
   });

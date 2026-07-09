@@ -27,7 +27,7 @@ function createApp(ctx = {}) {
     };
     next();
   });
-  app.use("/api/grows", require("./grows.personal"));
+  app.use("/api/personal/grows", require("./grows.personal"));
   app.use((err, _req, res, _next) => {
     res.status(err.status || 500).json({ message: err.message || "error" });
   });
@@ -69,7 +69,7 @@ describe("Personal grows route", () => {
     const chain = leanChain(rows);
     mockGrow.find.mockReturnValue(chain);
 
-    const res = await request(createApp()).get("/api/grows");
+    const res = await request(createApp()).get("/api/personal/grows");
 
     expect(res.status).toBe(200);
     expect(res.body.grows).toEqual(rows);
@@ -93,7 +93,7 @@ describe("Personal grows route", () => {
     );
 
     const res = await request(createApp())
-      .post("/api/grows")
+      .post("/api/personal/grows")
       .send({ name: "Flower Tent", stage: "flower", cultivar: "Test cultivar" });
 
     expect(res.status).toBe(201);
@@ -123,7 +123,7 @@ describe("Personal grows route", () => {
     mockGrow.countDocuments.mockResolvedValue(1);
 
     const res = await request(createApp({ entitlements: { plan: "free", maxGrows: 1 } }))
-      .post("/api/grows")
+      .post("/api/personal/grows")
       .send({ name: "Second Grow" });
 
     expect(res.status).toBe(403);
@@ -143,7 +143,7 @@ describe("Personal grows route", () => {
     mockGrow.findOne.mockResolvedValue(grow);
 
     const res = await request(createApp())
-      .patch(`/api/grows/${GROW_ID}/photos`)
+      .patch(`/api/personal/grows/${GROW_ID}/photos`)
       .send({
         photos: ["https://example.test/a.jpg", "https://example.test/b.jpg"]
       });
@@ -187,7 +187,7 @@ describe("Personal grows route", () => {
       })
     );
 
-    const create = await request(createApp()).post("/api/grows").send({
+    const create = await request(createApp()).post("/api/personal/grows").send({
       name: pack.title,
       stage: "germination",
       cultivar: pack.grow.cultivar,
@@ -224,7 +224,7 @@ describe("Personal grows route", () => {
     mockGrow.findOne.mockResolvedValue(grow);
 
     const append = await request(createApp())
-      .patch(`/api/grows/${GROW_ID}/photos`)
+      .patch(`/api/personal/grows/${GROW_ID}/photos`)
       .send({ photos: [...weekZeroPhotos.slice(0, 1), ...harvestPhotos] });
 
     expect(append.status).toBe(200);

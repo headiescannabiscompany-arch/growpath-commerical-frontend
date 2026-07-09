@@ -27,7 +27,8 @@
       "testFile": "backend/routes/grows.personal.test.js",
       "requiredRoutes": [
         { "method": "GET", "path": "/" },
-        { "method": "POST", "path": "/" }
+        { "method": "POST", "path": "/" },
+        { "method": "PATCH", "path": "/:id/photos" }
       ]
     },
     {

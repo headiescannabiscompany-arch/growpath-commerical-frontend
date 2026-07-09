@@ -16,8 +16,8 @@ export const ROUTES = {
     DELETE: (id) => `${PREFIX}/tasks/${id}`
   },
   GROWS: {
-    LIST: `${PREFIX}/grows`,
-    CREATE: `${PREFIX}/grows`,
+    LIST: `${PREFIX}/personal/grows`,
+    CREATE: `${PREFIX}/personal/grows`,
     ENTRIES: (id) => `${PREFIX}/grows/${id}/entries`,
     ENTRY_PHOTO: (id) => `${PREFIX}/grows/${id}/entries/photo`,
     ADD_PLANT: (id) => `${PREFIX}/grows/${id}/plants`

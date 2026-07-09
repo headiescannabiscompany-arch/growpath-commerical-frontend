@@ -34,10 +34,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 
 ### CANONICAL CONTRACT DRIFT
 
-4. Personal grows endpoint canonicalization
+4. Personal grows endpoint canonicalization - DONE 2026-07-09
 - Problem: competing contracts (`/api/personal/grows` vs `/api/grows` and environment-prefixed variants).
-- Action: choose one canonical personal-mode endpoint family; mark others as compatibility aliases or deprecations.
-- Done when: frontend clients, E2E, matrices, and runtime contract all point to one canonical path.
+- Action completed: `/api/personal/grows` is the canonical personal-mode list/create/timeline/photo endpoint family; the shared route map and grow-photo helper now target it, and the backend route module/test comments mount it at the canonical base path.
+- Evidence: `endpoints.test.js`, `grows.photos.test.ts`, acceptance user-story API tests, and `backend/routes/grows.personal.test.js` pass with `/api/personal/grows`.
+- Guardrail: `/api/grows/:id/entries` remains an explicit legacy entry-helper path until a mounted canonical replacement is implemented; do not use `/api/grows` for personal grow list/create/photo flows.
 
 5. AI transport request shape canonicalization
 - Problem: two incompatible request envelopes (`function+inputs` vs `tool+fn+args+context`).

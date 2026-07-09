@@ -42,7 +42,7 @@ function growLookupForUser(growId, userId) {
   };
 }
 
-// GET /api/grows
+// GET /api/personal/grows
 router.get("/", async (req, res) => {
   const userId = getUserId(req);
   if (!userId) {
@@ -69,7 +69,7 @@ router.get("/", async (req, res) => {
   return res.status(200).json({ success: true, grows: grows || [] });
 });
 
-// POST /api/grows
+// POST /api/personal/grows
 router.post("/", async (req, res) => {
   const userId = getUserId(req);
   if (!userId) {
@@ -148,7 +148,7 @@ router.post("/", async (req, res) => {
   });
 });
 
-// PATCH /api/grows/:id/photos
+// PATCH /api/personal/grows/:id/photos
 router.patch("/:id/photos", async (req, res) => {
   const userId = getUserId(req);
   if (!userId) {

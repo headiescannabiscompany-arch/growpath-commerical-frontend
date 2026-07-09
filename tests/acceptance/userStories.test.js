@@ -340,7 +340,7 @@ describe("Acceptance: User Stories", () => {
         light: { ppfd: "650" }
       }
     });
-    expect(fetchCalls.some((c) => c.url.includes("/api/grows"))).toBe(true);
+    expect(fetchCalls.some((c) => c.url.includes("/api/personal/grows"))).toBe(true);
 
     const growId = grow?._id || grow?.id || "g123";
     await growsApi.addEntry(growId, "Real entry", ["test"]);
@@ -350,7 +350,9 @@ describe("Acceptance: User Stories", () => {
 
     await growsApi.listGrows({ stage: "veg", search: "Live" });
     expect(
-      fetchCalls.some((c) => c.url.includes("/api/grows?") && c.url.includes("stage=veg"))
+      fetchCalls.some(
+        (c) => c.url.includes("/api/personal/grows?") && c.url.includes("stage=veg")
+      )
     ).toBe(true);
   });
 
@@ -452,7 +454,7 @@ describe("Acceptance: User Stories", () => {
       strain: "White Widow",
       stage: "flower"
     });
-    expect(fetchCalls.some((c) => c.url.includes("/api/grows"))).toBe(true);
+    expect(fetchCalls.some((c) => c.url.includes("/api/personal/grows"))).toBe(true);
 
     await diagnoseApi.analyzeDiagnosis({
       notes: "Bottom leaves are yellowing",

@@ -22,7 +22,7 @@ describe("grow photo API", () => {
 
     const grow = await appendGrowPhotos("grow-1", ["/uploads/photo-1.jpg"]);
 
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/grows/grow-1/photos", {
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/personal/grows/grow-1/photos", {
       method: "PATCH",
       body: { photos: ["/uploads/photo-1.jpg"] }
     });

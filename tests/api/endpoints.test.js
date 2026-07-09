@@ -47,7 +47,7 @@ describe("API Configuration & Endpoints", () => {
     it("ROUTES has correct literal values", () => {
       expect(ROUTES.AUTH.LOGIN).toBe("/api/auth/login");
       expect(ROUTES.TASKS.TODAY).toBe("/api/tasks/today");
-      expect(ROUTES.GROWS.LIST).toBe("/api/grows");
+      expect(ROUTES.GROWS.LIST).toBe("/api/personal/grows");
       expect(ROUTES.TASKS.COMPLETE("123")).toBe("/api/tasks/123/complete");
     });
   });
@@ -189,7 +189,7 @@ describe("API Configuration & Endpoints", () => {
 
     it("appendGrowPhotos targets personal grow photo attachment endpoint", async () => {
       await growsApi.appendGrowPhotos("grow_1", ["/uploads/photo.jpg"]);
-      expect(fetchCalls[0].url.endsWith("/api/grows/grow_1/photos")).toBe(true);
+      expect(fetchCalls[0].url.endsWith("/api/personal/grows/grow_1/photos")).toBe(true);
       expect(fetchCalls[0].options.method).toBe("PATCH");
       expect(JSON.parse(fetchCalls[0].options.body).photos).toEqual([
         "/uploads/photo.jpg"

@@ -77,6 +77,7 @@ Hide or skip it if it requires deep analytics, prediction, or a new commercial-h
 - Hardened the V1 feature/backend matrix quality contract: all 226 rows now carry explicit `rowStatus` labels (`canonical`, `compat_alias`, `deprecated`, `planned`), and validation rejects duplicate feature IDs, malformed modes, unexplained duplicate UI routes, and user-visible `unknown` mode rows.
 - Clarified the ID contract: `docs/contracts/ID_POLICY.md` now defines public IDs as opaque strings, keeps `_id` as persistence/compatibility fallback, and requires serializers/clients to normalize to `id` for routes, source links, tasks, ToolRuns, analytics, and audit references.
 - Hardened auth bootstrap route behavior: token-present `/api/me` failures now show explicit retry/clear-session actions in `RequireAuth` and protected deep routes instead of redirecting, silently falling back to personal mode, or spinning forever.
+- Canonicalized the personal grows endpoint family: frontend route constants and grow-photo helpers use `/api/personal/grows`, backend route tests mount `grows.personal` at `/api/personal/grows`, and the remaining `/api/grows/:id/entries` usage is documented as legacy entry-helper compatibility.
 
 ### 2026-07-02
 
