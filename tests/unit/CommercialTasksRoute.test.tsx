@@ -214,8 +214,7 @@ describe("CommercialTasksRoute", () => {
       screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-product-1")
     ).toBeTruthy();
     expect(
-      screen.getAllByLabelText("Commercial task link /home/commercial/storefront")
-        .length
+      screen.getAllByLabelText("Commercial task link /home/commercial/storefront").length
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByLabelText("Commercial task link /home/commercial/products/product-1")
@@ -255,6 +254,9 @@ describe("CommercialTasksRoute", () => {
             description: "Schedule product demo and replay follow-up.",
             dueAt: addDaysKey(7),
             priority: "normal",
+            allDay: true,
+            calendarType: "live_commercial_task",
+            sourceStage: "live_event_prep",
             sourceType: "live",
             sourceId: "live-1",
             linkedLiveId: "live-1",
@@ -311,6 +313,9 @@ describe("CommercialTasksRoute", () => {
             sourceType: "feed_campaign",
             sourceId: "campaign-7",
             linkedFeedCampaignId: "campaign-7",
+            allDay: true,
+            calendarType: "feed_campaign_commercial_task",
+            sourceStage: "campaign_review",
             status: "open"
           })
         })
@@ -343,6 +348,9 @@ describe("CommercialTasksRoute", () => {
             sourceId: "trial-7",
             linkedProductTrialId: "trial-7",
             linkedTrialId: "trial-7",
+            allDay: true,
+            calendarType: "product_trial_commercial_task",
+            sourceStage: "product_trial_review",
             status: "open"
           })
         })
@@ -377,6 +385,9 @@ describe("CommercialTasksRoute", () => {
             sourceType: "course_assignment",
             sourceId: "assignment-7",
             linkedCourseAssignmentId: "assignment-7",
+            allDay: true,
+            calendarType: "course_assignment_commercial_task",
+            sourceStage: "course_assignment_review",
             status: "open"
           })
         })

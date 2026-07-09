@@ -247,6 +247,31 @@ function linkedFieldsForSource(sourceType: string, sourceId: string) {
   }
 }
 
+function calendarMetadataForCommercialTask(sourceType: string) {
+  const normalized = sourceType || "manual";
+  const stageBySource: Record<string, string> = {
+    storefront: "storefront_setup",
+    product: "product_readiness",
+    product_batch: "product_batch_review",
+    product_trial: "product_trial_review",
+    course: "course_launch_review",
+    lesson: "lesson_setup",
+    course_assignment: "course_assignment_review",
+    live: "live_event_prep",
+    feed_campaign: "campaign_review",
+    order: "order_followup",
+    stripe: "stripe_setup",
+    analytics: "analytics_review",
+    alert: "alert_followup",
+    forum: "forum_response"
+  };
+  return {
+    allDay: true,
+    calendarType: `${normalized}_commercial_task`,
+    sourceStage: stageBySource[normalized] || "commercial_followup"
+  };
+}
+
 function scheduleSummary(task: CommercialTask) {
   const reminder =
     typeof task.reminderPlan?.label === "string"
@@ -337,6 +362,7 @@ export default function CommercialTasksRoute() {
           priority,
           sourceType,
           sourceId: cleanSourceId || undefined,
+          ...calendarMetadataForCommercialTask(sourceType),
           ...linkedFieldsForSource(sourceType, cleanSourceId),
           assignedToUserId: assignee.trim() || undefined,
           status: "open",

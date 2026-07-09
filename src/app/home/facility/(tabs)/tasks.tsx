@@ -155,6 +155,33 @@ function linkedFieldsForSource(
   }
 }
 
+function calendarMetadataForFacilityTask(sourceType: string) {
+  const normalized = sourceType || "manual";
+  const stageBySource: Record<string, string> = {
+    room: "room_work",
+    facility_run: "facility_run_work",
+    sop: "sop_work",
+    sensor_alert: "sensor_alert_followup",
+    alert: "alert_followup",
+    course: "training_course_review",
+    lesson: "training_lesson_review",
+    course_assignment: "training_assignment_review",
+    live: "training_live_prep",
+    feed_campaign: "facility_outreach_review",
+    toolrun: "toolrun_followup",
+    recipe: "recipe_work",
+    product: "product_review",
+    product_batch: "product_batch_review",
+    product_trial: "product_trial_review",
+    forum: "forum_followup"
+  };
+  return {
+    allDay: true,
+    calendarType: `${normalized}_facility_task`,
+    sourceStage: stageBySource[normalized] || "facility_followup"
+  };
+}
+
 export default function FacilityTasksRoute() {
   const router = useRouter();
   const ent = useEntitlements();
@@ -241,6 +268,7 @@ export default function FacilityTasksRoute() {
         sourceType: newSourceType,
         sourceObjectId: cleanSourceObjectId || undefined,
         roomId: cleanRoomId || undefined,
+        ...calendarMetadataForFacilityTask(newSourceType),
         ...linkedFieldsForSource(newSourceType, cleanSourceObjectId, cleanRoomId),
         reminderPlan: newReminder.trim()
           ? { label: newReminder.trim(), channels: ["in_app"] }
