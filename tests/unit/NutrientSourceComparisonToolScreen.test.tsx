@@ -124,14 +124,23 @@ describe("NutrientSourceComparisonToolScreen", () => {
             expect.objectContaining({
               title: "Review calcium source choice",
               priority: "high",
+              allDay: true,
+              calendarType: "nutrient_source_review",
+              sourceStage: "source_fit_review",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("gypsum")
             }),
             expect.objectContaining({
               title: "Compare available calcium inputs",
+              sourceStage: "source_speed_comparison",
               description: expect.stringContaining("Medium sources: gypsum")
             }),
             expect.objectContaining({
-              title: "Log calcium source result after application"
+              title: "Log calcium source result after application",
+              sourceStage: "source_application_review"
             })
           ]
         })

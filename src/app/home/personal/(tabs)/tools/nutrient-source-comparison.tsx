@@ -14,12 +14,22 @@ function nutrientSourceTaskPlan(outputs: Record<string, any>) {
   const bestChoice = String(outputs.bestChoiceByIntent || "best-fit source");
   const timingWarnings = listSummary(outputs.timingWarnings);
   const phWarnings = listSummary(outputs.pHEffectWarnings);
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "nutrient_source_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
 
   return [
     {
       title: `Review ${nutrient} source choice`,
       priority: timingWarnings || phWarnings ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "source_fit_review",
       description: [
         `Best choice by intent: ${bestChoice}.`,
         timingWarnings ? `Timing warnings: ${timingWarnings}` : "",
@@ -32,6 +42,8 @@ function nutrientSourceTaskPlan(outputs: Record<string, any>) {
       title: `Compare available ${nutrient} inputs`,
       priority: "medium" as const,
       dueDate: tomorrow(2),
+      ...calendarMetadata,
+      sourceStage: "source_speed_comparison",
       description: [
         listSummary(outputs.fastSources)
           ? `Fast sources: ${listSummary(outputs.fastSources)}`
@@ -50,6 +62,8 @@ function nutrientSourceTaskPlan(outputs: Record<string, any>) {
       title: `Log ${nutrient} source result after application`,
       priority: "medium" as const,
       dueDate: tomorrow(7),
+      ...calendarMetadata,
+      sourceStage: "source_application_review",
       description:
         "Record plant response, timing, pH/EC side effects, and whether this source should be reused in future recipes."
     }

@@ -850,6 +850,7 @@ Completed and pushed:
 574. Soil Builder recipe timelines and Topdress Planner follow-ups now carry all-day soil/topdress calendar metadata, source-stage values, and reminders so mix, activation, cook, ready review, application, water-in, response, and re-amend checks appear in the shared Schedule with recipe context.
 575. Dry Amendment Mix and Soil & Nutrient Batch task plans now carry all-day dry-blend/production-batch calendar metadata, source-stage values, and reminders so ingredient pulls, mixing, label QA, application review, inventory updates, and product draft follow-ups appear in the shared Schedule with batch context.
 576. NPK / Feed Recipe Builder task plans now carry all-day NPK recipe calendar metadata, source-stage values, and 12-hour reminders so label verification, mixing, application, plant response checks, and adjustment reviews appear in the shared Schedule with recipe context.
+577. Nutrient Source Comparison review tasks now carry all-day nutrient-source calendar metadata, source-stage values, and 12-hour reminders so source fit review, fast/medium/slow input comparison, and post-application response logging appear in the shared Schedule with source context.
 
 ## Working Rule For Codex
 
