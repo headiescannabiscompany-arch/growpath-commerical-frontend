@@ -268,7 +268,9 @@ describe("Storefront route", () => {
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Living Soil Line").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Interests living soil, dry amendments/).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Open Line")).toBeTruthy();
     expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/product-lines/line-1")).toBeTruthy();
@@ -276,7 +278,9 @@ describe("Storefront route", () => {
       screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
-    expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Interests living soil, dry amendments/).length
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/forum/post/thread-course")).toBeTruthy();
@@ -341,6 +345,9 @@ describe("Storefront route", () => {
             linkedLiveIds: ["live-1"],
             linkedFeedCampaignIds: ["campaign-1"],
             linkedFeedPostIds: ["campaign-1"],
+            allDay: true,
+            calendarType: "storefront_setup_task",
+            sourceStage: "storefront_logo_review",
             priority: "high",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
@@ -362,6 +369,9 @@ describe("Storefront route", () => {
           linkedLiveIds: ["live-1"],
           linkedFeedCampaignIds: ["campaign-1"],
           linkedFeedPostIds: ["campaign-1"],
+          allDay: true,
+          calendarType: "storefront_setup_task",
+          sourceStage: "storefront_grow_interests_review",
           priority: "high"
         })
       })

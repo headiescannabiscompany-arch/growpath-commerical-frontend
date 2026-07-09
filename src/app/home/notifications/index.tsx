@@ -161,6 +161,34 @@ function notificationText(row: NotificationRow) {
   return row.body || row.message || "Open the linked workflow for details.";
 }
 
+function notificationScheduleMetadata(row: NotificationRow) {
+  const sourceType = String(row.sourceType || "notification");
+  const normalized = sourceType.replace(/[^a-z0-9]+/gi, "_").toLowerCase();
+  const stageBySource: Record<string, string> = {
+    alert: "alert_review",
+    course: "course_notice_review",
+    course_assignment: "course_assignment_followup",
+    feed_campaign: "campaign_notification_followup",
+    live: "live_notification_followup",
+    live_event: "live_notification_followup",
+    notification: "notification_followup",
+    product: "product_notification_followup",
+    product_batch: "batch_notification_followup",
+    product_trial: "trial_notification_followup",
+    replay: "replay_notification_followup",
+    storefront: "storefront_notification_followup",
+    task: "task_notification_followup"
+  };
+  return {
+    allDay: true,
+    calendarType: `${normalized}_notification_followup`,
+    sourceStage: stageBySource[normalized] || `${normalized}_notification_followup`,
+    dueAt: row.scheduledFor
+      ? String(row.scheduledFor).slice(0, 10)
+      : new Date().toISOString().slice(0, 10)
+  };
+}
+
 function statusText(row: NotificationRow) {
   const parts = [
     row.workspaceType && `Workspace ${row.workspaceType}`,
@@ -284,6 +312,7 @@ export default function NotificationCenterRoute() {
           linkedNotificationId: id,
           notificationSourceType: row.sourceType || undefined,
           notificationSourceId: sourceReference(row) || undefined,
+          ...notificationScheduleMetadata(row),
           ...linkedFieldsForNotificationSource(row),
           ...storefrontMetadata(row),
           priority: ["alert", "task", "course_assignment"].includes(

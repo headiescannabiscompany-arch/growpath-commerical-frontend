@@ -189,6 +189,9 @@ describe("CommercialFeedRoute", () => {
             campaignStartsAt: "2026-07-17T21:00:00Z",
             campaignEndsAt: "2026-07-24T21:00:00Z",
             recurrenceRule: "weekly",
+            allDay: true,
+            calendarType: "commercial_feed_campaign_setup",
+            sourceStage: "live_ad_campaign_readiness",
             dueAt: "2026-07-17",
             priority: "high",
             status: "open",
@@ -288,9 +291,7 @@ describe("CommercialFeedRoute", () => {
       expect(screen.getByText("Alias storefront campaign")).toBeTruthy()
     );
 
-    expect(
-      screen.getByLabelText("Selected feed campaign campaign-alias-1")
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Selected feed campaign campaign-alias-1")).toBeTruthy();
   });
 
   it("limits facility feed creation to facility outreach", async () => {
@@ -513,12 +514,8 @@ describe("CommercialFeedRoute", () => {
     fireEvent.press(screen.getByLabelText("View Course for NPK Recipe Builder"));
     fireEvent.press(screen.getByLabelText("View Course for Soil Builder Masterclass"));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      "/store/living-soil-labs/products/veg-mix-1"
-    );
-    expect(mockPush).toHaveBeenCalledWith(
-      "/store/living-soil-labs/courses/course-npk-1"
-    );
+    expect(mockPush).toHaveBeenCalledWith("/store/living-soil-labs/products/veg-mix-1");
+    expect(mockPush).toHaveBeenCalledWith("/store/living-soil-labs/courses/course-npk-1");
     expect(mockPush).toHaveBeenCalledWith(
       "/store/living-soil-labs/courses/course-soil-1"
     );

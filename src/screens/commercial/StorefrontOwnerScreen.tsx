@@ -331,16 +331,15 @@ export default function Storefront({
           liveRes,
           feedRes,
           inventoryRes
-        ] =
-          await Promise.all([
-            apiRequest(commercialEndpoints.storefront),
-            apiRequest(commercialEndpoints.products),
-            apiRequest(commercialEndpoints.productLines),
-            apiRequest(commercialEndpoints.courses),
-            apiRequest(commercialEndpoints.lives),
-            apiRequest(commercialEndpoints.feed),
-            apiRequest(commercialEndpoints.inventory)
-          ]);
+        ] = await Promise.all([
+          apiRequest(commercialEndpoints.storefront),
+          apiRequest(commercialEndpoints.products),
+          apiRequest(commercialEndpoints.productLines),
+          apiRequest(commercialEndpoints.courses),
+          apiRequest(commercialEndpoints.lives),
+          apiRequest(commercialEndpoints.feed),
+          apiRequest(commercialEndpoints.inventory)
+        ]);
         const nextStorefront = storeRes?.storefront ?? storeRes ?? null;
         setStorefront(nextStorefront);
         setProducts(asArray(productRes, "products"));
@@ -562,6 +561,14 @@ export default function Storefront({
               linkedLiveIds,
               linkedFeedCampaignIds,
               linkedFeedPostIds: linkedFeedCampaignIds,
+              allDay: true,
+              calendarType: "storefront_setup_task",
+              sourceStage: `storefront_${
+                item.label
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "_")
+                  .replace(/^_|_$/g, "") || "setup"
+              }_review`,
               priority: publishBlockers.some((blocker) =>
                 blocker.includes(item.label.toLowerCase())
               )

@@ -871,6 +871,7 @@ Completed and pushed:
 595. Commercial and Facility task creation now assign source-specific calendar metadata, including all-day status, calendar type, and source stage, so storefront/product/course/live/feed/order/SOP/room/sensor/forum work created outside personal tools still lands in the shared schedule with workspace context.
 596. Commercial Dashboard action-item tasks and Alert Center alert-to-task creation now preserve all-day calendar metadata, source-specific calendar types, and source-stage values so setup warnings, product gaps, feed campaign issues, storefront checks, orders, trials, lessons, and sensor alerts become schedule-visible work instead of generic follow-up rows.
 597. Commercial product, course, live, product-trial evidence, and batch-production setup tasks now carry schedule metadata, calendar types, and source stages so owner workflow buttons create schedule-visible work instead of generic task rows.
+598. Feed campaign setup tasks, storefront setup tasks, and notification-created follow-up tasks now carry schedule metadata, calendar types, and source stages so advertising/outreach, storefront readiness, and inbox reminders become source-visible Schedule work.
 
 ## Working Rule For Codex
 

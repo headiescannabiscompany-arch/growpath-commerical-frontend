@@ -481,6 +481,9 @@ export default function CommercialFeedRoute() {
           campaignStartsAt: campaignStart.trim() || undefined,
           campaignEndsAt: campaignEnd.trim() || undefined,
           recurrenceRule: campaignRecurrence.trim() || undefined,
+          allDay: true,
+          calendarType: `${isFacility ? "facility" : "commercial"}_feed_campaign_setup`,
+          sourceStage: `${campaignKind}_campaign_readiness`,
           priority: readinessWarnings.some(
             (warning) =>
               warning.includes("destination") || warning.includes("should link")

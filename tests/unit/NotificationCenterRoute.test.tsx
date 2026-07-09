@@ -341,6 +341,9 @@ describe("NotificationCenterRoute", () => {
             notificationSourceType: "live",
             notificationSourceId: "live-1",
             linkedLiveId: "live-1",
+            allDay: true,
+            calendarType: "live_notification_followup",
+            sourceStage: "live_notification_followup",
             priority: "normal",
             status: "open"
           })
@@ -410,6 +413,9 @@ describe("NotificationCenterRoute", () => {
             notificationSourceType: "feed_campaign",
             notificationSourceId: "campaign-linked-1",
             linkedFeedCampaignId: "campaign-linked-1",
+            allDay: true,
+            calendarType: "feed_campaign_notification_followup",
+            sourceStage: "campaign_notification_followup",
             priority: "normal",
             status: "open"
           })
@@ -492,6 +498,9 @@ describe("NotificationCenterRoute", () => {
             linkedCourseId: "course-3",
             linkedLessonId: "lesson-3",
             linkedCourseAssignmentId: "assignment-1",
+            allDay: true,
+            calendarType: "course_assignment_notification_followup",
+            sourceStage: "course_assignment_followup",
             priority: "high",
             status: "open"
           })
@@ -519,7 +528,10 @@ describe("NotificationCenterRoute", () => {
             notificationSourceId: "living-soil-labs",
             linkedStorefrontId: "living-soil-labs",
             storefrontSlug: "living-soil-labs",
-            linkedStorefrontSlug: "living-soil-labs"
+            linkedStorefrontSlug: "living-soil-labs",
+            allDay: true,
+            calendarType: "storefront_notification_followup",
+            sourceStage: "storefront_notification_followup"
           })
         })
       )
