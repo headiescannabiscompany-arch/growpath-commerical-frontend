@@ -432,9 +432,9 @@ export default function ToolResultSurface({
 
       {contextMessage ? <Text style={styles.detail}>{contextMessage}</Text> : null}
       {footerMessage ? <Text style={styles.detail}>{footerMessage}</Text> : null}
-      {feedback || actionFeedback ? (
+      {actionFeedback || feedback ? (
         <Text accessibilityLiveRegion="polite" style={styles.feedback}>
-          {feedback || actionFeedback}
+          {actionFeedback || feedback}
         </Text>
       ) : null}
     </View>

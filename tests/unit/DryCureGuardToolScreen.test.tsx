@@ -6,6 +6,8 @@ import DryCureGuardToolScreen from "@/app/home/personal/(tabs)/tools/dry-cure-gu
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockGetHarvestBatch = jest.fn();
+const mockUpdateHarvestBatch = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -60,6 +62,11 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+jest.mock("@/api/harvestBatches", () => ({
+  getHarvestBatch: (...args: any[]) => mockGetHarvestBatch(...args),
+  updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
+}));
+
 describe("DryCureGuardToolScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -79,6 +86,24 @@ describe("DryCureGuardToolScreen", () => {
       ok: true,
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4"]
+    });
+    mockGetHarvestBatch.mockResolvedValue({
+      id: "harvest-1",
+      growId: "grow-1",
+      name: "Harvest 1",
+      status: "drying",
+      dryCureRecords: [
+        {
+          stage: "drying",
+          rh: 58,
+          linkedToolRunId: "toolrun-old"
+        }
+      ],
+      linkedToolRunIds: ["toolrun-old"]
+    });
+    mockUpdateHarvestBatch.mockResolvedValue({
+      id: "harvest-1",
+      status: "curing"
     });
   });
 
@@ -138,6 +163,53 @@ describe("DryCureGuardToolScreen", () => {
           ]
         })
       )
+    );
+  });
+
+  it("saves dry/cure readings to a harvest batch record", async () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      "63"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Harvest batch ID (optional)"),
+      "harvest-1"
+    );
+    fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
+
+    await waitFor(() => expect(screen.getByText("Dry / Cure Guard result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Save to Harvest Batch"));
+
+    await waitFor(() => expect(mockGetHarvestBatch).toHaveBeenCalledWith("harvest-1"));
+    expect(mockUpdateHarvestBatch).toHaveBeenCalledWith(
+      "harvest-1",
+      expect.objectContaining({
+        status: "curing",
+        linkedToolRunIds: ["toolrun-old", "toolrun-1"],
+        dryCureRecords: [
+          expect.objectContaining({
+            stage: "drying",
+            rh: 58,
+            linkedToolRunId: "toolrun-old"
+          }),
+          expect.objectContaining({
+            stage: "curing",
+            tempF: 68,
+            rh: 60,
+            jarRh: 63,
+            dewPointF: 53.2,
+            linkedToolRunId: "toolrun-1",
+            qualityNotes: expect.stringContaining("Mold risk: medium")
+          })
+        ]
+      })
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Saved dry/cure record to harvest batch.")).toBeTruthy()
     );
   });
 });

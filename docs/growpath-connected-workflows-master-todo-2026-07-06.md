@@ -835,6 +835,7 @@ Completed and pushed:
 559. Plant growth overlays now carry pheno plant record fields and stage scorecards, including keeper status/reason, clone and mother status, pheno score history, and stage-specific scoring data through the backend model, route contract, and frontend API helper.
 560. Personal harvest batches now have a backend model, personal CRUD routes, frontend API helper, dry/cure record fields, linked ToolRun ids, and merged grow timeline events so harvest and dry/cure history can persist as connected grow records.
 561. Commercial batch detail now creates source-linked production tasks from a saved Soil & Nutrient Batch Planner record, carrying product batch, product, product line, evidence run, proof requirement, reminder plan, pull-sheet, guaranteed-analysis, release-timing, and mixing/QC context into the shared task engine.
+562. Dry / Cure Guard now accepts an optional Harvest Batch ID and can append the calculated dry/cure reading, dew point, jar RH, risk notes, and linked ToolRun id onto the saved harvest batch, while shared tool result action feedback now surfaces action success instead of being masked by stale calculation feedback.
 
 ## Working Rule For Codex
 

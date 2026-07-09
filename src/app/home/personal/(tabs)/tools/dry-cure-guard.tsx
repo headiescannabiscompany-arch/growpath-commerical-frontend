@@ -4,6 +4,11 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  getHarvestBatch,
+  updateHarvestBatch,
+  type DryCureRecordInput
+} from "@/api/harvestBatches";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -58,6 +63,45 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
   ];
 }
 
+function dryCureStage(mode: unknown): DryCureRecordInput["stage"] {
+  const normalized = String(mode || "").toLowerCase();
+  if (normalized.includes("cur")) return "curing";
+  if (normalized.includes("trim")) return "trim";
+  if (normalized.includes("store")) return "stored";
+  if (normalized.includes("quality")) return "quality_review";
+  if (normalized.includes("harvest")) return "harvested";
+  return "drying";
+}
+
+function dryCureRecord(
+  outputs: Record<string, any>,
+  payload: Record<string, any>,
+  toolRunId: string
+): DryCureRecordInput {
+  const tempF =
+    String(payload.tempUnit || "F").toUpperCase() === "C"
+      ? n(String(payload.dryRoomTemp), 0)! * 1.8 + 32
+      : n(String(payload.dryRoomTemp));
+  return {
+    recordedAt: new Date().toISOString(),
+    stage: dryCureStage(payload.mode),
+    tempF,
+    rh: n(String(payload.dryRoomRH)),
+    jarRh: payload.jarRH == null ? null : n(String(payload.jarRH)),
+    dewPointF: typeof outputs.dewPointF === "number" ? outputs.dewPointF : null,
+    aromaNotes: outputs.aromaRisk || outputs.nextAction || "",
+    textureNotes: outputs.overdryRisk ? `Overdry risk: ${outputs.overdryRisk}` : "",
+    qualityNotes: [
+      outputs.moldRisk ? `Mold risk: ${outputs.moldRisk}` : "",
+      outputs.overdryRisk ? `Overdry risk: ${outputs.overdryRisk}` : "",
+      outputs.nextAction ? `Next action: ${outputs.nextAction}` : ""
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    linkedToolRunId: toolRunId
+  };
+}
+
 export default function DryCureGuardToolScreen() {
   return (
     <BackendCalculatorToolScreen
@@ -86,6 +130,11 @@ export default function DryCureGuardToolScreen() {
           defaultValue: "",
           keyboardType: "numeric"
         },
+        {
+          key: "harvestBatchId",
+          label: "Harvest batch ID (optional)",
+          defaultValue: ""
+        },
         { key: "airflow", label: "Airflow", defaultValue: "medium" },
         { key: "budDensity", label: "Bud density", defaultValue: "medium" }
       ]}
@@ -97,6 +146,7 @@ export default function DryCureGuardToolScreen() {
         tempUnit: values.tempUnit,
         dryRoomRH: n(values.dryRoomRH),
         jarRH: values.jarRH ? n(values.jarRH) : undefined,
+        harvestBatchId: values.harvestBatchId.trim() || undefined,
         airflow: values.airflow,
         budDensity: values.budDensity
       })}
@@ -137,6 +187,37 @@ export default function DryCureGuardToolScreen() {
               tasks: dryCureTaskPlan(outputs, payload)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "save-dry-cure-harvest-record",
+          label: "Save to Harvest Batch",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          disabled: !growId || !payload.harvestBatchId,
+          successMessage: "Saved dry/cure record to harvest batch.",
+          onPress: async () => {
+            const harvestBatchId = String(payload.harvestBatchId || "").trim();
+            const linkedToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
+            if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
+            if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
+            const batch = await getHarvestBatch(harvestBatchId);
+            if (!batch) throw new Error("Harvest batch not found.");
+            const existingRecords = Array.isArray(batch.dryCureRecords)
+              ? batch.dryCureRecords
+              : [];
+            const existingRunIds = Array.isArray(batch.linkedToolRunIds)
+              ? batch.linkedToolRunIds
+              : [];
+            const updated = await updateHarvestBatch(harvestBatchId, {
+              status: dryCureStage(payload.mode) === "curing" ? "curing" : "drying",
+              dryCureRecords: [
+                ...existingRecords,
+                dryCureRecord(outputs, payload, linkedToolRunId)
+              ],
+              linkedToolRunIds: Array.from(new Set([...existingRunIds, linkedToolRunId]))
+            });
+            if (!updated) throw new Error("Unable to update harvest batch.");
           }
         }
       ]}
