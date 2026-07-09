@@ -74,6 +74,18 @@ function dueTomorrow() {
   return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
+function environmentTaskMetadata(hasRisk: boolean) {
+  return {
+    allDay: true,
+    calendarType: "environment_analysis_followup",
+    sourceStage: hasRisk ? "environment_risk_inspection" : "environment_analysis_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function EnvironmentAnalysisToolScreen() {
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -450,7 +462,10 @@ export default function EnvironmentAnalysisToolScreen() {
                           riskFlags.length || environmentReview.riskLevel === "high"
                             ? "high"
                             : "medium",
-                        dueDate: dueTomorrow()
+                        dueDate: dueTomorrow(),
+                        ...environmentTaskMetadata(
+                          riskFlags.length > 0 || environmentReview.riskLevel === "high"
+                        )
                       });
                       if (!taskResult.ok) throw new Error(taskResult.error);
                       setFeedback("Created environment review task.");
