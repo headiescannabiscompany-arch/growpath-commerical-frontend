@@ -155,19 +155,29 @@ describe("HarvestReadinessToolRoute", () => {
           tasks: [
             expect.objectContaining({
               title: "Recheck harvest window",
+              allDay: true,
+              calendarType: "harvest_readiness",
+              sourceStage: "harvest_readiness_recheck",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("top and lower buds")
             }),
             expect.objectContaining({
-              title: "Capture top and lower trichome photos"
+              title: "Capture top and lower trichome photos",
+              sourceStage: "trichome_photo_capture"
             }),
             expect.objectContaining({
               title: "Make harvest window decision",
               priority: "high",
+              sourceStage: "harvest_window_decision",
               description: expect.stringContaining("flower day 60")
             }),
             expect.objectContaining({
               title: "Prepare dry/cure setup",
-              priority: "high"
+              priority: "high",
+              sourceStage: "dry_cure_setup"
             })
           ]
         })

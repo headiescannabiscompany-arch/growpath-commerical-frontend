@@ -852,6 +852,7 @@ Completed and pushed:
 576. NPK / Feed Recipe Builder task plans now carry all-day NPK recipe calendar metadata, source-stage values, and 12-hour reminders so label verification, mixing, application, plant response checks, and adjustment reviews appear in the shared Schedule with recipe context.
 577. Nutrient Source Comparison review tasks now carry all-day nutrient-source calendar metadata, source-stage values, and 12-hour reminders so source fit review, fast/medium/slow input comparison, and post-application response logging appear in the shared Schedule with source context.
 578. pH / EC Range Check task plans and default retest tasks now carry all-day pH/EC calendar metadata, source-stage values, and 12-hour reminders so retests, plant-response logging, source-water/feed review, and calculator-provided follow-ups appear in the shared Schedule with measurement context.
+579. Harvest Readiness decision plans and default recheck tasks now carry all-day harvest-readiness calendar metadata, source-stage values, and 12-hour reminders so maturity rechecks, top/lower trichome photos, harvest-window decisions, and dry/cure setup appear in the shared Schedule with harvest context.
 
 ## Working Rule For Codex
 

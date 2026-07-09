@@ -15,6 +15,18 @@ function numberOrFallback(value: unknown, fallback: number) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function harvestCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "harvest_readiness",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
   const flowerDay = numberOrFallback(payload.flowerDay, 0);
   const startDay = numberOrFallback(outputs.estimatedWindow?.startDay, flowerDay + 3);
@@ -44,6 +56,7 @@ function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string,
       title: outputs.harvestTask?.title || "Recheck harvest readiness",
       priority: outputs.harvestTask?.priority || "medium",
       dueDate: tomorrow(recheckDueInDays),
+      ...harvestCalendarMetadata("harvest_readiness_recheck"),
       description: [
         `Current readiness: ${readiness}.`,
         "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity.",
@@ -57,6 +70,7 @@ function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string,
       title: "Capture top and lower trichome photos",
       priority: "medium" as const,
       dueDate: tomorrow(recheckDueInDays),
+      ...harvestCalendarMetadata("trichome_photo_capture"),
       description:
         "Take clear photos from top and lower buds so harvest timing is not based on one sample site."
     },
@@ -64,6 +78,7 @@ function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string,
       title: "Make harvest window decision",
       priority: "high" as const,
       dueDate: tomorrow(windowStartDueInDays),
+      ...harvestCalendarMetadata("harvest_window_decision"),
       description: [
         `Estimated window starts around flower day ${startDay}.`,
         `Target day is ${targetDay} for goal: ${payload.userGoal || "balanced"}.`,
@@ -74,6 +89,7 @@ function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string,
       title: "Prepare dry/cure setup",
       priority: "high" as const,
       dueDate: tomorrow(Math.max(1, targetDueInDays - 1)),
+      ...harvestCalendarMetadata("dry_cure_setup"),
       description:
         "Prepare dry space targets, jars/bags, labels, and post-harvest notes before cutting plants."
     }
@@ -208,6 +224,7 @@ export default function HarvestReadinessToolRoute() {
         title: outputs.harvestTask?.title || "Recheck harvest readiness",
         priority: outputs.harvestTask?.priority || "medium",
         dueDate: tomorrow(outputs.harvestTask?.dueInDays || 3),
+        ...harvestCalendarMetadata("harvest_readiness_recheck"),
         description:
           "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity."
       })}
