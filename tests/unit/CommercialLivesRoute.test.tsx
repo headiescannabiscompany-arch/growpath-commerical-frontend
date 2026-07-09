@@ -128,6 +128,9 @@ describe("CommercialLivesRoute", () => {
             priority: "normal",
             status: "open",
             dueAt: "2026-07-10",
+            allDay: false,
+            calendarType: "live_setup_task",
+            sourceStage: "live_setup_review",
             reminderPlan: { label: "1 hour before", channels: ["in_app"] }
           })
         })

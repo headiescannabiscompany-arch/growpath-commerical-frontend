@@ -1074,6 +1074,9 @@ describe("commercial workflow pages", () => {
             linkedForumThreadId: "thread-course",
             priority: "high",
             status: "open",
+            allDay: true,
+            calendarType: "course_setup_task",
+            sourceStage: "course_setup_review",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
@@ -1597,6 +1600,9 @@ describe("commercial workflow pages", () => {
             linkedFeedPostIds: ["campaign-1"],
             linkedForumThreadId: "thread-product",
             priority: "normal",
+            allDay: true,
+            calendarType: "product_setup_task",
+            sourceStage: "product_setup_review",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
@@ -2131,6 +2137,9 @@ describe("commercial workflow pages", () => {
             linkedGrowId: "grow-1",
             priority: "high",
             status: "open",
+            allDay: true,
+            calendarType: "product_trial_evidence_task",
+            sourceStage: "trial_claim_readiness",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
@@ -2367,6 +2376,9 @@ describe("commercial workflow pages", () => {
             priority: "high",
             status: "open",
             requiresProof: true,
+            allDay: true,
+            calendarType: "product_batch_production_task",
+            sourceStage: "batch_production_run",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })
