@@ -54,6 +54,17 @@ function diagnosisFollowUpDays(result: NormalizedDiagnosis) {
   return 7;
 }
 
+function diagnosisTaskMetadata(result: NormalizedDiagnosis) {
+  const urgent =
+    result.severity === "high" || result.urgency.toLowerCase().includes("urgent");
+  return {
+    allDay: true,
+    calendarType: "ai_diagnosis_followup",
+    sourceStage: urgent ? "urgent_diagnosis_recheck" : "diagnosis_recheck",
+    reminderPlan: { label: "12 hours before", channels: ["in_app"] }
+  };
+}
+
 function diagnosisTaskDescription(result: NormalizedDiagnosis, acceptedTags: string[]) {
   const action =
     result.actions[0] || result.followUp || "Recheck plant symptoms and measurements.";
@@ -342,7 +353,8 @@ export default function DiagnoseRoute() {
       priority: result.severity === "high" ? "high" : "medium",
       sourceType: "ai_diagnosis",
       sourceObjectId: result.id || undefined,
-      sourceDiagnosisId: result.id || undefined
+      sourceDiagnosisId: result.id || undefined,
+      ...diagnosisTaskMetadata(result)
     });
     if (!created) throw new Error("Unable to create follow-up task.");
     setFeedback("Follow-up task created.");

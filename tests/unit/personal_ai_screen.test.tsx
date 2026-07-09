@@ -141,8 +141,13 @@ describe("personal AI screen", () => {
         title: "Check humidity pockets after lights out",
         description: "Inspect dense canopy and corners before the next dark cycle.",
         priority: "high",
+        dueDate: undefined,
+        allDay: true,
+        calendarType: "ai_assistant_followup",
+        sourceStage: "ai_suggested_action",
         sourceType: "ai_assistant",
-        sourceObjectId: "assistant-thread-1"
+        sourceObjectId: "assistant-thread-1",
+        reminderPlan: undefined
       })
     );
     expect(screen.getByText("AI suggested task created.")).toBeTruthy();

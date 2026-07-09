@@ -266,6 +266,16 @@ function cropContextSummary(plants: any[]) {
   return `${plantLabel(first) || "Plant context"} (${status})`;
 }
 
+function aiTaskMetadata(payload: Record<string, any>) {
+  return {
+    dueDate: payload.dueDate || undefined,
+    allDay: payload.allDay === false ? false : true,
+    calendarType: payload.calendarType || "ai_assistant_followup",
+    sourceStage: payload.sourceStage || "ai_suggested_action",
+    reminderPlan: payload.reminderPlan || undefined
+  };
+}
+
 export default function AiScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -404,7 +414,8 @@ export default function AiScreen() {
         description: String(payload.description || ""),
         priority: payload.priority || "medium",
         sourceType: "ai_assistant",
-        sourceObjectId: payload.sourceObjectId || undefined
+        sourceObjectId: payload.sourceObjectId || undefined,
+        ...aiTaskMetadata(payload)
       });
       if (!created) throw new Error("Unable to create AI suggested task.");
       setWriteFeedback("AI suggested task created.");

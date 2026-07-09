@@ -867,6 +867,7 @@ Completed and pushed:
 591. Dew Point Guard inspection tasks now carry dew-point calendar metadata, window/condensation source-stage values, and risk-aware reminders so manual and sensor-backed dew point reviews appear in the shared Schedule with ToolRun context.
 592. Nutrient Chemistry review tasks now carry all-day nutrient-chemistry calendar metadata, source/compatibility source-stage values, and 12-hour reminders so nutrient source decisions appear in the shared Schedule with ToolRun context.
 593. Stress Test and Tissue Culture default follow-up tasks now reuse their workflow calendar metadata, source-stage values, and reminders so generic follow-up actions match their multi-task plans in the shared Schedule.
+594. Direct personal task creation now adds schedule classification metadata for Diagnosis follow-ups, AI-confirmed task drafts, Forum advice tasks, Task Center tasks, and grow-specific tasks so non-ToolRun actions still appear in the shared Schedule with source-specific calendar type, source stage, all-day status, and reminders where available.
 
 ## Working Rule For Codex
 

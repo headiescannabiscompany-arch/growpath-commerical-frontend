@@ -94,9 +94,7 @@ describe("ForumPostDetailRoute", () => {
     const screen = render(<ForumPostDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
-    expect(
-      screen.getByLabelText("Shared back /home/personal/forum")
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Shared back /home/personal/forum")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create forum follow-up task"));
 
@@ -108,6 +106,9 @@ describe("ForumPostDetailRoute", () => {
           title: "Follow up on forum advice: Leaf spot follow-up",
           description: expect.stringContaining("Created from a Forum/Q&A discussion"),
           priority: "medium",
+          allDay: true,
+          calendarType: "forum_followup",
+          sourceStage: "forum_advice_review",
           sourceType: "forum",
           sourceObjectId: "post-1",
           linkedForumThreadId: "post-1",
@@ -130,7 +131,9 @@ describe("ForumPostDetailRoute", () => {
 
     const screen = render(<ForumPostDetailRoute />);
 
-    await waitFor(() => expect(screen.getByText("Anonymous forum question")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Anonymous forum question")).toBeTruthy()
+    );
 
     expect(screen.getAllByText("Forum member").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText("Community member")).toBeNull();

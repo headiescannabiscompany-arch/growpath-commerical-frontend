@@ -138,6 +138,30 @@ function linkedFieldsForSource(
   return links;
 }
 
+function calendarMetadataForTaskSource(sourceType: string) {
+  const normalized = sourceType || "manual";
+  const stageBySource: Record<string, string> = {
+    ai_diagnosis: "diagnosis_recheck",
+    alert: "alert_followup",
+    sensor_alert: "sensor_alert_followup",
+    forum: "forum_advice_review",
+    course_assignment: "course_assignment_due",
+    live_replay: "live_replay_review",
+    live: "live_followup",
+    product_batch: "product_batch_review",
+    product: "product_review",
+    recipe: "recipe_followup",
+    tool_run: "toolrun_followup",
+    plant: "plant_followup",
+    grow: "grow_followup"
+  };
+  return {
+    allDay: true,
+    calendarType: `${normalized}_task`,
+    sourceStage: stageBySource[normalized] || "manual_followup"
+  };
+}
+
 function taskSource(task: PersonalTask) {
   if (task.sourceType) return task.sourceType.replace(/_/g, " ");
   if (task.sourceToolRunId) return "tool run";
@@ -467,6 +491,7 @@ export default function GrowTasksScreen() {
         sourceToolRunId: newToolRunId.trim() || undefined,
         sourceDiagnosisId: newDiagnosisId.trim() || undefined,
         linkedLogId: newLinkedLogId.trim() || undefined,
+        ...calendarMetadataForTaskSource(newSourceType),
         ...linkedFieldsForSource(newSourceType, newSourceObjectId, growId, newToolRunId),
         reminderPlan: newReminderNote.trim()
           ? { label: newReminderNote.trim(), channels: ["in_app"] }

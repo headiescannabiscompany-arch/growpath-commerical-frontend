@@ -227,7 +227,10 @@ describe("GrowTasksScreen", () => {
           title: "Inspect sensor alert",
           sourceType: "sensor_alert",
           sourceObjectId: "sensor-alert-2",
-          linkedSensorAlertId: "sensor-alert-2"
+          linkedSensorAlertId: "sensor-alert-2",
+          allDay: true,
+          calendarType: "sensor_alert_task",
+          sourceStage: "sensor_alert_followup"
         })
       )
     );
@@ -250,7 +253,10 @@ describe("GrowTasksScreen", () => {
           title: "Upload assignment",
           sourceType: "course_assignment",
           sourceObjectId: "assignment-2",
-          linkedCourseAssignmentId: "assignment-2"
+          linkedCourseAssignmentId: "assignment-2",
+          allDay: true,
+          calendarType: "course_assignment_task",
+          sourceStage: "course_assignment_due"
         })
       )
     );
@@ -287,6 +293,9 @@ describe("GrowTasksScreen", () => {
         description: "Before watering.",
         dueDate: "2026-07-03",
         priority: "high",
+        allDay: true,
+        calendarType: "product_batch_task",
+        sourceStage: "product_batch_review",
         sourceType: "product_batch",
         sourceObjectId: "batch-1",
         sourceToolRunId: "toolrun-1",

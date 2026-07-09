@@ -157,9 +157,13 @@ describe("DiagnoseRoute", () => {
         description: expect.stringContaining("Next checks: Check runoff pH"),
         dueDate: expect.any(String),
         priority: "medium",
+        allDay: true,
+        calendarType: "ai_diagnosis_followup",
+        sourceStage: "diagnosis_recheck",
         sourceType: "ai_diagnosis",
         sourceObjectId: "diagnosis-1",
-        sourceDiagnosisId: "diagnosis-1"
+        sourceDiagnosisId: "diagnosis-1",
+        reminderPlan: { label: "12 hours before", channels: ["in_app"] }
       })
     );
     expect(mockCreatePersonalTask.mock.calls[0][0].description).toContain(
