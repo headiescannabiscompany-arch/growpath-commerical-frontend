@@ -69,4 +69,4 @@ Status policy: each item is `DONE` or `NOT DONE` with owner, next action, and ev
 
 - DONE: Support/ops handoff packet.
 - Owner: Product + Support
-- Evidence: Live GrowPath support aliases are configured in `src/config/supportContacts.ts` and covered by `tests/unit/SupportPage.test.tsx`, `tests/unit/PolicyContactAliases.test.tsx`, and `tests/unit/SupportContactsConfig.test.ts`.
+- Evidence: GrowPath support aliases are live and centralized in `src/config/supportContacts.ts`, with coverage in `tests/unit/SupportPage.test.tsx`, `tests/unit/PolicyContactAliases.test.tsx`, and `tests/unit/SupportContactsConfig.test.ts`.
