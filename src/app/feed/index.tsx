@@ -163,6 +163,16 @@ function visibleCampaignType(post: CommercialFeedCampaign) {
   return campaignKindLabels.general_campaign;
 }
 
+function campaignStorefrontSlug(post: CommercialFeedCampaign) {
+  return String(
+    post.storefrontSlug ||
+      post.linkedStorefrontSlug ||
+      post.brandSlug ||
+      post.publicSlug ||
+      ""
+  ).trim();
+}
+
 function campaignEngagementCount(post: CommercialFeedCampaign) {
   return Number(post.engagementCount ?? post.likeCount ?? 0);
 }
@@ -179,10 +189,11 @@ function splitTags(value: string) {
 }
 
 function campaignDestination(post: CommercialFeedCampaign) {
+  const storefrontSlug = campaignStorefrontSlug(post);
   if (post.linkedProductId) {
     const productId = encodeURIComponent(String(post.linkedProductId));
-    if (post.storefrontSlug) {
-      const slug = encodeURIComponent(String(post.storefrontSlug));
+    if (storefrontSlug) {
+      const slug = encodeURIComponent(storefrontSlug);
       return {
         label: "View Product",
         href: `/store/${slug}/products/${productId}`
@@ -195,8 +206,8 @@ function campaignDestination(post: CommercialFeedCampaign) {
   }
   if (post.linkedCourseId) {
     const courseId = encodeURIComponent(String(post.linkedCourseId));
-    if (post.storefrontSlug) {
-      const slug = encodeURIComponent(String(post.storefrontSlug));
+    if (storefrontSlug) {
+      const slug = encodeURIComponent(storefrontSlug);
       return {
         label: "View Course",
         href: `/store/${slug}/courses/${courseId}`
@@ -215,8 +226,8 @@ function campaignDestination(post: CommercialFeedCampaign) {
   }
   if (post.linkedProductLineId) {
     const lineId = encodeURIComponent(String(post.linkedProductLineId));
-    if (post.storefrontSlug) {
-      const slug = encodeURIComponent(String(post.storefrontSlug));
+    if (storefrontSlug) {
+      const slug = encodeURIComponent(storefrontSlug);
       return {
         label: "View Product Line",
         href: `/store/${slug}?line=${lineId}`
@@ -227,10 +238,10 @@ function campaignDestination(post: CommercialFeedCampaign) {
       href: `/store?line=${lineId}`
     };
   }
-  if (post.storefrontSlug) {
+  if (storefrontSlug) {
     return {
       label: "Visit Storefront",
-      href: `/store/${encodeURIComponent(String(post.storefrontSlug))}`
+      href: `/store/${encodeURIComponent(storefrontSlug)}`
     };
   }
   if (post.linkedForumThreadId) {
@@ -521,7 +532,7 @@ export default function CommercialFeedRoute() {
       eventType: "feed_campaign_click",
       objectType: "feed_campaign",
       objectId: post.id,
-      storefrontSlug: post.storefrontSlug,
+      storefrontSlug: campaignStorefrontSlug(post),
       productId: post.linkedProductId,
       targetUrl: destination.href,
       source: "commercial_feed",
@@ -976,7 +987,7 @@ export default function CommercialFeedRoute() {
             post.linkedLiveId ||
             campaignEvidenceRunId(post) ||
             post.linkedForumThreadId ||
-            post.storefrontSlug ||
+            campaignStorefrontSlug(post) ||
             post.startsAt ||
             post.endsAt ||
             post.externalLinks?.length ? (
@@ -1005,8 +1016,10 @@ export default function CommercialFeedRoute() {
                     Forum/Q&A: {post.linkedForumThreadId}
                   </Text>
                 ) : null}
-                {post.storefrontSlug ? (
-                  <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
+                {campaignStorefrontSlug(post) ? (
+                  <Text style={styles.linkMeta}>
+                    Store: {campaignStorefrontSlug(post)}
+                  </Text>
                 ) : null}
                 {post.startsAt ? (
                   <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>

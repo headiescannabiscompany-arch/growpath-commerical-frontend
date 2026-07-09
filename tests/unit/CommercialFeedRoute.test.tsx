@@ -507,6 +507,7 @@ describe("CommercialFeedRoute", () => {
     const screen = render(<CommercialFeedRoute />);
 
     await waitFor(() => expect(screen.getByText("3-1-1 Veg Mix")).toBeTruthy());
+    expect(screen.getAllByText("Store: living-soil-labs").length).toBeGreaterThan(0);
 
     fireEvent.press(screen.getByLabelText("View Product for 3-1-1 Veg Mix"));
     fireEvent.press(screen.getByLabelText("View Course for NPK Recipe Builder"));
