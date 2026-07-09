@@ -819,6 +819,7 @@ Completed and pushed:
 543. Facility Compliance AI dashboard now keeps the shared back header during loading, error, and loaded states, preventing transient compliance drill-in states from bypassing nested navigation.
 544. Legacy root `/dashboard` shim now sends selected facility users directly to `/home/facility/dashboard` instead of adding an extra `/home/facility` redirect hop, while still sending unselected facility users to facility selection.
 545. Legacy `/campaigns` now redirects to the canonical commercial Feed/Campaigns owner workspace at `/home/commercial/feed`, keeping stale campaign links on the advertising/outreach surface instead of the separate Marketing Planner.
+546. Global Search, shared capability menus, and Commercial Tools now label the actual commercial destination as Storefront and route it to `Storefront` instead of pricing/offers copy, while Feed / Campaigns and Forum / Q&A remain distinct routes.
 
 ## Working Rule For Codex
 

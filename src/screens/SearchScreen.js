@@ -13,9 +13,9 @@ const SEARCH_SURFACES = [
   },
   {
     key: "offers",
-    title: "Storefront Offers",
-    subtitle: "Plans, storefront access, and commercial/facility offers",
-    route: "PricingMatrix"
+    title: "Storefront",
+    subtitle: "Public brand storefronts, products, courses, lives, and offers",
+    route: "Storefront"
   },
   {
     key: "feed",
@@ -111,7 +111,7 @@ export default function SearchScreen({ navigation }) {
       <View style={styles.container}>
         <Text style={styles.title}>Search</Text>
         <Text style={styles.subtitle}>
-          Find tools, courses, Forum/Q&A, and grow records.
+          Find storefronts, Feed / Campaigns, courses, Forum/Q&A, and grow records.
         </Text>
         <TextInput
           value={query}

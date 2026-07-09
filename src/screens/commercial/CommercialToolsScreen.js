@@ -29,7 +29,7 @@ export default function CommercialToolsScreen({ navigation }) {
           onPress={() => navigation.navigate("SocialTools")}
         />
         <ToolCard
-          title="Storefront Offers"
+          title="Storefront"
           subtitle="Manage public products, courses, lives, and customer-facing offer cards."
           onPress={() => navigation.navigate("Storefront")}
         />

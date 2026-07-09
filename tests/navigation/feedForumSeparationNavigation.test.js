@@ -89,7 +89,7 @@ describe("feed/forum navigation separation", () => {
       route: "CommercialFeedRoute"
     });
     expect(contentMenu).toMatchObject({
-      label: "Storefront Offers",
+      label: "Storefront",
       route: "Storefront"
     });
     expect(menuItems.map((item) => item.label)).not.toContain("Marketplace");

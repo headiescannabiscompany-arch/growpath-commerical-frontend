@@ -164,7 +164,7 @@ export function getMenuItems({ capabilities, mode }) {
     if (capabilities.canUseMarketplace) {
       items.push({
         key: "storefrontOffers",
-        label: "Storefront Offers",
+        label: "Storefront",
         icon: "shopping-cart",
         route: "Storefront"
       });
