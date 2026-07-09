@@ -828,6 +828,7 @@ Completed and pushed:
 552. Paywall PRO benefits now describe storefront discovery instead of the older Storefront Offers destination label, while preserving the plans/pricing navigation for subscription comparison.
 553. Deferred user verification now includes the Paywall storefront-discovery regression so subscription upsell copy stays aligned with Storefront discovery rather than the old Storefront Offers destination wording.
 554. Nutrient recipe use now preserves explicit save-log intent, safely increments missing use counts, and has backend route coverage proving a saved recipe can become a linked NPK ToolRun plus FEEDING grow-history event.
+555. Release preflight now gates the diagnosis ETGU Playwright workflow covering diagnosis intake, accepted tags, save-to-grow-log, source-linked follow-up task creation, feedback, and grow timeline visibility.
 
 ## Working Rule For Codex
 

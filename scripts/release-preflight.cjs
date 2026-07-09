@@ -119,6 +119,7 @@ async function main() {
       "e2e/personal-home-task-sources-visual.spec.ts",
       "e2e/personal-core-loop.spec.ts",
       "e2e/toolrun-log-release.spec.ts",
+      "e2e/diagnosis-etgu-visual.spec.ts",
       "--reporter=list"
     ],
     {
