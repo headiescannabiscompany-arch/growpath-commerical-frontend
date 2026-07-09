@@ -576,6 +576,30 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        linkedProductId: "product-1",
+        brandSlug: "soil-school",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/soil-school/products/product-1");
+
+    expect(
+      sourceObjectHref({
+        linkedCourseId: "course-1",
+        publicSlug: "learn-living-soil",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/learn-living-soil/courses/course-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "storefront",
+        publicSlug: "public-brand",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/public-brand");
+
+    expect(
+      sourceObjectHref({
         linkedPlantId: "plant-1",
         linkedGrowId: "grow-1",
         workspaceType: "personal"

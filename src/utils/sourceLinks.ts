@@ -53,6 +53,8 @@ function inferSourceType(source: SourceLike) {
     firstText(
       source?.storefrontSlug,
       source?.linkedStorefrontSlug,
+      source?.brandSlug,
+      source?.publicSlug,
       source?.linkedStorefrontId
     )
   )
@@ -154,6 +156,8 @@ export function sourceObjectHref(source: SourceLike) {
   const storefrontSlug = firstText(
     source?.storefrontSlug,
     source?.linkedStorefrontSlug,
+    source?.brandSlug,
+    source?.publicSlug,
     source?.linkedStorefrontId
   );
   const publicProductHref = (id: string) =>

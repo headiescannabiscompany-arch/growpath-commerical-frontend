@@ -788,6 +788,7 @@ Completed and pushed:
 512. Live session product/course CTAs now also recognize `linkedStorefrontSlug` and `publicSlug` storefront aliases, preserving exact public storefront detail routes from live events even when the live API returns a slug alias instead of `storefrontSlug`.
 513. Commercial Brand Forum/Q&A support posts now resolve `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases for visible metadata and product/course/storefront action links, keeping discussion answers tied to exact public storefront pages without turning Forum/Q&A into Feed.
 514. Commercial Feed API wrapper coverage now locks campaign-id and storefront-slug alias normalization at the API boundary, proving `campaignId`, `linkedFeedCampaignId`, `linkedFeedPostId`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` are normalized before Feed placement and routing components consume campaigns.
+515. Shared source-link routing now recognizes `brandSlug` and `publicSlug` storefront aliases for inferred storefront, product, and course links, so alerts, notifications, tasks, schedule items, and other source-linked records can preserve exact public storefront routes without each page hand-coding alias handling.
 
 ## Working Rule For Codex
 
