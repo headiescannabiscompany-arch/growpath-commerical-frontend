@@ -253,14 +253,15 @@ describe("public commercial routes", () => {
     );
   });
 
-  it("loads a public storefront with a brand profile link", async () => {
+  it("loads a public storefront with storefront-first profile copy", async () => {
     const screen = render(<PublicStorefrontRoute />);
 
     await waitFor(() =>
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
-    expect(screen.getByText("View Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Storefront profile")).toBeTruthy();
+    expect(screen.getByText("Open Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Share Store")).toBeTruthy();
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
@@ -316,7 +317,7 @@ describe("public commercial routes", () => {
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
-    expect(screen.getByText("View Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Open Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Upcoming Lives")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();

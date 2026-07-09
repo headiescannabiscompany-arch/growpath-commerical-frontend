@@ -230,14 +230,15 @@ export default function PublicStorefrontRoute() {
       ) : (
         <>
           <View style={styles.profilePanel}>
-            <Text style={styles.profileTitle}>About this brand</Text>
+            <Text style={styles.profileTitle}>Storefront profile</Text>
             <Text style={styles.meta}>
-              View the public profile for brand details, courses, product context, and
-              public links.
+              This storefront is the public brand home base for products, courses,
+              lives, campaigns, and Q&A. The legacy profile view remains available for
+              extra public links.
             </Text>
             <Link href={`/brands/${encodeURIComponent(slug)}` as any} asChild>
               <Pressable style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>View Brand Profile</Text>
+                <Text style={styles.secondaryButtonText}>Open Legacy Profile</Text>
               </Pressable>
             </Link>
             <View style={styles.actionRow}>
