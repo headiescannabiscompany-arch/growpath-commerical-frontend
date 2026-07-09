@@ -69,11 +69,21 @@ function parseIngredients(value: string) {
 
 function soilBatchTaskPlan(outputs: Record<string, any>) {
   const suggested = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "soil_nutrient_batch",
+    sourceStage: String(outputs.purpose || outputs.stage || "production_batch"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
   if (suggested.length) {
     return suggested.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `Soil batch follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      ...calendarMetadata,
       description:
         task?.description ||
         "Complete the soil batch step and save actual quantities, lot notes, photos, and QA findings."
@@ -90,6 +100,8 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
       title: `Pull ingredients for ${recipe}`,
       priority: "medium" as const,
       dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "ingredient_pull",
       description:
         "Confirm ingredient lots, quantities, guaranteed analysis, costs, and substitutions before mixing."
     },
@@ -97,12 +109,16 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
       title: `Mix and record ${recipe} actuals`,
       priority: hasWarnings ? "high" : ("medium" as const),
       dueDate: tomorrow(2),
+      ...calendarMetadata,
+      sourceStage: "batch_mixing_actuals",
       description: `Mix the batch, record actual weights/volumes, moisture activation, shrinkage, photos, and operator notes.${bagCount}`
     },
     {
       title: "QA soil batch label and release notes",
       priority: hasWarnings ? "high" : ("medium" as const),
       dueDate: tomorrow(3),
+      ...calendarMetadata,
+      sourceStage: "batch_qa_label_review",
       description:
         "Review label N-P2O5-K2O estimate, release timing, stage fit, warnings, directions, application rate, and required COA/SDS or lab documents."
     },
@@ -110,6 +126,8 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
       title: "Update inventory or product draft",
       priority: "medium" as const,
       dueDate: tomorrow(4),
+      ...calendarMetadata,
+      sourceStage: "batch_inventory_product_update",
       description:
         "Create or update product batch/lot inventory, storefront draft fields, facility production records, or grow recipe notes from this batch plan."
     }
@@ -244,6 +262,13 @@ export default function SoilNutrientBatchToolRoute() {
         title: outputs.taskSuggestion?.title || "Build soil batch",
         priority: outputs.taskSuggestion?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 1),
+        allDay: true,
+        calendarType: "soil_nutrient_batch",
+        sourceStage: "production_batch",
+        reminderPlan: {
+          channels: ["in_app"],
+          reminders: [{ offsetMinutes: -24 * 60 }]
+        },
         description:
           "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
       })}

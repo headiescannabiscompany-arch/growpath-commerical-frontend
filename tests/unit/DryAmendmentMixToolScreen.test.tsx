@@ -137,15 +137,27 @@ describe("DryAmendmentMixToolScreen", () => {
           output: expect.objectContaining({ dosePerCubicFoot: 75 }),
           tasks: expect.arrayContaining([
             expect.objectContaining({
-              title: "Source ingredients for Veg topdress blend"
+              title: "Source ingredients for Veg topdress blend",
+              allDay: true,
+              calendarType: "dry_amendment_batch",
+              sourceStage: "dry_blend_ingredient_pull",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
+              })
             }),
             expect.objectContaining({
               title: "Weigh and mix Veg topdress blend",
-              priority: "high"
+              priority: "high",
+              sourceStage: "dry_blend_mixing"
             }),
-            expect.objectContaining({ title: "Label Veg topdress blend batch" }),
             expect.objectContaining({
-              title: "Review Veg topdress blend application result"
+              title: "Label Veg topdress blend batch",
+              sourceStage: "dry_blend_label_review"
+            }),
+            expect.objectContaining({
+              title: "Review Veg topdress blend application result",
+              sourceStage: "dry_blend_result_review"
             })
           ])
         })

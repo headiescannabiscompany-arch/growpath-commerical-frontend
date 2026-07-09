@@ -41,6 +41,15 @@ function dryBlendTasks(outputs: Record<string, any>, payload: Record<string, any
     outputs.dosePerCubicFoot || payload.dosePerGallonSoil
       ? ` Dose reference: ${outputs.dosePerCubicFoot ? `${outputs.dosePerCubicFoot} g/ft3` : `${payload.dosePerGallonSoil} g/gal soil`}.`
       : "";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "dry_amendment_batch",
+    sourceStage: String(payload.desiredStage || outputs.stageFit || "dry_blend"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
 
   return [
     {
@@ -48,7 +57,9 @@ function dryBlendTasks(outputs: Record<string, any>, payload: Record<string, any
       description:
         "Confirm ingredient labels, guaranteed analysis, release class, and enough batch weight before mixing.",
       priority: "medium" as const,
-      dueDate: tomorrow(0)
+      dueDate: tomorrow(0),
+      ...calendarMetadata,
+      sourceStage: "dry_blend_ingredient_pull"
     },
     {
       title: `Weigh and mix ${recipeName}`,
@@ -59,20 +70,26 @@ function dryBlendTasks(outputs: Record<string, any>, payload: Record<string, any
               .join(", ")}. Mix evenly and keep dust controlled.`
           : "Weigh ingredients, mix evenly, and record actual batch weight.",
       priority: "high" as const,
-      dueDate: tomorrow(1)
+      dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "dry_blend_mixing"
     },
     {
       title: `Label ${recipeName} batch`,
       description: `Record achieved analysis, stage fit for ${stage}, directions, batch date, and release notes.${dose}`,
       priority: "medium" as const,
-      dueDate: tomorrow(1)
+      dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "dry_blend_label_review"
     },
     {
       title: `Review ${recipeName} application result`,
       description:
         "Check plant response after application and compare the release expectation to actual results.",
       priority: "medium" as const,
-      dueDate: tomorrow(14)
+      dueDate: tomorrow(14),
+      ...calendarMetadata,
+      sourceStage: "dry_blend_result_review"
     }
   ];
 }
@@ -225,7 +242,14 @@ export default function DryAmendmentMixToolScreen() {
         title: `Mix ${outputs.recipeName || "dry amendment blend"}`,
         description: outputs.logSummary || "Mix dry amendment recipe.",
         priority: "medium",
-        dueDate: tomorrow(1)
+        dueDate: tomorrow(1),
+        allDay: true,
+        calendarType: "dry_amendment_batch",
+        sourceStage: "dry_blend_mixing",
+        reminderPlan: {
+          channels: ["in_app"],
+          reminders: [{ offsetMinutes: -24 * 60 }]
+        }
       })}
       assistantBrief={{
         title: "AI-guided, calculator-verified",

@@ -125,20 +125,30 @@ describe("SoilNutrientBatchToolRoute", () => {
           tasks: [
             expect.objectContaining({
               title: "Pull ingredients for Base Soil Mix",
+              allDay: true,
+              calendarType: "soil_nutrient_batch",
+              sourceStage: "ingredient_pull",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
+              }),
               description: expect.stringContaining("guaranteed analysis")
             }),
             expect.objectContaining({
               title: "Mix and record Base Soil Mix actuals",
               priority: "high",
+              sourceStage: "batch_mixing_actuals",
               description: expect.stringContaining("Target bag count: 72")
             }),
             expect.objectContaining({
               title: "QA soil batch label and release notes",
               priority: "high",
+              sourceStage: "batch_qa_label_review",
               description: expect.stringContaining("label N-P2O5-K2O estimate")
             }),
             expect.objectContaining({
               title: "Update inventory or product draft",
+              sourceStage: "batch_inventory_product_update",
               description: expect.stringContaining("product batch/lot")
             })
           ]
