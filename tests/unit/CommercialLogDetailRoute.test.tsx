@@ -11,6 +11,18 @@ const mockApiErrorHandler = {
 };
 
 jest.mock("expo-router", () => ({
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      React.Fragment,
+      null,
+      children,
+      React.createElement(Text, {
+        accessibilityLabel: `Commercial log link ${href}`
+      })
+    );
+  },
   useLocalSearchParams: () => ({ id: "log-1" }),
   useRouter: () => ({ back: jest.fn(), canGoBack: () => false, push: jest.fn() })
 }));
@@ -31,7 +43,7 @@ describe("CommercialLogDetailRoute", () => {
         id: "log-1",
         sourceType: "storefront",
         message: "Storefront setup was updated.",
-        linkedStorefrontSlug: "grow-shop"
+        publicSlug: "grow-shop"
       }
     });
   });
@@ -49,5 +61,8 @@ describe("CommercialLogDetailRoute", () => {
     expect(screen.getByText("id: log-1")).toBeTruthy();
     expect(screen.getByText("Storefront setup was updated.")).toBeTruthy();
     expect(screen.getByText("grow-shop")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial log link /home/commercial/storefront")
+    ).toBeTruthy();
   });
 });

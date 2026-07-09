@@ -7,7 +7,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
@@ -15,6 +15,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
 
@@ -82,6 +83,10 @@ export default function CommercialLogDetailRoute() {
   }, [load]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
+  const sourcePath = useMemo(
+    () => (item ? sourceObjectHref({ ...item, workspaceType: "commercial" }) : ""),
+    [item]
+  );
 
   return (
     <ScreenBoundary title="Log" showBack backFallbackHref="/home/commercial">
@@ -110,7 +115,16 @@ export default function CommercialLogDetailRoute() {
 
         <View style={styles.card}>
           {item ? (
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            <View style={styles.kvWrap}>
+              {sourcePath ? (
+                <Link href={sourcePath as any} asChild>
+                  <Text accessibilityLabel="View commercial log source" style={styles.link}>
+                    View source
+                  </Text>
+                </Link>
+              ) : null}
+              {keys.map((k) => renderKV(item, k))}
+            </View>
           ) : (
             <Text style={styles.muted}>
               {id ? "No log returned." : "Missing log id."}
@@ -138,5 +152,6 @@ const styles = StyleSheet.create({
   kvWrap: { marginTop: 6 },
   kv: { gap: 4, marginBottom: 10 },
   k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 }
+  v: { fontSize: 14 },
+  link: { color: "#2563eb", fontWeight: "800", marginBottom: 12 }
 });
