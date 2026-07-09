@@ -90,7 +90,9 @@ describe("RunComparisonToolRoute", () => {
     const screen = render(<RunComparisonToolRoute />);
 
     fireEvent.changeText(
-      screen.getByLabelText("Run-To-Run Comparison Runs as lines: name, cultivar, yield, quality 0-10, issue count, days, avg VPD, avg DLI, dry days"),
+      screen.getByLabelText(
+        "Run-To-Run Comparison Runs as lines: name, cultivar, yield, quality 0-10, issue count, days, avg VPD, avg DLI, dry days"
+      ),
       "Run 1, Sour Diesel, 14, 7, 3, 120, 1.1, 36, 12\nRun 2, Chem D, 18, 8, 1, 112, 1.3, 40, 8"
     );
     fireEvent.press(screen.getByLabelText("Run Run-To-Run Comparison"));
@@ -126,10 +128,19 @@ describe("RunComparisonToolRoute", () => {
           tasks: [
             expect.objectContaining({
               title: "Record run comparison decisions",
+              allDay: true,
+              calendarType: "run_comparison_followup",
+              sourceStage: "post_run_review",
+              reminderPlan: {
+                label: "24 hours before",
+                channels: ["in_app"],
+                reminders: [{ offsetMinutes: -1440 }]
+              },
               description: expect.stringContaining("Run 2")
             }),
             expect.objectContaining({
               title: "Update next-run task template",
+              calendarType: "run_comparison_followup",
               description: expect.stringContaining("VPD")
             }),
             expect.objectContaining({

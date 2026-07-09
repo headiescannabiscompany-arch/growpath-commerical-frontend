@@ -839,6 +839,7 @@ Completed and pushed:
 563. Personal tasks now persist all-day, end date, reminder plan, calendar type, source stage, and recurrence metadata, and Auto Grow Calendar task generation carries grow milestone stage plus a 24-hour in-app reminder into the shared task/schedule engine.
 564. The shared Schedule / Agenda page now surfaces task all-day, calendar type, source stage, reminder, and recurrence metadata so Auto Grow Calendar milestones read as grow-stage schedule items instead of generic task rows.
 565. Harvest Readiness AI now accepts an optional Harvest Batch ID and can save the readiness window, trichome percentages, sample location, effect goal, warnings, and linked ToolRun id as a harvest-batch quality review record.
+566. Run-To-Run Comparison now creates post-run review follow-up tasks with all-day calendar metadata, source stage, and 24-hour reminders so comparison decisions show up in the shared Schedule as next-run planning work instead of generic task rows.
 
 ## Working Rule For Codex
 
