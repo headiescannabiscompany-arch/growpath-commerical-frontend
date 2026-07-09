@@ -38,13 +38,22 @@ function calendarTaskPlan(outputs: Record<string, any>) {
   return schedule.slice(0, 20).map((item: any, index: number) => {
     const title = String(item?.title || item?.name || `Grow calendar task ${index + 1}`);
     const dueDate = String(item?.dueDate || item?.date || tomorrow(index));
-    const stage = item?.stage ? `Stage: ${item.stage}` : "";
+    const sourceStage = item?.stage ? String(item.stage) : "";
+    const stage = sourceStage ? `Stage: ${sourceStage}` : "";
     const notes = item?.description || item?.notes || item?.reason || "";
 
     return {
       title,
       priority: normalizePriority(item?.priority),
       dueDate,
+      allDay: true,
+      calendarType: "grow_milestone",
+      sourceStage,
+      reminderPlan: {
+        label: "24 hours before",
+        channels: ["in_app"],
+        reminders: [{ offsetMinutes: -1440 }]
+      },
       description: [stage, notes, "Created from the Auto Grow Calendar ToolRun."]
         .filter(Boolean)
         .join("\n")

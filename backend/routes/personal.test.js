@@ -567,20 +567,32 @@ describe("Personal grow workspace routes", () => {
       notes: "Check runoff tomorrow.",
       priority: "high",
       status: "OPEN",
+      allDay: true,
+      reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+      recurrence: { rule: "none" },
+      calendarType: "grow_milestone",
+      sourceStage: "veg",
       sourceType: "tool_run",
       sourceObjectId: TOOL_RUN_ID,
       sourceToolRunId: TOOL_RUN_ID
     });
     mockTask.create.mockResolvedValue(createdTask);
 
-    const res = await request(app).post("/api/personal/tasks").send({
-      growId: GROW_ID,
-      plantId: PLANT_ID,
-      title: "Retest pH / EC",
-      description: "Check runoff tomorrow.",
-      priority: "high",
-      sourceToolRunId: TOOL_RUN_ID
-    });
+    const res = await request(app)
+      .post("/api/personal/tasks")
+      .send({
+        growId: GROW_ID,
+        plantId: PLANT_ID,
+        title: "Retest pH / EC",
+        description: "Check runoff tomorrow.",
+        priority: "high",
+        allDay: true,
+        reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+        recurrence: { rule: "none" },
+        calendarType: "grow_milestone",
+        sourceStage: "veg",
+        sourceToolRunId: TOOL_RUN_ID
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.task).toMatchObject({
@@ -589,7 +601,12 @@ describe("Personal grow workspace routes", () => {
       plantId: PLANT_ID,
       sourceType: "tool_run",
       sourceObjectId: TOOL_RUN_ID,
-      sourceToolRunId: TOOL_RUN_ID
+      sourceToolRunId: TOOL_RUN_ID,
+      allDay: true,
+      reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+      recurrence: { rule: "none" },
+      calendarType: "grow_milestone",
+      sourceStage: "veg"
     });
     expect(mockTask.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -598,6 +615,11 @@ describe("Personal grow workspace routes", () => {
         assignedToUserId: TEST_USER,
         growId: GROW_ID,
         plantId: PLANT_ID,
+        allDay: true,
+        reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+        recurrence: { rule: "none" },
+        calendarType: "grow_milestone",
+        sourceStage: "veg",
         sourceType: "tool_run",
         sourceObjectId: TOOL_RUN_ID,
         sourceToolRunId: TOOL_RUN_ID

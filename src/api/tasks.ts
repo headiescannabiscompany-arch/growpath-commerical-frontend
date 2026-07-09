@@ -115,10 +115,14 @@ export interface PersonalTask {
   title: string;
   description: string;
   dueDate: string;
+  endAt?: string | null;
+  allDay?: boolean;
   snoozeUntil?: string | null;
   completed: boolean;
   priority?: "low" | "medium" | "high";
   status?: string;
+  calendarType?: string | null;
+  sourceStage?: string | null;
   sourceType?: string | null;
   sourceObjectId?: string | null;
   sourceToolRunId?: string | null;
@@ -190,7 +194,11 @@ export async function createPersonalTask(data: {
   title: string;
   description?: string;
   dueDate?: string;
+  endAt?: string | null;
+  allDay?: boolean;
   priority?: "low" | "medium" | "high";
+  calendarType?: string | null;
+  sourceStage?: string | null;
   snoozeUntil?: string | null;
   sourceType?: string | null;
   sourceObjectId?: string | null;

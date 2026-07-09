@@ -35,6 +35,12 @@ type LinkedTaskDraft = {
   description?: string;
   priority?: "low" | "medium" | "high";
   dueDate?: string;
+  endAt?: string | null;
+  allDay?: boolean;
+  reminderPlan?: Record<string, any> | null;
+  recurrence?: Record<string, any> | null;
+  calendarType?: string | null;
+  sourceStage?: string | null;
 };
 type CreateTasksArgs = Omit<SaveAndOpenArgs, "router"> & {
   tasks: LinkedTaskDraft[];
@@ -159,6 +165,12 @@ export async function saveToolRunAndCreateTasks(
         `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
       priority: draft.priority || "medium",
       dueDate: draft.dueDate,
+      endAt: draft.endAt,
+      allDay: draft.allDay,
+      reminderPlan: draft.reminderPlan,
+      recurrence: draft.recurrence,
+      calendarType: draft.calendarType,
+      sourceStage: draft.sourceStage,
       sourceType: "tool_run",
       sourceObjectId: ensured.toolRunId,
       sourceToolRunId: ensured.toolRunId,

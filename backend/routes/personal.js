@@ -348,7 +348,13 @@ function taskDto(row) {
     id: String(value._id),
     description: value.notes || "",
     dueDate: value.dueAt || null,
+    endAt: value.endAt || null,
+    allDay: Boolean(value.allDay),
     snoozeUntil: value.snoozeUntil || null,
+    reminderPlan: value.reminderPlan || null,
+    calendarType: value.calendarType || null,
+    sourceStage: value.sourceStage || null,
+    recurrence: value.recurrence || null,
     completed: value.status === "DONE",
     sourceToolRunId: value.sourceToolRunId || null,
     sourceDiagnosisId: value.sourceDiagnosisId || null,
@@ -1381,12 +1387,20 @@ router.post("/tasks", async (req, res, next) => {
         req.body?.dueDate || req.body?.dueAt
           ? new Date(req.body.dueDate || req.body.dueAt)
           : null,
+      endAt: req.body?.endAt ? new Date(req.body.endAt) : null,
+      allDay: Boolean(req.body?.allDay),
       snoozeUntil: req.body?.snoozeUntil ? new Date(req.body.snoozeUntil) : null,
+      reminderPlan:
+        req.body?.reminderPlan && typeof req.body.reminderPlan === "object"
+          ? req.body.reminderPlan
+          : null,
       recurrence:
         req.body?.recurrence && typeof req.body.recurrence === "object"
           ? req.body.recurrence
           : null,
       priority: req.body?.priority || "medium",
+      calendarType: req.body?.calendarType ? String(req.body.calendarType) : null,
+      sourceStage: req.body?.sourceStage ? String(req.body.sourceStage) : null,
       status: req.body?.completed ? "DONE" : "OPEN",
       sourceType: sourceFields.sourceType,
       sourceObjectId: sourceFields.sourceObjectId,
@@ -1440,14 +1454,26 @@ router.patch("/tasks/:id", async (req, res, next) => {
         req.body.dueDate === null || req.body.dueAt === null
           ? null
           : new Date(req.body.dueDate ?? req.body.dueAt);
+    if (req.body?.endAt !== undefined)
+      patch.endAt = req.body.endAt ? new Date(req.body.endAt) : null;
+    if (req.body?.allDay !== undefined) patch.allDay = Boolean(req.body.allDay);
     if (req.body?.snoozeUntil !== undefined)
       patch.snoozeUntil = req.body.snoozeUntil ? new Date(req.body.snoozeUntil) : null;
+    if (req.body?.reminderPlan !== undefined)
+      patch.reminderPlan =
+        req.body.reminderPlan && typeof req.body.reminderPlan === "object"
+          ? req.body.reminderPlan
+          : null;
     if (req.body?.recurrence !== undefined)
       patch.recurrence =
         req.body.recurrence && typeof req.body.recurrence === "object"
           ? req.body.recurrence
           : null;
     if (req.body?.priority !== undefined) patch.priority = req.body.priority;
+    if (req.body?.calendarType !== undefined)
+      patch.calendarType = req.body.calendarType ? String(req.body.calendarType) : null;
+    if (req.body?.sourceStage !== undefined)
+      patch.sourceStage = req.body.sourceStage ? String(req.body.sourceStage) : null;
     const sourceError = await validateTaskSourceOwnership(uid, req.body);
     if (sourceError) return res.status(404).json({ message: sourceError });
     const hasSourcePatch =

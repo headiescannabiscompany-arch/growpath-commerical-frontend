@@ -146,12 +146,21 @@ describe("AutoGrowCalendarToolRoute", () => {
             expect.objectContaining({
               title: "Transplant into final containers",
               dueDate: "2026-07-14",
+              allDay: true,
+              calendarType: "grow_milestone",
+              sourceStage: "veg",
+              reminderPlan: {
+                label: "24 hours before",
+                channels: ["in_app"],
+                reminders: [{ offsetMinutes: -1440 }]
+              },
               description: expect.stringContaining("Stage: veg")
             }),
             expect.objectContaining({
               title: "Flip to flower",
               dueDate: "2026-08-04",
               priority: "high",
+              sourceStage: "transition",
               description: expect.stringContaining("Confirm canopy is even")
             }),
             expect.objectContaining({
