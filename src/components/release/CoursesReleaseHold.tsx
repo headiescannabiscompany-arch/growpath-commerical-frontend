@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import { radius } from "@/theme/theme";
 
 const readinessItems = [
   "Real course catalog content and lesson progress",
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     borderWidth: 1,
     borderColor: "#F59E0B",
-    borderRadius: 8,
+    borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: "#FFFBEB"
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   panel: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 14,
     gap: 10
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     backgroundColor: "#64748B",
     marginTop: 7
   },
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#111827",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 11
   },

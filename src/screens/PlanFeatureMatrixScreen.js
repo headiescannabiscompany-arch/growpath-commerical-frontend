@@ -6,6 +6,7 @@ import {
   FACILITY_PLAN_PRICE_DISPLAY,
   PRO_PLAN_PRICE_DISPLAY
 } from "../constants/pricing.js";
+import { radius } from "../theme/theme";
 
 const featureMatrix = [
   [
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
   table: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden"
   },
   row: {

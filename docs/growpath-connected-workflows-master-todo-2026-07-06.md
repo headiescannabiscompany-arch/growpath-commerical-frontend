@@ -764,6 +764,7 @@ Completed and pushed:
 488. Legacy team management, vendor signup, certificate verification, and review submission modal panels, forms, certificate cards, validation panels, and actions now consume shared radius tokens while preserving team edits, vendor signup, certificate lookup, and review submission behavior.
 489. Facility selection, grow selection, plant form, and webhook setup cards, inputs, chips, rows, and actions now consume shared radius tokens while preserving facility switching, grow-scoped AI setup, plant editing, and webhook delivery management behavior.
 490. Creator influencer metrics and social scheduling cards, charts, platform chips, modal forms, and campaign actions now consume shared radius tokens while preserving external-channel metrics, scheduled post creation, and Feed/Campaign outreach behavior.
+491. App intro onboarding controls, course release-hold badges/panels/actions, and plan feature matrix table frames now consume shared radius tokens while preserving grow-interest onboarding, course-release gating, and shared pricing copy behavior.
 
 ## Working Rule For Codex
 

@@ -10,6 +10,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { INTEREST_TIERS } from "../config/interests";
 import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
+import { radius } from "../theme/theme";
 import { ensureTier1Selection } from "../utils/growInterests";
 const { height } = Dimensions.get("window");
 
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#10B981",
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 8,
+    borderRadius: radius.card,
     minWidth: 200,
     alignItems: "center"
   },
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 24,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#ddd",
     backgroundColor: "#f9f9f9"
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#10B981",
     paddingVertical: 14,
     paddingHorizontal: 40,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 10
   }
 });
