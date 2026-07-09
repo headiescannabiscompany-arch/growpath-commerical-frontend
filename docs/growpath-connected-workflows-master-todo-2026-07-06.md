@@ -873,6 +873,7 @@ Completed and pushed:
 597. Commercial product, course, live, product-trial evidence, and batch-production setup tasks now carry schedule metadata, calendar types, and source stages so owner workflow buttons create schedule-visible work instead of generic task rows.
 598. Feed campaign setup tasks, storefront setup tasks, and notification-created follow-up tasks now carry schedule metadata, calendar types, and source stages so advertising/outreach, storefront readiness, and inbox reminders become source-visible Schedule work.
 599. Legacy manual task screens and the single ToolRun task helper now create schedule-visible follow-ups with all-day metadata, calendar type, source stage, and reminders so older task entry points no longer produce bare task rows.
+600. Schedule source filters now cover storefront, notification, product, order, alert, recipe, ToolRun, and facility workflow categories so the shared Agenda can separate outreach, readiness, grow, commercial, and facility work instead of burying everything under generic tasks.
 
 ## Working Rule For Codex
 

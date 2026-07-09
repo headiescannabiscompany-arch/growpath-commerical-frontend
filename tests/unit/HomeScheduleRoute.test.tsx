@@ -147,6 +147,16 @@ describe("HomeScheduleRoute", () => {
               calendarType: "grow_milestone",
               sourceStage: "transition",
               reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+            },
+            {
+              id: "task-14",
+              title: "Follow up on notification",
+              dueAt: "2099-07-16T22:00:00Z",
+              status: "open",
+              workspaceType: "commercial",
+              linkedNotificationId: "notification-1",
+              calendarType: "live_notification_followup",
+              sourceStage: "live_notification_followup"
             }
           ]
         });
@@ -244,6 +254,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Complete linked course assignment")).toBeTruthy();
     expect(screen.getByText("Review public storefront launch")).toBeTruthy();
     expect(screen.getByText("Flip to flower")).toBeTruthy();
+    expect(screen.getByText("Follow up on notification")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -321,5 +332,24 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Facility IPM Training")).toBeTruthy();
     expect(screen.queryByText("Live Soil Demo")).toBeNull();
     expect(screen.queryByText("Connect Stripe price")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule source filter storefront"));
+    expect(screen.getByText("Review public storefront launch")).toBeTruthy();
+    expect(screen.queryByText("Veg Mix Launch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule source filter notification"));
+    expect(screen.getByText("Follow up on notification")).toBeTruthy();
+    expect(screen.queryByText("Review public storefront launch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule source filter product"));
+    expect(screen.getByText("Connect Stripe price")).toBeTruthy();
+    expect(screen.getByText("Review linked product batch")).toBeTruthy();
+    expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
+    expect(screen.queryByText("Follow up on notification")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule source filter facility"));
+    expect(screen.getByText("Facility IPM Training")).toBeTruthy();
+    expect(screen.getByText("Investigate linked sensor alert")).toBeTruthy();
+    expect(screen.queryByText("Review public storefront launch")).toBeNull();
   });
 });

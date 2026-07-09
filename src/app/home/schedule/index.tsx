@@ -35,7 +35,20 @@ type CalendarItem = {
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
 type WorkspaceFilter = "all" | "personal" | "commercial" | "facility";
-type SourceFilter = "all" | "task" | "live" | "course" | "feed_campaign";
+type SourceFilter =
+  | "all"
+  | "task"
+  | "live"
+  | "course"
+  | "feed_campaign"
+  | "storefront"
+  | "notification"
+  | "product"
+  | "order"
+  | "alert"
+  | "recipe"
+  | "tool_run"
+  | "facility";
 
 function asArray(res: any, key: string) {
   if (Array.isArray(res)) return res;
@@ -214,6 +227,30 @@ function taskToItem(task: any): CalendarItem {
   };
 }
 
+function sourceMatchesFilter(item: CalendarItem, filter: SourceFilter) {
+  if (filter === "all") return true;
+  if (item.itemType === filter || item.sourceType === filter) return true;
+  if (filter === "course") {
+    return (
+      item.itemType === "course_release" ||
+      ["course", "lesson", "course_assignment"].includes(item.sourceType || "")
+    );
+  }
+  if (filter === "product") {
+    return ["product", "product_batch", "product_trial"].includes(item.sourceType || "");
+  }
+  if (filter === "alert") {
+    return ["alert", "sensor_alert"].includes(item.sourceType || "");
+  }
+  if (filter === "facility") {
+    return (
+      item.workspaceType === "facility" ||
+      ["room", "sop", "facility_run"].includes(item.sourceType || "")
+    );
+  }
+  return false;
+}
+
 function liveToItem(live: any): CalendarItem {
   const id = String(live?.id || live?._id || live?.title || "live");
   const workspaceType = String(
@@ -333,11 +370,7 @@ export default function HomeScheduleRoute() {
       items.filter((item) => {
         const workspaceMatches =
           workspaceFilter === "all" || item.workspaceType === workspaceFilter;
-        const sourceMatches =
-          sourceFilter === "all" ||
-          item.itemType === sourceFilter ||
-          item.sourceType === sourceFilter ||
-          (sourceFilter === "course" && item.itemType === "course_release");
+        const sourceMatches = sourceMatchesFilter(item, sourceFilter);
         return workspaceMatches && sourceMatches;
       }),
     [items, sourceFilter, workspaceFilter]
@@ -477,29 +510,43 @@ export default function HomeScheduleRoute() {
         </View>
         <Text style={styles.filterLabel}>Source</Text>
         <View style={styles.filterRow}>
-          {(["all", "task", "live", "course", "feed_campaign"] as SourceFilter[]).map(
-            (item) => (
-              <Pressable
-                key={`source-${item}`}
-                accessibilityRole="button"
-                accessibilityLabel={`Schedule source filter ${item}`}
+          {(
+            [
+              "all",
+              "task",
+              "live",
+              "course",
+              "feed_campaign",
+              "storefront",
+              "notification",
+              "product",
+              "order",
+              "alert",
+              "recipe",
+              "tool_run",
+              "facility"
+            ] as SourceFilter[]
+          ).map((item) => (
+            <Pressable
+              key={`source-${item}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Schedule source filter ${item}`}
+              style={[
+                styles.filterChip,
+                sourceFilter === item && styles.filterChipActive
+              ]}
+              onPress={() => setSourceFilter(item)}
+            >
+              <Text
                 style={[
-                  styles.filterChip,
-                  sourceFilter === item && styles.filterChipActive
+                  styles.filterText,
+                  sourceFilter === item && styles.filterTextActive
                 ]}
-                onPress={() => setSourceFilter(item)}
               >
-                <Text
-                  style={[
-                    styles.filterText,
-                    sourceFilter === item && styles.filterTextActive
-                  ]}
-                >
-                  {item.replace(/_/g, " ")}
-                </Text>
-              </Pressable>
-            )
-          )}
+                {item.replace(/_/g, " ")}
+              </Text>
+            </Pressable>
+          ))}
         </View>
       </View>
 
