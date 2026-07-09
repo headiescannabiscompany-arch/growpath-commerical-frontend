@@ -312,7 +312,7 @@ export default function CommercialDashboardScreen() {
               <Text style={styles.sectionTitle}>Workflows</Text>
               <ActionRow
                 title="Storefront"
-                subtitle="Manage the public brand profile, featured products, courses, lives, campaigns, and setup checklist."
+                subtitle="Manage the public storefront, featured products, courses, lives, campaigns, and setup checklist."
                 route="Storefront"
                 navigation={navigation}
               />
