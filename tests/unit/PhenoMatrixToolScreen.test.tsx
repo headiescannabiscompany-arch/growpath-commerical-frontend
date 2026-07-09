@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import PhenoMatrixScreen from "@/app/home/personal/(tabs)/tools/pheno-matrix";
 
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockSavePlantGrowthProfile = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -68,6 +69,10 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+jest.mock("@/api/cropKnowledge", () => ({
+  savePlantGrowthProfile: (...args: any[]) => mockSavePlantGrowthProfile(...args)
+}));
+
 describe("PhenoMatrixScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -76,6 +81,7 @@ describe("PhenoMatrixScreen", () => {
       toolRunId: "toolrun-pheno-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4"]
     });
+    mockSavePlantGrowthProfile.mockResolvedValue({ id: "growth-profile-1" });
   });
 
   it("creates a source-linked pheno decision task plan from the matrix result", async () => {
@@ -93,18 +99,67 @@ describe("PhenoMatrixScreen", () => {
           toolKey: "pheno-matrix",
           tasks: expect.arrayContaining([
             expect.objectContaining({
-              title: "Review pheno keeper evidence: Plant 3"
+              title: "Review pheno keeper evidence: Plant 3",
+              allDay: true,
+              calendarType: "pheno_decision_followup",
+              sourceStage: "flower"
             }),
             expect.objectContaining({
-              title: "Verify clone and stress response: Plant 3"
+              title: "Verify clone and stress response: Plant 3",
+              calendarType: "pheno_decision_followup"
             }),
             expect.objectContaining({
-              title: "Record dry/cure smoke and hash notes: Plant 3"
+              title: "Record dry/cure smoke and hash notes: Plant 3",
+              sourceStage: "dry_cure_review"
             }),
             expect.objectContaining({
-              title: "Mark final keeper/reject/watch decision: Plant 3"
+              title: "Mark final keeper/reject/watch decision: Plant 3",
+              sourceStage: "final_keeper_decision"
             })
           ])
+        })
+      )
+    );
+  });
+
+  it("saves ranked keeper decisions into plant growth profiles", async () => {
+    const screen = render(<PhenoMatrixScreen />);
+
+    fireEvent.press(screen.getByText("Save Plant Decisions"));
+
+    await waitFor(() =>
+      expect(mockSavePlantGrowthProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          plantId: "p3",
+          phenoLabel: "Plant 3",
+          keeperStatus: "watch",
+          keeperReason: expect.stringContaining("ranked #1"),
+          phenoScores: [
+            expect.objectContaining({
+              tool: "pheno-matrix",
+              rank: 1,
+              recommendation: "watch",
+              weights: expect.objectContaining({
+                aroma: 1.5,
+                resin: 1.5,
+                resistance: 1.25
+              })
+            })
+          ],
+          stageScorecards: [
+            expect.objectContaining({
+              stage: "flower",
+              generation: "F1",
+              source: "pheno-matrix"
+            })
+          ],
+          sourceRecords: [
+            expect.objectContaining({
+              sourceName: "GrowPath Pheno Matrix",
+              sourceType: "user_entered"
+            })
+          ]
         })
       )
     );

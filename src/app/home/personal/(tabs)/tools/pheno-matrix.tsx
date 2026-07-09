@@ -18,6 +18,7 @@ import {
   saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { savePlantGrowthProfile } from "@/api/cropKnowledge";
 import { radius } from "@/theme/theme";
 
 const initialCandidates: PhenoCandidateInput[] = [
@@ -82,6 +83,12 @@ function coerceParam(value?: string | string[]) {
 
 function daysFromNow(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function keeperStatusFromRecommendation(recommendation: "keeper" | "watch" | "cull") {
+  if (recommendation === "keeper") return "keeper";
+  if (recommendation === "watch") return "watch";
+  return "reject";
 }
 
 export default function PhenoMatrixScreen() {
@@ -178,34 +185,101 @@ export default function PhenoMatrixScreen() {
           title: `Review pheno keeper evidence: ${candidateLabel}`,
           description: `${scoreLine} Review photos, morphology, vigor, aroma, resin, pest resistance, and stress notes before changing keeper status.`,
           priority: keepers.length ? "high" : "medium",
-          dueDate: daysFromNow(1)
+          dueDate: daysFromNow(1),
+          allDay: true,
+          calendarType: "pheno_decision_followup",
+          sourceStage: topCandidate?.stage || "pheno_review"
         },
         {
           title: `Verify clone and stress response: ${candidateLabel}`,
           description:
             "Confirm clone status, rooting behavior, stress tolerance, pest/disease tolerance, and whether backup cuts or mother stock should be kept.",
           priority: "medium",
-          dueDate: daysFromNow(3)
+          dueDate: daysFromNow(3),
+          allDay: true,
+          calendarType: "pheno_decision_followup",
+          sourceStage: topCandidate?.stage || "pheno_review"
         },
         {
           title: `Record dry/cure smoke and hash notes: ${candidateLabel}`,
           description:
             "After dry/cure, add smell, taste, smoke quality, resin behavior, hash value, and any lab or wash notes to support the keeper/reject decision.",
           priority: "medium",
-          dueDate: daysFromNow(14)
+          dueDate: daysFromNow(14),
+          allDay: true,
+          calendarType: "pheno_decision_followup",
+          sourceStage: "dry_cure_review"
         },
         {
           title: `Mark final keeper/reject/watch decision: ${candidateLabel}`,
           description:
             "Save the final decision with reasoning, including what data supported the call and where selected keeper data should flow next.",
           priority: keepers.length ? "high" : "medium",
-          dueDate: daysFromNow(21)
+          dueDate: daysFromNow(21),
+          allDay: true,
+          calendarType: "pheno_decision_followup",
+          sourceStage: "final_keeper_decision"
         }
       ]
     });
     if (!result.ok) throw new Error(result.error);
     if (!savedRunId) setSavedRunId(result.toolRunId);
     setFeedback("Created pheno decision tasks.");
+  }
+
+  async function savePlantDecisionProfiles() {
+    if (!growId) throw new Error("Select a grow before saving plant decisions.");
+    await Promise.all(
+      ranked.map((candidate) =>
+        savePlantGrowthProfile({
+          growId,
+          plantId: candidate.id,
+          phenoLabel: candidate.label,
+          keeperStatus: keeperStatusFromRecommendation(candidate.recommendation),
+          keeperReason: `Pheno Matrix ranked #${candidate.rank} at ${candidate.normalizedScore.toFixed(
+            2
+          )}/10 with ${candidate.recommendation.toUpperCase()} recommendation. ${
+            candidate.notes || "No additional notes recorded."
+          }`,
+          phenoScores: [
+            {
+              tool: "pheno-matrix",
+              toolRunId: savedRunId || null,
+              rank: candidate.rank,
+              totalScore: candidate.totalScore,
+              normalizedScore: candidate.normalizedScore,
+              recommendation: candidate.recommendation,
+              weights,
+              scores: PHENO_TRAITS.reduce<Record<string, number>>((acc, trait) => {
+                acc[trait.key] = candidate[trait.key];
+                return acc;
+              }, {})
+            }
+          ],
+          stageScorecards: [
+            {
+              stage: candidate.stage || "unknown",
+              generation: candidate.generation || "unknown",
+              source: "pheno-matrix",
+              rank: candidate.rank,
+              recommendation: candidate.recommendation,
+              notes: candidate.notes || ""
+            }
+          ],
+          sourceRecords: [
+            {
+              sourceName: "GrowPath Pheno Matrix",
+              sourceType: "user_entered",
+              confidence: "medium",
+              notes:
+                "Saved from the local weighted Pheno Matrix. Confirm with photos, clone response, stress testing, and dry/cure notes before final breeding or mother stock decisions."
+            }
+          ],
+          notes: candidate.notes || undefined
+        })
+      )
+    );
+    setFeedback("Saved keeper/watch/reject decisions to plant growth profiles.");
   }
 
   if (!enabled) {
@@ -411,6 +485,14 @@ export default function PhenoMatrixScreen() {
                 pendingLabel: "Creating...",
                 disabled: !growId,
                 onPress: createDecisionTasks
+              },
+              {
+                key: "save-decisions",
+                label: "Save Plant Decisions",
+                variant: "secondary",
+                pendingLabel: "Saving decisions...",
+                disabled: !growId,
+                onPress: savePlantDecisionProfiles
               }
             ]}
             feedback={feedback}
