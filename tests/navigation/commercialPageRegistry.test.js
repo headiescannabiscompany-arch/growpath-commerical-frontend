@@ -29,6 +29,7 @@ describe("commercial page registry", () => {
     expect(labels).not.toContain("Batch Planner");
     expect(labels).not.toContain("Product Trials");
     expect(labels).not.toContain("Inventory");
+    expect(labels.slice(0, 3)).toEqual(["Dashboard", "Storefront", "Products"]);
   });
 
   it("demotes product support surfaces from top-level commercial navigation", () => {

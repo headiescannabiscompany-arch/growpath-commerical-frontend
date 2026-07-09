@@ -21,6 +21,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../app/home/commercial/evidence-runs").default
   },
   {
+    name: "Storefront",
+    label: "Storefront",
+    icon: "storefront-outline",
+    capabilityKey: "commercial.storefront",
+    primary: true,
+    component: require("../app/home/commercial/storefront").default
+  },
+  {
     name: "CommercialProducts",
     label: "Products",
     icon: "pricetags-outline",
@@ -37,14 +45,6 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/product-lines").default
-  },
-  {
-    name: "Storefront",
-    label: "Storefront",
-    icon: "storefront-outline",
-    capabilityKey: "commercial.storefront",
-    primary: true,
-    component: require("../app/home/commercial/storefront").default
   },
   {
     name: "CommercialBatchPlanner",
