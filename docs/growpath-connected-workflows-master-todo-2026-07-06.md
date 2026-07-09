@@ -879,6 +879,7 @@ Completed and pushed:
 603. Storefront quick product creation now captures label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, warnings, and mirrored specs, so soil/amendment products created from Storefront preserve product-label data instead of requiring a separate Products-page cleanup pass.
 604. Commercial Product Detail editing now preserves label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, warnings, and mirrored specs on save, keeping soil/nutrient/amendment product label fields editable after creation and aligned with Storefront quick-create plus Products root creation.
 605. Render static-site configuration now carries the public GrowPath URL environment variables alongside the production API URL and Sentry secret placeholder, keeping dashboard deploy settings aligned with the repo-defined production web export and SPA fallback.
+606. Commercial course lesson task templates now include all-day Schedule metadata, a `course_lesson_task` calendar type, lesson-type source stage, and a 24-hour in-app reminder while preserving course, product, live, and Forum/Q&A links, so lesson actions enter the shared Task/Schedule system instead of remaining bare course-only metadata.
 
 ## Working Rule For Codex
 
