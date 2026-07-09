@@ -40,40 +40,59 @@ function topdressTasks(outputs: Record<string, any>, payload: Record<string, any
   const releaseWindow = outputs.releaseWindowDays
     ? `${outputs.releaseWindowDays.min}-${outputs.releaseWindowDays.max} days`
     : outputs.expectedReleaseWindow || payload.releaseClass || "estimated release window";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "topdress_followup",
+    sourceStage: String(payload.stage || outputs.stage || "topdress"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
 
   return [
     {
       title: `Apply ${topdressLabel}`,
       description: `Apply ${amount} for ${payload.stage || "the current stage"}.${total} Keep off stems and spread evenly.`,
       priority: "high" as const,
-      dueDate: applyDate
+      dueDate: applyDate,
+      ...calendarMetadata,
+      sourceStage: "topdress_application"
     },
     {
       title: `Water in ${productName}`,
       description:
         "Water in the topdress gently so amendments make soil contact without runoff or channeling.",
       priority: "high" as const,
-      dueDate: applyDate
+      dueDate: applyDate,
+      ...calendarMetadata,
+      sourceStage: "topdress_water_in"
     },
     {
       title: `Check ${productName} response after 3 days`,
       description:
         "Compare leaf posture, color, moisture, and stress response against the original topdress reason.",
       priority: "medium" as const,
-      dueDate: addDays(applyDate, 3)
+      dueDate: addDays(applyDate, 3),
+      ...calendarMetadata,
+      sourceStage: "topdress_response_3_day"
     },
     {
       title: `Recheck ${productName} response after 7 days`,
       description: `Review whether the expected ${releaseWindow} is matching plant response, and add photos/notes.`,
       priority: "medium" as const,
-      dueDate: addDays(applyDate, 7)
+      dueDate: addDays(applyDate, 7),
+      ...calendarMetadata,
+      sourceStage: "topdress_response_7_day"
     },
     {
       title: `Review next re-amend timing for ${productName}`,
       description:
         "Decide whether to re-amend, wait, or adjust based on plant response, harvest window, and release timing.",
       priority: "medium" as const,
-      dueDate: addDays(applyDate, 21)
+      dueDate: addDays(applyDate, 21),
+      ...calendarMetadata,
+      sourceStage: "topdress_reamend_review"
     }
   ];
 }
@@ -208,7 +227,14 @@ export default function TopdressToolScreen() {
         title: outputs.taskToCreate?.title || "Topdress plants",
         description: outputs.logSummary || "Apply planned topdress.",
         priority: outputs.taskToCreate?.priority || "medium",
-        dueDate: String(outputs.plannedApplyDate || tomorrow(1)).slice(0, 10)
+        dueDate: String(outputs.plannedApplyDate || tomorrow(1)).slice(0, 10),
+        allDay: true,
+        calendarType: "topdress_followup",
+        sourceStage: "topdress_application",
+        reminderPlan: {
+          channels: ["in_app"],
+          reminders: [{ offsetMinutes: -12 * 60 }]
+        }
       })}
       assistantBrief={{
         title: "AI-guided, calculator-verified",

@@ -136,24 +136,35 @@ describe("TopdressToolScreen", () => {
             expect.objectContaining({
               title: "Apply Bloom topdress",
               priority: "high",
-              dueDate: "2026-07-10"
+              dueDate: "2026-07-10",
+              allDay: true,
+              calendarType: "topdress_followup",
+              sourceStage: "topdress_application",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              })
             }),
             expect.objectContaining({
               title: "Water in Bloom topdress",
               priority: "high",
-              dueDate: "2026-07-10"
+              dueDate: "2026-07-10",
+              sourceStage: "topdress_water_in"
             }),
             expect.objectContaining({
               title: "Check Bloom topdress response after 3 days",
-              dueDate: "2026-07-13"
+              dueDate: "2026-07-13",
+              sourceStage: "topdress_response_3_day"
             }),
             expect.objectContaining({
               title: "Recheck Bloom topdress response after 7 days",
-              dueDate: "2026-07-17"
+              dueDate: "2026-07-17",
+              sourceStage: "topdress_response_7_day"
             }),
             expect.objectContaining({
               title: "Review next re-amend timing for Bloom topdress",
-              dueDate: "2026-07-31"
+              dueDate: "2026-07-31",
+              sourceStage: "topdress_reamend_review"
             })
           ]
         })

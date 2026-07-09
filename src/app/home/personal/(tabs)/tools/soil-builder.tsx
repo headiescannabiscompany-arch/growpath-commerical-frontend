@@ -35,6 +35,15 @@ function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string,
   const restCookDays = Number(outputs.restCookDays ?? payload.restCookDays ?? 21);
   const cookCheckDay = Math.max(7, Math.floor(restCookDays / 2));
   const readyDay = Math.max(1, restCookDays);
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "soil_recipe_timeline",
+    sourceStage: String(payload.stage || payload.intendedUse || "soil_recipe"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -24 * 60 }]
+    }
+  };
 
   return [
     {
@@ -44,28 +53,36 @@ function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string,
           ? outputs.mixingInstructions.join(" ")
           : "Blend base media, compost/castings, aeration, minerals, and amendments.",
       priority: "medium" as const,
-      dueDate: tomorrow(0)
+      dueDate: tomorrow(0),
+      ...calendarMetadata,
+      sourceStage: "soil_mix"
     },
     {
       title: `Moisten and activate ${mixName}`,
       description:
         "Moisten evenly, add planned biology/inoculant support, and label the mix date.",
       priority: "medium" as const,
-      dueDate: tomorrow(1)
+      dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "soil_activation"
     },
     {
       title: `Check soil cook for ${mixName}`,
       description:
         "Check moisture, temperature, odor, and whether fast nitrogen sources are still too active.",
       priority: "medium" as const,
-      dueDate: tomorrow(cookCheckDay)
+      dueDate: tomorrow(cookCheckDay),
+      ...calendarMetadata,
+      sourceStage: "soil_cook_check"
     },
     {
       title: `${mixName} ready/transplant review`,
       description:
         "Review rest/cook readiness before transplant or product batching. Compost/casting values remain estimates unless lab-tested.",
       priority: "high" as const,
-      dueDate: tomorrow(readyDay)
+      dueDate: tomorrow(readyDay),
+      ...calendarMetadata,
+      sourceStage: "soil_ready_review"
     }
   ];
 }
@@ -351,7 +368,14 @@ export default function SoilBuilderToolScreen() {
           ? outputs.mixingInstructions.join(" ")
           : `Mix soil recipe, moisten, activate biology, and rest/cook for ${outputs.restCookDays ?? 21} days before use when appropriate.`,
         priority: "medium",
-        dueDate: tomorrow(1)
+        dueDate: tomorrow(1),
+        allDay: true,
+        calendarType: "soil_recipe_timeline",
+        sourceStage: "soil_mix",
+        reminderPlan: {
+          channels: ["in_app"],
+          reminders: [{ offsetMinutes: -24 * 60 }]
+        }
       })}
       assistantBrief={{
         title: "AI-guided, calculator-verified",

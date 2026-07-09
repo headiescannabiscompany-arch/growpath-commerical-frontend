@@ -847,6 +847,7 @@ Completed and pushed:
 571. Stress Testing follow-up tasks now carry all-day stress-test calendar metadata, retest/source-stage values, and 12-hour reminders so recovery checks, pheno score updates, keeper retest decisions, and crop-steering candidate notes surface in the shared Schedule.
 572. Crop Steering Project task plans now carry all-day crop-steering calendar metadata, phase/source-stage values, and 12-hour reminders so dryback, runoff, target-fit, and pheno-response follow-ups appear in the shared Schedule as steering work.
 573. Backend calculator default follow-up tasks now preserve all-day, end date, calendar type, source stage, reminder plan, and recurrence metadata, and IPM Scout uses that path plus its multi-task plan to schedule inspection, treatment-decision, and outcome-review work with GrowPath AI and GPT verification context.
+574. Soil Builder recipe timelines and Topdress Planner follow-ups now carry all-day soil/topdress calendar metadata, source-stage values, and reminders so mix, activation, cook, ready review, application, water-in, response, and re-amend checks appear in the shared Schedule with recipe context.
 
 ## Working Rule For Codex
 

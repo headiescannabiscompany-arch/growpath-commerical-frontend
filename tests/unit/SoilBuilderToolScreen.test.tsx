@@ -207,12 +207,28 @@ describe("SoilBuilderToolScreen", () => {
             releaseCurve: { summary: "fast N plus slow P base" }
           }),
           tasks: expect.arrayContaining([
-            expect.objectContaining({ title: "Mix Living soil mix" }),
-            expect.objectContaining({ title: "Moisten and activate Living soil mix" }),
-            expect.objectContaining({ title: "Check soil cook for Living soil mix" }),
+            expect.objectContaining({
+              title: "Mix Living soil mix",
+              allDay: true,
+              calendarType: "soil_recipe_timeline",
+              sourceStage: "soil_mix",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
+              })
+            }),
+            expect.objectContaining({
+              title: "Moisten and activate Living soil mix",
+              sourceStage: "soil_activation"
+            }),
+            expect.objectContaining({
+              title: "Check soil cook for Living soil mix",
+              sourceStage: "soil_cook_check"
+            }),
             expect.objectContaining({
               title: "Living soil mix ready/transplant review",
-              priority: "high"
+              priority: "high",
+              sourceStage: "soil_ready_review"
             })
           ])
         })
