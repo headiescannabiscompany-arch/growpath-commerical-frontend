@@ -877,6 +877,7 @@ Completed and pushed:
 601. Commercial page registry order now matches the Storefront-first tab layout, with Dashboard, Storefront, then Products locked by navigation coverage so menu-driven commercial surfaces keep Storefront as the brand home base instead of letting Products become the first public-workflow destination.
 602. Login now separates network, timeout, offline, misconfigured API, and server-side auth outages from bad credentials, showing actionable retry/support copy with the live support alias while preserving unverified-email resend and invalid-password behavior.
 603. Storefront quick product creation now captures label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, warnings, and mirrored specs, so soil/amendment products created from Storefront preserve product-label data instead of requiring a separate Products-page cleanup pass.
+604. Commercial Product Detail editing now preserves label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, warnings, and mirrored specs on save, keeping soil/nutrient/amendment product label fields editable after creation and aligned with Storefront quick-create plus Products root creation.
 
 ## Working Rule For Codex
 

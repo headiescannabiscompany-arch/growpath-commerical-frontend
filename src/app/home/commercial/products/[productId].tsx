@@ -152,6 +152,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [price, setPrice] = useState("");
   const [unitSize, setUnitSize] = useState("");
+  const [npk, setNpk] = useState("");
+  const [guaranteedAnalysis, setGuaranteedAnalysis] = useState("");
+  const [ingredients, setIngredients] = useState("");
+  const [applicationRate, setApplicationRate] = useState("");
+  const [directions, setDirections] = useState("");
+  const [warnings, setWarnings] = useState("");
   const [growInterests, setGrowInterests] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
@@ -168,7 +174,16 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setImageUrl(productImage(next));
     setProductLineId(next?.productLineId || next?.linkedProductLineId || "");
     setPrice(priceInputValue(next));
-    setUnitSize(next?.unitSize || next?.specs?.unitSize || "");
+    const specs = (next as any)?.specs || {};
+    setUnitSize((next as any)?.unitSize || specs.unitSize || "");
+    setNpk((next as any)?.npk || specs.npk || specs.labelNpk || "");
+    setGuaranteedAnalysis(
+      (next as any)?.guaranteedAnalysis || specs.guaranteedAnalysis || ""
+    );
+    setIngredients(formatDetailValue((next as any)?.ingredients || specs.ingredients));
+    setApplicationRate((next as any)?.applicationRate || specs.applicationRate || "");
+    setDirections((next as any)?.directions || specs.directions || "");
+    setWarnings(formatDetailValue((next as any)?.warnings || specs.warnings));
     setGrowInterests(next?.growInterests?.join(", ") || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
@@ -210,6 +225,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       productLineId: productLineId.trim(),
       price: parsePrice(price),
       unitSize: unitSize.trim(),
+      npk: npk.trim(),
+      labelNpk: npk.trim(),
+      guaranteedAnalysis: guaranteedAnalysis.trim(),
+      ingredients: splitList(ingredients),
+      applicationRate: applicationRate.trim(),
+      directions: directions.trim(),
+      warnings: splitList(warnings),
       growInterests: splitList(growInterests),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
@@ -218,7 +240,19 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       stripePriceId: stripePriceId.trim(),
       specs: {
         ...(product?.specs || {}),
-        unitSize: unitSize.trim() || product?.specs?.unitSize
+        unitSize: unitSize.trim() || product?.specs?.unitSize,
+        npk: npk.trim() || product?.specs?.npk,
+        labelNpk: npk.trim() || (product?.specs as any)?.labelNpk,
+        guaranteedAnalysis:
+          guaranteedAnalysis.trim() || product?.specs?.guaranteedAnalysis,
+        ingredients: splitList(ingredients).length
+          ? splitList(ingredients)
+          : product?.specs?.ingredients,
+        directions: directions.trim() || product?.specs?.directions,
+        applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
+        warnings: splitList(warnings).length
+          ? splitList(warnings)
+          : product?.specs?.warnings
       }
     } as Product;
     const publishMissing = publicFieldMissingSetup(productMissingSetup(nextProduct));
@@ -240,6 +274,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         productLineId: productLineId.trim() || undefined,
         price: parsePrice(price),
         unitSize: unitSize.trim() || undefined,
+        npk: npk.trim() || undefined,
+        labelNpk: npk.trim() || undefined,
+        guaranteedAnalysis: guaranteedAnalysis.trim() || undefined,
+        ingredients: splitList(ingredients),
+        applicationRate: applicationRate.trim() || undefined,
+        directions: directions.trim() || undefined,
+        warnings: splitList(warnings),
         growInterests: splitList(growInterests),
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
@@ -248,7 +289,19 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         stripePriceId: stripePriceId.trim() || undefined,
         specs: {
           ...(product?.specs || {}),
-          unitSize: unitSize.trim() || product?.specs?.unitSize
+          unitSize: unitSize.trim() || product?.specs?.unitSize,
+          npk: npk.trim() || product?.specs?.npk,
+          labelNpk: npk.trim() || (product?.specs as any)?.labelNpk,
+          guaranteedAnalysis:
+            guaranteedAnalysis.trim() || product?.specs?.guaranteedAnalysis,
+          ingredients: splitList(ingredients).length
+            ? splitList(ingredients)
+            : product?.specs?.ingredients,
+          directions: directions.trim() || product?.specs?.directions,
+          applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
+          warnings: splitList(warnings).length
+            ? splitList(warnings)
+            : product?.specs?.warnings
         }
       } as Partial<Product>);
       hydrate(res?.product ?? res?.item ?? res);
@@ -325,7 +378,10 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Source tool" value={specs.sourceTool || specs.source} />
-          <DetailRow label="N-P-K" value={specs.npk || (product as any)?.npk} />
+          <DetailRow
+            label="Label N-P2O5-K2O"
+            value={specs.npk || specs.labelNpk || (product as any)?.npk}
+          />
           <DetailRow
             label="Guaranteed analysis"
             value={specs.guaranteedAnalysis || (product as any)?.guaranteedAnalysis}
@@ -539,6 +595,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             value={unitSize}
           />
           <TextInput
+            accessibilityLabel="Commercial product detail label N-P2O5-K2O"
+            onChangeText={setNpk}
+            placeholder="Label N-P2O5-K2O, e.g. 3-1-1"
+            style={styles.input}
+            value={npk}
+          />
+          <TextInput
             accessibilityLabel="Commercial product detail grow interests"
             onChangeText={setGrowInterests}
             placeholder="Grow interests, comma separated"
@@ -577,6 +640,45 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           placeholder="Short description, use case, product context, or public page copy"
           style={[styles.input, styles.textArea]}
           value={shortDescription}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail guaranteed analysis"
+          multiline
+          onChangeText={setGuaranteedAnalysis}
+          placeholder="Guaranteed analysis: N, P2O5, K2O, Ca, Mg, S, micros"
+          style={[styles.input, styles.textArea]}
+          value={guaranteedAnalysis}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail ingredients"
+          multiline
+          onChangeText={setIngredients}
+          placeholder="Ingredients, one per line or comma separated"
+          style={[styles.input, styles.textArea]}
+          value={ingredients}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail application rate"
+          onChangeText={setApplicationRate}
+          placeholder="Application rate, e.g. 1 cup per cubic foot"
+          style={styles.input}
+          value={applicationRate}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail directions"
+          multiline
+          onChangeText={setDirections}
+          placeholder="Directions for use, storage, and safety notes"
+          style={[styles.input, styles.textArea]}
+          value={directions}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail warnings"
+          multiline
+          onChangeText={setWarnings}
+          placeholder="Warnings, stage limits, legal notes, or safety notes"
+          style={[styles.input, styles.textArea]}
+          value={warnings}
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable

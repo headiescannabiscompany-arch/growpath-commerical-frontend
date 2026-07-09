@@ -1832,6 +1832,10 @@ describe("commercial workflow pages", () => {
       "2 cu ft bag"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail label N-P2O5-K2O"),
+      "4-2-3"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product detail grow interests"),
       "living soil, dry amendments"
     );
@@ -1851,6 +1855,26 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product detail short description"),
       "Updated product copy."
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail guaranteed analysis"),
+      "N 4\nP2O5 2\nK2O 3"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail ingredients"),
+      "Compost\nKelp meal\nFish bone meal"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail application rate"),
+      "2 cups per cubic foot"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail directions"),
+      "Mix evenly and rest before transplant."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail warnings"),
+      "Compost values are estimates\nDo not overapply"
+    );
     fireEvent.press(screen.getByLabelText("Save commercial product detail"));
 
     await waitFor(() =>
@@ -1864,6 +1888,13 @@ describe("commercial workflow pages", () => {
             productLineId: "line-1",
             price: 39,
             unitSize: "2 cu ft bag",
+            npk: "4-2-3",
+            labelNpk: "4-2-3",
+            guaranteedAnalysis: "N 4\nP2O5 2\nK2O 3",
+            ingredients: ["Compost", "Kelp meal", "Fish bone meal"],
+            applicationRate: "2 cups per cubic foot",
+            directions: "Mix evenly and rest before transplant.",
+            warnings: ["Compost values are estimates", "Do not overapply"],
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
             stripeProductId: "prod_product_updated",
@@ -1871,7 +1902,14 @@ describe("commercial workflow pages", () => {
             shortDescription: "Updated product copy.",
             description: "Updated product copy.",
             specs: expect.objectContaining({
-              unitSize: "2 cu ft bag"
+              unitSize: "2 cu ft bag",
+              npk: "4-2-3",
+              labelNpk: "4-2-3",
+              guaranteedAnalysis: "N 4\nP2O5 2\nK2O 3",
+              ingredients: ["Compost", "Kelp meal", "Fish bone meal"],
+              directions: "Mix evenly and rest before transplant.",
+              applicationRate: "2 cups per cubic foot",
+              warnings: ["Compost values are estimates", "Do not overapply"]
             })
           })
         })

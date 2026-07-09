@@ -138,6 +138,7 @@ const manualChecks = [
   {
     area: "Mode separation",
     checks: [
+      "Attempt login while the API is unreachable or blocked and confirm the login screen shows connection/support guidance instead of an invalid-password message.",
       "Switch Personal, Commercial, and Facility identities and confirm each dashboard names the current mode.",
       "Open Personal Profile, Commercial Profile & Billing, and Facility Profile and confirm each has a visible Switch Workspace action that opens /account/mode.",
       "Confirm commercial pages do not create personal grows and facility pages create rooms/runs/tasks instead of storefront products."
@@ -187,7 +188,9 @@ const manualChecks = [
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
       "From Commercial > Storefront quick product creation, enter Stripe product and price IDs and confirm both values save with the created product.",
+      "From Commercial > Storefront quick product creation, enter label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, and warnings and confirm they save into the created product specs.",
       "From Commercial > Products, create a published product using Stripe product and price IDs without an external purchase URL and confirm setup readiness accepts the Stripe price.",
+      "Open Commercial > Product Detail, edit label N-P2O5-K2O, guaranteed analysis, ingredients, application rate, directions, and warnings, save, and confirm both the owner detail and public/storefront product view preserve those label fields.",
       "Open Commercial > Product Detail, edit Stripe product and price IDs, save, and confirm both identifiers persist before testing checkout routing.",
       "Open public product cards/details and confirm Stripe-ready products show Buy, external-only products show External Link, and products without checkout setup do not show a fake Buy CTA.",
       "Open Commercial > Inventory, create an item, and open its detail; confirm visible routes use /home/commercial/inventory/new and /home/commercial/inventory/:id while legacy inventory-create/inventory-item URLs are only compatibility aliases.",
