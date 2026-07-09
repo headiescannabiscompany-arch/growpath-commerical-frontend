@@ -162,7 +162,7 @@ describe("NpkToolScreen", () => {
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText(/Build up to 20 product rows/)).toBeTruthy();
-    expect(screen.getByText(/Label N-P-K uses elemental N, P2O5, and K2O/)).toBeTruthy();
+    expect(screen.getByText(/Label N-P2O5-K2O uses elemental N/)).toBeTruthy();
 
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
     fireEvent.changeText(screen.getByPlaceholderText("Amount"), "100");
@@ -227,7 +227,9 @@ describe("NpkToolScreen", () => {
     fireEvent.press(screen.getByLabelText("Ask AI to build NPK recipe"));
 
     expect(screen.getByText("AI recipe brief")).toBeTruthy();
-    expect(screen.getByText(/Final nutrient totals, elemental P\/K conversion/)).toBeTruthy();
+    expect(
+      screen.getByText(/Final nutrient totals, elemental P\/K conversion/)
+    ).toBeTruthy();
     expect(screen.getByText(/Recipe: Kelp veg feed/)).toBeTruthy();
     expect(screen.getByText(/1\. Kelp meal \| 100g \| label 3-1-2/)).toBeTruthy();
     expect(screen.getByText(/Ask me for label density/)).toBeTruthy();
@@ -296,7 +298,7 @@ describe("NpkToolScreen", () => {
           category: "nutrient_recipe",
           status: "draft",
           linkedToolRunId: "toolrun-1",
-          fullDescription: expect.stringContaining("Target N-P-K"),
+          fullDescription: expect.stringContaining("Target label N-P2O5-K2O"),
           specs: expect.objectContaining({
             source: "npk_feed_recipe_builder",
             targetNpk: { N: undefined, P: undefined, K: undefined },

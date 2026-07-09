@@ -769,6 +769,7 @@ Completed and pushed:
 493. Facility vendor dashboard cards/forms/rows, login mode chips, and debug diagnostic cards/actions now consume shared radius tokens while preserving vendor CRUD, auth mode selection, and debug API checks.
 494. Deferred user verification now batches the latest support-contact config, onboarding, Forum copy, legal-link, login, and facility SOP route regressions and makes the full live alias set explicit in the future browser/manual checklist.
 495. Ingredient Library now labels saved ingredient analysis as guaranteed-analysis N-P2O5-K2O and clarifies that elemental P/K conversion belongs in recipe tools, preserving the existing saved label values while reducing NPK math confusion.
+496. NPK / Feed Recipe Builder product-draft copy, guaranteed-analysis helper text, feature status notes, and regression tests now say label N-P2O5-K2O instead of loose label N-P-K, keeping user-facing recipe language aligned with guaranteed-analysis math.
 
 ## Working Rule For Codex
 

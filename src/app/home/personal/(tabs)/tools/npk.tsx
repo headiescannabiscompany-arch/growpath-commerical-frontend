@@ -527,7 +527,7 @@ export default function NpkToolScreen() {
         `Mode: ${recipeMode.replaceAll("_", " ")}`,
         `Stage: ${stage}`,
         `Medium: ${medium}`,
-        `Target N-P-K: ${[targetN || "-", targetP || "-", targetK || "-"].join("-")}`,
+        `Target label N-P2O5-K2O: ${[targetN || "-", targetP || "-", targetK || "-"].join("-")}`,
         `Desired release: ${desiredReleaseProfile}`,
         result?.formula ? `Formula: ${result.formula}` : "",
         result?.releaseDisclaimer || ""
@@ -984,8 +984,9 @@ export default function NpkToolScreen() {
             </View>
             <Text style={styles.fieldHint}>Guaranteed analysis percentages</Text>
             <Text style={styles.fieldHint}>
-              Label N-P-K uses elemental N, P2O5, and K2O. GrowPath also stores elemental
-              P and K for recipe math using P2O5 x 0.4364 and K2O x 0.8301.
+              Label N-P2O5-K2O uses elemental N with oxide label values for P and K.
+              GrowPath also stores elemental P and K for recipe math using P2O5 x 0.4364
+              and K2O x 0.8301.
             </Text>
             <View style={styles.analysisGrid}>
               {(["N", "P", "K", "Ca", "Mg", "S"] as const).map((key) => (
@@ -1385,7 +1386,12 @@ const styles = StyleSheet.create({
   },
   productTitle: { fontSize: 16, fontWeight: "700" },
   remove: { color: "#B91C1C", fontWeight: "600" },
-  fullInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  fullInput: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   input: {
     minWidth: 90,
     flexGrow: 1,
@@ -1411,7 +1417,12 @@ const styles = StyleSheet.create({
   densityField: { minWidth: 180, flexGrow: 1, gap: 4 },
   analysisFieldWide: { width: 132 },
   analysisLabel: { fontSize: 12, fontWeight: "700", marginBottom: 4 },
-  analysisInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 9 },
+  analysisInput: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 9
+  },
   selectWrap: {
     minWidth: 180,
     flexGrow: 1,
@@ -1462,7 +1473,12 @@ const styles = StyleSheet.create({
   warning: { color: "#B45309", fontWeight: "600" },
   recommendation: { color: "#334155", lineHeight: 19 },
   savedSection: { gap: 8 },
-  savedRecipe: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
+  savedRecipe: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10
+  },
   savedRecipeOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
   timelineRow: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 8, gap: 4 },
   lockedCard: {

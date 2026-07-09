@@ -188,7 +188,7 @@ export const personalToolFeatures = [
     href: "/home/personal/tools/ingredient-library",
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "V1 release CRUD surface for user-entered ingredients with label NPK, source confidence, favorites, and archive support."
+      "V1 release CRUD surface for user-entered ingredients with label N-P2O5-K2O, source confidence, favorites, and archive support."
   },
   {
     key: "tools.watering",
