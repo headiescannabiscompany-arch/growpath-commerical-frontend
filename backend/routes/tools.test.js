@@ -1194,6 +1194,10 @@ describe("Tools Router (tools.js)", () => {
     });
     expect(ipm.body.outputs.gptVerification.prompt).toMatch(/IPM verification assistant/);
     expect(ipm.body.outputs.verificationDisplay).toHaveLength(2);
+    expect(ipm.body.toolRun.outputs.gptVerification).toMatchObject({
+      provider: "gpt",
+      status: "pending_gpt_review"
+    });
     expect(ipm.body.outputs.warnings).toEqual(
       expect.arrayContaining([
         "Verify IPM findings with magnification/photos and GPT second review before treatment decisions."

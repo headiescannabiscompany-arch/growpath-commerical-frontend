@@ -13,6 +13,7 @@ const NutrientRecipe = require("../models/NutrientRecipe");
 const calculators = require("../services/toolCalculators");
 const { CHEMISTRY_PRESETS } = require("../services/nutrientChemistry");
 const createAutomationEvent = require("../services/createAutomationEvent");
+const { applyIpmGptVerification } = require("../services/ipmGptVerification");
 
 const router = express.Router();
 
@@ -686,7 +687,24 @@ calculatorRoute(
   "living_soil_batch",
   calculators.calculateLivingSoilBatch
 );
-calculatorRoute("/ipm-scout", "ipm_scout", calculators.calculateIpmScout);
+router.post("/ipm-scout", async (req, res, next) => {
+  try {
+    const initialOutputs = calculators.calculateIpmScout(req.body || {});
+    const outputs = await applyIpmGptVerification(initialOutputs);
+    const toolRun = await createRun(req, "ipm_scout", req.body || {}, outputs);
+    await emitToolAutomationEvent(req, "ipm_scout", toolRun, outputs);
+    return res.status(201).json({ toolRun: toolRunDto(toolRun), outputs });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (
+      error instanceof TypeError ||
+      /must|between|greater|maximum|required|cannot/i.test(error.message || "")
+    ) {
+      return res.status(400).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
 calculatorRoute(
   "/species-crop-id",
   "species_crop_id",

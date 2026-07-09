@@ -775,6 +775,7 @@ Completed and pushed:
 499. Commercial product creation now labels soil/nutrient/amendment product analysis as label N-P2O5-K2O and writes a `labelNpk` specs alias while preserving the existing `npk` field for compatibility.
 500. Legacy feeding label-scan confirmation now displays scanned fertilizer values as label N-P2O5-K2O and has a focused regression test before handing data into the feeding schedule workflow.
 501. Deferred user verification now includes the feeding label-scan regression and manual checks for label N-P2O5-K2O wording across recipe tools and commercial soil/nutrient/amendment product creation.
+502. IPM Scout now attempts a configured OpenAI/GPT second-opinion verification with the same scout input and GrowPathAI answer before storing the ToolRun, while preserving the pending GPT review fallback when no provider is configured.
 
 ## Working Rule For Codex
 
