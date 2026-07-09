@@ -39,6 +39,17 @@ const sourceTypes = [
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
 
+function storefrontAlias(task: CommercialTask) {
+  return String(
+    task.linkedStorefrontSlug ||
+      task.storefrontSlug ||
+      task.brandSlug ||
+      task.publicSlug ||
+      task.linkedStorefrontId ||
+      ""
+  );
+}
+
 function asArray(res: any): CommercialTask[] {
   if (Array.isArray(res)) return res;
   if (Array.isArray(res?.tasks)) return res.tasks;
@@ -138,11 +149,10 @@ function linkedObjectPath(task: CommercialTask) {
       linkedFeedCampaignId:
         task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId
     },
-    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+    storefrontAlias(task) && {
       sourceType: "storefront",
-      sourceId:
-        task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId,
-      linkedStorefrontSlug: task.linkedStorefrontSlug || task.storefrontSlug || undefined,
+      sourceId: storefrontAlias(task),
+      linkedStorefrontSlug: storefrontAlias(task),
       linkedStorefrontId: task.linkedStorefrontId || undefined
     },
     task.linkedForumThreadId && {
@@ -165,10 +175,7 @@ function sourceReference(task: CommercialTask) {
   const sourceType = String(task.sourceType || "");
   const directSource = task.sourceId || task.sourceObjectId;
   if (directSource) return String(directSource);
-  if (sourceType === "storefront")
-    return String(
-      task.linkedStorefrontSlug || task.linkedStorefrontId || task.storefrontSlug || ""
-    );
+  if (sourceType === "storefront") return storefrontAlias(task);
   if (sourceType === "product") return String(task.linkedProductId || "");
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
   if (sourceType === "product_trial")
@@ -204,9 +211,7 @@ function sourceReference(task: CommercialTask) {
     task.linkedProductId ||
     task.linkedCourseId ||
     task.linkedLiveId ||
-    task.linkedStorefrontSlug ||
-    task.linkedStorefrontId ||
-    task.storefrontSlug;
+    storefrontAlias(task);
   return value ? String(value) : "";
 }
 

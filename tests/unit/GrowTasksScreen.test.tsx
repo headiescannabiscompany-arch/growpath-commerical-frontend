@@ -134,7 +134,7 @@ describe("GrowTasksScreen", () => {
         sourceType: "alert",
         sourceObjectId: "alert-product-1",
         linkedProductId: "veg-mix-1",
-        linkedStorefrontSlug: "living-soil-labs",
+        publicSlug: "living-soil-labs",
         createdAt: "2026-07-01T08:00:00.000Z"
       }
     ]);

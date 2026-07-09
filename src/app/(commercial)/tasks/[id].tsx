@@ -20,6 +20,18 @@ import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
 
+function storefrontAlias(task: AnyRec | null) {
+  if (!task) return "";
+  return String(
+    task.linkedStorefrontSlug ||
+      task.storefrontSlug ||
+      task.brandSlug ||
+      task.publicSlug ||
+      task.linkedStorefrontId ||
+      ""
+  );
+}
+
 function getId(params: Record<string, any>): string {
   const raw = params?.id;
   if (Array.isArray(raw)) return String(raw[0] ?? "");
@@ -62,7 +74,7 @@ function taskContextRows(task: AnyRec | null) {
   if (!task) return [];
   const rows = [
     ["Source", [task.sourceType, task.sourceId].filter(Boolean).join(": ")],
-    ["Storefront", task.linkedStorefrontSlug || task.linkedStorefrontId],
+    ["Storefront", storefrontAlias(task)],
     ["Action item type", task.actionItemType],
     ["Action item", task.actionItemTitle],
     ["Setup item", task.setupItemLabel],
@@ -118,7 +130,7 @@ function taskSourceId(task: AnyRec | null): string {
   const sourceType = String(task.sourceType || "");
   const directSource = firstLinkedValue(task.sourceId, task.sourceObjectId);
   if (directSource) return String(directSource);
-  if (sourceType === "storefront") return String(task.linkedStorefrontId || "");
+  if (sourceType === "storefront") return storefrontAlias(task);
   if (sourceType === "product") return String(task.linkedProductId || "");
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
   if (sourceType === "product_trial")
@@ -156,7 +168,7 @@ function taskSourceId(task: AnyRec | null): string {
       task.linkedProductId ||
       task.linkedCourseId ||
       task.linkedLiveId ||
-      task.linkedStorefrontId ||
+      storefrontAlias(task) ||
       ""
   );
 }
@@ -217,11 +229,10 @@ function commercialLinkedObjectPath(task: AnyRec | null): string {
       linkedFeedCampaignId:
         task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId
     },
-    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+    storefrontAlias(task) && {
       sourceType: "storefront",
-      sourceId:
-        task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId,
-      linkedStorefrontSlug: task.linkedStorefrontSlug || task.storefrontSlug || undefined,
+      sourceId: storefrontAlias(task),
+      linkedStorefrontSlug: storefrontAlias(task),
       linkedStorefrontId: task.linkedStorefrontId || undefined
     },
     task.linkedForumThreadId && {

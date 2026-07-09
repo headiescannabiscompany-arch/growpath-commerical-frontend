@@ -175,7 +175,7 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "alert",
         sourceObjectId: "alert-product-1",
         linkedProductId: "veg-mix-1",
-        linkedStorefrontSlug: "living-soil-labs",
+        publicSlug: "living-soil-labs",
         createdAt: "2026-07-07T00:00:00Z"
       }
     ]);

@@ -45,6 +45,17 @@ const sourceTypes = [
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
 
+function storefrontAlias(task: PersonalTask) {
+  return String(
+    task.storefrontSlug ||
+      task.linkedStorefrontSlug ||
+      task.brandSlug ||
+      task.publicSlug ||
+      task.linkedStorefrontId ||
+      ""
+  );
+}
+
 function dateKey(value?: string | null) {
   if (!value) return "";
   const parsed = new Date(value);
@@ -90,7 +101,7 @@ function sourceReference(task: PersonalTask) {
     task.linkedProductId ||
     task.linkedProductBatchId ||
     task.linkedProductTrialId ||
-    task.linkedStorefrontId ||
+    storefrontAlias(task) ||
     task.linkedOrderId ||
     task.linkedCourseAssignmentId ||
     task.linkedCourseId ||
@@ -128,10 +139,9 @@ function taskLinks(task: PersonalTask) {
     task.linkedLiveId &&
       linkedSource !== task.linkedLiveId &&
       `Live: ${task.linkedLiveId}`,
-    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) &&
-      linkedSource !==
-        (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) &&
-      `Storefront: ${task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId}`
+    storefrontAlias(task) &&
+      linkedSource !== storefrontAlias(task) &&
+      `Storefront: ${storefrontAlias(task)}`
   ];
   return [
     task.growId && `Grow: ${task.growId}`,
@@ -180,7 +190,7 @@ function taskSourcePath(task: PersonalTask) {
 }
 
 function explicitLinkedObjectPath(task: PersonalTask) {
-  const storefrontSlug = task.storefrontSlug || task.linkedStorefrontSlug || "";
+  const storefrontSlug = storefrontAlias(task);
   const sourceByPriority = [
     task.linkedProductId && {
       sourceType: "product",
@@ -221,7 +231,7 @@ function explicitLinkedObjectPath(task: PersonalTask) {
       sourceId: task.linkedLiveId,
       linkedLiveId: task.linkedLiveId
     },
-    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+    storefrontSlug && {
       sourceType: "storefront",
       sourceId: storefrontSlug || task.linkedStorefrontId || "",
       linkedStorefrontSlug: storefrontSlug || undefined,

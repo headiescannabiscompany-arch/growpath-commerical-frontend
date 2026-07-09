@@ -810,6 +810,7 @@ Completed and pushed:
 534. Commercial home Storefront Launch guidance now frames Storefront as the public brand home base instead of the public brand profile, reinforcing that storefront is where users follow, browse, RSVP, and buy.
 535. Commercial product and product-line owner guidance now routes the public flow through Feed to Storefront to product detail, with legacy brand profile explicitly secondary instead of part of the main product discovery path.
 536. Commercial alert detail task creation now preserves direct storefront slug aliases and linked storefront metadata, matching the global Alert Center behavior while routing owner-side storefront alerts back to the commercial Storefront workspace.
+537. Commercial and personal task center/detail routes now normalize `storefrontSlug`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases, preserving exact Storefront context for owner tasks, personal task links, and grow-specific task links.
 
 ## Working Rule For Codex
 

@@ -125,6 +125,13 @@ describe("CommercialTasksRoute", () => {
               sourceType: "alert",
               sourceId: "alert-product-1",
               linkedProductId: "product-1"
+            },
+            {
+              id: "task-11",
+              title: "Review public storefront alias",
+              status: "open",
+              sourceType: "storefront",
+              brandSlug: "living-soil-labs"
             }
           ]
         });
@@ -160,7 +167,9 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Review feed campaign")).toBeTruthy();
     expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
     expect(screen.getByText("Review alert-linked product")).toBeTruthy();
+    expect(screen.getByText("Review public storefront alias")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
+    expect(screen.getByText(/Source ID: living-soil-labs/)).toBeTruthy();
     expect(screen.getByText(/Source ID: live-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: batch-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: campaign-linked-1/)).toBeTruthy();
@@ -204,6 +213,10 @@ describe("CommercialTasksRoute", () => {
     expect(
       screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-product-1")
     ).toBeTruthy();
+    expect(
+      screen.getAllByLabelText("Commercial task link /home/commercial/storefront")
+        .length
+    ).toBeGreaterThan(0);
     expect(
       screen.getAllByLabelText("Commercial task link /home/commercial/products/product-1")
         .length

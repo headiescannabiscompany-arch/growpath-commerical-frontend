@@ -318,4 +318,26 @@ describe("CommercialTaskDetailRoute", () => {
       "/home/commercial/evidence-runs/trial-linked-1"
     );
   });
+
+  it("opens storefront alias task sources in the commercial storefront workflow", async () => {
+    taskOverrides = {
+      sourceType: "storefront",
+      sourceId: "",
+      sourceObjectId: "",
+      linkedStorefrontSlug: "",
+      linkedStorefrontId: "",
+      publicSlug: "living-soil-labs"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Storefront")).toBeTruthy();
+    expect(screen.getAllByText("living-soil-labs").length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/storefront");
+  });
 });
