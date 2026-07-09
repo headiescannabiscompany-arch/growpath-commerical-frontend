@@ -802,6 +802,7 @@ Completed and pushed:
 526. Deferred user verification now includes storefront-primary checks for owner Public Discovery plus public storefront/product/course pages, covering Storefront/Back-to-Store priority and Legacy Profile compatibility labels in the later browser pass.
 527. Store-facing discovery copy now says Find/Similar Storefronts on Store index, public storefront, and product detail pages while preserving Similar Brands language only on the true brand-profile route.
 528. Schedule / Agenda source-link inference now recognizes `storefrontSlug`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases, so storefront launch tasks and scheduled items can open the exact public storefront instead of falling back to generic task/source routes.
+529. Alert Center and Notification Center task creation now preserve direct storefront slug aliases as source IDs and linked storefront fields, so storefront reminders can become tasks without losing the public storefront route context.
 
 ## Working Rule For Codex
 

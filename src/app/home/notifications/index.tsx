@@ -67,6 +67,11 @@ function sourceReference(row: NotificationRow) {
     row.linkedProductTrialId,
     row.linkedTrialId,
     row.linkedProductId,
+    row.storefrontSlug,
+    row.linkedStorefrontSlug,
+    row.brandSlug,
+    row.publicSlug,
+    row.linkedStorefrontId,
     row.linkedFeedCampaignId,
     row.linkedFeedPostId,
     row.linkedOrderId,
@@ -122,6 +127,8 @@ function linkedFieldsForNotificationSource(row: NotificationRow) {
       return { linkedLiveId: sourceId };
     case "product":
       return { linkedProductId: sourceId };
+    case "storefront":
+      return { linkedStorefrontId: sourceId };
     case "product_batch":
       return { linkedProductBatchId: sourceId };
     case "product_trial":

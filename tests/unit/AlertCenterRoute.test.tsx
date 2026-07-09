@@ -234,6 +234,17 @@ describe("AlertCenterRoute", () => {
               linkedCourseId: "course-3",
               linkedLessonId: "lesson-3",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-20",
+              title: "Storefront launch check",
+              message: "Review the public storefront before launch.",
+              severity: "warning",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "storefront",
+              linkedStorefrontSlug: "living-soil-labs",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -315,6 +326,7 @@ describe("AlertCenterRoute", () => {
         "Alert link /home/personal/ai?alertId=alert-7&sourceType=product"
       )
     ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /store/living-soil-labs")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(
@@ -348,7 +360,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(18);
+    expect(createButtons).toHaveLength(19);
     fireEvent.press(createButtons[5]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -470,6 +482,27 @@ describe("AlertCenterRoute", () => {
             linkedCourseAssignmentId: "assignment-1",
             priority: "critical",
             status: "open"
+          })
+        })
+      )
+    );
+    fireEvent.press(createButtons[18]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Storefront launch check",
+            sourceType: "alert",
+            sourceId: "alert-20",
+            linkedAlertId: "alert-20",
+            alertSourceType: "storefront",
+            alertSourceId: "living-soil-labs",
+            linkedStorefrontId: "living-soil-labs",
+            storefrontSlug: "living-soil-labs",
+            linkedStorefrontSlug: "living-soil-labs"
           })
         })
       )

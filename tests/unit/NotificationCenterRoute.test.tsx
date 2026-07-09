@@ -214,6 +214,15 @@ describe("NotificationCenterRoute", () => {
               linkedLessonId: "lesson-3",
               workspaceType: "personal",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-21",
+              title: "Storefront launch reminder",
+              message: "Review the storefront before publishing.",
+              sourceType: "storefront",
+              linkedStorefrontSlug: "living-soil-labs",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -313,6 +322,9 @@ describe("NotificationCenterRoute", () => {
         "Notification link /home/commercial/feed?campaignId=campaign-linked-1"
       )
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /store/living-soil-labs")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getAllByLabelText("Create task from notification")[0]);
     await waitFor(() =>
@@ -338,7 +350,7 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(20);
+    expect(createButtons).toHaveLength(21);
     await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[7]);
     await waitFor(() =>
@@ -482,6 +494,32 @@ describe("NotificationCenterRoute", () => {
             linkedCourseAssignmentId: "assignment-1",
             priority: "high",
             status: "open"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        screen.getAllByLabelText("Create task from notification")[20].props.disabled
+      ).toBeFalsy()
+    );
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[20]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Storefront launch reminder",
+            sourceType: "notification",
+            sourceId: "notification-21",
+            linkedNotificationId: "notification-21",
+            notificationSourceType: "storefront",
+            notificationSourceId: "living-soil-labs",
+            linkedStorefrontId: "living-soil-labs",
+            storefrontSlug: "living-soil-labs",
+            linkedStorefrontSlug: "living-soil-labs"
           })
         })
       )
