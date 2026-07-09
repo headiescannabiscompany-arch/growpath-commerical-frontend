@@ -268,6 +268,28 @@ function actionItemSource(item: NonNullable<DashboardModel["actionItems"]>[numbe
   return { sourceType: type || "commercial_dashboard", sourceId: item.sourceId };
 }
 
+function dashboardActionTaskMetadata(sourceType: string) {
+  const normalized = sourceType || "commercial_dashboard";
+  const stageBySource: Record<string, string> = {
+    product_batch: "product_batch_action",
+    product_trial: "product_trial_action",
+    product: "product_action",
+    course: "course_action",
+    live: "live_action",
+    feed_campaign: "campaign_action",
+    alert: "alert_action",
+    storefront: "storefront_action",
+    order: "order_action",
+    inventory: "inventory_action",
+    commercial_dashboard: "dashboard_action"
+  };
+  return {
+    allDay: true,
+    calendarType: `${normalized}_dashboard_task`,
+    sourceStage: stageBySource[normalized] || "commercial_dashboard_action"
+  };
+}
+
 function DashboardCard({
   section,
   counts
@@ -354,6 +376,7 @@ export default function CommercialHome() {
     const key = `${item.type || "dashboard"}-${item.sourceId || item.productId || item.inventoryId || index}`;
     if (creatingActionTask) return;
     const source = actionItemSource(item);
+    const sourceType = String(source.sourceType || "commercial_dashboard");
     setCreatingActionTask(key);
     setTaskFeedback("");
     try {
@@ -366,9 +389,10 @@ export default function CommercialHome() {
             `Dashboard action type: ${item.type || "commercial_dashboard"}.`,
             "Created from the commercial command center so storefront, product, course, live, inventory, and campaign gaps become trackable work."
           ].join(" "),
-          sourceType: source.sourceType,
+          sourceType,
           sourceId: source.sourceId || undefined,
           sourceObjectId: source.sourceId || undefined,
+          ...dashboardActionTaskMetadata(sourceType),
           actionItemType: item.type || "commercial_dashboard",
           actionItemTitle: item.title || "Commercial dashboard action",
           linkedProductId: item.productId || undefined,

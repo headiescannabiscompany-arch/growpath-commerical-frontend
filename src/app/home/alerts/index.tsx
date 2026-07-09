@@ -178,6 +178,16 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
   }
 }
 
+function alertTaskMetadata(alert: AlertRow) {
+  const workspace = String(alert.workspaceType || "commercial").toLowerCase();
+  const sourceType = String(alert.sourceType || "alert").toLowerCase();
+  return {
+    allDay: true,
+    calendarType: `${workspace}_alert_followup`,
+    sourceStage: `${sourceType}_alert_followup`
+  };
+}
+
 function filterAlert(alert: AlertRow, filter: FilterKey) {
   if (filter === "resolved") return isResolved(alert);
   if (filter === "critical") return !isResolved(alert) && isCritical(alert);
@@ -285,6 +295,7 @@ export default function AlertCenterRoute() {
           linkedAlertId: id,
           alertSourceType: alert.sourceType || undefined,
           alertSourceId: sourceReference(alert) || undefined,
+          ...alertTaskMetadata(alert),
           ...linkedFieldsForAlertSource(alert),
           ...storefrontMetadata(alert),
           assignedToUserId: assignee.trim() || undefined,

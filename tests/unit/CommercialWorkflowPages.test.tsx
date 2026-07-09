@@ -788,6 +788,9 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             workspaceType: "commercial",
             title: "Resolve dashboard action: Bloom Topdress",
+            allDay: true,
+            calendarType: "product_dashboard_task",
+            sourceStage: "product_action",
             sourceType: "product",
             sourceId: "product-1",
             sourceObjectId: "product-1",
@@ -813,6 +816,9 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Resolve dashboard action: Restock base soil bags",
+            allDay: true,
+            calendarType: "inventory_dashboard_task",
+            sourceStage: "inventory_action",
             sourceType: "inventory",
             sourceId: "inventory-1",
             linkedInventoryId: "inventory-1",
@@ -833,6 +839,9 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Resolve dashboard action: Review veg trial evidence",
+            allDay: true,
+            calendarType: "product_trial_dashboard_task",
+            sourceStage: "product_trial_action",
             sourceType: "product_trial",
             sourceId: "trial-1",
             linkedProductTrialId: "trial-1",
@@ -854,6 +863,9 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Resolve dashboard action: Fix launch campaign CTA",
+            allDay: true,
+            calendarType: "feed_campaign_dashboard_task",
+            sourceStage: "campaign_action",
             sourceType: "feed_campaign",
             sourceId: "campaign-1",
             linkedFeedCampaignId: "campaign-1",
@@ -876,6 +888,9 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Resolve dashboard action: Fulfill wholesale order",
+            allDay: true,
+            calendarType: "order_dashboard_task",
+            sourceStage: "order_action",
             sourceType: "order",
             sourceId: "order-1",
             linkedOrderId: "order-1",
@@ -899,6 +914,9 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Resolve dashboard action: Resolve storefront setup alert",
+            allDay: true,
+            calendarType: "alert_dashboard_task",
+            sourceStage: "alert_action",
             sourceType: "alert",
             sourceId: "alert-1",
             linkedAlertId: "alert-1",

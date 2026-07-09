@@ -869,6 +869,7 @@ Completed and pushed:
 593. Stress Test and Tissue Culture default follow-up tasks now reuse their workflow calendar metadata, source-stage values, and reminders so generic follow-up actions match their multi-task plans in the shared Schedule.
 594. Direct personal task creation now adds schedule classification metadata for Diagnosis follow-ups, AI-confirmed task drafts, Forum advice tasks, Task Center tasks, and grow-specific tasks so non-ToolRun actions still appear in the shared Schedule with source-specific calendar type, source stage, all-day status, and reminders where available.
 595. Commercial and Facility task creation now assign source-specific calendar metadata, including all-day status, calendar type, and source stage, so storefront/product/course/live/feed/order/SOP/room/sensor/forum work created outside personal tools still lands in the shared schedule with workspace context.
+596. Commercial Dashboard action-item tasks and Alert Center alert-to-task creation now preserve all-day calendar metadata, source-specific calendar types, and source-stage values so setup warnings, product gaps, feed campaign issues, storefront checks, orders, trials, lessons, and sensor alerts become schedule-visible work instead of generic follow-up rows.
 
 ## Working Rule For Codex
 
