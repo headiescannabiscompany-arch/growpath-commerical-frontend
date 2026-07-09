@@ -840,6 +840,7 @@ Completed and pushed:
 564. The shared Schedule / Agenda page now surfaces task all-day, calendar type, source stage, reminder, and recurrence metadata so Auto Grow Calendar milestones read as grow-stage schedule items instead of generic task rows.
 565. Harvest Readiness AI now accepts an optional Harvest Batch ID and can save the readiness window, trichome percentages, sample location, effect goal, warnings, and linked ToolRun id as a harvest-batch quality review record.
 566. Run-To-Run Comparison now creates post-run review follow-up tasks with all-day calendar metadata, source stage, and 24-hour reminders so comparison decisions show up in the shared Schedule as next-run planning work instead of generic task rows.
+567. Pheno Matrix now creates keeper-decision follow-up tasks with all-day calendar metadata and can save ranked keeper/watch/reject recommendations, weighted scorecards, stage scorecards, notes, and source provenance back into plant growth profiles.
 
 ## Working Rule For Codex
 
