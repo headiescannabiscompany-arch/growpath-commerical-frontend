@@ -168,6 +168,24 @@ describe("Data Integrations Growlink flow", () => {
                   ]
                 })
               ],
+              suggestedAutomationRules: expect.arrayContaining([
+                expect.objectContaining({
+                  roomName: "Flower A",
+                  source: "growlink_account_structure",
+                  ruleType: "tool_suggestion",
+                  toolType: "vpd_dew_point_guard",
+                  requiredMetrics: ["air_temperature", "relative_humidity"],
+                  action: "Use imported room readings in VPD and Dew Point Guard."
+                }),
+                expect.objectContaining({
+                  roomName: "Flower A",
+                  source: "growlink_account_structure",
+                  ruleType: "alert_suggestion",
+                  triggerMetric: "relative_humidity",
+                  action:
+                    "Create high-humidity and dew-point-risk reminders after lights out."
+                })
+              ]),
               rooms: [
                 expect.objectContaining({
                   name: "Flower A",

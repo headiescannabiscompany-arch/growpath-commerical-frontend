@@ -780,6 +780,7 @@ Completed and pushed:
 504. Public storefront product and course detail campaign CTAs now preserve the feed campaign id in `/feed?campaignId=...`, so related outreach cards reopen the exact promotional campaign instead of dropping users on the generic Feed root.
 505. Public brand profile and storefront root campaign CTAs now also preserve `/feed?campaignId=...`, keeping all public commercial campaign cards tied to the exact Feed/Campaigns outreach record.
 506. Public brand profile course cards now open the brand storefront course detail route instead of the generic course catalog, preserving product/course/live/campaign/Stripe storefront context.
+507. Personal Growlink import previews now save suggested automation/tool handoffs with the account structure, including VPD/Dew Point Guard and high-humidity/dew-point alert suggestions when imported room streams include temperature and RH.
 
 ## Working Rule For Codex
 

@@ -64,6 +64,16 @@ type RoomImportPreview = {
   }>;
 };
 
+type SuggestedAutomationRule = {
+  roomName: string;
+  source: string;
+  ruleType: string;
+  toolType?: string;
+  triggerMetric?: string;
+  requiredMetrics?: string[];
+  action: string;
+};
+
 const metricPatterns: Array<[RegExp, string]> = [
   [/temp|temperature/i, "air_temperature"],
   [/rh|humidity/i, "relative_humidity"],
@@ -182,6 +192,60 @@ function buildGrowlinkImportPreview(
   });
 
   return Array.from(rooms.values());
+}
+
+function buildSuggestedAutomationRules(
+  rooms: RoomImportPreview[]
+): SuggestedAutomationRule[] {
+  return rooms.flatMap((room) => {
+    const metrics = new Set(room.metrics);
+    const base = {
+      roomName: room.name,
+      source: "growlink_account_structure"
+    };
+    const rules: SuggestedAutomationRule[] = [];
+
+    if (metrics.has("air_temperature") && metrics.has("relative_humidity")) {
+      rules.push(
+        {
+          ...base,
+          ruleType: "tool_suggestion",
+          toolType: "vpd_dew_point_guard",
+          requiredMetrics: ["air_temperature", "relative_humidity"],
+          action: "Use imported room readings in VPD and Dew Point Guard."
+        },
+        {
+          ...base,
+          ruleType: "alert_suggestion",
+          triggerMetric: "relative_humidity",
+          action: "Create high-humidity and dew-point-risk reminders after lights out."
+        }
+      );
+    }
+
+    if (metrics.has("substrate_moisture") || metrics.has("substrate_ec")) {
+      rules.push({
+        ...base,
+        ruleType: "tool_suggestion",
+        toolType: "watering_dryback_review",
+        requiredMetrics: ["substrate_moisture", "substrate_ec"].filter((metric) =>
+          metrics.has(metric)
+        ),
+        action: "Use imported root-zone readings for dryback and crop-steering review."
+      });
+    }
+
+    if (metrics.has("irrigation_event")) {
+      rules.push({
+        ...base,
+        ruleType: "task_suggestion",
+        triggerMetric: "irrigation_event",
+        action: "Create follow-up tasks from irrigation events when plant response is due."
+      });
+    }
+
+    return rules;
+  });
 }
 
 function defaultHistoryWindow() {
@@ -431,6 +495,8 @@ export default function DataIntegrationsScreen() {
         normalizedMetrics: room.metrics,
         sensorStreams: room.sensorStreams
       }));
+      const suggestedAutomationRules =
+        buildSuggestedAutomationRules(growlinkImportPreview);
       const created = await createTelemetrySource({
         growId: nextGrowId,
         type: "growlink",
@@ -448,6 +514,7 @@ export default function DataIntegrationsScreen() {
               detectedDevices: growlinkPreviewTotals.devices,
               detectedStreams: growlinkPreviewTotals.streams,
               suggestedGrowSpaces,
+              suggestedAutomationRules,
               rooms: importPreview
             }
           }
@@ -620,8 +687,9 @@ export default function DataIntegrationsScreen() {
             <Text style={styles.sourceListTitle}>Room import preview</Text>
             <Text style={styles.meta}>
               Review this mapping before saving. GrowPath can use it to suggest personal
-              grow spaces now and facility rooms/devices/streams during onboarding.
-              Read-only data sync stays separate from write/control actions.
+              grow spaces now, tool/alert handoffs for VPD and dew point, and facility
+              rooms/devices/streams during onboarding. Read-only data sync stays separate
+              from write/control actions.
             </Text>
             <Text style={styles.meta}>
               Permission: read-only / Detected rooms: {growlinkPreviewTotals.rooms} /
