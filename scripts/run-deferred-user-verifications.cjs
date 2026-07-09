@@ -163,6 +163,8 @@ const manualChecks = [
       "Confirm Feed cards read as commercial/facility outreach with CTA buttons, not discussion threads.",
       "Confirm Forum pages still present discussion/Q&A/thread behavior and can link to product/course/live context.",
       "Create a commercial feed campaign with grow interests, schedule start/end, reminder, recurrence, product/live/course/storefront destination, and Forum/Q&A link; confirm those fields show on the campaign card and Schedule page.",
+      "Open Feed with /feed?campaignId=:id and confirm the exact promoted outreach card is focused even when the campaign was created from a storefront, live, alert, task, notification, or schedule source.",
+      "From Feed, Live Session, and Brand Forum/Q&A cards, confirm product/course CTAs preserve exact /store/:slug/products/:id and /store/:slug/courses/:id routes when the payload uses storefrontSlug, linkedStorefrontSlug, brandSlug, or publicSlug.",
       "From the root Create Post action as a selected Facility user, confirm it opens /home/facility/feed for facility outreach creation instead of the shared /feed viewer.",
       "On a free account, confirm top and bottom feed placements render, and long pages include one middle placement."
     ]

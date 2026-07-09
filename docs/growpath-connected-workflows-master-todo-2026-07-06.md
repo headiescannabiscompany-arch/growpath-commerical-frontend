@@ -789,6 +789,7 @@ Completed and pushed:
 513. Commercial Brand Forum/Q&A support posts now resolve `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` aliases for visible metadata and product/course/storefront action links, keeping discussion answers tied to exact public storefront pages without turning Forum/Q&A into Feed.
 514. Commercial Feed API wrapper coverage now locks campaign-id and storefront-slug alias normalization at the API boundary, proving `campaignId`, `linkedFeedCampaignId`, `linkedFeedPostId`, `linkedStorefrontSlug`, `brandSlug`, and `publicSlug` are normalized before Feed placement and routing components consume campaigns.
 515. Shared source-link routing now recognizes `brandSlug` and `publicSlug` storefront aliases for inferred storefront, product, and course links, so alerts, notifications, tasks, schedule items, and other source-linked records can preserve exact public storefront routes without each page hand-coding alias handling.
+516. Deferred user verification checklist now includes exact Feed campaign deep-link focusing and storefront slug alias route checks across Feed, Live Session, and Brand Forum/Q&A so the later browser pass validates the alias-routing work in one batch.
 
 ## Working Rule For Codex
 
