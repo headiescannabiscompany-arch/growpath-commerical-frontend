@@ -891,6 +891,7 @@ Completed and pushed:
 615. Live-session campaign links are now workspace-aware: commercial-owned live sessions open `/home/commercial/feed?campaignId=...`, facility-owned sessions open `/home/facility/feed?campaignId=...`, and public sessions keep `/feed?campaignId=...` placement routing.
 616. Transactional email delivery is now tracked separately from live support aliases, with a non-secret Resend config verifier, deferred production delivery checks, backend default sender alignment for `GrowPathAI <noreply@growpathai.com>`, and launch checklist steps for `REQUIRE_EMAIL_VERIFICATION`, `EMAIL_PROVIDER`, `RESEND_API_KEY`, verified `growpathai.com` sending domain, registration verification email, and forgot-password delivery.
 617. Live URL verification now falls back to PowerShell web requests on Windows when Node fetch hits local TLS/CA failures, so `npm run verify:live-urls` can pass against production without repeatedly requiring a manual `NODE_OPTIONS=--use-system-ca` workaround.
+618. Stale underscored `/home/_personal` and `/home/_facility` route files were removed from `src/app`, dropping route inventory from 207 to 205 and keeping Personal/Facility entry through the canonical `/home/personal`, `/home/facility/select`, and `/home/facility` route family.
 
 ## Working Rule For Codex
 
