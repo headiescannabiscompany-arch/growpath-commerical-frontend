@@ -131,7 +131,7 @@ export default function StoreIndex() {
 
       <AppCard>
         <Text style={styles.cardTitle}>
-          {similarTo ? "Similar Brands" : "Find Brands"}
+          {similarTo ? "Similar Storefronts" : "Find Storefronts"}
         </Text>
         <Text style={styles.cardText}>
           Search public commercial storefronts by brand, category, product line, or store
@@ -157,7 +157,7 @@ export default function StoreIndex() {
           ]}
         >
           <Text style={styles.secondaryButtonText}>
-            {searching ? "Searching..." : "Search Brands"}
+            {searching ? "Searching..." : "Search Storefronts"}
           </Text>
         </Pressable>
         {directoryMessage ? <Text style={styles.meta}>{directoryMessage}</Text> : null}

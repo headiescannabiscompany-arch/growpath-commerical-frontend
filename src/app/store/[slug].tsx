@@ -247,7 +247,7 @@ export default function PublicStorefrontRoute() {
               </Pressable>
               <Link href={`/store?similarTo=${encodeURIComponent(slug)}` as any} asChild>
                 <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>View Similar Brands</Text>
+                  <Text style={styles.secondaryButtonText}>View Similar Storefronts</Text>
                 </Pressable>
               </Link>
               <Link href={returnFeedHref as any} asChild>

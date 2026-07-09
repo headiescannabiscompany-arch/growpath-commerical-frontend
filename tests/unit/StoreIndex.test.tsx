@@ -74,7 +74,7 @@ describe("StoreIndex", () => {
         limit: 12
       })
     );
-    expect(screen.getByText("Similar Brands")).toBeTruthy();
+    expect(screen.getByText("Similar Storefronts")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Profile")).toBeTruthy();
     expect(screen.getAllByText("Storefront").length).toBeGreaterThan(0);
@@ -86,7 +86,7 @@ describe("StoreIndex", () => {
     const screen = render(<StoreIndex />);
 
     fireEvent.changeText(screen.getByLabelText("Search public brands"), "soil");
-    fireEvent.press(screen.getByText("Search Brands"));
+    fireEvent.press(screen.getByText("Search Storefronts"));
 
     await waitFor(() =>
       expect(mockSearchPublicStorefronts).toHaveBeenCalledWith({

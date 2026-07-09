@@ -681,7 +681,7 @@ export default function PublicProductRoute() {
               </Link>
               <Link href={`/store?similarTo=${encodeURIComponent(slug)}` as any} asChild>
                 <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Similar Brands</Text>
+                  <Text style={styles.secondaryButtonText}>Similar Storefronts</Text>
                 </Pressable>
               </Link>
               <Link href={returnFeedHref as any} asChild>

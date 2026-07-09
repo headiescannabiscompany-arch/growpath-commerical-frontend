@@ -263,7 +263,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Storefront profile")).toBeTruthy();
     expect(screen.getByText("Open Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Share Store")).toBeTruthy();
-    expect(screen.getByText("View Similar Brands")).toBeTruthy();
+    expect(screen.getByText("View Similar Storefronts")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
@@ -395,7 +395,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Share Product")).toBeTruthy();
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
-    expect(screen.getByText("Similar Brands")).toBeTruthy();
+    expect(screen.getByText("Similar Storefronts")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
