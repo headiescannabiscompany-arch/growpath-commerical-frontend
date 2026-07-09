@@ -247,7 +247,7 @@ type StorefrontOwnerScreenProps = {
 export default function Storefront({
   routeKey = "storefront",
   title = "Storefront",
-  subtitle = "Public brand profile, product cards, courses, lives, campaigns, and user preview links.",
+  subtitle = "Public storefront, product cards, courses, lives, campaigns, and user preview links.",
   showBack,
   backFallbackHref
 }: StorefrontOwnerScreenProps = {}) {

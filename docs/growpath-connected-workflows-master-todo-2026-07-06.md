@@ -806,6 +806,7 @@ Completed and pushed:
 530. FeedRail fallback promotional and education placements now point to public Storefront routes instead of legacy Brand Profile routes, keeping offline/default outreach cards aligned with Feed as storefront/product/course/live promotion.
 531. Commercial Profile & Billing public discovery copy now lists `/store/:slug` as the primary public storefront URL and labels `/brands/:slug` as the legacy brand-profile compatibility route, keeping owner-facing public links aligned with Storefront-first commercial navigation.
 532. Commercial Dashboard Storefront workflow copy now says public storefront instead of public brand profile, keeping the dashboard's primary setup action aligned with Storefront as the commercial home base.
+533. Storefront owner page subtitle now frames the page as the public storefront instead of a public brand profile, while preserving the legacy brand-profile link as a clearly labeled compatibility route.
 
 ## Working Rule For Codex
 

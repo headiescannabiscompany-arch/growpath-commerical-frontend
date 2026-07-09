@@ -251,6 +251,11 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
+    expect(
+      screen.getByText(
+        "Public storefront, product cards, courses, lives, campaigns, and user preview links."
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("View as User: Store Page")).toBeTruthy();
     expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
