@@ -1132,10 +1132,11 @@ export default function Storefront({
             Free, Pro, commercial, and facility users can reach this brand from feed
             campaigns, forum replies, course pages, product cards, and public search
             surfaces. Storefronts should make it easy to view as a user, open the brand
-            profile, open support discussions, and follow product links.
+            storefront, open support discussions, and follow product links. The brand
+            profile URL is kept as a legacy compatibility view.
           </Text>
           <View style={styles.publicLinkBox}>
-            <Text style={styles.publicLinkLabel}>Brand profile</Text>
+            <Text style={styles.publicLinkLabel}>Legacy brand profile</Text>
             <Text selectable style={styles.publicLinkText}>
               {currentPublicUrl(publicProfilePath)}
             </Text>
@@ -1160,7 +1161,7 @@ export default function Storefront({
             />
             <PublicPreviewLink
               href={publicProfilePath}
-              label="View as User: Brand Profile"
+              label="View as User: Legacy Profile"
             />
           </View>
           <View style={styles.discoveryActions}>

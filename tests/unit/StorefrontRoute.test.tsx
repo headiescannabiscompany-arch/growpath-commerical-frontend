@@ -254,7 +254,8 @@ describe("Storefront route", () => {
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("View as User: Store Page")).toBeTruthy();
     expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
-    expect(screen.getByText("View as User: Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Legacy brand profile")).toBeTruthy();
+    expect(screen.getByText("View as User: Legacy Profile")).toBeTruthy();
     expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
     expect(screen.getByTestId("link-/storefront/grow-shop")).toBeTruthy();
     expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
