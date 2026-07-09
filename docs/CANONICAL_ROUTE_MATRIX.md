@@ -30,11 +30,11 @@ This file has older generated sections below. Use these current route rules firs
 
 ### Mode → Plan Matrix
 
-| Mode         | Valid Plans                   | Shell           | Primary Use Case                      |
-| ------------ | ----------------------------- | --------------- | ------------------------------------- |
-| `personal`   | `free`, `pro`                 | PersonalShell   | Individual growers, learning, courses, tools |
-| `commercial` | `commercial`                  | CommercialShell | Brands, storefronts, campaigns, orders |
-| `facility`   | `facility`                    | FacilityShell   | Multi-user operations, compliance     |
+| Mode         | Valid Plans   | Shell           | Primary Use Case                             |
+| ------------ | ------------- | --------------- | -------------------------------------------- |
+| `personal`   | `free`, `pro` | PersonalShell   | Individual growers, learning, courses, tools |
+| `commercial` | `commercial`  | CommercialShell | Brands, storefronts, campaigns, orders       |
+| `facility`   | `facility`    | FacilityShell   | Multi-user operations, compliance            |
 
 **Key Rule**: `mode` determines the navigation shell. `plan` determines capabilities within that shell.
 
@@ -156,7 +156,7 @@ Current commercial routes:
 
 Legacy compatibility guards:
 
-- `/campaigns` redirects to `/home/commercial/marketing`.
+- `/campaigns` redirects to `/home/commercial/feed`.
 - `/orders` redirects to `/home/commercial/orders`.
 - `/storefront` redirects/gates to commercial owner storefront.
 - `/home/commercial/inventory-create` mirrors `/home/commercial/inventory/new`.

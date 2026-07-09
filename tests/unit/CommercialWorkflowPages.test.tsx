@@ -888,7 +888,9 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
 
     fireEvent.press(
-      screen.getByLabelText("Create task for dashboard action Resolve storefront setup alert")
+      screen.getByLabelText(
+        "Create task for dashboard action Resolve storefront setup alert"
+      )
     );
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -1006,7 +1008,9 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getByText("Commercial Course Builder")).toBeTruthy();
     expect(screen.getByText("Course creation workflow")).toBeTruthy();
-    expect(screen.getByText(/Commercial courses should add storefront context/)).toBeTruthy();
+    expect(
+      screen.getByText(/Commercial courses should add storefront context/)
+    ).toBeTruthy();
     expect(screen.getByText("Product education")).toBeTruthy();
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);
@@ -1018,7 +1022,9 @@ describe("commercial workflow pages", () => {
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
     expect(screen.getByText("Choose Product Line")).toBeTruthy();
-    expect(screen.getByLabelText("Use course product line Living Soil Line")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use course product line Living Soil Line")
+    ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
@@ -1445,9 +1451,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Marketing plan linked product"),
       "product-2"
     );
-    fireEvent.press(
-      screen.getByLabelText("Use marketing product line Living Soil Line")
-    );
+    fireEvent.press(screen.getByLabelText("Use marketing product line Living Soil Line"));
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan linked course"),
       "course-2"
@@ -1498,13 +1502,13 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("keeps the legacy campaigns route as a canonical marketing redirect", () => {
+  it("keeps the legacy campaigns route as a canonical Feed/Campaigns redirect", () => {
     const routeSource = fs.readFileSync(
       path.join(process.cwd(), "src", "app", "campaigns", "index.tsx"),
       "utf8"
     );
 
-    expect(routeSource).toContain('<Redirect href="/home/commercial/marketing" />');
+    expect(routeSource).toContain('<Redirect href="/home/commercial/feed" />');
     expect(routeSource).not.toContain("Marketing Planner");
     expect(routeSource).not.toContain("Create Marketing Plan");
     expect(routeSource).not.toContain('objective: "content_plan"');
@@ -1961,8 +1965,12 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Products In This Line")).toBeTruthy();
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
     expect(screen.getByText("Seedling-safe base soil")).toBeTruthy();
-    expect(screen.getAllByText(/Interests living soil, seedlings/).length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products/product-1" })).toBeTruthy();
+    expect(
+      screen.getAllByText(/Interests living soil, seedlings/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/product-1" })
+    ).toBeTruthy();
     expect(screen.getByText("Public Use")).toBeTruthy();
     expect(
       screen.getByText(
