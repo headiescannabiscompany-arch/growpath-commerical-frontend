@@ -28,6 +28,22 @@ function productKey(product: any) {
   return String(product?.id || product?._id || product?.productId || product?.slug || "");
 }
 
+function campaignKey(campaign: any) {
+  return String(
+    campaign?.id ||
+      campaign?._id ||
+      campaign?.campaignId ||
+      campaign?.feedCampaignId ||
+      campaign?.feedPostId ||
+      ""
+  );
+}
+
+function campaignHref(campaign: any) {
+  const id = campaignKey(campaign);
+  return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
+}
+
 function productCanCheckout(product: any) {
   return Boolean(
     product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
@@ -610,7 +626,7 @@ export default function PublicProductRoute() {
                       </Text>
                     ) : null}
                   </View>
-                  <Link href={returnFeedHref as any} asChild>
+                  <Link href={campaignHref(campaign) as any} asChild>
                     <Pressable style={styles.secondaryButton}>
                       <Text style={styles.secondaryButtonText}>Open Campaign</Text>
                     </Pressable>

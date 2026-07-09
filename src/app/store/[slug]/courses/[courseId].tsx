@@ -36,6 +36,22 @@ function courseKey(course: any) {
   return String(course?.id || course?._id || course?.courseId || course?.slug || "");
 }
 
+function campaignKey(campaign: any) {
+  return String(
+    campaign?.id ||
+      campaign?._id ||
+      campaign?.campaignId ||
+      campaign?.feedCampaignId ||
+      campaign?.feedPostId ||
+      ""
+  );
+}
+
+function campaignHref(campaign: any) {
+  const id = campaignKey(campaign);
+  return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
+}
+
 function money(course: any) {
   const cents = Number(course?.priceCents || 0);
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
@@ -463,7 +479,7 @@ export default function PublicStorefrontCourseRoute() {
                       <Text style={styles.meta}>{publicItemSummary(campaign)}</Text>
                     ) : null}
                   </View>
-                  <Link href="/feed" asChild>
+                  <Link href={campaignHref(campaign) as any} asChild>
                     <Pressable style={styles.secondaryButton}>
                       <Text style={styles.secondaryButtonText}>Open Campaign</Text>
                     </Pressable>

@@ -380,6 +380,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getAllByText("Open Campaign").length).toBeGreaterThan(0);
+    expect(mockLinkHrefs).toContain("/feed?campaignId=post-1");
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
@@ -483,6 +484,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Promoted Course Campaigns")).toBeTruthy();
     expect(screen.getAllByText("Trial update").length).toBeGreaterThan(0);
     expect(screen.getByText("Open Campaign")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/feed?campaignId=post-1");
     expect(screen.getByText("Course Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
