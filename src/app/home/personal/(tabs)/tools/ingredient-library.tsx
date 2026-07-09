@@ -279,6 +279,8 @@ export default function IngredientLibraryRoute() {
           <Text style={styles.title}>Product / Ingredient Library</Text>
           <Text style={styles.subtitle}>
             Manage user-entered nutrients, amendments, soil inputs, and source confidence.
+            Guaranteed analysis is stored as label N-P2O5-K2O; elemental conversions
+            happen inside recipe tools.
           </Text>
           <PersonalFeedPlacement
             placement="top"
@@ -326,8 +328,8 @@ export default function IngredientLibraryRoute() {
                     {item.name}
                   </Text>
                   <Text style={styles.meta}>
-                    {item.brand || "No brand"} | {item.category || "input"} | NPK{" "}
-                    {item.labelNPK?.N ?? 0}-{item.labelNPK?.P ?? 0}-
+                    {item.brand || "No brand"} | {item.category || "input"} | Label
+                    N-P2O5-K2O {item.labelNPK?.N ?? 0}-{item.labelNPK?.P ?? 0}-
                     {item.labelNPK?.K ?? 0}
                   </Text>
                   <Text style={styles.meta}>
@@ -410,13 +412,13 @@ export default function IngredientLibraryRoute() {
               onChangeText={(value) => updateDraft("n", value)}
             />
             <Field
-              label="P"
+              label="P2O5"
               value={draft.p}
               numeric
               onChangeText={(value) => updateDraft("p", value)}
             />
             <Field
-              label="K"
+              label="K2O"
               value={draft.k}
               numeric
               onChangeText={(value) => updateDraft("k", value)}

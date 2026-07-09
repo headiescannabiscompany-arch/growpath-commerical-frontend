@@ -768,6 +768,7 @@ Completed and pushed:
 492. Links management, Growers Forum rule/role panels, and AI token balance/progress/action surfaces now consume shared radius tokens while preserving link CRUD, Forum positioning copy, and token balance upgrade behavior.
 493. Facility vendor dashboard cards/forms/rows, login mode chips, and debug diagnostic cards/actions now consume shared radius tokens while preserving vendor CRUD, auth mode selection, and debug API checks.
 494. Deferred user verification now batches the latest support-contact config, onboarding, Forum copy, legal-link, login, and facility SOP route regressions and makes the full live alias set explicit in the future browser/manual checklist.
+495. Ingredient Library now labels saved ingredient analysis as guaranteed-analysis N-P2O5-K2O and clarifies that elemental P/K conversion belongs in recipe tools, preserving the existing saved label values while reducing NPK math confusion.
 
 ## Working Rule For Codex
 

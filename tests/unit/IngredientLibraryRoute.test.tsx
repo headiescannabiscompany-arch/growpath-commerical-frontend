@@ -81,6 +81,10 @@ describe("IngredientLibraryRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Kelp meal")).toBeTruthy());
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(
+      screen.getByText(/Guaranteed analysis is stored as label N-P2O5-K2O/)
+    ).toBeTruthy();
+    expect(screen.getByText(/Label N-P2O5-K2O 1-0.5-2/)).toBeTruthy();
     expect(screen.getByText(/Release medium/)).toBeTruthy();
     expect(screen.getByText(/Supplier Local supply/)).toBeTruthy();
     expect(screen.getByText(/Docs https:\/\/example.com\/coa.pdf/)).toBeTruthy();
@@ -93,8 +97,8 @@ describe("IngredientLibraryRoute", () => {
     fireEvent.changeText(screen.getByLabelText("Brand"), "Trusted Farm");
     fireEvent.changeText(screen.getByLabelText("Category"), "dry amendment");
     fireEvent.changeText(screen.getByLabelText("N"), "3");
-    fireEvent.changeText(screen.getByLabelText("P"), "16");
-    fireEvent.changeText(screen.getByLabelText("K"), "0");
+    fireEvent.changeText(screen.getByLabelText("P2O5"), "16");
+    fireEvent.changeText(screen.getByLabelText("K2O"), "0");
     fireEvent.changeText(screen.getByLabelText("Density g/ml"), "0.8");
     fireEvent.changeText(screen.getByLabelText("Cost"), "42");
     fireEvent.press(screen.getByLabelText("Release speed slow"));
