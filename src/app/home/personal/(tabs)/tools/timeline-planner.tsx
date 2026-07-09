@@ -26,6 +26,19 @@ function numberValue(value: string, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function timelineCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "timeline_planner",
+    sourceStage,
+    reminderPlan: {
+      label: "24 hours before",
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -1440 }]
+    }
+  };
+}
+
 export default function TimelinePlannerScreen() {
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -88,7 +101,8 @@ export default function TimelinePlannerScreen() {
           .filter(Boolean)
           .join("\n"),
         dueDate: milestone.date,
-        priority: "medium"
+        priority: "medium",
+        ...timelineCalendarMetadata(milestone.key)
       }))
     });
     if (!result.ok) throw new Error(result.error);

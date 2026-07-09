@@ -857,6 +857,7 @@ Completed and pushed:
 581. Run-To-Run Comparison next-run tasks now use specific source-stage values for post-run decision review, next-run template updates, missing-data backfill, and cultivar/environment separation while preserving all-day run-comparison calendar metadata and 24-hour reminders.
 582. Species / Crop Identification task plans and default confirmation tasks now carry all-day crop-identity calendar metadata, source-stage values, and 12-hour reminders so crop confirmation, crop-specific tool target review, and grow/plant tag updates appear in the shared Schedule with crop-profile context.
 583. Auto Grow Calendar now uses one grow-calendar metadata helper for bulk milestone tasks and default first-task creation, preserving all-day milestone scheduling, 24-hour reminders, and non-empty source-stage values for generated stage anchors.
+584. Timeline Planner milestone task creation now carries all-day timeline calendar metadata, milestone source-stage values, and 24-hour reminders so flip, harvest-window, dry-complete, and cure-check tasks appear in the shared Schedule with grow/plant context.
 
 ## Working Rule For Codex
 
