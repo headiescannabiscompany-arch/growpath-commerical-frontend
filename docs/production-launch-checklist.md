@@ -70,3 +70,8 @@ Status policy: each item is `DONE` or `NOT DONE` with owner, next action, and ev
 - DONE: Support/ops handoff packet.
 - Owner: Product + Support
 - Evidence: GrowPath support aliases are live and centralized in `src/config/supportContacts.ts`, with coverage in `tests/unit/SupportPage.test.tsx`, `tests/unit/PolicyContactAliases.test.tsx`, and `tests/unit/SupportContactsConfig.test.ts`.
+
+- NOT DONE: Transactional email delivery verified in production.
+- Owner: Backend/DevOps
+- Next action: In the live API backend environment, confirm `REQUIRE_EMAIL_VERIFICATION=true`, `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` is present, and `EMAIL_FROM` uses display-name format such as `GrowPathAI <noreply@growpathai.com>`. Confirm the `growpathai.com` sending domain is verified in Resend, then test registration verification and forgot-password delivery until the API returns `emailSent=true` and messages arrive.
+- Evidence target: `tmp/spec/transactional_email_delivery_2026-07-09.md`

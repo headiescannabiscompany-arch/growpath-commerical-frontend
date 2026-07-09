@@ -27,6 +27,11 @@ const checks = [
     args: ["run", "audit:growpath-system"]
   },
   {
+    label: "Email delivery config shape",
+    command: npmCmd,
+    args: ["run", "verify:email-delivery-config"]
+  },
+  {
     label: "Recent autonomous workflow slices",
     command: npmCmd,
     args: [
@@ -158,6 +163,16 @@ const manualChecks = [
       "Confirm the full live alias set is represented where appropriate in config/docs: support, help, contact, hello, info, admin, billing, orders, sales, partners, privacy, legal, security, commercial, facility, courses, live, noreply, and notifications at growpathai.com.",
       "Verify sender-only aliases noreply@growpathai.com and notifications@growpathai.com remain configured for system email use but are not displayed as public support destinations.",
       "Open Privacy, Terms, and payment help surfaces and confirm they route privacy/legal/security/billing copy to the live aliases instead of placeholders."
+    ]
+  },
+  {
+    area: "Transactional email delivery",
+    checks: [
+      "In the live API backend environment, run npm run verify:email-delivery-config:strict or equivalent and confirm REQUIRE_EMAIL_VERIFICATION=true, EMAIL_PROVIDER=resend, RESEND_API_KEY is present, and EMAIL_FROM uses display-name format.",
+      "In Resend, confirm growpathai.com is a verified sending domain and the EMAIL_FROM address, preferably GrowPathAI <noreply@growpathai.com>, is allowed to send.",
+      "Create or register a test account and confirm the API returns emailSent=true for verification email delivery.",
+      "Use Forgot Password for a known account and confirm the API returns emailSent=true and the reset email arrives with a /reset-password link.",
+      "If emails still do not arrive, check the API logs for [AUTH][EMAIL_VERIFICATION_SEND_FAIL] or password-reset send errors and confirm Resend has no domain, DNS, rate-limit, or suppression-list rejection."
     ]
   },
   {
@@ -293,6 +308,7 @@ function renderChecklist() {
     "",
     "- Facility visual quality should be applied across Personal/Pro and Commercial UI, not kept only in Facility.",
     "- Owner confirmed support is live with all aliases; keep future checks focused on UI routing, the complete alias set, and sender-only visibility.",
+    "- Support aliases being live does not prove transactional email delivery. Verification and password reset require backend Resend config plus a verified sending domain.",
     "- Known non-blocking current test noise: some facility and NPK tests may emit React act(...) warnings while still passing.",
     ""
   );
