@@ -27,9 +27,11 @@ describe("CommercialProfileScreen", () => {
     expect(screen.getByText("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("555-0100")).toBeTruthy();
 
+    fireEvent.press(screen.getByText("Open Storefront"));
     fireEvent.press(screen.getByText("View Plans and Pricing"));
     fireEvent.press(screen.getByText("Manage Subscription"));
 
+    expect(navigate).toHaveBeenCalledWith("Storefront");
     expect(navigate).toHaveBeenCalledWith("PricingMatrix");
     expect(navigate).toHaveBeenCalledWith("Subscription");
   });

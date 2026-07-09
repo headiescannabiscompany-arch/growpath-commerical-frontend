@@ -27,15 +27,25 @@ export default function CommercialProfileScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.button}
+          onPress={() => navigation.navigate("Storefront")}
+        >
+          <Text style={styles.buttonText}>Open Storefront</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.secondary]}
           onPress={() => navigation.navigate("PricingMatrix")}
         >
-          <Text style={styles.buttonText}>View Plans and Pricing</Text>
+          <Text style={[styles.buttonText, styles.secondaryText]}>
+            View Plans and Pricing
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.secondary]}
           onPress={() => navigation.navigate("Subscription")}
         >
-          <Text style={[styles.buttonText, styles.secondaryText]}>Manage Subscription</Text>
+          <Text style={[styles.buttonText, styles.secondaryText]}>
+            Manage Subscription
+          </Text>
         </TouchableOpacity>
       </View>
     </ScreenContainer>

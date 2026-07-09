@@ -824,6 +824,7 @@ Completed and pushed:
 548. Production launch support handoff now records that GrowPath support aliases are live and centralized in the shared support-contact config instead of only being planned/configured.
 549. Global Search now uses the shared personal Feed placement component for top and bottom promotional campaign slots, keeping search aligned with the app-wide Feed placement rule without turning search results into forum/discussion content.
 550. Deferred user verification now includes the Search regression test and manual Search checks for Storefront routing, workflow keyword discovery, and top/bottom Feed placements, while updating active menu wording from Storefront Offers to Storefront.
+551. Legacy Commercial Brand Profile compatibility screen now exposes Storefront as the primary action before pricing/subscription controls, so stale commercial profile entry points still point owners toward the public storefront home base.
 
 ## Working Rule For Codex
 
