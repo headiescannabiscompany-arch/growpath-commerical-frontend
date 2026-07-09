@@ -30,6 +30,18 @@ function dueTomorrow() {
   return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
+function ppfdTaskMetadata(hasWarnings: boolean) {
+  return {
+    allDay: true,
+    calendarType: "ppfd_dli_followup",
+    sourceStage: hasWarnings ? "light_stress_response_check" : "ppfd_dli_measurement",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function PpfdToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
@@ -245,7 +257,8 @@ export default function PpfdToolScreen() {
                           "Verify with a meter and adjust fixture height or dimming gradually."
                         ].join("\n"),
                         priority: computed.warnings.length ? "high" : "medium",
-                        dueDate: dueTomorrow()
+                        dueDate: dueTomorrow(),
+                        ...ppfdTaskMetadata(computed.warnings.length > 0)
                       });
                       if (!result.ok) throw new Error(result.error);
                       setFeedback("Created light check task.");

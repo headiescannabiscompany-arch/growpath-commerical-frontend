@@ -859,6 +859,7 @@ Completed and pushed:
 583. Auto Grow Calendar now uses one grow-calendar metadata helper for bulk milestone tasks and default first-task creation, preserving all-day milestone scheduling, 24-hour reminders, and non-empty source-stage values for generated stage anchors.
 584. Timeline Planner milestone task creation now carries all-day timeline calendar metadata, milestone source-stage values, and 24-hour reminders so flip, harvest-window, dry-complete, and cure-check tasks appear in the shared Schedule with grow/plant context.
 585. Watering Planner task creation now carries all-day watering calendar metadata, watering-application source stage, and 12-hour reminders so watering volume/runoff actions appear in the shared Schedule with ToolRun context.
+586. PPFD / DLI Planner task creation now carries all-day lighting calendar metadata, PPFD/DLI source-stage values, and 12-hour reminders so light checks and stress-response follow-ups appear in the shared Schedule with ToolRun context.
 
 ## Working Rule For Codex
 
