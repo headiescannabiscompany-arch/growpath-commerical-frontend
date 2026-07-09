@@ -18,6 +18,13 @@ jest.mock("@/components/AppShell.js", () => {
   return ({ children }: any) => React.createElement(View, null, children);
 });
 
+jest.mock("@/components/feed/PersonalFeedPlacement", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return ({ placement, routeKey }: any) =>
+    React.createElement(Text, null, `Feed placement ${placement} ${routeKey}`);
+});
+
 describe("SearchScreen", () => {
   beforeEach(() => {
     mockSearchEnabled = true;
@@ -40,6 +47,8 @@ describe("SearchScreen", () => {
     expect(
       screen.getByText("NPK, soil builder, IPM, VPD, crop steering, and grow calculators")
     ).toBeTruthy();
+    expect(screen.getByText("Feed placement top personal_search")).toBeTruthy();
+    expect(screen.getByText("Feed placement bottom personal_search")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Open Tools"));
     fireEvent.press(screen.getByLabelText("Open Storefront"));

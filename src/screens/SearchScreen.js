@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import AppShell from "../components/AppShell.js";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
 
 const SEARCH_SURFACES = [
@@ -141,6 +142,7 @@ export default function SearchScreen({ navigation }) {
         <Text style={styles.subtitle}>
           Find storefronts, Feed / Campaigns, courses, Forum/Q&A, and grow records.
         </Text>
+        <PersonalFeedPlacement placement="top" routeKey="personal_search" />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -176,6 +178,7 @@ export default function SearchScreen({ navigation }) {
             </Pressable>
           )}
         />
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_search" />
       </View>
     </AppShell>
   );

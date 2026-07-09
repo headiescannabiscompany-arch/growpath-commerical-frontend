@@ -822,6 +822,7 @@ Completed and pushed:
 546. Global Search, shared capability menus, and Commercial Tools now label the actual commercial destination as Storefront and route it to `Storefront` instead of pricing/offers copy, while Feed / Campaigns and Forum / Q&A remain distinct routes.
 547. Global Search now exposes the missing Tools surface and matches workflow/grow-interest keywords such as NPK, soil, IPM, VPD, advertising, campaigns, and brands, routing users to the connected tool, storefront, Feed/Campaigns, or Forum surfaces instead of relying only on visible titles.
 548. Production launch support handoff now records that GrowPath support aliases are live and centralized in the shared support-contact config instead of only being planned/configured.
+549. Global Search now uses the shared personal Feed placement component for top and bottom promotional campaign slots, keeping search aligned with the app-wide Feed placement rule without turning search results into forum/discussion content.
 
 ## Working Rule For Codex
 
