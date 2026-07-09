@@ -298,7 +298,7 @@ export default function CommercialProductLineDetailRoute({
       <AppCard>
         <Text style={styles.cardTitle}>Public Use</Text>
         <Text style={styles.bullet}>
-          Feature this line on storefront and public brand profile.
+          Feature this line on the storefront; legacy brand profile remains secondary.
         </Text>
         <Text style={styles.bullet}>
           Link products to trial evidence before strong claims.

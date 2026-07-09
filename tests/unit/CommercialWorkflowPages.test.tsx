@@ -1531,6 +1531,16 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Products").length).toBeGreaterThan(0);
     expect(screen.getByText("Product catalog")).toBeTruthy();
     expect(screen.getByText("Public product page workflow")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Published products should be inspectable from public storefronts and public storefront pages. Users should be able to move from feed to storefront to product detail to external purchase or support."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Storefront should expose featured products; legacy brand profile remains secondary"
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Soil and nutrient product path")).toBeTruthy();
     expect(screen.getByText("Garden center and retail product path")).toBeTruthy();
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
@@ -1954,6 +1964,11 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText(/Interests living soil, seedlings/).length).toBeGreaterThan(0);
     expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products/product-1" })).toBeTruthy();
     expect(screen.getByText("Public Use")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Feature this line on the storefront; legacy brand profile remains secondary."
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Purpose-built soil products")).toBeTruthy();
 
     fireEvent.changeText(

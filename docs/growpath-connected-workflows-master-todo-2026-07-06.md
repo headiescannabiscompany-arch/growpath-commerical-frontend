@@ -808,6 +808,7 @@ Completed and pushed:
 532. Commercial Dashboard Storefront workflow copy now says public storefront instead of public brand profile, keeping the dashboard's primary setup action aligned with Storefront as the commercial home base.
 533. Storefront owner page subtitle now frames the page as the public storefront instead of a public brand profile, while preserving the legacy brand-profile link as a clearly labeled compatibility route.
 534. Commercial home Storefront Launch guidance now frames Storefront as the public brand home base instead of the public brand profile, reinforcing that storefront is where users follow, browse, RSVP, and buy.
+535. Commercial product and product-line owner guidance now routes the public flow through Feed to Storefront to product detail, with legacy brand profile explicitly secondary instead of part of the main product discovery path.
 
 ## Working Rule For Codex
 
