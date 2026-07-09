@@ -51,11 +51,12 @@ Scope: Frontend repo plus cross-repo contract alignment items
 - Evidence: `normalizeAiCallRequest` tests cover canonical, compatibility-alias, and obsolete-envelope cases; AI schema drift tests use the bare `fn` canonical example.
 - Guardrail: new AI clients and docs must use `{ tool, fn, args, context }`; do not introduce `functionName`, `inputs`, or fully-qualified `fn` examples except when explicitly documenting compatibility.
 
-6. Facility context rule consistency
+6. Facility context rule consistency - DONE 2026-07-09
 
-- Problem: “no header-derived facility context” conflicts with docs that still mention optional `X-Facility-Id`.
-- Action: remove/annotate conflicting header guidance; keep facility context source consistent with canonical policy.
-- Done when: all contracts describe one facility context mechanism.
+- Problem: “no header-derived facility context” conflicts with older docs that implied optional facility-id headers.
+- Action completed: facility scope remains path-param based (`/api/facility/:facilityId/...`), and `scripts/validate-facility-context.cjs` now blocks `X-Facility-Id` / facility-header wording from source, backend, docs, tests, and scripts while allowing explicit `x-test-facility-id` dev-test logging.
+- Evidence: `npm run validate:facility-context` passes and is wired into `npm run guard`.
+- Guardrail: use path params or explicit account-mode context for facility scope; do not add production request headers for facility context.
 
 ### ROLE/CAPABILITY DRIFT
 

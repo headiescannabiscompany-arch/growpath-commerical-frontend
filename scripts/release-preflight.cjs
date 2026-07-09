@@ -82,6 +82,9 @@ async function main() {
     "scripts/inventory-ai-functions.cjs"
   ]);
   run("ID policy validation", process.execPath, ["scripts/validate-id-policy.cjs"]);
+  run("facility context validation", process.execPath, [
+    "scripts/validate-facility-context.cjs"
+  ]);
 
   run("focused backend release routes", process.execPath, [
     jestCli,

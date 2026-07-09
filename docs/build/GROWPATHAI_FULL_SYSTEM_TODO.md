@@ -132,3 +132,4 @@ Legend:
 - [x] Auth bootstrap route guard hardened: token-present `/api/me` failures render a retryable session error in auth and route-access guards instead of redirecting, silently falling back, or spinning forever.
 - [x] Personal grows endpoint canonicalized: `/api/personal/grows` is the list/create/timeline/photo route family, with `/api/grows/:id/entries` left only as explicit legacy entry-helper compatibility.
 - [x] AI transport envelope canonicalized: `{ tool, fn, args, context }` with bare `fn` is the current contract, while obsolete `functionName` / `inputs` envelopes are rejected.
+- [x] Facility context source locked: production facility context comes from `/api/facility/:facilityId/...` path params, with a guard blocking `X-Facility-Id` style headers.
