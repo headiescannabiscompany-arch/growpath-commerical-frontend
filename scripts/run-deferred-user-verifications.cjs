@@ -91,6 +91,7 @@ const checks = [
       "tests/unit/SubscriptionScreenPricing.test.js",
       "tests/unit/SupportPage.test.tsx",
       "tests/unit/PolicyContactAliases.test.tsx",
+      "tests/unit/SupportContactsConfig.test.ts",
       "tests/unit/PaymentHelpDialog.test.js",
       "tests/unit/CommercialFeedCard.test.tsx",
       "tests/unit/CommercialToolsScreen.test.tsx",
@@ -102,6 +103,11 @@ const checks = [
       "tests/unit/CreatePostRootRoute.test.tsx",
       "tests/unit/canonical-route-matrix-doc.test.js",
       "tests/unit/themeTokens.test.js",
+      "tests/unit/AppIntroScreen.test.js",
+      "tests/unit/GuildCodeScreenCopy.test.js",
+      "tests/unit/LegalLinks.test.tsx",
+      "tests/unit/LoginEmailVerification.test.tsx",
+      "tests/unit/FacilitySopRunsBackRoutes.test.tsx",
       "tests/unit/ResetPasswordScreen.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
       "tests/unit/toolRuns-api.test.ts",
@@ -144,6 +150,7 @@ const manualChecks = [
     area: "Support alias UI smoke check",
     checks: [
       "Owner confirmed support is live with all aliases; open Support and verify general, billing, orders, sales, commercial, courses, live, facility, partners, contact, privacy, legal, and security requests still display the routed @growpathai.com aliases.",
+      "Confirm the full live alias set is represented where appropriate in config/docs: support, help, contact, hello, info, admin, billing, orders, sales, partners, privacy, legal, security, commercial, facility, courses, live, noreply, and notifications at growpathai.com.",
       "Verify sender-only aliases noreply@growpathai.com and notifications@growpathai.com remain configured for system email use but are not displayed as public support destinations.",
       "Open Privacy, Terms, and payment help surfaces and confirm they route privacy/legal/security/billing copy to the live aliases instead of placeholders."
     ]
@@ -270,7 +277,7 @@ function renderChecklist() {
     "## Notes",
     "",
     "- Facility visual quality should be applied across Personal/Pro and Commercial UI, not kept only in Facility.",
-    "- Owner confirmed support is live with all aliases; keep future checks focused on UI routing and sender-only visibility.",
+    "- Owner confirmed support is live with all aliases; keep future checks focused on UI routing, the complete alias set, and sender-only visibility.",
     "- Known non-blocking current test noise: some facility and NPK tests may emit React act(...) warnings while still passing.",
     ""
   );
