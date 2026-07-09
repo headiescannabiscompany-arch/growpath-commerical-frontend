@@ -9,43 +9,69 @@ const SEARCH_SURFACES = [
     key: "courses",
     title: "Courses",
     subtitle: "Lessons, certificates, and training",
-    route: "Courses"
+    route: "Courses",
+    keywords: ["education", "classes", "learning", "lessons", "training"]
+  },
+  {
+    key: "tools",
+    title: "Tools",
+    subtitle: "NPK, soil builder, IPM, VPD, crop steering, and grow calculators",
+    route: "Tools",
+    keywords: [
+      "npk",
+      "soil",
+      "dry amendments",
+      "recipe",
+      "ipm",
+      "vpd",
+      "dew point",
+      "crop steering",
+      "pheno",
+      "tissue culture",
+      "harvest"
+    ]
   },
   {
     key: "offers",
     title: "Storefront",
     subtitle: "Public brand storefronts, products, courses, lives, and offers",
-    route: "Storefront"
+    route: "Storefront",
+    keywords: ["store", "products", "brands", "commercial", "facility", "buy"]
   },
   {
     key: "feed",
     title: "Feed / Campaigns",
     subtitle: "Commercial and facility outreach, ads, and announcements",
-    route: "Feed"
+    route: "Feed",
+    keywords: ["ads", "advertising", "promotions", "campaigns", "outreach"]
   },
   {
     key: "forum",
     title: "Forum",
     subtitle: "Questions, answers, and Forum/Q&A threads",
-    route: "Forum"
+    route: "Forum",
+    keywords: ["discussion", "q&a", "qa", "questions", "answers", "help"]
   },
   {
     key: "plants",
     title: "Plants",
     subtitle: "Plant records and grow logs",
-    route: "Plants"
+    route: "Plants",
+    keywords: ["grows", "cultivars", "phenos", "grow logs", "notes"]
   },
   {
     key: "calendar",
     title: "Calendar",
     subtitle: "Tasks and scheduled work",
-    route: "Calendar"
+    route: "Calendar",
+    keywords: ["schedule", "agenda", "tasks", "reminders", "calendar"]
   },
   {
     key: "certificates",
     title: "Certificates",
     subtitle: "View and verify certificates",
-    route: "CertificateVerification"
+    route: "CertificateVerification",
+    keywords: ["badges", "verification", "course completion"]
   }
 ];
 
@@ -94,7 +120,9 @@ export default function SearchScreen({ navigation }) {
     const q = query.trim().toLowerCase();
     if (!q) return SEARCH_SURFACES;
     return SEARCH_SURFACES.filter((item) =>
-      `${item.title} ${item.subtitle}`.toLowerCase().includes(q)
+      `${item.title} ${item.subtitle} ${(item.keywords || []).join(" ")}`
+        .toLowerCase()
+        .includes(q)
     );
   }, [query]);
 

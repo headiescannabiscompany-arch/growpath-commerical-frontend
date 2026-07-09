@@ -820,6 +820,7 @@ Completed and pushed:
 544. Legacy root `/dashboard` shim now sends selected facility users directly to `/home/facility/dashboard` instead of adding an extra `/home/facility` redirect hop, while still sending unselected facility users to facility selection.
 545. Legacy `/campaigns` now redirects to the canonical commercial Feed/Campaigns owner workspace at `/home/commercial/feed`, keeping stale campaign links on the advertising/outreach surface instead of the separate Marketing Planner.
 546. Global Search, shared capability menus, and Commercial Tools now label the actual commercial destination as Storefront and route it to `Storefront` instead of pricing/offers copy, while Feed / Campaigns and Forum / Q&A remain distinct routes.
+547. Global Search now exposes the missing Tools surface and matches workflow/grow-interest keywords such as NPK, soil, IPM, VPD, advertising, campaigns, and brands, routing users to the connected tool, storefront, Feed/Campaigns, or Forum surfaces instead of relying only on visible titles.
 
 ## Working Rule For Codex
 

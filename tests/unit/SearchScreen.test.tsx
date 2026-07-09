@@ -36,15 +36,41 @@ describe("SearchScreen", () => {
     expect(
       screen.getByText("Public brand storefronts, products, courses, lives, and offers")
     ).toBeTruthy();
+    expect(screen.getByText("Tools")).toBeTruthy();
+    expect(
+      screen.getByText("NPK, soil builder, IPM, VPD, crop steering, and grow calculators")
+    ).toBeTruthy();
 
+    fireEvent.press(screen.getByLabelText("Open Tools"));
     fireEvent.press(screen.getByLabelText("Open Storefront"));
     fireEvent.press(screen.getByLabelText("Open Feed / Campaigns"));
     fireEvent.press(screen.getByLabelText("Open Forum"));
 
+    expect(navigate).toHaveBeenCalledWith("Tools");
     expect(navigate).toHaveBeenCalledWith("Storefront");
     expect(navigate).toHaveBeenCalledWith("Feed");
     expect(navigate).toHaveBeenCalledWith("Forum");
     expect(navigate).not.toHaveBeenCalledWith("PricingMatrix");
+  });
+
+  it("matches grow-interest and workflow keywords that are not visible titles", () => {
+    const navigate = jest.fn();
+    const screen = render(<SearchScreen navigation={{ navigate }} />);
+
+    fireEvent.changeText(screen.getByLabelText("Search GrowPath"), "npk");
+
+    expect(screen.getByText("Tools")).toBeTruthy();
+    expect(screen.queryByText("Storefront")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Search GrowPath"), "advertising");
+
+    expect(screen.getByText("Feed / Campaigns")).toBeTruthy();
+    expect(screen.queryByText("Forum")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Search GrowPath"), "brands");
+
+    expect(screen.getByText("Storefront")).toBeTruthy();
+    expect(screen.queryByText("Feed / Campaigns")).toBeNull();
   });
 
   it("keeps locked search routed to subscription", () => {
