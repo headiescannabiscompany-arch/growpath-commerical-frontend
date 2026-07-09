@@ -104,7 +104,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
       priority: hasWarnings ? "high" : ("medium" as const),
       dueDate: tomorrow(3),
       description:
-        "Review N-P-K estimate, release timing, stage fit, warnings, directions, application rate, and required COA/SDS or lab documents."
+        "Review label N-P2O5-K2O estimate, release timing, stage fit, warnings, directions, application rate, and required COA/SDS or lab documents."
     },
     {
       title: "Update inventory or product draft",
@@ -137,7 +137,7 @@ function buildSoilBatchAssistantBrief(payload: Record<string, any>) {
   return [
     "AI Soil & Nutrient Batch brief",
     "",
-    "Role: help the user scale the recipe into a production batch, but call the Soil & Nutrient Batch Planner for final bag count, guaranteed-analysis estimate, costs, warnings, ToolRun saving, and production task plan.",
+    "Role: help the user scale the recipe into a production batch, but call the Soil & Nutrient Batch Planner for final bag count, label N-P2O5-K2O guaranteed-analysis estimate, costs, warnings, ToolRun saving, and production task plan.",
     `Purpose/stage: ${payload.purpose || "not set"} / ${payload.stage || "not set"}`,
     `Recipe: ${payload.recipeId || "not set"}`,
     `Batch volume: ${payload.batchVolume || "-"} with ${payload.bagSize || "-"} bag size`,
@@ -250,7 +250,7 @@ export default function SoilNutrientBatchToolRoute() {
       assistantBrief={{
         title: "AI-guided, calculator-verified",
         description:
-          "Ask AI to help scale the recipe into a production workflow, pull list, QA checklist, or commercial/facility handoff. The batch planner remains the source of truth for bag count, analysis, costs, warnings, and tasks.",
+          "Ask AI to help scale the recipe into a production workflow, pull list, QA checklist, or commercial/facility handoff. The batch planner remains the source of truth for bag count, label N-P2O5-K2O analysis, costs, warnings, and tasks.",
         buttonLabel: "Ask AI to Plan Batch",
         accessibilityLabel: "Ask AI to plan soil nutrient batch",
         briefTitle: "AI soil batch brief",

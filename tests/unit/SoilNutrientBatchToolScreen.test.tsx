@@ -135,7 +135,7 @@ describe("SoilNutrientBatchToolRoute", () => {
             expect.objectContaining({
               title: "QA soil batch label and release notes",
               priority: "high",
-              description: expect.stringContaining("release timing")
+              description: expect.stringContaining("label N-P2O5-K2O estimate")
             }),
             expect.objectContaining({
               title: "Update inventory or product draft",
@@ -166,7 +166,9 @@ describe("SoilNutrientBatchToolRoute", () => {
     expect(screen.getByText(/Recipe: Base Soil Mix/)).toBeTruthy();
     expect(screen.getByText(/Compost: 40 gal, cost 80, label 1-1-1/)).toBeTruthy();
     expect(
-      screen.getByText(/call the Soil & Nutrient Batch Planner for final bag count/)
+      screen.getByText(
+        /call the Soil & Nutrient Batch Planner for final bag count, label N-P2O5-K2O/
+      )
     ).toBeTruthy();
   });
 });

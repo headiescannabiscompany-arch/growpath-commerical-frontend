@@ -771,6 +771,7 @@ Completed and pushed:
 495. Ingredient Library now labels saved ingredient analysis as guaranteed-analysis N-P2O5-K2O and clarifies that elemental P/K conversion belongs in recipe tools, preserving the existing saved label values while reducing NPK math confusion.
 496. NPK / Feed Recipe Builder product-draft copy, guaranteed-analysis helper text, feature status notes, and regression tests now say label N-P2O5-K2O instead of loose label N-P-K, keeping user-facing recipe language aligned with guaranteed-analysis math.
 497. Soil Builder and Dry Amendment Mix Builder now label target/amendment analysis and AI guidance as label N-P2O5-K2O, while preserving existing payload compatibility and adding a product-draft `estimatedLabelAnalysis` alias for storefront/product clarity.
+498. Soil & Nutrient Batch Planner now carries label N-P2O5-K2O wording through production QA tasks, AI batch briefs, and regression tests so facility/commercial batch planning does not collapse guaranteed analysis into vague NPK language.
 
 ## Working Rule For Codex
 
