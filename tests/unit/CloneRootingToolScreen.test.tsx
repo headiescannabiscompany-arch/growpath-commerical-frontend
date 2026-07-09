@@ -133,17 +133,27 @@ describe("CloneRootingToolRoute", () => {
             expect.objectContaining({
               title: "Recheck clone tray",
               priority: "high",
+              allDay: true,
+              calendarType: "clone_rooting_followup",
+              sourceStage: "clone_rooting",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("humidity dipping too low")
             }),
             expect.objectContaining({
-              title: "Photograph clone tray and weak cuts"
+              title: "Photograph clone tray and weak cuts",
+              sourceStage: "clone_photo_review"
             }),
             expect.objectContaining({
               title: "Adjust clone environment if needed",
-              priority: "high"
+              priority: "high",
+              sourceStage: "clone_environment_adjustment"
             }),
             expect.objectContaining({
-              title: "Update clone survival and transplant decision"
+              title: "Update clone survival and transplant decision",
+              sourceStage: "clone_transplant_decision"
             })
           ]
         })

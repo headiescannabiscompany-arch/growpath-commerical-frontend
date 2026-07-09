@@ -842,6 +842,7 @@ Completed and pushed:
 566. Run-To-Run Comparison now creates post-run review follow-up tasks with all-day calendar metadata, source stage, and 24-hour reminders so comparison decisions show up in the shared Schedule as next-run planning work instead of generic task rows.
 567. Pheno Matrix now creates keeper-decision follow-up tasks with all-day calendar metadata and can save ranked keeper/watch/reject recommendations, weighted scorecards, stage scorecards, notes, and source provenance back into plant growth profiles.
 568. Tissue Culture workflow tasks now carry all-day schedule metadata, TC workflow calendar type, stage/source-stage values, and 24-hour reminders so contamination checks, transfer reviews, acclimation counts, and SOP/media updates land in the shared Schedule with TC context.
+569. Clone Rooting follow-up tasks now carry all-day clone-rooting calendar metadata, source-stage values, and 12-hour reminders so tray checks, photo reviews, environment adjustments, and transplant decisions show up in the shared Schedule with clone-batch context.
 
 ## Working Rule For Codex
 

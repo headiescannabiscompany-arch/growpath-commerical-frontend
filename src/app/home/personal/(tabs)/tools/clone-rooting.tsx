@@ -24,12 +24,22 @@ function cloneRootingTaskPlan(
         .map((item: any) => item?.issue || item)
         .join("; ")
     : "";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "clone_rooting_followup",
+    sourceStage: "clone_rooting",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
 
   return [
     {
       title: outputs.followUpTask?.title || "Check clone rooting tray",
       priority: outputs.followUpTask?.priority || "medium",
       dueDate: tomorrow(followUpDueDays),
+      ...calendarMetadata,
       description: [
         `Day ${daysSinceCut} after cut; ${rootedCount}/${cloneCount} rooted.`,
         "Inspect dome humidity, medium moisture, leaf turgor, stem base, callus, and visible roots.",
@@ -42,6 +52,8 @@ function cloneRootingTaskPlan(
       title: "Photograph clone tray and weak cuts",
       priority: "medium" as const,
       dueDate: tomorrow(followUpDueDays),
+      ...calendarMetadata,
+      sourceStage: "clone_photo_review",
       description:
         "Take tray-wide and close-up photos of weak, wilted, stalled, or rooted cuts for comparison."
     },
@@ -49,6 +61,8 @@ function cloneRootingTaskPlan(
       title: "Adjust clone environment if needed",
       priority: outputs.riskLevel === "high" ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "clone_environment_adjustment",
       description:
         "Review humidity, temperature, light intensity, airflow, and medium moisture before changing the whole tray."
     },
@@ -56,6 +70,8 @@ function cloneRootingTaskPlan(
       title: "Update clone survival and transplant decision",
       priority: "medium" as const,
       dueDate: tomorrow(Math.max(3, followUpDueDays + 3)),
+      ...calendarMetadata,
+      sourceStage: "clone_transplant_decision",
       description:
         "Update rooted, failed, and stalled counts; decide which clones are ready to pot, hold, or cull."
     }
