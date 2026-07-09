@@ -41,7 +41,23 @@ function main() {
     process.exit(1);
   }
 
-  const rows = walk(APP_DIR)
+  const files = walk(APP_DIR);
+  const leakedPrivateRouteFiles = files
+    .map((abs) => path.relative(APP_DIR, abs).replace(/\\/g, "/"))
+    .filter((rel) => {
+      const base = path.basename(rel).replace(/\.(tsx?|jsx?)$/i, "");
+      return base.startsWith("_") && base !== "_layout";
+    });
+
+  if (leakedPrivateRouteFiles.length) {
+    console.error(
+      "Route inventory found underscored non-layout files under src/app. Move helpers out of the route tree or make them canonical routes:"
+    );
+    leakedPrivateRouteFiles.forEach((rel) => console.error(`- src/app/${rel}`));
+    process.exit(1);
+  }
+
+  const rows = files
     .map((abs) => {
       const rel = path.relative(APP_DIR, abs).replace(/\\/g, "/");
       return {
