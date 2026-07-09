@@ -128,21 +128,31 @@ describe("StressTestToolRoute", () => {
             expect.objectContaining({
               title: "Inspect recovery photos",
               priority: "high",
+              allDay: true,
+              calendarType: "stress_test_followup",
+              sourceStage: "stress_recovery",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("keeper decisions")
             }),
             expect.objectContaining({
               title: "Update pheno stress score",
               priority: "high",
+              sourceStage: "pheno_stress_score",
               description: expect.stringContaining("stress response score (62)")
             }),
             expect.objectContaining({
               title: "Compare stress response to selection plan",
               priority: "high",
+              sourceStage: "keeper_retest_decision",
               description: expect.stringContaining("keeper/watch/reject")
             }),
             expect.objectContaining({
               title: "Flag crop steering candidate notes",
               priority: "medium",
+              sourceStage: "crop_steering_candidate",
               description: expect.stringContaining("crop steering")
             })
           ]

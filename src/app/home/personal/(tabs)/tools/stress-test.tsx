@@ -20,6 +20,15 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
     outputs.stressResponseScore === undefined
       ? "not scored"
       : String(outputs.stressResponseScore);
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "stress_test_followup",
+    sourceStage: String(outputs.stage || "stress_recovery"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
 
   const tasks = [
     {
@@ -29,6 +38,7 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
         highRisk ? "high" : "medium"
       ),
       dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 2),
+      ...calendarMetadata,
       description:
         "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
     },
@@ -36,12 +46,16 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
       title: "Update pheno stress score",
       priority: shouldRetest ? "high" : "medium",
       dueDate: tomorrow(3),
+      ...calendarMetadata,
+      sourceStage: "pheno_stress_score",
       description: `Record ${stressLabel} recovery status, stress response score (${responseScore}), keeper impact, and clone/mother implications.`
     },
     {
       title: "Compare stress response to selection plan",
       priority: shouldRetest ? "high" : "medium",
       dueDate: tomorrow(5),
+      ...calendarMetadata,
+      sourceStage: "keeper_retest_decision",
       description:
         "Decide whether this plant should stay keeper/watch/reject, whether the stress should be retested, and whether clones need extra observation."
     }
@@ -52,6 +66,8 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
       title: "Flag crop steering candidate notes",
       priority: "medium",
       dueDate: tomorrow(7),
+      ...calendarMetadata,
+      sourceStage: "crop_steering_candidate",
       description:
         "Save why this plant handled stress well enough for future crop steering or production-run testing."
     });

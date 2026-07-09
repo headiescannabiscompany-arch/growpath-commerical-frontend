@@ -844,6 +844,7 @@ Completed and pushed:
 568. Tissue Culture workflow tasks now carry all-day schedule metadata, TC workflow calendar type, stage/source-stage values, and 24-hour reminders so contamination checks, transfer reviews, acclimation counts, and SOP/media updates land in the shared Schedule with TC context.
 569. Clone Rooting follow-up tasks now carry all-day clone-rooting calendar metadata, source-stage values, and 12-hour reminders so tray checks, photo reviews, environment adjustments, and transplant decisions show up in the shared Schedule with clone-batch context.
 570. Genetics Inventory follow-up tasks now carry all-day genetics-preservation calendar metadata, source-stage values, and 24-hour reminders so provenance review, preservation planning, and grow/pheno/clone linking appear in the shared Schedule with genetics context.
+571. Stress Testing follow-up tasks now carry all-day stress-test calendar metadata, retest/source-stage values, and 12-hour reminders so recovery checks, pheno score updates, keeper retest decisions, and crop-steering candidate notes surface in the shared Schedule.
 
 ## Working Rule For Codex
 
