@@ -831,6 +831,7 @@ Completed and pushed:
 555. Release preflight now gates the diagnosis ETGU Playwright workflow covering diagnosis intake, accepted tags, save-to-grow-log, source-linked follow-up task creation, feedback, and grow timeline visibility.
 556. Production web export sanity passed, with the export verifier confirming `dist` uses `https://api.growpathai.com`; generated `dist` staging was left out after Git object permission errors.
 557. Personal tool manifest coverage now recognizes explicit special-case tool POST routes such as IPM Scout, while the full-system TODO reflects verified Ingredient Library completion plus existing Compatibility Checker and ETGU Diagnosis foundations.
+558. Personal diagnosis follow-up now preserves accepted and rejected auto-tags in the grow-log AI insight audit trail, and diagnosis-created follow-up tasks include next-check context, priority, and due dates instead of loose unscheduled notes.
 
 ## Working Rule For Codex
 

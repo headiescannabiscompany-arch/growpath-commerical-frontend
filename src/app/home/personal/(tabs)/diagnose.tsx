@@ -35,6 +35,42 @@ function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
 }
 
+function addDaysIso(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
+function rejectedDiagnosisTags(result: NormalizedDiagnosis, acceptedTags: string[]) {
+  const accepted = new Set(acceptedTags);
+  return result.tags.filter((tag) => !accepted.has(tag));
+}
+
+function diagnosisFollowUpDays(result: NormalizedDiagnosis) {
+  if (result.severity === "high" || result.urgency.toLowerCase().includes("urgent")) {
+    return 1;
+  }
+  if (result.severity === "medium") return 3;
+  return 7;
+}
+
+function diagnosisTaskDescription(result: NormalizedDiagnosis, acceptedTags: string[]) {
+  const action =
+    result.actions[0] || result.followUp || "Recheck plant symptoms and measurements.";
+  return [
+    action,
+    result.followUp ? `Provider follow-up: ${result.followUp}` : "",
+    result.missingData.length ? `Next checks: ${result.missingData.join("; ")}` : "",
+    result.evidence.length ? `Evidence to compare: ${result.evidence.join("; ")}` : "",
+    acceptedTags.length ? `Accepted tags: ${acceptedTags.join(", ")}` : "",
+    rejectedDiagnosisTags(result, acceptedTags).length
+      ? `Rejected tags: ${rejectedDiagnosisTags(result, acceptedTags).join(", ")}`
+      : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function providerResultSummary(providerResult: unknown): string[] {
   if (!providerResult || typeof providerResult !== "object") return [];
   const data = providerResult as Record<string, any>;
@@ -253,6 +289,7 @@ export default function DiagnoseRoute() {
 
   async function saveLog() {
     if (!growId || !result) throw new Error("Select a grow before saving a diagnosis.");
+    const rejectedTags = rejectedDiagnosisTags(result, acceptedTags);
     const created = await createPersonalLog({
       growId,
       plantId: plantId || undefined,
@@ -274,7 +311,19 @@ export default function DiagnoseRoute() {
       ]
         .filter(Boolean)
         .join("\n"),
-      tags: acceptedTags
+      tags: acceptedTags,
+      rejectedTags,
+      aiInsight: {
+        summary: result.issueSummary,
+        source: "ai_diagnosis",
+        missingData: result.missingData,
+        suggestedTask:
+          result.actions[0] ||
+          result.followUp ||
+          "Recheck plant symptoms and measurements.",
+        acceptedTags,
+        rejectedTags
+      }
     });
     if (!created) throw new Error("Unable to save diagnosis to the grow journal.");
     setFeedback("Diagnosis saved to grow journal.");
@@ -282,13 +331,15 @@ export default function DiagnoseRoute() {
 
   async function createTask() {
     if (!growId || !result) throw new Error("Select a grow before creating a task.");
-    const action =
-      result.actions[0] || result.followUp || "Recheck plant symptoms and measurements.";
+    const followUpDays = diagnosisFollowUpDays(result);
     const created = await createPersonalTask({
       growId,
+      plantId: plantId || undefined,
       linkedGrowId: growId,
       title: `Follow up: ${result.issueSummary}`,
-      description: action,
+      description: diagnosisTaskDescription(result, acceptedTags),
+      dueDate: addDaysIso(followUpDays),
+      priority: result.severity === "high" ? "high" : "medium",
       sourceType: "ai_diagnosis",
       sourceObjectId: result.id || undefined,
       sourceDiagnosisId: result.id || undefined

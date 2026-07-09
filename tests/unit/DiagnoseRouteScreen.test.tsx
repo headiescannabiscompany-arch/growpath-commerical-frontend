@@ -119,7 +119,15 @@ describe("DiagnoseRoute", () => {
       expect.objectContaining({
         growId: "grow-1",
         diagnosisId: "diagnosis-1",
-        tags: ["yellowing"]
+        tags: ["yellowing"],
+        rejectedTags: ["ph out of range"],
+        aiInsight: expect.objectContaining({
+          source: "ai_diagnosis",
+          acceptedTags: ["yellowing"],
+          rejectedTags: ["ph out of range"],
+          missingData: ["Check runoff pH"],
+          suggestedTask: "Check runoff pH before changing feed."
+        })
       })
     );
   });
@@ -146,11 +154,16 @@ describe("DiagnoseRoute", () => {
         growId: "grow-1",
         linkedGrowId: "grow-1",
         title: "Follow up: Possible pH issue",
-        description: "Check runoff pH before changing feed.",
+        description: expect.stringContaining("Next checks: Check runoff pH"),
+        dueDate: expect.any(String),
+        priority: "medium",
         sourceType: "ai_diagnosis",
         sourceObjectId: "diagnosis-1",
         sourceDiagnosisId: "diagnosis-1"
       })
+    );
+    expect(mockCreatePersonalTask.mock.calls[0][0].description).toContain(
+      "Accepted tags: yellowing, ph out of range"
     );
     expect(screen.getByText("Follow-up task created.")).toBeTruthy();
   });

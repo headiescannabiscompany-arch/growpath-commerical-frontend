@@ -51,12 +51,12 @@ Legend:
 
 - [~] AI Diagnosis.
 - [~] ETGU Diagnosis Rules.
-- [ ] Grow Log Auto-Tagging approval flow.
+- [x] Grow Log Auto-Tagging approval flow.
 - [~] IPM Scout.
 - [~] Organism Library.
 - [~] Species / Crop Identification.
 - [~] Crop Profile Database.
-- [ ] Treatment and next-check task flow.
+- [~] Treatment and next-check task flow.
 
 ## Phase 4 - Genetics / Pheno / Stress / Crop Steering
 
