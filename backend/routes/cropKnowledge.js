@@ -13,7 +13,9 @@ const stableObjectIdFromAny = require("../helpers/stableObjectIdFromAny");
 const router = express.Router();
 
 function userId(req) {
-  return String(req.userId || req.ctx?.userId || req.user?._id || req.headers["x-test-user-id"] || "");
+  return String(
+    req.userId || req.ctx?.userId || req.user?._id || req.headers["x-test-user-id"] || ""
+  );
 }
 
 function userObjectId(req) {
@@ -147,7 +149,13 @@ const growthFields = [
   "confirmedScientificName",
   "cultivarName",
   "phenoLabel",
+  "keeperStatus",
+  "keeperReason",
+  "cloneStatus",
+  "motherStatus",
   "confirmationStatus",
+  "phenoScores",
+  "stageScorecards",
   "sizeMetrics",
   "timingAdjustments",
   "waterUseProfile",
@@ -174,7 +182,12 @@ function normalizeCropProfile(body) {
 
 router.get("/taxa", async (req, res, next) => {
   try {
-    const query = addListFilters({}, req, ["scientificName", "commonNames", "family", "genus"]);
+    const query = addListFilters({}, req, [
+      "scientificName",
+      "commonNames",
+      "family",
+      "genus"
+    ]);
     const items = await listRows(PlantTaxon, query, req, { scientificName: 1 });
     return res.json({ items });
   } catch (error) {
@@ -185,7 +198,8 @@ router.get("/taxa", async (req, res, next) => {
 router.post("/taxa", async (req, res, next) => {
   try {
     const scientificName = String(req.body?.scientificName || "").trim();
-    if (!scientificName) return res.status(400).json({ message: "scientificName is required" });
+    if (!scientificName)
+      return res.status(400).json({ message: "scientificName is required" });
     const item = await PlantTaxon.create({
       ...allowedPatch(req.body, taxonFields),
       scientificName,
@@ -199,7 +213,10 @@ router.post("/taxa", async (req, res, next) => {
 
 router.get("/taxa/:id", async (req, res, next) => {
   try {
-    const item = await PlantTaxon.findOne({ _id: req.params.id, archivedAt: null }).lean();
+    const item = await PlantTaxon.findOne({
+      _id: req.params.id,
+      archivedAt: null
+    }).lean();
     if (!item) return res.status(404).json({ message: "Taxon not found" });
     return res.json({ item: dto(item) });
   } catch (error) {
@@ -237,7 +254,12 @@ router.delete("/taxa/:id", async (req, res, next) => {
 
 router.get("/crop-profiles", async (req, res, next) => {
   try {
-    const query = addListFilters({}, req, ["displayName", "scientificName", "commonNames", "cropCategory"]);
+    const query = addListFilters({}, req, [
+      "displayName",
+      "scientificName",
+      "commonNames",
+      "cropCategory"
+    ]);
     const items = await listRows(CropProfile, query, req, { displayName: 1 });
     return res.json({ items });
   } catch (error) {
@@ -286,7 +308,8 @@ router.post("/crop-profiles/starter-seed", async (req, res, next) => {
 router.post("/crop-profiles", async (req, res, next) => {
   try {
     const payload = normalizeCropProfile(req.body || {});
-    if (!payload.displayName) return res.status(400).json({ message: "displayName is required" });
+    if (!payload.displayName)
+      return res.status(400).json({ message: "displayName is required" });
     const item = await CropProfile.create({ ...payload, submittedBy: userObjectId(req) });
     return res.status(201).json({ item: dto(item) });
   } catch (error) {
@@ -296,7 +319,10 @@ router.post("/crop-profiles", async (req, res, next) => {
 
 router.get("/crop-profiles/:id", async (req, res, next) => {
   try {
-    const item = await CropProfile.findOne({ _id: req.params.id, archivedAt: null }).lean();
+    const item = await CropProfile.findOne({
+      _id: req.params.id,
+      archivedAt: null
+    }).lean();
     if (!item) return res.status(404).json({ message: "Crop profile not found" });
     return res.json({ item: dto(item) });
   } catch (error) {
@@ -334,7 +360,13 @@ router.delete("/crop-profiles/:id", async (req, res, next) => {
 
 router.get("/organisms", async (req, res, next) => {
   try {
-    const query = addListFilters({}, req, ["scientificName", "commonNames", "organismType", "cropHosts", "symptoms"]);
+    const query = addListFilters({}, req, [
+      "scientificName",
+      "commonNames",
+      "organismType",
+      "cropHosts",
+      "symptoms"
+    ]);
     if (req.query.organismType) query.organismType = String(req.query.organismType);
     if (req.query.cropHost) query.cropHosts = String(req.query.cropHost);
     const items = await listRows(OrganismProfile, query, req, { scientificName: 1 });
@@ -347,7 +379,8 @@ router.get("/organisms", async (req, res, next) => {
 router.post("/organisms", async (req, res, next) => {
   try {
     const scientificName = String(req.body?.scientificName || "").trim();
-    if (!scientificName) return res.status(400).json({ message: "scientificName is required" });
+    if (!scientificName)
+      return res.status(400).json({ message: "scientificName is required" });
     const item = await OrganismProfile.create({
       ...allowedPatch(req.body, organismFields),
       scientificName,
@@ -361,7 +394,10 @@ router.post("/organisms", async (req, res, next) => {
 
 router.get("/organisms/:id", async (req, res, next) => {
   try {
-    const item = await OrganismProfile.findOne({ _id: req.params.id, archivedAt: null }).lean();
+    const item = await OrganismProfile.findOne({
+      _id: req.params.id,
+      archivedAt: null
+    }).lean();
     if (!item) return res.status(404).json({ message: "Organism not found" });
     return res.json({ item: dto(item) });
   } catch (error) {
@@ -433,7 +469,10 @@ router.post("/regional-alerts", async (req, res, next) => {
 
 router.get("/regional-alerts/:id", async (req, res, next) => {
   try {
-    const item = await RegionalAlert.findOne({ _id: req.params.id, archivedAt: null }).lean();
+    const item = await RegionalAlert.findOne({
+      _id: req.params.id,
+      archivedAt: null
+    }).lean();
     if (!item) return res.status(404).json({ message: "Regional alert not found" });
     return res.json({ item: dto(item) });
   } catch (error) {
@@ -503,7 +542,10 @@ router.post("/plant-growth-profiles", async (req, res, next) => {
     if (req.body?.plantId) patch.plantId = maybeObjectId(req.body.plantId);
     const filter = patch.plantId
       ? { user: objectUser, plantId: patch.plantId }
-      : { user: objectUser, _id: maybeObjectId(req.body?._id) || new mongoose.Types.ObjectId() };
+      : {
+          user: objectUser,
+          _id: maybeObjectId(req.body?._id) || new mongoose.Types.ObjectId()
+        };
     const item = await PlantGrowthProfile.findOneAndUpdate(
       filter,
       { ...patch, user: objectUser, archivedAt: null },
@@ -536,7 +578,8 @@ router.patch("/plant-growth-profiles/:id", async (req, res, next) => {
     const objectUser = userObjectId(req);
     if (!objectUser) return res.status(401).json({ message: "Not authenticated" });
     const patch = allowedPatch(req.body, growthFields);
-    if (req.body?.cropProfileId) patch.cropProfile = maybeObjectId(req.body.cropProfileId);
+    if (req.body?.cropProfileId)
+      patch.cropProfile = maybeObjectId(req.body.cropProfileId);
     if (req.body?.growId) patch.growId = maybeObjectId(req.body.growId);
     if (req.body?.plantId) patch.plantId = maybeObjectId(req.body.plantId);
     const item = await PlantGrowthProfile.findOneAndUpdate(

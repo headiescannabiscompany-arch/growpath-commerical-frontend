@@ -110,13 +110,11 @@ describe("crop knowledge routes", () => {
     const listed = await request(app).get(
       "/api/crop-knowledge/crop-profiles?q=blueberry&limit=5"
     );
-    const created = await request(app)
-      .post("/api/crop-knowledge/crop-profiles")
-      .send({
-        displayName: "Olive",
-        scientificName: "Olea europaea",
-        sourceRecords
-      });
+    const created = await request(app).post("/api/crop-knowledge/crop-profiles").send({
+      displayName: "Olive",
+      scientificName: "Olea europaea",
+      sourceRecords
+    });
 
     expect(listed.status).toBe(200);
     expect(listed.body.items[0]).toMatchObject({
@@ -179,9 +177,7 @@ describe("crop knowledge routes", () => {
       curationStatus: update.$set.curationStatus
     }));
 
-    const res = await request(app).post(
-      "/api/crop-knowledge/crop-profiles/starter-seed"
-    );
+    const res = await request(app).post("/api/crop-knowledge/crop-profiles/starter-seed");
 
     expect(res.status).toBe(201);
     expect(res.body.count).toBe(4);
@@ -268,6 +264,29 @@ describe("crop knowledge routes", () => {
       .send({
         plantId: PLANT_ID,
         cultivarName: "Cherry tomato",
+        phenoLabel: "P1",
+        keeperStatus: "keeper",
+        keeperReason: "Strong vigor, resin, and stress response.",
+        cloneStatus: "rooted",
+        motherStatus: "candidate",
+        phenoScores: [
+          {
+            scoredAt: "2026-07-09T00:00:00.000Z",
+            stage: "flower",
+            vigor: 8,
+            resin: 9,
+            stressTolerance: 8
+          }
+        ],
+        stageScorecards: [
+          {
+            stage: "veg",
+            vigor: 8,
+            morphology: 7,
+            stressResponse: 8,
+            notes: "Did not falter under dryback stress."
+          }
+        ],
         confirmationStatus: "user_confirmed"
       });
     const updated = await request(app)
@@ -285,7 +304,31 @@ describe("crop knowledge routes", () => {
     expect(archived.body.archived).toBe(true);
     expect(mockPlantGrowthProfile.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ user: expect.any(Object), plantId: expect.any(Object) }),
-      expect.objectContaining({ user: expect.any(Object), archivedAt: null }),
+      expect.objectContaining({
+        user: expect.any(Object),
+        archivedAt: null,
+        phenoLabel: "P1",
+        keeperStatus: "keeper",
+        keeperReason: "Strong vigor, resin, and stress response.",
+        cloneStatus: "rooted",
+        motherStatus: "candidate",
+        phenoScores: [
+          expect.objectContaining({
+            stage: "flower",
+            vigor: 8,
+            resin: 9,
+            stressTolerance: 8
+          })
+        ],
+        stageScorecards: [
+          expect.objectContaining({
+            stage: "veg",
+            vigor: 8,
+            morphology: 7,
+            stressResponse: 8
+          })
+        ]
+      }),
       expect.objectContaining({ upsert: true })
     );
   });

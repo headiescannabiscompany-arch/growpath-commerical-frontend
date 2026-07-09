@@ -63,8 +63,8 @@ Legend:
 - [~] Genetics Inventory.
 - [~] Pheno Matrix foundation.
 - [~] Pheno Hunt Projects.
-- [ ] Pheno Plant Records.
-- [ ] Stage Scorecards.
+- [~] Pheno Plant Records.
+- [~] Stage Scorecards.
 - [~] Stress Testing.
 - [~] Crop Steering foundation.
 - [~] Keeper / Reject / Retest decisions.

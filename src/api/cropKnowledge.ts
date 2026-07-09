@@ -117,11 +117,30 @@ export type PlantGrowthProfileInput = {
   confirmedScientificName?: string;
   cultivarName?: string;
   phenoLabel?: string;
+  keeperStatus?:
+    | "unknown"
+    | "keeper"
+    | "watch"
+    | "reject"
+    | "retest"
+    | "mother_candidate"
+    | "breeding_candidate";
+  keeperReason?: string;
+  cloneStatus?:
+    | "unknown"
+    | "not_taken"
+    | "cut_taken"
+    | "rooted"
+    | "failed"
+    | "mother_stock";
+  motherStatus?: "none" | "candidate" | "active" | "retired" | "rejected";
   confirmationStatus?:
     | "user_confirmed"
     | "ai_suggested"
     | "needs_confirmation"
     | "unknown";
+  phenoScores?: Array<Record<string, unknown>>;
+  stageScorecards?: Array<Record<string, unknown>>;
   sizeMetrics?: Record<string, unknown>;
   timingAdjustments?: Record<string, unknown>;
   waterUseProfile?: Record<string, unknown>;

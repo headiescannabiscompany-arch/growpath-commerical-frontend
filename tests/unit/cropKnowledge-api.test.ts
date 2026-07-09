@@ -115,7 +115,9 @@ describe("crop knowledge API", () => {
     mockApiRequest.mockResolvedValueOnce({ item: { id: "org-1" } });
     mockApiRequest.mockResolvedValueOnce({ archived: true });
 
-    await expect(updateCropProfile("crop-1", { displayName: "Updated" })).resolves.toEqual({
+    await expect(
+      updateCropProfile("crop-1", { displayName: "Updated" })
+    ).resolves.toEqual({
       id: "crop-1"
     });
     await expect(archiveCropProfile("crop-1")).resolves.toBe(true);
@@ -151,7 +153,30 @@ describe("crop knowledge API", () => {
       plantId: "plant-1",
       cropProfileId: "crop-1",
       cultivarName: "Cherry tomato",
+      phenoLabel: "P1",
+      keeperStatus: "keeper",
+      keeperReason: "Strong vigor, resin, and stress response.",
+      cloneStatus: "rooted",
+      motherStatus: "candidate",
       confirmationStatus: "user_confirmed",
+      phenoScores: [
+        {
+          scoredAt: "2026-07-09T00:00:00.000Z",
+          stage: "flower",
+          vigor: 8,
+          resin: 9,
+          stressTolerance: 8
+        }
+      ],
+      stageScorecards: [
+        {
+          stage: "veg",
+          vigor: 8,
+          morphology: 7,
+          stressResponse: 8,
+          notes: "Did not falter under dryback stress."
+        }
+      ],
       sizeMetrics: { canopyWidthCm: 75 },
       timingAdjustments: { fruitingDaysOffset: 7 },
       waterUseProfile: { observedDemand: "high" }
@@ -163,6 +188,27 @@ describe("crop knowledge API", () => {
         method: "POST",
         body: expect.objectContaining({
           plantId: "plant-1",
+          phenoLabel: "P1",
+          keeperStatus: "keeper",
+          keeperReason: "Strong vigor, resin, and stress response.",
+          cloneStatus: "rooted",
+          motherStatus: "candidate",
+          phenoScores: [
+            expect.objectContaining({
+              stage: "flower",
+              vigor: 8,
+              resin: 9,
+              stressTolerance: 8
+            })
+          ],
+          stageScorecards: [
+            expect.objectContaining({
+              stage: "veg",
+              vigor: 8,
+              morphology: 7,
+              stressResponse: 8
+            })
+          ],
           sizeMetrics: { canopyWidthCm: 75 },
           timingAdjustments: { fruitingDaysOffset: 7 }
         })

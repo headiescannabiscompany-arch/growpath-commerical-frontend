@@ -832,6 +832,7 @@ Completed and pushed:
 556. Production web export sanity passed, with the export verifier confirming `dist` uses `https://api.growpathai.com`; generated `dist` staging was left out after Git object permission errors.
 557. Personal tool manifest coverage now recognizes explicit special-case tool POST routes such as IPM Scout, while the full-system TODO reflects verified Ingredient Library completion plus existing Compatibility Checker and ETGU Diagnosis foundations.
 558. Personal diagnosis follow-up now preserves accepted and rejected auto-tags in the grow-log AI insight audit trail, and diagnosis-created follow-up tasks include next-check context, priority, and due dates instead of loose unscheduled notes.
+559. Plant growth overlays now carry pheno plant record fields and stage scorecards, including keeper status/reason, clone and mother status, pheno score history, and stage-specific scoring data through the backend model, route contract, and frontend API helper.
 
 ## Working Rule For Codex
 
