@@ -558,7 +558,7 @@ describe("commercial workflow pages", () => {
               linkedCourseId: "course-1",
               linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
-              storefrontSlug: "living-soil-labs"
+              linkedStorefrontSlug: "living-soil-labs"
             }
           ]
         });

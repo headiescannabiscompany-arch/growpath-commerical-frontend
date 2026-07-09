@@ -32,6 +32,9 @@ type BrandForumPost = {
   linkedTrialId?: string;
   linkedGrowId?: string;
   storefrontSlug?: string;
+  linkedStorefrontSlug?: string;
+  brandSlug?: string;
+  publicSlug?: string;
 };
 
 const EMPTY_FORM: SupportForm = {
@@ -68,6 +71,16 @@ function evidenceRunId(post: BrandForumPost) {
   return post.linkedTrialId || post.linkedGrowId || "";
 }
 
+function postStorefrontSlug(post: BrandForumPost) {
+  return (
+    post.storefrontSlug ||
+    post.linkedStorefrontSlug ||
+    post.brandSlug ||
+    post.publicSlug ||
+    ""
+  );
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -80,11 +93,12 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 
 function postActionLinks(post: BrandForumPost) {
   const links: Array<{ href: string; label: string }> = [];
+  const storefrontSlug = postStorefrontSlug(post);
   if (post.linkedProductId) {
     links.push({
       label: "Open Product",
-      href: post.storefrontSlug
-        ? `/store/${encodeURIComponent(post.storefrontSlug)}/products/${encodeURIComponent(
+      href: storefrontSlug
+        ? `/store/${encodeURIComponent(storefrontSlug)}/products/${encodeURIComponent(
             post.linkedProductId
           )}`
         : `/home/commercial/products/${encodeURIComponent(post.linkedProductId)}`
@@ -93,8 +107,8 @@ function postActionLinks(post: BrandForumPost) {
   if (post.linkedCourseId) {
     links.push({
       label: "Open Course",
-      href: post.storefrontSlug
-        ? `/store/${encodeURIComponent(post.storefrontSlug)}/courses/${encodeURIComponent(
+      href: storefrontSlug
+        ? `/store/${encodeURIComponent(storefrontSlug)}/courses/${encodeURIComponent(
             post.linkedCourseId
           )}`
         : `/home/commercial/courses/${encodeURIComponent(post.linkedCourseId)}`
@@ -107,10 +121,10 @@ function postActionLinks(post: BrandForumPost) {
       href: `/home/commercial/evidence-runs/${encodeURIComponent(evidenceId)}`
     });
   }
-  if (post.storefrontSlug) {
+  if (storefrontSlug) {
     links.push({
       label: "Open Storefront",
-      href: `/store/${encodeURIComponent(post.storefrontSlug)}`
+      href: `/store/${encodeURIComponent(storefrontSlug)}`
     });
   }
   return links;
@@ -330,6 +344,7 @@ export default function CommercialCommunityRoute() {
           <View style={styles.list}>
             {posts.map((post) => {
               const actionLinks = postActionLinks(post);
+              const storefrontSlug = postStorefrontSlug(post);
               return (
                 <View key={post.id} style={styles.postRow}>
                   <Text style={styles.postTitle}>
@@ -339,14 +354,14 @@ export default function CommercialCommunityRoute() {
                   {post.linkedProductId ||
                   post.linkedCourseId ||
                   evidenceRunId(post) ||
-                  post.storefrontSlug ? (
+                  storefrontSlug ? (
                     <Text style={styles.postMeta}>
                       Links:{" "}
                       {[
                         post.linkedProductId && `product ${post.linkedProductId}`,
                         post.linkedCourseId && `course ${post.linkedCourseId}`,
                         evidenceRunId(post) && `evidence run ${evidenceRunId(post)}`,
-                        post.storefrontSlug && `store ${post.storefrontSlug}`
+                        storefrontSlug && `store ${storefrontSlug}`
                       ]
                         .filter(Boolean)
                         .join(", ")}
