@@ -863,6 +863,7 @@ Completed and pushed:
 587. AI Feeding Schedule review tasks now carry all-day feeding-review calendar metadata, risk-aware source-stage values, and 12-hour reminders so generated feed plans create schedule-visible review work with ToolRun context.
 588. Harvest Estimator check tasks now carry all-day harvest-estimator calendar metadata, harvest review source-stage values, and 12-hour reminders so estimated readiness checks appear in the shared Schedule with ToolRun context.
 589. AI Environment Analysis review tasks now carry all-day environment-analysis calendar metadata, risk-inspection source-stage values, and 12-hour reminders so endpoint risk flags create schedule-visible environment follow-ups with ToolRun context.
+590. Bud Rot Risk inspection tasks now carry bud-rot calendar metadata, canopy/urgent source-stage values, and risk-aware reminders so canopy inspections appear in the shared Schedule with ToolRun context.
 
 ## Working Rule For Codex
 

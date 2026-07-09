@@ -31,6 +31,19 @@ function dueInHours(hours: number) {
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 }
 
+function budRotTaskMetadata(band: string) {
+  const highRisk = band === "High";
+  return {
+    allDay: !highRisk,
+    calendarType: "bud_rot_risk_followup",
+    sourceStage: highRisk ? "bud_rot_urgent_inspection" : "bud_rot_canopy_inspection",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: highRisk ? -60 : -12 * 60 }]
+    }
+  };
+}
+
 export default function BudRotRiskToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
@@ -228,7 +241,8 @@ export default function BudRotRiskToolScreen() {
                         title: "Inspect canopy for bud rot risk",
                         description: `Heuristic risk screen is ${computed.band} (${computed.score}/100). Check dense flowers, wet pockets, and airflow before changing controls.`,
                         priority: computed.band === "High" ? "high" : "medium",
-                        dueDate: dueInHours(computed.band === "High" ? 2 : 24)
+                        dueDate: dueInHours(computed.band === "High" ? 2 : 24),
+                        ...budRotTaskMetadata(computed.band)
                       });
                       if (!result.ok) throw new Error(result.error);
                       setFeedback("Created inspection task.");
