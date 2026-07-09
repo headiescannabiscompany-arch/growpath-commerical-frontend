@@ -15,7 +15,13 @@ try {
 } catch {}
 
 export function getRouteForItem(item: FeedItem): string {
-  const storefrontSlug = item.metadata?.storefrontSlug;
+  const storefrontSlug =
+    item.metadata?.storefrontSlug ||
+    item.metadata?.linkedStorefrontSlug ||
+    item.metadata?.brandSlug ||
+    item.metadata?.publicSlug ||
+    item.metadata?.commercialSlug ||
+    item.metadata?.actorSlug;
   const linkedProductId =
     item.metadata?.linkedProductId ||
     item.metadata?.productId ||
@@ -37,12 +43,6 @@ export function getRouteForItem(item: FeedItem): string {
       : `/courses?courseId=${courseId}`;
   }
   if (storefrontSlug) return `/store/${encodeURIComponent(String(storefrontSlug))}`;
-
-  const brandSlug =
-    item.metadata?.commercialSlug ||
-    item.metadata?.brandSlug ||
-    item.metadata?.actorSlug;
-  if (brandSlug) return `/brands/${encodeURIComponent(String(brandSlug))}`;
   if (item.type === "task") {
     return item.scope?.facilityId
       ? `/home/facility/tasks/${encodeURIComponent(item.id)}`

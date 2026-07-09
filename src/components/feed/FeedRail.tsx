@@ -28,23 +28,34 @@ type AdItem = {
   imageUrl: string;
 };
 
+function campaignStorefrontSlug(post: CommercialFeedCampaign) {
+  return String(
+    post.storefrontSlug ||
+      post.linkedStorefrontSlug ||
+      post.brandSlug ||
+      post.publicSlug ||
+      ""
+  );
+}
+
 function campaignDestination(post: CommercialFeedCampaign) {
+  const storefrontSlug = campaignStorefrontSlug(post);
   if (post.linkedProductId) {
     const productId = encodeURIComponent(String(post.linkedProductId));
-    if (post.storefrontSlug) {
+    if (storefrontSlug) {
       return {
         cta: "View Product",
-        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}/products/${productId}`
+        href: `/store/${encodeURIComponent(storefrontSlug)}/products/${productId}`
       };
     }
     return { cta: "View Product", href: `/store?q=${productId}` };
   }
   if (post.linkedCourseId) {
     const courseId = encodeURIComponent(String(post.linkedCourseId));
-    if (post.storefrontSlug) {
+    if (storefrontSlug) {
       return {
         cta: "View Course",
-        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}/courses/${courseId}`
+        href: `/store/${encodeURIComponent(storefrontSlug)}/courses/${courseId}`
       };
     }
     return {
@@ -60,10 +71,10 @@ function campaignDestination(post: CommercialFeedCampaign) {
   }
   if (post.linkedProductLineId) {
     const lineId = encodeURIComponent(String(post.linkedProductLineId));
-    if (post.storefrontSlug) {
+    if (storefrontSlug) {
       return {
         cta: "View Product Line",
-        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}?line=${lineId}`
+        href: `/store/${encodeURIComponent(storefrontSlug)}?line=${lineId}`
       };
     }
     return {
@@ -71,10 +82,10 @@ function campaignDestination(post: CommercialFeedCampaign) {
       href: `/store?line=${lineId}`
     };
   }
-  if (post.storefrontSlug) {
+  if (storefrontSlug) {
     return {
       cta: "Visit Storefront",
-      href: `/store/${encodeURIComponent(String(post.storefrontSlug))}`
+      href: `/store/${encodeURIComponent(storefrontSlug)}`
     };
   }
   if (post.linkedForumThreadId) {
@@ -106,7 +117,7 @@ function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
     body: post.body || "Promoted outreach from a GrowPath account.",
     cta: destination.cta,
     href: destination.href,
-    storefrontSlug: String(post.storefrontSlug || ""),
+    storefrontSlug: campaignStorefrontSlug(post),
     createdAt: post.createdAt || new Date(0).toISOString(),
     engagementCount: Number((post as any).engagementCount ?? post.likeCount ?? 0),
     clickCount: Number((post as any).clickCount || 0),

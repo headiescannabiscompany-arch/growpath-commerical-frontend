@@ -209,4 +209,57 @@ describe("FeedRail", () => {
       })
     );
   });
+
+  it("preserves storefront slug aliases in promotional rail destinations", async () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({
+      items: [
+        {
+          id: "campaign-product-alias",
+          type: "listing",
+          title: "Alias Veg Mix",
+          body: "Product campaign using a brand slug alias.",
+          linkedProductId: "veg-mix-1",
+          brandSlug: "soil-school",
+          createdAt: "2026-07-07T12:00:00Z",
+          engagementCount: 5,
+          author: { displayName: "Soil School" },
+          tags: [],
+          growInterests: ["living soil"]
+        },
+        {
+          id: "campaign-course-alias",
+          type: "education",
+          title: "Alias Course",
+          body: "Course campaign using a public slug alias.",
+          linkedCourseId: "course-1",
+          publicSlug: "soil-school",
+          createdAt: "2026-07-07T13:00:00Z",
+          engagementCount: 3,
+          author: { displayName: "Soil School" },
+          tags: [],
+          growInterests: ["education"]
+        }
+      ],
+      nextCursor: null
+    });
+
+    const screen = render(<FeedRail slots={2} railMode="promo-only" placement="top" />);
+
+    await waitFor(() => expect(screen.getByText("Alias Veg Mix")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("View Product for Alias Veg Mix"));
+    fireEvent.press(screen.getByLabelText("View Course for Alias Course"));
+
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUrl: "/store/soil-school/products/veg-mix-1",
+        metadata: expect.objectContaining({ cta: "View Product" })
+      })
+    );
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUrl: "/store/soil-school/courses/course-1",
+        metadata: expect.objectContaining({ cta: "View Course" })
+      })
+    );
+  });
 });

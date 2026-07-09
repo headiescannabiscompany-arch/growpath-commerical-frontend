@@ -38,7 +38,7 @@ describe("FeedItemCard route helper", () => {
     ).toBe("/home/commercial/tasks/task-2");
   });
 
-  it("routes storefront metadata to the public storefront, not the legacy brand profile", () => {
+  it("routes storefront metadata aliases to the public storefront, not the legacy brand profile", () => {
     expect(
       getRouteForItem(
         item({
@@ -57,7 +57,27 @@ describe("FeedItemCard route helper", () => {
           metadata: { brandSlug: "living-soil-labs" }
         })
       )
-    ).toBe("/brands/living-soil-labs");
+    ).toBe("/store/living-soil-labs");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-3",
+          type: "alert",
+          metadata: { linkedStorefrontSlug: "linked-soil-labs" }
+        })
+      )
+    ).toBe("/store/linked-soil-labs");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-4",
+          type: "alert",
+          metadata: { publicSlug: "public-soil-labs" }
+        })
+      )
+    ).toBe("/store/public-soil-labs");
   });
 
   it("routes product and course metadata to exact storefront destinations", () => {
@@ -86,6 +106,32 @@ describe("FeedItemCard route helper", () => {
         })
       )
     ).toBe("/store/living-soil-labs/courses/course-1");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-product-alias",
+          type: "alert",
+          metadata: {
+            brandSlug: "soil-school",
+            linkedProductId: "veg-mix-1"
+          }
+        })
+      )
+    ).toBe("/store/soil-school/products/veg-mix-1");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-course-alias",
+          type: "alert",
+          metadata: {
+            publicSlug: "soil-school",
+            linkedCourseId: "course-1"
+          }
+        })
+      )
+    ).toBe("/store/soil-school/courses/course-1");
   });
 
   it("falls back to public discovery when product or course metadata lacks a storefront", () => {
