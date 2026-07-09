@@ -188,10 +188,7 @@ export function applyFacilityRoleCapabilities(
   normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
   normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;
 
-  if (
-    facilityRole === "OWNER" ||
-    facilityRole === "MANAGER"
-  ) {
+  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
     normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
     normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
     normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
