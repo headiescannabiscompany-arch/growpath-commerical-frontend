@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { radius } from "@/theme/theme";
 
 export default function SelectGrowScreen({
   facilityId,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     backgroundColor: "#fff"
   },
@@ -76,13 +77,13 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14
   },
   btn: {
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center",
     backgroundColor: "#111827"

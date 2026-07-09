@@ -3,6 +3,7 @@ import { Alert, View, Text, FlatList, TextInput, Pressable, Switch } from "react
 import { useWebhooks } from "../../hooks/useWebhooks";
 import type { NotificationType } from "../../types/notification";
 import type { WebhookDelivery } from "../../api/webhooks";
+import { radius } from "../../theme/theme";
 
 const EVENT_OPTIONS: { label: string; value: NotificationType }[] = [
   { label: "Task Assigned", value: "TASK_ASSIGNED" },
@@ -76,7 +77,7 @@ export default function WebhooksScreen() {
         value={url}
         onChangeText={setUrl}
         placeholder="Webhook URL"
-        style={{ borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8 }}
+        style={{ borderWidth: 1, borderRadius: radius.card, padding: 8, marginBottom: 8 }}
       />
       <Text style={{ marginBottom: 4 }}>Events:</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
@@ -93,7 +94,7 @@ export default function WebhooksScreen() {
             style={{
               padding: 8,
               borderWidth: 1,
-              borderRadius: 8,
+              borderRadius: radius.pill,
               backgroundColor: events.includes(opt.value) ? "#e0f7fa" : undefined
             }}
           >
@@ -107,7 +108,7 @@ export default function WebhooksScreen() {
         style={{
           padding: 10,
           borderWidth: 1,
-          borderRadius: 8,
+          borderRadius: radius.card,
           marginBottom: 16,
           opacity: isSaving || !url.trim() || events.length === 0 ? 0.5 : 1
         }}
@@ -120,7 +121,7 @@ export default function WebhooksScreen() {
           style={{
             borderWidth: 1,
             borderColor: "#0f766e",
-            borderRadius: 8,
+            borderRadius: radius.card,
             padding: 10,
             marginBottom: 12,
             backgroundColor: "#ecfdf5"
@@ -150,7 +151,12 @@ export default function WebhooksScreen() {
           ListEmptyComponent={<Text>No webhooks configured yet.</Text>}
           renderItem={({ item }) => (
             <View
-              style={{ borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 10 }}
+              style={{
+                borderWidth: 1,
+                borderRadius: radius.card,
+                padding: 12,
+                marginBottom: 10
+              }}
             >
               <Text style={{ fontWeight: "700" }}>{item.url}</Text>
               <Text style={{ marginTop: 4 }}>Events: {item.events.join(", ")}</Text>

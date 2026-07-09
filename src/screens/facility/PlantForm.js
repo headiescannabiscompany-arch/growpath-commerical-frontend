@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet
 } from "react-native";
+import { radius } from "../../theme/theme";
 
 const STAGES = ["Seedling", "Vegetative", "Flowering", "Harvest", "Cured"];
 
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 8,
     backgroundColor: "#fff",
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   stageBtn: {
     padding: 10,
-    borderRadius: 6,
+    borderRadius: radius.card,
     backgroundColor: "#f3f4f6",
     marginTop: 8,
     marginBottom: 4

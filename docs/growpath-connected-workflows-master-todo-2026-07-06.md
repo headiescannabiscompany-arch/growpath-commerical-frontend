@@ -762,6 +762,7 @@ Completed and pushed:
 486. Commercial course creation, social channel management, and external channel integration inputs, locked cards, platform cards, status cards, and action buttons now consume shared radius tokens while preserving course draft creation, Feed/Campaign placement, and external-channel guidance behavior.
 487. Facility billing/reporting, deviation handling, green waste, and settings cards, status badges, list rows, inputs, method chips, usage tiles, and actions now consume shared radius tokens while preserving billing checkout, report generation, deviation logging, waste logging, and workspace settings behavior.
 488. Legacy team management, vendor signup, certificate verification, and review submission modal panels, forms, certificate cards, validation panels, and actions now consume shared radius tokens while preserving team edits, vendor signup, certificate lookup, and review submission behavior.
+489. Facility selection, grow selection, plant form, and webhook setup cards, inputs, chips, rows, and actions now consume shared radius tokens while preserving facility switching, grow-scoped AI setup, plant editing, and webhook delivery management behavior.
 
 ## Working Rule For Codex
 

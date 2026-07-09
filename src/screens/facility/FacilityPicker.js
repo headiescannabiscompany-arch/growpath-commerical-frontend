@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useAuth } from "@/auth/AuthContext";
 import { getFacilityDetail } from "../../api/facility";
+import { radius } from "../../theme/theme";
 
 const FacilityPicker = ({ navigation }) => {
   const { facilitiesAccess, setSelectedFacilityId, setMode } = useAuth();
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#0ea5e9",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 20,
     marginBottom: 20,
     alignItems: "center"
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     padding: 16,
     marginBottom: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderLeftWidth: 4,
     borderLeftColor: "#0ea5e9"
   },
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0f2fe",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4
+    borderRadius: radius.pill
   },
   facilityInfo: {
     fontSize: 14,
