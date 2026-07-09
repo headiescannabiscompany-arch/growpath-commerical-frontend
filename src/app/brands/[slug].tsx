@@ -39,6 +39,11 @@ function trackCommercialClick(payload: Record<string, any>) {
   });
 }
 
+function campaignHref(campaign: any) {
+  const id = publicItemId(campaign);
+  return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
+}
+
 export default function PublicBrandProfileRoute() {
   const params = useLocalSearchParams<{ slug?: string }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
@@ -333,7 +338,7 @@ export default function PublicBrandProfileRoute() {
                       </Text>
                     ) : null}
                   </View>
-                  <Link href={returnFeedHref as any} asChild>
+                  <Link href={campaignHref(post) as any} asChild>
                     <Pressable style={styles.secondaryButton}>
                       <Text style={styles.secondaryButtonText}>Open Campaign</Text>
                     </Pressable>

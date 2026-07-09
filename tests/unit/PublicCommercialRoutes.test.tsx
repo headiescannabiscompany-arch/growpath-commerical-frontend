@@ -237,6 +237,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Open Campaign")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/feed?campaignId=post-1");
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     await waitFor(() =>
@@ -288,6 +289,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getByText("Open Campaign")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/feed?campaignId=post-1");
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
