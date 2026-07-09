@@ -93,7 +93,7 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
     "Role: help the user design the recipe conversationally, but call the Soil Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
     `Goal: ${payload.goal || "not set"}`,
     `Stage/use: ${payload.stage || payload.intendedUse || "not set"}`,
-    `Target label N-P-K: ${payload.targetNpk || "not set"}`,
+    `Target label N-P2O5-K2O: ${payload.targetNpk || "not set"}`,
     `Target release logic: ${payload.targetReleaseCurve || "not set"}`,
     `Batch: ${payload.totalVolume || "-"} ${payload.volumeUnit || ""}`.trim(),
     `Base mix: ${payload.baseMedia || "base media"} with ${payload.basePercent || 0}% base, ${payload.compostPercent || 0}% compost/castings, ${payload.aerationPercent || 0}% aeration, ${payload.biocharPercent || 0}% biochar.`,
@@ -121,7 +121,7 @@ export default function SoilBuilderToolScreen() {
         { key: "goal", label: "Goal", defaultValue: "medium veg soil" },
         {
           key: "targetNpk",
-          label: "Target N-P-K",
+          label: "Target label N-P2O5-K2O",
           defaultValue: "3-1-1"
         },
         {
@@ -182,7 +182,7 @@ export default function SoilBuilderToolScreen() {
         },
         {
           key: "amendmentAnalysis",
-          label: "Fast amendment N-P-K",
+          label: "Fast amendment label N-P2O5-K2O",
           defaultValue: "3-1-2"
         },
         {
@@ -208,7 +208,7 @@ export default function SoilBuilderToolScreen() {
         },
         {
           key: "amendmentAnalysisB",
-          label: "Slow base N-P-K",
+          label: "Slow base label N-P2O5-K2O",
           defaultValue: "3-16-0"
         },
         {
@@ -408,6 +408,11 @@ export default function SoilBuilderToolScreen() {
                 recipe: outputs.recipe || null,
                 targetNpk: payload.targetNpk,
                 estimatedNpk: outputs.estimatedNpk || outputs.guaranteedAnalysis || null,
+                estimatedLabelAnalysis:
+                  outputs.guaranteedAnalysis ||
+                  outputs.guaranteedAnalysisEstimate ||
+                  outputs.estimatedNpk ||
+                  null,
                 guaranteedAnalysisEstimate:
                   outputs.guaranteedAnalysis ||
                   outputs.guaranteedAnalysisEstimate ||

@@ -242,6 +242,9 @@ describe("DryAmendmentMixToolScreen", () => {
     fireEvent.press(screen.getByLabelText("Ask AI to build dry amendment blend"));
 
     expect(screen.getByText("AI dry amendment brief")).toBeTruthy();
+    expect(
+      screen.getByText(/source of truth for label N-P2O5-K2O math, release timing/)
+    ).toBeTruthy();
     expect(screen.getByText(/Recipe: Veg topdress blend/)).toBeTruthy();
     expect(screen.getByText(/Target stage: veg/)).toBeTruthy();
     expect(screen.getByText(/Alfalfa meal: 500 grams, label 3-1-2/)).toBeTruthy();

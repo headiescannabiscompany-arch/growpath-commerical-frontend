@@ -93,7 +93,10 @@ describe("SoilBuilderToolScreen", () => {
   it("sends target profile, release timing, and rest/cook assumptions to the soil calculator", async () => {
     const screen = render(<SoilBuilderToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Soil Builder Target N-P-K"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      "3-1-1"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Soil Builder Target release curve"),
       "1-1-1 slow base plus fast nitrogen"
@@ -178,7 +181,10 @@ describe("SoilBuilderToolScreen", () => {
   it("creates a soil recipe task timeline from the saved ToolRun", async () => {
     const screen = render(<SoilBuilderToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Soil Builder Target N-P-K"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      "3-1-1"
+    );
     fireEvent.changeText(screen.getByLabelText("Soil Builder Rest/cook days"), "28");
     fireEvent.press(screen.getByLabelText("Run Soil Builder"));
 
@@ -217,7 +223,10 @@ describe("SoilBuilderToolScreen", () => {
   it("builds an AI soil recipe brief without replacing calculator math", () => {
     const screen = render(<SoilBuilderToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Soil Builder Target N-P-K"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      "3-1-1"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Soil Builder Target release curve"),
       "1-1-1 slow base plus fast nitrogen"
@@ -230,7 +239,7 @@ describe("SoilBuilderToolScreen", () => {
     fireEvent.press(screen.getByLabelText("Ask AI to build soil recipe"));
 
     expect(screen.getByText("AI soil recipe brief")).toBeTruthy();
-    expect(screen.getByText(/Target label N-P-K: 3-1-1/)).toBeTruthy();
+    expect(screen.getByText(/Target label N-P2O5-K2O: 3-1-1/)).toBeTruthy();
     expect(
       screen.getByText(/Target release logic: 1-1-1 slow base plus fast nitrogen/)
     ).toBeTruthy();

@@ -112,7 +112,7 @@ export default function DryAmendmentMixToolScreen() {
       tool="dry-amendment-mix"
       toolKey="dry-amendment-mix"
       title="Dry Amendment Mix Builder"
-      subtitle="Blend guaranteed-analysis ingredients, estimate achieved NPK, and group release timing."
+      subtitle="Blend guaranteed-analysis ingredients, estimate achieved label N-P2O5-K2O, and group release timing."
       fields={[
         { key: "recipeName", label: "Recipe name", defaultValue: "Dry amendment blend" },
         { key: "desiredStage", label: "Desired stage", defaultValue: "veg" },
@@ -230,7 +230,7 @@ export default function DryAmendmentMixToolScreen() {
       assistantBrief={{
         title: "AI-guided, calculator-verified",
         description:
-          "Ask AI to help balance the blend, explain which ingredients drive the label analysis, and identify product-label gaps. The Dry Amendment Mix Builder remains the source of truth for NPK math, release timing, batch tasks, and product drafts.",
+          "Ask AI to help balance the blend, explain which ingredients drive the label analysis, and identify product-label gaps. The Dry Amendment Mix Builder remains the source of truth for label N-P2O5-K2O math, release timing, batch tasks, and product drafts.",
         buttonLabel: "Ask AI to Build Dry Blend",
         accessibilityLabel: "Ask AI to build dry amendment blend",
         briefTitle: "AI dry amendment brief",
