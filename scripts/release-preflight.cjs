@@ -78,6 +78,9 @@ async function main() {
   run("V1 feature matrix validation", process.execPath, [
     "scripts/validate-v1-feature-matrix.cjs"
   ]);
+  run("AI function inventory validation", process.execPath, [
+    "scripts/inventory-ai-functions.cjs"
+  ]);
 
   run("focused backend release routes", process.execPath, [
     jestCli,

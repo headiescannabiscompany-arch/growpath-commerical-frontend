@@ -126,3 +126,4 @@ Legend:
 - [x] Route pollution guard: stale underscored `/home/_personal` and `/home/_facility` route files removed, and `scripts/inventory-ui-routes.cjs` now fails on underscored non-layout files under `src/app`.
 - [x] Forum/Q&A route naming guard: `/forum` and `/forum/post/:id` are canonical discussion routes; `/communities` and workspace `community` entry points are documented/tested as Forum/Q&A compatibility/support surfaces, not Feed/Campaigns.
 - [x] Personal logs/tasks route contract reconciled: `/home/personal/logs` remains a grow-scoped stale-link redirect, while `/home/personal/tasks` is the functional out-of-nav Task Center/Schedule route.
+- [x] AI function count canonicalized: hardened tool-function spec Section 5 now has a generated 44-function / 15-tool inventory and a guard that also blocks the known `cultivarId` typo regression.

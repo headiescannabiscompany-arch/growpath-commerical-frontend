@@ -20,6 +20,7 @@ Repo: C:\growpath-commercial\frontend
 
 - docs/contracts/FRONTEND_RUNTIME_CONTRACT.json
 - docs/contracts/FRONTEND_RUNTIME_AUDIT.md
+- docs/contracts/AI_FUNCTION_INVENTORY.json
 - docs/contracts/TEMPORAL_CONTRACT.md
 - docs/contracts/errors.md
 - docs/contracts/CAPABILITY_KEYS.json

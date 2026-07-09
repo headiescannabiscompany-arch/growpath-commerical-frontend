@@ -1,0 +1,260 @@
+{
+  "source": "docs/GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md",
+  "registrySection": "5",
+  "totalFunctions": 44,
+  "toolCount": 15,
+  "byTool": {
+    "harvest": [
+      "harvest.analyzeTrichomes",
+      "harvest.estimateHarvestWindow",
+      "harvest.recommendPartialHarvest",
+      "harvest.updateHarvestPlan"
+    ],
+    "steering": [
+      "steering.computeDryback",
+      "steering.recommendNextIrrigation",
+      "steering.scoreSteeringBias",
+      "steering.suggestECAdjustment"
+    ],
+    "light": [
+      "light.co2CompatibilityCheck",
+      "light.computeDLI",
+      "light.recommendPPFD",
+      "light.targetDLI"
+    ],
+    "climate": [
+      "climate.computeDewPoint",
+      "climate.computeVPD",
+      "climate.nightSwingRisk",
+      "climate.recommendRHShift"
+    ],
+    "risk": [
+      "risk.computeBudRotRisk",
+      "risk.recommendMitigationActions"
+    ],
+    "nutrients": [
+      "nutrients.computeDeliveredNPK",
+      "nutrients.computeRatio"
+    ],
+    "fert": [
+      "fert.buildRecipe",
+      "fert.estimateCost",
+      "fert.scaleRecipe"
+    ],
+    "ec": [
+      "ec.computeDrift",
+      "ec.recommendCorrection",
+      "ec.targetEC"
+    ],
+    "soil": [
+      "soil.buildMix",
+      "soil.computeCost",
+      "soil.scaleAmendments"
+    ],
+    "topdress": [
+      "topdress.computeTopdressAmounts",
+      "topdress.recommendTopdress"
+    ],
+    "diagnosis": [
+      "diagnosis.analyzeSymptoms",
+      "diagnosis.confirmChecks",
+      "diagnosis.proposeCauses",
+      "diagnosis.recommendAction"
+    ],
+    "pheno": [
+      "pheno.comparePhenotypes",
+      "pheno.recommendKeeper",
+      "pheno.scorePheno"
+    ],
+    "runs": [
+      "runs.attributeDeltas",
+      "runs.compareRuns"
+    ],
+    "calendar": [
+      "calendar.generateCalendar",
+      "calendar.updateCalendarOnEvent"
+    ],
+    "tasks": [
+      "tasks.generateDailyTasks",
+      "tasks.prioritizeTasks"
+    ]
+  },
+  "functions": [
+    {
+      "tool": "calendar",
+      "name": "calendar.generateCalendar"
+    },
+    {
+      "tool": "calendar",
+      "name": "calendar.updateCalendarOnEvent"
+    },
+    {
+      "tool": "climate",
+      "name": "climate.computeDewPoint"
+    },
+    {
+      "tool": "climate",
+      "name": "climate.computeVPD"
+    },
+    {
+      "tool": "climate",
+      "name": "climate.nightSwingRisk"
+    },
+    {
+      "tool": "climate",
+      "name": "climate.recommendRHShift"
+    },
+    {
+      "tool": "diagnosis",
+      "name": "diagnosis.analyzeSymptoms"
+    },
+    {
+      "tool": "diagnosis",
+      "name": "diagnosis.confirmChecks"
+    },
+    {
+      "tool": "diagnosis",
+      "name": "diagnosis.proposeCauses"
+    },
+    {
+      "tool": "diagnosis",
+      "name": "diagnosis.recommendAction"
+    },
+    {
+      "tool": "ec",
+      "name": "ec.computeDrift"
+    },
+    {
+      "tool": "ec",
+      "name": "ec.recommendCorrection"
+    },
+    {
+      "tool": "ec",
+      "name": "ec.targetEC"
+    },
+    {
+      "tool": "fert",
+      "name": "fert.buildRecipe"
+    },
+    {
+      "tool": "fert",
+      "name": "fert.estimateCost"
+    },
+    {
+      "tool": "fert",
+      "name": "fert.scaleRecipe"
+    },
+    {
+      "tool": "harvest",
+      "name": "harvest.analyzeTrichomes"
+    },
+    {
+      "tool": "harvest",
+      "name": "harvest.estimateHarvestWindow"
+    },
+    {
+      "tool": "harvest",
+      "name": "harvest.recommendPartialHarvest"
+    },
+    {
+      "tool": "harvest",
+      "name": "harvest.updateHarvestPlan"
+    },
+    {
+      "tool": "light",
+      "name": "light.co2CompatibilityCheck"
+    },
+    {
+      "tool": "light",
+      "name": "light.computeDLI"
+    },
+    {
+      "tool": "light",
+      "name": "light.recommendPPFD"
+    },
+    {
+      "tool": "light",
+      "name": "light.targetDLI"
+    },
+    {
+      "tool": "nutrients",
+      "name": "nutrients.computeDeliveredNPK"
+    },
+    {
+      "tool": "nutrients",
+      "name": "nutrients.computeRatio"
+    },
+    {
+      "tool": "pheno",
+      "name": "pheno.comparePhenotypes"
+    },
+    {
+      "tool": "pheno",
+      "name": "pheno.recommendKeeper"
+    },
+    {
+      "tool": "pheno",
+      "name": "pheno.scorePheno"
+    },
+    {
+      "tool": "risk",
+      "name": "risk.computeBudRotRisk"
+    },
+    {
+      "tool": "risk",
+      "name": "risk.recommendMitigationActions"
+    },
+    {
+      "tool": "runs",
+      "name": "runs.attributeDeltas"
+    },
+    {
+      "tool": "runs",
+      "name": "runs.compareRuns"
+    },
+    {
+      "tool": "soil",
+      "name": "soil.buildMix"
+    },
+    {
+      "tool": "soil",
+      "name": "soil.computeCost"
+    },
+    {
+      "tool": "soil",
+      "name": "soil.scaleAmendments"
+    },
+    {
+      "tool": "steering",
+      "name": "steering.computeDryback"
+    },
+    {
+      "tool": "steering",
+      "name": "steering.recommendNextIrrigation"
+    },
+    {
+      "tool": "steering",
+      "name": "steering.scoreSteeringBias"
+    },
+    {
+      "tool": "steering",
+      "name": "steering.suggestECAdjustment"
+    },
+    {
+      "tool": "tasks",
+      "name": "tasks.generateDailyTasks"
+    },
+    {
+      "tool": "tasks",
+      "name": "tasks.prioritizeTasks"
+    },
+    {
+      "tool": "topdress",
+      "name": "topdress.computeTopdressAmounts"
+    },
+    {
+      "tool": "topdress",
+      "name": "topdress.recommendTopdress"
+    }
+  ]
+}

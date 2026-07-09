@@ -73,6 +73,7 @@ Hide or skip it if it requires deep analytics, prediction, or a new commercial-h
 - Added the cross-user visual standard decision: Facility's visual appeal and polish should apply to Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces.
 - Removed stale underscored `/home/_personal` and `/home/_facility` route files and added a route-inventory guard that fails on any underscored non-layout file under `src/app`, keeping route inventory to canonical visible routes plus Expo `_layout` files.
 - Canonicalized Forum/Q&A route naming: `/forum` and `/forum/post/:id` are the discussion routes; `/communities` is only a legacy Forum Directory compatibility route; workspace `community` routes remain Forum/Q&A support surfaces and must not become Feed/Campaigns.
+- Canonicalized the AI function inventory: Section 5 of the hardened tool-function spec now validates against `docs/contracts/AI_FUNCTION_INVENTORY.json` with 44 AI functions across 15 tools. The inventory guard is wired into guard and release preflight and blocks the known `cultivarId` spacing typo from returning.
 
 ### 2026-07-02
 

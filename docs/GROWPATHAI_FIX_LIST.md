@@ -71,10 +71,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 
 ### DOC TYPO / COUNT ERROR
 
-10. AI function count contradiction + typo cleanup
-- Problem: total function counts and minor typos (for example `cultiva rId`) reduce trust in specs.
-- Action: regenerate authoritative function inventory and fix doc typos.
-- Done when: one canonical function count exists and doc lint checks pass.
+10. AI function count contradiction + typo cleanup - DONE 2026-07-09
+- Problem: total function counts and minor typos in contract field names reduce trust in specs.
+- Action completed: added `docs/contracts/AI_FUNCTION_INVENTORY.json` as the canonical generated inventory for Section 5 of the hardened tool-function spec, then added `scripts/inventory-ai-functions.cjs` to validate the 44-function / 15-tool count and fail if the known field-name typo returns.
+- Evidence: `node scripts/inventory-ai-functions.cjs` passes and is now wired into `npm run guard` plus release preflight.
+- Guardrail: edit the hardened registry first, then run `npm run inventory:ai-functions` and update the canonical inventory in the same change.
 
 ## Fix Later
 

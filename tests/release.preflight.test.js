@@ -45,6 +45,7 @@ function createPreflightRoot() {
     "scripts/validate-backend-route-contract.cjs",
     "scripts/validate-v1-ui-surface.cjs",
     "scripts/validate-v1-feature-matrix.cjs",
+    "scripts/inventory-ai-functions.cjs",
     "scripts/run-playwright-expo.cjs",
     "scripts/export-production-web.cjs",
     "scripts/verify-web-seo.cjs",
@@ -99,6 +100,7 @@ describe("release preflight", () => {
       "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
+      "scripts/inventory-ai-functions.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/jest/bin/jest.js",
       "scripts/run-playwright-expo.cjs",
@@ -106,7 +108,7 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(readLog(tempRoot)[7].argv).toEqual(
+    expect(readLog(tempRoot)[8].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -114,7 +116,7 @@ describe("release preflight", () => {
         "backend/routes/cropKnowledge.test.js"
       ])
     );
-    expect(readLog(tempRoot)[8].argv).toEqual(
+    expect(readLog(tempRoot)[9].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -153,6 +155,7 @@ describe("release preflight", () => {
       "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
+      "scripts/inventory-ai-functions.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/jest/bin/jest.js",
       "scripts/run-playwright-expo.cjs",
@@ -161,7 +164,7 @@ describe("release preflight", () => {
       "scripts/export-store-assets.cjs"
     ]);
     expect(log[2].strict).toBe("1");
-    expect(log[10].argv).toEqual(
+    expect(log[11].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -169,7 +172,7 @@ describe("release preflight", () => {
         "backend/routes/cropKnowledge.test.js"
       ])
     );
-    expect(log[11].argv).toEqual(
+    expect(log[12].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -185,7 +188,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[12]).toEqual(
+    expect(log[13]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

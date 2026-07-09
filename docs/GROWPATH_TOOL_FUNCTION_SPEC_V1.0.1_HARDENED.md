@@ -639,6 +639,8 @@ All include `id`, `createdAt`, `updatedAt`, `deletedAt`.
 
 The AI may ONLY invoke functions below.
 
+Canonical generated inventory: `docs/contracts/AI_FUNCTION_INVENTORY.json` (44 functions across 15 tools). Run `npm run inventory:ai-functions` after editing this section.
+
 ### Harvest
 
 - `harvest.analyzeTrichomes`
