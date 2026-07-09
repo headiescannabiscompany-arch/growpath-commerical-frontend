@@ -70,6 +70,20 @@ function pillStyle(active: boolean) {
   return [styles.pill, active ? styles.pillOn : null];
 }
 
+function nutrientChemistryTaskMetadata(hasWarnings: boolean) {
+  return {
+    allDay: true,
+    calendarType: "nutrient_chemistry_review",
+    sourceStage: hasWarnings
+      ? "nutrient_compatibility_warning_review"
+      : "nutrient_source_review",
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 export default function NutrientChemistryToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
@@ -312,7 +326,8 @@ export default function NutrientChemistryToolScreen() {
         .filter(Boolean)
         .join("\n"),
       priority: compatibilityWarnings.length ? "high" : "medium",
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      ...nutrientChemistryTaskMetadata(compatibilityWarnings.length > 0)
     });
     setSavedMessage(result.ok ? "Created nutrient review task." : result.error);
     setCreatingTask(false);

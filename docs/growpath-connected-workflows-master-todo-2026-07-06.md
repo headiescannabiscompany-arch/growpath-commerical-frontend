@@ -865,6 +865,7 @@ Completed and pushed:
 589. AI Environment Analysis review tasks now carry all-day environment-analysis calendar metadata, risk-inspection source-stage values, and 12-hour reminders so endpoint risk flags create schedule-visible environment follow-ups with ToolRun context.
 590. Bud Rot Risk inspection tasks now carry bud-rot calendar metadata, canopy/urgent source-stage values, and risk-aware reminders so canopy inspections appear in the shared Schedule with ToolRun context.
 591. Dew Point Guard inspection tasks now carry dew-point calendar metadata, window/condensation source-stage values, and risk-aware reminders so manual and sensor-backed dew point reviews appear in the shared Schedule with ToolRun context.
+592. Nutrient Chemistry review tasks now carry all-day nutrient-chemistry calendar metadata, source/compatibility source-stage values, and 12-hour reminders so nutrient source decisions appear in the shared Schedule with ToolRun context.
 
 ## Working Rule For Codex
 
