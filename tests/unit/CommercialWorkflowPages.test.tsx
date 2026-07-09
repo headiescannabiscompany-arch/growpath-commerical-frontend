@@ -1573,7 +1573,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product grow interests"),
       "living soil, dry amendments"
     );
-    fireEvent.changeText(screen.getByLabelText("Commercial product NPK"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product label N-P2O5-K2O"),
+      "3-1-1"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product application rate"),
       "1 cup per cubic foot"
@@ -1633,6 +1636,7 @@ describe("commercial workflow pages", () => {
             specs: expect.objectContaining({
               unitSize: "5 lb bag",
               npk: "3-1-1",
+              labelNpk: "3-1-1",
               guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
               ingredients: ["Alfalfa meal", "Fish bone meal"],
               directions: "Topdress and water in.",

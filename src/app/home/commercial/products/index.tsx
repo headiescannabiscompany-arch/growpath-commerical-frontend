@@ -224,6 +224,7 @@ export default function CommercialProductsRoute({
           ? {
               unitSize: form.unitSize.trim() || undefined,
               npk: form.npk.trim() || undefined,
+              labelNpk: form.npk.trim() || undefined,
               guaranteedAnalysis: form.guaranteedAnalysis.trim() || undefined,
               ingredients: splitList(form.ingredients),
               directions: form.directions.trim() || undefined,
@@ -410,8 +411,8 @@ export default function CommercialProductsRoute({
           <TextInput
             value={form.npk}
             onChangeText={(npk) => setForm((prev) => ({ ...prev, npk }))}
-            accessibilityLabel="Commercial product NPK"
-            placeholder="N-P-K: 3-1-1"
+            accessibilityLabel="Commercial product label N-P2O5-K2O"
+            placeholder="Label N-P2O5-K2O: 3-1-1"
             style={styles.input}
           />
           <TextInput
