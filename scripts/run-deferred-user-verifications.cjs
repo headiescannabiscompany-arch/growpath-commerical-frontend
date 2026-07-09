@@ -126,6 +126,7 @@ const checks = [
       "--config",
       "jest.backend.config.cjs",
       "--runInBand",
+      "backend/services/ipmGptVerification.test.js",
       "backend/routes/tools.test.js"
     ]
   }
