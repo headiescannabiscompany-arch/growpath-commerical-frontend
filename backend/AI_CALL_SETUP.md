@@ -89,7 +89,7 @@ suite as release evidence.
 ```json
 {
   "tool": "harvest",
-  "fn": "harvest.analyzeTrichomes",
+  "fn": "analyzeTrichomes",
   "args": {
     "images": ["https://example.com/img1.jpg"],
     "zones": ["top"],
@@ -104,6 +104,9 @@ suite as release evidence.
   }
 }
 ```
+
+Canonical request shape is `{ "tool", "fn", "args", "context" }`.
+`fn` should be the bare function name. Fully-qualified `tool.fn` values are accepted only as a compatibility alias. Do not send legacy `functionName` / `inputs` envelopes.
 
 ## Response Contract (Success)
 
@@ -168,7 +171,7 @@ suite as release evidence.
 When adding new handlers to `HANDLERS` object in `ai.call.js`:
 
 ```javascript
-async "tool.functionName"(ctx, args, writes) {
+async "tool.fn"(ctx, args, writes) {
   // 1. Validate required inputs
   if (!args.requiredField) {
     return { error: { code: "MISSING_REQUIRED_INPUTS", message: "..." }, status: 400 };
@@ -195,7 +198,7 @@ async "tool.functionName"(ctx, args, writes) {
     result: { ...result, id: objId },
     confidence: 0.85,
     audit: {
-      body: `tool.functionName → result summary`,
+      body: `tool.fn → result summary`,
       tags: ["ai", "tool"]
     }
   };

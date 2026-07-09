@@ -37,6 +37,11 @@ Response:
 }
 ```
 
+Canonical shape is `{ tool, fn, args, context }`. Use a bare function name for
+`fn` such as `"estimateHarvestWindow"`. A fully-qualified `tool.fn` value is
+only a compatibility alias; `functionName` / `inputs` request envelopes are not
+supported.
+
 ### Calendar Read
 
 ```

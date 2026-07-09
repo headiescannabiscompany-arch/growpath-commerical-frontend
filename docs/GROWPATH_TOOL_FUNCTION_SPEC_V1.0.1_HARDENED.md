@@ -120,6 +120,11 @@ POST /api/facilities/:facilityId/ai/call
 }
 ```
 
+`fn` is the bare function name, for example `"estimateHarvestWindow"`.
+Fully-qualified `"tool.fn"` values may be accepted as a compatibility alias and
+normalized server-side, but new clients and docs must not use that form.
+Legacy `functionName` / `inputs` request envelopes are invalid.
+
 ### 1.4 Response Contract
 
 ```json

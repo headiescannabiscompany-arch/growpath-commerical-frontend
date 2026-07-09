@@ -113,7 +113,8 @@ function ensureSchemaPathsExist() {
     );
   }
 }
-const hasFullSchemaPack = missingSchemaPaths().length === 0 && fullObjectSchemaCount() >= 20;
+const hasFullSchemaPack =
+  missingSchemaPaths().length === 0 && fullObjectSchemaCount() >= 20;
 
 describe("AI Schema Drift Stopper preflight", () => {
   test("full schema pack is present before full drift validation runs", () => {
@@ -179,7 +180,7 @@ d("AI Schema Drift Stopper (V1.0.1)", () => {
     test("Accepts a canonical request", () => {
       const req = {
         tool: "harvest",
-        fn: "harvest.analyzeTrichomes",
+        fn: "analyzeTrichomes",
         args: { images: ["https://example.com/a.jpg"], zones: ["top"], notes: "macro" },
         context: {
           facilityId: "fac_123",
@@ -204,7 +205,18 @@ d("AI Schema Drift Stopper (V1.0.1)", () => {
     });
 
     test("Rejects missing context", () => {
-      const req = { tool: "harvest", fn: "harvest.analyzeTrichomes", args: {} };
+      const req = { tool: "harvest", fn: "analyzeTrichomes", args: {} };
+      const ok = validate(req);
+      expect(ok).toBe(false);
+    });
+
+    test("Rejects obsolete function and inputs envelope", () => {
+      const req = {
+        toolName: "harvest",
+        functionName: "analyzeTrichomes",
+        inputs: { images: ["https://example.com/a.jpg"] },
+        context: { facilityId: "fac_1", growId: "g_1", stage: "flower", date: isoNow() }
+      };
       const ok = validate(req);
       expect(ok).toBe(false);
     });

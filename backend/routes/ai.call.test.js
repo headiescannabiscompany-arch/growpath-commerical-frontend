@@ -54,7 +54,8 @@ const {
   handleClimateComputeVPD,
   handleECRecommendCorrection,
   handleHarvestAnalyzeTrichomes,
-  handleHarvestEstimateWindow
+  handleHarvestEstimateWindow,
+  normalizeAiCallRequest
 } = aiRouter.__testables;
 
 describe("AI call route handlers", () => {
@@ -63,6 +64,55 @@ describe("AI call route handlers", () => {
     expect(REGISTRY.harvest).toContain("estimateHarvestWindow");
     expect(REGISTRY.climate).toContain("computeVPD");
     expect(REGISTRY.ec).toContain("recommendCorrection");
+  });
+
+  test("normalizes canonical AI call envelope", () => {
+    expect(
+      normalizeAiCallRequest({
+        tool: "harvest",
+        fn: "estimateHarvestWindow",
+        args: { daysSinceFlip: 56 },
+        context: { growId: "grow_1" }
+      })
+    ).toEqual({
+      tool: "harvest",
+      fn: "estimateHarvestWindow",
+      args: { daysSinceFlip: 56 },
+      context: { growId: "grow_1" }
+    });
+  });
+
+  test("normalizes full-qualified fn as compatibility alias", () => {
+    expect(
+      normalizeAiCallRequest({
+        tool: "harvest",
+        fn: "harvest.estimateHarvestWindow",
+        args: {},
+        context: {}
+      })
+    ).toEqual({
+      tool: "harvest",
+      fn: "estimateHarvestWindow",
+      args: {},
+      context: {}
+    });
+  });
+
+  test("rejects obsolete function and inputs AI call envelopes", () => {
+    expect(
+      normalizeAiCallRequest({
+        toolName: "harvest",
+        functionName: "estimateHarvestWindow",
+        inputs: { daysSinceFlip: 56 }
+      })
+    ).toEqual({
+      error: {
+        code: "VALIDATION_ERROR",
+        message:
+          "Use canonical AI call envelope { tool, fn, args, context }; function/inputs-style envelopes are not supported.",
+        status: 400
+      }
+    });
   });
 
   test("climate.computeVPD returns deterministic confidence and no writes", () => {
@@ -153,7 +203,12 @@ describe("AI call route handlers", () => {
       })
     );
     expect(CalendarEvent.updateMany).toHaveBeenCalledWith(
-      { facilityId: "fac_123", growId: "grow_123", type: "HARVEST_WINDOW", deletedAt: null },
+      {
+        facilityId: "fac_123",
+        growId: "grow_123",
+        type: "HARVEST_WINDOW",
+        deletedAt: null
+      },
       { deletedAt: expect.any(Date) }
     );
     expect(CalendarEvent.insertMany).toHaveBeenCalledWith(

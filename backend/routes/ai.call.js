@@ -160,6 +160,68 @@ async function attachExternalValidation(data, { tool, fn, ctx }) {
   };
 }
 
+function normalizeAiCallRequest(body = {}) {
+  const obsoleteKeys = ["function", "functionName", "inputs", "toolName"].filter((key) =>
+    Object.prototype.hasOwnProperty.call(body, key)
+  );
+  if (obsoleteKeys.length) {
+    return {
+      error: {
+        code: "VALIDATION_ERROR",
+        message:
+          "Use canonical AI call envelope { tool, fn, args, context }; function/inputs-style envelopes are not supported.",
+        status: 400
+      }
+    };
+  }
+
+  let { tool, fn, args = {}, context = {} } = body;
+
+  if (!tool || !fn) {
+    return {
+      error: { code: "VALIDATION_ERROR", message: "Missing tool or fn", status: 400 }
+    };
+  }
+
+  tool = String(tool).trim();
+  fn = String(fn).trim();
+
+  if (!tool || !fn) {
+    return {
+      error: { code: "VALIDATION_ERROR", message: "Missing tool or fn", status: 400 }
+    };
+  }
+
+  if (args != null && (typeof args !== "object" || Array.isArray(args))) {
+    return {
+      error: { code: "BAD_REQUEST", message: "args must be an object", status: 400 }
+    };
+  }
+
+  if (context != null && (typeof context !== "object" || Array.isArray(context))) {
+    return {
+      error: { code: "BAD_REQUEST", message: "context must be an object", status: 400 }
+    };
+  }
+
+  if (fn.includes(".")) {
+    const parts = fn.split(".");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return {
+        error: { code: "VALIDATION_ERROR", message: "Invalid fn format", status: 400 }
+      };
+    }
+    if (parts[0] !== tool) {
+      return {
+        error: { code: "VALIDATION_ERROR", message: "Tool mismatch in fn", status: 400 }
+      };
+    }
+    fn = parts[1];
+  }
+
+  return { tool, fn, args: args || {}, context: context || {} };
+}
+
 // ---- Production Handlers ----
 
 /**
@@ -446,27 +508,17 @@ async function handleHarvestEstimateWindow(args, ctx) {
 
 // ---- Router Handler ----
 router.post("/call", async (req, res) => {
+  let tool;
+  let fn;
+  let args = {};
+  let context = {};
   try {
-    let { tool, fn, args = {}, context = {} } = req.body;
-
-    // Validate request shape
-    if (!tool || !fn) {
-      return fail(res, "VALIDATION_ERROR", "Missing tool or fn");
+    const normalized = normalizeAiCallRequest(req.body);
+    if (normalized.error) {
+      const error = normalized.error;
+      return fail(res, error.code, error.message, error.status);
     }
-
-    // args must be an object if provided
-    if (args != null && (typeof args !== "object" || Array.isArray(args))) {
-      return fail(res, "BAD_REQUEST", "args must be an object");
-    }
-
-    // Handle fn in "tool.function" format
-    if (fn.includes(".")) {
-      const parts = fn.split(".");
-      if (parts[0] !== tool) {
-        return fail(res, "VALIDATION_ERROR", "Tool mismatch in fn");
-      }
-      fn = parts[1]; // Extract just the function name
-    }
+    ({ tool, fn, args, context } = normalized);
 
     // Verify function is registered
     if (!REGISTRY[tool] || !REGISTRY[tool].includes(fn)) {
@@ -554,6 +606,7 @@ router.__testables = {
   handleECRecommendCorrection,
   handleHarvestAnalyzeTrichomes,
   handleHarvestEstimateWindow,
+  normalizeAiCallRequest,
   serializeHarvestDecision
 };
 
