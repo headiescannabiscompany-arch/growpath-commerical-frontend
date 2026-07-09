@@ -33,12 +33,27 @@ function normalizePriority(value: unknown): "low" | "medium" | "high" {
   return value === "low" || value === "medium" || value === "high" ? value : "medium";
 }
 
+function growCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "grow_milestone",
+    sourceStage,
+    reminderPlan: {
+      label: "24 hours before",
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -1440 }]
+    }
+  };
+}
+
 function calendarTaskPlan(outputs: Record<string, any>) {
   const schedule = Array.isArray(outputs.taskSchedule) ? outputs.taskSchedule : [];
   return schedule.slice(0, 20).map((item: any, index: number) => {
     const title = String(item?.title || item?.name || `Grow calendar task ${index + 1}`);
     const dueDate = String(item?.dueDate || item?.date || tomorrow(index));
-    const sourceStage = item?.stage ? String(item.stage) : "";
+    const sourceStage = item?.stage
+      ? String(item.stage)
+      : `grow_calendar_task_${index + 1}`;
     const stage = sourceStage ? `Stage: ${sourceStage}` : "";
     const notes = item?.description || item?.notes || item?.reason || "";
 
@@ -46,14 +61,7 @@ function calendarTaskPlan(outputs: Record<string, any>) {
       title,
       priority: normalizePriority(item?.priority),
       dueDate,
-      allDay: true,
-      calendarType: "grow_milestone",
-      sourceStage,
-      reminderPlan: {
-        label: "24 hours before",
-        channels: ["in_app"],
-        reminders: [{ offsetMinutes: -1440 }]
-      },
+      ...growCalendarMetadata(sourceStage),
       description: [stage, notes, "Created from the Auto Grow Calendar ToolRun."]
         .filter(Boolean)
         .join("\n")
@@ -144,6 +152,11 @@ export default function AutoGrowCalendarToolRoute() {
         title: outputs.taskSchedule?.[0]?.title || "Start grow calendar",
         dueDate: outputs.taskSchedule?.[0]?.dueDate || tomorrow(0),
         priority: "medium",
+        ...growCalendarMetadata(
+          outputs.taskSchedule?.[0]?.stage
+            ? String(outputs.taskSchedule[0].stage)
+            : "grow_calendar_start"
+        ),
         description:
           "Use this as the first calendar task, then create the rest from the saved plan."
       })}

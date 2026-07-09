@@ -856,6 +856,7 @@ Completed and pushed:
 580. Dry / Cure Guard monitoring plans and default condition-check tasks now carry all-day dry/cure calendar metadata, source-stage values, and 12-hour reminders so dry-room checks, bud quality inspections, jar RH/burp reviews, and outcome notes appear in the shared Schedule with harvest-batch context.
 581. Run-To-Run Comparison next-run tasks now use specific source-stage values for post-run decision review, next-run template updates, missing-data backfill, and cultivar/environment separation while preserving all-day run-comparison calendar metadata and 24-hour reminders.
 582. Species / Crop Identification task plans and default confirmation tasks now carry all-day crop-identity calendar metadata, source-stage values, and 12-hour reminders so crop confirmation, crop-specific tool target review, and grow/plant tag updates appear in the shared Schedule with crop-profile context.
+583. Auto Grow Calendar now uses one grow-calendar metadata helper for bulk milestone tasks and default first-task creation, preserving all-day milestone scheduling, 24-hour reminders, and non-empty source-stage values for generated stage anchors.
 
 ## Working Rule For Codex
 

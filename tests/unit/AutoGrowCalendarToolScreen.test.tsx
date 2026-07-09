@@ -165,7 +165,8 @@ describe("AutoGrowCalendarToolRoute", () => {
             }),
             expect.objectContaining({
               title: "Start harvest readiness checks",
-              dueDate: "2026-09-29"
+              dueDate: "2026-09-29",
+              sourceStage: "late flower"
             })
           ]
         })
