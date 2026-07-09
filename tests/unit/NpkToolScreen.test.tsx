@@ -258,17 +258,34 @@ describe("NpkToolScreen", () => {
           toolKey: "npk-recipe",
           toolRunId: "toolrun-1",
           tasks: expect.arrayContaining([
-            expect.objectContaining({ title: "Verify labels for Kelp veg feed" }),
+            expect.objectContaining({
+              title: "Verify labels for Kelp veg feed",
+              allDay: true,
+              calendarType: "npk_recipe_followup",
+              sourceStage: "npk_label_verification",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              })
+            }),
             expect.objectContaining({
               title: "Mix Kelp veg feed",
-              priority: "high"
+              priority: "high",
+              sourceStage: "npk_recipe_mixing"
             }),
             expect.objectContaining({
               title: "Apply Kelp veg feed",
-              priority: "high"
+              priority: "high",
+              sourceStage: "npk_recipe_application"
             }),
-            expect.objectContaining({ title: "Check response to Kelp veg feed" }),
-            expect.objectContaining({ title: "Review next adjustment for Kelp veg feed" })
+            expect.objectContaining({
+              title: "Check response to Kelp veg feed",
+              sourceStage: "npk_recipe_response_check"
+            }),
+            expect.objectContaining({
+              title: "Review next adjustment for Kelp veg feed",
+              sourceStage: "npk_recipe_adjustment_review"
+            })
           ])
         })
       )

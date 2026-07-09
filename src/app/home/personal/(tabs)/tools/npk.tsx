@@ -232,6 +232,15 @@ function npkRecipeTasks(args: {
         .filter(Boolean)
         .join(", ")
     : "";
+  const calendarMetadata = {
+    allDay: true,
+    calendarType: "npk_recipe_followup",
+    sourceStage: String(args.stage || args.payload.stage || "nutrient_recipe"),
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
 
   return [
     {
@@ -244,7 +253,9 @@ function npkRecipeTasks(args: {
         .filter(Boolean)
         .join("\n"),
       priority: confidence === "low" ? ("high" as const) : ("medium" as const),
-      dueDate: daysFromNow(0)
+      dueDate: daysFromNow(0),
+      ...calendarMetadata,
+      sourceStage: "npk_label_verification"
     },
     {
       title: `Mix ${name}`,
@@ -255,28 +266,36 @@ function npkRecipeTasks(args: {
         .filter(Boolean)
         .join("\n"),
       priority: "high" as const,
-      dueDate: daysFromNow(1)
+      dueDate: daysFromNow(1),
+      ...calendarMetadata,
+      sourceStage: "npk_recipe_mixing"
     },
     {
       title: `Apply ${name}`,
       description:
         "Apply only after label, water, EC/pH, plant stage, and release timing checks are complete.",
       priority: "high" as const,
-      dueDate: daysFromNow(1)
+      dueDate: daysFromNow(1),
+      ...calendarMetadata,
+      sourceStage: "npk_recipe_application"
     },
     {
       title: `Check response to ${name}`,
       description:
         "Compare plant posture, color, runoff/feed notes, and any stress response against the recipe target.",
       priority: "medium" as const,
-      dueDate: daysFromNow(3)
+      dueDate: daysFromNow(3),
+      ...calendarMetadata,
+      sourceStage: "npk_recipe_response_check"
     },
     {
       title: `Review next adjustment for ${name}`,
       description:
         "Decide whether to repeat, reduce, increase, or revise the recipe based on measured response and release timing.",
       priority: "medium" as const,
-      dueDate: daysFromNow(7)
+      dueDate: daysFromNow(7),
+      ...calendarMetadata,
+      sourceStage: "npk_recipe_adjustment_review"
     }
   ];
 }
