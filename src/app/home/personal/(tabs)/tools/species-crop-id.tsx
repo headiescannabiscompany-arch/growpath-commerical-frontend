@@ -12,6 +12,18 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
+function cropIdentityCalendarMetadata(sourceStage: string) {
+  return {
+    allDay: true,
+    calendarType: "crop_identity_followup",
+    sourceStage,
+    reminderPlan: {
+      channels: ["in_app"],
+      reminders: [{ offsetMinutes: -12 * 60 }]
+    }
+  };
+}
+
 function speciesCropTaskPlan(outputs: Record<string, any>) {
   const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
   if (planned.length) {
@@ -19,6 +31,9 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
       title: String(task?.title || `Crop identity follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      ...cropIdentityCalendarMetadata(
+        String(task?.sourceStage || `crop_identity_followup_${index + 1}`)
+      ),
       description:
         task?.description ||
         "Follow up on crop identity before applying crop-specific diagnosis, nutrition, IPM, or environment guidance."
@@ -33,6 +48,7 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
       title: needsConfirm ? "Confirm crop identity" : "Save crop identity to profile",
       priority: needsConfirm ? "high" : ("medium" as const),
       dueDate: tomorrow(1),
+      ...cropIdentityCalendarMetadata("crop_identity_confirmation"),
       description:
         outputs.recommendationContext ||
         `Confirm ${crop} identity and save the crop profile before using crop-specific guidance.`
@@ -41,6 +57,7 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
       title: "Review crop-specific tool targets",
       priority: "medium" as const,
       dueDate: tomorrow(2),
+      ...cropIdentityCalendarMetadata("crop_tool_target_review"),
       description:
         "Check whether diagnosis prompts, pH/EC ranges, VPD targets, nutrient assumptions, and IPM context should change for this crop identity."
     },
@@ -48,6 +65,7 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
       title: "Update grow or plant tags",
       priority: "medium" as const,
       dueDate: tomorrow(3),
+      ...cropIdentityCalendarMetadata("crop_profile_tag_update"),
       description:
         "Attach confirmed common names, scientific name, cultivar, grow interests, and privacy-safe notes to the grow or plant record."
     }
@@ -109,7 +127,8 @@ export default function SpeciesCropIdToolRoute() {
         description:
           outputs.recommendationContext ||
           "Confirm species/crop profile before applying crop-specific guidance.",
-        priority: outputs.userConfirmationRequired ? "high" : "medium"
+        priority: outputs.userConfirmationRequired ? "high" : "medium",
+        ...cropIdentityCalendarMetadata("crop_identity_confirmation")
       })}
       buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
         {

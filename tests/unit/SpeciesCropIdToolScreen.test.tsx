@@ -121,14 +121,23 @@ describe("SpeciesCropIdToolRoute", () => {
             expect.objectContaining({
               title: "Confirm crop identity",
               priority: "high",
+              allDay: true,
+              calendarType: "crop_identity_followup",
+              sourceStage: "crop_identity_confirmation",
+              reminderPlan: expect.objectContaining({
+                channels: ["in_app"],
+                reminders: [expect.objectContaining({ offsetMinutes: -720 })]
+              }),
               description: expect.stringContaining("cannabis-specific")
             }),
             expect.objectContaining({
               title: "Review crop-specific tool targets",
+              sourceStage: "crop_tool_target_review",
               description: expect.stringContaining("VPD targets")
             }),
             expect.objectContaining({
               title: "Update grow or plant tags",
+              sourceStage: "crop_profile_tag_update",
               description: expect.stringContaining("scientific name")
             })
           ]
