@@ -87,10 +87,11 @@ Scope: Frontend repo plus cross-repo contract alignment items
 - Evidence: `npm run validate:v1-matrix` passes with 226 checked rows; `v1.release.matrix.test.js` passes. Current row status distribution is 39 canonical, 121 compatibility/internal, 65 planned, and 1 deprecated.
 - Guardrail: `unknown` mode is only allowed for non-visible internal `auto.*` inventory rows; duplicate UI routes must have one canonical row plus compatibility/deprecated companion rows.
 
-12. ID format policy clarification
+12. ID format policy clarification - DONE 2026-07-09
 - Problem: UUID-v4 contract language vs `_id`/Mongo-shaped compatibility behavior is ambiguous.
-- Action: document persistence ID vs API ID normalization rules and compatibility strategy.
-- Done when: ID policy is explicit in contracts and reflected in response normalizers.
+- Action completed: added `docs/contracts/ID_POLICY.md`, clarified the hardened tool-function spec to use opaque API string IDs, and added `scripts/validate-id-policy.cjs` to reject misleading UUID-only wording.
+- Evidence: `npm run validate:id-policy` and `release.preflight.test.js` pass; validator is wired into `npm run guard` and release preflight.
+- Guardrail: public API/client code should normalize to `id`; `_id` remains a persistence/compatibility fallback, not the preferred public field.
 
 ## Execution Order (Deterministic)
 

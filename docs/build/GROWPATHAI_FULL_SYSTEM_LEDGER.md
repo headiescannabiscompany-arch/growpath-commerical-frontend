@@ -75,6 +75,7 @@ Hide or skip it if it requires deep analytics, prediction, or a new commercial-h
 - Canonicalized Forum/Q&A route naming: `/forum` and `/forum/post/:id` are the discussion routes; `/communities` is only a legacy Forum Directory compatibility route; workspace `community` routes remain Forum/Q&A support surfaces and must not become Feed/Campaigns.
 - Canonicalized the AI function inventory: Section 5 of the hardened tool-function spec now validates against `docs/contracts/AI_FUNCTION_INVENTORY.json` with 44 AI functions across 15 tools. The inventory guard is wired into guard and release preflight and blocks the known `cultivarId` spacing typo from returning.
 - Hardened the V1 feature/backend matrix quality contract: all 226 rows now carry explicit `rowStatus` labels (`canonical`, `compat_alias`, `deprecated`, `planned`), and validation rejects duplicate feature IDs, malformed modes, unexplained duplicate UI routes, and user-visible `unknown` mode rows.
+- Clarified the ID contract: `docs/contracts/ID_POLICY.md` now defines public IDs as opaque strings, keeps `_id` as persistence/compatibility fallback, and requires serializers/clients to normalize to `id` for routes, source links, tasks, ToolRuns, analytics, and audit references.
 
 ### 2026-07-02
 

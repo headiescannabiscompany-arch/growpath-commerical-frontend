@@ -11,7 +11,8 @@
 
 ### 0.1 IDs / Foreign Keys
 
-- All objects use `id: string` (UUID).
+- IDs are opaque strings at the API boundary. See `docs/contracts/ID_POLICY.md`.
+- Public API serializers should expose `id`; persistence may also carry `_id` for Mongo/ObjectId compatibility.
 - Foreign keys: `facilityId`, `growId`, `runId`, `cultivarId`, `userId`, `recipeId`, `eventId` (all `string`).
 
 ### 0.2 Timestamps / Soft Delete
