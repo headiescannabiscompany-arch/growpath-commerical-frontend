@@ -36,7 +36,7 @@ export default function AdCard({
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const { width } = useWindowDimensions();
   const compactMedia = width >= 760;
-  const resolvedImageUrl = resolveImageUri(profileImageUrl || imageUrl);
+  const resolvedImageUrl = resolveImageUri(imageUrl || profileImageUrl);
 
   useEffect(() => {
     let active = true;
@@ -105,7 +105,9 @@ export default function AdCard({
           {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
         </View>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.body}>{body}</Text>
+        <Text style={styles.body} numberOfLines={compactMedia ? 2 : undefined}>
+          {body}
+        </Text>
         <Text style={styles.link}>
           {cta} {"\u2192"}
         </Text>
@@ -120,8 +122,8 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     borderRadius: radius.card,
     borderWidth: 1,
-    gap: 10,
-    padding: 16,
+    gap: 8,
+    padding: 12,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.06,
@@ -161,8 +163,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F5F9"
   },
   mediaDesktop: {
-    width: 168,
-    aspectRatio: 4 / 3,
+    width: 128,
+    aspectRatio: 16 / 9,
     marginBottom: 0
   },
   image: {

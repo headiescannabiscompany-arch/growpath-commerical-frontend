@@ -28,10 +28,7 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("FeedRail", () => {
   beforeEach(() => {
     mockListCommercialFeedCampaigns.mockReset();
-    jest
-      .mocked(recordCommercialAnalyticsEvent)
-      .mockReset()
-      .mockResolvedValue({});
+    jest.mocked(recordCommercialAnalyticsEvent).mockReset().mockResolvedValue({});
   });
 
   it("keeps fallback promotional rail cards on storefront routes", async () => {
@@ -114,6 +111,9 @@ describe("FeedRail", () => {
           title: "3-1-1 Veg Mix",
           body: "Promoted product discovery.",
           linkedProductId: "veg-mix-1",
+          imageUrl: "https://example.com/generic.jpg",
+          creativeImageUrl: "https://example.com/creative.jpg",
+          bannerImageUrl: "https://example.com/banner.jpg",
           createdAt: "2026-07-07T12:00:00Z",
           engagementCount: 4,
           author: { displayName: "Living Soil Labs" },
@@ -127,6 +127,9 @@ describe("FeedRail", () => {
     const screen = render(<FeedRail slots={1} railMode="promo-only" placement="top" />);
 
     await waitFor(() => expect(screen.getByText("3-1-1 Veg Mix")).toBeTruthy());
+    expect(screen.getByLabelText("3-1-1 Veg Mix ad image").props.source).toEqual({
+      uri: "https://example.com/banner.jpg"
+    });
     fireEvent.press(screen.getByLabelText("View Product for 3-1-1 Veg Mix"));
 
     expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
@@ -221,7 +224,9 @@ describe("FeedRail", () => {
 
     const screen = render(<FeedRail slots={2} railMode="promo-only" placement="top" />);
 
-    await waitFor(() => expect(screen.getByText("Soil Builder Masterclass")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Soil Builder Masterclass")).toBeTruthy()
+    );
     fireEvent.press(screen.getByLabelText("View Course for Soil Builder Masterclass"));
     fireEvent.press(screen.getByLabelText("View Live for Live Soil Mixing Demo"));
 

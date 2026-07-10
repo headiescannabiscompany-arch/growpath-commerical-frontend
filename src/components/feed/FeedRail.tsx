@@ -102,7 +102,7 @@ function campaignDestination(post: CommercialFeedCampaign) {
 }
 
 function campaignImage(post: CommercialFeedCampaign) {
-  return post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || "";
+  return post.bannerImageUrl || post.creativeImageUrl || post.imageUrl || "";
 }
 
 function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
