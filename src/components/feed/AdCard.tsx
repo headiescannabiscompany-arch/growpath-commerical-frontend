@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Image, Pressable, Text, StyleSheet, View } from "react-native";
-import AppCard from "@/components/layout/AppCard";
+import {
+  Image,
+  Pressable,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+  View
+} from "react-native";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { fetchPublicStorefront } from "@/api/storefront";
 import { radius } from "@/theme/theme";
@@ -28,6 +34,8 @@ export default function AdCard({
   strategyLabel
 }: AdCardProps) {
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const { width } = useWindowDimensions();
+  const compactMedia = width >= 760;
   const resolvedImageUrl = resolveImageUri(profileImageUrl || imageUrl);
 
   useEffect(() => {
@@ -75,35 +83,58 @@ export default function AdCard({
   }
 
   return (
-    <AppCard>
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={`${cta} for ${title}`}
+      onPress={openAd}
+      style={[styles.card, compactMedia && resolvedImageUrl ? styles.cardDesktop : null]}
+    >
       {resolvedImageUrl ? (
-        <Image
-          source={{ uri: resolvedImageUrl }}
-          style={styles.image}
-          resizeMode="cover"
-          accessibilityLabel={`${title} ad image`}
-        />
+        <View style={[styles.mediaFrame, compactMedia ? styles.mediaDesktop : null]}>
+          <Image
+            source={{ uri: resolvedImageUrl }}
+            style={styles.image}
+            resizeMode="cover"
+            accessibilityLabel={`${title} ad image`}
+          />
+        </View>
       ) : null}
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>Promoted campaign</Text>
-        {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
-      </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.body}>{body}</Text>
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={`${cta} for ${title}`}
-        onPress={openAd}
-      >
+      <View style={styles.copy}>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Promoted campaign</Text>
+          {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
+        </View>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.body}>{body}</Text>
         <Text style={styles.link}>
           {cta} {"\u2192"}
         </Text>
-      </Pressable>
-    </AppCard>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 10,
+    padding: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18
+  },
+  cardDesktop: {
+    alignItems: "center",
+    flexDirection: "row"
+  },
+  copy: {
+    flex: 1,
+    minWidth: 0
+  },
   label: {
     fontSize: 12,
     fontWeight: "700",
@@ -121,12 +152,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700"
   },
-  image: {
+  mediaFrame: {
     width: "100%",
-    aspectRatio: 16 / 7,
+    aspectRatio: 16 / 9,
     borderRadius: radius.card,
+    overflow: "hidden",
     marginBottom: 10,
     backgroundColor: "#F1F5F9"
+  },
+  mediaDesktop: {
+    width: 168,
+    aspectRatio: 4 / 3,
+    marginBottom: 0
+  },
+  image: {
+    width: "100%",
+    height: "100%"
   },
   title: {
     fontSize: 16,

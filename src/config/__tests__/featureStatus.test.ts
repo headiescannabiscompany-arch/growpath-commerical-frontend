@@ -117,9 +117,7 @@ describe("personal feature status manifest", () => {
     );
     const backendRoutes = new Set(
       [
-        ...Array.from(
-          routeSource.matchAll(/calculatorRoute\(\s*["']\/([^"']+)["']/g)
-        ),
+        ...Array.from(routeSource.matchAll(/calculatorRoute\(\s*["']\/([^"']+)["']/g)),
         ...Array.from(routeSource.matchAll(/router\.post\(\s*["']\/([^"']+)["']/g))
       ].map((match) => match[1])
     );
@@ -154,6 +152,7 @@ describe("personal feature status manifest", () => {
     ) as Record<string, FeatureDefinition>;
 
     expect(byKey["tools.ai_diagnosis"].capabilityKey).toBe("DIAGNOSE_AI");
+    expect(byKey["tools.ai_assistant"].capabilityKey).toBe("AI_ASSISTANT");
     expect(byKey["tools.feeding_schedule"].capabilityKey).toBe("FEEDING_SCHEDULE");
     expect(byKey["tools.harvest_estimator"].capabilityKey).toBe("TOOL_HARVEST_ESTIMATOR");
     expect(byKey["tools.timeline_planner"].capabilityKey).toBe("TOOL_TIMELINE_PLANNER");
@@ -169,6 +168,7 @@ describe("personal feature status manifest", () => {
       "tools.bud_rot_risk": "/home/personal/tools/bud-rot-risk",
       "tools.npk_recipe": "/home/personal/tools/npk",
       "tools.ai_diagnosis": "/home/personal/diagnose",
+      "tools.ai_assistant": "/home/personal/ai",
       "tools.integrations": "/home/personal/tools/integrations"
     };
 
@@ -231,6 +231,9 @@ describe("personal feature status manifest", () => {
     );
 
     expect(byKey["tools.ai_diagnosis"].area).toBe("plant_health");
+    expect(byKey["tools.ai_assistant"].area).toBe("plant_health");
+    expect(byKey["tools.ai_assistant"].status).toBe("release");
+    expect(byKey["tools.ai_assistant"].href).toBe("/home/personal/ai");
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");

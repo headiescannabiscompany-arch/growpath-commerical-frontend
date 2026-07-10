@@ -287,6 +287,18 @@ export const personalToolFeatures = [
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
   {
+    key: "tools.ai_assistant",
+    title: "Ask AI",
+    description: "Ask grow questions with optional grow context and save AI drafts.",
+    area: "plant_health",
+    status: "release",
+    href: "/home/personal/ai",
+    acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
+    internalNote:
+      "Primary personal AI interface for grow-aware questions, task drafts, and log drafts."
+  },
+  {
     key: "tools.crop_steering",
     title: "Crop Steering",
     description: "Plan irrigation phases, dryback, EC, and steering trials.",

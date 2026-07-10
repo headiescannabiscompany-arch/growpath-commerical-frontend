@@ -104,6 +104,7 @@ const fallbackRoutes = [
   "home/personal/grows",
   "home/personal/grows/new",
   "home/personal/tasks",
+  "home/personal/ai",
   "home/personal/tools",
   "home/personal/tools/vpd",
   "home/personal/tools/dew-point-guard",
