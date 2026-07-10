@@ -2,7 +2,7 @@ services:
   - type: web
     name: growpath-commercial-frontend
     runtime: static
-    buildCommand: npm run build
+    buildCommand: node scripts/render-static-build.cjs
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
