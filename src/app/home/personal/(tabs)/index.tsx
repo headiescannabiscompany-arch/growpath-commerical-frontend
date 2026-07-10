@@ -126,23 +126,61 @@ export default function PersonalHomeTab() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       {!loading && !model?.activeGrow ? (
-        <AppCard>
-          <Text style={styles.cardTitle}>Start your first grow</Text>
-          <Text style={styles.cardDescription}>
-            Create a grow to connect journal entries, tasks, tool results, and AI context.
-          </Text>
-          <View style={styles.actions}>
-            {canCreateGrow ? (
-              <ActionLink href="/home/personal/grows/new" label="Create Grow" />
-            ) : null}
-            <ActionLink href="/home/personal/tools" label="Explore Tools" />
-          </View>
-          {!canCreateGrow ? (
-            <Text style={styles.upgradeNote}>
-              Upgrade to create and save personal grow records.
+        <View style={styles.section}>
+          <AppCard style={styles.firstRunCard}>
+            <Text style={styles.commandEyebrow}>First run setup</Text>
+            <Text style={styles.commandTitle}>Build your grow workspace</Text>
+            <Text style={styles.commandDescription}>
+              Start with one grow, then attach plants, photos, journal notes, tasks, tool
+              runs, and diagnosis history to the same record.
             </Text>
-          ) : null}
-        </AppCard>
+            <View style={styles.actions}>
+              {canCreateGrow ? (
+                <ActionLink href="/home/personal/grows/new" label="Create Grow" />
+              ) : null}
+              <ActionLink href="/home/personal/tools" label="Explore Tools" />
+              <ActionLink href="/home/personal/diagnose" label="Run Diagnosis" />
+              <ActionLink href="/home/personal/community" label="Ask Forum / Q&A" />
+            </View>
+            {!canCreateGrow ? (
+              <Text style={styles.upgradeNote}>
+                Upgrade to create and save personal grow records.
+              </Text>
+            ) : null}
+          </AppCard>
+
+          <View style={styles.onboardingGrid}>
+            <AppCard style={styles.onboardingCard}>
+              <Text style={styles.stepNumber}>1</Text>
+              <Text style={styles.cardTitle}>Create the grow</Text>
+              <Text style={styles.cardDescription}>
+                Name the crop, stage, medium, room, and target outcome so every future
+                log has context.
+              </Text>
+              {canCreateGrow ? (
+                <ActionLink href="/home/personal/grows/new" label="Start Setup" />
+              ) : null}
+            </AppCard>
+            <AppCard style={styles.onboardingCard}>
+              <Text style={styles.stepNumber}>2</Text>
+              <Text style={styles.cardTitle}>Add observations</Text>
+              <Text style={styles.cardDescription}>
+                Save photos, watering notes, symptoms, environment readings, and task
+                decisions in the journal.
+              </Text>
+              <ActionLink href="/home/personal/tools" label="Open Tools" />
+            </AppCard>
+            <AppCard style={styles.onboardingCard}>
+              <Text style={styles.stepNumber}>3</Text>
+              <Text style={styles.cardTitle}>Turn findings into tasks</Text>
+              <Text style={styles.cardDescription}>
+                Use diagnosis and tool results to create reminders that stay linked to
+                the grow.
+              </Text>
+              <ActionLink href="/home/personal/tasks" label="View Tasks" />
+            </AppCard>
+          </View>
+        </View>
       ) : null}
 
       {model?.activeGrow ? (
@@ -388,6 +426,34 @@ const styles = StyleSheet.create({
   commandCard: {
     backgroundColor: "#F0FDF4",
     borderColor: "#BBF7D0"
+  },
+  firstRunCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderWidth: 1
+  },
+  onboardingGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  onboardingCard: {
+    flexBasis: 230,
+    flexGrow: 1
+  },
+  stepNumber: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: 999,
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+    marginBottom: 8,
+    minWidth: 26,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    textAlign: "center"
   },
   commandHeader: {
     flexDirection: "row",
