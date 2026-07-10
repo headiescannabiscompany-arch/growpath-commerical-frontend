@@ -230,7 +230,7 @@ export default function SavedToolRunsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Saved Tool Runs</Text>
           <Text style={styles.subtitle}>
-            Reopen, annotate, archive, and continue from saved GrowPathAI results.
+            Reopen, annotate, archive, and continue from saved GrowPath results.
           </Text>
           <PersonalFeedPlacement
             placement="top"

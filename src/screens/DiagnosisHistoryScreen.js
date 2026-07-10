@@ -97,7 +97,7 @@ export default function DiagnosisHistoryScreen({ navigation }) {
     <ScreenContainer>
       <Text style={styles.header}>Diagnosis History</Text>
       <Text style={styles.help}>
-        Saved AI/provider results, GrowPathAI context, and your outcome feedback.
+        Saved AI/provider results, GrowPath context, and your outcome feedback.
       </Text>
 
       {loading ? <Text style={styles.sub}>Loading diagnosis history...</Text> : null}

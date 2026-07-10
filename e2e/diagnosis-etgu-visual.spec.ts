@@ -256,6 +256,13 @@ async function installMocks(page: any) {
   return { diagnosisPayloads, savedLogs, savedTasks, savedFeedback };
 }
 
+async function replaceInput(locator: any, value: string) {
+  await locator.click();
+  await locator.press("Control+A");
+  await locator.press("Backspace");
+  await locator.type(value);
+}
+
 test.describe("ETGU diagnosis intake", () => {
   for (const size of [
     { name: "desktop", width: 1280, height: 1100 },
@@ -277,9 +284,9 @@ test.describe("ETGU diagnosis intake", () => {
       await page
         .getByRole("button", { name: "Diagnose plant Arbequina Olive #1" })
         .click();
-      await page.getByLabel("Diagnosis crop common name").fill("Olive");
-      await page.getByLabel("Diagnosis scientific name").fill("Olea europaea");
-      await page.getByLabel("Diagnosis cultivar or strain").fill("Arbequina");
+      await replaceInput(page.getByLabel("Diagnosis crop common name"), "Olive");
+      await replaceInput(page.getByLabel("Diagnosis scientific name"), "Olea europaea");
+      await replaceInput(page.getByLabel("Diagnosis cultivar or strain"), "Arbequina");
       await expect(
         page.getByText("Confirmed crop context", { exact: true })
       ).toBeVisible();

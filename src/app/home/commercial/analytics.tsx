@@ -273,7 +273,7 @@ export default function CommercialAnalyticsRoute() {
         <Text style={styles.cardTitle}>Ad and marketing click counts</Text>
         <Text style={styles.body}>
           Commercial users should be able to see how many clicks their ads and promotional
-          links get, even when the ad itself is managed outside GrowPathAI.
+          links get, even when the ad itself is managed outside GrowPath.
         </Text>
         <View style={styles.bullets}>
           <Text style={styles.bullet}>Clicks by marketing plan or campaign</Text>
@@ -292,9 +292,9 @@ export default function CommercialAnalyticsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>External checkout reality</Text>
         <Text style={styles.body}>
-          If a product uses an external purchase URL, GrowPathAI should track product
-          views, outbound clicks, inquiries, and follow-up content. Do not call those
-          internal orders unless checkout is actually built.
+          If a product uses an external purchase URL, GrowPath should track product views,
+          outbound clicks, inquiries, and follow-up content. Do not call those internal
+          orders unless checkout is actually built.
         </Text>
         <View style={styles.bullets}>
           <Text style={styles.bullet}>

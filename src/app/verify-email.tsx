@@ -33,7 +33,7 @@ export default function VerifyEmailScreen() {
         await confirmEmailVerification(token);
         if (!mounted) return;
         setState("success");
-        setMessage("Your email is verified. You can sign in to GrowPathAI.");
+        setMessage("Your email is verified. You can sign in to GrowPath.");
       } catch (err: any) {
         if (!mounted) return;
         setState("error");

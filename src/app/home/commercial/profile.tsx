@@ -92,11 +92,32 @@ export default function CommercialProfileRoute() {
   const [error, setError] = useState<any>(null);
 
   const legacyProfileUrl = useMemo(
-    () => (form.slug.trim() ? `/brands/${form.slug.trim()}` : "/brands/:slug"),
+    () => (form.slug.trim() ? `/brands/${form.slug.trim()}` : "/brands/your-brand-slug"),
     [form.slug]
   );
   const publicStoreUrl = useMemo(
-    () => (form.slug.trim() ? `/store/${form.slug.trim()}` : "/store/:slug"),
+    () => (form.slug.trim() ? `/store/${form.slug.trim()}` : "/store/your-brand-slug"),
+    [form.slug]
+  );
+  const publicStorefrontAliasUrl = useMemo(
+    () =>
+      form.slug.trim()
+        ? `/storefront/${form.slug.trim()}`
+        : "/storefront/your-brand-slug",
+    [form.slug]
+  );
+  const publicProductUrl = useMemo(
+    () =>
+      form.slug.trim()
+        ? `/store/${form.slug.trim()}/products/product-id`
+        : "/store/your-brand-slug/products/product-id",
+    [form.slug]
+  );
+  const publicProductAliasUrl = useMemo(
+    () =>
+      form.slug.trim()
+        ? `/storefront/${form.slug.trim()}/products/product-id`
+        : "/storefront/your-brand-slug/products/product-id",
     [form.slug]
   );
 
@@ -299,12 +320,12 @@ export default function CommercialProfileRoute() {
         <View style={styles.urlList}>
           <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
           <Text style={styles.urlText}>Legacy brand profile: {legacyProfileUrl}</Text>
-          <Text style={styles.urlText}>Public storefront alias: /storefront/:slug</Text>
           <Text style={styles.urlText}>
-            Public product detail: /store/:slug/products/:productId
+            Public storefront alias: {publicStorefrontAliasUrl}
           </Text>
+          <Text style={styles.urlText}>Public product detail: {publicProductUrl}</Text>
           <Text style={styles.urlText}>
-            Public product alias: /storefront/:slug/products/:productId
+            Public product alias: {publicProductAliasUrl}
           </Text>
           <Text style={styles.urlText}>
             Similar storefronts and return-to-feed actions stay available from public

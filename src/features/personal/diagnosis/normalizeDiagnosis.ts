@@ -47,7 +47,7 @@ export type NormalizedDiagnosis = {
 };
 
 export const DIAGNOSIS_SAFETY_DISCLAIMER =
-  "GrowPathAI provides plant-health triage, not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.";
+  "GrowPath AI provides plant-health triage, not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.";
 
 function strings(value: unknown): string[] {
   return Array.isArray(value)
@@ -76,7 +76,10 @@ function cautiousIssueSummary(value: unknown): string {
   return summary
     .replace(/^\s*(confirmed|definite|certain|guaranteed)\b[:\-\s]*/i, "Possible ")
     .replace(/\b(is|are)\s+(confirmed|definite|certain|guaranteed)\b/gi, "$1 possible")
-    .replace(/\b(confirmed|definite|certain|guaranteed)\s+(diagnosis|disease|infection|deficiency|toxicity)\b/gi, "possible $2");
+    .replace(
+      /\b(confirmed|definite|certain|guaranteed)\s+(diagnosis|disease|infection|deficiency|toxicity)\b/gi,
+      "possible $2"
+    );
 }
 
 export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {

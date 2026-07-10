@@ -56,7 +56,7 @@ describe("LoginScreen email verification", () => {
         screen.getByText("Please verify your email address before signing in.")
       ).toBeTruthy();
       expect(
-        screen.getByText("Check your inbox for the GrowPathAI verification link.")
+        screen.getByText("Check your inbox for the GrowPath verification link.")
       ).toBeTruthy();
     });
 
@@ -154,7 +154,7 @@ describe("LoginScreen email verification", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "Unable to reach GrowPath AI right now. Check your connection and try again. If it keeps happening, email support@growpathai.com."
+          "Unable to reach GrowPath right now. Check your connection and try again. If it keeps happening, email support@growpathai.com."
         )
       ).toBeTruthy();
       expect(mockReplace).not.toHaveBeenCalled();

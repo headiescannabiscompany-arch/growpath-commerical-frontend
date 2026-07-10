@@ -71,7 +71,9 @@ const fallbackRoutes = [
   "marketplace",
   "storefront",
   "orders",
+  "offers",
   "feed",
+  "forum",
   "profile",
   "verify-email",
   "forgot-password",
@@ -166,9 +168,9 @@ const rawIndexHtml = fs.readFileSync(indexHtml, "utf8");
 const siteUrl = "https://growpathai.com";
 
 const defaultSeo = {
-  title: "GrowPathAI",
+  title: "GrowPath",
   description:
-    "GrowPathAI helps growers plan, track, diagnose, and improve gardens, commercial storefronts, courses, communities, and facility workflows.",
+    "GrowPath helps growers plan, track, diagnose, and improve gardens, commercial storefronts, courses, communities, and facility workflows.",
   index: true
 };
 
@@ -177,48 +179,48 @@ const routeSeo = new Map(
     [
       "",
       {
-        title: "GrowPathAI | AI grow planning, tracking, and facility tools",
+        title: "GrowPath | Grow planning, tracking, and facility tools",
         description:
-          "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPathAI."
+          "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPath."
       }
     ],
     [
       "login",
       {
-        title: "Log in to GrowPathAI",
+        title: "Log in to GrowPath",
         description:
-          "Log in to your GrowPathAI account to manage grows, plants, tools, courses, and facility workflows.",
+          "Log in to your GrowPath account to manage grows, plants, tools, courses, and facility workflows.",
         index: false
       }
     ],
     [
       "register",
       {
-        title: "Create a GrowPathAI account",
+        title: "Create a GrowPath account",
         description:
-          "Create a GrowPathAI account for personal grow tracking, grow tools, community, commercial profiles, and facility workflows."
+          "Create a GrowPath account for personal grow tracking, grow tools, community, commercial profiles, and facility workflows."
       }
     ],
     [
       "store",
       {
-        title: "GrowPathAI Store",
+        title: "GrowPath Store",
         description:
-          "Discover grow products, genetics, soil lines, nutrient lines, and commercial profiles published through GrowPathAI."
+          "Discover grow products, genetics, soil lines, nutrient lines, and commercial profiles published through GrowPath."
       }
     ],
     [
       "courses",
       {
-        title: "GrowPathAI Courses",
+        title: "GrowPath Courses",
         description:
-          "Browse grow education, live sessions, documents, videos, and structured courses from GrowPathAI creators."
+          "Browse grow education, live sessions, documents, videos, and structured courses from GrowPath creators."
       }
     ],
     [
       "feed",
       {
-        title: "GrowPathAI Feed",
+        title: "GrowPath Feed",
         description:
           "Explore commercial and facility outreach campaigns for products, courses, lives, storefronts, and professional cultivation services."
       }
@@ -226,41 +228,40 @@ const routeSeo = new Map(
     [
       "forum",
       {
-        title: "GrowPathAI Forum",
+        title: "GrowPath Forum",
         description:
-          "Join GrowPathAI community discussions about growing, diagnostics, tools, genetics, soil, nutrients, and facility workflows."
+          "Join GrowPath community discussions about growing, diagnostics, tools, genetics, soil, nutrients, and facility workflows."
       }
     ],
     [
       "privacy",
       {
-        title: "Privacy Policy | GrowPathAI",
+        title: "Privacy Policy | GrowPath",
         description:
-          "Read the GrowPathAI privacy policy, including account data, grow data, uploads, subscriptions, and data rights."
+          "Read the GrowPath privacy policy, including account data, grow data, uploads, subscriptions, and data rights."
       }
     ],
     [
       "terms",
       {
-        title: "Terms of Service | GrowPathAI",
+        title: "Terms of Service | GrowPath",
         description:
-          "Read the GrowPathAI terms of service for accounts, subscriptions, user content, commerce, courses, and app usage."
+          "Read the GrowPath terms of service for accounts, subscriptions, user content, commerce, courses, and app usage."
       }
     ],
     [
       "support",
       {
-        title: "Support | GrowPathAI",
+        title: "Support | GrowPath",
         description:
-          "Get GrowPathAI support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."
+          "Get GrowPath support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."
       }
     ],
     [
       "account/delete",
       {
-        title: "Delete Account | GrowPathAI",
-        description:
-          "Request GrowPathAI account deletion and data rights support.",
+        title: "Delete Account | GrowPath",
+        description: "Request GrowPath account deletion and data rights support.",
         index: false
       }
     ]
@@ -293,10 +294,14 @@ function escapeXml(value) {
 
 function seoForRoute(route) {
   if (routeSeo.has(route)) return routeSeo.get(route);
-  if (route.startsWith("home/") || route.startsWith("reset-password") || route === "verify-email") {
+  if (
+    route.startsWith("home/") ||
+    route.startsWith("reset-password") ||
+    route === "verify-email"
+  ) {
     return {
       ...defaultSeo,
-      title: "GrowPathAI App",
+      title: "GrowPath App",
       description: defaultSeo.description,
       index: false
     };
@@ -329,7 +334,7 @@ function applySeo(html, route) {
     `<link rel="manifest" href="/site.webmanifest" />`,
     `<meta name="theme-color" content="#0f5132" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="GrowPathAI" />`,
+    `<meta property="og:site_name" content="GrowPath" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
@@ -392,7 +397,7 @@ fs.writeFileSync(
   path.join(absoluteOutputDir, "site.webmanifest"),
   `${JSON.stringify(
     {
-      name: "GrowPathAI",
+      name: "GrowPath",
       short_name: "GrowPath",
       start_url: "/",
       scope: "/",

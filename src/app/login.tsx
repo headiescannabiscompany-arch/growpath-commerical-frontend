@@ -141,7 +141,7 @@ export default function LoginScreen() {
           {verificationEmail ? (
             <View style={styles.verificationBox}>
               <Text style={styles.verificationText}>
-                Check your inbox for the GrowPathAI verification link.
+                Check your inbox for the GrowPath verification link.
               </Text>
               {verificationMsg ? (
                 <Text style={styles.verificationNote}>{verificationMsg}</Text>
@@ -219,7 +219,7 @@ function loginErrorMessage(error: ApiError) {
     error.code === "API_URL_NOT_CONFIGURED" ||
     (typeof error.status === "number" && error.status >= 500)
   ) {
-    return `Unable to reach GrowPath AI right now. Check your connection and try again. If it keeps happening, email ${SUPPORT_CONTACTS.general}.`;
+    return `Unable to reach GrowPath right now. Check your connection and try again. If it keeps happening, email ${SUPPORT_CONTACTS.general}.`;
   }
 
   return backendMessage || error.message || "Invalid email or password";

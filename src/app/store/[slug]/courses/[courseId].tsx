@@ -266,7 +266,7 @@ export default function PublicStorefrontCourseRoute() {
   async function shareCourse() {
     try {
       const result = await sharePublicLink(
-        publicItemTitle(course, "GrowPathAI course"),
+        publicItemTitle(course, "GrowPath course"),
         `/store/${slug}/courses/${requestedCourseId}`
       );
       setFeedback(

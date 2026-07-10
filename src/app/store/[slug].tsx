@@ -178,7 +178,7 @@ export default function PublicStorefrontRoute() {
   async function shareStorefront() {
     try {
       const result = await sharePublicLink(
-        storefront?.name || "GrowPathAI storefront",
+        storefront?.name || "GrowPath storefront",
         `/store/${slug}`
       );
       setFeedback(

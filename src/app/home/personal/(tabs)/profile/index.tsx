@@ -217,7 +217,7 @@ export default function ProfileScreen() {
         setPrivacyFeedback("Data export downloaded.");
       } else {
         await Share.share({
-          title: "GrowPathAI data export",
+          title: "GrowPath data export",
           message: payload
         });
         setPrivacyFeedback("Data export opened in the share sheet.");

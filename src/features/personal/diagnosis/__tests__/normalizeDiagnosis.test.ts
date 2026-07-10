@@ -84,7 +84,7 @@ describe("normalizeDiagnosisResponse", () => {
         suggestedTags: ["yellowing"],
         tasksToCreate: [{ title: "Check runoff pH." }],
         urgency: "medium",
-        disclaimer: "GrowPathAI provides plant-health triage."
+        disclaimer: "GrowPath AI provides plant-health triage."
       }
     });
 

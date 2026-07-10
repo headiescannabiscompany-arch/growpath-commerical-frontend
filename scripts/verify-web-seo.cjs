@@ -45,14 +45,10 @@ function main() {
   const home = read("index.html");
   requireIncludes(
     home,
-    "<title>GrowPathAI | AI grow planning, tracking, and facility tools</title>",
+    "<title>GrowPath | Grow planning, tracking, and facility tools</title>",
     "root HTML"
   );
-  requireIncludes(
-    home,
-    '<meta name="robots" content="index,follow" />',
-    "root HTML"
-  );
+  requireIncludes(home, '<meta name="robots" content="index,follow" />', "root HTML");
   requireIncludes(
     home,
     '<link rel="canonical" href="https://growpathai.com" />',
@@ -61,7 +57,7 @@ function main() {
   requireIncludes(home, '<meta property="og:title"', "root HTML");
 
   const courses = read(path.join("courses", "index.html"));
-  requireIncludes(courses, "<title>GrowPathAI Courses</title>", "courses HTML");
+  requireIncludes(courses, "<title>GrowPath Courses</title>", "courses HTML");
   requireIncludes(
     courses,
     '<link rel="canonical" href="https://growpathai.com/courses" />',
@@ -76,8 +72,8 @@ function main() {
   );
 
   const manifest = JSON.parse(read("site.webmanifest"));
-  if (manifest.name !== "GrowPathAI" || manifest.start_url !== "/") {
-    throw new Error("site.webmanifest does not describe the GrowPathAI web app");
+  if (manifest.name !== "GrowPath" || manifest.start_url !== "/") {
+    throw new Error("site.webmanifest does not describe the GrowPath web app");
   }
 
   console.log("Web SEO verification passed.");

@@ -232,7 +232,7 @@ export default function CommercialMarketingRoute() {
             <Text style={styles.title}>Marketing Planner</Text>
             <Text style={styles.subtitle}>
               Plan content, product launches, course announcements, storefront updates,
-              ads, and promotional posts. Track clicks without pretending GrowPathAI
+              ads, and promotional posts. Track clicks without pretending GrowPath
               executes ad-platform spend.
             </Text>
           </View>

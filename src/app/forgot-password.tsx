@@ -61,7 +61,7 @@ export default function ForgotPasswordScreen() {
         <BackButton fallbackHref="/login" />
         <Text style={styles.title}>Reset password</Text>
         <Text style={styles.message}>
-          Enter your account email and GrowPathAI will send password reset instructions if
+          Enter your account email and GrowPath will send password reset instructions if
           the account exists.
         </Text>
 

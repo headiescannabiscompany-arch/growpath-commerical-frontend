@@ -145,7 +145,7 @@ function buildAskAiPrompt({
     source: copyPayload
   };
   return [
-    `Explain this GrowPathAI tool result and suggest safe next checks.`,
+    `Explain this GrowPath tool result and suggest safe next checks.`,
     `Do not make absolute diagnosis claims; use the selected grow context if available.`,
     JSON.stringify(payload, null, 2)
   ]

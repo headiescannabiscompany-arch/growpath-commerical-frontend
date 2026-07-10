@@ -88,8 +88,7 @@ export default function ResetPasswordScreen() {
         <BackButton fallbackHref="/login" />
         <Text style={styles.title}>Choose new password</Text>
         <Text style={styles.message}>
-          Enter a new password for your GrowPathAI account. Reset links expire after 1
-          hour.
+          Enter a new password for your GrowPath account. Reset links expire after 1 hour.
         </Text>
 
         <TextInput

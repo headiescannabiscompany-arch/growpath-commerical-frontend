@@ -324,7 +324,7 @@ export default function PublicProductRoute() {
   async function shareProduct() {
     try {
       const result = await sharePublicLink(
-        product?.name || "GrowPathAI product",
+        product?.name || "GrowPath product",
         `/store/${slug}/products/${requestedProductId}`
       );
       setFeedback(

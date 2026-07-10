@@ -149,7 +149,7 @@ export default function Profile() {
         URL.revokeObjectURL(url);
         setPrivacyFeedback("Data export downloaded.");
       } else {
-        await Share.share({ title: "GrowPathAI data export", message: payload });
+        await Share.share({ title: "GrowPath data export", message: payload });
         setPrivacyFeedback("Data export opened in the share sheet.");
       }
     } catch (e: any) {

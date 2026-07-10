@@ -739,8 +739,8 @@ export default function DiagnoseRoute() {
           ) : null}
         </View>
         <Text style={styles.photoPolicy}>
-          Photos are used for this diagnosis request. They are not used to train
-          GrowPathAI models unless you explicitly opt in.
+          Photos are used for this diagnosis request. They are not used to train GrowPath
+          AI models unless you explicitly opt in.
         </Text>
         {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
 
@@ -896,7 +896,7 @@ export default function DiagnoseRoute() {
                       Provider output was not supplied as a separate structured payload.
                     </Text>
                   )}
-                  <Text style={styles.providerTitle}>GrowPathAI reasoning</Text>
+                  <Text style={styles.providerTitle}>GrowPath AI reasoning</Text>
                   {result.growPathReasoning.length ? (
                     result.growPathReasoning.map((line) => (
                       <Text key={line} style={styles.providerLine}>
@@ -905,11 +905,11 @@ export default function DiagnoseRoute() {
                     ))
                   ) : (
                     <Text style={styles.providerLine}>
-                      No additional GrowPathAI reasoning was returned with this result.
+                      No additional GrowPath AI reasoning was returned with this result.
                     </Text>
                   )}
                   <Text style={styles.providerMeta}>
-                    GrowPathAI improves diagnosis quality from reviewed provider output,
+                    GrowPath AI improves diagnosis quality from reviewed provider output,
                     crop/profile context, and user-confirmed outcomes. Training use
                     remains opt-in.
                   </Text>
@@ -972,9 +972,9 @@ export default function DiagnoseRoute() {
             <View style={styles.followUpCard}>
               <Text style={styles.label}>Improve this diagnosis</Text>
               <Text style={styles.subtitle}>
-                Tell GrowPathAI whether this result matched what you saw. Feedback is
-                linked to this diagnosis and is not used for model training unless you
-                explicitly consent.
+                Tell GrowPath whether this result matched what you saw. Feedback is linked
+                to this diagnosis and is not used for model training unless you explicitly
+                consent.
               </Text>
               <TextInput
                 style={styles.input}

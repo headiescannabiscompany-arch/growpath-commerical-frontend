@@ -13,7 +13,7 @@ describe("PaymentHelpDialog", () => {
     jest.restoreAllMocks();
   });
 
-  it("uses the GrowPath AI billing alias for payment help", () => {
+  it("uses the GrowPath billing alias for payment help", () => {
     const onClose = jest.fn();
     const screen = render(<PaymentHelpDialog onClose={onClose} />);
 

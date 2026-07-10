@@ -41,7 +41,9 @@ describe("VerifyEmailScreen", () => {
 
     await waitFor(() => {
       expect(mockConfirmEmailVerification).toHaveBeenCalledWith("verify-token-1");
-      expect(screen.getByText("Your email is verified. You can sign in to GrowPathAI.")).toBeTruthy();
+      expect(
+        screen.getByText("Your email is verified. You can sign in to GrowPath.")
+      ).toBeTruthy();
     });
 
     fireEvent.press(screen.getByLabelText("Go to sign in"));

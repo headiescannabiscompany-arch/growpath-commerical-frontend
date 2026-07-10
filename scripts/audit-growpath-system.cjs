@@ -165,7 +165,7 @@ const MODULES = [
       "root-zone context",
       "measured numbers",
       "counterEvidence",
-      "GrowPathAI reasoning"
+      "GrowPath AI reasoning"
     ],
     required: ["rules", "intake", "tests"]
   },
@@ -428,7 +428,7 @@ function personalCommunityUsesForumAndCampaignPlacements(routes) {
     /Forum \/ Q&A/.test(source) &&
     /\blistForumPosts\b/.test(source) &&
     /\blistGuilds\b/.test(source) &&
-    source.includes('href={`/forum/post/${encodeURIComponent(id)}`}') &&
+    source.includes("href={`/forum/post/${encodeURIComponent(id)}`}") &&
     /\bPersonalFeedPlacement\b/.test(source) &&
     /commercial\/facility outreach, not discussion/.test(source) &&
     !/createCommercialFeedPost|listCommercialFeedCampaigns|from "@\/api\/commercialFeed"/.test(
@@ -725,10 +725,12 @@ function main() {
     "/home/personal/forum"
   );
   const commercialCommunityForumOnly = commercialCommunityUsesForum(files.routes);
-  const legacyCommunitiesForumDirectory =
-    legacyCommunitiesRouteIsForumDirectory(files.routes);
-  const personalCommunityForumOnly =
-    personalCommunityUsesForumAndCampaignPlacements(files.routes);
+  const legacyCommunitiesForumDirectory = legacyCommunitiesRouteIsForumDirectory(
+    files.routes
+  );
+  const personalCommunityForumOnly = personalCommunityUsesForumAndCampaignPlacements(
+    files.routes
+  );
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();

@@ -74,7 +74,7 @@ export function diagnosisCropContextState(
     return {
       status: "unconfirmed",
       title: "Crop context needs confirmation",
-      message: `${plantLabel} will be sent to diagnosis, but GrowPathAI will treat crop-specific ranges as unverified until the profile is confirmed.`,
+      message: `${plantLabel} will be sent to diagnosis, but GrowPath AI will treat crop-specific ranges as unverified until the profile is confirmed.`,
       details: [
         "Do not apply cannabis defaults to non-cannabis crops or cultivar names without confirmed species context.",
         "Confirm species/crop profile before using crop-specific diagnosis, nutrient, or IPM recommendations."

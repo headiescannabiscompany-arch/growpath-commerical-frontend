@@ -83,14 +83,18 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Public storefront discovery")).toBeTruthy();
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
-    expect(screen.getByText("Public storefront: /store/:slug")).toBeTruthy();
-    expect(screen.getByText("Legacy brand profile: /brands/:slug")).toBeTruthy();
+    expect(screen.getByText("Public storefront: /store/your-brand-slug")).toBeTruthy();
+    expect(screen.getByText("Legacy brand profile: /brands/your-brand-slug")).toBeTruthy();
     expect(
-      screen.getByText("Public product detail: /store/:slug/products/:productId")
+      screen.getByText("Public product detail: /store/your-brand-slug/products/product-id")
     ).toBeTruthy();
-    expect(screen.getByText("Public storefront alias: /storefront/:slug")).toBeTruthy();
     expect(
-      screen.getByText("Public product alias: /storefront/:slug/products/:productId")
+      screen.getByText("Public storefront alias: /storefront/your-brand-slug")
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Public product alias: /storefront/your-brand-slug/products/product-id"
+      )
     ).toBeTruthy();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
