@@ -24,7 +24,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "npm run export:web:production",
+    "build": "node scripts/render-static-build.cjs",
     "export:web:production": "node scripts/export-production-web.cjs",
     "export:store-assets": "node scripts/export-store-assets.cjs",
     "lint": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\"",
