@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: growpath-commercial-frontend
+    name: growpath-commerical-frontend
     runtime: static
     buildCommand: node scripts/render-static-build.cjs
     staticPublishPath: dist
