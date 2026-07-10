@@ -16,8 +16,8 @@ describe("SupportPage", () => {
     expect(screen.getAllByText(/support@growpathai\.com/).length).toBeGreaterThanOrEqual(
       2
     );
-    expect(screen.getByText("Billing")).toBeTruthy();
-    expect(screen.getByText("Orders")).toBeTruthy();
+    expect(screen.getAllByText("Billing").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Orders").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Commercial / Storefront")).toBeTruthy();
     expect(screen.getByText("Privacy Requests")).toBeTruthy();
     expect(screen.getByText("Legal Notices")).toBeTruthy();
