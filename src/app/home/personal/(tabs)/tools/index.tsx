@@ -162,6 +162,15 @@ export default function ToolsHubScreen() {
           </View>
         ) : null}
         <View style={styles.utilityRow}>
+          <Link href={hrefWithGrow("/home/personal/ai", growId) as Href} asChild>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open personal Ask AI"
+              style={styles.utilityButton}
+            >
+              <Text style={styles.utilityText}>Ask AI</Text>
+            </Pressable>
+          </Link>
           <Link
             href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
             asChild
