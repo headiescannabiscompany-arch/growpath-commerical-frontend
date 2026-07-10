@@ -74,6 +74,7 @@ const fallbackRoutes = [
   "offers",
   "feed",
   "forum",
+  "communities",
   "profile",
   "verify-email",
   "forgot-password",
@@ -235,6 +236,14 @@ const routeSeo = new Map(
       }
     ],
     [
+      "communities",
+      {
+        title: "GrowPath Forum Directory",
+        description:
+          "Browse GrowPath Forum/Q&A groups by crop, category, and workflow."
+      }
+    ],
+    [
       "privacy",
       {
         title: "Privacy Policy | GrowPath",
@@ -276,6 +285,7 @@ const sitemapRoutes = [
   { route: "courses", priority: "0.8", changefreq: "weekly" },
   { route: "feed", priority: "0.7", changefreq: "daily" },
   { route: "forum", priority: "0.7", changefreq: "daily" },
+  { route: "communities", priority: "0.5", changefreq: "weekly" },
   { route: "privacy", priority: "0.3", changefreq: "monthly" },
   { route: "terms", priority: "0.3", changefreq: "monthly" },
   { route: "support", priority: "0.5", changefreq: "monthly" }

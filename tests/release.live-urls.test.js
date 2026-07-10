@@ -156,6 +156,7 @@ describe("live URL verifier", () => {
       "privacy",
       "terms",
       "support",
+      "communities",
       "delete-account",
       "api-health",
       "api-ready",
@@ -167,7 +168,7 @@ describe("live URL verifier", () => {
       .trim()
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
-    expect(fetchLog).toHaveLength(7);
+    expect(fetchLog).toHaveLength(8);
     expect(fetchLog.every((entry) => entry.method === "HEAD")).toBe(true);
   });
 });

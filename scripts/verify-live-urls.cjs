@@ -43,6 +43,10 @@ function expectedUrls() {
       url: urlFromEnv("EXPO_PUBLIC_SUPPORT_URL", "https://growpathai.com/support")
     },
     {
+      name: "communities",
+      url: "https://growpathai.com/communities"
+    },
+    {
       name: "delete-account",
       url: urlFromEnv(
         "EXPO_PUBLIC_DELETE_ACCOUNT_URL",
