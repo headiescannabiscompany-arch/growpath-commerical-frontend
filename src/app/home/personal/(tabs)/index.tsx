@@ -131,8 +131,8 @@ export default function PersonalHomeTab() {
             <Text style={styles.commandEyebrow}>First run setup</Text>
             <Text style={styles.commandTitle}>Build your grow workspace</Text>
             <Text style={styles.commandDescription}>
-              Start with one grow, then attach plants, photos, journal notes, tasks, tool
-              runs, and diagnosis history to the same record.
+              Start with one grow, then attach plants, photos, journal notes, tasks,
+              tool runs, and diagnosis history to the same record.
             </Text>
             <View style={styles.actions}>
               {canCreateGrow ? (
@@ -154,8 +154,8 @@ export default function PersonalHomeTab() {
               <Text style={styles.stepNumber}>1</Text>
               <Text style={styles.cardTitle}>Create the grow</Text>
               <Text style={styles.cardDescription}>
-                Name the crop, stage, medium, room, and target outcome so every future
-                log has context.
+                Name the crop, stage, medium, room, and target outcome so every
+                future log has context.
               </Text>
               {canCreateGrow ? (
                 <ActionLink href="/home/personal/grows/new" label="Start Setup" />
