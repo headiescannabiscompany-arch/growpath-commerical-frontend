@@ -19,10 +19,10 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         return;
       }
       if (!token || !user) {
-        if (!inAuthGroup) router.replace("/(auth)/login");
+        if (!inAuthGroup) router.replace("/login");
         return;
       }
-      if (inAuthGroup) router.replace("/(app)/home");
+      if (inAuthGroup) router.replace("/home");
     }
   }, [isHydrating, meStatus, token, user, segments]);
 
