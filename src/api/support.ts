@@ -30,6 +30,7 @@ export type SupportContactResponse = {
   ok: true;
   emailSent?: boolean;
   routedTo?: string;
+  providerMessageId?: string | null;
   message?: string;
 };
 

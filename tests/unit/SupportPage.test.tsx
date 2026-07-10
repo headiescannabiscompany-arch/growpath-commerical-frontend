@@ -13,7 +13,11 @@ const mockSendSupportContact = sendSupportContact as jest.Mock;
 describe("SupportPage", () => {
   beforeEach(() => {
     mockSendSupportContact.mockReset();
-    mockSendSupportContact.mockResolvedValue({ ok: true, emailSent: true });
+    mockSendSupportContact.mockResolvedValue({
+      ok: true,
+      emailSent: true,
+      providerMessageId: "email_123"
+    });
   });
 
   it("routes support requests to the live GrowPath aliases", () => {
@@ -76,7 +80,7 @@ describe("SupportPage", () => {
       });
     });
     expect(
-      screen.getByText("Support request sent. Check your email for any follow-up.")
+      screen.getByText("Support request sent. Reference: email_123.")
     ).toBeTruthy();
   });
 });

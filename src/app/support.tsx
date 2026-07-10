@@ -82,7 +82,11 @@ export default function SupportPage() {
         );
         return;
       }
-      setFeedback("Support request sent. Check your email for any follow-up.");
+      setFeedback(
+        response.providerMessageId
+          ? `Support request sent. Reference: ${response.providerMessageId}.`
+          : "Support request sent. Check your email for any follow-up."
+      );
       setSubject("");
       setMessage("");
       setAccountEmail("");
