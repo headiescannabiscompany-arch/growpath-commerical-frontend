@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   addCommercialCourseLesson,
@@ -15,6 +16,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -176,12 +178,16 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setMessage("");
     setError(null);
     try {
+      const [persistedThumbnailUrl, persistedBannerUrl] = await Promise.all([
+        persistImageUri(thumbnailUrl.trim()),
+        persistImageUri(bannerUrl.trim())
+      ]);
       const updated = await updateCommercialCourse(courseId, {
         status: (status.trim() || "draft") as CommercialCourse["status"],
         access: (access.trim() || "free") as CommercialCourse["access"],
         price: Number(price) || 0,
-        thumbnailUrl: thumbnailUrl.trim() || undefined,
-        bannerUrl: bannerUrl.trim() || undefined,
+        thumbnailUrl: persistedThumbnailUrl || undefined,
+        bannerUrl: persistedBannerUrl || undefined,
         category: category.trim() || undefined,
         growInterests: splitIds(growInterests),
         description: description.trim(),
@@ -200,6 +206,24 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickCourseImage(kind: "thumbnailUrl" | "bannerUrl") {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(
+        new Error("Photo-library permission is required to upload a course image.")
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    const uri = result.canceled ? "" : result.assets?.[0]?.uri || "";
+    if (!uri) return;
+    if (kind === "thumbnailUrl") setThumbnailUrl(uri);
+    else setBannerUrl(uri);
   }
 
   async function addLesson() {
@@ -405,6 +429,68 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             value={bannerUrl}
           />
         </View>
+        <View style={styles.mediaTools}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload commercial course detail thumbnail"
+            disabled={saving}
+            onPress={() => pickCourseImage("thumbnailUrl")}
+            style={[styles.mediaButton, saving && styles.disabled]}
+          >
+            <Text style={styles.mediaButtonText}>Upload thumbnail</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload commercial course detail banner"
+            disabled={saving}
+            onPress={() => pickCourseImage("bannerUrl")}
+            style={[styles.mediaButton, saving && styles.disabled]}
+          >
+            <Text style={styles.mediaButtonText}>Upload banner</Text>
+          </Pressable>
+          {thumbnailUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear commercial course detail thumbnail"
+              disabled={saving}
+              onPress={() => setThumbnailUrl("")}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>Clear thumbnail</Text>
+            </Pressable>
+          ) : null}
+          {bannerUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear commercial course detail banner"
+              disabled={saving}
+              onPress={() => setBannerUrl("")}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>Clear banner</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {thumbnailUrl || bannerUrl ? (
+          <View style={styles.previewGrid}>
+            {thumbnailUrl ? (
+              <Image
+                accessibilityLabel="Commercial course detail thumbnail preview"
+                resizeMode="cover"
+                source={{ uri: resolveImageUri(thumbnailUrl) }}
+                style={styles.thumbnailPreview}
+              />
+            ) : null}
+            {bannerUrl ? (
+              <Image
+                accessibilityLabel="Commercial course detail banner preview"
+                resizeMode="cover"
+                source={{ uri: resolveImageUri(bannerUrl) }}
+                style={styles.bannerPreview}
+              />
+            ) : null}
+          </View>
+        ) : null}
         <TextInput
           accessibilityLabel="Commercial course detail description"
           multiline
@@ -713,6 +799,56 @@ const styles = StyleSheet.create({
   },
   detailValue: { color: "#0F172A", fontSize: 14, fontWeight: "800", marginTop: 4 },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  mediaTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  mediaButton: {
+    backgroundColor: "#111827",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  mediaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  clearButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  clearButtonText: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  previewGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10
+  },
+  thumbnailPreview: {
+    aspectRatio: 4 / 3,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    flex: 1,
+    minWidth: 180
+  },
+  bannerPreview: {
+    aspectRatio: 16 / 7,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    flex: 2,
+    minWidth: 260
+  },
   input: {
     borderColor: "#CBD5E1",
     borderRadius: radius.card,

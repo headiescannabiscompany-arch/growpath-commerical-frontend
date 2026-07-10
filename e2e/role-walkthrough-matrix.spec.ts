@@ -254,6 +254,32 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/commercial/products/product-walkthrough-1") {
+      return fulfillJson(route, {
+        product: {
+          id: "product-walkthrough-1",
+          name: "Walkthrough Soil",
+          status: "draft",
+          imageUrl: "/uploads/product-walkthrough.jpg",
+          shortDescription: "Commercial product image route check.",
+          price: 24,
+          unitSize: "5 lb",
+          growInterests: ["soil"],
+          externalPurchaseUrl: "https://example.com"
+        }
+      });
+    }
+
+    if (
+      method === "GET" &&
+      path === "/api/commercial/products/product-walkthrough-1/effectiveness"
+    ) {
+      return fulfillJson(route, {
+        summary: { batchCount: 0, completedTrialCount: 0 },
+        linked: { batches: [], trials: [], grows: [], courses: [] }
+      });
+    }
+
     if (method === "GET" && path === "/api/commercial/courses") {
       return fulfillJson(route, {
         courses: [
@@ -268,6 +294,38 @@ async function installRoleMocks(page: any, persona: Persona) {
             lessons: [{ title: "Lesson 1" }],
             access: "free",
             status: "draft"
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/commercial/courses/course-walkthrough-1") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-walkthrough-1",
+          title: "Walkthrough Course",
+          description: "Commercial course thumbnail route check.",
+          thumbnailUrl: "/uploads/course-walkthrough.jpg",
+          bannerUrl: "/uploads/course-banner.jpg",
+          category: "soil",
+          growInterests: ["soil"],
+          lessons: [{ title: "Lesson 1" }],
+          access: "free",
+          status: "draft"
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/commercial/lives") {
+      return fulfillJson(route, {
+        lives: [
+          {
+            id: "live-walkthrough-1",
+            title: "Walkthrough Live",
+            description: "Live thumbnail route check.",
+            thumbnailUrl: "/uploads/live-walkthrough.jpg",
+            status: "scheduled",
+            visibility: "public"
           }
         ]
       });
@@ -401,11 +459,40 @@ test.describe("role walkthrough matrix", () => {
     await expect(page.getByLabel("Upload commercial product image")).toBeVisible();
     await expect(page.getByText("Walkthrough Soil")).toBeVisible();
 
+    await page.goto("/home/commercial/products/product-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByLabel("Upload commercial product detail image")).toBeVisible();
+    await expect(
+      page.getByLabel("Commercial product detail image preview")
+    ).toBeVisible();
+
     await page.goto("/home/commercial/courses", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByLabel("Upload commercial course thumbnail")).toBeVisible();
     await expect(page.getByLabel("Upload commercial course banner")).toBeVisible();
     await expect(page.getByText("Walkthrough Course")).toBeVisible();
+
+    await page.goto("/home/commercial/courses/course-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(
+      page.getByLabel("Upload commercial course detail thumbnail")
+    ).toBeVisible();
+    await expect(page.getByLabel("Upload commercial course detail banner")).toBeVisible();
+    await expect(
+      page.getByLabel("Commercial course detail thumbnail preview")
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Commercial course detail banner preview")
+    ).toBeVisible();
+
+    await page.goto("/home/commercial/lives", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByLabel("Upload commercial live thumbnail")).toBeVisible();
+    await expect(page.getByText("Walkthrough Live")).toBeVisible();
 
     await page.goto("/home/commercial/marketing", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);

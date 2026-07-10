@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   fetchProduct,
@@ -13,6 +14,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -218,10 +220,11 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   async function saveChanges() {
     if (!productId) return;
     const nextStatus = (status.trim() || "draft") as Product["status"];
+    let persistedImageUrl = imageUrl.trim() || null;
     const nextProduct = {
       ...(product || {}),
       status: nextStatus,
-      imageUrl: imageUrl.trim(),
+      imageUrl: persistedImageUrl || "",
       productLineId: productLineId.trim(),
       price: parsePrice(price),
       unitSize: unitSize.trim(),
@@ -268,9 +271,10 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setMessage("");
     setError(null);
     try {
+      persistedImageUrl = await persistImageUri(imageUrl.trim());
       const res = await updateProduct(productId, {
         status: nextStatus,
-        imageUrl: imageUrl.trim() || undefined,
+        imageUrl: persistedImageUrl || undefined,
         productLineId: productLineId.trim() || undefined,
         price: parsePrice(price),
         unitSize: unitSize.trim() || undefined,
@@ -311,6 +315,22 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickProductImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(
+        new Error("Photo-library permission is required to upload a product image.")
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    const uri = result.canceled ? "" : result.assets?.[0]?.uri || "";
+    if (uri) setImageUrl(uri);
   }
 
   const summary = effectiveness?.summary || {};
@@ -545,6 +565,36 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             style={styles.input}
             value={imageUrl}
           />
+          <View style={styles.mediaTools}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Upload commercial product detail image"
+              disabled={saving}
+              onPress={pickProductImage}
+              style={[styles.mediaButton, saving && styles.disabled]}
+            >
+              <Text style={styles.mediaButtonText}>Upload product image</Text>
+            </Pressable>
+            {imageUrl ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear commercial product detail image"
+                disabled={saving}
+                onPress={() => setImageUrl("")}
+                style={styles.clearButton}
+              >
+                <Text style={styles.clearButtonText}>Clear image</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {imageUrl ? (
+            <Image
+              accessibilityLabel="Commercial product detail image preview"
+              resizeMode="cover"
+              source={{ uri: resolveImageUri(imageUrl) }}
+              style={styles.productPreview}
+            />
+          ) : null}
           <TextInput
             accessibilityLabel="Commercial product detail product line"
             autoCapitalize="none"
@@ -792,6 +842,45 @@ const styles = StyleSheet.create({
   focusValue: { color: "#0F172A", fontSize: 18, fontWeight: "900", marginTop: 4 },
   focusBody: { color: "#475569", fontSize: 13, lineHeight: 19, marginTop: 6 },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  mediaTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 10,
+    width: "100%"
+  },
+  mediaButton: {
+    backgroundColor: "#111827",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  mediaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  clearButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  clearButtonText: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  productPreview: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    marginTop: 10,
+    maxWidth: 520,
+    width: "100%"
+  },
   selectorRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" },
   selectorButton: {
     borderColor: "#CBD5E1",

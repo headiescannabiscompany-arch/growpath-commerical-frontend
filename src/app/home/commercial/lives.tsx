@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
 import {
@@ -13,6 +14,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 type LiveForm = {
   title: string;
@@ -116,6 +118,16 @@ function liveFeedCampaignId(live: CommercialLiveEvent) {
   );
 }
 
+function liveThumbnail(live: CommercialLiveEvent) {
+  return resolveImageUri(
+    live.thumbnailUrl ||
+      (live as any).imageUrl ||
+      (live as any).bannerUrl ||
+      (live as any).coverImageUrl ||
+      ""
+  );
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -168,10 +180,11 @@ export default function CommercialLivesRoute() {
     setError(null);
     setMessage("");
     try {
+      const thumbnailUrl = await persistImageUri(form.thumbnailUrl.trim());
       await createCommercialLive({
         title: form.title.trim(),
         description: form.description.trim(),
-        thumbnailUrl: form.thumbnailUrl.trim() || undefined,
+        thumbnailUrl: thumbnailUrl || undefined,
         scheduledStart: form.scheduledStart.trim() || undefined,
         scheduledEnd: form.scheduledEnd.trim() || undefined,
         timezone: form.timezone.trim() || "America/New_York",
@@ -201,6 +214,20 @@ export default function CommercialLivesRoute() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickLiveThumbnail() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(new Error("Photo-library permission is required to upload a live image."));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    const uri = result.canceled ? "" : result.assets?.[0]?.uri || "";
+    if (uri) setForm((prev) => ({ ...prev, thumbnailUrl: uri }));
   }
 
   async function createLiveSetupTask(live: CommercialLiveEvent, warnings: string[]) {
@@ -290,10 +317,9 @@ export default function CommercialLivesRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Live workflow status</Text>
         <Text style={styles.body}>
-          Twitch connection, embed testing, EventSub status, RSVP tracking, and replay
-          conversion should attach to this live record as backend support lands. The
-          current workspace captures the schedule, destination links, notification plan,
-          and replay URL.
+          Live records capture schedule, destination links, Twitch channel/embed fields,
+          EventSub status, notification plan, replay URL, setup warnings, and setup task
+          creation.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -345,6 +371,36 @@ export default function CommercialLivesRoute() {
             placeholder="Thumbnail URL"
             style={styles.input}
           />
+          <View style={styles.mediaTools}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Upload commercial live thumbnail"
+              disabled={saving}
+              onPress={pickLiveThumbnail}
+              style={[styles.mediaButton, saving && styles.disabled]}
+            >
+              <Text style={styles.mediaButtonText}>Upload live image</Text>
+            </Pressable>
+            {form.thumbnailUrl ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear commercial live thumbnail"
+                disabled={saving}
+                onPress={() => setForm((prev) => ({ ...prev, thumbnailUrl: "" }))}
+                style={styles.clearButton}
+              >
+                <Text style={styles.clearButtonText}>Clear image</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {form.thumbnailUrl ? (
+            <Image
+              accessibilityLabel="Commercial live thumbnail preview"
+              resizeMode="cover"
+              source={{ uri: resolveImageUri(form.thumbnailUrl) }}
+              style={styles.livePreview}
+            />
+          ) : null}
           <TextInput
             value={form.twitchChannelName}
             onChangeText={(twitchChannelName) =>
@@ -548,6 +604,14 @@ export default function CommercialLivesRoute() {
                     style={[styles.liveRow, isFocused ? styles.liveRowFocused : null]}
                   >
                     <Text style={styles.liveTitle}>{live.title || "Untitled live"}</Text>
+                    {liveThumbnail(live) ? (
+                      <Image
+                        accessibilityLabel={`${live.title || "Commercial live"} thumbnail`}
+                        resizeMode="cover"
+                        source={{ uri: liveThumbnail(live) }}
+                        style={styles.liveThumbnail}
+                      />
+                    ) : null}
                     <Text style={styles.liveMeta}>
                       {[
                         live.status || "scheduled",
@@ -664,6 +728,45 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 92, textAlignVertical: "top" },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   fullWidth: { width: "100%" },
+  mediaTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 10,
+    width: "100%"
+  },
+  mediaButton: {
+    backgroundColor: "#111827",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  mediaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  clearButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  clearButtonText: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  livePreview: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    marginTop: 10,
+    maxWidth: 520,
+    width: "100%"
+  },
   label: { color: "#334155", fontSize: 12, fontWeight: "900", marginTop: 12 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   action: {
@@ -717,5 +820,12 @@ const styles = StyleSheet.create({
     borderWidth: 2
   },
   liveTitle: { color: "#0F172A", fontWeight: "900" },
+  liveThumbnail: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    marginTop: 8,
+    width: "100%"
+  },
   liveMeta: { color: "#64748B", fontSize: 12, fontWeight: "700", marginTop: 5 }
 });
