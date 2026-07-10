@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Linking,
   Platform,
@@ -9,7 +9,7 @@ import {
   View
 } from "react-native";
 
-import { createCheckoutSession } from "@/api/subscription";
+import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -23,6 +23,7 @@ import { radius } from "@/theme/theme";
 
 type BillingInterval = "monthly" | "yearly";
 type PlanKey = "pro" | "commercial" | "facility";
+type CheckoutMode = "live" | "test" | "unknown";
 
 type Plan = {
   key: PlanKey;
@@ -83,11 +84,31 @@ export default function Offers() {
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
     String(auth.user?.subscriptionStatus || "").toLowerCase()
   );
+
+  useEffect(() => {
+    let mounted = true;
+
+    getSubscriptionSetupStatus()
+      .then((status) => {
+        const mode = String(status?.mode || "unknown").toLowerCase();
+        if (mounted && ["live", "test", "unknown"].includes(mode)) {
+          setCheckoutMode(mode as CheckoutMode);
+        }
+      })
+      .catch(() => {
+        if (mounted) setCheckoutMode("unknown");
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   async function startCheckout(plan: PlanKey) {
     setLoadingPlan(plan);
@@ -116,8 +137,8 @@ export default function Offers() {
           <Text style={styles.kicker}>Plans</Text>
           <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
           <Text style={styles.headerSubtitle}>
-            Start checkout for a paid plan, then close Stripe before entering payment when
-            you only need a smoke test.
+            Start checkout for a paid plan. Live checkout charges real payment methods
+            after Stripe payment is submitted.
           </Text>
           <View style={styles.segment}>
             {(["monthly", "yearly"] as const).map((item) => {
@@ -143,6 +164,30 @@ export default function Offers() {
       }
       railOverride={null}
     >
+      <View
+        style={[
+          styles.modeBanner,
+          checkoutMode === "live"
+            ? styles.modeBannerLive
+            : checkoutMode === "test"
+              ? styles.modeBannerTest
+              : styles.modeBannerUnknown
+        ]}
+      >
+        <Text
+          style={[
+            styles.modeBannerText,
+            checkoutMode === "live" ? styles.modeBannerTextLive : null
+          ]}
+        >
+          {checkoutMode === "live"
+            ? "Stripe checkout is live. Real cards can be charged."
+            : checkoutMode === "test"
+              ? "Stripe checkout is in test mode. Test card payments are not real charges."
+              : "Stripe checkout mode is being checked before payment."}
+        </Text>
+      </View>
+
       {feedback ? (
         <View style={styles.feedback}>
           <Text style={styles.feedbackText}>{feedback}</Text>
@@ -244,6 +289,25 @@ const styles = StyleSheet.create({
     padding: 12
   },
   feedbackText: { color: "#166534", fontWeight: "800" },
+  modeBanner: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 12
+  },
+  modeBannerLive: {
+    backgroundColor: "#fff7ed",
+    borderColor: "#fb923c"
+  },
+  modeBannerTest: {
+    backgroundColor: "#ecfdf5",
+    borderColor: "#86efac"
+  },
+  modeBannerUnknown: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#cbd5e1"
+  },
+  modeBannerText: { color: "#334155", fontWeight: "900" },
+  modeBannerTextLive: { color: "#9a3412" },
   planGrid: { gap: 12 },
   planGridWide: { flexDirection: "row" },
   planCard: { flex: 1, gap: 10 },

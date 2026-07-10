@@ -1,8 +1,14 @@
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
+import apiRoutes from "./routes.js";
 
 export async function getSubscriptionStatus() {
   const res = await apiRequest(endpoints.subscriptionStatus, { method: "GET" });
+  return res?.data ?? res;
+}
+
+export async function getSubscriptionSetupStatus() {
+  const res = await apiRequest("/api/subscription/status", { method: "GET" });
   return res?.data ?? res;
 }
 
@@ -39,4 +45,26 @@ export async function createCheckoutSession(
     body
   });
   return res?.data ?? res;
+}
+
+export async function verifyIapReceipt({
+  receipt,
+  platform,
+  productId,
+  transactionId
+}: {
+  receipt: string;
+  platform: string;
+  productId?: string;
+  transactionId?: string;
+}) {
+  return apiRequest(apiRoutes.SUBSCRIBE.VERIFY_IAP, {
+    method: "POST",
+    body: {
+      receipt,
+      platform,
+      productId,
+      transactionId
+    }
+  });
 }
