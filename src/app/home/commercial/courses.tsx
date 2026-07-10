@@ -1,4 +1,5 @@
 import { Link } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -14,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 type CourseForm = {
   title: string;
@@ -118,6 +120,10 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   return warnings;
 }
 
+function courseThumbnailUrl(course: Partial<CommercialCourse>) {
+  return resolveImageUri(course.thumbnailUrl || "");
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -186,11 +192,15 @@ export default function CommercialCoursesRoute() {
     setSaving(true);
     setError(null);
     try {
+      const [thumbnailUrl, bannerUrl] = await Promise.all([
+        persistImageUri(form.thumbnailUrl.trim()),
+        persistImageUri(form.bannerUrl.trim())
+      ]);
       await createCommercialCourse({
         title: form.title.trim(),
         description: form.description.trim(),
-        thumbnailUrl: form.thumbnailUrl.trim() || undefined,
-        bannerUrl: form.bannerUrl.trim() || undefined,
+        thumbnailUrl: thumbnailUrl || undefined,
+        bannerUrl: bannerUrl || undefined,
         category: form.category.trim() || "product_education",
         growInterests: splitList(form.growInterests),
         skillLevel: form.skillLevel.trim() || undefined,
@@ -217,6 +227,24 @@ export default function CommercialCoursesRoute() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickCourseImage(kind: "thumbnailUrl" | "bannerUrl") {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(
+        new Error("Photo-library permission is required to upload a course image.")
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.85
+    });
+    if (result.canceled) return;
+    const uri = result.assets.find((asset) => asset.uri)?.uri;
+    if (uri) setForm((prev) => ({ ...prev, [kind]: uri }));
   }
 
   async function createCourseSetupTask(course: CommercialCourse, warnings: string[]) {
@@ -379,6 +407,46 @@ export default function CommercialCoursesRoute() {
           placeholder="What this course teaches and who it helps"
           style={[styles.input, styles.textArea]}
         />
+        <View style={styles.mediaTools}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload commercial course thumbnail"
+            onPress={() => pickCourseImage("thumbnailUrl")}
+            disabled={saving}
+            style={[styles.mediaButton, saving && styles.disabled]}
+          >
+            <Text style={styles.mediaButtonText}>Upload thumbnail</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload commercial course banner"
+            onPress={() => pickCourseImage("bannerUrl")}
+            disabled={saving}
+            style={[styles.mediaButton, saving && styles.disabled]}
+          >
+            <Text style={styles.mediaButtonText}>Upload banner</Text>
+          </Pressable>
+        </View>
+        {form.thumbnailUrl || form.bannerUrl ? (
+          <View style={styles.previewGrid}>
+            {form.thumbnailUrl ? (
+              <Image
+                source={{ uri: resolveImageUri(form.thumbnailUrl) }}
+                style={styles.thumbnailPreview}
+                resizeMode="cover"
+                accessibilityLabel="Commercial course thumbnail preview"
+              />
+            ) : null}
+            {form.bannerUrl ? (
+              <Image
+                source={{ uri: resolveImageUri(form.bannerUrl) }}
+                style={styles.bannerPreview}
+                resizeMode="cover"
+                accessibilityLabel="Commercial course banner preview"
+              />
+            ) : null}
+          </View>
+        ) : null}
         <View style={styles.formGrid}>
           <TextInput
             value={form.linkedProductIds}
@@ -586,10 +654,10 @@ export default function CommercialCoursesRoute() {
                 const warnings = courseSetupWarnings(course);
                 return (
                   <View key={courseId(course)} style={styles.courseRow}>
-                    {course.thumbnailUrl ? (
+                    {courseThumbnailUrl(course) ? (
                       <Image
                         accessibilityLabel={`${course.title || "Course"} thumbnail`}
-                        source={{ uri: course.thumbnailUrl }}
+                        source={{ uri: courseThumbnailUrl(course) }}
                         style={styles.courseThumbnail}
                       />
                     ) : null}
@@ -823,6 +891,43 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginTop: 12
+  },
+  mediaTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  mediaButton: {
+    backgroundColor: "#111827",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  mediaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  previewGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10
+  },
+  thumbnailPreview: {
+    aspectRatio: 4 / 3,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    flexGrow: 1,
+    minWidth: 180
+  },
+  bannerPreview: {
+    aspectRatio: 16 / 7,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    flexGrow: 2,
+    minWidth: 240
   },
   action: {
     backgroundColor: "#FFFFFF",

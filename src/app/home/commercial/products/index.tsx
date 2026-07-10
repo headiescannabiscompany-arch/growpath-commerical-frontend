@@ -1,4 +1,5 @@
 import { Link } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -10,6 +11,7 @@ import AppPage from "@/components/layout/AppPage";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 type ProductForm = {
   name: string;
@@ -62,13 +64,13 @@ function hasText(value: unknown) {
 }
 
 function productImage(product: Product) {
-  return (
+  return resolveImageUri(
     product.imageUrl ||
-    (product as any).thumbnailUrl ||
-    (product as any).photoUrl ||
-    (product as any).gallery?.[0] ||
-    (product as any).images?.[0] ||
-    ""
+      (product as any).thumbnailUrl ||
+      (product as any).photoUrl ||
+      (product as any).gallery?.[0] ||
+      (product as any).images?.[0] ||
+      ""
   );
 }
 
@@ -206,12 +208,13 @@ export default function CommercialProductsRoute({
     setSaving(true);
     setError(null);
     try {
+      const imageUrl = await persistImageUri(form.imageUrl.trim());
       await createProduct({
         name: form.name.trim(),
         category: form.category.trim() || "other",
         shortDescription: form.shortDescription.trim(),
         description: form.shortDescription.trim(),
-        imageUrl: form.imageUrl.trim() || undefined,
+        imageUrl: imageUrl || undefined,
         price: parsePrice(form.price),
         currency: form.currency.trim() || "USD",
         sku: form.sku.trim(),
@@ -240,6 +243,24 @@ export default function CommercialProductsRoute({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickProductImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(
+        new Error("Photo-library permission is required to upload a product image.")
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.85
+    });
+    if (result.canceled) return;
+    const uri = result.assets.find((asset) => asset.uri)?.uri;
+    if (uri) setForm((prev) => ({ ...prev, imageUrl: uri }));
   }
 
   async function createProductSetupTask(product: Product, missing: string[]) {
@@ -498,6 +519,36 @@ export default function CommercialProductsRoute({
           placeholder="Short public description, use case, and product context"
           style={[styles.input, styles.textArea]}
         />
+        <View style={styles.mediaTools}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload commercial product image"
+            onPress={pickProductImage}
+            disabled={saving}
+            style={[styles.mediaButton, saving && styles.disabled]}
+          >
+            <Text style={styles.mediaButtonText}>Upload product image</Text>
+          </Pressable>
+          {form.imageUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear commercial product image"
+              onPress={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
+              disabled={saving}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>Clear image</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {form.imageUrl ? (
+          <Image
+            source={{ uri: resolveImageUri(form.imageUrl) }}
+            style={styles.productPreview}
+            resizeMode="cover"
+            accessibilityLabel="Commercial product image preview"
+          />
+        ) : null}
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
@@ -632,7 +683,7 @@ export default function CommercialProductsRoute({
           product detail to external purchase or support.
         </Text>
         <Text style={styles.bullet}>
-          Public product detail route: /store/:slug/products/:productId
+          Public product detail route: /store/your-brand-slug/products/product-id
         </Text>
         <Text style={styles.bullet}>
           Support product photos, description, price, external purchase link, usage
@@ -812,6 +863,43 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginTop: 12
+  },
+  mediaTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  mediaButton: {
+    backgroundColor: "#111827",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  mediaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  clearButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  clearButtonText: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  productPreview: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    marginTop: 10,
+    width: "100%"
   },
   action: {
     backgroundColor: "#FFFFFF",
