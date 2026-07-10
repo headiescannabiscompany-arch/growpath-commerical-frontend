@@ -52,8 +52,12 @@ describe("LoginScreen email verification", () => {
     fireEvent.press(screen.getByLabelText("Sign in"));
 
     await waitFor(() => {
-      expect(screen.getByText("Please verify your email address before signing in.")).toBeTruthy();
-      expect(screen.getByText("Check your inbox for the GrowPathAI verification link.")).toBeTruthy();
+      expect(
+        screen.getByText("Please verify your email address before signing in.")
+      ).toBeTruthy();
+      expect(
+        screen.getByText("Check your inbox for the GrowPathAI verification link.")
+      ).toBeTruthy();
     });
 
     fireEvent.press(screen.getByLabelText("Resend verification email"));
@@ -61,11 +65,43 @@ describe("LoginScreen email verification", () => {
     await waitFor(() => {
       expect(mockRequestEmailVerification).toHaveBeenCalledWith("grower@example.com");
       expect(
-        screen.getByText("If that account exists, a new verification email has been sent.")
+        screen.getByText("A new verification email was accepted for delivery.")
       ).toBeTruthy();
     });
 
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("does not claim resend delivery when backend email delivery is unavailable", async () => {
+    mockLogin.mockRejectedValueOnce(
+      new ApiError("EMAIL_NOT_VERIFIED", 403, {
+        error: {
+          code: "EMAIL_NOT_VERIFIED",
+          message: "Please verify your email address before signing in."
+        }
+      })
+    );
+    mockRequestEmailVerification.mockResolvedValueOnce({ ok: true, emailSent: false });
+
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "grower@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Resend verification email")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByLabelText("Resend verification email"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Verification email delivery is not available right now. Email support@growpathai.com for account access help."
+        )
+      ).toBeTruthy();
+    });
   });
 
   it("normalizes email and routes to the app after a successful login", async () => {

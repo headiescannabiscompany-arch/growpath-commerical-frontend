@@ -64,9 +64,17 @@ export default function LoginScreen() {
     setVerificationMsg(null);
     setResendingVerification(true);
     try {
-      await requestEmailVerification(targetEmail);
+      const response = await requestEmailVerification(targetEmail);
+      if (response.emailSent === false) {
+        setVerificationMsg(
+          `Verification email delivery is not available right now. Email ${SUPPORT_CONTACTS.general} for account access help.`
+        );
+        return;
+      }
       setVerificationMsg(
-        "If that account exists, a new verification email has been sent."
+        response.emailSent
+          ? "A new verification email was accepted for delivery."
+          : "If that account exists, verification instructions will be sent."
       );
     } catch (e: any) {
       setVerificationMsg(e?.message || "Unable to request a verification email.");

@@ -1,16 +1,29 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SupportPage from "@/app/support";
+import { sendSupportContact } from "@/api/support";
+
+jest.mock("@/api/support", () => ({
+  sendSupportContact: jest.fn()
+}));
+
+const mockSendSupportContact = sendSupportContact as jest.Mock;
 
 describe("SupportPage", () => {
+  beforeEach(() => {
+    mockSendSupportContact.mockReset();
+    mockSendSupportContact.mockResolvedValue({ ok: true, emailSent: true });
+  });
+
   it("routes support requests to the live GrowPath aliases", () => {
     const screen = render(<SupportPage />);
 
     expect(screen.getByText("Support")).toBeTruthy();
+    expect(screen.getByText("Send a Support Email")).toBeTruthy();
     expect(
       screen.getByText(
-        /account, billing, orders, sales, technical, privacy, legal, security, commercial, courses, live events, partner, and facility support/
+        /account, billing, orders, sales, technical, privacy, legal, security,\s+commercial, courses, live events, partner, and facility support/
       )
     ).toBeTruthy();
     expect(screen.getAllByText(/support@growpathai\.com/).length).toBeGreaterThanOrEqual(
@@ -30,5 +43,40 @@ describe("SupportPage", () => {
     expect(screen.getByText(/Email security@growpathai\.com/)).toBeTruthy();
     expect(screen.queryByText(/Email noreply@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email notifications@growpathai\.com/)).toBeNull();
+  });
+
+  it("sends a support request through the backend email endpoint", async () => {
+    const screen = render(<SupportPage />);
+
+    fireEvent.changeText(screen.getByLabelText("Support name"), "Jane Grower");
+    fireEvent.changeText(
+      screen.getByLabelText("Support reply email"),
+      "jane@example.com"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Support account email"),
+      "account@example.com"
+    );
+    fireEvent.changeText(screen.getByLabelText("Support subject"), "Cannot log in");
+    fireEvent.changeText(
+      screen.getByLabelText("Support message"),
+      "I verified my address but still cannot log in."
+    );
+    fireEvent.press(screen.getByLabelText("Send support request"));
+
+    await waitFor(() => {
+      expect(mockSendSupportContact).toHaveBeenCalledWith({
+        topic: "account",
+        name: "Jane Grower",
+        email: "jane@example.com",
+        accountEmail: "account@example.com",
+        subject: "Cannot log in",
+        message: "I verified my address but still cannot log in.",
+        company: ""
+      });
+    });
+    expect(
+      screen.getByText("Support request sent. Check your email for any follow-up.")
+    ).toBeTruthy();
   });
 });
