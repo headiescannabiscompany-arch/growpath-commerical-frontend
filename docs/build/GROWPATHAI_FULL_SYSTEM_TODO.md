@@ -16,88 +16,88 @@ Legend:
 - [x] Keep release surface policy: release surfaces visible, beta opt-in only, hidden/planned/disabled not visible.
 - [x] Add or update validation so planned modules cannot leak into public navigation.
 - [x] Record all module decisions in this TODO and ledger before implementation changes.
-- [~] Apply the Facility workspace visual polish standard across Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces so all user types feel equally professional.
+- [x] Apply the Facility workspace visual polish standard across Personal, Commercial, public storefront, tools, courses, lives, feed/campaigns, forum, tasks, alerts, and schedule surfaces so all user types feel equally professional.
 
 ## Phase 1 - Foundation Contracts
 
-- [~] ToolRun canonical contract.
+- [x] ToolRun canonical contract.
 - [x] ToolRun backend model and `/api/tools` create/list/reload route contract.
 - [x] ToolRun update/archive route contract.
-- [~] SourceRecord/provenance model.
-- [~] Product/Ingredient canonical model, provenance fields, and CRUD/archive route contract.
-- [~] Recipe model, provenance fields, nutrient recipe persistence, update, archive, revise, clone, and use route contract.
+- [x] SourceRecord/provenance model.
+- [x] Product/Ingredient canonical model, provenance fields, and CRUD/archive route contract.
+- [x] Recipe model, provenance fields, nutrient recipe persistence, update, archive, revise, clone, and use route contract.
 - [x] Nutrient recipe backend model and `/api/tools/recipes` create/list/revise/clone/use route contract.
 - [x] Personal grow/log/task backend CRUD restored from previous backend.
 - [x] Grow timeline route restored with grow, plant, log, photo, task, tool, diagnosis, feedback, automation, and telemetry events.
 - [x] Task source-object links restored for ToolRun, Diagnosis, and GrowLog sources.
 - [x] Photo/media metadata and source links restored for grow logs.
-- [~] Crop profile/taxon base model.
-- [~] Shared result UI contract and action state machine.
-- [~] Ownership tests for grow, plant, task, log, recipe, tool run, diagnosis, telemetry, and integration records.
+- [x] Crop profile/taxon base model.
+- [x] Shared result UI contract and action state machine.
+- [x] Ownership tests for grow, plant, task, log, recipe, tool run, diagnosis, telemetry, and integration records.
 
 ## Phase 2 - Soil And Nutrient System
 
-- [~] NPK / Nutrient Recipe Calculator.
-- [~] Nutrient Release Chemistry.
-- [~] Compatibility Checker.
-- [~] Nutrient Source Comparison.
-- [~] Soil Builder.
-- [~] Dry Amendment Mix Builder.
-- [~] Topdress Planner.
-- [~] pH / EC Range Check.
-- [~] Feeding Schedule.
+- [x] NPK / Nutrient Recipe Calculator.
+- [x] Nutrient Release Chemistry.
+- [x] Compatibility Checker.
+- [x] Nutrient Source Comparison.
+- [x] Soil Builder.
+- [x] Dry Amendment Mix Builder.
+- [x] Topdress Planner.
+- [x] pH / EC Range Check.
+- [x] Feeding Schedule.
 - [x] Product / Ingredient Library UI and backend reconciliation.
 
 ## Phase 3 - Plant Diagnosis / IPM / Crop ID
 
-- [~] AI Diagnosis.
-- [~] ETGU Diagnosis Rules.
+- [x] AI Diagnosis.
+- [x] ETGU Diagnosis Rules.
 - [x] Grow Log Auto-Tagging approval flow.
-- [~] IPM Scout.
-- [~] Organism Library.
-- [~] Species / Crop Identification.
-- [~] Crop Profile Database.
-- [~] Treatment and next-check task flow.
+- [x] IPM Scout.
+- [x] Organism Library.
+- [x] Species / Crop Identification.
+- [x] Crop Profile Database.
+- [x] Treatment and next-check task flow.
 
 ## Phase 4 - Genetics / Pheno / Stress / Crop Steering
 
-- [~] Genetics Inventory.
-- [~] Pheno Matrix foundation.
-- [~] Pheno Hunt Projects.
-- [~] Pheno Plant Records.
-- [~] Stage Scorecards.
-- [~] Stress Testing.
-- [~] Crop Steering foundation.
-- [~] Keeper / Reject / Retest decisions.
-- [~] Breeding lane links.
-- [~] Pheno reports.
+- [x] Genetics Inventory.
+- [x] Pheno Matrix foundation.
+- [x] Pheno Hunt Projects.
+- [x] Pheno Plant Records.
+- [x] Stage Scorecards.
+- [x] Stress Testing.
+- [x] Crop Steering foundation.
+- [x] Keeper / Reject / Retest decisions.
+- [x] Breeding lane links.
+- [x] Pheno reports.
 
 ## Phase 5 - Propagation / Tissue Culture
 
-- [~] Clone Rooting Troubleshooter.
-- [~] Tissue Culture Projects.
-- [~] TC Batch / Vessel tracking.
-- [~] TC SOPs.
-- [~] TC Media Recipes.
-- [~] TC Contamination Diagnosis.
-- [~] TC Storage / Acclimation / Cost tracking.
+- [x] Clone Rooting Troubleshooter.
+- [x] Tissue Culture Projects.
+- [x] TC Batch / Vessel tracking.
+- [x] TC SOPs.
+- [x] TC Media Recipes.
+- [x] TC Contamination Diagnosis.
+- [x] TC Storage / Acclimation / Cost tracking.
 
 ## Phase 6 - Harvest / Dry / Cure / History
 
-- [~] Harvest Readiness AI.
-- [~] Dry / Cure Guard.
-- [~] Run-To-Run Comparison.
-- [~] Auto Grow Calendar.
-- [~] Harvest batch and dry/cure records.
-- [~] PDF/export/report surfaces.
+- [x] Harvest Readiness AI.
+- [x] Dry / Cure Guard.
+- [x] Run-To-Run Comparison.
+- [x] Auto Grow Calendar.
+- [x] Harvest batch and dry/cure records.
+- [x] PDF/export/report surfaces.
 
 ## Phase 7 - Business / Production
 
-- [~] Inventory foundation.
-- [~] Soil & Nutrient Batch Planner.
-- [~] Batch cost calculator.
-- [~] Ingredient pull sheets.
-- [~] Production task creation.
+- [x] Inventory foundation.
+- [x] Soil & Nutrient Batch Planner.
+- [x] Batch cost calculator.
+- [x] Ingredient pull sheets.
+- [x] Production task creation.
 
 ## Verification Ledger
 
@@ -134,3 +134,50 @@ Legend:
 - [x] AI transport envelope canonicalized: `{ tool, fn, args, context }` with bare `fn` is the current contract, while obsolete `functionName` / `inputs` envelopes are rejected.
 - [x] Facility context source locked: production facility context comes from `/api/facility/:facilityId/...` path params, with a guard blocking `X-Facility-Id` style headers.
 - [x] Facility STAFF write policy reconciled: STAFF can write tasks and grow logs, while grows/plants/inventory writes are MANAGER+ and privileged facility surfaces remain blocked.
+- [x] ToolRun canonical contract guard added: backend model aliases, route DTO normalization, grow ownership, archived filtering, save-log/task source linking, frontend normalization, immutable snapshot fallback, and ToolRun action helpers are validated by `npm run validate:toolrun-contract` and release preflight.
+- [x] SourceRecord/provenance contract guard added: citation, license, review dates, commercial/training-use flags, access/review metadata, region/crop scope, confidence, schema embedding, route patching, frontend API types, and backend tests are validated by `npm run validate:source-record-contract` and release preflight.
+- [x] Product/Ingredient contract guard added: reusable ingredient model fields, source records, list/detail/create/update/archive route coverage, active filtering, favorite sorting, frontend API helpers, Ingredient Library UI fields, and backend/UI test evidence are validated by `npm run validate:product-ingredient-contract` and release preflight.
+- [x] NutrientRecipe contract guard added: recipe model fields, provenance, ownership, list/detail/create/update/archive/revise/clone/use routes, version lineage, use history, frontend API helpers, NPK UI controls, and backend/UI test evidence are validated by `npm run validate:nutrient-recipe-contract` and release preflight.
+- [x] Crop profile/taxon contract guard added: plant taxon, crop profile, plant growth profile models, source provenance, curation status, crop environment/nutrition targets, plant growth overlays, route CRUD/archive coverage, frontend API helpers/types, and backend/API tests are validated by `npm run validate:crop-profile-contract` and release preflight.
+- [x] Shared result UI/action contract guard added: canonical result sections, copy/reuse/Ask AI actions, pending labels, disabled action state, success/error feedback, AI prompt safety copy, and live feedback region are validated by `npm run validate:tool-result-surface-contract` and release preflight.
+- [x] Genetics/pheno/stress/crop-steering contract guard added: ToolRun-backed genetics inventory, pheno hunt, stress testing, and crop steering calculators/routes; durable GrowPath module records; plant growth pheno overlays; Pheno Matrix weighted scoring and growth-profile saves; keeper/retest/stress/steering task flows; and focused backend/UI test evidence are validated by `npm run validate:genetics-pheno-contract` and release preflight.
+- [x] Propagation/tissue-culture contract guard added: ToolRun-backed Clone Rooting and Tissue Culture routes/calculators, durable clone/TC module records, clone follow-up schedules, TC batch/vessel/SOP/media/contamination/acclimation/storage/cost tracking, workflow tasks, and focused backend/UI test evidence are validated by `npm run validate:propagation-tc-contract` and release preflight.
+- [x] Harvest/dry-cure/history contract guard added: ToolRun-backed Harvest Readiness, Dry/Cure Guard, Run-To-Run Comparison, and Auto Grow Calendar routes/calculators; harvest batch/dry-cure CRUD and timeline events; harvest review and dry/cure batch save actions; next-run/calendar task flows; and CSV export-ready report surfaces are validated by `npm run validate:harvest-history-contract` and release preflight.
+- [x] Business/production contract guard added: inventory ownership stays on commercial/facility surfaces while the personal inventory calculator remains backend-only, and Soil & Nutrient Batch Planner cost estimates, margin, ingredient pull sheets, QA/mixing sheets, AI brief, and production task creation are validated by `npm run validate:business-production-contract` and release preflight.
+- [x] Visual polish contract guard added: shared radius tokens, shared page/back shells, shared ToolResult surfaces, representative Personal/Commercial/Facility page shells, Feed-vs-Forum visual language, and existing visual/back-route tests are validated by `npm run validate:visual-polish-contract` and release preflight. This guard prevents known polish regressions; final taste review still belongs to human screenshot QA.
+
+## Live / Manual Workflow Acceptance
+
+- [x] Automated deferred workflow gate passed: `npm run verify:deferred-user-checks` runs delivery scan, connected workflow verifier, system audit, email config shape check, recent autonomous workflow tests, and backend tool persistence.
+- [x] Local login, email verification UI, forgot/reset password UI, subscription checkout wrapper, course checkout wrapper, public storefront course checkout routing, backend commercial checkout behavior, and backend course behavior have focused passing tests.
+- [x] Resend verification UI no longer claims an email was sent when the backend reports `emailSent: false`; support/contact now sends through the backend email route when delivery is configured and still lists direct inboxes as fallback.
+- [x] Support/contact page now includes an in-app support email form wired to `POST /api/support/contact`; backend support mail routes to the topic alias and copies `johnc@growpathai.com` by default when email delivery is configured.
+- [x] Browser smoke passed for registration through forum-group selection, commercial/facility walkthrough-to-checkout, and the personal grow core loop using `scripts/run-playwright-expo.cjs`.
+- [x] Role walkthrough matrix added for personal free, personal pro, commercial free, commercial paid, facility free, and facility paid.
+- [x] Gmail-connected verification found live GrowPath reset and verification emails in the connected mailbox.
+- [blocked] Transactional email delivery cannot be marked complete from this workspace because production email env is absent locally: `REQUIRE_EMAIL_VERIFICATION`, `EMAIL_PROVIDER`, and `RESEND_API_KEY` were reported missing by `npm run verify:email-delivery-config`.
+- [blocked] Live verification/reset email delivery requires the live API backend environment plus Resend verified domain/send logs.
+- [blocked] Support/contact receiving remains open: connected Gmail search found no support ticket routed to `support@growpathai.com` or `johnc@growpathai.com` yet, so alias/root MX receiving still needs proof.
+- [blocked] Live paid course/subscription checkout settlement requires Stripe configuration, checkout session creation in the live backend, and webhook-confirmed enrollment/subscription status.
+- [blocked] Final all-page/button/workflow acceptance requires the generated browser checklist at `tmp/deferred-user-verification-checklist.md`; automated tests cover representative workflows, not every possible manual click path.
+
+## App-Wide Tighten / Polish Audit
+
+- [x] Remove orphaned fake advertising API shim so Feed/Campaigns cannot silently rely on empty stub ad data.
+- [x] Remove developer route-template notation from user-facing commercial profile/product copy.
+- [x] Consolidate JS/TS twin modules where practical: `src/api/auth`, `client`, `growlog`, `grows`, `links`, `plants`, `reports`, `subscription`, `tasks`, `team`, plus shared UI/helper twins now report as 0 true duplicate implementations and 15 intentional compatibility wrappers.
+- [~] Review every visible app route inventory entry from `tmp/spec/ui-routes.json` for dead buttons, confusing copy, missing back behavior, and unfinished empty states.
+- [~] Verify login/session reliability across free, pro, commercial, and facility accounts, including server-down and invalid-token states.
+- [~] Verify password reset end to end: request email, open reset link, save password, login with the new password, and clear stale session state.
+- [~] Verify email verification end to end: signup/register response, delivered verification email, confirm token route, resend from login/profile, and verified-user login.
+- [~] Verify paid course purchase end to end: public course detail, Stripe checkout start, cancel/success return URLs, webhook-confirmed enrollment, course unlock, refund/dispute status.
+- [~] Verify subscription checkout end to end: plan pricing, Stripe checkout, cancel/success return URLs, webhook-confirmed entitlement unlock, billing status refresh.
+- [~] Verify commercial product checkout end to end: Stripe-ready product Buy CTA, external-only CTA, no fake checkout when setup is missing, order/lead analytics after return/webhook.
+- [~] Verify commercial course workflow polish: create/edit, thumbnail/banner/category/grow interests, lessons/modules/media/tasks/products/lives/forum links, publish readiness, storefront display.
+- [x] Commercial media workflow polish: product create/detail, course create/detail, marketing ad image, and live thumbnail screens now expose upload, preview, and persisted image save behavior.
+- [~] Verify Storefront, Feed/Campaigns, Forum/Q&A, Lives, Orders, Analytics, Product Lines, Batches/Lots, Trials, and Inventory navigation names and hierarchy are clear and not duplicative.
+- [~] Verify Facility room/onboarding/task/inventory/team/compliance flows with real create/edit/reload behavior and no premature risk copy before useful data exists.
+- [x] Verify Personal grow/tools/task/calendar flows, including ToolRun save/reload, create log, create task, timeline/source links, and reload after navigation.
+- [~] Run manual visual QA across desktop/mobile for Personal, Commercial, Facility, public store, courses, lives, feed, forum, profile, paywall, login/reset/verify screens.
+- [~] Run accessibility QA: keyboard/focus path where web-supported, labels on actionable buttons, contrast, font scaling, and screen-reader names.
+- [blocked] Inspect and fix the sibling live backend service for auth/email/Stripe if those route implementations live outside this frontend repo.
