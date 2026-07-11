@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
 import { getTokenBalance } from "../api/tokens";
 import { radius } from "../theme/theme";
 
@@ -12,19 +13,24 @@ export default function TokenBalanceWidget({ onPress }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    load();
-  }, []);
+    let alive = true;
 
-  async function load() {
-    try {
-      const res = await getTokenBalance();
-      setBalance(res?.data ?? res);
-      setLoading(false);
-    } catch (err) {
-      console.error("Failed to load token balance:", err);
-      setLoading(false);
+    async function load() {
+      try {
+        const res = await getTokenBalance();
+        if (alive) setBalance(res?.data ?? res);
+      } catch (err) {
+        console.error("Failed to load token balance:", err);
+      } finally {
+        if (alive) setLoading(false);
+      }
     }
-  }
+
+    load();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);
@@ -58,7 +64,7 @@ export default function TokenBalanceWidget({ onPress }) {
   const refillCopy =
     balance?.refillDescription || "Token refills are managed by your account limits.";
   const usageCopy =
-    "Use tokens for Diagnose (1–2), Training Coach (1), and Environment Assistant (1).";
+    "Use tokens for Ask AI, Plant Diagnose, recipe review, and environment analysis.";
 
   if (loading || balance === null) return null;
 
@@ -69,12 +75,12 @@ export default function TokenBalanceWidget({ onPress }) {
     >
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>🤖</Text>
+          <Text style={styles.icon}>AI</Text>
         </View>
         <View style={styles.headerContent}>
           <Text style={styles.label}>AI Tokens</Text>
           <Text style={styles.balance}>
-            {aiTokens} / {maxTokens ?? "—"}
+            {aiTokens} / {maxTokens ?? "-"}
           </Text>
         </View>
         <View style={styles.barContainer}>
@@ -90,7 +96,7 @@ export default function TokenBalanceWidget({ onPress }) {
       </View>
 
       <View style={styles.ctaRow}>
-        <Text style={styles.ctaText}>See how tokens work →</Text>
+        <Text style={styles.ctaText}>See how tokens work</Text>
       </View>
     </TouchableOpacity>
   );
@@ -124,7 +130,9 @@ const styles = StyleSheet.create({
     marginRight: 12
   },
   icon: {
-    fontSize: 20
+    color: "#166534",
+    fontSize: 14,
+    fontWeight: "900"
   },
   headerContent: {
     flex: 1

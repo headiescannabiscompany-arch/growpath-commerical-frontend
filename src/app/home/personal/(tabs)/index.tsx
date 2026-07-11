@@ -186,7 +186,9 @@ export default function PersonalHomeTab() {
       {model?.activeGrow ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Grow</Text>
-          <AppCard style={styles.commandCard}>
+          <Link href={growHref} asChild>
+            <Pressable accessibilityRole="link" accessibilityLabel="Open active grow">
+              <AppCard style={styles.commandCard}>
             <View style={styles.commandHeader}>
               <View style={styles.commandCopy}>
                 <Text style={styles.commandEyebrow}>Personal command center</Text>
@@ -237,6 +239,9 @@ export default function PersonalHomeTab() {
                 <Text style={styles.metricLabel}>Latest tool</Text>
               </View>
             </View>
+              </AppCard>
+            </Pressable>
+          </Link>
             <View style={styles.actions}>
               <ActionLink href={growHref} label="Open Grow" />
               {canCreateLog ? (
@@ -265,11 +270,11 @@ export default function PersonalHomeTab() {
             </View>
             {!canCreateLog || !canCreateTask ? (
               <Text style={styles.upgradeNote}>
-                Free accounts can review this grow. Upgrade to save journal entries,
-                photos, and reminders.
+                Free plan includes basic grow tracking, logs, tasks, and limited AI/tool
+                tokens. Upgrade for more grows, more storage, advanced tools, exports,
+                and higher AI limits.
               </Text>
             ) : null}
-          </AppCard>
         </View>
       ) : null}
 

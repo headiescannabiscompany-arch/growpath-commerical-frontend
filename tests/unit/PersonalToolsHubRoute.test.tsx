@@ -33,5 +33,9 @@ describe("personal tools hub", () => {
 
     expect(screen.getByLabelText("Open personal Ask AI")).toBeTruthy();
     expect(screen.getAllByLabelText("link-/home/personal/ai").length).toBeGreaterThan(0);
+    expect(screen.getByText("Start Here")).toBeTruthy();
+    expect(screen.getByText("Recipe Builder")).toBeTruthy();
+    expect(screen.getByText("Environment Monitor")).toBeTruthy();
+    expect(screen.queryByText("Bud Rot Risk")).toBeNull();
   });
 });

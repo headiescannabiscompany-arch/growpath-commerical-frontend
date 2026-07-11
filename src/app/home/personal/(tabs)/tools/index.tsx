@@ -77,9 +77,9 @@ function hrefWithGrow(path: string, growId: string) {
 }
 
 const AREA_ORDER: FeatureArea[] = [
-  "environment",
-  "water_nutrients",
   "plant_health",
+  "water_nutrients",
+  "environment",
   "crop_management",
   "planning_records",
   "genetics",
@@ -91,7 +91,7 @@ const AREA_ORDER: FeatureArea[] = [
 const AREA_LABELS: Record<FeatureArea, string> = {
   personal_navigation: "Navigation",
   environment: "Environment",
-  water_nutrients: "Water & Nutrients",
+  water_nutrients: "Recipe / Nutrients",
   plant_health: "Plant Health & AI",
   crop_management: "Crop Management",
   planning_records: "Planning & Records",
@@ -100,6 +100,8 @@ const AREA_LABELS: Record<FeatureArea, string> = {
   integrations: "Integrations",
   business_production: "Products & Production"
 };
+
+const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
 
 function ToolCard({
   tool,
@@ -142,6 +144,7 @@ export default function ToolsHubScreen() {
     () => getNavigablePersonalTools({ allowBetaSurfaces: !isFreePlan }),
     [isFreePlan]
   );
+  const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: "personal_tools_hub",
     plan,
@@ -154,8 +157,16 @@ export default function ToolsHubScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Tools / AI</Text>
         <Text style={styles.subtitle}>
-          Run calculators, get recommendations, and save outputs to a grow.
+          Ask AI, diagnose plants, build recipes, analyze environment risk, and save
+          outputs back to a grow.
         </Text>
+        <View style={styles.context}>
+          <Text style={styles.contextText}>
+            {isFreePlan
+              ? "Free plan: Ask AI and Plant Diagnose are available with limited AI tokens."
+              : "AI token balance and usage are managed from Profile."}
+          </Text>
+        </View>
         {growId ? (
           <View style={styles.context}>
             <Text style={styles.contextText}>Grow context active: {growId}</Text>
@@ -202,8 +213,24 @@ export default function ToolsHubScreen() {
         />
       ) : null}
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Start Here</Text>
+        <View style={styles.grid}>
+          {primaryTools.map((tool) => (
+            <ToolCard
+              key={tool.key}
+              tool={tool}
+              growId={growId}
+              enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+            />
+          ))}
+        </View>
+      </View>
+
       {AREA_ORDER.map((area, index) => {
-        const areaTools = tools.filter((tool) => tool.area === area);
+        const areaTools = tools.filter(
+          (tool) => tool.area === area && !PRIMARY_TOOL_KEYS.has(tool.key)
+        );
         if (!areaTools.length) return null;
 
         return (

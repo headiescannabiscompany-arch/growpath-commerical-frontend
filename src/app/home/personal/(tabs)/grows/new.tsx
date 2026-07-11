@@ -3,6 +3,8 @@ import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
   Image,
+  Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -58,6 +60,7 @@ export default function NewGrowScreen() {
   const [checkingLimit, setCheckingLimit] = React.useState(true);
   const [existingGrowCount, setExistingGrowCount] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
+  const [createdGrowId, setCreatedGrowId] = React.useState("");
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
   const canCreateGrow =
@@ -180,7 +183,11 @@ export default function NewGrowScreen() {
         await appendGrowPhotos(createdId, uploadedPhotos);
       }
 
-      router.replace(`/home/personal/grows?r=${Date.now()}`);
+      if (createdId) {
+        setCreatedGrowId(createdId);
+      } else {
+        router.replace(`/home/personal/grows?r=${Date.now()}`);
+      }
     } catch (err: any) {
       setError(err?.message ?? "Failed to create grow.");
     } finally {
@@ -202,6 +209,64 @@ export default function NewGrowScreen() {
     targetVpdBand,
     timeZone
   ]);
+
+  function openCreated(path: string) {
+    if (!createdGrowId) return;
+    router.replace(path as any);
+  }
+
+  function DateInput({
+    label,
+    value,
+    onChangeText,
+    accessibilityLabel,
+    testID
+  }: {
+    label: string;
+    value: string;
+    onChangeText: (value: string) => void;
+    accessibilityLabel: string;
+    testID?: string;
+  }) {
+    return (
+      <>
+        <Text style={{ fontWeight: "700" }}>{label}</Text>
+        {Platform.OS === "web" ? (
+          React.createElement("input", {
+            type: "date",
+            value,
+            onChange: (event: any) => onChangeText(event?.target?.value || ""),
+            "aria-label": accessibilityLabel,
+            "data-testid": testID,
+            style: {
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderColor: "#E2E8F0",
+              borderRadius: radius.card,
+              padding: 10,
+              fontSize: 16
+            }
+          })
+        ) : (
+          <TextInput
+            testID={testID}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder="YYYY-MM-DD"
+            accessibilityLabel={accessibilityLabel}
+            inputMode="numeric"
+            style={{
+              borderWidth: 1,
+              borderColor: "#E2E8F0",
+              borderRadius: radius.card,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   if (checkingLimit && !hasCreateCapability) {
     return (
@@ -326,20 +391,12 @@ export default function NewGrowScreen() {
           ))}
         </View>
 
-        <Text style={{ fontWeight: "700" }}>Anchor date (YYYY-MM-DD)</Text>
-        <TextInput
-          testID="input-grow-anchor-date"
+        <DateInput
+          label="Anchor date"
           value={anchorDate}
           onChangeText={setAnchorDate}
-          placeholder="2026-02-27"
           accessibilityLabel="Anchor date"
-          style={{
-            borderWidth: 1,
-            borderColor: "#E2E8F0",
-            borderRadius: radius.card,
-            paddingHorizontal: 12,
-            paddingVertical: 10
-          }}
+          testID="input-grow-anchor-date"
         />
 
         <Text style={{ fontWeight: "700" }}>Timezone</Text>
@@ -482,19 +539,11 @@ export default function NewGrowScreen() {
 
         {showAdvanced ? (
           <View style={{ gap: 10 }}>
-            <Text style={{ fontWeight: "700" }}>Flip date (optional)</Text>
-            <TextInput
+            <DateInput
+              label="Flip date (optional)"
               value={flipDate}
               onChangeText={setFlipDate}
-              placeholder="YYYY-MM-DD"
               accessibilityLabel="Flip date"
-              style={{
-                borderWidth: 1,
-                borderColor: "#E2E8F0",
-                borderRadius: radius.card,
-                paddingHorizontal: 12,
-                paddingVertical: 10
-              }}
             />
 
             <Text style={{ fontWeight: "700" }}>Pot size (optional)</Text>
@@ -607,6 +656,73 @@ export default function NewGrowScreen() {
           routeKey="personal_new_grow"
           longContent
         />
+        <Modal visible={Boolean(createdGrowId)} transparent animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(15, 23, 42, 0.35)",
+              justifyContent: "center",
+              padding: 20
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: radius.card,
+                padding: 18,
+                gap: 10
+              }}
+            >
+              <Text style={{ fontSize: 20, fontWeight: "900", color: "#0F172A" }}>
+                Grow created: {name.trim()}
+              </Text>
+              <Text style={{ color: "#475569", lineHeight: 20 }}>
+                Choose the next step so this grow immediately has plants, logs, tasks, or
+                AI context attached.
+              </Text>
+              {[
+                ["Add Plants", `/home/personal/grows/${createdGrowId}/plants`],
+                [
+                  "Create First Journal Entry",
+                  `/home/personal/logs/new?growId=${encodeURIComponent(createdGrowId)}`
+                ],
+                [
+                  "Set Up Grow Calendar",
+                  `/home/personal/tools/auto-grow-calendar?growId=${encodeURIComponent(createdGrowId)}`
+                ],
+                [
+                  "Run Diagnosis / Ask AI",
+                  `/home/personal/diagnose?growId=${encodeURIComponent(createdGrowId)}`
+                ],
+                ["Open Grow Dashboard", `/home/personal/grows/${createdGrowId}`]
+              ].map(([label, path]) => (
+                <Pressable
+                  key={label}
+                  accessibilityRole="button"
+                  onPress={() => openCreated(path)}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#166534",
+                    borderRadius: radius.card,
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    backgroundColor:
+                      label === "Open Grow Dashboard" ? "#166534" : "#FFFFFF"
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: label === "Open Grow Dashboard" ? "#FFFFFF" : "#166534",
+                      fontWeight: "800"
+                    }}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </ScreenBoundary>
   );

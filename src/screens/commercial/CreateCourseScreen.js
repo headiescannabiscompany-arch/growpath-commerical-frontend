@@ -30,7 +30,7 @@ export default function CreateCourseScreen({ navigation }) {
   async function submitCourse() {
     if (!canSubmit) return;
     if (!access.canCreateCourses) {
-      Alert.alert("Unavailable", "Creating courses requires COURSES_CREATE.");
+      Alert.alert("Unavailable", "Course creation is unavailable for this account.");
       return;
     }
     if (price.trim() && priceCents == null) {
@@ -75,7 +75,9 @@ export default function CreateCourseScreen({ navigation }) {
         {!access.canCreateCourses ? (
           <View style={styles.lockedCard}>
             <Text style={styles.lockedTitle}>Course creation unavailable</Text>
-            <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
+            <Text style={styles.helpText}>
+              Sign in to an account with course access to create drafts.
+            </Text>
           </View>
         ) : null}
         <Text style={styles.label}>Course title</Text>
@@ -111,10 +113,9 @@ export default function CreateCourseScreen({ navigation }) {
           Paid course limit:{" "}
           {access.maxPaidCourses === null ? "unlimited" : access.maxPaidCourses}
         </Text>
-        <Text style={styles.helpText}>
-          Lesson limit per course:{" "}
-          {access.maxLessonsPerCourse === null ? "unlimited" : access.maxLessonsPerCourse}
-        </Text>
+        <Text style={styles.helpText}>Storage used: 0 MB / plan limit</Text>
+        <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
+        <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
         <PersonalFeedPlacement placement="bottom" routeKey="personal_course_create" />
 
         <TouchableOpacity

@@ -148,10 +148,9 @@ export default function AddLessonScreen({ route, navigation }) {
           <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
         </View>
       ) : null}
-      <Text style={styles.helpText}>
-        Lesson limit per course:{" "}
-        {access.maxLessonsPerCourse === null ? "unlimited" : access.maxLessonsPerCourse}
-      </Text>
+      <Text style={styles.helpText}>Course storage: 0 MB / plan limit</Text>
+      <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
+      <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
 
       <TextInput
         style={styles.input}

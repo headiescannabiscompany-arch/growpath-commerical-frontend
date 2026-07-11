@@ -53,7 +53,7 @@ describe("legacy course authoring route back behavior", () => {
     render(<CreateCourseRoute />);
 
     expect(screen.getByText("Boundary Create Course")).toBeTruthy();
-    expect(screen.getByText("Shared Back /courses")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/courses")).toBeTruthy();
     expect(screen.getByText("Create course form")).toBeTruthy();
   });
 

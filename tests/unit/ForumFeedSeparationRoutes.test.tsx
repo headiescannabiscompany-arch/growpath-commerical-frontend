@@ -206,7 +206,9 @@ describe("Forum and feed separation copy", () => {
     const screen = render(<ForumRoute />);
 
     await waitFor(() =>
-      expect(screen.getByTestId("link-/forum/post/thread-grow-help")).toBeTruthy()
+      expect(
+        screen.getByTestId("link-/home/personal/forum/post/thread-grow-help")
+      ).toBeTruthy()
     );
   });
 

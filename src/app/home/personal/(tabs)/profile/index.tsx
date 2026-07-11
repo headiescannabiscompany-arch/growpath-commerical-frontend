@@ -16,6 +16,7 @@ import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
@@ -87,6 +88,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   accountActionText: { fontWeight: "800", color: "#0F172A" },
+  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  planAction: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#FFFFFF"
+  },
+  planActionPrimary: { backgroundColor: "#166534" },
+  planActionText: { color: "#166534", fontWeight: "800" },
+  planActionPrimaryText: { color: "#FFFFFF", fontWeight: "800" },
   mutedText: { marginTop: 8, fontSize: 12, color: "#64748B", lineHeight: 18 }
 });
 
@@ -365,6 +378,58 @@ export default function ProfileScreen() {
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Plan</Text>
         <Text style={styles.rowValue}>{plan}</Text>
+        <Text style={styles.mutedText}>
+          Free includes basic grow tracking, logs, tasks, and limited AI/tool tokens.
+          Upgrade for more grows, storage, advanced tools, exports, integrations, and
+          higher AI limits.
+        </Text>
+        <View style={styles.actionGrid}>
+          {[
+            ["Upgrade to Pro", "/home/personal/upgrade/pro", true],
+            ["Upgrade to Commercial", "/home/personal/upgrade/commercial", false],
+            ["Apply / Upgrade to Facility", "/home/personal/upgrade/facility", false],
+            ["Manage Billing", "/home/personal/profile/billing", false]
+          ].map(([label, href, primary]) => (
+            <Pressable
+              key={String(label)}
+              accessibilityRole="button"
+              onPress={() => router.push(href as any)}
+              style={[
+                styles.planAction,
+                primary ? styles.planActionPrimary : null
+              ]}
+            >
+              <Text
+                style={primary ? styles.planActionPrimaryText : styles.planActionText}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>AI token balance</Text>
+        <TokenBalanceWidget
+          onPress={() => router.push("/home/personal/profile/billing" as any)}
+        />
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Grow interests</Text>
+        <Text style={styles.mutedText}>
+          Edit what you grow, your environment, growing method, experience level, and
+          commercial goals when relevant.
+        </Text>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/onboarding/guilds" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Edit grow interests"
+        >
+          <Text style={styles.accountActionText}>Edit Grow Interests</Text>
+        </Pressable>
       </View>
       <PersonalFeedPlacement placement="middle" routeKey="personal_profile" longContent />
 
@@ -437,18 +502,6 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
       </View>
-
-      <Pressable
-        style={[styles.button, styles.buttonPrimary]}
-        onPress={() =>
-          Alert.alert(
-            "Manage Plan",
-            "Plan details and upgrades are available from your account settings."
-          )
-        }
-      >
-        <Text style={styles.buttonPrimaryText}>Manage Plan</Text>
-      </Pressable>
 
       <Pressable style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
         <Text style={styles.buttonDangerText}>Log out</Text>

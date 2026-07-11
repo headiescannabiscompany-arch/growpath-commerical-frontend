@@ -112,8 +112,9 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.dew_point_guard",
-    title: "Dew Point Guard",
-    description: "Analyze manual, CSV, or connected readings for condensation risk.",
+    title: "Environment Monitor",
+    description:
+      "Find lights-off RH spikes, dew point risk windows, airflow risk, and mold-prone periods from manual, CSV, or connected readings.",
     area: "environment",
     status: "release",
     href: "/home/personal/tools/dew-point-guard",
@@ -123,8 +124,9 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.ppfd_dli",
-    title: "PPFD / DLI Planner",
-    description: "Compare measured light against DLI and photoperiod targets.",
+    title: "PPFD / DLI Analyzer",
+    description:
+      "Use PAR meter or phone-app readings across the canopy to estimate DLI, hot spots, low spots, and stage fit.",
     area: "environment",
     status: "release",
     href: "/home/personal/tools/ppfd",
@@ -134,18 +136,19 @@ export const personalToolFeatures = [
   {
     key: "tools.bud_rot_risk",
     title: "Bud Rot Risk",
-    description: "Screen humidity, temperature, airflow, and wet-window risk factors.",
+    description: "Duplicate risk screen folded into Environment Monitor.",
     area: "environment",
-    status: "release",
-    href: "/home/personal/tools/bud-rot-risk",
+    status: "remove_from_user_app",
+    href: undefined,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.DIAGNOSE_ADVANCED,
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
     key: "tools.npk_recipe",
-    title: "NPK / Feed Recipe Builder",
-    description: "Build multi-product recipes with elemental ppm and release timing.",
+    title: "Recipe Builder",
+    description:
+      "Build feed, soil, and dry-amendment recipes from ingredients, guaranteed analysis, max amounts, release timing, and target ratios.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/npk",
@@ -159,7 +162,7 @@ export const personalToolFeatures = [
     title: "Nutrient Chemistry",
     description: "Compare nutrient forms, release behavior, pH effects, and use cases.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
@@ -171,7 +174,7 @@ export const personalToolFeatures = [
     title: "Nutrient Source Comparison",
     description: "Compare source speed, pH effects, secondary nutrients, and use cases.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/nutrient-source-comparison",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
@@ -184,7 +187,7 @@ export const personalToolFeatures = [
     description:
       "Create and manage nutrient, amendment, soil, and input records for recipes and grow planning.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/ingredient-library",
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -193,7 +196,8 @@ export const personalToolFeatures = [
   {
     key: "tools.watering",
     title: "Watering Planner",
-    description: "Estimate watering volume using medium, stage, and environment.",
+    description:
+      "Create watering, dryback, pot-weight, and runoff check tasks from medium, stage, and environment.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/watering",
@@ -214,9 +218,9 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.feeding_schedule",
-    title: "AI Feeding Schedule",
+    title: "Feeding Schedule",
     description:
-      "Generate a stage-aware feeding schedule from nutrient and grow-medium context.",
+      "Create feed, topdress, water-in, pH/EC check, and plant-response tasks from nutrient and grow-medium context.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/feeding-schedule",
@@ -227,10 +231,10 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.harvest_estimator",
-    title: "Harvest Estimator",
+    title: "Harvest / Maturity Check",
     description:
       "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
-    area: "planning_records",
+    area: "plant_health",
     status: "release",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
@@ -241,7 +245,8 @@ export const personalToolFeatures = [
   {
     key: "tools.timeline_planner",
     title: "Timeline Planner",
-    description: "Plan grow milestones across veg, flower, drying, and cure windows.",
+    description:
+      "Schedule grow-stage, transplant, flip, IPM, harvest, dry, and cure tasks.",
     area: "planning_records",
     status: "release",
     href: "/home/personal/tools/timeline-planner",
@@ -253,7 +258,8 @@ export const personalToolFeatures = [
   {
     key: "tools.pdf_export",
     title: "PDF / Export",
-    description: "Prepare grow records, plants, tasks, and tool runs for export.",
+    description:
+      "Export grow timeline, journal, diagnosis, tool run, harvest, pheno, and comparison reports from the records they belong to.",
     area: "planning_records",
     status: "release",
     href: "/home/personal/tools/pdf-export",
@@ -267,7 +273,7 @@ export const personalToolFeatures = [
     title: "Pheno Matrix",
     description: "Score phenotype candidates, weight traits, and rank keeper selections.",
     area: "genetics",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_PHENO_MATRIX,
@@ -282,7 +288,6 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -294,7 +299,6 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/ai",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
     internalNote:
       "Primary personal AI interface for grow-aware questions, task drafts, and log drafts."
   },

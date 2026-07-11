@@ -17,13 +17,14 @@ function nullableLimit(value: any): number | null {
 
 export function getLearningAccess(entitlements: EntitlementsLike | null | undefined) {
   const limits = entitlements?.limits || {};
+  const canViewCourses = has(entitlements, CAPABILITY_KEYS.COURSES_VIEW);
   const canSellPaidCourses = has(entitlements, CAPABILITY_KEYS.COURSES_SELL_PAID);
 
   return {
-    canViewCourses: has(entitlements, CAPABILITY_KEYS.COURSES_VIEW),
+    canViewCourses,
     canSeePaidCourses:
       has(entitlements, CAPABILITY_KEYS.SEE_PAID_COURSES) || canSellPaidCourses,
-    canCreateCourses: has(entitlements, CAPABILITY_KEYS.COURSES_CREATE),
+    canCreateCourses: canViewCourses || has(entitlements, CAPABILITY_KEYS.COURSES_CREATE),
     canSellPaidCourses,
     canPublishCourses: has(entitlements, CAPABILITY_KEYS.PUBLISH_COURSES),
     canViewCourseAnalytics: has(entitlements, CAPABILITY_KEYS.COURSES_ANALYTICS),

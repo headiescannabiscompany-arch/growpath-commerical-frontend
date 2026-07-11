@@ -215,7 +215,22 @@ export default function GrowToolsScreen() {
           </Link>
           <Link href={withGrow("/home/personal/tools/npk", growId)} asChild>
             <Pressable style={styles.action}>
-              <Text style={styles.actionText}>NPK Preview</Text>
+              <Text style={styles.actionText}>Recipe Builder</Text>
+            </Pressable>
+          </Link>
+          <Link href={withGrow("/home/personal/tools/pheno-matrix", growId)} asChild>
+            <Pressable style={styles.action}>
+              <Text style={styles.actionText}>Pheno Matrix</Text>
+            </Pressable>
+          </Link>
+          <Link href={withGrow("/home/personal/tools/harvest-readiness", growId)} asChild>
+            <Pressable style={styles.action}>
+              <Text style={styles.actionText}>Harvest Readiness</Text>
+            </Pressable>
+          </Link>
+          <Link href={withGrow("/home/personal/tools/pdf-export", growId)} asChild>
+            <Pressable style={styles.action}>
+              <Text style={styles.actionText}>Export Grow Data</Text>
             </Pressable>
           </Link>
         </View>

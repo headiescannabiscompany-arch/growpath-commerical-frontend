@@ -155,7 +155,23 @@ describe("CoursesScreen QA (capability-driven)", () => {
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
       expect(getByText("Paid course limit: 1/1")).toBeTruthy();
-      expect(getByText("Lesson limit per course: 7")).toBeTruthy();
+      expect(getByText("Storage used: 0 MB / plan limit")).toBeTruthy();
+      expect(getByText("Live sessions this month: 0 / plan limit")).toBeTruthy();
+      expect(getByText("Uploaded video storage: 0 GB / plan limit")).toBeTruthy();
+    });
+  });
+
+  it("lets free course viewers start a course draft even without explicit create capability", async () => {
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: { maxPaidCourses: 1 },
+      can: (cap) => cap === "COURSES_VIEW"
+    });
+    const { getByText } = await renderWithNav();
+    await waitFor(() => {
+      expect(getByText("Create Course")).toBeTruthy();
+      expect(getByText("Paid course sales require `COURSES_SELL_PAID`.")).toBeTruthy();
     });
   });
 
