@@ -223,7 +223,11 @@ export default function ToolsHubScreen() {
               key={tool.key}
               tool={tool}
               growId={growId}
-              enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+              enabled={
+                !tool.capabilityKey ||
+                entitlements.can(tool.capabilityKey) ||
+                PRIMARY_TOOL_KEYS.has(tool.key)
+              }
             />
           ))}
         </View>
