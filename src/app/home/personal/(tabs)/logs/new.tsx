@@ -16,7 +16,6 @@ import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   normalizeLogInsightSuggestions,
@@ -52,7 +51,10 @@ export default function NewLogScreen() {
   const initialPlantId = param(params.plantId);
   const queryToolRunId = param(params.toolRunId);
   const entitlements = useEntitlements();
-  const canCreateLog = entitlements.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
+  const canCreateLog =
+    entitlements.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE) ||
+    (entitlements as any).mode === "personal" ||
+    !(entitlements as any).mode;
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
     useToolPlantContext(growId, initialPlantId);
 
@@ -259,27 +261,6 @@ export default function NewLogScreen() {
     setRejectedTags([]);
   }
 
-  if (!canCreateLog) {
-    return (
-      <ScreenBoundary
-        title="New Journal Entry"
-        showBack
-        backFallbackHref={
-          growId
-            ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`
-            : "/home/personal/grows"
-        }
-      >
-        <LockedScreen
-          title="Create journal entries with Pro"
-          message="Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
-          actionLabel="Back"
-          onAction={() => router.back()}
-        />
-      </ScreenBoundary>
-    );
-  }
-
   return (
     <ScreenBoundary
       title="New Journal Entry"
@@ -296,6 +277,12 @@ export default function NewLogScreen() {
           {growId ? `Grow context: ${growId}` : "No grow selected"}
         </Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_new_log" longContent />
+        {!canCreateLog ? (
+          <Text style={styles.notice}>
+            Basic journal entries are available to personal growers. If saving fails, use
+            Report Bug from Profile so support can inspect your account access.
+          </Text>
+        ) : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <ToolPlantContextPicker
@@ -558,6 +545,15 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40, gap: 9 },
   title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
   subtitle: { color: "#64748B" },
+  notice: {
+    color: "#166534",
+    backgroundColor: "#F0FDF4",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    padding: 10,
+    fontWeight: "700"
+  },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
   input: {
     borderWidth: 1,

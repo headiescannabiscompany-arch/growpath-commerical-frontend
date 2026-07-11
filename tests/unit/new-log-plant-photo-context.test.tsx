@@ -11,7 +11,6 @@ const mockPersistImageUris = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockEntitlementsCan = jest.fn();
-const mockRouterBack = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({
@@ -22,7 +21,7 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
     push: jest.fn(),
-    back: mockRouterBack
+    back: jest.fn()
   }),
   Link: ({ children }: any) => children
 }));
@@ -128,26 +127,31 @@ describe("NewLogScreen plant/photo context", () => {
     mockCreatePersonalLog.mockResolvedValue({ id: "log-1" });
   });
 
-  it("locks journal creation for free personal accounts", async () => {
+  it("keeps journal creation available for free personal accounts", async () => {
     mockEntitlementsCan.mockImplementation(
       (capability) => capability !== "LOGS_PERSONAL_WRITE"
     );
 
-    const { getByText } = render(<NewLogScreen />);
+    const { getByLabelText, getByText, queryByText } = render(<NewLogScreen />);
 
     expect(getByText("Shared Back /home/personal/grows/grow-1/journal")).toBeTruthy();
-    expect(getByText("Create journal entries with Pro")).toBeTruthy();
-    expect(
-      getByText(
-        "Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
-      )
-    ).toBeTruthy();
+    expect(queryByText("Create journal entries with Pro")).toBeNull();
     await waitFor(() =>
       expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
     );
-    fireEvent.press(getByText("Back"));
-    expect(mockRouterBack).toHaveBeenCalled();
-    expect(mockCreatePersonalLog).not.toHaveBeenCalled();
+    fireEvent.changeText(getByLabelText("Log title"), "Free grow journal");
+    fireEvent.changeText(getByLabelText("Log notes"), "Basic grow log for free plan.");
+    fireEvent.press(getByLabelText("Create log"));
+
+    await waitFor(() => expect(mockCreatePersonalLog).toHaveBeenCalled());
+    expect(mockCreatePersonalLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        title: "Free grow journal",
+        notes: "Basic grow log for free plan."
+      })
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-1/journal");
   });
 
   it("creates logs and photo metadata with selected plant context", async () => {
