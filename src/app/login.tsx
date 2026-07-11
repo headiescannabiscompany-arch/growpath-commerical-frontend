@@ -111,7 +111,7 @@ export default function LoginScreen() {
             </View>
             <Text style={styles.brand}>GrowPath</Text>
             <Text style={styles.tagline}>
-              A one-stop app by gardeners, for gardeners.
+              A gardener-built hub for grows, soil, tools, courses, and community.
             </Text>
           </View>
 

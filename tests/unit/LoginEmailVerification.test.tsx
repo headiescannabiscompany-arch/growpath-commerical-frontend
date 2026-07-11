@@ -35,6 +35,16 @@ describe("LoginScreen email verification", () => {
     mockRequestEmailVerification.mockResolvedValue({ ok: true, emailSent: true });
   });
 
+  it("uses the stronger gardener-platform tagline", () => {
+    const screen = render(<LoginScreen />);
+
+    expect(
+      screen.getByText(
+        "A gardener-built hub for grows, soil, tools, courses, and community."
+      )
+    ).toBeTruthy();
+  });
+
   it("shows resend verification when the backend rejects an unverified email", async () => {
     mockLogin.mockRejectedValueOnce(
       new ApiError("EMAIL_NOT_VERIFIED", 403, {
