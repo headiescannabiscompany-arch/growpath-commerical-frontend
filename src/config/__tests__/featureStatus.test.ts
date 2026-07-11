@@ -165,7 +165,6 @@ describe("personal feature status manifest", () => {
       "tools.vpd": "/home/personal/tools/vpd",
       "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.bud_rot_risk": "/home/personal/tools/bud-rot-risk",
       "tools.npk_recipe": "/home/personal/tools/npk",
       "tools.ai_diagnosis": "/home/personal/diagnose",
       "tools.ai_assistant": "/home/personal/ai",
@@ -215,7 +214,7 @@ describe("personal feature status manifest", () => {
   });
 
   test("keeps removed/internal-only tools out of the user-facing app", () => {
-    const removedTools = ["tools.crop_steering", "tools.inventory"];
+    const removedTools = ["tools.bud_rot_risk", "tools.crop_steering", "tools.inventory"];
     const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
     for (const key of removedTools) {
       const feature = personalToolFeatures.find((item) => item.key === key);

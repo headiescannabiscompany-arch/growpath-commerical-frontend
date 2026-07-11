@@ -75,9 +75,10 @@ export default function PdfExportScreen() {
   return (
     <ScreenBoundary title="PDF / Export" showBack backFallbackHref="/home/personal/tools">
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>CSV Export</Text>
+        <Text style={styles.title}>PDF / Export</Text>
         <Text style={styles.subtitle}>
-          Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
+          Gather grow logs, tasks, plants, and tool runs into an export-ready dataset. CSV
+          is available now; PDF reports stay attached to the grow records they summarize.
         </Text>
         <PersonalFeedPlacement
           placement="top"

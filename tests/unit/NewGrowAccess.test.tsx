@@ -143,8 +143,10 @@ describe("NewGrowScreen access", () => {
         })
       })
     );
-    expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining("/home/personal/grows")
+    await waitFor(() =>
+      expect(screen.getByText("Grow created: Bruce Banner Auto")).toBeTruthy()
     );
+    fireEvent.press(screen.getByText("Open Grow Dashboard"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
   });
 });

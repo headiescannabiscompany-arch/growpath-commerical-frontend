@@ -174,7 +174,7 @@ export const personalToolFeatures = [
     title: "Nutrient Source Comparison",
     description: "Compare source speed, pH effects, secondary nutrients, and use cases.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/nutrient-source-comparison",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
@@ -187,7 +187,7 @@ export const personalToolFeatures = [
     description:
       "Create and manage nutrient, amendment, soil, and input records for recipes and grow planning.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/ingredient-library",
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -288,6 +288,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -299,6 +300,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/ai",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
     internalNote:
       "Primary personal AI interface for grow-aware questions, task drafts, and log drafts."
   },

@@ -74,13 +74,27 @@ export async function createForumPost(data: {
   workspaceContext?: "personal" | "commercial" | "facility" | string;
 }): Promise<SocialPost> {
   const photos = await persistImageUris(data.photos || []);
+  const tags = data.tags?.length
+    ? data.tags
+    : data.growInterests?.length
+      ? data.growInterests
+      : undefined;
+  const growInterests = data.growInterests?.length
+    ? data.growInterests
+    : data.tags?.length
+      ? data.tags
+      : undefined;
   const response = await apiRequest(apiRoutes.FORUM.CREATE, {
     method: "POST",
     body: {
-      ...data,
+      title: data.title,
+      body: data.body,
+      authorType: data.authorType,
+      authorId: data.authorId,
+      workspaceContext: data.workspaceContext,
       photos,
-      tags: data.tags || data.growInterests || [],
-      growInterests: data.growInterests || data.tags || []
+      ...(tags ? { tags } : {}),
+      ...(growInterests ? { growInterests } : {})
     }
   });
   return response?.created ?? response?.post ?? response;

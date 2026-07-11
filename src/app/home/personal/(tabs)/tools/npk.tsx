@@ -627,6 +627,11 @@ export default function NpkToolScreen() {
             deterministic tool preserves label N-P2O5-K2O, converts P2O5/K2O for elemental
             math, tracks release timing, and saves the ToolRun for review.
           </Text>
+          <Text style={styles.fieldHint}>
+            Fertilizer labels are interpreted as total N, available phosphate as P2O5, and
+            soluble potash as K2O. When a dry ingredient has no measured bulk density, use
+            4 cups per pound only as a planning assumption.
+          </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Ask AI to build NPK recipe"
