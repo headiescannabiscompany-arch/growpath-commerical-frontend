@@ -4,17 +4,19 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import CommercialProfileRoute from "@/app/home/commercial/profile";
 
 const mockApiRequest = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    useRouter: () => ({ push: mockPush })
   };
 });
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: { email: "brand@example.com" }
+    user: { id: "brand-user-1", email: "brand@example.com", displayName: "Brand Owner" }
   })
 }));
 
@@ -49,6 +51,7 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("CommercialProfileRoute", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
+    mockPush.mockReset();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/storefront" && !options) {
         return Promise.resolve({
@@ -84,9 +87,13 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/your-brand-slug")).toBeTruthy();
-    expect(screen.getByText("Legacy brand profile: /brands/your-brand-slug")).toBeTruthy();
     expect(
-      screen.getByText("Public product detail: /store/your-brand-slug/products/product-id")
+      screen.getByText("Legacy brand profile: /brands/your-brand-slug")
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Public product detail: /store/your-brand-slug/products/product-id"
+      )
     ).toBeTruthy();
     expect(
       screen.getByText("Public storefront alias: /storefront/your-brand-slug")
@@ -98,6 +105,20 @@ describe("CommercialProfileRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
+    expect(screen.getByText("Report Bug")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Report bug"));
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: "/support",
+        params: expect.objectContaining({
+          topic: "technical",
+          email: "brand@example.com",
+          accountEmail: "brand@example.com",
+          subject: "Bug report - commercial - Commercial profile",
+          message: expect.stringContaining("User ID: brand-user-1")
+        })
+      })
+    );
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();

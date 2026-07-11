@@ -3,7 +3,17 @@ import { render } from "@testing-library/react-native";
 
 import SupportPage from "@/app/support";
 
+let mockParams: Record<string, string> = {};
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockParams
+}));
+
 describe("SupportPage", () => {
+  beforeEach(() => {
+    mockParams = {};
+  });
+
   it("routes support request topics to the support inbox", () => {
     const screen = render(<SupportPage />);
 
@@ -28,5 +38,28 @@ describe("SupportPage", () => {
     expect(screen.queryByText(/Email security@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email noreply@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email notifications@growpathai\.com/)).toBeNull();
+  });
+
+  it("prefills structured bug report details from query params", () => {
+    mockParams = {
+      topic: "technical",
+      name: "Grower",
+      email: "grower@example.com",
+      accountEmail: "account@example.com",
+      subject: "Bug report - personal - Personal profile",
+      message:
+        "Bug report\n\nWho:\n- Account email: account@example.com\n\nWhat is wrong:\n- "
+    };
+
+    const screen = render(<SupportPage />);
+
+    expect(screen.getByDisplayValue("Grower")).toBeTruthy();
+    expect(screen.getByDisplayValue("grower@example.com")).toBeTruthy();
+    expect(screen.getByDisplayValue("account@example.com")).toBeTruthy();
+    expect(
+      screen.getByDisplayValue("Bug report - personal - Personal profile")
+    ).toBeTruthy();
+    expect(screen.getByDisplayValue(/What is wrong/)).toBeTruthy();
+    expect(screen.getByText("Technical")).toBeTruthy();
   });
 });

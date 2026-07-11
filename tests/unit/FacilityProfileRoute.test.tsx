@@ -37,7 +37,21 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
+    user: {
+      id: "facility-user-1",
+      email: "facility@example.com",
+      displayName: "Facility Lead"
+    },
     logout: (...args: any[]) => mockLogout(...args)
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    plan: "facility",
+    mode: "facility",
+    facilityId: "facility-1",
+    facilityRole: "admin"
   })
 }));
 
@@ -66,9 +80,24 @@ describe("FacilityProfileRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));
+    fireEvent.press(screen.getByLabelText("Report bug"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/home/facility/select"));
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: "/support",
+        params: expect.objectContaining({
+          topic: "technical",
+          email: "facility@example.com",
+          accountEmail: "facility@example.com",
+          subject: "Bug report - facility - Facility profile",
+          message: expect.stringContaining("Facility ID: facility-1")
+        })
+      })
+    );
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
+    );
   });
 });

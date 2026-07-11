@@ -8,6 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { sendSupportContact, type SupportContactTopic } from "@/api/support";
 import {
@@ -38,7 +39,26 @@ function isLikelyEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+function paramString(value?: string | string[]) {
+  if (Array.isArray(value)) return value[0] || "";
+  return typeof value === "string" ? value : "";
+}
+
+function topicFromParam(value: string): SupportContactTopic | null {
+  return TOPICS.some((item) => item.key === value)
+    ? (value as SupportContactTopic)
+    : null;
+}
+
 export default function SupportPage() {
+  const params = useLocalSearchParams<{
+    topic?: string | string[];
+    name?: string | string[];
+    email?: string | string[];
+    accountEmail?: string | string[];
+    subject?: string | string[];
+    message?: string | string[];
+  }>();
   const [topic, setTopic] = useState<SupportContactTopic>("account");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -48,6 +68,28 @@ export default function SupportPage() {
   const [company, setCompany] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
+
+  React.useEffect(() => {
+    const nextTopic = topicFromParam(paramString(params.topic));
+    if (nextTopic) setTopic(nextTopic);
+    const nextName = paramString(params.name);
+    const nextEmail = paramString(params.email);
+    const nextAccountEmail = paramString(params.accountEmail);
+    const nextSubject = paramString(params.subject);
+    const nextMessage = paramString(params.message);
+    if (nextName) setName(nextName);
+    if (nextEmail) setEmail(nextEmail);
+    if (nextAccountEmail) setAccountEmail(nextAccountEmail);
+    if (nextSubject) setSubject(nextSubject);
+    if (nextMessage) setMessage(nextMessage);
+  }, [
+    params.accountEmail,
+    params.email,
+    params.message,
+    params.name,
+    params.subject,
+    params.topic
+  ]);
 
   const canSubmit = useMemo(
     () =>
