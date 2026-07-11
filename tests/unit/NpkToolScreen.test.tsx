@@ -235,6 +235,62 @@ describe("NpkToolScreen", () => {
     expect(screen.getByText(/Ask me for label density/)).toBeTruthy();
   });
 
+  it("loads GrowPath locked amendment presets with exact densities and label values", async () => {
+    const screen = await renderNpkToolScreen();
+
+    fireEvent.press(screen.getByLabelText("Load Flower amendment preset"));
+
+    expect(screen.getByText(/Flower loaded/)).toBeTruthy();
+    expect(screen.getByText(/Dry mix size is 2 lb/)).toBeTruthy();
+    expect(screen.getByDisplayValue("GrowPath 2-6-4 Flower")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Calculate recipe"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "npk-recipe",
+        expect.objectContaining({
+          batchVolume: 5,
+          batchUnit: "gal",
+          dryMixWeightLb: 2,
+          stage: "flower",
+          medium: "living_soil",
+          recipeMode: "build_dry_blend",
+          targetNpk: { N: 2, P: 6, K: 4 },
+          releaseEnvironment: expect.objectContaining({ livingSoil: true }),
+          products: expect.arrayContaining([
+            expect.objectContaining({
+              name: "Langbeinite",
+              amount: 226.8,
+              unit: "g",
+              densityGml: 1.9172,
+              K2O: 22,
+              Mg: 10.8,
+              S: 22
+            }),
+            expect.objectContaining({
+              name: "Bone Meal",
+              amount: 198.45,
+              densityGml: 0.9586,
+              N: 3,
+              P2O5: 15,
+              Ca: 18
+            }),
+            expect.objectContaining({
+              name: "Greenstone",
+              N: 0,
+              P2O5: 0,
+              K2O: 0,
+              Ca: 2,
+              Mg: 4,
+              Fe: 4
+            })
+          ])
+        })
+      )
+    );
+  });
+
   it("creates a source-linked NPK recipe task plan from the saved ToolRun", async () => {
     const screen = await renderNpkToolScreen();
 

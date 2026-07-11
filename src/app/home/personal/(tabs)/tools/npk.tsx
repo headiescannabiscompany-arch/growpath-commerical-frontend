@@ -85,6 +85,7 @@ const chemistryOptions = [
 const MAX_PRODUCT_ROWS = 20;
 const P2O5_TO_ELEMENTAL_P = 0.4364;
 const K2O_TO_ELEMENTAL_K = 0.8301;
+const TBSP_PER_CUP = 16;
 
 const guaranteedAnalysisLabels: Record<"N" | "P" | "K" | "Ca" | "Mg" | "S", string> = {
   N: "N",
@@ -94,6 +95,219 @@ const guaranteedAnalysisLabels: Record<"N" | "P" | "K" | "Ca" | "Mg" | "S", stri
   Mg: "Mg",
   S: "S"
 };
+
+type GrowpathAmendmentKey =
+  | "alfalfaMeal"
+  | "kelpMeal"
+  | "boneMeal"
+  | "crabMeal"
+  | "langbeinite"
+  | "dolomiteLime"
+  | "gardenGypsum"
+  | "greenstone"
+  | "rockPhosphate";
+
+type GrowpathAmendmentPreset = {
+  key: GrowpathAmendmentKey;
+  name: string;
+  cupsPerLb: number;
+  chemistryKey: ProductRow["chemistryKey"];
+  releaseSpeed: ProductRow["releaseSpeed"];
+  releaseWindow: ProductRow["releaseWindow"];
+  analysis: Partial<Pick<ProductRow, "N" | "P" | "K" | "Ca" | "Mg" | "S" | "Fe" | "Si">>;
+};
+
+type StageRecipePreset = {
+  key: string;
+  label: string;
+  name: string;
+  stage: string;
+  target: { N: string; P: string; K: string };
+  actual: string;
+  amountsTbsp: Record<GrowpathAmendmentKey, number>;
+};
+
+const GROWPATH_AMENDMENTS: Record<GrowpathAmendmentKey, GrowpathAmendmentPreset> = {
+  alfalfaMeal: {
+    key: "alfalfaMeal",
+    name: "Alfalfa Meal",
+    cupsPerLb: 4,
+    chemistryKey: "organic_protein_meal",
+    releaseSpeed: "fast",
+    releaseWindow: "days_7_21",
+    analysis: { N: "2", P: "0", K: "1" }
+  },
+  kelpMeal: {
+    key: "kelpMeal",
+    name: "Kelp Meal",
+    cupsPerLb: 3,
+    chemistryKey: "organic_meal",
+    releaseSpeed: "medium",
+    releaseWindow: "days_21_45",
+    analysis: { N: "1", P: "0.1", K: "2" }
+  },
+  boneMeal: {
+    key: "boneMeal",
+    name: "Bone Meal",
+    cupsPerLb: 2,
+    chemistryKey: "bone_meal",
+    releaseSpeed: "slow",
+    releaseWindow: "days_45_90",
+    analysis: { N: "3", P: "15", K: "0", Ca: "18" }
+  },
+  crabMeal: {
+    key: "crabMeal",
+    name: "Crab Meal",
+    cupsPerLb: 4,
+    chemistryKey: "organic_protein_meal",
+    releaseSpeed: "medium",
+    releaseWindow: "days_21_45",
+    analysis: { N: "4", P: "3", K: "0", Ca: "14" }
+  },
+  langbeinite: {
+    key: "langbeinite",
+    name: "Langbeinite",
+    cupsPerLb: 1,
+    chemistryKey: "sulfate_salt",
+    releaseSpeed: "medium",
+    releaseWindow: "days_7_21",
+    analysis: { N: "0", P: "0", K: "22", Mg: "10.8", S: "22" }
+  },
+  dolomiteLime: {
+    key: "dolomiteLime",
+    name: "Dolomite Lime",
+    cupsPerLb: 2,
+    chemistryKey: "dolomitic_lime",
+    releaseSpeed: "slow",
+    releaseWindow: "days_90_plus",
+    analysis: { N: "0", P: "0", K: "0", Ca: "23", Mg: "9.5" }
+  },
+  gardenGypsum: {
+    key: "gardenGypsum",
+    name: "Garden Gypsum",
+    cupsPerLb: 2,
+    chemistryKey: "gypsum",
+    releaseSpeed: "medium",
+    releaseWindow: "days_21_45",
+    analysis: { N: "0", P: "0", K: "0", Ca: "21", S: "17" }
+  },
+  greenstone: {
+    key: "greenstone",
+    name: "Greenstone",
+    cupsPerLb: 1.5,
+    chemistryKey: "rock_mineral",
+    releaseSpeed: "slow",
+    releaseWindow: "days_90_plus",
+    analysis: { N: "0", P: "0", K: "0", Ca: "2", Mg: "4", Fe: "4" }
+  },
+  rockPhosphate: {
+    key: "rockPhosphate",
+    name: "Rock Phosphate",
+    cupsPerLb: 1.5,
+    chemistryKey: "rock_mineral",
+    releaseSpeed: "slow",
+    releaseWindow: "days_90_plus",
+    analysis: { N: "0", P: "3", K: "0", Ca: "18" }
+  }
+};
+
+const GROWPATH_STAGE_RECIPES: StageRecipePreset[] = [
+  {
+    key: "starter",
+    label: "Starter / Cook",
+    name: "GrowPath 3-3-3 Starter / Cook",
+    stage: "soil_building",
+    target: { N: "3", P: "3", K: "3" },
+    actual: "~2.9-3.0-2.8",
+    amountsTbsp: {
+      alfalfaMeal: 22,
+      kelpMeal: 12,
+      boneMeal: 10.6667,
+      crabMeal: 16,
+      langbeinite: 3.3333,
+      dolomiteLime: 6.6667,
+      gardenGypsum: 6.6667,
+      greenstone: 2.3333,
+      rockPhosphate: 2.3333
+    }
+  },
+  {
+    key: "vegetative",
+    label: "Vegetative",
+    name: "GrowPath 3-1-2 Vegetative",
+    stage: "veg",
+    target: { N: "3", P: "1", K: "2" },
+    actual: "~3.1-0.9-2.1",
+    amountsTbsp: {
+      alfalfaMeal: 32,
+      kelpMeal: 17,
+      crabMeal: 19,
+      langbeinite: 4,
+      boneMeal: 6.6667,
+      dolomiteLime: 4.6667,
+      gardenGypsum: 4.6667,
+      greenstone: 1.3333,
+      rockPhosphate: 1.3333
+    }
+  },
+  {
+    key: "transition",
+    label: "Pre-flower / Transition",
+    name: "GrowPath 2-2-3 Pre-flower / Transition",
+    stage: "preflower",
+    target: { N: "2", P: "2", K: "3" },
+    actual: "~2.0-2.1-3.0",
+    amountsTbsp: {
+      kelpMeal: 19,
+      boneMeal: 12,
+      langbeinite: 5.3333,
+      crabMeal: 16,
+      alfalfaMeal: 16,
+      dolomiteLime: 4.6667,
+      gardenGypsum: 4.6667,
+      greenstone: 1.3333,
+      rockPhosphate: 1.3333
+    }
+  },
+  {
+    key: "flower",
+    label: "Flower",
+    name: "GrowPath 2-6-4 Flower",
+    stage: "flower",
+    target: { N: "2", P: "6", K: "4" },
+    actual: "~1.9-6.1-3.9",
+    amountsTbsp: {
+      langbeinite: 8,
+      boneMeal: 14,
+      kelpMeal: 19,
+      rockPhosphate: 2.3333,
+      alfalfaMeal: 8.6667,
+      crabMeal: 8.6667,
+      dolomiteLime: 3,
+      gardenGypsum: 3,
+      greenstone: 1.3333
+    }
+  },
+  {
+    key: "ripen",
+    label: "Ripen / Finish",
+    name: "GrowPath 0.5-3-3 Ripen / Finish",
+    stage: "late_flower",
+    target: { N: "0.5", P: "3", K: "3" },
+    actual: "~0.55-3.0-3.2",
+    amountsTbsp: {
+      langbeinite: 10,
+      kelpMeal: 19,
+      boneMeal: 12,
+      rockPhosphate: 2,
+      gardenGypsum: 4.6667,
+      dolomiteLime: 4.6667,
+      greenstone: 2.3333,
+      alfalfaMeal: 5.3333,
+      crabMeal: 5.3333
+    }
+  }
+];
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -125,6 +339,35 @@ function newRow(index: number): ProductRow {
     B: "0",
     Mo: "0",
     Si: "0"
+  };
+}
+
+function tbspToGrams(tbsp: number, cupsPerLb: number) {
+  const lb = tbsp / (TBSP_PER_CUP * cupsPerLb);
+  return Number((lb * 453.59237).toFixed(2));
+}
+
+function presetRow(key: GrowpathAmendmentKey, tbsp: number, index: number): ProductRow {
+  const amendment = GROWPATH_AMENDMENTS[key];
+  return {
+    ...newRow(index),
+    id: `growpath-${key}-${index}-${Date.now()}`,
+    name: amendment.name,
+    amount: String(tbspToGrams(tbsp, amendment.cupsPerLb)),
+    unit: "g",
+    chemistryKey: amendment.chemistryKey,
+    sourceType: "manufacturer",
+    releaseSpeed: amendment.releaseSpeed,
+    releaseWindow: amendment.releaseWindow,
+    densityGml: String(Number((453.59237 / (amendment.cupsPerLb * 236.588)).toFixed(4))),
+    N: amendment.analysis.N || "0",
+    P: amendment.analysis.P || "0",
+    K: amendment.analysis.K || "0",
+    Ca: amendment.analysis.Ca || "0",
+    Mg: amendment.analysis.Mg || "0",
+    S: amendment.analysis.S || "0",
+    Fe: amendment.analysis.Fe || "0",
+    Si: amendment.analysis.Si || "0"
   };
 }
 
@@ -326,6 +569,7 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
     `Recipe: ${payload.name || "unnamed"}`,
     `Mode: ${String(payload.recipeMode || "dose_existing_products").replaceAll("_", " ")}`,
     `Stage: ${payload.stage || "unknown"} | Medium: ${payload.medium || "unknown"} | Batch: ${payload.batchVolume || 0} ${payload.batchUnit || ""}`,
+    payload.dryMixWeightLb ? `Dry mix weight: ${payload.dryMixWeightLb} lb` : "",
     `Target label N-P2O5-K2O: ${target.N ?? "-"}-${target.P ?? "-"}-${target.K ?? "-"}`,
     `Desired release profile: ${payload.desiredReleaseProfile || "blended"}`,
     `Water baseline: EC ${payload.waterBaseline?.sourceEC ?? "-"}, pH ${payload.waterBaseline?.sourcePH ?? "-"}, Ca ${payload.waterBaseline?.Ca ?? "-"}, Mg ${payload.waterBaseline?.Mg ?? "-"}`,
@@ -349,6 +593,7 @@ export default function NpkToolScreen() {
   const [stage, setStage] = useState("veg");
   const [medium, setMedium] = useState("soil");
   const [recipeMode, setRecipeMode] = useState("dose_existing_products");
+  const [dryMixWeightLb, setDryMixWeightLb] = useState("");
   const [targetN, setTargetN] = useState("");
   const [targetP, setTargetP] = useState("");
   const [targetK, setTargetK] = useState("");
@@ -401,6 +646,7 @@ export default function NpkToolScreen() {
       stage,
       medium,
       recipeMode,
+      dryMixWeightLb: dryMixWeightLb ? Number(dryMixWeightLb) : undefined,
       targetNpk: {
         N: targetN ? Number(targetN) : undefined,
         P: targetP ? Number(targetP) : undefined,
@@ -427,6 +673,7 @@ export default function NpkToolScreen() {
     setStage(recipe.stage || "veg");
     setMedium(recipe.medium || "soil");
     setRecipeMode((recipe as any).recipeMode || "dose_existing_products");
+    setDryMixWeightLb(String((recipe as any).dryMixWeightLb ?? ""));
     setTargetN(String((recipe as any).targetNpk?.N ?? ""));
     setTargetP(String((recipe as any).targetNpk?.P ?? ""));
     setTargetK(String((recipe as any).targetNpk?.K ?? ""));
@@ -452,6 +699,33 @@ export default function NpkToolScreen() {
         ),
         id: `${Date.now()}-${index}`
       })) as ProductRow[]
+    );
+  }
+
+  function loadGrowpathStagePreset(preset: StageRecipePreset) {
+    setSelectedRecipeId("");
+    setRecipeName(preset.name);
+    setRecipeMode("build_dry_blend");
+    setStage(preset.stage);
+    setMedium("living_soil");
+    setTargetN(preset.target.N);
+    setTargetP(preset.target.P);
+    setTargetK(preset.target.K);
+    setDesiredReleaseProfile("blended");
+    setBatchVolume("5");
+    setBatchUnit("gal");
+    setDryMixWeightLb("2");
+    setLivingSoil(true);
+    setRows(
+      Object.entries(preset.amountsTbsp).map(([key, tbsp], index) =>
+        presetRow(key as GrowpathAmendmentKey, tbsp, index)
+      )
+    );
+    setResult(null);
+    setToolRun(null);
+    setAiRecipeBrief("");
+    setFeedback(
+      `${preset.label} loaded. Actual target from source recipe: ${preset.actual}. Amounts use locked cups-per-pound densities and are converted to grams for calculator math. Dry mix size is 2 lb; batch volume remains the application/dilution context.`
     );
   }
 
@@ -560,6 +834,7 @@ export default function NpkToolScreen() {
         source: "npk_feed_recipe_builder",
         targetNpk: payload.targetNpk,
         desiredReleaseProfile,
+        dryMixWeightLb: payload.dryMixWeightLb,
         batchVolume: payload.batchVolume,
         batchUnit: payload.batchUnit,
         stage,
@@ -693,6 +968,32 @@ export default function NpkToolScreen() {
           placeholder="e.g. Veg base"
         />
 
+        <View style={styles.guidanceCard}>
+          <Text style={styles.resultTitle}>GrowPath cooked amendment presets</Text>
+          <Text style={styles.fieldHint}>
+            Load the locked 2 lb dry-amendment recipes using your guaranteed analysis,
+            exact cups-per-pound densities, Greenstone as 0-0-0, and target tolerance
+            workflow.
+          </Text>
+          <View style={styles.row}>
+            {GROWPATH_STAGE_RECIPES.map((preset) => (
+              <Pressable
+                key={preset.key}
+                accessibilityRole="button"
+                accessibilityLabel={`Load ${preset.label} amendment preset`}
+                style={styles.secondaryButton}
+                onPress={() => loadGrowpathStagePreset(preset)}
+              >
+                <Text style={styles.secondaryButtonText}>{preset.label}</Text>
+                <Text style={styles.fieldHint}>
+                  Target {preset.target.N}-{preset.target.P}-{preset.target.K}; actual{" "}
+                  {preset.actual}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         {savedRecipes.length ? (
           <View style={styles.savedSection}>
             <Text style={styles.label}>Saved recipes</Text>
@@ -784,6 +1085,13 @@ export default function NpkToolScreen() {
             onChangeText={setSoilTempC}
             keyboardType="numeric"
             placeholder="Soil temp C"
+          />
+          <TextInput
+            style={styles.input}
+            value={dryMixWeightLb}
+            onChangeText={setDryMixWeightLb}
+            keyboardType="numeric"
+            placeholder="Dry mix lb"
           />
         </View>
         <Text style={styles.label}>Target profile</Text>
