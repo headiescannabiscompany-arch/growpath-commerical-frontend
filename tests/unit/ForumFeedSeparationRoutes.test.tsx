@@ -109,8 +109,21 @@ describe("Forum and feed separation copy", () => {
 
     await waitFor(() => expect(mockListForumPosts).toHaveBeenCalled());
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("New Discussion")).toBeTruthy();
+    expect(screen.getByText("Forum Feed")).toBeTruthy();
+    expect(screen.getByText(/tagged by grow interests/)).toBeTruthy();
     expect(screen.getByText(/Discussion, Q&A, grow help/)).toBeTruthy();
     expect(screen.getByText(/campaign ads, not forum threads/)).toBeTruthy();
+  });
+
+  it("shows a retryable forum error instead of an empty feed", async () => {
+    mockListForumPosts.mockRejectedValueOnce(new Error("Network down"));
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() => expect(screen.getByText("Forum could not load")).toBeTruthy());
+    expect(screen.getByText("Network down")).toBeTruthy();
+    expect(screen.getByLabelText("Retry loading forum posts")).toBeTruthy();
+    expect(screen.queryByText("No posts yet.")).toBeNull();
   });
 
   it("keeps the new forum post composer out of Feed / Campaigns", () => {

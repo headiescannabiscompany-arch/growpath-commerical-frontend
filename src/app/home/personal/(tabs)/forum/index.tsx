@@ -56,6 +56,28 @@ function photosOf(post: SocialPost) {
   return (rows || []).map((uri) => resolveImageUri(uri)).filter(Boolean);
 }
 
+function ForumPostImage({ photo, index }: { photo: string; index: number }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <View style={[styles.photoThumb, styles.photoFallback]}>
+        <Text style={styles.emptyImageText}>Image failed to load</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={{ uri: photo }}
+      style={styles.photoThumb}
+      resizeMode="cover"
+      accessibilityLabel={`Forum post photo ${index + 1}`}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export default function ForumRoute() {
   const entitlements = useEntitlements();
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
@@ -126,7 +148,27 @@ export default function ForumRoute() {
         </Link>
       ) : null}
 
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      <View style={styles.feedHeader}>
+        <Text style={styles.feedTitle}>Forum Feed</Text>
+        <Text style={styles.feedSubtitle}>
+          Latest discussions from growers, tagged by grow interests.
+        </Text>
+      </View>
+
+      {feedback ? (
+        <View style={styles.errorCard}>
+          <Text style={styles.cardTitle}>Forum could not load</Text>
+          <Text style={styles.cardText}>{feedback}</Text>
+          <Pressable
+            onPress={() => load()}
+            style={styles.primaryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading forum posts"
+          >
+            <Text style={styles.primaryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {!canView ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Forum unavailable</Text>
@@ -173,12 +215,10 @@ export default function ForumRoute() {
               {photos.length ? (
                 <View style={styles.photoRow}>
                   {photos.slice(0, 3).map((photo, index) => (
-                    <Image
+                    <ForumPostImage
                       key={`${photo}-${index}`}
-                      source={{ uri: photo }}
-                      style={styles.photoThumb}
-                      resizeMode="cover"
-                      accessibilityLabel={`Forum post photo ${index + 1}`}
+                      photo={photo}
+                      index={index}
                     />
                   ))}
                 </View>
@@ -241,6 +281,14 @@ const styles = StyleSheet.create({
     gap: 4
   },
   composerTitle: { color: "#166534", fontSize: 16, fontWeight: "900" },
+  feedHeader: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+    paddingTop: 6,
+    paddingBottom: 10
+  },
+  feedTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
+  feedSubtitle: { color: "#64748B", marginTop: 2 },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   tag: {
     borderWidth: 1,
@@ -253,6 +301,11 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   emptyImageText: { color: "#64748B", fontSize: 12, fontWeight: "700" },
+  photoFallback: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8
+  },
   openText: { color: "#166534", fontWeight: "900", marginTop: 4 },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
   primaryBtn: {
@@ -269,5 +322,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
+  },
+  errorCard: {
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    borderRadius: radius.card,
+    padding: 14,
+    backgroundColor: "#FEF2F2",
+    gap: 8
   }
 });
