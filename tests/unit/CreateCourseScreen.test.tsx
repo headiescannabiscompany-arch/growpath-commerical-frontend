@@ -6,6 +6,12 @@ import CreateCourseScreen from "@/screens/commercial/CreateCourseScreen";
 
 const mockCreateCourse = jest.fn();
 const mockReplace = jest.fn();
+const mockPersistImageUri = jest.fn();
+const mockPersistImageUris = jest.fn();
+const mockUploadCourseMedia = jest.fn();
+const mockLaunchImageLibraryAsync = jest.fn();
+const mockRequestMediaLibraryPermissionsAsync = jest.fn();
+const mockGetDocumentAsync = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: mockReplace })
@@ -13,6 +19,27 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/api/courses", () => ({
   createCourse: (...args: any[]) => mockCreateCourse(...args)
+}));
+
+jest.mock("@/api/uploads", () => ({
+  uploadCourseMedia: (...args: any[]) => mockUploadCourseMedia(...args)
+}));
+
+jest.mock("@/utils/photoUploads", () => ({
+  persistImageUri: (...args: any[]) => mockPersistImageUri(...args),
+  persistImageUris: (...args: any[]) => mockPersistImageUris(...args),
+  resolveImageUri: (uri: string) => uri
+}));
+
+jest.mock("expo-image-picker", () => ({
+  MediaTypeOptions: { Images: "Images" },
+  requestMediaLibraryPermissionsAsync: (...args: any[]) =>
+    mockRequestMediaLibraryPermissionsAsync(...args),
+  launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibraryAsync(...args)
+}));
+
+jest.mock("expo-document-picker", () => ({
+  getDocumentAsync: (...args: any[]) => mockGetDocumentAsync(...args)
 }));
 
 jest.mock("@/components/ScreenContainer", () => {
@@ -52,6 +79,29 @@ describe("CreateCourseScreen", () => {
     jest.resetAllMocks();
     jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
     mockCreateCourse.mockResolvedValue({ id: "course-new", title: "Living Soil 101" });
+    mockPersistImageUri.mockImplementation(async (uri) =>
+      uri ? "uploaded-cover.jpg" : null
+    );
+    mockPersistImageUris.mockResolvedValue(["/uploads/course-gallery.jpg"]);
+    mockUploadCourseMedia
+      .mockResolvedValueOnce({ url: "/uploads/course-workbook.pdf" })
+      .mockResolvedValueOnce({ url: "/uploads/course-video.mp4" });
+    mockRequestMediaLibraryPermissionsAsync.mockResolvedValue({ granted: true });
+    mockLaunchImageLibraryAsync.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "local-cover.jpg" }]
+    });
+    mockGetDocumentAsync.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/course-workbook.pdf",
+          name: "course-workbook.pdf",
+          mimeType: "application/pdf",
+          size: 1024
+        }
+      ]
+    });
   });
 
   afterEach(() => {
@@ -70,6 +120,10 @@ describe("CreateCourseScreen", () => {
     expect(screen.getByText("6. Pricing / access")).toBeTruthy();
     expect(screen.getByText("7. Preview / publish")).toBeTruthy();
     expect(screen.getByText("Lessons: 0 / plan limit")).toBeTruthy();
+    expect(screen.getByText("Upload Cover Image")).toBeTruthy();
+    expect(screen.getByText("Upload Documents")).toBeTruthy();
+    expect(screen.getByText("Upload Video / Audio")).toBeTruthy();
+    expect(screen.getByText("Upload Images")).toBeTruthy();
   });
 
   it("creates structured draft payloads for lessons, documents, lives, and links", async () => {
@@ -147,5 +201,116 @@ describe("CreateCourseScreen", () => {
       })
     );
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
+  });
+
+  it("uploads a selected course cover image before creating the draft", async () => {
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Media Course");
+    fireEvent.press(screen.getByLabelText("Upload course cover image"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course cover image preview")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() =>
+      expect(mockPersistImageUri).toHaveBeenCalledWith("local-cover.jpg")
+    );
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Media Course",
+        coverImageUrl: "uploaded-cover.jpg"
+      })
+    );
+  });
+
+  it("uploads selected course documents, video/audio media, and image sets before creating the draft", async () => {
+    mockGetDocumentAsync
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          {
+            uri: "file:///tmp/course-workbook.pdf",
+            name: "course-workbook.pdf",
+            mimeType: "application/pdf",
+            size: 1024
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          {
+            uri: "file:///tmp/course-video.mp4",
+            name: "course-video.mp4",
+            mimeType: "video/mp4",
+            size: 4096
+          }
+        ]
+      });
+    mockLaunchImageLibraryAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///tmp/course-gallery.jpg", fileName: "gallery.jpg" }]
+    });
+
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Upload Workflow");
+    fireEvent.press(screen.getByLabelText("Upload course documents"));
+    await waitFor(() => expect(screen.getByText("1 Document Selected")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Upload course media files"));
+    await waitFor(() => expect(screen.getByText("1 Media File")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Upload course image set"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course media image 1")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
+    expect(mockUploadCourseMedia).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ uri: "file:///tmp/course-workbook.pdf" })
+    );
+    expect(mockUploadCourseMedia).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ uri: "file:///tmp/course-video.mp4" })
+    );
+    expect(mockPersistImageUris).toHaveBeenCalledWith(["file:///tmp/course-gallery.jpg"]);
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documents: expect.arrayContaining([
+          expect.objectContaining({
+            fileName: "course-workbook.pdf",
+            storageUrl: "/uploads/course-workbook.pdf",
+            status: "uploaded"
+          })
+        ]),
+        mediaAssets: expect.arrayContaining([
+          expect.objectContaining({
+            fileName: "course-video.mp4",
+            type: "video",
+            storageUrl: "/uploads/course-video.mp4"
+          }),
+          expect.objectContaining({
+            fileName: "gallery.jpg",
+            type: "image",
+            storageUrl: "/uploads/course-gallery.jpg"
+          })
+        ]),
+        uploadedImageUrls: ["/uploads/course-gallery.jpg"],
+        authoringPlan: expect.objectContaining({
+          limits: expect.objectContaining({
+            selectedDocuments: 1,
+            selectedMedia: 2,
+            videoStorage: "selected_for_upload"
+          })
+        })
+      })
+    );
   });
 });

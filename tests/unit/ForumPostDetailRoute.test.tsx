@@ -78,7 +78,8 @@ describe("ForumPostDetailRoute", () => {
       body: "Check underside of leaves after lights on.",
       createdAt: "2026-07-07T12:00:00Z",
       author: { name: "Grow Mentor" },
-      likeCount: 2
+      likeCount: 2,
+      media: [{ storageUrl: "/uploads/forum-detail.jpg" }]
     });
     mockListForumComments.mockResolvedValue([
       {
@@ -95,6 +96,7 @@ describe("ForumPostDetailRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
     expect(screen.getByLabelText("Shared back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create forum follow-up task"));
 

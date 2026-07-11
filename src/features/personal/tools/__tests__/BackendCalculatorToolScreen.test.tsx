@@ -99,6 +99,10 @@ function renderCloneRootingTool() {
 describe("BackendCalculatorToolScreen beta access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "" }
+    });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-1" });
     mockRunCalculator.mockResolvedValue({
       outputs: { rootingProgress: "normal_wait", warnings: [] },
@@ -123,6 +127,25 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(screen.getByText("Clone Rooting Troubleshooter is a Pro tool")).toBeTruthy();
     expect(screen.queryByText("Calculate")).toBeNull();
     expect(mockRunCalculator).not.toHaveBeenCalled();
+  });
+
+  it("lets the local paid preview flag run beta packet tools for free accounts", async () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "?paid=1" }
+    });
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "free",
+      can: jest.fn(() => false)
+    });
+
+    renderCloneRootingTool();
+
+    expect(screen.queryByText("Clone Rooting Troubleshooter is a Pro tool")).toBeNull();
+    fireEvent.press(screen.getByText("Calculate"));
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
   });
 
   it("lets pro personal users run beta packet tools", async () => {

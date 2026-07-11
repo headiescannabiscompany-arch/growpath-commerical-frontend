@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { getTokenBalance } from "../api/tokens";
 import { useEntitlements } from "../entitlements";
 import { radius } from "../theme/theme";
+import { localPaidPreviewPlan } from "../utils/localPaidPreview";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -39,6 +40,7 @@ function fallbackBalanceForPlan(plan) {
 export default function TokenBalanceWidget({ onPress }) {
   const navigation = useNavigation();
   const entitlements = useEntitlements();
+  const displayPlan = localPaidPreviewPlan(entitlements.plan);
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +53,7 @@ export default function TokenBalanceWidget({ onPress }) {
         if (alive) setBalance(res?.data ?? res);
       } catch (err) {
         console.error("Failed to load token balance:", err);
-        if (alive) setBalance(fallbackBalanceForPlan(entitlements.plan));
+        if (alive) setBalance(fallbackBalanceForPlan(displayPlan));
       } finally {
         if (alive) setLoading(false);
       }
@@ -61,15 +63,15 @@ export default function TokenBalanceWidget({ onPress }) {
     return () => {
       alive = false;
     };
-  }, [entitlements.plan]);
+  }, [displayPlan]);
 
   const effectiveBalance = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);
     if (!balance || !Number.isFinite(rawMax) || rawMax <= 0) {
-      return fallbackBalanceForPlan(entitlements.plan);
+      return fallbackBalanceForPlan(displayPlan);
     }
     return balance;
-  }, [balance, entitlements.plan]);
+  }, [balance, displayPlan]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(effectiveBalance?.maxTokens);

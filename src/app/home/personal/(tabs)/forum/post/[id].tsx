@@ -65,15 +65,36 @@ function titleOf(post: SocialPost | null) {
   return String(post?.title || post?.text || post?.content || post?.body || "Forum post");
 }
 
+function photoUri(value: any) {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+  return String(
+    value.url ||
+      value.uri ||
+      value.src ||
+      value.storageUrl ||
+      value.imageUrl ||
+      value.photoUrl ||
+      value.path ||
+      ""
+  );
+}
+
 function photosOf(post: SocialPost | null) {
   if (!post) return [];
   const rows = [
     post.photos,
     post.photoUrls,
+    (post as any).imageUrls,
+    (post as any).media,
+    (post as any).attachments,
     post.images,
     post.imageUrl ? [post.imageUrl] : []
   ].find((value) => Array.isArray(value) && value.length);
-  return (rows || []).map((uri) => resolveImageUri(uri)).filter(Boolean);
+  return (rows || [])
+    .map(photoUri)
+    .map((uri) => resolveImageUri(uri))
+    .filter(Boolean);
 }
 
 function likedByViewer(post: SocialPost | null) {

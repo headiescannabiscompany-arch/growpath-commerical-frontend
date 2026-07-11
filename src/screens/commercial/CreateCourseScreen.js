@@ -1,13 +1,25 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
+import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "@/theme/theme";
+import { persistImageUri, persistImageUris, resolveImageUri } from "@/utils/photoUploads";
 
 function toPriceCents(input) {
   const n = Number(input);
@@ -49,6 +61,50 @@ function buildDocuments(input) {
   }));
 }
 
+function firstDocumentAsset(result) {
+  if (!result || result.canceled) return null;
+  if (Array.isArray(result.assets) && result.assets[0]) return result.assets[0];
+  if (result.type === "success") return result;
+  return null;
+}
+
+function fileNameOf(asset, fallback) {
+  return (
+    asset?.name ||
+    asset?.fileName ||
+    String(asset?.uri || "")
+      .split("/")
+      .pop() ||
+    fallback
+  );
+}
+
+function uploadedDocumentRecord(asset, uploaded) {
+  const fileName = fileNameOf(asset, "course-document");
+  return {
+    title: fileName.replace(/\.[^.]+$/, "") || fileName,
+    description: "",
+    fileName,
+    fileType: asset?.mimeType || asset?.type || "",
+    fileSizeBytes: asset?.size || null,
+    storageUrl: uploaded?.url || "",
+    status: "uploaded"
+  };
+}
+
+function uploadedMediaRecord(asset, uploaded, kind) {
+  const fileName = fileNameOf(asset, `course-${kind}`);
+  return {
+    title: fileName.replace(/\.[^.]+$/, "") || fileName,
+    fileName,
+    fileType: asset?.mimeType || asset?.type || "",
+    fileSizeBytes: asset?.size || null,
+    storageUrl: uploaded?.url || "",
+    type: kind,
+    status: "uploaded"
+  };
+}
+
 function buildLiveSessions(input) {
   return splitPlanLines(input).map((title) => ({
     title,
@@ -80,7 +136,10 @@ export default function CreateCourseScreen({ navigation }) {
   const [cropType, setCropType] = useState("");
   const [curriculumPlan, setCurriculumPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
+  const [documentFiles, setDocumentFiles] = useState([]);
   const [mediaPlan, setMediaPlan] = useState("");
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [mediaImages, setMediaImages] = useState([]);
   const [liveSessionPlan, setLiveSessionPlan] = useState("");
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
@@ -96,6 +155,100 @@ export default function CreateCourseScreen({ navigation }) {
       navigation.goBack();
     } else if (router?.replace) {
       router.replace(backTarget);
+    }
+  }
+
+  async function pickCoverImage() {
+    if (!access.canCreateCourses || submitting) return;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Photo access required",
+          "Allow photo library access to upload a course cover image."
+        );
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 0.85
+      });
+      const uri = result.canceled ? "" : result.assets?.[0]?.uri || "";
+      if (uri) setCoverImageUrl(uri);
+    } catch (e) {
+      Alert.alert("Upload failed", String(e?.message || e || "Unable to pick image."));
+    }
+  }
+
+  async function pickCourseDocuments() {
+    if (!access.canCreateCourses || submitting) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "text/plain",
+          "text/csv"
+        ],
+        multiple: true
+      });
+      const assets = Array.isArray(result?.assets)
+        ? result.assets
+        : firstDocumentAsset(result)
+          ? [firstDocumentAsset(result)]
+          : [];
+      if (assets.length) setDocumentFiles((current) => [...current, ...assets]);
+    } catch (e) {
+      Alert.alert(
+        "Upload failed",
+        String(e?.message || e || "Unable to pick documents.")
+      );
+    }
+  }
+
+  async function pickCourseMedia() {
+    if (!access.canCreateCourses || submitting) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["video/*", "audio/*", "application/pdf"],
+        multiple: true
+      });
+      const assets = Array.isArray(result?.assets)
+        ? result.assets
+        : firstDocumentAsset(result)
+          ? [firstDocumentAsset(result)]
+          : [];
+      if (assets.length) setMediaFiles((current) => [...current, ...assets]);
+    } catch (e) {
+      Alert.alert("Upload failed", String(e?.message || e || "Unable to pick media."));
+    }
+  }
+
+  async function pickCourseImages() {
+    if (!access.canCreateCourses || submitting) return;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Photo access required",
+          "Allow photo library access to upload course images."
+        );
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.85
+      });
+      if (!result.canceled && result.assets?.length) {
+        setMediaImages((current) => [...current, ...result.assets]);
+      }
+    } catch (e) {
+      Alert.alert("Upload failed", String(e?.message || e || "Unable to pick images."));
     }
   }
 
@@ -120,13 +273,39 @@ export default function CreateCourseScreen({ navigation }) {
     setSubmitting(true);
     try {
       const lessons = buildLessons(curriculumPlan);
-      const documents = buildDocuments(documentPlan);
+      const uploadedDocuments = await Promise.all(
+        documentFiles.map(async (asset) =>
+          uploadedDocumentRecord(asset, await uploadCourseMedia(asset))
+        )
+      );
+      const uploadedMediaFiles = await Promise.all(
+        mediaFiles.map(async (asset) => {
+          const type = String(asset?.mimeType || asset?.type || "").toLowerCase();
+          const kind = type.startsWith("audio/")
+            ? "audio"
+            : type.startsWith("video/")
+              ? "video"
+              : "document";
+          return uploadedMediaRecord(asset, await uploadCourseMedia(asset), kind);
+        })
+      );
+      const persistedCourseImageUrls = await persistImageUris(
+        mediaImages.map((asset) => asset.uri)
+      );
+      const uploadedCourseImages = mediaImages.map((asset, index) =>
+        uploadedMediaRecord(asset, { url: persistedCourseImageUrls[index] }, "image")
+      );
+      const documents = [...buildDocuments(documentPlan), ...uploadedDocuments];
+      const mediaAssets = [...uploadedMediaFiles, ...uploadedCourseImages].filter(
+        (asset) => asset.storageUrl
+      );
       const liveSessions = buildLiveSessions(liveSessionPlan);
+      const persistedCoverImageUrl = await persistImageUri(coverImageUrl.trim());
       const course = await createCourse({
         title: title.trim(),
         summary: summary.trim(),
         description: description.trim(),
-        coverImageUrl: coverImageUrl.trim(),
+        coverImageUrl: persistedCoverImageUrl || "",
         category: category.trim(),
         difficulty: difficulty.trim(),
         cropType: cropType.trim(),
@@ -136,6 +315,10 @@ export default function CreateCourseScreen({ navigation }) {
         liveSessionPlan: liveSessionPlan.trim(),
         lessons,
         documents,
+        mediaAssets,
+        uploadedImageUrls: mediaAssets
+          .filter((asset) => asset.type === "image")
+          .map((asset) => asset.storageUrl),
         liveSessions,
         linkedProductIds: splitPlanLines(linkedProductIds),
         linkedGrowIds: splitPlanLines(linkedGrowIds),
@@ -160,7 +343,11 @@ export default function CreateCourseScreen({ navigation }) {
             paidCourseLimit: access.maxPaidCourses,
             lessonLimit: access.maxLessonsPerCourse,
             storage: "plan_limit",
-            videoStorage: "plan_limit",
+            selectedDocuments: documentFiles.length,
+            selectedMedia: mediaFiles.length + mediaImages.length,
+            videoStorage: mediaAssets.filter((asset) => asset.type === "video").length
+              ? "selected_for_upload"
+              : "plan_limit",
             liveSessionsPerMonth: "plan_limit"
           }
         }
@@ -246,11 +433,33 @@ export default function CreateCourseScreen({ navigation }) {
           <TextInput
             value={coverImageUrl}
             onChangeText={setCoverImageUrl}
-            placeholder="Image URL or uploaded asset URL"
+            placeholder="Paste image URL or upload from device"
             editable={access.canCreateCourses && !submitting}
             style={styles.input}
             accessibilityLabel="Course cover image URL"
           />
+          <TouchableOpacity
+            onPress={pickCoverImage}
+            disabled={!access.canCreateCourses || submitting}
+            accessibilityRole="button"
+            accessibilityLabel="Upload course cover image"
+            style={[
+              styles.uploadButton,
+              (!access.canCreateCourses || submitting) && styles.buttonDisabled
+            ]}
+          >
+            <Text style={styles.uploadButtonText}>
+              {coverImageUrl ? "Change Cover Image" : "Upload Cover Image"}
+            </Text>
+          </TouchableOpacity>
+          {coverImageUrl ? (
+            <Image
+              source={{ uri: resolveImageUri(coverImageUrl) }}
+              style={styles.coverPreview}
+              resizeMode="cover"
+              accessibilityLabel="Course cover image preview"
+            />
+          ) : null}
           <Text style={styles.label}>Category</Text>
           <TextInput
             value={category}
@@ -307,6 +516,22 @@ export default function CreateCourseScreen({ navigation }) {
             style={[styles.input, styles.multiline]}
             accessibilityLabel="Course documents"
           />
+          <TouchableOpacity
+            onPress={pickCourseDocuments}
+            disabled={!access.canCreateCourses || submitting}
+            accessibilityRole="button"
+            accessibilityLabel="Upload course documents"
+            style={[
+              styles.uploadButton,
+              (!access.canCreateCourses || submitting) && styles.buttonDisabled
+            ]}
+          >
+            <Text style={styles.uploadButtonText}>
+              {documentFiles.length
+                ? `${documentFiles.length} Document${documentFiles.length === 1 ? "" : "s"} Selected`
+                : "Upload Documents"}
+            </Text>
+          </TouchableOpacity>
           <TextInput
             value={mediaPlan}
             onChangeText={setMediaPlan}
@@ -316,6 +541,55 @@ export default function CreateCourseScreen({ navigation }) {
             style={[styles.input, styles.multiline]}
             accessibilityLabel="Course media plan"
           />
+          <View style={styles.uploadRow}>
+            <TouchableOpacity
+              onPress={pickCourseMedia}
+              disabled={!access.canCreateCourses || submitting}
+              accessibilityRole="button"
+              accessibilityLabel="Upload course media files"
+              style={[
+                styles.uploadButton,
+                styles.uploadRowButton,
+                (!access.canCreateCourses || submitting) && styles.buttonDisabled
+              ]}
+            >
+              <Text style={styles.uploadButtonText}>
+                {mediaFiles.length
+                  ? `${mediaFiles.length} Media File${mediaFiles.length === 1 ? "" : "s"}`
+                  : "Upload Video / Audio"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={pickCourseImages}
+              disabled={!access.canCreateCourses || submitting}
+              accessibilityRole="button"
+              accessibilityLabel="Upload course image set"
+              style={[
+                styles.uploadButton,
+                styles.uploadRowButton,
+                (!access.canCreateCourses || submitting) && styles.buttonDisabled
+              ]}
+            >
+              <Text style={styles.uploadButtonText}>
+                {mediaImages.length
+                  ? `${mediaImages.length} Image${mediaImages.length === 1 ? "" : "s"}`
+                  : "Upload Images"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {mediaImages.length ? (
+            <View style={styles.imageGrid}>
+              {mediaImages.map((asset, index) => (
+                <Image
+                  key={`${asset.uri}-${index}`}
+                  source={{ uri: asset.uri }}
+                  style={styles.imageThumb}
+                  resizeMode="cover"
+                  accessibilityLabel={`Course media image ${index + 1}`}
+                />
+              ))}
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.sectionCard}>
@@ -436,6 +710,29 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.55 },
   buttonText: { color: "#fff", fontWeight: "800" },
+  uploadButton: {
+    borderWidth: 1,
+    borderColor: "#15803d",
+    borderRadius: radius.card,
+    paddingVertical: 10,
+    alignItems: "center"
+  },
+  uploadButtonText: { color: "#166534", fontWeight: "800" },
+  uploadRow: { flexDirection: "row", gap: 8 },
+  uploadRowButton: { flex: 1 },
+  coverPreview: {
+    width: "100%",
+    minHeight: 160,
+    borderRadius: radius.card,
+    backgroundColor: "#f1f5f9"
+  },
+  imageGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  imageThumb: {
+    width: 72,
+    height: 72,
+    borderRadius: radius.card,
+    backgroundColor: "#f1f5f9"
+  },
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#15803d",

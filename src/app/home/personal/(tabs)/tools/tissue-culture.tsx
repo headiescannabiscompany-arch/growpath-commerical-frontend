@@ -29,6 +29,9 @@ function tissueCultureTaskPlan(
   const projectName = String(outputs.projectName || payload.projectName || "TC Project");
   const batchNumber = String(payload.batchNumber || "TC batch");
   const stage = String(payload.stage || "initiation");
+  const productionPhase = String(payload.productionPhase || "production");
+  const transferCycle = numberOrFallback(payload.transferCycle, 0);
+  const maxProductionTransfers = numberOrFallback(payload.maxProductionTransfers, 12);
   const transferDueDays = numberOrFallback(
     outputs.nextTransferTasks?.[0]?.dueInDays,
     numberOrFallback(payload.transfersDueDays, 14)
@@ -39,6 +42,22 @@ function tissueCultureTaskPlan(
       ? `Likely failure modes: ${failureModes.map((item: any) => item?.issue || item).join("; ")}`
       : "";
   const calendarMetadata = tissueCultureCalendarMetadata(stage);
+  const generatedCalendarTasks = Array.isArray(outputs.generatedCalendar)
+    ? outputs.generatedCalendar.slice(0, 8).map((item: any, index: number) => ({
+        title: String(item?.title || `TC calendar check ${index + 1}`),
+        priority: item?.priority || "medium",
+        dueDate: tomorrow(numberOrFallback(item?.dueInDays, index + 1)),
+        ...calendarMetadata,
+        sourceStage: String(item?.sourceStage || `generated_calendar_${stage}`),
+        description: [
+          `${projectName} generated calendar check for ${batchNumber}.`,
+          item?.description || "",
+          "Confirm the batch pattern before changing SOP, media, or transfer timing."
+        ]
+          .filter(Boolean)
+          .join("\n")
+      }))
+    : [];
 
   return [
     {
@@ -50,6 +69,7 @@ function tissueCultureTaskPlan(
         `${projectName} is in ${stage}.`,
         `Contaminated vessels: ${payload.contaminatedVessels || 0}; browning vessels: ${payload.browningVessels || 0}.`,
         failureSummary,
+        `Production phase: ${productionPhase}; transfer cycle ${transferCycle}/${maxProductionTransfers}.`,
         "Cull or isolate contaminated vessels and note whether the issue is media, explant prep, or handling."
       ]
         .filter(Boolean)
@@ -61,7 +81,7 @@ function tissueCultureTaskPlan(
       dueDate: tomorrow(transferDueDays),
       ...calendarMetadata,
       description:
-        "Review vessel IDs, media recipe, multiplication/rooting readiness, contamination, and transfer notes before moving cultures."
+        "Review vessel IDs, media recipe, multiplication/rooting readiness, contamination, transfer cycle count, and transfer notes before moving cultures."
     },
     {
       title: `Record rooting and acclimation counts: ${batchNumber}`,
@@ -81,9 +101,24 @@ function tissueCultureTaskPlan(
       description: [
         `SOP version: ${payload.SOPVersion || "not set"}.`,
         `Media recipe: ${payload.mediaRecipe || "not set"}.`,
+        `Technician/owner: ${payload.technicianOwner || "not set"}.`,
         "Capture what changed, what worked, and what should be adjusted before the next batch."
       ].join("\n")
-    }
+    },
+    ...(transferCycle >= Math.max(1, maxProductionTransfers - 2)
+      ? [
+          {
+            title: `Refresh production line from mother block: ${batchNumber}`,
+            priority: "high" as const,
+            dueDate: tomorrow(1),
+            ...calendarMetadata,
+            sourceStage: "transfer_cycle_limit",
+            description:
+              "This line is near the transfer-cycle limit. Pull clean apical material from mother block or retire the production line before more multiplication."
+          }
+        ]
+      : []),
+    ...generatedCalendarTasks
   ];
 }
 
@@ -99,7 +134,43 @@ export default function TissueCultureToolRoute() {
         { key: "batchNumber", label: "Batch number", defaultValue: "TC-001" },
         { key: "geneticsId", label: "Genetics ID", defaultValue: "" },
         { key: "stage", label: "Stage", defaultValue: "initiation" },
+        {
+          key: "productionPhase",
+          label: "Production phase",
+          defaultValue: "production"
+        },
+        {
+          key: "transferCycle",
+          label: "Transfer cycle",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "maxProductionTransfers",
+          label: "Max production transfers",
+          defaultValue: "12",
+          keyboardType: "numeric"
+        },
+        {
+          key: "technicianOwner",
+          label: "Technician / owner",
+          defaultValue: ""
+        },
+        {
+          key: "motherBlockStartDate",
+          label: "Mother block start date",
+          defaultValue: ""
+        },
+        {
+          key: "productionEndDate",
+          label: "Production end date",
+          defaultValue: ""
+        },
         { key: "mediaRecipe", label: "Media recipe", defaultValue: "starter media" },
+        { key: "mediaType", label: "Media type", defaultValue: "best fit box" },
+        { key: "vesselType", label: "Vessel type", defaultValue: "glass jar" },
+        { key: "explantType", label: "Explant type", defaultValue: "node" },
+        { key: "explantSize", label: "Explant size", defaultValue: "standard" },
         {
           key: "vessels",
           label: "Total vessels",
@@ -110,6 +181,12 @@ export default function TissueCultureToolRoute() {
           key: "contaminatedVessels",
           label: "Contaminated vessels",
           defaultValue: "2",
+          keyboardType: "numeric"
+        },
+        {
+          key: "fungusVessels",
+          label: "Fungus vessels",
+          defaultValue: "0",
           keyboardType: "numeric"
         },
         {
@@ -175,9 +252,20 @@ export default function TissueCultureToolRoute() {
         batchNumber: values.batchNumber,
         geneticsId: values.geneticsId,
         stage: values.stage,
+        productionPhase: values.productionPhase,
+        transferCycle: values.transferCycle,
+        maxProductionTransfers: values.maxProductionTransfers,
+        technicianOwner: values.technicianOwner,
+        motherBlockStartDate: values.motherBlockStartDate,
+        productionEndDate: values.productionEndDate,
         mediaRecipe: values.mediaRecipe,
+        mediaType: values.mediaType,
+        vesselType: values.vesselType,
+        explantType: values.explantType,
+        explantSize: values.explantSize,
         vessels: values.vessels,
         contaminatedVessels: values.contaminatedVessels,
+        fungusVessels: values.fungusVessels,
         browningVessels: values.browningVessels,
         stalledVessels: values.stalledVessels,
         rootedVessels: values.rootedVessels,
@@ -195,6 +283,19 @@ export default function TissueCultureToolRoute() {
           key: "contamination",
           label: "Contamination %",
           value: outputs.contaminationRate
+        },
+        { key: "fungus", label: "Fungus %", value: outputs.fungusRate },
+        {
+          key: "transferCycle",
+          label: "Transfer cycle",
+          value: `${outputs.productionControls?.transferCycle ?? "-"} / ${
+            outputs.productionControls?.maxProductionTransfers ?? "-"
+          }`
+        },
+        {
+          key: "transfersRemaining",
+          label: "Transfers left",
+          value: outputs.productionControls?.transfersRemaining
         },
         { key: "rooting", label: "Rooting %", value: outputs.rootingRate },
         { key: "acclimation", label: "Acclimation %", value: outputs.acclimationRate },
@@ -221,6 +322,33 @@ export default function TissueCultureToolRoute() {
               severity: "medium" as const,
               message
             }))
+          : []),
+        ...(outputs.targetBands?.commercialReference
+          ? [
+              {
+                key: "target-bands",
+                severity: "info" as const,
+                message: outputs.targetBands.commercialReference
+              }
+            ]
+          : []),
+        ...(outputs.productionControls?.explantSizeTradeoff
+          ? [
+              {
+                key: "explant-tradeoff",
+                severity: "info" as const,
+                message: outputs.productionControls.explantSizeTradeoff
+              }
+            ]
+          : []),
+        ...(outputs.acclimationGuidance?.greenhouseTransition
+          ? [
+              {
+                key: "acclimation-guidance",
+                severity: "info" as const,
+                message: outputs.acclimationGuidance.greenhouseTransition
+              }
+            ]
           : []),
         ...(outputs.diagnosisRecord?.likelyFailureModes?.length
           ? [

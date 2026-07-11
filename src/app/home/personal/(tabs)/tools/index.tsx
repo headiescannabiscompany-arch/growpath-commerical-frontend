@@ -7,11 +7,13 @@ import FeedBanner from "@/components/feed/FeedBanner";
 import {
   FeatureArea,
   FeatureDefinition,
+  PREVIEW_TOOL_STATUS,
   getNavigablePersonalTools
 } from "@/config/featureStatus";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
+import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -136,15 +138,17 @@ function ToolCard({
 }
 
 export default function ToolsHubScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, devPlan: rawDevPlan } = useLocalSearchParams<{
+    growId?: string | string[];
+    devPlan?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const devPlan = useMemo(() => coerceParam(rawDevPlan).toLowerCase(), [rawDevPlan]);
   const entitlements = useEntitlements();
-  const plan = entitlements.plan || "free";
-  const isFreePlan = String(plan).toLowerCase() === "free";
-  const tools = useMemo(
-    () => getNavigablePersonalTools({ allowBetaSurfaces: !isFreePlan }),
-    [isFreePlan]
-  );
+  const devPaidOverride = hasLocalPaidPreviewOverride(devPlan);
+  const plan = devPaidOverride ? "pro" : entitlements.plan || "free";
+  const isFreePlan = !devPaidOverride && String(plan).toLowerCase() === "free";
+  const tools = useMemo(() => getNavigablePersonalTools({ allowBetaSurfaces: true }), []);
   const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: "personal_tools_hub",
@@ -224,6 +228,7 @@ export default function ToolsHubScreen() {
               tool={tool}
               growId={growId}
               enabled={
+                devPaidOverride ||
                 !tool.capabilityKey ||
                 entitlements.can(tool.capabilityKey) ||
                 PRIMARY_TOOL_KEYS.has(tool.key)
@@ -258,7 +263,11 @@ export default function ToolsHubScreen() {
                     key={tool.key}
                     tool={tool}
                     growId={growId}
-                    enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+                    enabled={
+                      devPaidOverride ||
+                      (!(tool.status === PREVIEW_TOOL_STATUS && isFreePlan) &&
+                        (!tool.capabilityKey || entitlements.can(tool.capabilityKey)))
+                    }
                   />
                 ))}
               </View>

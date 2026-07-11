@@ -36,6 +36,16 @@ describe("entitlement mode access", () => {
     expect(resolveDevEntitlementsPlan("commercial", false)).toBeNull();
   });
 
+  it("treats the local paid preview query as pro in dev only", () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { search: "?paid=1" }
+    });
+
+    expect(resolveDevEntitlementsPlan(null, true)).toBe("pro");
+    expect(resolveDevEntitlementsPlan(null, false)).toBeNull();
+  });
+
   it("does not grant Commercial mode from a plan name alone", () => {
     expect(
       resolveEntitlementsMode(

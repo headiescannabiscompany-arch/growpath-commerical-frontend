@@ -83,7 +83,9 @@ describe("Tools Router (tools.js)", () => {
   });
 
   test("lists tool runs for the authenticated user and selected grow", async () => {
-    const items = [{ _id: RUN_ID, growId: "grow_1", toolType: "vpd", inputs: {}, outputs: {} }];
+    const items = [
+      { _id: RUN_ID, growId: "grow_1", toolType: "vpd", inputs: {}, outputs: {} }
+    ];
     const chain = mockFindChain(mockToolRun, items);
 
     const res = await authed(request(app).get("/api/tools?growId=grow_1"));
@@ -189,9 +191,7 @@ describe("Tools Router (tools.js)", () => {
     mockGrowLog.create.mockResolvedValue({ _id: "log_1", title: "Saved VPD" });
 
     const res = await authed(
-      request(app)
-        .post(`/api/tools/runs/${RUN_ID}/save-log`)
-        .send({ title: "Saved VPD" })
+      request(app).post(`/api/tools/runs/${RUN_ID}/save-log`).send({ title: "Saved VPD" })
     );
 
     expect(res.status).toBe(201);
@@ -257,19 +257,17 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/ph-ec-check")
-        .send({
-          growId: "grow_1",
-          medium: "coco",
-          stage: "flower",
-          inputPH: 6.0,
-          runoffPH: 6.8,
-          inputEC: 1.4,
-          runoffEC: 2.8,
-          ecUnit: "mS/cm",
-          waterSource: "RO"
-        })
+      request(app).post("/api/tools/ph-ec-check").send({
+        growId: "grow_1",
+        medium: "coco",
+        stage: "flower",
+        inputPH: 6.0,
+        runoffPH: 6.8,
+        inputEC: 1.4,
+        runoffEC: 2.8,
+        ecUnit: "mS/cm",
+        waterSource: "RO"
+      })
     );
 
     expect(res.status).toBe(201);
@@ -308,16 +306,14 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/ppfd-dli")
-        .send({
-          growId: "grow_1",
-          stage: "clone",
-          targetDli: 22,
-          photoperiodHours: 18,
-          measuredPpfd: 420,
-          leafResponse: "taco and bleaching"
-        })
+      request(app).post("/api/tools/ppfd-dli").send({
+        growId: "grow_1",
+        stage: "clone",
+        targetDli: 22,
+        photoperiodHours: 18,
+        measuredPpfd: 420,
+        leafResponse: "taco and bleaching"
+      })
     );
 
     expect(res.status).toBe(201);
@@ -433,22 +429,20 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/watering")
-        .send({
-          growId: "grow_1",
-          potVolume: 5,
-          potUnit: "gal",
-          medium: "coco",
-          stage: "flower",
-          drybackTargetPercent: 20,
-          actualDrybackPercent: 34,
-          runoffTargetPercent: 10,
-          actualRunoffPercent: 1,
-          vpdKpa: 1.7,
-          recoveryTimeHours: 30,
-          leafResponse: "wilt and stalled"
-        })
+      request(app).post("/api/tools/watering").send({
+        growId: "grow_1",
+        potVolume: 5,
+        potUnit: "gal",
+        medium: "coco",
+        stage: "flower",
+        drybackTargetPercent: 20,
+        actualDrybackPercent: 34,
+        runoffTargetPercent: 10,
+        actualRunoffPercent: 1,
+        vpdKpa: 1.7,
+        recoveryTimeHours: 30,
+        leafResponse: "wilt and stalled"
+      })
     );
 
     expect(res.status).toBe(201);
@@ -489,18 +483,16 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/environment-review")
-        .send({
-          growId: "grow_1",
-          stage: "late_flower",
-          tempDayC: 22,
-          tempNightC: 12,
-          humidity: 78,
-          vpd: 0.55,
-          dli: 48,
-          lightHours: 14
-        })
+      request(app).post("/api/tools/environment-review").send({
+        growId: "grow_1",
+        stage: "late_flower",
+        tempDayC: 22,
+        tempNightC: 12,
+        humidity: 78,
+        vpd: 0.55,
+        dli: 48,
+        lightHours: 14
+      })
     );
 
     expect(res.status).toBe(201);
@@ -597,21 +589,19 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/topdress-plan")
-        .send({
-          growId: "grow_1",
-          plantCount: 4,
-          soilVolumePerPlant: 10,
-          soilVolumeUnit: "gallons",
-          stage: "late_flower",
-          productName: "Craft Blend",
-          doseRate: 2,
-          doseUnit: "tbsp_per_gallon",
-          releaseClass: "slow",
-          daysUntilHarvest: 14,
-          plannedApplyDate: "2026-07-03T12:00:00.000Z"
-        })
+      request(app).post("/api/tools/topdress-plan").send({
+        growId: "grow_1",
+        plantCount: 4,
+        soilVolumePerPlant: 10,
+        soilVolumeUnit: "gallons",
+        stage: "late_flower",
+        productName: "Craft Blend",
+        doseRate: 2,
+        doseUnit: "tbsp_per_gallon",
+        releaseClass: "slow",
+        daysUntilHarvest: 14,
+        plannedApplyDate: "2026-07-03T12:00:00.000Z"
+      })
     );
 
     expect(res.status).toBe(201);
@@ -626,7 +616,9 @@ describe("Tools Router (tools.js)", () => {
     });
     expect(res.body.outputs.warnings[0]).toMatch(/Late flower topdressing/);
     expect(res.body.outputs.warnings).toEqual(
-      expect.arrayContaining(["Expected release may start too late for the likely harvest window."])
+      expect.arrayContaining([
+        "Expected release may start too late for the likely harvest window."
+      ])
     );
     expect(res.body.outputs.followUpTasks).toEqual(
       expect.arrayContaining([
@@ -721,16 +713,14 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const res = await authed(
-      request(app)
-        .post("/api/tools/dry-cure-guard")
-        .send({
-          growId: "grow_1",
-          mode: "curing",
-          dryRoomTemp: 72,
-          tempUnit: "F",
-          dryRoomRH: 60,
-          jarRH: 70
-        })
+      request(app).post("/api/tools/dry-cure-guard").send({
+        growId: "grow_1",
+        mode: "curing",
+        dryRoomTemp: 72,
+        tempUnit: "F",
+        dryRoomRH: 60,
+        jarRH: 70
+      })
     );
 
     expect(res.status).toBe(201);
@@ -769,15 +759,24 @@ describe("Tools Router (tools.js)", () => {
           compostPercent: 33,
           aerationPercent: 34,
           amendments: [
-            { name: "Fast N meal", doseRate: 0.5, releaseClass: "fast", sourceConfidence: "low" },
+            {
+              name: "Fast N meal",
+              doseRate: 0.5,
+              releaseClass: "fast",
+              sourceConfidence: "low"
+            },
             { name: "Gypsum", doseRate: 0.25, releaseClass: "slow" }
           ]
         })
     );
     const comparison = await authed(
-      request(app)
-        .post("/api/tools/nutrient-source-comparison")
-        .send({ growId: "grow_1", nutrient: "calcium", intent: "long_term_soil", stage: "late flower", medium: "coco" })
+      request(app).post("/api/tools/nutrient-source-comparison").send({
+        growId: "grow_1",
+        nutrient: "calcium",
+        intent: "long_term_soil",
+        stage: "late flower",
+        medium: "coco"
+      })
     );
 
     expect(soil.status).toBe(201);
@@ -804,7 +803,9 @@ describe("Tools Router (tools.js)", () => {
       ])
     );
     expect(soil.body.outputs.compatibilityWarnings).toEqual(
-      expect.arrayContaining(["Gypsum supplies calcium/sulfur support but is not pH down."])
+      expect.arrayContaining([
+        "Gypsum supplies calcium/sulfur support but is not pH down."
+      ])
     );
     expect(comparison.status).toBe(201);
     expect(comparison.body.outputs).toMatchObject({
@@ -812,9 +813,12 @@ describe("Tools Router (tools.js)", () => {
       desiredSpeed: "long_term_soil_building",
       bestChoiceByIntent: "calcitic lime",
       slowSources: expect.arrayContaining(["oyster shell"]),
-      bestUseCase: "Use slow sources as soil-building/background nutrition, not urgent rescue."
+      bestUseCase:
+        "Use slow sources as soil-building/background nutrition, not urgent rescue."
     });
-    expect(comparison.body.outputs.intentQuestions[0]).toMatch(/current calcium transport issue/);
+    expect(comparison.body.outputs.intentQuestions[0]).toMatch(
+      /current calcium transport issue/
+    );
     expect(comparison.body.outputs.timingWarnings).toEqual(
       expect.arrayContaining([
         "Long-term soil-building sources may release too slowly for late flower or finish correction.",
@@ -822,7 +826,9 @@ describe("Tools Router (tools.js)", () => {
       ])
     );
     expect(comparison.body.outputs.pHEffectWarnings).toEqual(
-      expect.arrayContaining(["Gypsum supplies calcium/sulfur support without being pH down."])
+      expect.arrayContaining([
+        "Gypsum supplies calcium/sulfur support without being pH down."
+      ])
     );
   });
 
@@ -834,39 +840,35 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const stress = await authed(
-      request(app)
-        .post("/api/tools/stress-test")
-        .send({
-          growId: "grow_1",
-          plantId: "plant_1",
-          stressType: "heat",
-          severity: 8,
-          recoveryDays: 3,
-          hoursToRecover: 72,
-          damageScore: 7,
-          vigorScore: 6,
-          stabilitySignals: "intersex watch",
-          notes: "quality drop after heat"
-        })
+      request(app).post("/api/tools/stress-test").send({
+        growId: "grow_1",
+        plantId: "plant_1",
+        stressType: "heat",
+        severity: 8,
+        recoveryDays: 3,
+        hoursToRecover: 72,
+        damageScore: 7,
+        vigorScore: 6,
+        stabilitySignals: "intersex watch",
+        notes: "quality drop after heat"
+      })
     );
     const clone = await authed(
-      request(app)
-        .post("/api/tools/clone-rooting")
-        .send({
-          growId: "grow_1",
-          daysSinceCut: 16,
-          cloneCount: 10,
-          rootedCount: 1,
-          failedCount: 3,
-          motherPlantHealth: "stressed",
-          humidity: 60,
-          temperature: 68,
-          lightIntensity: 320,
-          stemCondition: "black slime",
-          leafCondition: "wilt",
-          mediumStatus: "too wet",
-          rootingStatus: "no visible roots"
-        })
+      request(app).post("/api/tools/clone-rooting").send({
+        growId: "grow_1",
+        daysSinceCut: 16,
+        cloneCount: 10,
+        rootedCount: 1,
+        failedCount: 3,
+        motherPlantHealth: "stressed",
+        humidity: 60,
+        temperature: 68,
+        lightIntensity: 320,
+        stemCondition: "black slime",
+        leafCondition: "wilt",
+        mediumStatus: "too wet",
+        rootingStatus: "no visible roots"
+      })
     );
 
     expect(stress.status).toBe(201);
@@ -879,7 +881,12 @@ describe("Tools Router (tools.js)", () => {
         rejectOrRetest: true
       }),
       phenoImpact: "retest_before_keeper_decision",
-      tags: expect.arrayContaining(["stress-test", "stability-watch", "recovery_poor", "quality_loss_under_stress"])
+      tags: expect.arrayContaining([
+        "stress-test",
+        "stability-watch",
+        "recovery_poor",
+        "quality_loss_under_stress"
+      ])
     });
     expect(stress.body.outputs.tasksToCreate).toEqual(
       expect.arrayContaining([
@@ -907,7 +914,12 @@ describe("Tools Router (tools.js)", () => {
       ])
     );
     expect(clone.body.outputs.tags).toEqual(
-      expect.arrayContaining(["mother_health_issue", "low_humidity", "overwet_medium", "delayed_rooting"])
+      expect.arrayContaining([
+        "mother_health_issue",
+        "low_humidity",
+        "overwet_medium",
+        "delayed_rooting"
+      ])
     );
   });
 
@@ -924,8 +936,25 @@ describe("Tools Router (tools.js)", () => {
         .send({
           growId: "grow_1",
           runs: [
-            { name: "Run 1", cultivar: "Sour Diesel", yieldAmount: 14, qualityScore: 7, issueCount: 4, days: 120, averageVpd: 1.1 },
-            { name: "Run 2", cultivar: "Sour Diesel", yieldAmount: 18, qualityScore: 8, issueCount: 1, days: 112, averageVpd: 1.3, averageDli: 40 }
+            {
+              name: "Run 1",
+              cultivar: "Sour Diesel",
+              yieldAmount: 14,
+              qualityScore: 7,
+              issueCount: 4,
+              days: 120,
+              averageVpd: 1.1
+            },
+            {
+              name: "Run 2",
+              cultivar: "Sour Diesel",
+              yieldAmount: 18,
+              qualityScore: 8,
+              issueCount: 1,
+              days: 112,
+              averageVpd: 1.3,
+              averageDli: 40
+            }
           ]
         })
     );
@@ -939,8 +968,18 @@ describe("Tools Router (tools.js)", () => {
           vegLengthWeeks: 4,
           expectedFlowerDays: 63,
           plants: [
-            { plantId: "plant_1", cultivar: "Sour Diesel", expectedFlowerDaysMin: 63, expectedFlowerDaysMax: 70 },
-            { plantId: "plant_2", cultivar: "Haze Hybrid", expectedFlowerDaysMin: 70, expectedFlowerDaysMax: 77 }
+            {
+              plantId: "plant_1",
+              cultivar: "Sour Diesel",
+              expectedFlowerDaysMin: 63,
+              expectedFlowerDaysMax: 70
+            },
+            {
+              plantId: "plant_2",
+              cultivar: "Haze Hybrid",
+              expectedFlowerDaysMin: 70,
+              expectedFlowerDaysMax: 77
+            }
           ]
         })
     );
@@ -989,8 +1028,16 @@ describe("Tools Router (tools.js)", () => {
     );
     expect(calendar.body.outputs.plantSpecificHarvestWindows).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ cultivar: "Sour Diesel", start: "2026-09-23", end: "2026-10-14" }),
-        expect.objectContaining({ cultivar: "Haze Hybrid", start: "2026-09-30", end: "2026-10-21" })
+        expect.objectContaining({
+          cultivar: "Sour Diesel",
+          start: "2026-09-23",
+          end: "2026-10-14"
+        }),
+        expect.objectContaining({
+          cultivar: "Haze Hybrid",
+          start: "2026-09-30",
+          end: "2026-10-21"
+        })
       ])
     );
     expect(calendar.body.outputs.reminders).toEqual(
@@ -1008,26 +1055,35 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const tc = await authed(
-      request(app)
-        .post("/api/tools/tissue-culture")
-        .send({
-          growId: "grow_1",
-          projectName: "TC mother backup",
-          batchNumber: "TC-001",
-          vessels: 20,
-          contaminatedVessels: 5,
-          browningVessels: 2,
-          stalledVessels: 1,
-          rootedVessels: 6,
-          acclimatedPlants: 3,
-          stage: "initiation",
-          symptoms: "fuzzy mold, browning near explant",
-          mediaRecipe: "starter",
-          SOPVersion: "SOP-1",
-          mediaCost: 40,
-          vesselSupplyCost: 30,
-          laborCost: 50
-        })
+      request(app).post("/api/tools/tissue-culture").send({
+        growId: "grow_1",
+        projectName: "TC mother backup",
+        batchNumber: "TC-001",
+        vessels: 20,
+        contaminatedVessels: 5,
+        fungusVessels: 1,
+        browningVessels: 2,
+        stalledVessels: 1,
+        rootedVessels: 6,
+        acclimatedPlants: 3,
+        stage: "initiation",
+        productionPhase: "production",
+        transferCycle: 11,
+        maxProductionTransfers: 12,
+        technicianOwner: "Ailda",
+        motherBlockStartDate: "2026-01-01",
+        productionEndDate: "2026-06-01",
+        mediaType: "best fit box",
+        vesselType: "glass jar",
+        explantType: "node",
+        explantSize: "small",
+        symptoms: "fuzzy mold, browning near explant",
+        mediaRecipe: "starter",
+        SOPVersion: "SOP-1",
+        mediaCost: 40,
+        vesselSupplyCost: 30,
+        laborCost: 50
+      })
     );
     const batch = await authed(
       request(app)
@@ -1073,17 +1129,38 @@ describe("Tools Router (tools.js)", () => {
 
     expect(tc.status).toBe(201);
     expect(tc.body.outputs).toMatchObject({
-      projectStatus: "active",
+      projectStatus: "at_risk",
       contaminationRate: 25,
+      fungusRate: 5,
       rootingRate: 30,
+      targetBands: expect.objectContaining({
+        fungusTargetPercent: 2,
+        fungusDangerPercent: 4.5,
+        overallTargetPercent: 10
+      }),
+      productionControls: expect.objectContaining({
+        productionPhase: "production",
+        transferCycle: 11,
+        maxProductionTransfers: 12,
+        transfersRemaining: 1,
+        technicianOwner: "Ailda",
+        mediaType: "best fit box",
+        vesselType: "glass jar",
+        explantSizeTradeoff: expect.stringContaining("Larger explants")
+      }),
+      acclimationGuidance: expect.objectContaining({
+        greenhouseTransition: expect.stringContaining("Remove media")
+      }),
       vesselStatus: expect.objectContaining({
         contaminatedVessels: 5,
+        fungusVessels: 1,
         browningVessels: 2,
         stalledVessels: 1
       }),
       successMetrics: expect.objectContaining({
         totalExplantsStarted: 20,
         contaminatedExplants: 5,
+        fungusExplants: 1,
         oxidizedExplants: 2
       }),
       costTracking: expect.objectContaining({
@@ -1092,8 +1169,16 @@ describe("Tools Router (tools.js)", () => {
         costPerCleanVessel: 8,
         costPerAcclimatedPlant: 40
       }),
+      explantPreset: expect.objectContaining({
+        explantType: "node",
+        warning: expect.stringContaining("Cannabis TC response varies")
+      }),
       diagnosisRecord: expect.objectContaining({
-        tags: expect.arrayContaining(["contamination", "oxidation"])
+        tags: expect.arrayContaining(["contamination", "oxidation"]),
+        taskSuggestions: expect.arrayContaining([
+          expect.objectContaining({ title: "Isolate or cull contaminated TC vessels" }),
+          expect.objectContaining({ title: "Review TC browning and oxidation pattern" })
+        ])
       }),
       complianceRecord: expect.objectContaining({
         batchNumber: "TC-001",
@@ -1101,24 +1186,47 @@ describe("Tools Router (tools.js)", () => {
         mediaCost: 40,
         vesselSupplyCost: 30,
         laborCost: 50,
-        stage: "initiation"
+        stage: "initiation",
+        productionPhase: "production",
+        transferCycle: 11,
+        maxProductionTransfers: 12,
+        technicianOwner: "Ailda"
       })
     });
     expect(tc.body.outputs.diagnosisRecord.likelyFailureModes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ issue: "Likely contamination" }),
-        expect.objectContaining({ issue: "Possible browning or oxidation" })
+        expect.objectContaining({
+          issue: "Likely contamination",
+          counterEvidence: expect.arrayContaining([
+            "15 vessel(s) are not marked contaminated"
+          ]),
+          taskSuggestions: expect.arrayContaining([
+            expect.objectContaining({
+              title: "Audit TC sterilization and media handling notes"
+            })
+          ])
+        }),
+        expect.objectContaining({
+          issue: "Possible browning or oxidation",
+          counterEvidence: expect.arrayContaining([
+            "18 vessel(s) are not marked browning"
+          ])
+        })
       ])
     );
     expect(tc.body.outputs.generatedCalendar).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ title: "Review TC batch issue notes" }),
+        expect.objectContaining({ title: "Refresh production line from mother block" }),
         expect.objectContaining({ title: "Check for early contamination" })
       ])
     );
     expect(tc.body.outputs.warnings).toEqual(
       expect.arrayContaining([
-        "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes."
+        "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes.",
+        "Fungus pressure is above the production danger band. Isolate affected vessels and review room/tool hygiene immediately.",
+        "Overall contamination is above the commercial target band. Audit transfer technique, media lots, vessel handling, and room workflow.",
+        "This production line is nearing its transfer-cycle limit. Plan a mother-block refresh before the next production turn."
       ])
     );
     expect(batch.status).toBe(201);
@@ -1159,28 +1267,24 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const ipm = await authed(
-      request(app)
-        .post("/api/tools/ipm-scout")
-        .send({
-          growId: "grow_1",
-          plantId: "plant_1",
-          pestSeen: "mites",
-          leafDamage: "stippling",
-          undersideInspection: "webbing under leaf",
-          stickyTrapCount: 12,
-          notes: "mites, webbing"
-        })
+      request(app).post("/api/tools/ipm-scout").send({
+        growId: "grow_1",
+        plantId: "plant_1",
+        pestSeen: "mites",
+        leafDamage: "stippling",
+        undersideInspection: "webbing under leaf",
+        stickyTrapCount: 12,
+        notes: "mites, webbing"
+      })
     );
     const cropId = await authed(
-      request(app)
-        .post("/api/tools/species-crop-id")
-        .send({
-          growId: "grow_1",
-          commonName: "Cannabis",
-          cultivar: "Blue Dream",
-          traits: "serrated leaves, photoperiod",
-          userConfirmed: false
-        })
+      request(app).post("/api/tools/species-crop-id").send({
+        growId: "grow_1",
+        commonName: "Cannabis",
+        cultivar: "Blue Dream",
+        traits: "serrated leaves, photoperiod",
+        userConfirmed: false
+      })
     );
 
     expect(ipm.status).toBe(201);
@@ -1239,38 +1343,34 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const genetics = await authed(
-      request(app)
-        .post("/api/tools/genetics-inventory")
-        .send({
-          growId: "grow_1",
-          cultivar: "Keeper Kush",
-          breeder: "House line",
-          parentage: "(A x B) x C",
-          seedType: "regular",
-          materialType: "mother",
-          feedingResponse: "heavy feeder",
-          stressNotes: "heat tolerant, roots fast",
-          flowerTime: 63,
-          aromaFlavorNotes: "gas, citrus"
-        })
+      request(app).post("/api/tools/genetics-inventory").send({
+        growId: "grow_1",
+        cultivar: "Keeper Kush",
+        breeder: "House line",
+        parentage: "(A x B) x C",
+        seedType: "regular",
+        materialType: "mother",
+        feedingResponse: "heavy feeder",
+        stressNotes: "heat tolerant, roots fast",
+        flowerTime: 63,
+        aromaFlavorNotes: "gas, citrus"
+      })
     );
     const harvest = await authed(
-      request(app)
-        .post("/api/tools/harvest-readiness")
-        .send({
-          growId: "grow_1",
-          plantId: "plant_1",
-          flowerDay: 61,
-          breederFlowerTime: 63,
-          cloudyPercent: 70,
-          amberPercent: 7,
-          clearPercent: 10,
-          pistilStatus: "mostly_receded",
-          budSwellStatus: "fully_swollen",
-          sampleLocation: "mixed_bud_sites",
-          aromaIntensity: "strong",
-          userGoal: "balanced"
-        })
+      request(app).post("/api/tools/harvest-readiness").send({
+        growId: "grow_1",
+        plantId: "plant_1",
+        flowerDay: 61,
+        breederFlowerTime: 63,
+        cloudyPercent: 70,
+        amberPercent: 7,
+        clearPercent: 10,
+        pistilStatus: "mostly_receded",
+        budSwellStatus: "fully_swollen",
+        sampleLocation: "mixed_bud_sites",
+        aromaIntensity: "strong",
+        userGoal: "balanced"
+      })
     );
 
     expect(genetics.status).toBe(201);
@@ -1282,7 +1382,12 @@ describe("Tools Router (tools.js)", () => {
       geneticsInventoryItem: expect.objectContaining({
         cultivar: "Keeper Kush",
         materialType: "mother",
-        tags: expect.arrayContaining(["heavy_feeder", "stress_resistant", "roots_fast", "notable_aroma"])
+        tags: expect.arrayContaining([
+          "heavy_feeder",
+          "stress_resistant",
+          "roots_fast",
+          "notable_aroma"
+        ])
       }),
       observedTraits: expect.objectContaining({
         feedingResponse: "heavy feeder",
@@ -1339,32 +1444,28 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const inventory = await authed(
-      request(app)
-        .post("/api/tools/personal-inventory")
-        .send({
-          growId: "grow_1",
-          name: "Kelp meal",
-          category: "amendment",
-          quantity: 1,
-          unit: "lb",
-          reorderAt: 2,
-          cost: 12,
-          recipeUseRate: 1
-        })
+      request(app).post("/api/tools/personal-inventory").send({
+        growId: "grow_1",
+        name: "Kelp meal",
+        category: "amendment",
+        quantity: 1,
+        unit: "lb",
+        reorderAt: 2,
+        cost: 12,
+        recipeUseRate: 1
+      })
     );
     const steering = await authed(
-      request(app)
-        .post("/api/tools/crop-steering-project")
-        .send({
-          growId: "grow_1",
-          steeringIntent: "generative",
-          stage: "mid flower",
-          drybackPercent: 42,
-          inputEC: 1.6,
-          runoffEC: 3.1,
-          recoveryHours: 30,
-          plantResponse: "leaf edge stress"
-        })
+      request(app).post("/api/tools/crop-steering-project").send({
+        growId: "grow_1",
+        steeringIntent: "generative",
+        stage: "mid flower",
+        drybackPercent: 42,
+        inputEC: 1.6,
+        runoffEC: 3.1,
+        recoveryHours: 30,
+        plantResponse: "leaf edge stress"
+      })
     );
     const pheno = await authed(
       request(app)
@@ -1525,26 +1626,30 @@ describe("Tools Router (tools.js)", () => {
         micronutrientNotes: "Adds calcium and trace minerals.",
         sourceRecords
       })
-      .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", archivedAt: new Date() });
+      .mockResolvedValueOnce({
+        _id: "ingredient_1",
+        name: "Kelp meal",
+        archivedAt: new Date()
+      });
 
     const loaded = await authed(request(app).get("/api/tools/ingredients/ingredient_1"));
     const updated = await authed(
-      request(app)
-        .patch("/api/tools/ingredients/ingredient_1")
-        .send({
-          favorite: true,
-          releaseSpeed: "slow",
-          releaseWindow: "days_45_90",
-          supplier: "Trusted supplier",
-          cost: 42,
-          documentUrl: "https://example.test/updated-coa.pdf",
-          photoUrl: "https://example.test/updated-label.jpg",
-          applicationNotes: "Better for established plants.",
-          micronutrientNotes: "Adds calcium and trace minerals.",
-          sourceRecords
-        })
+      request(app).patch("/api/tools/ingredients/ingredient_1").send({
+        favorite: true,
+        releaseSpeed: "slow",
+        releaseWindow: "days_45_90",
+        supplier: "Trusted supplier",
+        cost: 42,
+        documentUrl: "https://example.test/updated-coa.pdf",
+        photoUrl: "https://example.test/updated-label.jpg",
+        applicationNotes: "Better for established plants.",
+        micronutrientNotes: "Adds calcium and trace minerals.",
+        sourceRecords
+      })
     );
-    const archived = await authed(request(app).delete("/api/tools/ingredients/ingredient_1"));
+    const archived = await authed(
+      request(app).delete("/api/tools/ingredients/ingredient_1")
+    );
 
     expect(loaded.status).toBe(200);
     expect(loaded.body.item).toMatchObject({
@@ -1640,7 +1745,9 @@ describe("Tools Router (tools.js)", () => {
         confidence: "medium"
       }
     ];
-    mockNutrientRecipeModel.findOne.mockResolvedValueOnce(recipe).mockResolvedValueOnce(recipe);
+    mockNutrientRecipeModel.findOne
+      .mockResolvedValueOnce(recipe)
+      .mockResolvedValueOnce(recipe);
 
     const updated = await authed(
       request(app)
@@ -1670,9 +1777,7 @@ describe("Tools Router (tools.js)", () => {
           name: "Veg Feed",
           batchVolume: 5,
           batchUnit: "gal",
-          products: [
-            { name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }
-          ],
+          products: [{ name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }],
           sourceRecords: [
             {
               sourceName: "Manufacturer label",
@@ -1690,9 +1795,7 @@ describe("Tools Router (tools.js)", () => {
         name: "Veg Feed",
         batchVolume: 5,
         batchUnit: "gal",
-        products: [
-          { name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }
-        ],
+        products: [{ name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }],
         sourceRecords: [
           expect.objectContaining({
             sourceName: "Manufacturer label",
@@ -1775,7 +1878,9 @@ describe("Tools Router (tools.js)", () => {
       measuredEC: 1.2,
       measuredPH: 6.4,
       sourceConfidence: { overall: "medium" },
-      sourceRecords: [{ sourceName: "Manufacturer label", sourceType: "manufacturer_label" }],
+      sourceRecords: [
+        { sourceName: "Manufacturer label", sourceType: "manufacturer_label" }
+      ],
       mixingOrder: ["Base"],
       calculation: { totals: { Nppm: 20 } },
       notes: "Keep pH stable."

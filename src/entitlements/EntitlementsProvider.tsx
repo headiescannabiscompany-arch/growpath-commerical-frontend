@@ -110,8 +110,20 @@ function hasCommercialAccess(ctx: any) {
 
 export function resolveDevEntitlementsPlan(rawPlan?: string | null, isDev = __DEV__) {
   if (!isDev) return null;
+  const queryPlan =
+    typeof window !== "undefined" && window.location
+      ? new URLSearchParams(window.location.search).get("devPlan")
+      : null;
+  const paidPreview =
+    typeof window !== "undefined" && window.location
+      ? new URLSearchParams(window.location.search).get("paid")
+      : null;
   const normalized = String(
-    rawPlan ?? process.env.EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN ?? ""
+    rawPlan ??
+      queryPlan ??
+      (paidPreview === "1" || paidPreview === "true" ? "pro" : null) ??
+      process.env.EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN ??
+      ""
   )
     .trim()
     .toLowerCase();

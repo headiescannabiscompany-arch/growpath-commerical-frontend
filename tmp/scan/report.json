@@ -1,23 +1,31 @@
 {
-  "root": "C:\\growpathai\\growpath-commerical-frontend",
+  "root": "C:\\growpathai\\growpath-commerical-frontend.worktrees\\agents-vscode-terminal-issues",
   "counts": {
-    "srcFiles": 782,
-    "testFiles": 116,
-    "totalFiles": 898,
-    "apiFiles": 103,
+    "srcFiles": 856,
+    "testFiles": 250,
+    "totalFiles": 1106,
+    "apiFiles": 109,
     "apiOrphans": 0,
     "legacyClientCallers": 0,
-    "jsTsTwins": 15,
-    "bannedFindings": 0
+    "jsTsTwins": 2,
+    "compatTwinWrappers": 13,
+    "bannedFindings": 2,
+    "strictBannedFindings": 0
   },
   "jsTsTwins": [
     [
-      "src/api/auth.js",
-      "src/api/auth.ts"
-    ],
-    [
       "src/api/client.js",
       "src/api/client.ts"
+    ],
+    [
+      "src/components/EmptyState.js",
+      "src/components/EmptyState.tsx"
+    ]
+  ],
+  "compatTwinWrappers": [
+    [
+      "src/api/auth.js",
+      "src/api/auth.ts"
     ],
     [
       "src/api/growlog.js",
@@ -52,10 +60,6 @@
       "src/api/team.ts"
     ],
     [
-      "src/components/EmptyState.js",
-      "src/components/EmptyState.tsx"
-    ],
-    [
       "src/components/FeatureGate.js",
       "src/components/FeatureGate.tsx"
     ],
@@ -74,5 +78,15 @@
   ],
   "apiOrphans": [],
   "legacyClientCallers": [],
-  "bannedFindings": []
+  "bannedFindings": [
+    {
+      "file": "tests/unit/canonical-route-matrix-doc.test.js",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "tests/unit/PublicCommercialRoutes.test.tsx",
+      "rule": "/:id placeholder"
+    }
+  ],
+  "strictBannedFindings": []
 }

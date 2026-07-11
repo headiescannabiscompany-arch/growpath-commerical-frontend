@@ -13,6 +13,7 @@ import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { personalToolFeatures, type FeatureDefinition } from "@/config/featureStatus";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
+import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
 import {
   ToolPlantContextPicker,
   useToolPlantContext
@@ -159,15 +160,18 @@ export default function BackendCalculatorToolScreen({
   const growId = coerceParam(params.growId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
   const entitlements = useEntitlements();
-  const plan = entitlements.plan || "free";
-  const isFreePlan = String(plan).toLowerCase() === "free";
+  const paidPreviewOverride = hasLocalPaidPreviewOverride();
+  const plan = paidPreviewOverride ? "pro" : entitlements.plan || "free";
+  const isFreePlan = !paidPreviewOverride && String(plan).toLowerCase() === "free";
   const feature = personalToolFeatures.find(
     (item) => item.key === TOOL_FEATURE_KEY_BY_TOOL_KEY[toolKey]
   ) as FeatureDefinition | undefined;
   const requiredCapability = feature?.capabilityKey || null;
   const betaLockedForFree = feature?.status === "beta" && isFreePlan;
   const capabilityLocked =
-    Boolean(requiredCapability) && !entitlements.can(String(requiredCapability));
+    !paidPreviewOverride &&
+    Boolean(requiredCapability) &&
+    !entitlements.can(String(requiredCapability));
   const locked = betaLockedForFree || capabilityLocked;
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: `personal_tool_${toolKey}`,

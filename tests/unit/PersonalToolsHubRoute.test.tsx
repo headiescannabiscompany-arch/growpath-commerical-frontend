@@ -5,6 +5,7 @@ import ToolsHubScreen from "@/app/home/personal/(tabs)/tools";
 
 const mockCan = jest.fn();
 let mockPlan = "pro";
+let mockSearchParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -12,7 +13,7 @@ jest.mock("expo-router", () => {
   return {
     Link: ({ children, href }: any) =>
       React.createElement(View, { accessibilityLabel: `link-${String(href)}` }, children),
-    useLocalSearchParams: () => ({})
+    useLocalSearchParams: () => mockSearchParams
   };
 });
 
@@ -40,6 +41,11 @@ describe("personal tools hub", () => {
   beforeEach(() => {
     mockCan.mockReturnValue(true);
     mockPlan = "pro";
+    mockSearchParams = {};
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "" }
+    });
   });
 
   it("shows a direct Ask AI entry point from Tools", () => {
@@ -50,6 +56,8 @@ describe("personal tools hub", () => {
     expect(screen.getByText("Start Here")).toBeTruthy();
     expect(screen.getByText("Recipe Builder")).toBeTruthy();
     expect(screen.getByText("Environment Monitor")).toBeTruthy();
+    expect(screen.getByText("Tissue Culture")).toBeTruthy();
+    expect(screen.getByText("Lab / Tissue Culture")).toBeTruthy();
     expect(screen.queryByText("Bud Rot Risk")).toBeNull();
   });
 
@@ -63,7 +71,24 @@ describe("personal tools hub", () => {
     expect(screen.getByText("AI Tokens 10 / 10")).toBeTruthy();
     expect(screen.getAllByText("Ask AI").length).toBeGreaterThan(0);
     expect(screen.getByText("Plant Issue Diagnosis")).toBeTruthy();
+    expect(screen.getByText("Tissue Culture")).toBeTruthy();
     expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryAllByText("Upgrade to unlock").length).toBeGreaterThan(0);
+  });
+
+  it("unlocks the paid tools hub with the dev plan query override", () => {
+    mockPlan = "free";
+    mockCan.mockReturnValue(false);
+    mockSearchParams = { devPlan: "pro" };
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "?paid=1" }
+    });
+
+    const screen = render(<ToolsHubScreen />);
+
+    expect(screen.getByText(/AI token balance and usage/)).toBeTruthy();
+    expect(screen.getByText("Tissue Culture")).toBeTruthy();
+    expect(screen.queryAllByText("Upgrade to unlock")).toHaveLength(0);
   });
 });

@@ -7,6 +7,8 @@ export type FeatureStatus =
   | "remove_from_user_app"
   | "disabled";
 
+export const PREVIEW_TOOL_STATUS: FeatureStatus = "beta";
+
 export type FeatureArea =
   | "personal_navigation"
   | "environment"

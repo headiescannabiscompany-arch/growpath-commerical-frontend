@@ -69,8 +69,23 @@ describe("TissueCultureToolRoute", () => {
         projectName: "MAC1 TC",
         projectStatus: "needs_attention",
         contaminationRate: 12.5,
+        fungusRate: 4.5,
         rootingRate: 40,
         acclimationRate: 25,
+        targetBands: {
+          commercialReference:
+            "Production target: keep fungus low and total contamination under 10%."
+        },
+        productionControls: {
+          transferCycle: 11,
+          maxProductionTransfers: 12,
+          transfersRemaining: 1,
+          explantSizeTradeoff:
+            "Larger explants usually grow faster but carry more contamination risk."
+        },
+        acclimationGuidance: {
+          greenhouseTransition: "Remove media before greenhouse transfer."
+        },
         costTracking: {
           totalProjectCost: 120,
           costPerAcclimatedPlant: 40
@@ -83,6 +98,18 @@ describe("TissueCultureToolRoute", () => {
             title: "Transfer clean TC vessels",
             priority: "high",
             dueInDays: 10
+          }
+        ],
+        generatedCalendar: [
+          {
+            title: "Check for early contamination",
+            dueInDays: 3,
+            priority: "medium"
+          },
+          {
+            title: "Evaluate shoot growth",
+            dueInDays: 21,
+            priority: "medium"
           }
         ]
       },
@@ -97,7 +124,7 @@ describe("TissueCultureToolRoute", () => {
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
-      taskIds: ["task-1", "task-2", "task-3", "task-4"]
+      taskIds: ["task-1", "task-2", "task-3", "task-4", "task-5", "task-6", "task-7"]
     });
   });
 
@@ -106,6 +133,15 @@ describe("TissueCultureToolRoute", () => {
 
     fireEvent.changeText(screen.getByLabelText("Tissue Culture Project name"), "MAC1 TC");
     fireEvent.changeText(screen.getByLabelText("Tissue Culture Batch number"), "TC-042");
+    fireEvent.changeText(screen.getByLabelText("Tissue Culture Transfer cycle"), "11");
+    fireEvent.changeText(
+      screen.getByLabelText("Tissue Culture Max production transfers"),
+      "12"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Tissue Culture Technician / owner"),
+      "Ailda"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Tissue Culture Contaminated vessels"),
       "3"
@@ -125,6 +161,9 @@ describe("TissueCultureToolRoute", () => {
           growId: "grow-1",
           projectName: "MAC1 TC",
           batchNumber: "TC-042",
+          transferCycle: "11",
+          maxProductionTransfers: "12",
+          technicianOwner: "Ailda",
           contaminatedVessels: "3",
           mediaCost: "40",
           vesselSupplyCost: "30",
@@ -149,7 +188,7 @@ describe("TissueCultureToolRoute", () => {
           output: expect.objectContaining({
             projectStatus: "needs_attention"
           }),
-          tasks: [
+          tasks: expect.arrayContaining([
             expect.objectContaining({
               title: "Review contamination and browning: TC-042",
               priority: "high",
@@ -175,12 +214,25 @@ describe("TissueCultureToolRoute", () => {
             expect.objectContaining({
               title: "Update TC SOP notes: TC-042",
               sourceStage: "sop_media_review"
+            }),
+            expect.objectContaining({
+              title: "Refresh production line from mother block: TC-042",
+              sourceStage: "transfer_cycle_limit"
+            }),
+            expect.objectContaining({
+              title: "Check for early contamination",
+              sourceStage: "generated_calendar_initiation"
+            }),
+            expect.objectContaining({
+              title: "Evaluate shoot growth",
+              sourceStage: "generated_calendar_initiation"
             })
-          ]
+          ])
         })
       )
     );
-  });
+    expect(mockSaveToolRunAndCreateTasks.mock.calls[0][0].tasks).toHaveLength(7);
+  }, 15000);
 
   it("creates default tissue culture follow-up task with shared Schedule metadata", async () => {
     const screen = render(<TissueCultureToolRoute />);

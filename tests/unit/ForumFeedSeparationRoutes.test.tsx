@@ -224,7 +224,8 @@ describe("Forum and feed separation copy", () => {
         id: "thread-grow-help",
         title: "Leaf help",
         body: "What changed?",
-        growInterests: ["Cannabis", "Indoor"]
+        growInterests: ["Cannabis", "Indoor"],
+        attachments: [{ url: "/uploads/forum-leaf.jpg" }]
       }
     ]);
 
@@ -237,6 +238,7 @@ describe("Forum and feed separation copy", () => {
     );
     expect(screen.getByText("Cannabis")).toBeTruthy();
     expect(screen.getByText("Indoor")).toBeTruthy();
+    expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
   });
 
   it("opens community forum previews through the shared forum detail route", async () => {
