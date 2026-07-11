@@ -33,6 +33,8 @@ export async function createCheckoutSession(
   const body = {
     plan: data.plan || "pro",
     interval: data.interval || data.billingInterval || "monthly",
+    paymentMethodTypes: ["card"],
+    disallowBankDebits: true,
     ...(origin
       ? {
           successUrl: `${origin}/offers?subscription=success`,

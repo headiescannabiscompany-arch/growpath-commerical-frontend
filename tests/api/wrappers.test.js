@@ -92,7 +92,9 @@ describe("API Wrappers Unit Tests", () => {
     );
     expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
       plan: "commercial",
-      interval: "yearly"
+      interval: "yearly",
+      paymentMethodTypes: ["card"],
+      disallowBankDebits: true
     });
   });
 
@@ -101,7 +103,9 @@ describe("API Wrappers Unit Tests", () => {
     expect(fetchCalls[0].options.method).toBe("POST");
     expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
       plan: "pro",
-      interval: "monthly"
+      interval: "monthly",
+      paymentMethodTypes: ["card"],
+      disallowBankDebits: true
     });
   });
 
