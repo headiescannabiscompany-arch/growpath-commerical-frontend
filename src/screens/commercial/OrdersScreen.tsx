@@ -241,7 +241,9 @@ const styles = StyleSheet.create({
 
 export default function Orders() {
   const params = useLocalSearchParams<{ orderId?: string | string[] }>();
-  const focusedOrderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
+  const focusedOrderId = Array.isArray(params.orderId)
+    ? params.orderId[0]
+    : params.orderId;
   const ent = useEntitlements();
   const mapApiError = useApiErrorHandler();
   const [orders, setOrders] = useState<CommercialOrder[]>([]);
@@ -323,7 +325,7 @@ export default function Orders() {
 
   return (
     <AppPage
-      routeKey="orders"
+      routeKey="commercial-orders"
       header={
         <View>
           <Text style={styles.headerTitle}>Orders</Text>

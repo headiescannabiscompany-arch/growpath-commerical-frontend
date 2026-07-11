@@ -1,9 +1,9 @@
 {
   "root": "C:\\growpathai\\growpath-commerical-frontend.worktrees\\agents-vscode-terminal-issues",
   "counts": {
-    "srcFiles": 856,
+    "srcFiles": 857,
     "testFiles": 250,
-    "totalFiles": 1106,
+    "totalFiles": 1107,
     "apiFiles": 109,
     "apiOrphans": 0,
     "legacyClientCallers": 0,

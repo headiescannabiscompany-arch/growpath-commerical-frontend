@@ -9,6 +9,7 @@ import CommercialProductsRoute from "../app/home/commercial/products";
 import CommercialFeedRoute from "../app/home/commercial/feed";
 import CommercialProfileRoute from "../app/home/commercial/profile";
 import CommercialStorefrontRoute from "../app/home/commercial/storefront";
+import CommercialAnalyticsRoute from "../app/home/commercial/analytics";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,19 +22,24 @@ export default function CommercialTabs() {
         options={{ title: "Dashboard" }}
       />
       <Tab.Screen
+        name="CommercialProfile"
+        component={CommercialProfileRoute}
+        options={{ title: "Setup" }}
+      />
+      <Tab.Screen
+        name="CommercialProducts"
+        component={CommercialProductsRoute}
+        options={{ title: "Catalog" }}
+      />
+      <Tab.Screen
         name="Storefront"
         component={CommercialStorefrontRoute}
         options={{ title: "Storefront" }}
       />
       <Tab.Screen
-        name="CommercialProducts"
-        component={CommercialProductsRoute}
-        options={{ title: "Products" }}
-      />
-      <Tab.Screen
         name="CommercialCourses"
         component={CommercialCoursesRoute}
-        options={{ title: "Courses" }}
+        options={{ title: "Education" }}
       />
       <Tab.Screen
         name="CommercialLives"
@@ -51,9 +57,9 @@ export default function CommercialTabs() {
         options={{ title: "Orders" }}
       />
       <Tab.Screen
-        name="CommercialProfile"
-        component={CommercialProfileRoute}
-        options={{ title: "Profile" }}
+        name="CommercialAnalytics"
+        component={CommercialAnalyticsRoute}
+        options={{ title: "Analytics" }}
       />
     </Tab.Navigator>
   );

@@ -82,38 +82,40 @@ async function loadCommercialDashboard() {
 }
 
 const QUICK_ACTIONS: Action[] = [
-  { label: "View Storefront", href: "/home/commercial/storefront" },
-  { label: "Edit Storefront", href: "/home/commercial/storefront/edit" },
+  { label: "Brand Profile", href: "/home/commercial/profile" },
+  { label: "Product Catalog", href: "/home/commercial/products" },
+  { label: "Evidence & Trials", href: "/home/commercial/trials" },
+  { label: "Storefront", href: "/home/commercial/storefront" },
+  { label: "Courses", href: "/home/commercial/courses" },
+  { label: "Campaigns", href: "/home/commercial/feed" },
+  { label: "Orders", href: "/home/commercial/orders" },
+  { label: "Analytics", href: "/home/commercial/analytics" }
+];
+
+const SETUP_ACTIONS: Action[] = [
+  { label: "Brand Profile", href: "/home/commercial/profile" },
   { label: "Add Product", href: "/home/commercial/products/new" },
-  { label: "Create Course", href: "/home/commercial/courses" },
-  { label: "Schedule Live", href: "/home/commercial/lives" },
-  { label: "Create Feed Campaign", href: "/home/commercial/feed" },
-  { label: "View Orders", href: "/home/commercial/orders" },
-  { label: "View Analytics", href: "/home/commercial/analytics" }
+  { label: "Edit Storefront", href: "/home/commercial/storefront/edit" }
 ];
 
 const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
-    title: "Storefront Launch",
+    title: "1. Brand Setup",
     description:
-      "Your storefront is the public brand home base. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe.",
+      "Start with the brand record: public name, slug, logo, banner, support email, Forum/Q&A identity, external links, billing readiness, and storefront visibility.",
     status: "Active",
     metrics: [
       { label: "Storefront status", key: "storefrontConfigured" },
       { label: "Products", key: "products" },
       { label: "Courses", key: "courses" },
-      { label: "Campaigns", key: "posts" }
+      { label: "Low stock", key: "lowStock" }
     ],
-    actions: [
-      { label: "Open Storefront", href: "/home/commercial/storefront" },
-      { label: "Products", href: "/home/commercial/products" },
-      { label: "Feed Campaigns", href: "/home/commercial/feed" }
-    ]
+    actions: SETUP_ACTIONS
   },
   {
-    title: "Products & Storefront",
+    title: "2. Product Catalog",
     description:
-      "Products are the commercial source of truth. Product lines, batches/lots, trials, and inventory are supporting views that feed storefront cards, campaigns, courses, and purchase links.",
+      "Products are the commercial source of truth. Product lines, batches/lots, inventory support, and checkout fields feed storefront cards, campaigns, courses, and purchase links.",
     status: "Active",
     metrics: [
       { label: "Product lines", key: "productLines" },
@@ -123,14 +125,15 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     ],
     actions: [
       { label: "Products", href: "/home/commercial/products" },
-      { label: "Storefront", href: "/home/commercial/storefront" },
-      { label: "Manage Product Lines", href: "/home/commercial/product-lines" }
+      { label: "Product Lines", href: "/home/commercial/product-lines" },
+      { label: "Batch Planner", href: "/home/commercial/batch-planner" },
+      { label: "Inventory Support", href: "/home/commercial/inventory" }
     ]
   },
   {
-    title: "Product Formulas, Batches & Trials",
+    title: "3. Product Evidence",
     description:
-      "Design product formulas, scale product batches/lots, track guaranteed analysis and release timing, then attach trial evidence back to the related product.",
+      "Prove the catalog before you market it. Design formulas, scale batches/lots, run evidence grows, and attach trial summaries back to related products.",
     status: "Active",
     metrics: [
       { label: "Recent batches", key: "batches" },
@@ -139,29 +142,48 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
       { label: "Completed trials", key: "completedTrials" }
     ],
     actions: [
-      { label: "Product Batch Planner", href: "/home/commercial/batch-planner" },
-      { label: "Products", href: "/home/commercial/products" },
-      { label: "Product Trials", href: "/home/commercial/trials" }
+      { label: "Product Trials", href: "/home/commercial/trials" },
+      { label: "Evidence Runs", href: "/home/commercial/evidence-runs" },
+      { label: "Batch Planner", href: "/home/commercial/batch-planner" }
     ]
   },
   {
-    title: "Product Inventory Support",
+    title: "4. Storefront Launch",
     description:
-      "Use inventory as a support view for product stock, ingredients, packaging, genetics, equipment, courses, and retail records. It should not become a second product universe.",
-    status: "Live",
+      "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path.",
+    status: "Active",
     metrics: [
-      { label: "Inventory items", key: "inventory" },
-      { label: "Low stock", key: "lowStock" },
+      { label: "Storefront status", key: "storefrontConfigured" },
+      { label: "Products", key: "products" },
+      { label: "Courses", key: "courses" },
       { label: "External leads", key: "externalLeads" },
-      { label: "Orders/leads", key: "orders" }
+      { label: "Store views", key: "storefrontViews" }
     ],
     actions: [
-      { label: "Open Inventory Support", href: "/home/commercial/inventory" },
-      { label: "Add Inventory Record", href: "/home/commercial/inventory/new" }
+      { label: "Open Storefront", href: "/home/commercial/storefront" },
+      { label: "Edit Storefront", href: "/home/commercial/storefront/edit" },
+      { label: "Public Store", href: "/store" }
     ]
   },
   {
-    title: "Content & Forum / Q&A",
+    title: "5. Education & Lives",
+    description:
+      "Turn products and evidence into courses, lessons, product-use education, live demos, and replays. Courses and lives should link back to products, trials, and support.",
+    status: "Active",
+    metrics: [
+      { label: "Courses", key: "courses" },
+      { label: "Course drafts", key: "draftCourses" },
+      { label: "Campaigns", key: "posts" },
+      { label: "Product views", key: "productViews" }
+    ],
+    actions: [
+      { label: "Courses", href: "/home/commercial/courses" },
+      { label: "Lives", href: "/home/commercial/lives" },
+      { label: "Products", href: "/home/commercial/products" }
+    ]
+  },
+  {
+    title: "6. Campaigns & Forum / Q&A",
     description:
       "Create outreach campaigns for products, courses, lives, and storefront visibility. Discussion and Q&A belong in Forum/Q&A, not inside feed ads.",
     status: "Active",
@@ -173,14 +195,29 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     ],
     actions: [
       { label: "Feed Campaigns", href: "/home/commercial/feed" },
-      { label: "Forum / Q&A", href: "/home/commercial/community" },
-      { label: "Courses", href: "/home/commercial/courses" },
-      { label: "Lives", href: "/home/commercial/lives" },
-      { label: "Marketing Planner", href: "/home/commercial/marketing" }
+      { label: "Marketing Planner", href: "/home/commercial/marketing" },
+      { label: "Forum / Q&A", href: "/home/commercial/community" }
     ]
   },
   {
-    title: "Analytics Snapshot",
+    title: "7. Sales & Fulfillment",
+    description:
+      "Separate internal orders from external checkout links. Internal storefront purchases need fulfillment; external links should be tracked as views, clicks, inquiries, and follow-up tasks.",
+    status: "Live",
+    metrics: [
+      { label: "Orders/leads", key: "orders" },
+      { label: "External leads", key: "externalLeads" },
+      { label: "Low stock", key: "lowStock" },
+      { label: "Inventory items", key: "inventory" }
+    ],
+    actions: [
+      { label: "Orders", href: "/home/commercial/orders" },
+      { label: "Inventory Support", href: "/home/commercial/inventory" },
+      { label: "Tasks", href: "/home/commercial/tasks" }
+    ]
+  },
+  {
+    title: "8. Analytics Snapshot",
     description:
       "Start with simple, useful counts: ad clicks, storefront views, product views, external link clicks, inquiries, course starts, forum replies, and trial outcomes.",
     status: "Live",
@@ -193,17 +230,19 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     actions: [{ label: "Analytics", href: "/home/commercial/analytics" }]
   },
   {
-    title: "Brand Profile & Billing",
+    title: "9. Operations",
     description:
-      "Manage brand identity, storefront settings, public slug, logo/banner, support email, Forum/Q&A identity, external links, and billing.",
+      "Use tasks, alerts, schedule, and inventory support to keep launch gaps from becoming lost notes. Operational records should point back to the product, course, live, campaign, order, or storefront item that caused them.",
     status: "Active",
     metrics: [
-      { label: "Storefront status", key: "storefrontConfigured" },
-      { label: "Products", key: "products" },
-      { label: "External leads", key: "externalLeads" },
+      { label: "Inventory items", key: "inventory" },
       { label: "Low stock", key: "lowStock" }
     ],
-    actions: [{ label: "Profile & Billing", href: "/home/commercial/profile" }]
+    actions: [
+      { label: "Tasks", href: "/home/commercial/tasks" },
+      { label: "Alerts", href: "/home/alerts" },
+      { label: "Schedule", href: "/home/schedule" }
+    ]
   }
 ];
 
@@ -458,8 +497,9 @@ export default function CommercialHome() {
           <View style={styles.commandCopy}>
             <Text style={styles.cardTitle}>Commercial command center</Text>
             <Text style={styles.cardDesc}>
-              Start from the storefront. Add products and courses, schedule lives, create
-              feed campaigns for outreach, and use Forum/Q&A for discussion and support.
+              Follow the commercial order: set up the brand, build products, attach
+              evidence, publish the storefront, teach with courses/lives, launch
+              campaigns, fulfill sales, and review analytics.
             </Text>
             {dashboard?.storefront ? (
               <Text style={styles.dashboardMeta}>

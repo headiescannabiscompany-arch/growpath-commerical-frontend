@@ -11,6 +11,9 @@ import { useEntitlements } from "@/entitlements";
 import FeedBanner from "@/components/feed/FeedBanner";
 import FeedRail from "@/components/feed/FeedRail";
 import BackButton from "@/components/nav/BackButton";
+import CommercialWorkflowNav, {
+  isCommercialWorkflowRoute
+} from "@/components/commercial/CommercialWorkflowNav";
 import { getFeedBannerPolicy, getFeedPolicy } from "@/utils/feedPolicy";
 
 type AppPageProps = {
@@ -36,6 +39,7 @@ const NO_BACK_ROUTE_KEYS = new Set([
   "commercial-grows",
   "commercial-lives",
   "commercial-marketing",
+  "commercial-orders",
   "commercial-product-lines",
   "commercial-products",
   "commercial-profile",
@@ -93,6 +97,9 @@ export default function AppPage({
         <View style={styles.header}>
           {sanitizeViewChildren(header, "AppPage.header")}
         </View>
+      ) : null}
+      {ent.mode === "commercial" && isCommercialWorkflowRoute(routeKey) ? (
+        <CommercialWorkflowNav routeKey={routeKey} />
       ) : null}
       {bannerPolicy.top ? (
         <View style={styles.topBanner}>
