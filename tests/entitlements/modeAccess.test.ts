@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { resolveLocalCommercialPreviewSession } from "../../src/auth/AuthContext";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
   applyDefaultCourseLimits,
@@ -44,6 +45,25 @@ describe("entitlement mode access", () => {
 
     expect(resolveDevEntitlementsPlan(null, true)).toBe("pro");
     expect(resolveDevEntitlementsPlan(null, false)).toBeNull();
+  });
+
+  it("uses a separate local commercial preview identity on commercial routes", () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        hostname: "127.0.0.1",
+        pathname: "/home/commercial",
+        search: "?commercialEmail=brand@example.test"
+      }
+    });
+
+    const preview = resolveLocalCommercialPreviewSession();
+
+    expect(preview?.token).toBe("local-preview-commercial-token");
+    expect(preview?.user.email).toBe("brand@example.test");
+    expect(preview?.ctx.mode).toBe("commercial");
+    expect(preview?.ctx.plan).toBe("commercial");
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
   });
 
   it("does not grant Commercial mode from a plan name alone", () => {

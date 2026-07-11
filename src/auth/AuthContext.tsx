@@ -20,6 +20,9 @@ import { setToken as persistToken, getToken as readToken } from "./tokenStore";
 import { setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
 
+const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
+const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
+
 type AuthState = {
   token: string | null;
   user: AuthUser | null;
@@ -35,6 +38,87 @@ type AuthState = {
 };
 
 const AuthContext = createContext<AuthState | null>(null);
+
+function localWindowLocation() {
+  if (typeof window === "undefined" || !window.location) {
+    return { hostname: "", pathname: "", search: "" };
+  }
+  return {
+    hostname: window.location.hostname || "",
+    pathname: window.location.pathname || "",
+    search: window.location.search || ""
+  };
+}
+
+function isLocalPreviewHost(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "";
+}
+
+export function resolveLocalCommercialPreviewSession() {
+  const { hostname, pathname, search } = localWindowLocation();
+  if (!isLocalPreviewHost(hostname)) return null;
+
+  const params = new URLSearchParams(search);
+  const devPlan = String(params.get("devPlan") || "").toLowerCase();
+  const commercialParam = String(params.get("commercial") || "").toLowerCase();
+  const isCommercialRoute =
+    pathname === "/home/commercial" || pathname.startsWith("/home/commercial/");
+  const wantsCommercial =
+    isCommercialRoute ||
+    devPlan === "commercial" ||
+    commercialParam === "1" ||
+    commercialParam === "true";
+
+  if (!wantsCommercial) return null;
+
+  const email =
+    String(params.get("commercialEmail") || "")
+      .trim()
+      .toLowerCase() || LOCAL_COMMERCIAL_PREVIEW_EMAIL;
+  const displayName = String(params.get("commercialName") || "Commercial Demo Brand");
+
+  return {
+    token: LOCAL_COMMERCIAL_PREVIEW_TOKEN,
+    user: {
+      id: "local-commercial-preview-user",
+      email,
+      displayName,
+      role: "creator" as const,
+      plan: "commercial",
+      subscriptionStatus: "active",
+      emailVerified: true,
+      businessName: displayName,
+      companyName: displayName,
+      business: {
+        name: displayName,
+        contactEmail: email
+      }
+    },
+    ctx: {
+      mode: "commercial",
+      plan: "commercial",
+      requestedPlan: "commercial",
+      subscriptionStatus: "active",
+      capabilities: {
+        COMMERCIAL_HOME: true,
+        COMMERCIAL_INVENTORY_VIEW: true,
+        COMMERCIAL_INVENTORY_WRITE: true,
+        COMMERCIAL_FEED_VIEW: true,
+        COMMERCIAL_ALERTS_VIEW: true,
+        COMMERCIAL_TASKS_VIEW: true,
+        STORE_FRONT_VIEW: true,
+        STORE_FRONT_WRITE: true,
+        COURSES_VIEW: true,
+        COURSES_CREATE: true,
+        COURSES_SELL_PAID: true,
+        PUBLISH_COURSES: true,
+        FORUM_VIEW: true,
+        FORUM_POST: true
+      },
+      limits: {}
+    }
+  };
+}
 
 function mergeAuthUser(
   current: AuthUser | null,
@@ -129,6 +213,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     (async () => {
       try {
+        const localPreview = resolveLocalCommercialPreviewSession();
+        if (localPreview) {
+          setToken(localPreview.token);
+          setUser(localPreview.user);
+          setCtx(localPreview.ctx);
+          setMeStatus("ready");
+          setMeError(null);
+          return;
+        }
+
         const t = await readToken();
         if (!mounted) return;
 
