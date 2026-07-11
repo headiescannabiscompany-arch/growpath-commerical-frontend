@@ -22,6 +22,9 @@ import { apiMe } from "../api/me";
 
 const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
 const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
+const LOCAL_FACILITY_PREVIEW_TOKEN = "local-preview-facility-token";
+const LOCAL_FACILITY_PREVIEW_EMAIL = "facility-demo@growpathai.local";
+const LOCAL_FACILITY_PREVIEW_ID = "local-dev-facility";
 
 type AuthState = {
   token: string | null;
@@ -112,6 +115,87 @@ export function resolveLocalCommercialPreviewSession() {
         COURSES_CREATE: true,
         COURSES_SELL_PAID: true,
         PUBLISH_COURSES: true,
+        FORUM_VIEW: true,
+        FORUM_POST: true
+      },
+      limits: {}
+    }
+  };
+}
+
+export function resolveLocalFacilityPreviewSession() {
+  const { hostname, pathname, search } = localWindowLocation();
+  if (!isLocalPreviewHost(hostname)) return null;
+
+  const params = new URLSearchParams(search);
+  const devPlan = String(params.get("devPlan") || "").toLowerCase();
+  const facilityParam = String(params.get("facility") || "").toLowerCase();
+  const isFacilityRoute =
+    pathname === "/home/facility" || pathname.startsWith("/home/facility/");
+  const wantsFacility =
+    isFacilityRoute ||
+    devPlan === "facility" ||
+    facilityParam === "1" ||
+    facilityParam === "true";
+
+  if (!wantsFacility) return null;
+
+  const email =
+    String(params.get("facilityEmail") || "")
+      .trim()
+      .toLowerCase() || LOCAL_FACILITY_PREVIEW_EMAIL;
+  const displayName = String(params.get("facilityName") || "Facility Demo Operator");
+  const facilityId =
+    String(params.get("facilityId") || "")
+      .trim()
+      .toLowerCase() || LOCAL_FACILITY_PREVIEW_ID;
+  const facilityRole = String(params.get("facilityRole") || "OWNER").toUpperCase();
+
+  return {
+    token: LOCAL_FACILITY_PREVIEW_TOKEN,
+    user: {
+      id: "local-facility-preview-user",
+      email,
+      displayName,
+      role: "admin" as const,
+      plan: "facility",
+      subscriptionStatus: "active",
+      emailVerified: true
+    },
+    ctx: {
+      mode: "facility",
+      plan: "facility",
+      requestedPlan: "facility",
+      subscriptionStatus: "active",
+      facilityId,
+      facilityRole,
+      capabilities: {
+        FACILITY_ACCESS: true,
+        TASKS_READ: true,
+        TASKS_WRITE: true,
+        GROWS_READ: true,
+        GROWS_WRITE: true,
+        PLANTS_READ: true,
+        PLANTS_WRITE: true,
+        GROWLOGS_READ: true,
+        GROWLOGS_WRITE: true,
+        INVENTORY_READ: true,
+        INVENTORY_WRITE: true,
+        COMPLIANCE_READ: true,
+        COMPLIANCE_WRITE: true,
+        AUDIT_READ: true,
+        SOP_RUNS_READ: true,
+        SOP_RUNS_WRITE: true,
+        TEAM_VIEW: true,
+        TEAM_INVITE: true,
+        TEAM_UPDATE_ROLE: true,
+        TEAM_REMOVE: true,
+        ROOMS_EQUIPMENT_STAFF: true,
+        FACILITY_SETTINGS_EDIT: true,
+        EXPORT_COMPLIANCE: true,
+        COURSES_VIEW: true,
+        COURSES_CREATE: true,
+        COURSES_SELL_PAID: true,
         FORUM_VIEW: true,
         FORUM_POST: true
       },
@@ -213,7 +297,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     (async () => {
       try {
-        const localPreview = resolveLocalCommercialPreviewSession();
+        const localPreview =
+          resolveLocalFacilityPreviewSession() || resolveLocalCommercialPreviewSession();
         if (localPreview) {
           setToken(localPreview.token);
           setUser(localPreview.user);

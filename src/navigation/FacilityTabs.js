@@ -1,23 +1,65 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import VendorDashboardScreen from "../screens/facility/VendorDashboardScreen";
-import FacilityTasksScreen from "../screens/facility/FacilityTasksScreen";
-import AuditLogScreen from "../screens/facility/AuditLogScreen";
-import FacilitySettingsScreen from "../screens/facility/FacilitySettingsScreen";
+import FacilityDashboardRoute from "../app/home/facility/(tabs)/dashboard";
+import FacilityRoomsRoute from "../app/home/facility/(tabs)/rooms";
+import FacilityGrowsRoute from "../app/home/facility/(tabs)/grows";
+import FacilityInventoryRoute from "../app/home/facility/(tabs)/inventory";
+import FacilityTasksRoute from "../app/home/facility/(tabs)/tasks";
+import FacilityComplianceRoute from "../app/home/facility/(tabs)/compliance";
+import FacilityTeamRoute from "../app/home/facility/(tabs)/team";
+import FacilityReportsRoute from "../app/home/facility/(tabs)/reports";
+import FacilityProfileRoute from "../app/home/facility/(tabs)/profile";
 
 const Tab = createBottomTabNavigator();
 
 export default function FacilityTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: true }}>
-      <Tab.Screen name="FacilityHome" component={VendorDashboardScreen} options={{ title: "Home" }} />
-      <Tab.Screen name="FacilityTasks" component={FacilityTasksScreen} options={{ title: "Tasks" }} />
-      <Tab.Screen name="FacilityReports" component={AuditLogScreen} options={{ title: "Reports" }} />
       <Tab.Screen
         name="FacilityProfile"
-        component={FacilitySettingsScreen}
-        options={{ title: "Profile" }}
+        component={FacilityProfileRoute}
+        options={{ title: "Setup" }}
+      />
+      <Tab.Screen
+        name="FacilityRooms"
+        component={FacilityRoomsRoute}
+        options={{ title: "Rooms" }}
+      />
+      <Tab.Screen
+        name="FacilityGrows"
+        component={FacilityGrowsRoute}
+        options={{ title: "Grows" }}
+      />
+      <Tab.Screen
+        name="FacilityInventory"
+        component={FacilityInventoryRoute}
+        options={{ title: "Inventory" }}
+      />
+      <Tab.Screen
+        name="FacilityTasks"
+        component={FacilityTasksRoute}
+        options={{ title: "Tasks" }}
+      />
+      <Tab.Screen
+        name="FacilityCompliance"
+        component={FacilityComplianceRoute}
+        options={{ title: "Compliance" }}
+      />
+      <Tab.Screen
+        name="FacilityTeam"
+        component={FacilityTeamRoute}
+        options={{ title: "Team" }}
+      />
+      <Tab.Screen
+        name="FacilityReports"
+        component={FacilityReportsRoute}
+        options={{ title: "Reports" }}
+      />
+      <Tab.Screen
+        name="FacilityDashboard"
+        component={FacilityDashboardRoute}
+        options={{ title: "Dashboard" }}
       />
     </Tab.Navigator>
   );

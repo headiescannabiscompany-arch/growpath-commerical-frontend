@@ -201,20 +201,6 @@ export default function FacilityDashboardTab() {
   const quick = useMemo(
     () => [
       {
-        label: "Open tasks",
-        value: counts.tasks,
-        to: "/home/facility/tasks",
-        tone: "amber" as Tone,
-        hint: "Work queue"
-      },
-      {
-        label: "Plants",
-        value: counts.plants,
-        to: "/home/facility/plants",
-        tone: "green" as Tone,
-        hint: `${counts.grows} grows`
-      },
-      {
         label: "Rooms",
         value: counts.rooms,
         to: "/home/facility/rooms",
@@ -222,11 +208,39 @@ export default function FacilityDashboardTab() {
         hint: `${counts.batchCycles} batches`
       },
       {
+        label: "Grows",
+        value: counts.grows,
+        to: "/home/facility/grows",
+        tone: "green" as Tone,
+        hint: "Active runs"
+      },
+      {
+        label: "Plants",
+        value: counts.plants,
+        to: "/home/facility/plants",
+        tone: "green" as Tone,
+        hint: "Plant records"
+      },
+      {
         label: "Inventory",
         value: counts.inventory,
         to: "/home/facility/inventory",
         tone: "violet" as Tone,
         hint: "Tracked items"
+      },
+      {
+        label: "Open tasks",
+        value: counts.tasks,
+        to: "/home/facility/tasks",
+        tone: "amber" as Tone,
+        hint: "Work queue"
+      },
+      {
+        label: "SOPs",
+        value: counts.sops,
+        to: "/home/facility/sop-runs",
+        tone: "cyan" as Tone,
+        hint: "Procedures"
       },
       {
         label: "Verifications",
@@ -241,13 +255,6 @@ export default function FacilityDashboardTab() {
         to: "/home/facility/audit-logs",
         tone: "slate" as Tone,
         hint: "Evidence trail"
-      },
-      {
-        label: "SOPs",
-        value: counts.sops,
-        to: "/home/facility/sop-runs",
-        tone: "cyan" as Tone,
-        hint: "Procedures"
       },
       {
         label: "Team",

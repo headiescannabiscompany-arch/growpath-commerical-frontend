@@ -1,5 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
-import { resolveLocalCommercialPreviewSession } from "../../src/auth/AuthContext";
+import {
+  resolveLocalCommercialPreviewSession,
+  resolveLocalFacilityPreviewSession
+} from "../../src/auth/AuthContext";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
   applyDefaultCourseLimits,
@@ -64,6 +67,29 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.mode).toBe("commercial");
     expect(preview?.ctx.plan).toBe("commercial");
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
+  });
+
+  it("uses a separate local facility preview identity on facility routes", () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        hostname: "127.0.0.1",
+        pathname: "/home/facility/dashboard",
+        search:
+          "?facilityEmail=operator@example.test&facilityId=facility-preview-1&facilityRole=MANAGER"
+      }
+    });
+
+    const preview = resolveLocalFacilityPreviewSession();
+
+    expect(preview?.token).toBe("local-preview-facility-token");
+    expect(preview?.user.email).toBe("operator@example.test");
+    expect(preview?.ctx.mode).toBe("facility");
+    expect(preview?.ctx.plan).toBe("facility");
+    expect(preview?.ctx.facilityId).toBe("facility-preview-1");
+    expect(preview?.ctx.facilityRole).toBe("MANAGER");
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.FACILITY_ACCESS]).toBe(true);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMPLIANCE_WRITE]).toBe(true);
   });
 
   it("does not grant Commercial mode from a plan name alone", () => {
