@@ -120,6 +120,9 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Posting as User")).toBeTruthy();
     expect(screen.getByText("Workspace: personal")).toBeTruthy();
+    expect(screen.getByText("Grow interests")).toBeTruthy();
+    expect(screen.getByText("What You Grow")).toBeTruthy();
+    expect(screen.getByText("Environment")).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
     expect(
@@ -135,6 +138,8 @@ describe("Forum and feed separation copy", () => {
       screen.getByLabelText("Forum post body"),
       "What changed before this issue?"
     );
+    fireEvent.press(screen.getByLabelText("Toggle grow interest Cannabis"));
+    fireEvent.press(screen.getByLabelText("Toggle grow interest Indoor"));
     fireEvent.press(screen.getByLabelText("Publish forum post"));
 
     await waitFor(() =>
@@ -144,7 +149,9 @@ describe("Forum and feed separation copy", () => {
         authorType: "user",
         authorId: "user-1",
         workspaceContext: "personal",
-        photos: []
+        photos: [],
+        tags: ["Cannabis", "Indoor"],
+        growInterests: ["Cannabis", "Indoor"]
       })
     );
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/forum");
@@ -200,7 +207,12 @@ describe("Forum and feed separation copy", () => {
 
   it("opens personal forum list posts through the shared forum detail route", async () => {
     mockListForumPosts.mockResolvedValue([
-      { id: "thread-grow-help", title: "Leaf help", body: "What changed?" }
+      {
+        id: "thread-grow-help",
+        title: "Leaf help",
+        body: "What changed?",
+        growInterests: ["Cannabis", "Indoor"]
+      }
     ]);
 
     const screen = render(<ForumRoute />);
@@ -210,6 +222,8 @@ describe("Forum and feed separation copy", () => {
         screen.getByTestId("link-/home/personal/forum/post/thread-grow-help")
       ).toBeTruthy()
     );
+    expect(screen.getByText("Cannabis")).toBeTruthy();
+    expect(screen.getByText("Indoor")).toBeTruthy();
   });
 
   it("opens community forum previews through the shared forum detail route", async () => {

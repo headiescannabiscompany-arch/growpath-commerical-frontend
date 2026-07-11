@@ -15,9 +15,11 @@ import { useRouter } from "expo-router";
 import { createForumPost } from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { INTEREST_TIERS } from "@/config/interests";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { flattenTierSelections } from "@/utils/growInterests";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -51,6 +53,21 @@ export default function ForumNewPostRoute() {
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
+  const [interestSelections, setInterestSelections] = useState<Record<string, string[]>>(
+    {}
+  );
+
+  const selectedInterests = flattenTierSelections(interestSelections);
+
+  function toggleInterest(tierId: string, option: string) {
+    setInterestSelections((current) => {
+      const values = Array.isArray(current[tierId]) ? current[tierId] : [];
+      const nextValues = values.includes(option)
+        ? values.filter((item) => item !== option)
+        : [...values, option];
+      return { ...current, [tierId]: nextValues };
+    });
+  }
 
   const pickPhotos = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -94,7 +111,9 @@ export default function ForumNewPostRoute() {
         authorType,
         authorId: auth.user?._id || auth.user?.id || null,
         workspaceContext,
-        photos: photos.map((photo) => photo.uri)
+        photos: photos.map((photo) => photo.uri),
+        tags: selectedInterests,
+        growInterests: selectedInterests
       });
       router.replace("/home/personal/forum");
     } catch (error: any) {
@@ -110,6 +129,7 @@ export default function ForumNewPostRoute() {
     canPost,
     photos,
     router,
+    selectedInterests,
     title,
     workspaceContext
   ]);
@@ -171,6 +191,44 @@ export default function ForumNewPostRoute() {
           style={[styles.input, styles.bodyInput]}
           accessibilityLabel="Forum post body"
         />
+
+        <View style={styles.interestCard}>
+          <Text style={styles.cardTitle}>Grow interests</Text>
+          <Text style={styles.cardText}>
+            Add crop, environment, method, technique, goal, constraint, or experience tags
+            so the right growers can find this discussion.
+          </Text>
+          {INTEREST_TIERS.map((tier) => (
+            <View key={tier.id} style={styles.interestGroup}>
+              <Text style={styles.interestLabel}>{tier.label}</Text>
+              <View style={styles.tagRow}>
+                {tier.options.map((option) => {
+                  const selected = Boolean(interestSelections[tier.id]?.includes(option));
+                  return (
+                    <Pressable
+                      key={option}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Toggle grow interest ${option}`}
+                      onPress={() => toggleInterest(tier.id, option)}
+                      disabled={submitting || !canPost}
+                      style={[styles.tag, selected && styles.tagSelected]}
+                    >
+                      <Text style={[styles.tagText, selected && styles.tagTextSelected]}>
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ))}
+          {selectedInterests.length ? (
+            <Text style={styles.photoCount}>
+              {selectedInterests.length} grow interest tag
+              {selectedInterests.length === 1 ? "" : "s"} selected
+            </Text>
+          ) : null}
+        </View>
 
         <View style={styles.photoTools}>
           <Pressable
@@ -293,6 +351,28 @@ const styles = StyleSheet.create({
   },
   identityTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   identityText: { color: "#475569", fontSize: 13, fontWeight: "700", marginTop: 4 },
+  interestCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  interestGroup: { gap: 6 },
+  interestLabel: { color: "#334155", fontSize: 13, fontWeight: "900" },
+  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  tag: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    backgroundColor: "#FFFFFF"
+  },
+  tagSelected: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
+  tagText: { color: "#334155", fontSize: 12, fontWeight: "800" },
+  tagTextSelected: { color: "#166534" },
   primaryBtn: {
     alignItems: "center",
     backgroundColor: "#166534",

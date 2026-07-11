@@ -67,6 +67,8 @@ export async function createForumPost(data: {
   title: string;
   body: string;
   photos?: string[];
+  tags?: string[];
+  growInterests?: string[];
   authorType?: "user" | "commercial" | "facility" | "moderator";
   authorId?: string | null;
   workspaceContext?: "personal" | "commercial" | "facility" | string;
@@ -76,7 +78,9 @@ export async function createForumPost(data: {
     method: "POST",
     body: {
       ...data,
-      photos
+      photos,
+      tags: data.tags || data.growInterests || [],
+      growInterests: data.growInterests || data.tags || []
     }
   });
   return response?.created ?? response?.post ?? response;

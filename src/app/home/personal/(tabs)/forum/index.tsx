@@ -37,7 +37,12 @@ function timeOf(post: SocialPost) {
 }
 
 function tagsOf(post: SocialPost) {
-  const tags = (post as any).tags || (post as any).topicTags || [];
+  const tags =
+    (post as any).growInterests ||
+    (post as any).growTags ||
+    (post as any).tags ||
+    (post as any).topicTags ||
+    [];
   return Array.isArray(tags) ? tags.filter(Boolean).slice(0, 4) : [];
 }
 
