@@ -125,7 +125,7 @@ describe("SoilBuilderToolScreen", () => {
             "not intended to replace agronomists"
           ),
           soilRecipeReference: expect.stringMatching(
-            /Cannabis Living Soil Standard[\s\S]*Penny Saver Soil[\s\S]*Living Soil[\s\S]*No-Till Soil[\s\S]*Biochar is not part/
+            /Cannabis Living Soil Standard[\s\S]*Penny Saver Soil[\s\S]*Biochar is not part[\s\S]*Living Soil[\s\S]*No-Till Soil/
           ),
           scientificNotes: expect.stringContaining("reference material"),
           nutrientPhilosophy: expect.stringContaining("not intended to mimic soluble"),
