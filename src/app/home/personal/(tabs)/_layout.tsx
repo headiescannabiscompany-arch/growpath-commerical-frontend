@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
+import ReportBugButton from "@/components/ReportBugButton";
 import { useEntitlements } from "@/entitlements";
 
 export default function PersonalTabsLayout() {
@@ -26,6 +27,7 @@ export default function PersonalTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
+        headerRight: () => <ReportBugButton workspace="personal" />,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
         tabBarStyle: hideTabBar ? { display: "none" } : undefined

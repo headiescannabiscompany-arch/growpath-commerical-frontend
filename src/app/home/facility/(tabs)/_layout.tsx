@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
+import ReportBugButton from "@/components/ReportBugButton";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 
@@ -49,6 +50,7 @@ export default function FacilityTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
+        headerRight: () => <ReportBugButton workspace="facility" />,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
         tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
