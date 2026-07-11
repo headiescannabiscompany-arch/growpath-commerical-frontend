@@ -189,92 +189,92 @@ export default function PersonalHomeTab() {
           <Link href={growHref} asChild>
             <Pressable accessibilityRole="link" accessibilityLabel="Open active grow">
               <AppCard style={styles.commandCard}>
-            <View style={styles.commandHeader}>
-              <View style={styles.commandCopy}>
-                <Text style={styles.commandEyebrow}>Personal command center</Text>
-                <Text style={styles.commandTitle}>
-                  {model.activeGrow.name || "Active grow"}
-                </Text>
-                <Text style={styles.commandDescription}>
-                  {model.activeGrow.status} | Updated{" "}
-                  {fmtDate(model.activeGrow.updatedAt)}
-                </Text>
-              </View>
-              <View style={styles.pulseStack}>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>
-                    {model.activeGrow.status || "Active"}
-                  </Text>
-                  <Text style={styles.pulseLabel}>Stage</Text>
+                <View style={styles.commandHeader}>
+                  <View style={styles.commandCopy}>
+                    <Text style={styles.commandEyebrow}>Personal command center</Text>
+                    <Text style={styles.commandTitle}>
+                      {model.activeGrow.name || "Active grow"}
+                    </Text>
+                    <Text style={styles.commandDescription}>
+                      {model.activeGrow.status} | Updated{" "}
+                      {fmtDate(model.activeGrow.updatedAt)}
+                    </Text>
+                  </View>
+                  <View style={styles.pulseStack}>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>
+                        {model.activeGrow.status || "Active"}
+                      </Text>
+                      <Text style={styles.pulseLabel}>Stage</Text>
+                    </View>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>{model.alerts.length}</Text>
+                      <Text style={styles.pulseLabel}>Alerts</Text>
+                    </View>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
+                      <Text style={styles.pulseLabel}>Open tasks</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>{model.alerts.length}</Text>
-                  <Text style={styles.pulseLabel}>Alerts</Text>
+                <View style={styles.metrics}>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
+                    <Text style={styles.metricLabel}>Plants</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.stats.logCount}</Text>
+                    <Text style={styles.metricLabel}>Journal entries</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.openTaskCount}</Text>
+                    <Text style={styles.metricLabel}>Open tasks</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>
+                      {model.latestToolRun?.toolType ||
+                        model.latestToolRun?.toolName ||
+                        "None"}
+                    </Text>
+                    <Text style={styles.metricLabel}>Latest tool</Text>
+                  </View>
                 </View>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
-                  <Text style={styles.pulseLabel}>Open tasks</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.metrics}>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
-                <Text style={styles.metricLabel}>Plants</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.logCount}</Text>
-                <Text style={styles.metricLabel}>Journal entries</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.openTaskCount}</Text>
-                <Text style={styles.metricLabel}>Open tasks</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>
-                  {model.latestToolRun?.toolType ||
-                    model.latestToolRun?.toolName ||
-                    "None"}
-                </Text>
-                <Text style={styles.metricLabel}>Latest tool</Text>
-              </View>
-            </View>
               </AppCard>
             </Pressable>
           </Link>
-            <View style={styles.actions}>
-              <ActionLink href={growHref} label="Open Grow" />
-              {canCreateLog ? (
-                <>
-                  <ActionLink
-                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
-                    label="Add Log"
-                  />
-                  <ActionLink
-                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
-                    label="Add Photo"
-                  />
-                </>
-              ) : null}
-              <ActionLink
-                href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
-                label="Run Tool"
-              />
-              <ActionLink
-                href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
-                label="Diagnose"
-              />
-              {canCreateTask ? (
-                <ActionLink href={`${growHref}/tasks`} label="Create Task" />
-              ) : null}
-            </View>
-            {!canCreateLog || !canCreateTask ? (
-              <Text style={styles.upgradeNote}>
-                Free plan includes basic grow tracking, logs, tasks, and limited AI/tool
-                tokens. Upgrade for more grows, more storage, advanced tools, exports,
-                and higher AI limits.
-              </Text>
+          <View style={styles.actions}>
+            <ActionLink href={growHref} label="Open Grow" />
+            {canCreateLog ? (
+              <>
+                <ActionLink
+                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+                  label="Add Log"
+                />
+                <ActionLink
+                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                  label="Add Photo"
+                />
+              </>
             ) : null}
+            <ActionLink
+              href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
+              label="Run Tool"
+            />
+            <ActionLink
+              href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
+              label="Diagnose"
+            />
+            {canCreateTask ? (
+              <ActionLink href={`${growHref}/tasks`} label="Create Task" />
+            ) : null}
+          </View>
+          {!canCreateLog || !canCreateTask ? (
+            <Text style={styles.upgradeNote}>
+              Free plan includes basic grow tracking, logs, tasks, and limited AI/tool
+              tokens. Upgrade for more grows, more storage, advanced tools, exports, and
+              higher AI limits.
+            </Text>
+          ) : null}
         </View>
       ) : null}
 

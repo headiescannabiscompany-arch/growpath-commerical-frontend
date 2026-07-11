@@ -394,10 +394,7 @@ export default function ProfileScreen() {
               key={String(label)}
               accessibilityRole="button"
               onPress={() => router.push(href as any)}
-              style={[
-                styles.planAction,
-                primary ? styles.planActionPrimary : null
-              ]}
+              style={[styles.planAction, primary ? styles.planActionPrimary : null]}
             >
               <Text
                 style={primary ? styles.planActionPrimaryText : styles.planActionText}

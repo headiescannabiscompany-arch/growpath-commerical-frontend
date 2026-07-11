@@ -14,7 +14,8 @@ function fallbackBalanceForPlan(plan) {
     return {
       aiTokens: 1000,
       maxTokens: 1000,
-      refillDescription: "Commercial and facility token limits reset from account billing.",
+      refillDescription:
+        "Commercial and facility token limits reset from account billing.",
       estimated: true
     };
   }
@@ -29,7 +30,8 @@ function fallbackBalanceForPlan(plan) {
   return {
     aiTokens: 10,
     maxTokens: 10,
-    refillDescription: "Free accounts get limited AI tokens for Ask AI and Plant Diagnose.",
+    refillDescription:
+      "Free accounts get limited AI tokens for Ask AI and Plant Diagnose.",
     estimated: true
   };
 }

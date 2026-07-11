@@ -5,7 +5,11 @@ import UpgradePlan from "@/features/billing/screens/UpgradePlan";
 
 export default function PersonalUpgradeRoute() {
   return (
-    <ScreenBoundary title="Upgrade Account" showBack backFallbackHref="/home/personal/profile">
+    <ScreenBoundary
+      title="Upgrade Account"
+      showBack
+      backFallbackHref="/home/personal/profile"
+    >
       <UpgradePlan />
     </ScreenBoundary>
   );
