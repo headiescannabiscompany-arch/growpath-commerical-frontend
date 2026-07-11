@@ -110,7 +110,9 @@ export default function LoginScreen() {
               />
             </View>
             <Text style={styles.brand}>GrowPath</Text>
-            <Text style={styles.tagline}>Grow, brand, and facility intelligence</Text>
+            <Text style={styles.tagline}>
+              A one-stop app by gardeners, for gardeners.
+            </Text>
           </View>
 
           <Text style={styles.title}>Sign in</Text>

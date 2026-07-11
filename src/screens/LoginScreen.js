@@ -181,7 +181,7 @@ function LoginScreen() {
       <View style={styles.authShell}>
         <View style={styles.logoContainer}>
           <Text style={styles.appName}>GrowPath</Text>
-          <Text style={styles.tagline}>Your grow companion for every plant</Text>
+          <Text style={styles.tagline}>A one-stop app by gardeners, for gardeners.</Text>
         </View>
 
         <Text style={styles.title}>
