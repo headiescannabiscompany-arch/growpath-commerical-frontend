@@ -121,7 +121,9 @@ describe("SoilBuilderToolScreen", () => {
           restCookDays: 28,
           mineralSupport: "gypsum, basalt, oyster shell",
           biologySupport: "worm castings, microbial inoculant, moisture activation",
-          soilRecipeReference: expect.stringContaining("Penny Saver Soil"),
+          soilRecipeReference: expect.stringMatching(
+            /Penny Saver Soil[\s\S]*Biochar is not part/
+          ),
           scientificNotes: expect.stringContaining("reference material"),
           nutrientPhilosophy: expect.stringContaining("not intended to mimic soluble"),
           amendments: expect.arrayContaining([

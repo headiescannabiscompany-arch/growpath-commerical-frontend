@@ -37,6 +37,7 @@ const PENNY_SAVER_SOIL_RECIPE = [
   "",
   "Base: 1/3 coco and peat.",
   "Compost: 1/3 Blue Ribbon Compost, Detroit Worm Castings, and Soil Conditioner.",
+  "Compost split rule: compost ingredients without a specific amount are used evenly within the compost fraction. Biochar is not part of that equal compost split; use it as a separate optional 5-10% fraction when included.",
   "Aeration: 1/3 total, split 50% perlite and 50% rice hulls.",
   "",
   "Rice hulls provide temporary aeration and slowly decompose over approximately one year while contributing plant-available silica.",
