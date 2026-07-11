@@ -45,7 +45,10 @@ export default function CreateCourseScreen({ navigation }) {
       return;
     }
     if ((priceCents || 0) > 0 && !access.canSellPaidCourses) {
-      Alert.alert("Paid courses unavailable", "Paid course sales require COURSES_SELL_PAID.");
+      Alert.alert(
+        "Paid courses unavailable",
+        "Paid course sales require COURSES_SELL_PAID."
+      );
       return;
     }
 
@@ -148,7 +151,7 @@ export default function CreateCourseScreen({ navigation }) {
         <TextInput
           value={cropType}
           onChangeText={setCropType}
-          placeholder="Cannabis, tomatoes, houseplants, microgreens, etc."
+          placeholder="Tomatoes, houseplants, microgreens, specialty crops, etc."
           editable={access.canCreateCourses && !submitting}
           style={styles.input}
         />
@@ -205,7 +208,9 @@ export default function CreateCourseScreen({ navigation }) {
           disabled={!canSubmit}
           style={[styles.button, !canSubmit && styles.buttonDisabled]}
         >
-          <Text style={styles.buttonText}>{submitting ? "Creating..." : "Create Draft"}</Text>
+          <Text style={styles.buttonText}>
+            {submitting ? "Creating..." : "Create Draft"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScreenContainer>
