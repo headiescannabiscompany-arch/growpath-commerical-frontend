@@ -3,12 +3,40 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import { getTokenBalance } from "../api/tokens";
+import { useEntitlements } from "../entitlements";
 import { radius } from "../theme/theme";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+function fallbackBalanceForPlan(plan) {
+  const normalized = String(plan || "free").toLowerCase();
+  if (normalized === "commercial" || normalized === "facility") {
+    return {
+      aiTokens: 1000,
+      maxTokens: 1000,
+      refillDescription: "Commercial and facility token limits reset from account billing.",
+      estimated: true
+    };
+  }
+  if (normalized === "pro" || normalized === "personal" || normalized === "premium") {
+    return {
+      aiTokens: 100,
+      maxTokens: 100,
+      refillDescription: "Pro token limits reset from account billing.",
+      estimated: true
+    };
+  }
+  return {
+    aiTokens: 10,
+    maxTokens: 10,
+    refillDescription: "Free accounts get limited AI tokens for Ask AI and Plant Diagnose.",
+    estimated: true
+  };
+}
+
 export default function TokenBalanceWidget({ onPress }) {
   const navigation = useNavigation();
+  const entitlements = useEntitlements();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +49,7 @@ export default function TokenBalanceWidget({ onPress }) {
         if (alive) setBalance(res?.data ?? res);
       } catch (err) {
         console.error("Failed to load token balance:", err);
+        if (alive) setBalance(fallbackBalanceForPlan(entitlements.plan));
       } finally {
         if (alive) setLoading(false);
       }
@@ -30,14 +59,22 @@ export default function TokenBalanceWidget({ onPress }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [entitlements.plan]);
+
+  const effectiveBalance = useMemo(() => {
+    const rawMax = Number(balance?.maxTokens);
+    if (!balance || !Number.isFinite(rawMax) || rawMax <= 0) {
+      return fallbackBalanceForPlan(entitlements.plan);
+    }
+    return balance;
+  }, [balance, entitlements.plan]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
-    const rawMax = Number(balance?.maxTokens);
+    const rawMax = Number(effectiveBalance?.maxTokens);
     const hasValidMax = Number.isFinite(rawMax) && rawMax > 0;
     const resolvedMax = hasValidMax ? rawMax : null;
 
-    const rawCurrent = Number(balance?.aiTokens);
+    const rawCurrent = Number(effectiveBalance?.aiTokens);
     const resolvedCurrent =
       Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
 
@@ -53,7 +90,7 @@ export default function TokenBalanceWidget({ onPress }) {
       isLow: resolvedMax ? pct < 30 : false,
       missingMax: !hasValidMax
     };
-  }, [balance]);
+  }, [effectiveBalance]);
 
   useEffect(() => {
     if (balance && missingMax) {
@@ -61,12 +98,14 @@ export default function TokenBalanceWidget({ onPress }) {
     }
   }, [balance, missingMax]);
 
-  const refillCopy =
-    balance?.refillDescription || "Token refills are managed by your account limits.";
+  const refillCopy = effectiveBalance?.estimated
+    ? `${effectiveBalance.refillDescription} Live balance is not available yet.`
+    : effectiveBalance?.refillDescription ||
+      "Token refills are managed by your account limits.";
   const usageCopy =
     "Use tokens for Ask AI, Plant Diagnose, recipe review, and environment analysis.";
 
-  if (loading || balance === null) return null;
+  if (loading) return null;
 
   return (
     <TouchableOpacity

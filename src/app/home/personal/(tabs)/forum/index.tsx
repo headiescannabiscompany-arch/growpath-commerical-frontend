@@ -125,7 +125,6 @@ export default function ForumRoute() {
           </Pressable>
         </Link>
       ) : null}
-      <PersonalFeedPlacement placement="top" routeKey="personal_forum" longContent />
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {!canView ? (
@@ -144,8 +143,6 @@ export default function ForumRoute() {
           <Text style={styles.cardText}>No posts yet.</Text>
         </View>
       ) : null}
-
-      <PersonalFeedPlacement placement="middle" routeKey="personal_forum" longContent />
 
       {posts.map((post) => {
         const id = postId(post);
@@ -205,6 +202,8 @@ export default function ForumRoute() {
           </Link>
         );
       })}
+      <PersonalFeedPlacement placement="top" routeKey="personal_forum" longContent />
+      <PersonalFeedPlacement placement="middle" routeKey="personal_forum" longContent />
       <PersonalFeedPlacement placement="bottom" routeKey="personal_forum" longContent />
     </ScrollView>
   );

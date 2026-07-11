@@ -21,6 +21,13 @@ export default function CreateCourseScreen({ navigation }) {
   const access = getLearningAccess(entitlements);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [cropType, setCropType] = useState("");
+  const [curriculumPlan, setCurriculumPlan] = useState("");
+  const [documentPlan, setDocumentPlan] = useState("");
+  const [liveSessionPlan, setLiveSessionPlan] = useState("");
   const [price, setPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,7 +54,15 @@ export default function CreateCourseScreen({ navigation }) {
       const course = await createCourse({
         title: title.trim(),
         summary: summary.trim(),
+        description: description.trim(),
+        category: category.trim(),
+        difficulty: difficulty.trim(),
+        cropType: cropType.trim(),
+        curriculumPlan: curriculumPlan.trim(),
+        documentPlan: documentPlan.trim(),
+        liveSessionPlan: liveSessionPlan.trim(),
         priceCents: priceCents ?? 0,
+        access: (priceCents || 0) > 0 ? "paid" : "free",
         isPublished: false,
         workspace: entitlements.mode || "personal"
       });
@@ -56,7 +71,7 @@ export default function CreateCourseScreen({ navigation }) {
       if (navigation?.replace) {
         navigation.replace("CourseDetail", { course, id: course?._id || course?.id });
       } else if (router?.replace) {
-        router.replace("/courses");
+        router.replace("/home/personal/courses");
       } else {
         navigation.goBack();
       }
@@ -72,6 +87,13 @@ export default function CreateCourseScreen({ navigation }) {
       <View style={styles.container}>
         <Text style={styles.title}>Create Course</Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
+        <View style={styles.workflowCard}>
+          <Text style={styles.workflowTitle}>Course builder workflow</Text>
+          <Text style={styles.helpText}>
+            Basics, curriculum, documents/media, optional live sessions, linked
+            products/grows/forum, pricing/access, preview, then publish.
+          </Text>
+        </View>
         {!access.canCreateCourses ? (
           <View style={styles.lockedCard}>
             <Text style={styles.lockedTitle}>Course creation unavailable</Text>
@@ -93,6 +115,66 @@ export default function CreateCourseScreen({ navigation }) {
           value={summary}
           onChangeText={setSummary}
           placeholder="What learners will get from this course"
+          multiline
+          editable={access.canCreateCourses && !submitting}
+          style={[styles.input, styles.multiline]}
+        />
+        <Text style={styles.label}>Description / outline</Text>
+        <TextInput
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Longer course description, outcomes, and prerequisites"
+          multiline
+          editable={access.canCreateCourses && !submitting}
+          style={[styles.input, styles.multiline]}
+        />
+        <Text style={styles.label}>Category</Text>
+        <TextInput
+          value={category}
+          onChangeText={setCategory}
+          placeholder="Plant health, living soil, lighting, business, etc."
+          editable={access.canCreateCourses && !submitting}
+          style={styles.input}
+        />
+        <Text style={styles.label}>Difficulty</Text>
+        <TextInput
+          value={difficulty}
+          onChangeText={setDifficulty}
+          placeholder="Beginner, intermediate, advanced, or pro"
+          editable={access.canCreateCourses && !submitting}
+          style={styles.input}
+        />
+        <Text style={styles.label}>Crop type</Text>
+        <TextInput
+          value={cropType}
+          onChangeText={setCropType}
+          placeholder="Cannabis, tomatoes, houseplants, microgreens, etc."
+          editable={access.canCreateCourses && !submitting}
+          style={styles.input}
+        />
+        <Text style={styles.label}>Curriculum / lessons</Text>
+        <TextInput
+          value={curriculumPlan}
+          onChangeText={setCurriculumPlan}
+          placeholder="Lesson titles, assignments, checklists, or sections"
+          multiline
+          editable={access.canCreateCourses && !submitting}
+          style={[styles.input, styles.multiline]}
+        />
+        <Text style={styles.label}>Documents / media</Text>
+        <TextInput
+          value={documentPlan}
+          onChangeText={setDocumentPlan}
+          placeholder="PDFs, worksheets, images, videos, storage needs"
+          multiline
+          editable={access.canCreateCourses && !submitting}
+          style={[styles.input, styles.multiline]}
+        />
+        <Text style={styles.label}>Live sessions, optional</Text>
+        <TextInput
+          value={liveSessionPlan}
+          onChangeText={setLiveSessionPlan}
+          placeholder="Live topics, schedule windows, duration, replay plan"
           multiline
           editable={access.canCreateCourses && !submitting}
           style={[styles.input, styles.multiline]}
@@ -159,5 +241,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc"
   },
   lockedTitle: { fontWeight: "800" },
+  workflowCard: {
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    borderRadius: radius.card,
+    padding: 12,
+    backgroundColor: "#f0fdf4"
+  },
+  workflowTitle: { color: "#166534", fontWeight: "900" },
   helpText: { color: "#64748b", fontSize: 12 }
 });

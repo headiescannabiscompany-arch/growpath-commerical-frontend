@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Href, Link, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import FeedBanner from "@/components/feed/FeedBanner";
 import {
   FeatureArea,
@@ -172,6 +173,7 @@ export default function ToolsHubScreen() {
             <Text style={styles.contextText}>Grow context active: {growId}</Text>
           </View>
         ) : null}
+        <TokenBalanceWidget />
         <View style={styles.utilityRow}>
           <Link href={hrefWithGrow("/home/personal/ai", growId) as Href} asChild>
             <Pressable

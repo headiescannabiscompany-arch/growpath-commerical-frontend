@@ -218,7 +218,6 @@ export function applyUniversalCapabilities(normalized: Record<string, boolean>) 
   normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
   normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
-  normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
   normalized[CAPABILITY_KEYS.FORUM_POST] = true;
 }
@@ -272,30 +271,31 @@ export function applyPlanCapabilities(
   const isFacility = normalizedPlan === "facility";
 
   normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
   normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE] = true;
   normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE] = true;
+  normalized[CAPABILITY_KEYS.AI_ASSISTANT] = true;
   normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC] = true;
+  normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
   normalized[CAPABILITY_KEYS.TOOLS_VPD] = true;
+  normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE] = true;
+  normalized[CAPABILITY_KEYS.TASK_REMINDERS] = true;
+  normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
 
   if (isPaidPersonal || isCommercial || isFacility) {
-    normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.AI_ASSISTANT] = true;
     normalized[CAPABILITY_KEYS.ALERTS_VIEW] = true;
     normalized[CAPABILITY_KEYS.ALERTS_ACK] = true;
     normalized[CAPABILITY_KEYS.DASHBOARD_ANALYTICS] = true;
     normalized[CAPABILITY_KEYS.DASHBOARD_EXPORT] = true;
-    normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_ADVANCED] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
     normalized[CAPABILITY_KEYS.TOOL_NPK] = true;
     normalized[CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR] = true;
-    normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
     normalized[CAPABILITY_KEYS.TOOL_PDF_EXPORT] = true;
     normalized[CAPABILITY_KEYS.TOOL_PHENO_MATRIX] = true;
-    normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE] = true;
-    normalized[CAPABILITY_KEYS.TASK_REMINDERS] = true;
   }
 
   if (isCommercial || isFacility) {
@@ -474,7 +474,6 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
           [CAPABILITY_KEYS.COURSES_VIEW]: true,
           [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
           [CAPABILITY_KEYS.COURSES_CREATE]: true,
-          [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
           [CAPABILITY_KEYS.FORUM_VIEW]: true,
           [CAPABILITY_KEYS.FORUM_POST]: true
         },

@@ -139,8 +139,15 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.DIAGNOSE_AI]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.TOOLS_VPD]).toBe(true);
-    expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.AI_ASSISTANT]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TOOL_NPK]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).not.toBe(true);
@@ -159,8 +166,9 @@ describe("entitlement mode access", () => {
       expect(caps[CAPABILITY_KEYS.COURSES_VIEW]).toBe(true);
       expect(caps[CAPABILITY_KEYS.SEE_PAID_COURSES]).toBe(true);
       expect(caps[CAPABILITY_KEYS.COURSES_CREATE]).toBe(true);
-      expect(caps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
     }
+    expect(freeCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).not.toBe(true);
+    expect(proCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
 
     expect(applyDefaultCourseLimits({}, "free")).toMatchObject({
       maxPaidCourses: 1,
