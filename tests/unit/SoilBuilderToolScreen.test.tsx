@@ -121,11 +121,15 @@ describe("SoilBuilderToolScreen", () => {
           restCookDays: 28,
           mineralSupport: "gypsum, basalt, oyster shell",
           biologySupport: "worm castings, microbial inoculant, moisture activation",
+          universalSoilScience: expect.stringContaining(
+            "not intended to replace agronomists"
+          ),
           soilRecipeReference: expect.stringMatching(
-            /Penny Saver Soil[\s\S]*Biochar is not part/
+            /Cannabis Living Soil Standard[\s\S]*Penny Saver Soil[\s\S]*Living Soil[\s\S]*No-Till Soil[\s\S]*Biochar is not part/
           ),
           scientificNotes: expect.stringContaining("reference material"),
           nutrientPhilosophy: expect.stringContaining("not intended to mimic soluble"),
+          soilHealthScoreModel: expect.stringContaining("Biological Diversity"),
           amendments: expect.arrayContaining([
             expect.objectContaining({
               name: "Alfalfa meal",
@@ -166,9 +170,11 @@ describe("SoilBuilderToolScreen", () => {
             releaseCurve: { summary: "fast N plus slow P base" },
             restCookDays: 21,
             compostUncertainty: "high - compost only estimated",
+            universalSoilScience: expect.stringContaining("different soil ecosystems"),
             soilRecipeReference: expect.stringContaining("Penny Saver Soil"),
             scientificNotes: expect.stringContaining("Basalt rock dust"),
             nutrientPhilosophy: expect.stringContaining("preserve the recipe first"),
+            soilHealthScoreModel: expect.stringContaining("Reuse Readiness"),
             directions: expect.arrayContaining([
               expect.stringContaining("Confirm base media"),
               expect.stringContaining("complete rest/cook review")
@@ -268,7 +274,10 @@ describe("SoilBuilderToolScreen", () => {
       screen.getByText(/Target release logic: 1-1-1 slow base plus fast nitrogen/)
     ).toBeTruthy();
     expect(screen.getByText(/Compost uncertainty: high - lab test missing/)).toBeTruthy();
+    expect(screen.getByText(/Universal Soil Science/)).toBeTruthy();
+    expect(screen.getByText(/Cannabis Living Soil Standard v1/)).toBeTruthy();
     expect(screen.getByText(/Penny Saver Soil/)).toBeTruthy();
+    expect(screen.getByText(/Soil Health Score Model/)).toBeTruthy();
     expect(screen.getByText(/Do not redesign locked formulas/)).toBeTruthy();
     expect(
       screen.getByText(/call the Soil Builder calculator for final nutrient estimates/)
