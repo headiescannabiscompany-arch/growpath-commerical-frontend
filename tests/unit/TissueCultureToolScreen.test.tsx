@@ -71,6 +71,10 @@ describe("TissueCultureToolRoute", () => {
         contaminationRate: 12.5,
         rootingRate: 40,
         acclimationRate: 25,
+        costTracking: {
+          totalProjectCost: 120,
+          costPerAcclimatedPlant: 40
+        },
         diagnosisRecord: {
           likelyFailureModes: [{ issue: "possible media contamination" }]
         },
@@ -106,6 +110,12 @@ describe("TissueCultureToolRoute", () => {
       screen.getByLabelText("Tissue Culture Contaminated vessels"),
       "3"
     );
+    fireEvent.changeText(screen.getByLabelText("Tissue Culture Media cost"), "40");
+    fireEvent.changeText(
+      screen.getByLabelText("Tissue Culture Vessel / supply cost"),
+      "30"
+    );
+    fireEvent.changeText(screen.getByLabelText("Tissue Culture Labor cost"), "50");
     fireEvent.press(screen.getByLabelText("Run Tissue Culture"));
 
     await waitFor(() =>
@@ -115,7 +125,10 @@ describe("TissueCultureToolRoute", () => {
           growId: "grow-1",
           projectName: "MAC1 TC",
           batchNumber: "TC-042",
-          contaminatedVessels: "3"
+          contaminatedVessels: "3",
+          mediaCost: "40",
+          vesselSupplyCost: "30",
+          laborCost: "50"
         })
       )
     );

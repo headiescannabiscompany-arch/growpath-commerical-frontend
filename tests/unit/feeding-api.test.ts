@@ -35,4 +35,40 @@ describe("feeding API label uploads", () => {
     expect(formValue(request.body, "photo")).toBeTruthy();
     expect(result.photoUrl).toBe("/uploads/label.jpg");
   });
+
+  it("generates feeding schedules through the ToolRun-backed review route", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      outputs: {
+        riskLevel: "low",
+        logSummary: "Base nutrient feeding schedule reviewed: low risk, 0 warnings."
+      },
+      toolRun: { id: "toolrun-1" }
+    });
+
+    const { generateSchedule } = require("@/api/feeding");
+    const result = await generateSchedule({
+      growId: "grow-1",
+      nutrientData: { productName: "Base nutrient" },
+      growMedium: "Soil",
+      stage: "veg",
+      weeks: 2
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/feeding-schedule-review", {
+      method: "POST",
+      headers: undefined,
+      body: expect.objectContaining({
+        growId: "grow-1",
+        productName: "Base nutrient",
+        medium: "Soil",
+        schedule: [
+          expect.objectContaining({ week: 1, stage: "veg" }),
+          expect.objectContaining({ week: 2, stage: "veg" })
+        ]
+      })
+    });
+    expect(result.data.schedule.schedule).toHaveLength(2);
+    expect(result.data.schedule.review).toMatchObject({ riskLevel: "low" });
+    expect(result.data.toolRun).toEqual({ id: "toolrun-1" });
+  });
 });

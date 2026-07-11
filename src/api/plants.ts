@@ -1,5 +1,7 @@
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
+import routes from "./routes.js";
+import { persistImageUri } from "@/utils/photoUploads";
 
 export type Plant = {
   id: string;
@@ -8,41 +10,98 @@ export type Plant = {
   // Keep fields optional during migration; tighten later from backend schema
 };
 
+function normalizePlantList(res: any) {
+  if (Array.isArray(res)) return res;
+  return res?.plants ?? res?.data ?? [];
+}
+
+function normalizePlantEntity(res: any) {
+  return res?.created ?? res?.updated ?? res?.plant ?? res;
+}
+
+function asLegacyTokenOptions(token?: string) {
+  return { auth: token ? true : false };
+}
+
 // CONTRACT: facility-scoped resources must use endpoints.ts (no hardcoded paths)
 // and must return canonical envelopes.
 
-export async function getPlants(facilityId: string): Promise<Plant[]> {
-  const listRes = await apiRequest(endpoints.plants(facilityId));
-  // Contract: { plants: [...] }
-  return listRes?.plants ?? [];
+export async function getPlants(facilityIdOrToken?: string): Promise<Plant[]> {
+  if (facilityIdOrToken) {
+    const listRes = await apiRequest(endpoints.plants(facilityIdOrToken), {
+      method: "GET"
+    });
+    return normalizePlantList(listRes);
+  }
+  const listRes = await apiRequest(routes.PLANTS.LIST);
+  return normalizePlantList(listRes);
 }
 
-export async function createPlant(facilityId: string, data: any): Promise<Plant> {
-  const createRes = await apiRequest(endpoints.plants(facilityId), {
+export async function createPlant(a: string | any, b?: any): Promise<Plant> {
+  if (typeof a === "string" && b !== undefined) {
+    const createRes = await apiRequest(endpoints.plants(a), {
+      method: "POST",
+      body: b
+    });
+    return normalizePlantEntity(createRes);
+  }
+  const createRes = await apiRequest(routes.PLANTS.CREATE, {
     method: "POST",
-    body: data
+    body: a
   });
-  // Contract options: { created } preferred; tolerate { plant } / raw
-  return createRes?.created ?? createRes?.plant ?? createRes;
+  return normalizePlantEntity(createRes);
 }
 
-export async function updatePlant(
-  facilityId: string,
-  id: string,
-  patch: any
-): Promise<Plant> {
-  const updateRes = await apiRequest(endpoints.plant(facilityId, id), {
-    method: "PATCH",
-    body: patch
+export async function updatePlant(a: string, b: string | any, c?: any): Promise<Plant> {
+  if (typeof b === "string" && c !== undefined) {
+    const updateRes = await apiRequest(endpoints.plant(a, b), {
+      method: "PATCH",
+      body: c
+    });
+    return normalizePlantEntity(updateRes);
+  }
+  const updateRes = await apiRequest(routes.PLANTS.DETAIL(a), {
+    method: "PUT",
+    ...asLegacyTokenOptions(c),
+    body: b
   });
-  return updateRes?.updated ?? updateRes?.plant ?? updateRes;
+  return normalizePlantEntity(updateRes);
 }
 
-export async function deletePlant(facilityId: string, id: string) {
-  const deleteRes = await apiRequest(endpoints.plant(facilityId, id), {
-    method: "DELETE"
+export async function deletePlant(a: string, b?: string) {
+  if (typeof b === "string") {
+    const deleteRes = await apiRequest(endpoints.plant(a, b), { method: "DELETE" });
+    return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
+  }
+  const deleteRes = await apiRequest(routes.PLANTS.DETAIL(a), {
+    method: "DELETE",
+    ...asLegacyTokenOptions(b)
   });
   return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
+}
+
+export async function uploadPlantPhoto(file: any) {
+  const uri = file && typeof file === "object" && file.uri ? file.uri : file;
+  const url = await persistImageUri(uri);
+  return { url };
+}
+
+export async function getPlantWithLogs(plantId: string, token?: string) {
+  const [plant, logs] = await Promise.all([
+    apiRequest(routes.PLANTS.DETAIL(plantId), asLegacyTokenOptions(token)),
+    apiRequest(routes.PLANTS.LOGS(plantId), asLegacyTokenOptions(token))
+  ]);
+  return {
+    plant: plant?.plant ?? plant,
+    logs: logs?.logs ?? logs?.data ?? logs ?? []
+  };
+}
+
+export async function exportPlantPdf(plantId: string, token?: string) {
+  return apiRequest(routes.PLANTS.EXPORT_PDF(plantId), {
+    method: "GET",
+    ...asLegacyTokenOptions(token)
+  });
 }
 
 // ===== Personal Mode Plants (User/Grow-Scoped) =====

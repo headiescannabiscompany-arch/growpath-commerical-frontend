@@ -1932,6 +1932,10 @@ function calculateTissueCulture(input = {}) {
   const browningVessels = Math.max(0, number(input.browningVessels ?? 0, "Browning vessels"));
   const stalledVessels = Math.max(0, number(input.stalledVessels ?? 0, "Stalled vessels"));
   const totalExplantsStarted = Math.max(vessels, number(input.totalExplantsStarted ?? vessels, "Total explants started"));
+  const mediaCost = Math.max(0, number(input.mediaCost ?? 0, "Media cost"));
+  const vesselSupplyCost = Math.max(0, number(input.vesselSupplyCost ?? input.vesselCost ?? 0, "Vessel supply cost"));
+  const laborCost = Math.max(0, number(input.laborCost ?? 0, "Labor cost"));
+  const totalProjectCost = mediaCost + vesselSupplyCost + laborCost;
   const contaminationRate = vessels ? contaminated / vessels : 0;
   const rootingRate = vessels ? rooted / vessels : 0;
   const acclimationRate = rooted ? acclimated / rooted : 0;
@@ -2105,6 +2109,19 @@ function calculateTissueCulture(input = {}) {
       rootingRate: Number((rootingRate * 100).toFixed(2)),
       acclimationRate: Number((acclimationRate * 100).toFixed(2))
     },
+    costTracking: {
+      mediaCost: Number(mediaCost.toFixed(2)),
+      vesselSupplyCost: Number(vesselSupplyCost.toFixed(2)),
+      laborCost: Number(laborCost.toFixed(2)),
+      totalProjectCost: Number(totalProjectCost.toFixed(2)),
+      costPerVessel: vessels ? Number((totalProjectCost / vessels).toFixed(2)) : null,
+      costPerCleanVessel: vessels - contaminated > 0
+        ? Number((totalProjectCost / (vessels - contaminated)).toFixed(2))
+        : null,
+      costPerAcclimatedPlant: acclimated
+        ? Number((totalProjectCost / acclimated).toFixed(2))
+        : null
+    },
     diagnosisRecord: {
       likelyFailureModes,
       tags: Array.from(new Set(diagnosisTags)),
@@ -2127,6 +2144,9 @@ function calculateTissueCulture(input = {}) {
       geneticsId: input.geneticsId || null,
       SOPVersion: input.SOPVersion || input.sopVersion || null,
       mediaRecipe: input.mediaRecipe || null,
+      mediaCost,
+      vesselSupplyCost,
+      laborCost,
       stage,
       vesselCount: vessels
     },

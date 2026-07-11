@@ -2,6 +2,7 @@
 // and must return canonical envelopes.
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
+import routes from "./routes.js";
 
 export type Grow = {
   id: string;
@@ -13,19 +14,57 @@ export type Grow = {
   // Add fields as your backend defines them (keep optional to avoid UI breakage during migration)
 };
 
-export async function listGrows(facilityId: string): Promise<Grow[]> {
-  const listRes = await apiRequest(endpoints.grows(facilityId));
-  // Contract: { grows: [...] }
-  return listRes?.grows ?? [];
+function normalizeGrowList(res: any) {
+  const raw = Array.isArray(res) ? res : (res?.grows ?? res?.data ?? []);
+  return Array.isArray(raw)
+    ? raw.map((grow) => {
+        if (!grow || typeof grow !== "object") return grow;
+        if (grow.id && !grow._id) return { ...grow, _id: grow.id };
+        if (grow._id && !grow.id) return { ...grow, id: grow._id };
+        return grow;
+      })
+    : [];
 }
 
-export async function createGrow(facilityId: string, data: any): Promise<Grow> {
-  const createRes = await apiRequest(endpoints.grows(facilityId), {
-    method: "POST",
-    body: data
+function normalizeGrowEntity(res: any) {
+  const grow = res?.created ?? res?.updated ?? res?.grow ?? res;
+  if (!grow || typeof grow !== "object") return grow;
+  if (grow.id && !grow._id) return { ...grow, _id: grow.id };
+  if (grow._id && !grow.id) return { ...grow, id: grow._id };
+  return grow;
+}
+
+export async function listGrows(
+  filtersOrFacilityId: string | Record<string, any> = {}
+): Promise<Grow[]> {
+  if (typeof filtersOrFacilityId === "string" && filtersOrFacilityId) {
+    const listRes = await apiRequest(endpoints.grows(filtersOrFacilityId), {
+      method: "GET"
+    });
+    return normalizeGrowList(listRes);
+  }
+  const listRes = await apiRequest(routes.GROWS.LIST, {
+    params: filtersOrFacilityId || {}
   });
-  // Contract options: { created: grow } (preferred) or { grow } or raw object
-  return createRes?.created ?? createRes?.grow ?? createRes;
+  return normalizeGrowList(listRes);
+}
+
+export async function createGrow(
+  a: string | Record<string, any>,
+  b?: any
+): Promise<Grow> {
+  if (typeof a === "string" && b !== undefined) {
+    const createRes = await apiRequest(endpoints.grows(a), {
+      method: "POST",
+      body: b
+    });
+    return normalizeGrowEntity(createRes);
+  }
+  const createRes = await apiRequest(routes.GROWS.CREATE, {
+    method: "POST",
+    body: a
+  });
+  return normalizeGrowEntity(createRes);
 }
 
 export async function updateGrow(
@@ -37,7 +76,7 @@ export async function updateGrow(
     method: "PATCH",
     body: patch
   });
-  return updateRes?.updated ?? updateRes?.grow ?? updateRes;
+  return normalizeGrowEntity(updateRes);
 }
 
 export async function deleteGrow(facilityId: string, id: string) {
@@ -136,4 +175,24 @@ export async function appendGrowPhotos(
     body: { photos: photoUrls }
   });
   return (res as any)?.grow ?? (res as any)?.data?.grow ?? (res as any) ?? null;
+}
+
+export function addEntry(growId: string, data: Record<string, any> = {}) {
+  return apiRequest(routes.GROWS.ENTRIES(growId), {
+    method: "POST",
+    body: data
+  });
+}
+
+export function uploadEntryPhoto(growId: string, file: any) {
+  const form = new FormData();
+  form.append("photo", file);
+  return apiRequest(routes.GROWS.ENTRY_PHOTO(growId), { method: "POST", body: form });
+}
+
+export function addPlantToGrow(growId: string, plant: Record<string, any>) {
+  return apiRequest(routes.GROWS.ADD_PLANT(growId), {
+    method: "POST",
+    body: plant
+  });
 }

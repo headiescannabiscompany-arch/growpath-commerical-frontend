@@ -1,5 +1,32 @@
 import { apiRequest } from "./apiRequest";
 
+export type SourceRecord = {
+  sourceName: string;
+  sourceType?:
+    | "extension"
+    | "federal"
+    | "academic"
+    | "api"
+    | "manufacturer_label"
+    | "manufacturer"
+    | "user_entered"
+    | "growpath_verified"
+    | "ai_assisted"
+    | "other";
+  url?: string;
+  citation?: string;
+  license?: string;
+  licenseReviewedAt?: string | null;
+  commercialUseAllowed?: boolean;
+  trainingUseAllowed?: boolean;
+  accessedAt?: string | null;
+  lastReviewedAt?: string | null;
+  region?: string;
+  cropScope?: string;
+  confidence?: "low" | "medium" | "high";
+  notes?: string;
+};
+
 export type ProductIngredient = {
   _id?: string;
   id?: string;
@@ -31,17 +58,7 @@ export type ProductIngredient = {
   sourceType?: string;
   confidence?: "low" | "medium" | "high";
   sourceUrl?: string;
-  sourceRecords?: {
-    sourceName: string;
-    sourceType?: string;
-    url?: string;
-    citation?: string;
-    license?: string;
-    commercialUseAllowed?: boolean;
-    trainingUseAllowed?: boolean;
-    confidence?: "low" | "medium" | "high";
-    notes?: string;
-  }[];
+  sourceRecords?: SourceRecord[];
   favorite?: boolean;
   archivedAt?: string | null;
 };

@@ -9,7 +9,7 @@ const TelemetrySourceSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["pulse", "growlink", "upload", "manual"],
+      enum: ["pulse", "ubibot", "growlink", "upload", "manual"],
       index: true
     },
     name: { type: String, required: true },

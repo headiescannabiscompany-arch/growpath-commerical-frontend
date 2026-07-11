@@ -12,6 +12,21 @@ function writeFile(tempRoot, relPath, contents) {
 }
 
 function fakeNodeScript(name) {
+  if (name.endsWith(".mjs")) {
+    return `
+import fs from "fs";
+import path from "path";
+const logPath = path.join(process.cwd(), "preflight-log.jsonl");
+fs.appendFileSync(logPath, JSON.stringify({
+  name: ${JSON.stringify(name)},
+  argv: process.argv.slice(2),
+  strict: process.env.GROWPATH_STRICT_RELEASE || "",
+  playwrightPort: process.env.PLAYWRIGHT_WEB_PORT || "",
+  playwrightVideo: process.env.PLAYWRIGHT_DISABLE_VIDEO || ""
+}) + "\\n");
+`;
+  }
+
   return `
 const fs = require("fs");
 const path = require("path");
@@ -38,6 +53,7 @@ function createPreflightRoot() {
   [
     "scripts/scan-release.cjs",
     "scripts/audit-full-surface.cjs",
+    "scripts/full-scan.mjs",
     "scripts/verify-sentry-dsn.cjs",
     "scripts/verify-live-urls.cjs",
     "scripts/inventory-ui-routes.cjs",
@@ -45,6 +61,20 @@ function createPreflightRoot() {
     "scripts/validate-backend-route-contract.cjs",
     "scripts/validate-v1-ui-surface.cjs",
     "scripts/validate-v1-feature-matrix.cjs",
+    "scripts/validate-toolrun-contract.cjs",
+    "scripts/validate-source-record-contract.cjs",
+    "scripts/validate-product-ingredient-contract.cjs",
+    "scripts/validate-nutrient-recipe-contract.cjs",
+    "scripts/validate-crop-profile-contract.cjs",
+    "scripts/validate-tool-result-surface-contract.cjs",
+    "scripts/validate-ownership-contract.cjs",
+    "scripts/validate-soil-nutrient-tools-contract.cjs",
+    "scripts/validate-diagnosis-ipm-contract.cjs",
+    "scripts/validate-genetics-pheno-contract.cjs",
+    "scripts/validate-propagation-tc-contract.cjs",
+    "scripts/validate-harvest-history-contract.cjs",
+    "scripts/validate-business-production-contract.cjs",
+    "scripts/validate-visual-polish-contract.cjs",
     "scripts/inventory-ai-functions.cjs",
     "scripts/validate-id-policy.cjs",
     "scripts/validate-facility-context.cjs",
@@ -97,11 +127,26 @@ describe("release preflight", () => {
     expect(names).toEqual([
       "scripts/scan-release.cjs",
       "scripts/audit-full-surface.cjs",
+      "scripts/full-scan.mjs",
       "scripts/inventory-ui-routes.cjs",
       "scripts/validate-frontend-runtime-contract.cjs",
       "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
+      "scripts/validate-toolrun-contract.cjs",
+      "scripts/validate-source-record-contract.cjs",
+      "scripts/validate-product-ingredient-contract.cjs",
+      "scripts/validate-nutrient-recipe-contract.cjs",
+      "scripts/validate-crop-profile-contract.cjs",
+      "scripts/validate-tool-result-surface-contract.cjs",
+      "scripts/validate-ownership-contract.cjs",
+      "scripts/validate-soil-nutrient-tools-contract.cjs",
+      "scripts/validate-diagnosis-ipm-contract.cjs",
+      "scripts/validate-genetics-pheno-contract.cjs",
+      "scripts/validate-propagation-tc-contract.cjs",
+      "scripts/validate-harvest-history-contract.cjs",
+      "scripts/validate-business-production-contract.cjs",
+      "scripts/validate-visual-polish-contract.cjs",
       "scripts/inventory-ai-functions.cjs",
       "scripts/validate-id-policy.cjs",
       "scripts/validate-facility-context.cjs",
@@ -112,15 +157,18 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(readLog(tempRoot)[10].argv).toEqual(
+    expect(readLog(tempRoot)[25].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
         "backend/routes/tools.test.js",
-        "backend/routes/cropKnowledge.test.js"
+        "backend/routes/cropKnowledge.test.js",
+        "backend/routes/diagnose.test.js",
+        "backend/routes/telemetry.test.js",
+        "backend/routes/integrations.test.js"
       ])
     );
-    expect(readLog(tempRoot)[11].argv).toEqual(
+    expect(readLog(tempRoot)[26].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -151,6 +199,7 @@ describe("release preflight", () => {
     expect(log.map((entry) => entry.name)).toEqual([
       "scripts/scan-release.cjs",
       "scripts/audit-full-surface.cjs",
+      "scripts/full-scan.mjs",
       "scripts/scan-release.cjs",
       "scripts/verify-sentry-dsn.cjs",
       "scripts/verify-live-urls.cjs",
@@ -159,6 +208,20 @@ describe("release preflight", () => {
       "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
+      "scripts/validate-toolrun-contract.cjs",
+      "scripts/validate-source-record-contract.cjs",
+      "scripts/validate-product-ingredient-contract.cjs",
+      "scripts/validate-nutrient-recipe-contract.cjs",
+      "scripts/validate-crop-profile-contract.cjs",
+      "scripts/validate-tool-result-surface-contract.cjs",
+      "scripts/validate-ownership-contract.cjs",
+      "scripts/validate-soil-nutrient-tools-contract.cjs",
+      "scripts/validate-diagnosis-ipm-contract.cjs",
+      "scripts/validate-genetics-pheno-contract.cjs",
+      "scripts/validate-propagation-tc-contract.cjs",
+      "scripts/validate-harvest-history-contract.cjs",
+      "scripts/validate-business-production-contract.cjs",
+      "scripts/validate-visual-polish-contract.cjs",
       "scripts/inventory-ai-functions.cjs",
       "scripts/validate-id-policy.cjs",
       "scripts/validate-facility-context.cjs",
@@ -169,16 +232,20 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(log[2].strict).toBe("1");
-    expect(log[13].argv).toEqual(
+    expect(log[2].argv).toEqual(["--strict"]);
+    expect(log[3].strict).toBe("1");
+    expect(log[28].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
         "backend/routes/tools.test.js",
-        "backend/routes/cropKnowledge.test.js"
+        "backend/routes/cropKnowledge.test.js",
+        "backend/routes/diagnose.test.js",
+        "backend/routes/telemetry.test.js",
+        "backend/routes/integrations.test.js"
       ])
     );
-    expect(log[14].argv).toEqual(
+    expect(log[29].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -194,7 +261,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[15]).toEqual(
+    expect(log[30]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

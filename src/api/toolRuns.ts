@@ -46,6 +46,7 @@ export type CalculatorTool =
   | "npk-recipe"
   | "ph-ec-check"
   | "topdress-plan"
+  | "feeding-schedule-review"
   | "dry-amendment-mix"
   | "dry-cure-guard"
   | "soil-builder"

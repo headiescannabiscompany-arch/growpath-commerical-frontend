@@ -138,6 +138,24 @@ export default function TissueCultureToolRoute() {
         },
         { key: "SOPVersion", label: "SOP version", defaultValue: "SOP-TC-1" },
         {
+          key: "mediaCost",
+          label: "Media cost",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "vesselSupplyCost",
+          label: "Vessel / supply cost",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "laborCost",
+          label: "Labor cost",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
           key: "symptoms",
           label: "Symptoms / diagnosis notes",
           defaultValue: "fuzzy mold, browning",
@@ -165,6 +183,9 @@ export default function TissueCultureToolRoute() {
         rootedVessels: values.rootedVessels,
         acclimatedPlants: values.acclimatedPlants,
         SOPVersion: values.SOPVersion,
+        mediaCost: values.mediaCost,
+        vesselSupplyCost: values.vesselSupplyCost,
+        laborCost: values.laborCost,
         symptoms: values.symptoms,
         transfersDueDays: values.transfersDueDays
       })}
@@ -186,6 +207,11 @@ export default function TissueCultureToolRoute() {
           key: "nextCheck",
           label: "Calendar tasks",
           value: outputs.generatedCalendar?.length || 0
+        },
+        {
+          key: "cost",
+          label: "Total cost",
+          value: outputs.costTracking?.totalProjectCost
         }
       ]}
       buildNotices={(outputs) => [

@@ -75,7 +75,7 @@ export default function PdfExportScreen() {
   return (
     <ScreenBoundary title="PDF / Export" showBack backFallbackHref="/home/personal/tools">
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>PDF / Export</Text>
+        <Text style={styles.title}>CSV Export</Text>
         <Text style={styles.subtitle}>
           Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
         </Text>
@@ -130,7 +130,7 @@ export default function PdfExportScreen() {
               }
               assumptions={[
                 "This export uses records visible to the current account and optional grow context.",
-                "PDF rendering is represented as an export-ready package until backend or native PDF support is connected."
+                "Use CSV export for the current release; PDF output is not exposed as a completed workflow."
               ]}
               actions={[
                 {

@@ -24,11 +24,63 @@ export async function uploadLabel(uri, token) {
     : result;
 }
 
+function numericWeeks(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 1;
+  return Math.min(Math.max(Math.round(parsed), 1), 52);
+}
+
+function defaultScheduleRows(data = {}) {
+  if (Array.isArray(data.schedule) && data.schedule.length) return data.schedule;
+  const weeks = numericWeeks(data.weeks);
+  const stage = String(data.stage || data.currentStage || "veg");
+  const productName = String(
+    data.nutrientData?.productName || data.productName || "Nutrient"
+  );
+  return Array.from({ length: weeks }, (_, index) => ({
+    week: index + 1,
+    stage,
+    feed: {
+      amountPerGallon: `Review ${productName} label rate; start low and adjust from plant response.`
+    },
+    notes: "Generated as a conservative planning row before backend risk review."
+  }));
+}
+
+function unwrapToolResponse(response) {
+  return response?.data ?? response ?? {};
+}
+
 export function generateSchedule(data, token) {
-  return apiRequest(apiRoutes.FEEDING.SCHEDULE, {
+  const schedule = defaultScheduleRows(data);
+  const payload = {
+    ...data,
+    productName: data?.productName || data?.nutrientData?.productName,
+    medium: data?.medium || data?.growMedium,
+    schedule
+  };
+  return apiRequest("/api/tools/feeding-schedule-review", {
     method: "POST",
     headers: buildAuthHeaders(token),
-    body: data
+    body: payload
+  }).then((response) => {
+    const body = unwrapToolResponse(response);
+    const outputs = body.outputs || {};
+    return {
+      ...body,
+      data: {
+        ...(body.data || {}),
+        schedule: {
+          schedule,
+          notes:
+            outputs.logSummary ||
+            outputs.scheduleSummary ||
+            "Generated schedule reviewed by the feeding schedule calculator.",
+          review: outputs
+        },
+        toolRun: body.toolRun
+      }
+    };
   });
 }
 

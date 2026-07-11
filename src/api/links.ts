@@ -35,3 +35,7 @@ export async function updateLink(linkId: string, data: Partial<Link>) {
 export async function deleteLink(linkId: string) {
   return apiRequest(`${LINKS_BASE}/${encodeURIComponent(linkId)}`, { method: "DELETE" });
 }
+
+export const getLinks = fetchLinks;
+export const addLink = createLink;
+export const removeLink = deleteLink;

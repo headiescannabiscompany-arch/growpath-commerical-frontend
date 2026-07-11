@@ -86,6 +86,72 @@ describe("crop knowledge routes", () => {
     app = createApp();
   });
 
+  test("creates, updates, and archives plant taxa with source provenance intact", async () => {
+    const sourceRecords = [
+      {
+        sourceName: "Taxon source",
+        sourceType: "academic",
+        confidence: "medium"
+      }
+    ];
+    mockPlantTaxon.create.mockResolvedValue({
+      _id: CROP_ID,
+      scientificName: "Solanum lycopersicum",
+      commonNames: ["tomato"],
+      sourceRecords
+    });
+    mockPlantTaxon.findOneAndUpdate
+      .mockResolvedValueOnce({
+        _id: CROP_ID,
+        scientificName: "Solanum lycopersicum",
+        commonNames: ["tomato", "garden tomato"],
+        curationStatus: "needs_license_review",
+        sourceRecords
+      })
+      .mockResolvedValueOnce({
+        _id: CROP_ID,
+        scientificName: "Solanum lycopersicum",
+        archivedAt: new Date()
+      });
+
+    const created = await request(app).post("/api/crop-knowledge/taxa").send({
+      scientificName: "Solanum lycopersicum",
+      commonNames: ["tomato"],
+      family: "Solanaceae",
+      genus: "Solanum",
+      species: "lycopersicum",
+      cropCategory: "vegetable",
+      sourceRecords
+    });
+    const updated = await request(app)
+      .patch(`/api/crop-knowledge/taxa/${CROP_ID}`)
+      .send({
+        commonNames: ["tomato", "garden tomato"],
+        curationStatus: "needs_license_review",
+        sourceRecords
+      });
+    const archived = await request(app).delete(`/api/crop-knowledge/taxa/${CROP_ID}`);
+
+    expect(created.status).toBe(201);
+    expect(mockPlantTaxon.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scientificName: "Solanum lycopersicum",
+        family: "Solanaceae",
+        genus: "Solanum",
+        species: "lycopersicum",
+        submittedBy: expect.any(Object),
+        sourceRecords
+      })
+    );
+    expect(updated.status).toBe(200);
+    expect(updated.body.item).toMatchObject({
+      commonNames: ["tomato", "garden tomato"],
+      sourceRecords: [expect.objectContaining({ sourceName: "Taxon source" })]
+    });
+    expect(archived.status).toBe(200);
+    expect(archived.body.archived).toBe(true);
+  });
+
   test("lists and creates crop profiles with source provenance intact", async () => {
     const sourceRecords = [
       {

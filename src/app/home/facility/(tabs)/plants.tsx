@@ -304,7 +304,8 @@ export default function FacilityPlantsTab() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No plants yet</Text>
                 <Text style={styles.muted}>
-                  When plants exist on the backend, they will show up here.
+                  Create a plant above or link plants from a grow/room to start tracking
+                  room and batch coverage.
                 </Text>
               </View>
             ) : null

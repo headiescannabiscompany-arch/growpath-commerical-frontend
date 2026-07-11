@@ -56,6 +56,7 @@ async function main() {
   run("full frontend/backend surface audit", process.execPath, [
     "scripts/audit-full-surface.cjs"
   ]);
+  run("strict full app scan", process.execPath, ["scripts/full-scan.mjs", "--strict"]);
 
   if (strict) {
     run("strict release scan", process.execPath, ["scripts/scan-release.cjs"], {
@@ -78,6 +79,48 @@ async function main() {
   run("V1 feature matrix validation", process.execPath, [
     "scripts/validate-v1-feature-matrix.cjs"
   ]);
+  run("ToolRun contract validation", process.execPath, [
+    "scripts/validate-toolrun-contract.cjs"
+  ]);
+  run("SourceRecord contract validation", process.execPath, [
+    "scripts/validate-source-record-contract.cjs"
+  ]);
+  run("Product/Ingredient contract validation", process.execPath, [
+    "scripts/validate-product-ingredient-contract.cjs"
+  ]);
+  run("NutrientRecipe contract validation", process.execPath, [
+    "scripts/validate-nutrient-recipe-contract.cjs"
+  ]);
+  run("Crop profile/taxon contract validation", process.execPath, [
+    "scripts/validate-crop-profile-contract.cjs"
+  ]);
+  run("Tool result surface contract validation", process.execPath, [
+    "scripts/validate-tool-result-surface-contract.cjs"
+  ]);
+  run("Ownership contract validation", process.execPath, [
+    "scripts/validate-ownership-contract.cjs"
+  ]);
+  run("Soil/nutrient tools contract validation", process.execPath, [
+    "scripts/validate-soil-nutrient-tools-contract.cjs"
+  ]);
+  run("Diagnosis/IPM contract validation", process.execPath, [
+    "scripts/validate-diagnosis-ipm-contract.cjs"
+  ]);
+  run("Genetics/pheno contract validation", process.execPath, [
+    "scripts/validate-genetics-pheno-contract.cjs"
+  ]);
+  run("Propagation/tissue culture contract validation", process.execPath, [
+    "scripts/validate-propagation-tc-contract.cjs"
+  ]);
+  run("Harvest/dry-cure/history contract validation", process.execPath, [
+    "scripts/validate-harvest-history-contract.cjs"
+  ]);
+  run("Business/production contract validation", process.execPath, [
+    "scripts/validate-business-production-contract.cjs"
+  ]);
+  run("Visual polish contract validation", process.execPath, [
+    "scripts/validate-visual-polish-contract.cjs"
+  ]);
   run("AI function inventory validation", process.execPath, [
     "scripts/inventory-ai-functions.cjs"
   ]);
@@ -93,7 +136,10 @@ async function main() {
     "--runInBand",
     "backend/routes/tools.test.js",
     "backend/routes/growpathModules.test.js",
-    "backend/routes/cropKnowledge.test.js"
+    "backend/routes/cropKnowledge.test.js",
+    "backend/routes/diagnose.test.js",
+    "backend/routes/telemetry.test.js",
+    "backend/routes/integrations.test.js"
   ]);
 
   run("focused release unit tests", process.execPath, [

@@ -1023,7 +1023,10 @@ describe("Tools Router (tools.js)", () => {
           stage: "initiation",
           symptoms: "fuzzy mold, browning near explant",
           mediaRecipe: "starter",
-          SOPVersion: "SOP-1"
+          SOPVersion: "SOP-1",
+          mediaCost: 40,
+          vesselSupplyCost: 30,
+          laborCost: 50
         })
     );
     const batch = await authed(
@@ -1083,12 +1086,21 @@ describe("Tools Router (tools.js)", () => {
         contaminatedExplants: 5,
         oxidizedExplants: 2
       }),
+      costTracking: expect.objectContaining({
+        totalProjectCost: 120,
+        costPerVessel: 6,
+        costPerCleanVessel: 8,
+        costPerAcclimatedPlant: 40
+      }),
       diagnosisRecord: expect.objectContaining({
         tags: expect.arrayContaining(["contamination", "oxidation"])
       }),
       complianceRecord: expect.objectContaining({
         batchNumber: "TC-001",
         mediaRecipe: "starter",
+        mediaCost: 40,
+        vesselSupplyCost: 30,
+        laborCost: 50,
         stage: "initiation"
       })
     });
@@ -1743,6 +1755,50 @@ describe("Tools Router (tools.js)", () => {
         previousVersionId: RECIPE_ID
       })
     );
+  });
+
+  test("clones a recipe using authenticated ownership", async () => {
+    const source = {
+      _id: RECIPE_ID,
+      user: "object-user",
+      growId: "grow_1",
+      name: "Veg Feed",
+      description: "Baseline veg feed",
+      version: 2,
+      stage: "veg",
+      medium: "soil",
+      batchVolume: 5,
+      batchUnit: "gal",
+      products: [{ name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }],
+      releaseEnvironment: { soilTempC: 22 },
+      waterBaseline: { sourceEC: 0.2 },
+      measuredEC: 1.2,
+      measuredPH: 6.4,
+      sourceConfidence: { overall: "medium" },
+      sourceRecords: [{ sourceName: "Manufacturer label", sourceType: "manufacturer_label" }],
+      mixingOrder: ["Base"],
+      calculation: { totals: { Nppm: 20 } },
+      notes: "Keep pH stable."
+    };
+    mockNutrientRecipeModel.findOne.mockResolvedValue(source);
+
+    const res = await authed(
+      request(app)
+        .post(`/api/tools/recipes/${RECIPE_ID}/clone`)
+        .send({ name: "Veg Feed copy" })
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockNutrientRecipeModel.findOne).toHaveBeenCalledWith({
+      _id: RECIPE_ID,
+      user: expect.any(Object)
+    });
+    expect(res.body.recipe).toMatchObject({
+      name: "Veg Feed copy",
+      clonedFromRecipeId: RECIPE_ID,
+      version: 1,
+      sourceRecords: [expect.objectContaining({ sourceName: "Manufacturer label" })]
+    });
   });
 
   test("records nutrient recipe use as a linked ToolRun and feeding history event", async () => {

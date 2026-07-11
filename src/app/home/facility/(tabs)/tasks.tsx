@@ -491,7 +491,8 @@ export default function FacilityTasksRoute() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No tasks yet</Text>
                 <Text style={styles.muted}>
-                  When tasks exist on the backend, they will show up here.
+                  Create a task above or generate one from a room, SOP, alert, course,
+                  live, tool run, product, or forum source.
                 </Text>
               </View>
             ) : null

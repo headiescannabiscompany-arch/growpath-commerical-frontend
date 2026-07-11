@@ -1,14 +1,54 @@
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
+import routes from "./routes.js";
+
+function normalizeTaskList(res: any) {
+  const raw = Array.isArray(res) ? res : (res?.tasks ?? res?.data ?? []);
+  return Array.isArray(raw)
+    ? raw.map((task) => {
+        if (!task || typeof task !== "object") return task;
+        if (task.id && !task._id) return { ...task, _id: task.id };
+        if (task._id && !task.id) return { ...task, id: task._id };
+        return task;
+      })
+    : [];
+}
+
+function normalizeTaskEntity(res: any) {
+  const task = res?.created ?? res?.updated ?? res?.task ?? res;
+  if (!task || typeof task !== "object") return task;
+  if (task.id && !task._id) return { ...task, _id: task.id };
+  if (task._id && !task.id) return { ...task, id: task._id };
+  return task;
+}
+
+function toTaskId(value: any) {
+  if (value && typeof value === "object") return value.id || value._id || null;
+  return value || null;
+}
+
+function asLegacyTokenOptions(token?: string) {
+  return { auth: token ? true : false };
+}
+
+export function getTodayTasks(token?: string) {
+  return apiRequest(routes.TASKS.TODAY, asLegacyTokenOptions(token));
+}
+
+export function getUpcomingTasks(token?: string) {
+  return apiRequest(routes.TASKS.UPCOMING, asLegacyTokenOptions(token));
+}
 
 // Phase 2.3.7: Dual-mode helpers (personal + facility) with overloads
 export function getTasks(): Promise<PersonalTask[]>;
 export function getTasks(facilityId: string): Promise<Task[]>;
 export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Task[]> {
   if (facilityId) {
+    if (facilityId.startsWith("token") || facilityId.includes(".")) {
+      return apiRequest(routes.TASKS.LIST, asLegacyTokenOptions(facilityId));
+    }
     const listRes = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
-    // Contract: { tasks: [...] }
-    return listRes?.tasks ?? [];
+    return normalizeTaskList(listRes);
   }
   return listPersonalTasks();
 }
@@ -23,7 +63,7 @@ export async function createCustomTask(a: any, b?: any): Promise<any> {
   if (typeof a === "string") {
     return createTask(a, b);
   }
-  const personalCreateRes = await apiRequest("/api/personal/tasks", {
+  const personalCreateRes = await apiRequest(routes.TASKS.LIST, {
     method: "POST",
     body: a
   });
@@ -34,13 +74,26 @@ export function completeTask(id: string): Promise<PersonalTask>;
 export function completeTask(facilityId: string, id: string, patch?: any): Promise<Task>;
 export async function completeTask(a: any, b?: any, c?: any): Promise<any> {
   if (arguments.length >= 2) {
-    return updateTask(a, b, c ?? { completed: true });
+    if (c !== undefined) return updateTask(a, b, c);
+    return apiRequest(routes.TASKS.COMPLETE(toTaskId(a)), {
+      method: "PUT",
+      ...asLegacyTokenOptions(b),
+      body: {}
+    });
   }
   const completeRes = await apiRequest(`/api/personal/tasks/${a}`, {
     method: "PATCH",
     body: { completed: true }
   });
   return completeRes?.task ?? completeRes?.updated ?? completeRes;
+}
+
+export function reopenTask(id: any, token?: string) {
+  return apiRequest(routes.TASKS.REOPEN(toTaskId(id)), {
+    method: "PUT",
+    ...asLegacyTokenOptions(token),
+    body: {}
+  });
 }
 
 export type Task = {
@@ -63,7 +116,7 @@ export async function createTask(facilityId: string, data: any): Promise<Task> {
     method: "POST",
     body: data
   });
-  return createRes?.created ?? createRes?.task ?? createRes;
+  return normalizeTaskEntity(createRes);
 }
 
 export async function getTask(facilityId: string, id: string): Promise<Task | null> {
@@ -80,7 +133,7 @@ export async function updateTask(
     method: "PATCH",
     body: patch
   });
-  return updateRes?.updated ?? updateRes?.task ?? updateRes;
+  return normalizeTaskEntity(updateRes);
 }
 
 export async function completeFacilityTask(
@@ -96,6 +149,11 @@ export async function completeFacilityTask(
 }
 
 export async function deleteTask(facilityId: string, id: string) {
+  if (arguments.length < 2) {
+    return apiRequest(routes.TASKS.DELETE(toTaskId(facilityId)), {
+      method: "DELETE"
+    });
+  }
   const deleteRes = await apiRequest(endpoints.task(facilityId, id), {
     method: "DELETE"
   });

@@ -4,9 +4,18 @@ import path from "path";
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, "src");
 const TESTS = path.join(ROOT, "tests");
+const strict = process.argv.includes("--strict");
 
 const EXTS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
-const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", "build", "coverage", ".expo", ".next"]);
+const IGNORE_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  "coverage",
+  ".expo",
+  ".next"
+]);
 
 function walk(dir) {
   const out = [];
@@ -93,6 +102,20 @@ function groupByBase(files) {
   return map;
 }
 
+function isCompatReexport(file) {
+  if (path.extname(file) !== ".js") return false;
+  const code = read(file).trim();
+  const base = path.basename(file, ".js");
+  const tsTarget = `./${base}.ts`;
+  const tsxTarget = `./${base}.tsx`;
+  return (
+    code === `export * from "${tsTarget}";` ||
+    code === `export { default } from "${tsTarget}";\nexport * from "${tsTarget}";` ||
+    code === `export * from "${tsxTarget}";` ||
+    code === `export { default } from "${tsxTarget}";\nexport * from "${tsxTarget}";`
+  );
+}
+
 const srcFiles = fs.existsSync(SRC) ? walk(SRC).filter(isCodeFile) : [];
 const testFiles = fs.existsSync(TESTS) ? walk(TESTS).filter(isCodeFile) : [];
 const allFiles = [...srcFiles, ...testFiles];
@@ -118,10 +141,16 @@ for (const f of allFiles) {
 
 const byBase = groupByBase(allFiles);
 const twins = [];
+const compatTwinWrappers = [];
 for (const [, arr] of byBase.entries()) {
   const exts = new Set(arr.map((f) => path.extname(f)));
   if (exts.has(".js") && (exts.has(".ts") || exts.has(".tsx"))) {
-    twins.push(arr.map(rel));
+    const jsFile = arr.find((f) => path.extname(f) === ".js");
+    if (jsFile && isCompatReexport(jsFile)) {
+      compatTwinWrappers.push(arr.map(rel));
+    } else {
+      twins.push(arr.map(rel));
+    }
   }
 }
 
@@ -178,6 +207,16 @@ for (const f of allFiles) {
   }
 }
 
+const strictBannedFindings = bannedFindings
+  .filter((finding) => finding.file.startsWith("src/"))
+  .filter((finding) => !finding.file.startsWith("src/api/"))
+  .filter(
+    (finding) =>
+      finding.file.startsWith("src/app/") ||
+      finding.file.startsWith("src/screens/") ||
+      finding.file.startsWith("src/components/")
+  );
+
 const report = {
   root: ROOT,
   counts: {
@@ -188,18 +227,26 @@ const report = {
     apiOrphans: apiOrphans.length,
     legacyClientCallers: legacyClientCallers.length,
     jsTsTwins: twins.length,
-    bannedFindings: bannedFindings.length
+    compatTwinWrappers: compatTwinWrappers.length,
+    bannedFindings: bannedFindings.length,
+    strictBannedFindings: strictBannedFindings.length
   },
   jsTsTwins: twins,
+  compatTwinWrappers,
   apiOrphans,
   legacyClientCallers,
-  bannedFindings
+  bannedFindings,
+  strictBannedFindings
 };
 
 const outDir = path.join(ROOT, "tmp", "scan");
 fs.mkdirSync(outDir, { recursive: true });
 
-fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2), "utf8");
+fs.writeFileSync(
+  path.join(outDir, "report.json"),
+  JSON.stringify(report, null, 2),
+  "utf8"
+);
 
 let md = `# Full Scan Report\n\n`;
 md += `## Counts\n`;
@@ -210,20 +257,58 @@ md += `- api files: ${report.counts.apiFiles}\n`;
 md += `- api orphans: ${report.counts.apiOrphans}\n`;
 md += `- legacy client callers: ${report.counts.legacyClientCallers}\n`;
 md += `- js/ts twin modules: ${report.counts.jsTsTwins}\n`;
+md += `- compatibility twin wrappers: ${report.counts.compatTwinWrappers}\n`;
 md += `- banned findings: ${report.counts.bannedFindings}\n\n`;
+md += `- strict banned findings: ${report.counts.strictBannedFindings}\n\n`;
 
 md += `## JS/TS Twins (same module name exists in both JS + TS)\n`;
-md += report.jsTsTwins.length ? report.jsTsTwins.map((g) => `- ${g.join(" , ")}`).join("\n") : `- none`;
+md += report.jsTsTwins.length
+  ? report.jsTsTwins.map((g) => `- ${g.join(" , ")}`).join("\n")
+  : `- none`;
+md += `\n\n## Compatibility twin wrappers (intentional JS re-exports for legacy importers)\n`;
+md += report.compatTwinWrappers.length
+  ? report.compatTwinWrappers.map((g) => `- ${g.join(" , ")}`).join("\n")
+  : `- none`;
 md += `\n\n## API Orphans (src/api files not imported anywhere)\n`;
-md += report.apiOrphans.length ? report.apiOrphans.map((f) => `- ${f}`).join("\n") : `- none`;
+md += report.apiOrphans.length
+  ? report.apiOrphans.map((f) => `- ${f}`).join("\n")
+  : `- none`;
 md += `\n\n## Legacy client callers\n`;
-md += report.legacyClientCallers.length ? report.legacyClientCallers.map((f) => `- ${f}`).join("\n") : `- none`;
+md += report.legacyClientCallers.length
+  ? report.legacyClientCallers.map((f) => `- ${f}`).join("\n")
+  : `- none`;
 md += `\n\n## Banned findings\n`;
 md += report.bannedFindings.length
   ? report.bannedFindings.map((x) => `- ${x.rule}: ${x.file}`).join("\n")
   : `- none`;
 md += `\n`;
 
+md += `\n## Strict banned findings\n`;
+md += report.strictBannedFindings.length
+  ? report.strictBannedFindings.map((x) => `- ${x.rule}: ${x.file}`).join("\n")
+  : `- none`;
+md += `\n`;
+
 fs.writeFileSync(path.join(outDir, "report.md"), md, "utf8");
 
-console.log(`Wrote:\n- ${path.join("tmp", "scan", "report.md")}\n- ${path.join("tmp", "scan", "report.json")}`);
+console.log(
+  `Wrote:\n- ${path.join("tmp", "scan", "report.md")}\n- ${path.join("tmp", "scan", "report.json")}`
+);
+
+if (strict) {
+  const failures = [];
+  if (apiOrphans.length) failures.push(`api orphans: ${apiOrphans.length}`);
+  if (legacyClientCallers.length) {
+    failures.push(`legacy client callers: ${legacyClientCallers.length}`);
+  }
+  if (strictBannedFindings.length) {
+    failures.push(`strict banned findings: ${strictBannedFindings.length}`);
+  }
+
+  if (failures.length) {
+    console.error(`Full scan strict gate failed: ${failures.join(", ")}`);
+    process.exit(1);
+  }
+
+  console.log("Full scan strict gate passed.");
+}

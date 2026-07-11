@@ -9,7 +9,9 @@ export type SourceRecord = {
     | "academic"
     | "api"
     | "manufacturer_label"
+    | "manufacturer"
     | "user_entered"
+    | "growpath_verified"
     | "ai_assisted"
     | "other";
   url?: string;
@@ -59,6 +61,13 @@ export type PlantTaxonInput = {
   sourceRecords?: SourceRecord[];
 };
 
+export type PlantTaxon = PlantTaxonInput & {
+  id?: string;
+  _id?: string;
+  submittedBy?: string | null;
+  archivedAt?: string | null;
+};
+
 export type CropProfileInput = {
   cropKey?: string;
   displayName: string;
@@ -77,6 +86,15 @@ export type CropProfileInput = {
   recommendationCautions?: string[];
   curationStatus?: string;
   sourceRecords?: SourceRecord[];
+};
+
+export type CropProfile = CropProfileInput & {
+  id?: string;
+  _id?: string;
+  submittedBy?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  archivedAt?: string | null;
 };
 
 export type OrganismProfileInput = {
@@ -148,6 +166,14 @@ export type PlantGrowthProfileInput = {
   pestDiseaseSensitivities?: string[];
   notes?: string;
   sourceRecords?: SourceRecord[];
+};
+
+export type PlantGrowthProfile = PlantGrowthProfileInput & {
+  id?: string;
+  _id?: string;
+  user?: string;
+  cropProfile?: string | null;
+  archivedAt?: string | null;
 };
 
 function list<T>(path: string, params?: CropKnowledgeListParams) {

@@ -125,4 +125,85 @@ describe("ToolResultSurface", () => {
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('"ppmN": 100'));
   });
+
+  it("shows pending and success feedback for result actions", async () => {
+    let resolveAction: () => void = () => {};
+    const onPress = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAction = resolve;
+        })
+    );
+
+    let tree: any;
+    await act(async () => {
+      tree = renderer.create(
+        <ToolResultSurface
+          title="Action result"
+          metrics={[{ key: "risk", label: "Risk", value: "low" }]}
+          actions={[
+            {
+              key: "save",
+              label: "Save Result",
+              pendingLabel: "Saving...",
+              successMessage: "Saved result.",
+              onPress
+            }
+          ]}
+        />
+      );
+    });
+
+    const actionButton = tree!.root
+      .findAll((node: any) => node.props.accessibilityLabel === "Save Result")
+      .at(0);
+
+    await act(async () => {
+      actionButton?.props.onPress();
+    });
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+    let text = tree!.root.findAllByType(Text).map((node: any) => node.props.children);
+    expect(text.flat(Infinity).join(" ")).toContain("Saving...");
+
+    await act(async () => {
+      resolveAction();
+    });
+
+    text = tree!.root.findAllByType(Text).map((node: any) => node.props.children);
+    expect(text.flat(Infinity).join(" ")).toContain("Saved result.");
+  });
+
+  it("shows action error feedback without losing the result", async () => {
+    let tree: any;
+    await act(async () => {
+      tree = renderer.create(
+        <ToolResultSurface
+          title="Action error result"
+          metrics={[{ key: "risk", label: "Risk", value: "high" }]}
+          actions={[
+            {
+              key: "save",
+              label: "Save Result",
+              onPress: async () => {
+                throw new Error("Save failed.");
+              }
+            }
+          ]}
+        />
+      );
+    });
+
+    const actionButton = tree!.root
+      .findAll((node: any) => node.props.accessibilityLabel === "Save Result")
+      .at(0);
+
+    await act(async () => {
+      actionButton?.props.onPress();
+    });
+
+    const text = tree!.root.findAllByType(Text).map((node: any) => node.props.children);
+    expect(text.flat(Infinity).join(" ")).toContain("Action error result");
+    expect(text.flat(Infinity).join(" ")).toContain("Save failed.");
+  });
 });

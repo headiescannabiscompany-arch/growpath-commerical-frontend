@@ -1,10 +1,16 @@
 import { apiRequest } from "./apiRequest";
+import type { SourceRecord } from "./productIngredients";
 
 export type NutrientRecipe = {
   _id: string;
+  id?: string;
+  user?: string;
   name: string;
   description?: string;
   version: number;
+  rootRecipeId?: string | null;
+  previousVersionId?: string | null;
+  clonedFromRecipeId?: string | null;
   growId?: string | null;
   stage: string;
   medium: string;
@@ -16,9 +22,12 @@ export type NutrientRecipe = {
   measuredEC?: number | null;
   measuredPH?: number | null;
   sourceConfidence?: Record<string, any>;
-  sourceRecords?: Record<string, any>[];
+  sourceRecords?: SourceRecord[];
   mixingOrder?: string[];
   calculation?: Record<string, any>;
+  notes?: string;
+  active?: boolean;
+  archivedAt?: string | null;
   useCount?: number;
   lastUsedAt?: string | null;
 };

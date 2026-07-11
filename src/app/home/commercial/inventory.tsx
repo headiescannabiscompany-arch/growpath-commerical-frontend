@@ -215,7 +215,8 @@ export default function CommercialInventoryRoute() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No inventory support records yet</Text>
                 <Text style={styles.muted}>
-                  When stock support records exist on the backend, they will show here.
+                  Create a stock support record to track quantities, reorder points,
+                  suppliers, and product links.
                 </Text>
               </View>
             ) : null

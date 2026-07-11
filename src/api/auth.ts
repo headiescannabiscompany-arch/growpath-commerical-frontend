@@ -66,31 +66,74 @@ function currentOrigin() {
   return typeof location?.origin === "string" ? location.origin : "";
 }
 
+function setLegacyAuthGlobals(response: LoginResponse | SignupResponse) {
+  const token = response?.token;
+  if (token) {
+    (globalThis as any).authToken = token;
+    if (response.user) (globalThis as any).user = response.user;
+  }
+}
+
+function normalizeAuthArgs(a: LoginBody | string, b?: string): LoginBody {
+  if (typeof a === "object" && a !== null) return a;
+  return { email: String(a || ""), password: String(b || "") };
+}
+
+function normalizeSignupArgs(a: SignupBody | string, b?: string, c?: string): SignupBody {
+  if (typeof a === "object" && a !== null) return a;
+  return {
+    email: String(a || ""),
+    password: String(b || ""),
+    displayName: String(c || ""),
+    name: String(c || "")
+  };
+}
+
 /** Login with email/password. Returns LoginResponse or throws ApiError. */
-export async function login(body: LoginBody): Promise<LoginResponse> {
-  return apiRequest("/api/auth/login", {
+export async function login(
+  bodyOrEmail: LoginBody | string,
+  maybePassword?: string
+): Promise<LoginResponse> {
+  const body = normalizeAuthArgs(bodyOrEmail, maybePassword);
+  const response = (await apiRequest("/api/auth/login", {
     method: "POST",
     auth: false,
     body
-  }) as Promise<LoginResponse>;
+  })) as LoginResponse;
+  setLegacyAuthGlobals(response);
+  return response;
 }
 
 /** Signup with email/password. Returns SignupResponse or throws ApiError. */
-export async function signup(body: SignupBody): Promise<SignupResponse> {
-  return apiRequest("/api/auth/signup", {
+export async function signup(
+  bodyOrEmail: SignupBody | string,
+  maybePassword?: string,
+  maybeDisplayName?: string
+): Promise<SignupResponse> {
+  const body = normalizeSignupArgs(bodyOrEmail, maybePassword, maybeDisplayName);
+  const response = (await apiRequest("/api/auth/signup", {
     method: "POST",
     auth: false,
     body
-  }) as Promise<SignupResponse>;
+  })) as SignupResponse;
+  setLegacyAuthGlobals(response);
+  return response;
 }
 
 /** Register (legacy). Returns signup/verification state or throws ApiError. */
-export async function register(body: SignupBody): Promise<SignupResponse> {
-  return apiRequest("/api/auth/register", {
+export async function register(
+  bodyOrEmail: SignupBody | string,
+  maybePassword?: string,
+  maybeDisplayName?: string
+): Promise<SignupResponse> {
+  const body = normalizeSignupArgs(bodyOrEmail, maybePassword, maybeDisplayName);
+  const response = (await apiRequest("/api/auth/register", {
     method: "POST",
     auth: false,
     body
-  }) as Promise<SignupResponse>;
+  })) as SignupResponse;
+  setLegacyAuthGlobals(response);
+  return response;
 }
 
 export async function requestEmailVerification(
@@ -143,9 +186,13 @@ export async function resetPassword(
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */
 export async function becomeCreator(): Promise<{ ok: true; role: "creator" }> {
-  return apiRequest("/api/auth/become-creator", {
+  const response = (await apiRequest("/api/auth/become-creator", {
     method: "POST"
-  }) as Promise<{ ok: true; role: "creator" }>;
+  })) as { ok: true; role: "creator" };
+  if (response.role && (globalThis as any).user) {
+    (globalThis as any).user.role = response.role;
+  }
+  return response;
 }
 
 /** Save push notification token. Returns { ok } or throws ApiError. */
