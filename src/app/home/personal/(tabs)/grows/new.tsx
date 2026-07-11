@@ -47,7 +47,16 @@ export default function NewGrowScreen() {
   const [timeZone, setTimeZone] = React.useState(defaultTimeZone);
 
   const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [startDate, setStartDate] = React.useState("");
+  const [germinationDate, setGerminationDate] = React.useState("");
+  const [cloneCutDate, setCloneCutDate] = React.useState("");
+  const [transplantDate, setTransplantDate] = React.useState("");
   const [flipDate, setFlipDate] = React.useState("");
+  const [flowerDay1Date, setFlowerDay1Date] = React.useState("");
+  const [expectedHarvestDate, setExpectedHarvestDate] = React.useState("");
+  const [actualHarvestDate, setActualHarvestDate] = React.useState("");
+  const [dryStartDate, setDryStartDate] = React.useState("");
+  const [cureStartDate, setCureStartDate] = React.useState("");
   const [potSize, setPotSize] = React.useState("");
   const [potCount, setPotCount] = React.useState("");
   const [cultivar, setCultivar] = React.useState("");
@@ -158,7 +167,16 @@ export default function NewGrowScreen() {
           anchorDateType,
           anchorDate: anchorDate.trim(),
           timezone: timeZone.trim() || "UTC",
+          startDate: startDate.trim() || undefined,
+          germinationDate: germinationDate.trim() || undefined,
+          cloneCutDate: cloneCutDate.trim() || undefined,
+          transplantDate: transplantDate.trim() || undefined,
           flipDate: flipDate.trim() || undefined,
+          flowerDay1Date: flowerDay1Date.trim() || undefined,
+          expectedHarvestDate: expectedHarvestDate.trim() || undefined,
+          actualHarvestDate: actualHarvestDate.trim() || undefined,
+          dryStartDate: dryStartDate.trim() || undefined,
+          cureStartDate: cureStartDate.trim() || undefined,
           potSize: potSize.trim() || undefined,
           potCount: potCount ? Number(potCount) : undefined,
           cultivar: cultivar.trim() || undefined,
@@ -197,7 +215,14 @@ export default function NewGrowScreen() {
     anchorDate,
     anchorDateType,
     cultivar,
+    actualHarvestDate,
+    cloneCutDate,
+    cureStartDate,
+    dryStartDate,
+    expectedHarvestDate,
     flipDate,
+    flowerDay1Date,
+    germinationDate,
     isValid,
     name,
     notes,
@@ -205,8 +230,10 @@ export default function NewGrowScreen() {
     potCount,
     potSize,
     router,
+    startDate,
     systemPreset,
     targetVpdBand,
+    transplantDate,
     timeZone
   ]);
 
@@ -540,10 +567,64 @@ export default function NewGrowScreen() {
         {showAdvanced ? (
           <View style={{ gap: 10 }}>
             <DateInput
+              label="Start date (optional)"
+              value={startDate}
+              onChangeText={setStartDate}
+              accessibilityLabel="Start date"
+            />
+            <DateInput
+              label="Germination date (optional)"
+              value={germinationDate}
+              onChangeText={setGerminationDate}
+              accessibilityLabel="Germination date"
+            />
+            <DateInput
+              label="Clone cut date (optional)"
+              value={cloneCutDate}
+              onChangeText={setCloneCutDate}
+              accessibilityLabel="Clone cut date"
+            />
+            <DateInput
+              label="Transplant date (optional)"
+              value={transplantDate}
+              onChangeText={setTransplantDate}
+              accessibilityLabel="Transplant date"
+            />
+            <DateInput
               label="Flip date (optional)"
               value={flipDate}
               onChangeText={setFlipDate}
               accessibilityLabel="Flip date"
+            />
+            <DateInput
+              label="Flower day 1 (optional)"
+              value={flowerDay1Date}
+              onChangeText={setFlowerDay1Date}
+              accessibilityLabel="Flower day 1"
+            />
+            <DateInput
+              label="Expected harvest date (optional)"
+              value={expectedHarvestDate}
+              onChangeText={setExpectedHarvestDate}
+              accessibilityLabel="Expected harvest date"
+            />
+            <DateInput
+              label="Actual harvest date (optional)"
+              value={actualHarvestDate}
+              onChangeText={setActualHarvestDate}
+              accessibilityLabel="Actual harvest date"
+            />
+            <DateInput
+              label="Dry start date (optional)"
+              value={dryStartDate}
+              onChangeText={setDryStartDate}
+              accessibilityLabel="Dry start date"
+            />
+            <DateInput
+              label="Cure start date (optional)"
+              value={cureStartDate}
+              onChangeText={setCureStartDate}
+              accessibilityLabel="Cure start date"
             />
 
             <Text style={{ fontWeight: "700" }}>Pot size (optional)</Text>

@@ -130,6 +130,17 @@ describe("NewGrowScreen access", () => {
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "Bruce Banner Auto");
     fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    fireEvent.press(screen.getByLabelText("Show advanced fields"));
+    fireEvent.changeText(screen.getByLabelText("Start date"), "2026-01-01");
+    fireEvent.changeText(screen.getByLabelText("Germination date"), "2026-01-03");
+    fireEvent.changeText(screen.getByLabelText("Clone cut date"), "2026-01-04");
+    fireEvent.changeText(screen.getByLabelText("Transplant date"), "2026-01-15");
+    fireEvent.changeText(screen.getByLabelText("Flip date"), "2026-02-14");
+    fireEvent.changeText(screen.getByLabelText("Flower day 1"), "2026-02-15");
+    fireEvent.changeText(screen.getByLabelText("Expected harvest date"), "2026-04-15");
+    fireEvent.changeText(screen.getByLabelText("Actual harvest date"), "2026-04-20");
+    fireEvent.changeText(screen.getByLabelText("Dry start date"), "2026-04-20");
+    fireEvent.changeText(screen.getByLabelText("Cure start date"), "2026-04-30");
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
@@ -139,7 +150,17 @@ describe("NewGrowScreen access", () => {
         method: "POST",
         body: expect.objectContaining({
           name: "Bruce Banner Auto",
-          anchorDate: "2026-01-01"
+          anchorDate: "2026-01-01",
+          startDate: "2026-01-01",
+          germinationDate: "2026-01-03",
+          cloneCutDate: "2026-01-04",
+          transplantDate: "2026-01-15",
+          flipDate: "2026-02-14",
+          flowerDay1Date: "2026-02-15",
+          expectedHarvestDate: "2026-04-15",
+          actualHarvestDate: "2026-04-20",
+          dryStartDate: "2026-04-20",
+          cureStartDate: "2026-04-30"
         })
       })
     );
