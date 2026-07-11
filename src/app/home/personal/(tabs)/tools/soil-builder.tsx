@@ -30,6 +30,55 @@ function amendment(
   };
 }
 
+const PENNY_SAVER_SOIL_RECIPE = [
+  "Penny Saver Soil",
+  "",
+  "Purpose: lower-cost living soil intended for one or two cycles before being moved into vegetable gardens or landscaping.",
+  "",
+  "Base: 1/3 coco and peat.",
+  "Compost: 1/3 Blue Ribbon Compost, Detroit Worm Castings, and Soil Conditioner.",
+  "Aeration: 1/3 total, split 50% perlite and 50% rice hulls.",
+  "",
+  "Rice hulls provide temporary aeration and slowly decompose over approximately one year while contributing plant-available silica.",
+  "",
+  "Mineral package: GrowPathAI 3-3-3 cooked amendment plus basalt rock dust during the initial soil build.",
+  "",
+  "Locked formula rule: this is the recipe. Do not redesign it unless the user explicitly asks for a new formula."
+].join("\n");
+
+const SCIENTIFIC_NOTES = [
+  "Scientific Notes",
+  "",
+  "These notes explain why the recipes were designed this way. They are reference material, not instructions to modify the formulas.",
+  "",
+  "Compost diversity: different compost feedstocks contribute different microbial communities, nutrient profiles, carbon fractions, and decomposition rates. The recipes intentionally combine multiple compost types to diversify biology rather than relying on a single compost source.",
+  "",
+  "Woody compost: finished woody compost provides slower carbon fractions and supports fungal communities. Immature woody materials should be avoided because they can temporarily immobilize nitrogen while decomposing.",
+  "",
+  "Rice hulls: rice hulls provide temporary aeration, renewable organic matter, silica, and gradual decomposition. They are excellent for economical soils but are not permanent structural aeration.",
+  "",
+  "Vermiculite: vermiculite contributes water retention, calcium, magnesium, iron, and cation exchange capacity. It is used because it provides both physical and chemical benefits beyond simple aeration.",
+  "",
+  "Pumice: pumice provides the most durable long-term pore structure of the aeration materials considered.",
+  "",
+  "Clay pebbles: expanded clay provides durable structure but creates larger pore spaces and is generally better suited as a component rather than the entire aeration fraction.",
+  "",
+  "Basalt rock dust: basalt is included as a long-term mineral source and trace element reserve. It is not treated as an immediate fertilizer."
+].join("\n");
+
+const NUTRIENT_PHILOSOPHY = [
+  "Nutrient Philosophy",
+  "",
+  "The cooked 3-3-3 amendment is the soil's baseline fertility.",
+  "Additional stage-specific amendments steer nutrient availability through the grow.",
+  "",
+  "The stage recipes are based on long-term mineralization, microbial nutrient cycling, cation exchange, calcium management, potassium mobility, and phosphorus timing.",
+  "",
+  "They are not intended to mimic soluble fertilizer schedules.",
+  "",
+  "Instruction to AI: preserve the recipe first. Use this section to explain the design, not to redesign the formula."
+].join("\n");
+
 function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string, any>) {
   const mixName = String(outputs.mixName || payload.mixName || "soil recipe");
   const restCookDays = Number(outputs.restCookDays ?? payload.restCookDays ?? 21);
@@ -122,7 +171,17 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
     `Rest/cook time: ${payload.restCookDays || 21} days`,
     `Safety notes: ${payload.safetyNotes || "none"}`,
     "",
-    "Explain tradeoffs like fast nitrogen versus slower base nutrition, compost uncertainty, mineral/biology support, seedling hot-mix risk, and whether this should become grow tasks, a facility batch, or a commercial product draft after user approval."
+    "Locked soil recipe reference:",
+    payload.soilRecipeReference || "none entered",
+    "",
+    "Scientific notes:",
+    payload.scientificNotes || "none entered",
+    "",
+    "Nutrient philosophy:",
+    payload.nutrientPhilosophy || "none entered",
+    "",
+    "Explain tradeoffs like fast nitrogen versus slower base nutrition, compost uncertainty, mineral/biology support, seedling hot-mix risk, and whether this should become grow tasks, a facility batch, or a commercial product draft after user approval.",
+    "Do not redesign locked formulas. Treat science notes and nutrient philosophy as explanation/reference material unless the user asks for a new recipe."
   ].join("\n");
 }
 
@@ -255,6 +314,24 @@ export default function SoilBuilderToolScreen() {
           defaultValue:
             "Compost and castings are estimates unless lab-tested. Avoid hot mixes for seedlings.",
           multiline: true
+        },
+        {
+          key: "soilRecipeReference",
+          label: "Locked soil recipe reference",
+          defaultValue: PENNY_SAVER_SOIL_RECIPE,
+          multiline: true
+        },
+        {
+          key: "scientificNotes",
+          label: "Scientific notes",
+          defaultValue: SCIENTIFIC_NOTES,
+          multiline: true
+        },
+        {
+          key: "nutrientPhilosophy",
+          label: "Nutrient philosophy",
+          defaultValue: NUTRIENT_PHILOSOPHY,
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -292,6 +369,9 @@ export default function SoilBuilderToolScreen() {
         biologySupport: values.biologySupport,
         restCookDays: n(values.restCookDays, 21),
         safetyNotes: values.safetyNotes,
+        soilRecipeReference: values.soilRecipeReference,
+        scientificNotes: values.scientificNotes,
+        nutrientPhilosophy: values.nutrientPhilosophy,
         intendedUse: values.intendedUse,
         stage: values.stage
       })}
@@ -462,6 +542,9 @@ export default function SoilBuilderToolScreen() {
                 compostUncertainty: payload.compostUncertainty,
                 mineralSupport: payload.mineralSupport,
                 biologySupport: payload.biologySupport,
+                soilRecipeReference: payload.soilRecipeReference,
+                scientificNotes: payload.scientificNotes,
+                nutrientPhilosophy: payload.nutrientPhilosophy,
                 warnings: [
                   payload.safetyNotes,
                   ...(Array.isArray(outputs.stageTimingWarnings)

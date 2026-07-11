@@ -121,6 +121,9 @@ describe("SoilBuilderToolScreen", () => {
           restCookDays: 28,
           mineralSupport: "gypsum, basalt, oyster shell",
           biologySupport: "worm castings, microbial inoculant, moisture activation",
+          soilRecipeReference: expect.stringContaining("Penny Saver Soil"),
+          scientificNotes: expect.stringContaining("reference material"),
+          nutrientPhilosophy: expect.stringContaining("not intended to mimic soluble"),
           amendments: expect.arrayContaining([
             expect.objectContaining({
               name: "Alfalfa meal",
@@ -161,6 +164,9 @@ describe("SoilBuilderToolScreen", () => {
             releaseCurve: { summary: "fast N plus slow P base" },
             restCookDays: 21,
             compostUncertainty: "high - compost only estimated",
+            soilRecipeReference: expect.stringContaining("Penny Saver Soil"),
+            scientificNotes: expect.stringContaining("Basalt rock dust"),
+            nutrientPhilosophy: expect.stringContaining("preserve the recipe first"),
             directions: expect.arrayContaining([
               expect.stringContaining("Confirm base media"),
               expect.stringContaining("complete rest/cook review")
@@ -260,6 +266,8 @@ describe("SoilBuilderToolScreen", () => {
       screen.getByText(/Target release logic: 1-1-1 slow base plus fast nitrogen/)
     ).toBeTruthy();
     expect(screen.getByText(/Compost uncertainty: high - lab test missing/)).toBeTruthy();
+    expect(screen.getByText(/Penny Saver Soil/)).toBeTruthy();
+    expect(screen.getByText(/Do not redesign locked formulas/)).toBeTruthy();
     expect(
       screen.getByText(/call the Soil Builder calculator for final nutrient estimates/)
     ).toBeTruthy();
