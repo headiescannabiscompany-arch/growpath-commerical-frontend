@@ -1,7 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   resolveLocalCommercialPreviewSession,
-  resolveLocalFacilityPreviewSession
+  resolveLocalFacilityPreviewSession,
+  resolveLocalPreviewSession
 } from "../../src/auth/AuthContext";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
@@ -69,6 +70,19 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
   });
 
+  it("lets commercial routes win over stale facility preview query params", () => {
+    const preview = resolveLocalPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/commercial/courses",
+      search:
+        "?facility=1&devPlan=facility&facilityEmail=operator@example.test&commercialEmail=brand@example.test"
+    });
+
+    expect(preview?.token).toBe("local-preview-commercial-token");
+    expect(preview?.user.email).toBe("brand@example.test");
+    expect(preview?.ctx.mode).toBe("commercial");
+  });
+
   it("uses a separate local facility preview identity on facility routes", () => {
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -90,6 +104,19 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.facilityRole).toBe("MANAGER");
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.FACILITY_ACCESS]).toBe(true);
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMPLIANCE_WRITE]).toBe(true);
+  });
+
+  it("lets facility routes win over stale commercial preview query params", () => {
+    const preview = resolveLocalPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/facility/dashboard",
+      search:
+        "?commercial=1&devPlan=commercial&commercialEmail=brand@example.test&facilityEmail=operator@example.test"
+    });
+
+    expect(preview?.token).toBe("local-preview-facility-token");
+    expect(preview?.user.email).toBe("operator@example.test");
+    expect(preview?.ctx.mode).toBe("facility");
   });
 
   it("does not grant Commercial mode from a plan name alone", () => {

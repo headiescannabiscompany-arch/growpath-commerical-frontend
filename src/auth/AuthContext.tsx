@@ -7,6 +7,7 @@ import React, {
   useState,
   useRef
 } from "react";
+import { useGlobalSearchParams, usePathname } from "expo-router";
 import { logEvent } from "../api/events";
 import { usePushRegistration } from "../hooks/usePushRegistration";
 import {
@@ -57,17 +58,30 @@ function isLocalPreviewHost(hostname: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "";
 }
 
-export function resolveLocalCommercialPreviewSession() {
-  const { hostname, pathname, search } = localWindowLocation();
+type LocalPreviewLocation = {
+  hostname: string;
+  pathname: string;
+  search: string;
+};
+
+function isCommercialPreviewRoute(pathname: string) {
+  return pathname === "/home/commercial" || pathname.startsWith("/home/commercial/");
+}
+
+function isFacilityPreviewRoute(pathname: string) {
+  return pathname === "/home/facility" || pathname.startsWith("/home/facility/");
+}
+
+export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLocation) {
+  const { hostname, pathname, search } = location ?? localWindowLocation();
   if (!isLocalPreviewHost(hostname)) return null;
+  if (isFacilityPreviewRoute(pathname)) return null;
 
   const params = new URLSearchParams(search);
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
   const commercialParam = String(params.get("commercial") || "").toLowerCase();
-  const isCommercialRoute =
-    pathname === "/home/commercial" || pathname.startsWith("/home/commercial/");
   const wantsCommercial =
-    isCommercialRoute ||
+    isCommercialPreviewRoute(pathname) ||
     devPlan === "commercial" ||
     commercialParam === "1" ||
     commercialParam === "true";
@@ -123,17 +137,16 @@ export function resolveLocalCommercialPreviewSession() {
   };
 }
 
-export function resolveLocalFacilityPreviewSession() {
-  const { hostname, pathname, search } = localWindowLocation();
+export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocation) {
+  const { hostname, pathname, search } = location ?? localWindowLocation();
   if (!isLocalPreviewHost(hostname)) return null;
+  if (isCommercialPreviewRoute(pathname)) return null;
 
   const params = new URLSearchParams(search);
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
   const facilityParam = String(params.get("facility") || "").toLowerCase();
-  const isFacilityRoute =
-    pathname === "/home/facility" || pathname.startsWith("/home/facility/");
   const wantsFacility =
-    isFacilityRoute ||
+    isFacilityPreviewRoute(pathname) ||
     devPlan === "facility" ||
     facilityParam === "1" ||
     facilityParam === "true";
@@ -204,6 +217,20 @@ export function resolveLocalFacilityPreviewSession() {
   };
 }
 
+export function resolveLocalPreviewSession(location?: LocalPreviewLocation) {
+  const resolvedLocation = location ?? localWindowLocation();
+  if (isCommercialPreviewRoute(resolvedLocation.pathname)) {
+    return resolveLocalCommercialPreviewSession(resolvedLocation);
+  }
+  if (isFacilityPreviewRoute(resolvedLocation.pathname)) {
+    return resolveLocalFacilityPreviewSession(resolvedLocation);
+  }
+  return (
+    resolveLocalFacilityPreviewSession(resolvedLocation) ||
+    resolveLocalCommercialPreviewSession(resolvedLocation)
+  );
+}
+
 function mergeAuthUser(
   current: AuthUser | null,
   next: AuthUser | null | undefined
@@ -224,6 +251,8 @@ function mergeAuthUser(
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const routeParams = useGlobalSearchParams();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ctx, setCtx] = useState<any | null>(null);
@@ -237,6 +266,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const didHydrateRef = useRef(false);
   // Prevent multiple logout operations in flight
   const isLoggingOutRef = useRef(false);
+  const routePreviewKey = useMemo(
+    () => `${pathname || ""}?${safeStableParams(routeParams)}`,
+    [pathname, routeParams]
+  );
 
   // Hard logout that prevents token from reappearing
   const hardLogout = async () => {
@@ -297,8 +330,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     (async () => {
       try {
-        const localPreview =
-          resolveLocalFacilityPreviewSession() || resolveLocalCommercialPreviewSession();
+        const localPreview = resolveLocalPreviewSession();
         if (localPreview) {
           setToken(localPreview.token);
           setUser(localPreview.user);
@@ -329,6 +361,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (isHydrating) return;
+
+    const localPreview = resolveLocalPreviewSession();
+    if (!localPreview) return;
+
+    const hasLocalPreviewToken =
+      token === LOCAL_COMMERCIAL_PREVIEW_TOKEN || token === LOCAL_FACILITY_PREVIEW_TOKEN;
+    if (token && !hasLocalPreviewToken) return;
+    if (
+      token === localPreview.token &&
+      user?.email === localPreview.user.email &&
+      ctx?.mode === localPreview.ctx.mode
+    ) {
+      return;
+    }
+
+    setToken(localPreview.token);
+    setUser(localPreview.user);
+    setCtx(localPreview.ctx);
+    setMeStatus("ready");
+    setMeError(null);
+  }, [routePreviewKey, isHydrating, token, user?.email, ctx?.mode]);
 
   // Register push token after login/hydration
   usePushRegistration({
@@ -403,6 +459,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function safeStableParams(params: Record<string, unknown>) {
+  try {
+    return JSON.stringify(
+      Object.entries(params || {})
+        .map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : value])
+        .sort(([a], [b]) => String(a).localeCompare(String(b)))
+    );
+  } catch {
+    return "";
+  }
 }
 
 export function useAuth() {
