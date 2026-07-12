@@ -58,9 +58,14 @@ export default function FacilityTabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="dashboard"
-        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
+        name="profile"
+        options={{
+          title: "Setup",
+          tabBarLabel: "Setup",
+          href: compactTabs ? null : undefined
+        }}
       />
+      <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
       <Tabs.Screen
         name="grows"
         options={{ title: "Grows", href: compactTabs ? null : undefined }}
@@ -69,12 +74,6 @@ export default function FacilityTabsLayout() {
         name="plants"
         options={{ title: "Plants", href: compactTabs ? null : undefined }}
       />
-      <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen
-        name="integrations"
-        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen
         name="logs"
         options={{ title: "Logs", href: compactTabs ? null : undefined }}
@@ -83,9 +82,10 @@ export default function FacilityTabsLayout() {
         name="inventory"
         options={{ title: "Inventory", href: compactTabs ? null : undefined }}
       />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen
-        name="reports"
-        options={{ title: "Reports", href: compactTabs ? null : undefined }}
+        name="sop-runs"
+        options={{ title: "SOPs", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
         name="compliance"
@@ -93,10 +93,6 @@ export default function FacilityTabsLayout() {
           title: "Compliance",
           tabBarLabel: compactTabs ? "Comp" : "Compliance"
         }}
-      />
-      <Tabs.Screen
-        name="sop-runs"
-        options={{ title: "SOPs", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
         name="audit-logs"
@@ -107,8 +103,16 @@ export default function FacilityTabsLayout() {
         options={{ title: "Team", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile", href: compactTabs ? null : undefined }}
+        name="reports"
+        options={{ title: "Reports", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
+      />
+      <Tabs.Screen
+        name="integrations"
+        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
       <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />

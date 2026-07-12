@@ -69,7 +69,6 @@ const FACILITY_STEPS: FacilityStep[] = [
     shortLabel: "9",
     href: "/home/facility/reports",
     paths: [
-      "/home/facility",
       "/home/facility/dashboard",
       "/home/facility/reports",
       "/home/facility/ai-ask",

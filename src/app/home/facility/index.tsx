@@ -23,7 +23,7 @@ export default function FacilityEntry() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "700" }}>Entering Facility…</Text>
+      <Text style={{ fontSize: 18, fontWeight: "700" }}>Entering Facility...</Text>
     </View>
   );
 }
