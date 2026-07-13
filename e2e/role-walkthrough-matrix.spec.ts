@@ -267,6 +267,99 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/courses") {
+      return fulfillJson(route, {
+        courses: [
+          {
+            id: "course-published-1",
+            title: "Indoor Living Soil Basics",
+            summary: "A published course matched to this grower's interests.",
+            status: "published",
+            isPublished: true,
+            priceCents: 0,
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
+            lessons: []
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/mine") {
+      return fulfillJson(route, {
+        courses: [
+          {
+            id: "course-new",
+            title: "Recorded Course Draft",
+            summary: "The draft remains visible after creation.",
+            status: "draft",
+            isPublished: false,
+            priceCents: 0,
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"]
+            },
+            lessons: []
+          }
+        ]
+      });
+    }
+
+    if (
+      method === "POST" &&
+      (path === "/api/courses/create" || path === "/api/courses")
+    ) {
+      return fulfillJson(
+        route,
+        {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          summary: "The draft remains visible after creation.",
+          status: "draft",
+          priceCents: 0,
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        },
+        201
+      );
+    }
+
+    if (method === "GET" && path === "/api/courses/course-new") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          summary: "The draft remains visible after creation.",
+          status: "draft",
+          priceCents: 0,
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        }
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/courses/course-new/enrollment-status" ||
+        path === "/api/courses/course-new/reviews")
+    ) {
+      return fulfillJson(route, { enrolled: false, reviews: [] });
+    }
+
+    if (method === "POST" && path === "/api/courses/course-new/lesson") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          status: "draft",
+          lessons: [{ id: "lesson-new", title: "Recorded Lesson" }]
+        }
+      });
+    }
+
     if (method === "GET" && path === "/api/commercial/products") {
       return fulfillJson(route, {
         products: [
@@ -497,6 +590,31 @@ test.describe("role walkthrough matrix", () => {
     });
     await expectNoNotFound(page);
     await expect(page.getByLabel("Attach log photos")).toBeVisible();
+
+    await page.goto("/home/personal/courses", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Indoor Living Soil Basics")).toBeVisible();
+    await expect(page.getByText("Recorded Course Draft")).toBeVisible();
+    await expect(page.getByText("Draft", { exact: true })).toBeVisible();
+
+    await page.goto("/courses/create?from=/home/personal/courses", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Course grow interests")).toBeVisible();
+    await page.getByLabel("Course title").fill("Recorded Course Draft");
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByText("Create Draft").click();
+    await expect(page).toHaveURL(/home\/personal\/courses(?:\?|$)/);
+    await expect(page.getByText("Recorded Course Draft").first()).toBeVisible();
+    await expect(page.getByText("Add Lesson")).toBeVisible();
+
+    await page.getByText("Add Lesson").click();
+    await expect(page).toHaveURL(/courses\/add-lesson\?courseId=course-new/);
+    await expect(page.getByText("Add Lesson").first()).toBeVisible();
+    await page.getByPlaceholder("Title").fill("Recorded Lesson");
+    await page.getByText("Save Lesson").click();
+    await expect(page).toHaveURL(/home\/personal\/courses/);
   });
 
   test("commercial free keeps commercial shell but shows free plan constraints", async ({

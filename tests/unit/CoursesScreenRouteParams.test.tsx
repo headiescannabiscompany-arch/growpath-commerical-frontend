@@ -47,11 +47,29 @@ jest.mock("@/screens/CourseDetailScreen", () => {
 describe("CoursesScreen route params", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    mockApiRequest.mockResolvedValue({
-      courses: [
-        { id: "course-1", title: "Living Soil Basics", priceCents: 0 },
-        { id: "course-2", title: "IPM Follow-up", priceCents: 0 }
-      ]
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/courses/mine") {
+        return {
+          courses: [
+            {
+              id: "course-2",
+              title: "IPM Follow-up",
+              priceCents: 0,
+              status: "draft"
+            }
+          ]
+        };
+      }
+      return {
+        courses: [
+          {
+            id: "course-1",
+            title: "Living Soil Basics",
+            priceCents: 0,
+            status: "published"
+          }
+        ]
+      };
     });
   });
 
@@ -62,5 +80,6 @@ describe("CoursesScreen route params", () => {
       expect(screen.getByLabelText("Selected course course-2")).toBeTruthy()
     );
     expect(screen.getByText("Course detail course-2")).toBeTruthy();
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/courses/mine");
   });
 });

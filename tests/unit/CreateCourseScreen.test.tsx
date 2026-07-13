@@ -74,6 +74,10 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { growInterests: {} } })
+}));
+
 describe("CreateCourseScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -200,7 +204,10 @@ describe("CreateCourseScreen", () => {
         })
       })
     );
-    expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/home/personal/courses",
+      params: { courseId: "course-new" }
+    });
   });
 
   it("uploads a selected course cover image before creating the draft", async () => {

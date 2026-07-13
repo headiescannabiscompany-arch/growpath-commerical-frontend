@@ -26,6 +26,16 @@ function normalizeList(payload) {
   return [];
 }
 
+function mergeCourses(...lists) {
+  const merged = new Map();
+  lists.flat().forEach((course) => {
+    const id = String(course?._id || course?.id || "");
+    if (!id) return;
+    merged.set(id, { ...(merged.get(id) || {}), ...course });
+  });
+  return Array.from(merged.values());
+}
+
 function courseInterestTags(course) {
   const structured =
     course?.growInterests && !Array.isArray(course.growInterests)
@@ -78,8 +88,17 @@ export default function CoursesScreen({ navigation } = {}) {
       setErr("");
 
       try {
-        const data = await apiRequest("/api/courses");
-        const list = normalizeList(data);
+        const [publicResult, ownedResult] = await Promise.allSettled([
+          apiRequest("/api/courses"),
+          access.canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([])
+        ]);
+        if (publicResult.status === "rejected" && ownedResult.status === "rejected") {
+          throw publicResult.reason;
+        }
+        const list = mergeCourses(
+          publicResult.status === "fulfilled" ? normalizeList(publicResult.value) : [],
+          ownedResult.status === "fulfilled" ? normalizeList(ownedResult.value) : []
+        );
         const filtered = access.canSeePaidCourses
           ? list
           : list.filter((c) => (c?.priceCents || 0) === 0);
@@ -96,7 +115,7 @@ export default function CoursesScreen({ navigation } = {}) {
     return () => {
       alive = false;
     };
-  }, [access.canSeePaidCourses, access.canViewCourses]);
+  }, [access.canCreateCourses, access.canSeePaidCourses, access.canViewCourses]);
 
   useEffect(() => {
     if (!requestedCourseId || selectedCourse || courses.length === 0) return;
@@ -205,6 +224,11 @@ export default function CoursesScreen({ navigation } = {}) {
           <Text style={styles.cardTitle}>
             {String(item?.title || item?.name || "Untitled")}
           </Text>
+          <Text style={styles.statusText}>
+            {item?.isPublished || ["published", "active", "public"].includes(item?.status)
+              ? "Published"
+              : "Draft"}
+          </Text>
           {courseInterestTags(item).length ? (
             <Text style={styles.meta}>
               Grow interests: {courseInterestTags(item).join(" | ")}
@@ -310,6 +334,7 @@ const styles = StyleSheet.create({
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
   lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
+  statusText: { color: "#166534", fontWeight: "800", marginTop: 4 },
   card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   cardTitle: { fontWeight: "800" },
   btn: { marginTop: 10, paddingVertical: 10 },

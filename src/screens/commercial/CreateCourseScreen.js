@@ -16,10 +16,12 @@ import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import GrowInterestPicker from "@/components/GrowInterestPicker";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "@/theme/theme";
 import { persistImageUri, persistImageUris, resolveImageUri } from "@/utils/photoUploads";
+import { buildEmptyTierSelection, flattenTierSelections } from "@/utils/growInterests";
 
 function toPriceCents(input) {
   const n = Number(input);
@@ -134,6 +136,9 @@ export default function CreateCourseScreen({ navigation }) {
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [cropType, setCropType] = useState("");
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
   const [curriculumPlan, setCurriculumPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
   const [documentFiles, setDocumentFiles] = useState([]);
@@ -301,6 +306,7 @@ export default function CreateCourseScreen({ navigation }) {
       );
       const liveSessions = buildLiveSessions(liveSessionPlan);
       const persistedCoverImageUrl = await persistImageUri(coverImageUrl.trim());
+      const growInterestTags = flattenTierSelections(growInterestSelections);
       const course = await createCourse({
         title: title.trim(),
         summary: summary.trim(),
@@ -309,6 +315,9 @@ export default function CreateCourseScreen({ navigation }) {
         category: category.trim(),
         difficulty: difficulty.trim(),
         cropType: cropType.trim(),
+        growInterests: growInterestSelections,
+        interestTags: growInterestTags,
+        tags: growInterestTags,
         curriculumPlan: curriculumPlan.trim(),
         documentPlan: documentPlan.trim(),
         mediaPlan: mediaPlan.trim(),
@@ -357,7 +366,12 @@ export default function CreateCourseScreen({ navigation }) {
       if (navigation?.replace) {
         navigation.replace("CourseDetail", { course, id: course?._id || course?.id });
       } else if (router?.replace) {
-        router.replace(backTarget);
+        const courseId = course?._id || course?.id;
+        router.replace(
+          courseId
+            ? { pathname: backTarget, params: { courseId: String(courseId) } }
+            : backTarget
+        );
       } else {
         navigation.goBack();
       }
@@ -486,6 +500,13 @@ export default function CreateCourseScreen({ navigation }) {
             editable={access.canCreateCourses && !submitting}
             style={styles.input}
             accessibilityLabel="Course crop type"
+          />
+          <GrowInterestPicker
+            title="Course grow interests"
+            helperText="Choose who this course is for. These tags control recommendations and learning-path visibility."
+            value={growInterestSelections}
+            onChange={setGrowInterestSelections}
+            defaultExpanded={false}
           />
         </View>
 
