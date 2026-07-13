@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   resolveLocalCommercialPreviewSession,
   resolveLocalFacilityPreviewSession,
+  resolveLocalPersonalPreviewSession,
   resolveLocalPreviewSession
 } from "../../src/auth/AuthContext";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
@@ -117,6 +118,32 @@ describe("entitlement mode access", () => {
     expect(preview?.token).toBe("local-preview-facility-token");
     expect(preview?.user.email).toBe("operator@example.test");
     expect(preview?.ctx.mode).toBe("facility");
+  });
+
+  it("uses a separate local free single-user preview identity on personal routes", () => {
+    const preview = resolveLocalPersonalPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/personal",
+      search: "?single=1&singleEmail=single@example.test&devPlan=free"
+    });
+
+    expect(preview?.token).toBe("local-preview-personal-token");
+    expect(preview?.user.email).toBe("single@example.test");
+    expect(preview?.ctx.mode).toBe("personal");
+    expect(preview?.ctx.plan).toBe("free");
+  });
+
+  it("lets personal routes win over stale commercial and facility preview params", () => {
+    const preview = resolveLocalPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/personal/courses",
+      search:
+        "?commercial=1&facility=1&commercialEmail=brand@example.test&facilityEmail=operator@example.test&singleEmail=single@example.test"
+    });
+
+    expect(preview?.token).toBe("local-preview-personal-token");
+    expect(preview?.user.email).toBe("single@example.test");
+    expect(preview?.ctx.mode).toBe("personal");
   });
 
   it("does not grant Commercial mode from a plan name alone", () => {

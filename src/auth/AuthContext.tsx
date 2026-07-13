@@ -26,6 +26,8 @@ const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
 const LOCAL_FACILITY_PREVIEW_TOKEN = "local-preview-facility-token";
 const LOCAL_FACILITY_PREVIEW_EMAIL = "facility-demo@growpathai.local";
 const LOCAL_FACILITY_PREVIEW_ID = "local-dev-facility";
+const LOCAL_PERSONAL_PREVIEW_TOKEN = "local-preview-personal-token";
+const LOCAL_PERSONAL_PREVIEW_EMAIL = "single-free-demo@growpathai.local";
 
 type AuthState = {
   token: string | null;
@@ -72,10 +74,14 @@ function isFacilityPreviewRoute(pathname: string) {
   return pathname === "/home/facility" || pathname.startsWith("/home/facility/");
 }
 
+function isPersonalPreviewRoute(pathname: string) {
+  return pathname === "/home/personal" || pathname.startsWith("/home/personal/");
+}
+
 export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLocation) {
   const { hostname, pathname, search } = location ?? localWindowLocation();
   if (!isLocalPreviewHost(hostname)) return null;
-  if (isFacilityPreviewRoute(pathname)) return null;
+  if (isFacilityPreviewRoute(pathname) || isPersonalPreviewRoute(pathname)) return null;
 
   const params = new URLSearchParams(search);
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
@@ -140,7 +146,7 @@ export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLoca
 export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocation) {
   const { hostname, pathname, search } = location ?? localWindowLocation();
   if (!isLocalPreviewHost(hostname)) return null;
-  if (isCommercialPreviewRoute(pathname)) return null;
+  if (isCommercialPreviewRoute(pathname) || isPersonalPreviewRoute(pathname)) return null;
 
   const params = new URLSearchParams(search);
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
@@ -217,6 +223,59 @@ export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocati
   };
 }
 
+export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocation) {
+  const { hostname, pathname, search } = location ?? localWindowLocation();
+  if (!isLocalPreviewHost(hostname)) return null;
+  if (isCommercialPreviewRoute(pathname) || isFacilityPreviewRoute(pathname)) return null;
+
+  const params = new URLSearchParams(search);
+  const devPlan = String(params.get("devPlan") || "").toLowerCase();
+  const personalParam = String(params.get("personal") || "").toLowerCase();
+  const singleParam = String(params.get("single") || "").toLowerCase();
+  const wantsPersonal =
+    isPersonalPreviewRoute(pathname) ||
+    devPlan === "free" ||
+    devPlan === "personal" ||
+    personalParam === "1" ||
+    personalParam === "true" ||
+    singleParam === "1" ||
+    singleParam === "true";
+
+  if (!wantsPersonal) return null;
+
+  const email =
+    String(params.get("singleEmail") || params.get("personalEmail") || "")
+      .trim()
+      .toLowerCase() || LOCAL_PERSONAL_PREVIEW_EMAIL;
+  const displayName = String(params.get("singleName") || "Single Free Demo");
+
+  return {
+    token: LOCAL_PERSONAL_PREVIEW_TOKEN,
+    user: {
+      id: "local-personal-preview-user",
+      email,
+      displayName,
+      role: "user" as const,
+      plan: "free",
+      subscriptionStatus: "free",
+      emailVerified: true
+    },
+    ctx: {
+      mode: "personal",
+      plan: "free",
+      requestedPlan: "free",
+      subscriptionStatus: "free",
+      capabilities: {
+        COURSES_VIEW: true,
+        COURSES_CREATE: true,
+        FORUM_VIEW: true,
+        FORUM_POST: true
+      },
+      limits: {}
+    }
+  };
+}
+
 export function resolveLocalPreviewSession(location?: LocalPreviewLocation) {
   const resolvedLocation = location ?? localWindowLocation();
   if (isCommercialPreviewRoute(resolvedLocation.pathname)) {
@@ -225,9 +284,13 @@ export function resolveLocalPreviewSession(location?: LocalPreviewLocation) {
   if (isFacilityPreviewRoute(resolvedLocation.pathname)) {
     return resolveLocalFacilityPreviewSession(resolvedLocation);
   }
+  if (isPersonalPreviewRoute(resolvedLocation.pathname)) {
+    return resolveLocalPersonalPreviewSession(resolvedLocation);
+  }
   return (
     resolveLocalFacilityPreviewSession(resolvedLocation) ||
-    resolveLocalCommercialPreviewSession(resolvedLocation)
+    resolveLocalCommercialPreviewSession(resolvedLocation) ||
+    resolveLocalPersonalPreviewSession(resolvedLocation)
   );
 }
 
@@ -369,7 +432,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!localPreview) return;
 
     const hasLocalPreviewToken =
-      token === LOCAL_COMMERCIAL_PREVIEW_TOKEN || token === LOCAL_FACILITY_PREVIEW_TOKEN;
+      token === LOCAL_COMMERCIAL_PREVIEW_TOKEN ||
+      token === LOCAL_FACILITY_PREVIEW_TOKEN ||
+      token === LOCAL_PERSONAL_PREVIEW_TOKEN;
     if (token && !hasLocalPreviewToken) return;
     if (
       token === localPreview.token &&
