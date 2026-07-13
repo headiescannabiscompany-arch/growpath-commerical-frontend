@@ -164,7 +164,13 @@ describe("saveToolRunAndOpenJournal", () => {
       title: "Check light",
       description: "Verify canopy PPFD.",
       priority: "medium",
-      dueDate: "2026-07-01"
+      dueDate: "2026-07-01",
+      endAt: "2026-07-01T14:00:00.000Z",
+      allDay: false,
+      calendarType: "light_recheck",
+      sourceStage: "canopy_verification",
+      reminderPlan: { label: "1 hour before", channels: ["in_app"] },
+      recurrence: { rule: "weekly" }
     });
 
     expect(result).toEqual({ ok: true, toolRunId: "run-1", taskId: "task-1" });
@@ -176,10 +182,12 @@ describe("saveToolRunAndOpenJournal", () => {
       description: "Verify canopy PPFD.",
       priority: "medium",
       dueDate: "2026-07-01",
-      allDay: true,
-      calendarType: "ppfd_followup",
-      sourceStage: "tool_run_followup",
-      reminderPlan: { label: "12 hours before", channels: ["in_app"] },
+      endAt: "2026-07-01T14:00:00.000Z",
+      allDay: false,
+      calendarType: "light_recheck",
+      sourceStage: "canopy_verification",
+      reminderPlan: { label: "1 hour before", channels: ["in_app"] },
+      recurrence: { rule: "weekly" },
       sourceType: "tool_run",
       sourceObjectId: "run-1",
       sourceToolRunId: "run-1",

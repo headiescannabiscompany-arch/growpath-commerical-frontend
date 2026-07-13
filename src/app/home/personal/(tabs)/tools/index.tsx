@@ -1,8 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Href, Link, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { listPersonalGrows } from "@/api/grows";
+import { useAuth } from "@/auth/AuthContext";
 import FeedBanner from "@/components/feed/FeedBanner";
 import {
   FeatureArea,
@@ -14,6 +16,7 @@ import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
 import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
+import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -76,7 +79,9 @@ function coerceParam(value?: string | string[]) {
 }
 
 function hrefWithGrow(path: string, growId: string) {
-  return growId ? `${path}?growId=${encodeURIComponent(growId)}` : path;
+  if (!growId) return path;
+  const glue = path.includes("?") ? "&" : "?";
+  return `${path}${glue}growId=${encodeURIComponent(growId)}`;
 }
 
 const AREA_ORDER: FeatureArea[] = [
@@ -105,6 +110,35 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
+const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
+  "tools.crop_steering_projects",
+  "tools.pheno_hunting",
+  "tools.pheno_matrix",
+  "tools.dry_cure_guard",
+  "tools.clone_rooting",
+  "tools.harvest_readiness_ai"
+]);
+const SOIL_FOCUSED_TOOL_KEYS = new Set([
+  "tools.soil_builder",
+  "tools.dry_amendment_mix",
+  "tools.topdress_planner",
+  "tools.soil_nutrient_batch_planner"
+]);
+
+function toolMatchesInterests(tool: FeatureDefinition, interests: string[]) {
+  if (!interests.length) return true;
+  const selected = new Set(interests.map((item) => item.toLowerCase()));
+  const growsCannabis = selected.has("cannabis");
+  const soilMethod = Array.from(selected).some((item) =>
+    /soil|no-till|organic|amended/.test(item)
+  );
+  const hydroOnly =
+    (selected.has("hydroponics") || selected.has("aeroponics")) && !soilMethod;
+
+  if (CANNABIS_FOCUSED_TOOL_KEYS.has(tool.key) && !growsCannabis) return false;
+  if (SOIL_FOCUSED_TOOL_KEYS.has(tool.key) && hydroOnly) return false;
+  return true;
+}
 
 function ToolCard({
   tool,
@@ -127,9 +161,25 @@ function ToolCard({
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>
       {enabled ? (
-        <Link href={href as Href} style={styles.link} asChild>
-          <Text>Open</Text>
-        </Link>
+        <>
+          <Link href={href as Href} style={styles.link} asChild>
+            <Text>Open</Text>
+          </Link>
+          <Link
+            href={
+              hrefWithGrow(
+                `/home/personal/ai?prompt=${encodeURIComponent(
+                  `Help me use ${tool.title} as part of my grow workflow.`
+                )}`,
+                growId
+              ) as Href
+            }
+            style={styles.link}
+            asChild
+          >
+            <Text>Ask AI to guide this workflow</Text>
+          </Link>
+        </>
       ) : (
         <Text style={styles.lockedText}>Upgrade to unlock</Text>
       )}
@@ -145,10 +195,48 @@ export default function ToolsHubScreen() {
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const devPlan = useMemo(() => coerceParam(rawDevPlan).toLowerCase(), [rawDevPlan]);
   const entitlements = useEntitlements();
+  const auth = useAuth();
   const devPaidOverride = hasLocalPaidPreviewOverride(devPlan);
   const plan = devPaidOverride ? "pro" : entitlements.plan || "free";
   const isFreePlan = !devPaidOverride && String(plan).toLowerCase() === "free";
-  const tools = useMemo(() => getNavigablePersonalTools({ allowBetaSurfaces: true }), []);
+  const [activeGrowInterests, setActiveGrowInterests] = useState<string[]>([]);
+  const profileInterests = useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
+  useEffect(() => {
+    let alive = true;
+    if (!growId) {
+      setActiveGrowInterests([]);
+      return () => {
+        alive = false;
+      };
+    }
+    listPersonalGrows()
+      .then((grows) => {
+        if (!alive) return;
+        const grow = grows.find(
+          (item: any) => String(item?.id || item?._id || "") === growId
+        );
+        const tags = [
+          ...normalizeInterestList((grow as any)?.growTags),
+          ...flattenGrowInterests((grow as any)?.growInterests || {})
+        ];
+        setActiveGrowInterests(Array.from(new Set(tags)));
+      })
+      .catch(() => {
+        if (alive) setActiveGrowInterests([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [growId]);
+  const selectedInterests = activeGrowInterests.length
+    ? activeGrowInterests
+    : profileInterests;
+  const tools = getNavigablePersonalTools({ allowBetaSurfaces: true }).filter((tool) =>
+    toolMatchesInterests(tool, selectedInterests)
+  );
   const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: "personal_tools_hub",
@@ -175,6 +263,13 @@ export default function ToolsHubScreen() {
         {growId ? (
           <View style={styles.context}>
             <Text style={styles.contextText}>Grow context active: {growId}</Text>
+          </View>
+        ) : null}
+        {selectedInterests.length ? (
+          <View style={styles.context}>
+            <Text style={styles.contextText}>
+              Workflow interests: {selectedInterests.join(" | ")}
+            </Text>
           </View>
         ) : null}
         <TokenBalanceWidget />

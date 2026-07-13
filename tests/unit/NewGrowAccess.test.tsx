@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import NewGrowScreen from "@/app/home/personal/(tabs)/grows/new";
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 const mockAppendGrowPhotos = jest.fn();
 const mockListPersonalGrows = jest.fn();
@@ -13,9 +14,25 @@ let mockLimits: Record<string, number> = {};
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    replace: mockReplace
+    replace: mockReplace,
+    push: mockPush
   }),
+  useLocalSearchParams: () => ({}),
   Link: ({ children }: any) => children
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      id: "personal-pro-user",
+      growInterests: {
+        crops: ["Fruit Trees & Bushes"],
+        environment: ["Outdoor"],
+        methods: ["Organic (Amended Soil)"],
+        experience: ["Intermediate"]
+      }
+    }
+  })
 }));
 
 jest.mock("expo-image-picker", () => ({
@@ -128,6 +145,10 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
+    expect(screen.getByText("Grow Planner / Auto Calendar")).toBeTruthy();
+    expect(screen.getByLabelText("Plant count")).toBeTruthy();
+    expect(screen.getByLabelText("Veg length (weeks)")).toBeTruthy();
+    expect(screen.getByLabelText("Expected flower days")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "Bruce Banner Auto");
     fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
     fireEvent.press(screen.getByLabelText("Show advanced fields"));

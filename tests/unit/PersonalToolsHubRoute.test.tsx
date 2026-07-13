@@ -6,6 +6,15 @@ import ToolsHubScreen from "@/app/home/personal/(tabs)/tools";
 const mockCan = jest.fn();
 let mockPlan = "pro";
 let mockSearchParams: Record<string, string> = {};
+let mockGrowInterests: Record<string, string[]> = {};
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "tools-user", growInterests: mockGrowInterests } })
+}));
+
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: jest.fn().mockResolvedValue([])
+}));
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -42,10 +51,27 @@ describe("personal tools hub", () => {
     mockCan.mockReturnValue(true);
     mockPlan = "pro";
     mockSearchParams = {};
+    mockGrowInterests = {};
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { hostname: "localhost", search: "" }
     });
+  });
+
+  it("removes cannabis-focused workflows for a fruit-tree grower", () => {
+    mockGrowInterests = {
+      crops: ["Fruit Trees & Bushes"],
+      environment: ["Outdoor"],
+      methods: ["Organic (Amended Soil)"]
+    };
+
+    const screen = render(<ToolsHubScreen />);
+
+    expect(screen.getByText(/Fruit Trees & Bushes/)).toBeTruthy();
+    expect(screen.getByText("Watering Planner")).toBeTruthy();
+    expect(screen.getByText("IPM Scout / Pest & Organism Tool")).toBeTruthy();
+    expect(screen.queryByText("Pheno Hunting")).toBeNull();
+    expect(screen.queryByText("Dry / Cure Guard")).toBeNull();
   });
 
   it("shows a direct Ask AI entry point from Tools", () => {

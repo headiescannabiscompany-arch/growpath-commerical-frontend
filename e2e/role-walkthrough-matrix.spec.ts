@@ -82,6 +82,7 @@ function capabilitiesFor(persona: Persona) {
     TOOL_PDF_EXPORT: paidPersonal,
     TOOL_PHENO_MATRIX: paidPersonal,
     FEEDING_SCHEDULE: paidPersonal,
+    TASK_REMINDERS: paidPersonal,
     COURSES_VIEW: true,
     COURSES_CREATE: true,
     COURSES_SELL_PAID: true,
@@ -146,7 +147,16 @@ async function installRoleMocks(page: any, persona: Persona) {
       email: persona.email,
       displayName: persona.email.split("@")[0],
       plan: persona.requestedPlan,
-      subscriptionStatus: persona.subscriptionStatus
+      subscriptionStatus: persona.subscriptionStatus,
+      growInterests:
+        persona.mode === "personal"
+          ? {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"],
+              experience: ["Intermediate"]
+            }
+          : {}
     },
     ctx: {
       mode: persona.mode,
@@ -199,6 +209,12 @@ async function installRoleMocks(page: any, persona: Persona) {
             id: "grow-walkthrough-1",
             name: "Walkthrough Grow",
             status: "vegetating",
+            growTags: ["Cannabis", "Indoor", "Living Soil / No-Till"],
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
             updatedAt: "2026-07-10T00:00:00.000Z"
           }
         ]
@@ -219,6 +235,21 @@ async function installRoleMocks(page: any, persona: Persona) {
             updatedAt: "2026-07-10T00:00:00.000Z"
           }
         ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/personal/logs/log-walkthrough-1") {
+      return fulfillJson(route, {
+        log: {
+          id: "log-walkthrough-1",
+          growId: "grow-walkthrough-1",
+          title: "Walkthrough photo log",
+          notes: "Leaf check with photo.",
+          photos: ["/uploads/walkthrough-leaf.jpg"],
+          date: "2026-07-10",
+          createdAt: "2026-07-10T00:00:00.000Z",
+          updatedAt: "2026-07-10T00:00:00.000Z"
+        }
       });
     }
 
@@ -394,7 +425,7 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/personal/tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByRole("heading", { name: "Tools / AI" })).toBeVisible();
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open personal Ask AI" })).toBeVisible();
     await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
     await expect(page.getByText("VPD Calculator")).toBeVisible();
     await expect(page.getByText("Upgrade to unlock").first()).toBeVisible();
@@ -406,15 +437,51 @@ test.describe("role walkthrough matrix", () => {
     await expect(page.getByText(/Upgrade to save journal entries/i)).toBeVisible();
   });
 
-  test("personal pro can open Ask AI, diagnosis, and photo log controls", async ({
-    page
-  }) => {
+  test("personal pro contextual workflow crawler", async ({ page }) => {
     await installRoleMocks(page, PERSONAS.personalPro);
 
     await page.goto("/home/personal/tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open personal Ask AI" })).toBeVisible();
     await expect(page.getByText("Ask grow questions")).toBeVisible();
+
+    await page.goto("/home/personal/grows/new", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Grow Planner / Auto Calendar")).toBeVisible();
+    await expect(page.getByLabel("Plant count")).toBeVisible();
+
+    await page.goto("/home/personal/tasks", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Planning workflows")).toBeVisible();
+    await expect(
+      page.getByLabel("Watering Planner from personal_tasks_calendar")
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Feeding Schedule from personal_tasks_calendar")
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Timeline Planner from personal_tasks_calendar")
+    ).toBeVisible();
+
+    await page.goto("/home/personal/grows/grow-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Pheno / Genetics")).toBeVisible();
+    await expect(page.getByText("Harvest / Diagnosis")).toBeVisible();
+
+    await page.goto("/home/personal/grows/grow-walkthrough-1/timeline", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Timeline report")).toBeVisible();
+    await expect(page.getByLabel("Export Grow Report from grow_timeline")).toBeVisible();
+
+    await page.goto("/home/personal/logs/log-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Log report")).toBeVisible();
 
     await page.goto("/home/personal/ai", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
@@ -423,6 +490,7 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/personal/diagnose", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByText(/Add Photo|Change Photo/i).first()).toBeVisible();
+    await expect(page.getByText("Harvest / maturity mode")).toBeVisible();
 
     await page.goto("/home/personal/logs/new?growId=grow-walkthrough-1&focus=photos", {
       waitUntil: "domcontentloaded"

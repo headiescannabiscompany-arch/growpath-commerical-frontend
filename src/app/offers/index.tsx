@@ -224,17 +224,13 @@ export default function Offers() {
 
               <Pressable
                 onPress={() => startCheckout(plan.key)}
-                disabled={loading}
+                disabled={loading || current}
                 accessibilityRole="button"
                 accessibilityLabel={`Start ${plan.title} checkout`}
-                style={[styles.button, loading && styles.buttonDisabled]}
+                style={[styles.button, (loading || current) && styles.buttonDisabled]}
               >
                 <Text style={styles.buttonText}>
-                  {loading
-                    ? "Starting..."
-                    : current
-                      ? "Manage checkout"
-                      : "Start checkout"}
+                  {loading ? "Starting..." : current ? "Current plan" : "Start checkout"}
                 </Text>
               </Pressable>
             </AppCard>

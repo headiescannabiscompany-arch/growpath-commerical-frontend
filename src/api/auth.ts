@@ -5,12 +5,15 @@ import { apiRequest } from "./apiRequest";
 
 export type AuthUser = {
   id: string;
+  _id?: string;
+  name?: string;
   email: string;
   displayName: string;
   role: "user" | "creator" | "admin";
   plan: string | null;
   subscriptionStatus: string | null;
   emailVerified?: boolean;
+  growInterests?: Record<string, string[]>;
 };
 
 export type SignupBody = {

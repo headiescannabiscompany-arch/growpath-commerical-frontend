@@ -68,6 +68,8 @@ describe("GrowOverviewScreen", () => {
         id: "grow-1",
         name: "Connected Run",
         status: "flowering",
+        growTags: ["Cannabis", "Indoor"],
+        growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
         updatedAt: "2026-07-07T00:00:00.000Z"
       }
     ]);
@@ -128,6 +130,12 @@ describe("GrowOverviewScreen", () => {
     );
 
     expect(screen.getByText("Connected Run")).toBeTruthy();
+    expect(screen.getByText("Pheno / Genetics")).toBeTruthy();
+    expect(screen.getByText("Harvest / Diagnosis")).toBeTruthy();
+    expect(screen.getByLabelText("Pheno Matrix from grow_detail_pheno")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Harvest Readiness from grow_detail_harvest")
+    ).toBeTruthy();
     expect(screen.getByText("Batch follow-up saved")).toBeTruthy();
     expect(screen.getByText("Topdress follow-up")).toBeTruthy();
     expect(screen.getByText("Course campaign attached")).toBeTruthy();

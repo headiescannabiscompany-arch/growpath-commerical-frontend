@@ -11,14 +11,23 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
+import { useAuth } from "@/auth/AuthContext";
+import GrowInterestPicker from "@/components/GrowInterestPicker";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { INTEREST_TIERS } from "@/config/interests";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import {
+  buildEmptyTierSelection,
+  flattenGrowInterests,
+  flattenTierSelections,
+  groupTagsByTier
+} from "@/utils/growInterests";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
 const GROWS_CREATE_PATH = "/api/personal/grows";
@@ -33,18 +42,102 @@ type SelectedPhoto = {
   sizeBytes?: number | null;
 };
 
+function firstParam(value: string | string[] | undefined) {
+  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
+}
+
+function commaList(value: string | string[] | undefined) {
+  return firstParam(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function mergeTierSelections(...sources: Record<string, string[]>[]) {
+  const merged = buildEmptyTierSelection() as Record<string, string[]>;
+  for (const source of sources) {
+    for (const tier of INTEREST_TIERS) {
+      const values = Array.isArray(source?.[tier.id]) ? source[tier.id] : [];
+      merged[tier.id] = Array.from(new Set([...(merged[tier.id] || []), ...values]));
+    }
+  }
+  return merged;
+}
+
 export default function NewGrowScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    source?: string | string[];
+    name?: string | string[];
+    cultivar?: string | string[];
+    systemPreset?: string | string[];
+    anchorDate?: string | string[];
+    notes?: string | string[];
+    growTags?: string | string[];
+    startType?: string | string[];
+    plantCount?: string | string[];
+    vegLengthWeeks?: string | string[];
+    expectedFlowerDays?: string | string[];
+  }>();
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const hasCreateCapability = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
   const defaultTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
-  const [name, setName] = React.useState("");
-  const [systemPreset, setSystemPreset] = React.useState<SystemPreset>("soil");
+  const aiSource = firstParam(params.source).toLowerCase() === "ai";
+  const requestedPreset = firstParam(params.systemPreset).toLowerCase();
+  const initialProfileTags = React.useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
+  const initialQueryTags = React.useMemo(
+    () => commaList(params.growTags),
+    [params.growTags]
+  );
+  const initialInterestSelections = React.useMemo(
+    () =>
+      mergeTierSelections(
+        groupTagsByTier(initialProfileTags) as Record<string, string[]>,
+        groupTagsByTier(initialQueryTags) as Record<string, string[]>
+      ),
+    [initialProfileTags, initialQueryTags]
+  );
+  const interestOptionsOverride = React.useMemo(() => {
+    const overrides: Record<string, string[]> = {};
+    for (const tier of INTEREST_TIERS) {
+      const profileValues = Array.isArray(auth.user?.growInterests?.[tier.id])
+        ? auth.user.growInterests[tier.id]
+        : [];
+      const selectedValues = initialInterestSelections[tier.id] || [];
+      const allowed = Array.from(new Set([...profileValues, ...selectedValues]));
+      if (allowed.length) overrides[tier.id] = allowed;
+    }
+    return overrides;
+  }, [auth.user?.growInterests, initialInterestSelections]);
+
+  const [name, setName] = React.useState(firstParam(params.name));
+  const [systemPreset, setSystemPreset] = React.useState<SystemPreset>(
+    requestedPreset === "coco" || requestedPreset === "hydro" ? requestedPreset : "soil"
+  );
   const [anchorDateType, setAnchorDateType] = React.useState<AnchorType>("vegStart");
-  const [anchorDate, setAnchorDate] = React.useState("");
+  const [anchorDate, setAnchorDate] = React.useState(firstParam(params.anchorDate));
   const [timeZone, setTimeZone] = React.useState(defaultTimeZone);
+  const [startType, setStartType] = React.useState(
+    firstParam(params.startType) || "seed"
+  );
+  const [plannedPlantCount, setPlannedPlantCount] = React.useState(
+    firstParam(params.plantCount) || "1"
+  );
+  const [vegLengthWeeks, setVegLengthWeeks] = React.useState(
+    firstParam(params.vegLengthWeeks) || "4"
+  );
+  const [expectedFlowerDays, setExpectedFlowerDays] = React.useState(
+    firstParam(params.expectedFlowerDays) || "63"
+  );
+  const [growInterestSelections, setGrowInterestSelections] = React.useState<
+    Record<string, string[]>
+  >(initialInterestSelections);
 
   const [showAdvanced, setShowAdvanced] = React.useState(false);
   const [startDate, setStartDate] = React.useState("");
@@ -59,9 +152,9 @@ export default function NewGrowScreen() {
   const [cureStartDate, setCureStartDate] = React.useState("");
   const [potSize, setPotSize] = React.useState("");
   const [potCount, setPotCount] = React.useState("");
-  const [cultivar, setCultivar] = React.useState("");
+  const [cultivar, setCultivar] = React.useState(firstParam(params.cultivar));
   const [targetVpdBand, setTargetVpdBand] = React.useState("");
-  const [notes, setNotes] = React.useState("");
+  const [notes, setNotes] = React.useState(firstParam(params.notes));
   const [photos, setPhotos] = React.useState<SelectedPhoto[]>([]);
   const [photoUrl, setPhotoUrl] = React.useState("");
 
@@ -159,10 +252,24 @@ export default function NewGrowScreen() {
     setError(null);
     try {
       const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
+      const growTags = flattenTierSelections(growInterestSelections);
       const created = await apiRequest(GROWS_CREATE_PATH, {
         method: "POST",
         body: {
           name: name.trim(),
+          growTags,
+          growInterests: growInterestSelections,
+          cropTypes: growInterestSelections.crops || [],
+          environmentTypes: growInterestSelections.environment || [],
+          growingMethods: growInterestSelections.methods || [],
+          draftSource: aiSource ? "ai_assistant" : "manual",
+          planning: {
+            startType,
+            plantCount: Number(plannedPlantCount) || 1,
+            vegLengthWeeks: Number(vegLengthWeeks) || 0,
+            expectedFlowerDays: Number(expectedFlowerDays) || 0,
+            createStarterCalendar: true
+          },
           systemPreset,
           anchorDateType,
           anchorDate: anchorDate.trim(),
@@ -223,6 +330,7 @@ export default function NewGrowScreen() {
     flipDate,
     flowerDay1Date,
     germinationDate,
+    growInterestSelections,
     isValid,
     name,
     notes,
@@ -234,7 +342,12 @@ export default function NewGrowScreen() {
     systemPreset,
     targetVpdBand,
     transplantDate,
-    timeZone
+    timeZone,
+    aiSource,
+    expectedFlowerDays,
+    plannedPlantCount,
+    startType,
+    vegLengthWeeks
   ]);
 
   function openCreated(path: string) {
@@ -333,6 +446,48 @@ export default function NewGrowScreen() {
         <Text style={{ color: "#475569" }}>
           Set required anchors so logs, tools, and tasks can map to this grow correctly.
         </Text>
+        {aiSource ? (
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#86EFAC",
+              borderRadius: radius.card,
+              padding: 12,
+              backgroundColor: "#F0FDF4"
+            }}
+          >
+            <Text style={{ color: "#166534", fontWeight: "800" }}>
+              AI-assisted grow draft
+            </Text>
+            <Text style={{ color: "#166534", marginTop: 4 }}>
+              Review every prefilled field before saving. AI does not create the grow
+              until you confirm here.
+            </Text>
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ask AI to build a grow draft"
+            onPress={() =>
+              router.push(
+                "/home/personal/ai?prompt=Help%20me%20build%20a%20new%20grow%20from%20my%20grow%20interests" as any
+              )
+            }
+            style={{
+              alignSelf: "flex-start",
+              borderWidth: 1,
+              borderColor: "#166534",
+              borderRadius: radius.card,
+              paddingHorizontal: 12,
+              paddingVertical: 9,
+              backgroundColor: "#F0FDF4"
+            }}
+          >
+            <Text style={{ color: "#166534", fontWeight: "800" }}>
+              Build this grow with AI
+            </Text>
+          </Pressable>
+        )}
         <PersonalFeedPlacement placement="top" routeKey="personal_new_grow" longContent />
 
         {error ? (
@@ -363,6 +518,86 @@ export default function NewGrowScreen() {
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
+        />
+
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#BBF7D0",
+            borderRadius: radius.card,
+            padding: 12,
+            gap: 9,
+            backgroundColor: "#F0FDF4"
+          }}
+        >
+          <Text style={{ color: "#14532D", fontSize: 16, fontWeight: "900" }}>
+            Grow Planner / Auto Calendar
+          </Text>
+          <Text style={{ color: "#166534" }}>
+            These setup answers prefill the shared calendar tool after this grow is saved.
+            The calendar tool creates real starter tasks; this form does not duplicate it.
+          </Text>
+          <Text style={{ fontWeight: "700" }}>How are you starting?</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {["seed", "clone", "transplant", "existing plant"].map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Grow start type ${option}`}
+                onPress={() => setStartType(option)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: startType === option ? "#166534" : "#86EFAC",
+                  borderRadius: 999,
+                  backgroundColor: startType === option ? "#166534" : "#FFFFFF",
+                  paddingHorizontal: 10,
+                  paddingVertical: 7
+                }}
+              >
+                <Text style={{ color: startType === option ? "#FFFFFF" : "#166534" }}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              ["Plant count", plannedPlantCount, setPlannedPlantCount],
+              ["Veg length (weeks)", vegLengthWeeks, setVegLengthWeeks],
+              ["Expected flower days", expectedFlowerDays, setExpectedFlowerDays]
+            ].map(([label, value, setter]) => (
+              <View key={String(label)} style={{ flex: 1, minWidth: 150, gap: 4 }}>
+                <Text style={{ fontWeight: "700" }}>{String(label)}</Text>
+                <TextInput
+                  value={String(value)}
+                  onChangeText={setter as (text: string) => void}
+                  keyboardType="numeric"
+                  accessibilityLabel={String(label)}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#86EFAC",
+                    borderRadius: radius.card,
+                    backgroundColor: "#FFFFFF",
+                    paddingHorizontal: 10,
+                    paddingVertical: 9
+                  }}
+                />
+              </View>
+            ))}
+          </View>
+          <Text style={{ color: "#166534", fontWeight: "800" }}>
+            Next: save the grow, then confirm Create Grow Calendar to generate tasks.
+          </Text>
+        </View>
+
+        <GrowInterestPicker
+          title="What are you growing and how?"
+          helperText="This grow starts from your profile interests. These choices drive tools, AI context, courses, and forum discovery."
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          tierOptionsOverride={interestOptionsOverride}
+          enabledTierIds={INTEREST_TIERS.map((tier) => tier.id)}
+          collapsible={false}
         />
 
         <Text style={{ fontWeight: "700" }}>System preset</Text>
@@ -768,8 +1003,17 @@ export default function NewGrowScreen() {
                   `/home/personal/logs/new?growId=${encodeURIComponent(createdGrowId)}`
                 ],
                 [
-                  "Set Up Grow Calendar",
-                  `/home/personal/tools/auto-grow-calendar?growId=${encodeURIComponent(createdGrowId)}`
+                  "Create Grow Calendar",
+                  `/home/personal/tools/auto-grow-calendar?${new URLSearchParams({
+                    growId: createdGrowId,
+                    source: "start_grow",
+                    plantCount: plannedPlantCount,
+                    startDate: anchorDate,
+                    vegLengthWeeks,
+                    expectedFlowerDays,
+                    growStyle: flattenTierSelections(growInterestSelections).join(", "),
+                    medium: systemPreset
+                  }).toString()}`
                 ],
                 [
                   "Run Diagnosis / Ask AI",

@@ -94,7 +94,26 @@ describe("Personal grows route", () => {
 
     const res = await request(createApp())
       .post("/api/personal/grows")
-      .send({ name: "Flower Tent", stage: "flower", cultivar: "Test cultivar" });
+      .send({
+        name: "Flower Tent",
+        stage: "flower",
+        cultivar: "Test cultivar",
+        growTags: ["Cannabis", "Indoor"],
+        growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+        cropTypes: ["Cannabis"],
+        environmentTypes: ["Indoor"],
+        growingMethods: ["Living Soil / No-Till"],
+        draftSource: "ai_assistant",
+        planning: {
+          startType: "clone",
+          plantCount: 4,
+          vegLengthWeeks: 5,
+          expectedFlowerDays: 63,
+          createStarterCalendar: true
+        },
+        germinationDate: "2026-01-03",
+        expectedHarvestDate: "2026-04-15"
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.grow).toMatchObject({
@@ -114,7 +133,21 @@ describe("Personal grows route", () => {
         name: "Flower Tent",
         stage: "flower",
         strain: "Test cultivar",
-        cultivar: "Test cultivar"
+        cultivar: "Test cultivar",
+        growTags: ["Cannabis", "Indoor"],
+        cropTypes: ["Cannabis"],
+        environmentTypes: ["Indoor"],
+        growingMethods: ["Living Soil / No-Till"],
+        draftSource: "ai_assistant",
+        planning: {
+          startType: "clone",
+          plantCount: 4,
+          vegLengthWeeks: 5,
+          expectedFlowerDays: 63,
+          createStarterCalendar: true
+        },
+        germinationDate: new Date("2026-01-03"),
+        expectedHarvestDate: new Date("2026-04-15")
       })
     );
   });

@@ -133,6 +133,24 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.plan).toBe("free");
   });
 
+  it("honors the local single-user Pro preview plan and paid capabilities", () => {
+    const preview = resolveLocalPersonalPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/personal/tools",
+      search: "?devPlan=pro"
+    });
+
+    expect(preview?.token).toBe("local-preview-personal-token");
+    expect(preview?.user.email).toBe("single-pro-demo@growpathai.local");
+    expect(preview?.user.plan).toBe("pro");
+    expect(preview?.user.subscriptionStatus).toBe("active");
+    expect(preview?.ctx.mode).toBe("personal");
+    expect(preview?.ctx.plan).toBe("pro");
+    expect(preview?.ctx.capabilities.TOOL_NPK).toBe(true);
+    expect(preview?.ctx.capabilities.DIAGNOSE_ADVANCED).toBe(true);
+    expect(preview?.ctx.limits.maxGrows).toBe(999);
+  });
+
   it("lets personal routes win over stale commercial and facility preview params", () => {
     const preview = resolveLocalPreviewSession({
       hostname: "127.0.0.1",

@@ -26,6 +26,12 @@ type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
   description?: string;
   priority?: "low" | "medium" | "high";
   dueDate?: string;
+  endAt?: string | null;
+  allDay?: boolean;
+  reminderPlan?: Record<string, any> | null;
+  recurrence?: Record<string, any> | string | null;
+  calendarType?: string | null;
+  sourceStage?: string | null;
 };
 type CreateTaskResult =
   | { ok: true; toolRunId: string; taskId: string }
@@ -135,12 +141,26 @@ export async function saveToolRunAndCreateTask(
       `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
     priority: args.priority || "medium",
     dueDate: args.dueDate,
-    allDay: true,
-    calendarType: `${String(args.toolKey || args.toolType || "tool_run")
-      .replace(/[^a-z0-9]+/gi, "_")
-      .toLowerCase()}_followup`,
-    sourceStage: "tool_run_followup",
-    reminderPlan: { label: "12 hours before", channels: ["in_app"] },
+    ...(args.endAt !== undefined ? { endAt: args.endAt } : {}),
+    allDay: args.allDay ?? true,
+    calendarType:
+      args.calendarType ||
+      `${String(args.toolKey || args.toolType || "tool_run")
+        .replace(/[^a-z0-9]+/gi, "_")
+        .toLowerCase()}_followup`,
+    sourceStage: args.sourceStage || "tool_run_followup",
+    reminderPlan: args.reminderPlan || {
+      label: "12 hours before",
+      channels: ["in_app"]
+    },
+    ...(args.recurrence
+      ? {
+          recurrence:
+            typeof args.recurrence === "string"
+              ? { rule: args.recurrence }
+              : args.recurrence
+        }
+      : {}),
     sourceType: "tool_run",
     sourceObjectId: ensured.toolRunId,
     sourceToolRunId: ensured.toolRunId,

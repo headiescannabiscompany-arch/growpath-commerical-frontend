@@ -153,10 +153,12 @@ export default function BackendCalculatorToolScreen({
   buildActions,
   assistantBrief
 }: BackendCalculatorToolScreenProps) {
-  const params = useLocalSearchParams<{
+  const routeParams = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
   }>();
+  const params = routeParams as typeof routeParams &
+    Record<string, string | string[] | undefined>;
   const growId = coerceParam(params.growId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
   const entitlements = useEntitlements();
@@ -181,8 +183,14 @@ export default function BackendCalculatorToolScreen({
   });
 
   const initialValues = useMemo(
-    () => Object.fromEntries(fields.map((field) => [field.key, field.defaultValue])),
-    [fields]
+    () =>
+      Object.fromEntries(
+        fields.map((field) => [
+          field.key,
+          coerceParam(params[field.key]) || field.defaultValue
+        ])
+      ),
+    [fields, params]
   );
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);

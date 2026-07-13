@@ -17,6 +17,7 @@ import {
   type PersonalTask
 } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
@@ -572,6 +573,12 @@ export default function PersonalTaskCenterRoute() {
           </View>
         ))}
       </View>
+      <ContextualWorkflowLinks
+        title="Planning workflows"
+        helper="These shared tools create real grow tasks and calendar entries. Select the grow inside the workflow when one is not already in context."
+        source="personal_tasks_calendar"
+        workflows={["watering", "feeding-schedule", "timeline-planner"]}
+      />
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_task_center"

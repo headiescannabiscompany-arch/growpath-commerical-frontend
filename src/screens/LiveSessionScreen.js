@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -11,6 +12,8 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "../api/apiRequest";
+import { listPersonalGrows } from "../api/grows";
+import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 import { radius } from "../theme/theme";
 
@@ -30,6 +33,8 @@ export default function LiveSessionScreen({ route }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [err, setErr] = useState("");
+  const [savingReminder, setSavingReminder] = useState(false);
+  const [reminderCreated, setReminderCreated] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -113,6 +118,53 @@ export default function LiveSessionScreen({ route }) {
   const feedHref = feedCampaignId
     ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
+
+  async function createAttendanceReminder() {
+    if (!startsAt || savingReminder || reminderCreated) return;
+    setSavingReminder(true);
+    try {
+      const grows = await listPersonalGrows();
+      const linkedGrowId = String(session?.linkedGrowId || session?.growId || "");
+      const grow =
+        grows.find((item) => String(item?.id || item?._id) === linkedGrowId) ||
+        grows.find(
+          (item) => String(item?.status || "active").toLowerCase() === "active"
+        ) ||
+        grows[0];
+      const growId = String(grow?.id || grow?._id || "");
+      if (!growId) {
+        Alert.alert(
+          "Build a grow first",
+          "Create a grow so GrowPath has a workspace for this live-session reminder."
+        );
+        return;
+      }
+
+      const task = await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedLiveId: String(session?._id || session?.id || sessionId),
+        title: `Attend live: ${String(session?.title || "GrowPath session")}`,
+        description: String(session?.description || "Open the GrowPath live session."),
+        dueDate: String(startsAt),
+        allDay: false,
+        priority: "high",
+        calendarType: "live_session",
+        sourceType: "live_reminder",
+        sourceObjectId: String(session?._id || session?.id || sessionId),
+        reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+      });
+      if (!task) throw new Error("The reminder could not be saved.");
+      setReminderCreated(true);
+    } catch (error) {
+      Alert.alert(
+        "Reminder not saved",
+        String(error?.message || error || "Please try again.")
+      );
+    } finally {
+      setSavingReminder(false);
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -230,6 +282,23 @@ export default function LiveSessionScreen({ route }) {
             </Pressable>
           ) : null}
 
+          {startsAt ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={savingReminder || reminderCreated}
+              style={[styles.secondaryBtn, reminderCreated && styles.completedBtn]}
+              onPress={createAttendanceReminder}
+            >
+              <Text style={styles.secondaryBtnText}>
+                {reminderCreated
+                  ? "Reminder task created"
+                  : savingReminder
+                    ? "Creating reminder..."
+                    : "Add live reminder to My Tasks"}
+              </Text>
+            </Pressable>
+          ) : null}
+
           {replayUrl ? (
             <Pressable
               accessibilityRole="button"
@@ -338,5 +407,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingVertical: 11
   },
-  secondaryBtnText: { color: "#0F172A", fontWeight: "900" }
+  secondaryBtnText: { color: "#0F172A", fontWeight: "900" },
+  completedBtn: { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" }
 });

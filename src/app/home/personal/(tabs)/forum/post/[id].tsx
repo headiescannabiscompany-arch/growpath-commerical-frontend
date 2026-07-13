@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
   Image,
@@ -39,6 +40,8 @@ type CommentRow = {
   author?: any;
   user?: any;
   createdAt?: string;
+  photos?: string[];
+  attachments?: any[];
 };
 
 function getId(params: Record<string, any>): string {
@@ -61,6 +64,29 @@ function bodyOf(row: any) {
   return String(row?.body || row?.content || row?.text || "");
 }
 
+function commentPhotos(row: CommentRow): string[] {
+  const structured = [row?.photos, row?.attachments]
+    .filter(Array.isArray)
+    .flat()
+    .map(photoUri)
+    .filter(Boolean);
+  const embedded = bodyOf(row)
+    .split(/\s+/)
+    .filter((value) => /^https?:\/\//i.test(value) || value.startsWith("/uploads/"));
+  return Array.from(new Set([...structured, ...embedded]))
+    .map((uri: string) => resolveImageUri(uri))
+    .filter((uri: string): uri is string => Boolean(uri));
+}
+
+function visibleCommentBody(row: CommentRow) {
+  const photoSet = new Set(commentPhotos(row));
+  return bodyOf(row)
+    .split("\n")
+    .filter((line) => !photoSet.has(resolveImageUri(line.trim())))
+    .join("\n")
+    .trim();
+}
+
 function titleOf(post: SocialPost | null) {
   return String(post?.title || post?.text || post?.content || post?.body || "Forum post");
 }
@@ -80,7 +106,7 @@ function photoUri(value: any) {
   );
 }
 
-function photosOf(post: SocialPost | null) {
+function photosOf(post: SocialPost | null): string[] {
   if (!post) return [];
   const rows = [
     post.photos,
@@ -91,10 +117,10 @@ function photosOf(post: SocialPost | null) {
     post.images,
     post.imageUrl ? [post.imageUrl] : []
   ].find((value) => Array.isArray(value) && value.length);
-  return (rows || [])
+  return ((rows || []) as unknown[])
     .map(photoUri)
-    .map((uri) => resolveImageUri(uri))
-    .filter(Boolean);
+    .map((uri: string) => resolveImageUri(uri))
+    .filter((uri: string): uri is string => Boolean(uri));
 }
 
 function likedByViewer(post: SocialPost | null) {
@@ -123,6 +149,7 @@ export default function ForumPostDetailRoute() {
   const [post, setPost] = useState<SocialPost | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentText, setCommentText] = useState("");
+  const [commentPhotoUris, setCommentPhotoUris] = useState<string[]>([]);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -193,12 +220,13 @@ export default function ForumPostDetailRoute() {
   async function submitComment() {
     const targetId = loadedId || id;
     const text = commentText.trim();
-    if (!targetId || !text || !canPost) return;
+    if (!targetId || (!text && !commentPhotoUris.length) || !canPost) return;
     setSaving(true);
     setFeedback("");
     try {
-      await addForumComment(targetId, text);
+      await addForumComment(targetId, text || "Photo comment", commentPhotoUris);
       setCommentText("");
+      setCommentPhotoUris([]);
       const nextComments = await listForumComments(targetId);
       setComments(nextComments);
     } catch (error: any) {
@@ -206,6 +234,25 @@ export default function ForumPostDetailRoute() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickCommentPhotos() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setFeedback("Photo-library permission is required to add comment photos.");
+      return;
+    }
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      allowsEditing: false,
+      quality: 0.8
+    });
+    if (picked.canceled) return;
+    setCommentPhotoUris((current) => [
+      ...current,
+      ...picked.assets.map((asset) => asset.uri).filter(Boolean)
+    ]);
   }
 
   async function saveToGrowLog() {
@@ -428,11 +475,48 @@ export default function ForumPostDetailRoute() {
                   accessibilityLabel="Forum comment"
                 />
                 <Pressable
-                  disabled={!commentText.trim() || saving}
+                  disabled={saving}
+                  onPress={pickCommentPhotos}
+                  style={[styles.secondaryBtn, saving && styles.disabled]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Attach forum comment photos"
+                >
+                  <Text style={styles.secondaryText}>
+                    {commentPhotoUris.length ? "Add more photos" : "Attach photo"}
+                  </Text>
+                </Pressable>
+                {commentPhotoUris.length ? (
+                  <View style={styles.photoGrid}>
+                    {commentPhotoUris.map((uri, index) => (
+                      <View key={`${uri}-${index}`}>
+                        <Image
+                          source={{ uri: resolveImageUri(uri) }}
+                          style={styles.commentPhoto}
+                          resizeMode="cover"
+                          accessibilityLabel={`Forum comment draft photo ${index + 1}`}
+                        />
+                        <Pressable
+                          onPress={() =>
+                            setCommentPhotoUris((current) =>
+                              current.filter((_, itemIndex) => itemIndex !== index)
+                            )
+                          }
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove forum comment photo ${index + 1}`}
+                        >
+                          <Text style={styles.dangerText}>Remove</Text>
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+                <Pressable
+                  disabled={(!commentText.trim() && !commentPhotoUris.length) || saving}
                   onPress={submitComment}
                   style={[
                     styles.primaryBtn,
-                    (!commentText.trim() || saving) && styles.disabled
+                    ((!commentText.trim() && !commentPhotoUris.length) || saving) &&
+                      styles.disabled
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel="Submit forum comment"
@@ -450,9 +534,22 @@ export default function ForumPostDetailRoute() {
                 style={styles.comment}
               >
                 <Text style={styles.rowTitle}>{authorName(comment)}</Text>
-                <Text style={styles.cardText}>
-                  {bodyOf(comment) || "No comment text."}
-                </Text>
+                {visibleCommentBody(comment) ? (
+                  <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
+                ) : null}
+                {commentPhotos(comment).length ? (
+                  <View style={styles.photoGrid}>
+                    {commentPhotos(comment).map((photo, index) => (
+                      <Image
+                        key={`${photo}-${index}`}
+                        source={{ uri: photo }}
+                        style={styles.commentPhoto}
+                        resizeMode="cover"
+                        accessibilityLabel={`Forum comment photo ${index + 1}`}
+                      />
+                    ))}
+                  </View>
+                ) : null}
               </View>
             ))}
             {!comments.length ? (
@@ -512,6 +609,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   commentInput: { minHeight: 90, textAlignVertical: "top" },
+  commentPhoto: {
+    width: 120,
+    height: 90,
+    borderRadius: radius.card,
+    backgroundColor: "#E2E8F0"
+  },
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

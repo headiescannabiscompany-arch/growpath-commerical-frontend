@@ -192,6 +192,16 @@ describe("PersonalTaskCenterRoute", () => {
     const screen = render(<PersonalTaskCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Task Center / Schedule")).toBeTruthy());
+    expect(screen.getByText("Planning workflows")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Watering Planner from personal_tasks_calendar")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Feeding Schedule from personal_tasks_calendar")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Timeline Planner from personal_tasks_calendar")
+    ).toBeTruthy();
     expect(screen.getByText("Inspect IPM issue")).toBeTruthy();
     expect(screen.getByText(/Mixed soil/)).toBeTruthy();
     expect(screen.getAllByText("sensor alert").length).toBeGreaterThan(0);

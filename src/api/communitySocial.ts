@@ -118,10 +118,12 @@ export async function listForumComments(id: string) {
   return rows<any>(response, ["comments", "items"]);
 }
 
-export async function addForumComment(id: string, text: string) {
+export async function addForumComment(id: string, text: string, photos: string[] = []) {
+  const persistedPhotos = await persistImageUris(photos);
+  const storedText = [text.trim(), ...persistedPhotos].filter(Boolean).join("\n");
   return apiRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
-    body: { text }
+    body: { text: storedText, photos: persistedPhotos }
   });
 }
 

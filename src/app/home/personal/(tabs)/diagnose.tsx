@@ -21,6 +21,7 @@ import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
@@ -474,6 +475,16 @@ export default function DiagnoseRoute() {
         </Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        {String(cropCommonName).toLowerCase().includes("cannabis") ? (
+          <ContextualWorkflowLinks
+            title="Harvest / maturity mode"
+            helper="Open the existing Harvest Readiness workflow with this grow and plant selected."
+            source="plant_diagnosis"
+            growId={growId}
+            plantId={plantId}
+            workflows={["harvest-readiness"]}
+          />
+        ) : null}
 
         {plants.length ? (
           <View style={styles.section}>

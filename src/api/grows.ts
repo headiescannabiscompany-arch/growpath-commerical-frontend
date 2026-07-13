@@ -44,7 +44,10 @@ export async function listGrows(
     return normalizeGrowList(listRes);
   }
   const listRes = await apiRequest(routes.GROWS.LIST, {
-    params: filtersOrFacilityId || {}
+    params:
+      typeof filtersOrFacilityId === "object" && filtersOrFacilityId
+        ? filtersOrFacilityId
+        : {}
   });
   return normalizeGrowList(listRes);
 }
@@ -94,6 +97,20 @@ export interface PersonalGrow extends Grow {
   location: string;
   status: "vegetating" | "flowering" | "curing" | "harvested";
   updatedAt: string;
+  notes?: string;
+  cultivar?: string;
+  growTags?: string[];
+  growInterests?: Record<string, string[]>;
+  cropTypes?: string[];
+  environmentTypes?: string[];
+  growingMethods?: string[];
+  planning?: {
+    startType?: string;
+    plantCount?: number;
+    vegLengthWeeks?: number;
+    expectedFlowerDays?: number;
+    createStarterCalendar?: boolean;
+  };
 }
 
 export interface PersonalGrowTimelineEvent {

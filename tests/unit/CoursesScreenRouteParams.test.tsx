@@ -5,6 +5,10 @@ import CoursesScreen from "@/screens/CoursesScreen";
 
 const mockApiRequest = jest.fn();
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "course-user", growInterests: {} } })
+}));
+
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ courseId: "course-2" }),
   useRouter: () => ({ push: jest.fn() })
@@ -54,7 +58,9 @@ describe("CoursesScreen route params", () => {
   it("opens a linked personal course from the courseId query", async () => {
     const screen = render(<CoursesScreen />);
 
-    await waitFor(() => expect(screen.getByLabelText("Selected course course-2")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText("Selected course course-2")).toBeTruthy()
+    );
     expect(screen.getByText("Course detail course-2")).toBeTruthy();
   });
 });

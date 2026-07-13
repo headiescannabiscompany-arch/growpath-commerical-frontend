@@ -28,6 +28,7 @@ const LOCAL_FACILITY_PREVIEW_EMAIL = "facility-demo@growpathai.local";
 const LOCAL_FACILITY_PREVIEW_ID = "local-dev-facility";
 const LOCAL_PERSONAL_PREVIEW_TOKEN = "local-preview-personal-token";
 const LOCAL_PERSONAL_PREVIEW_EMAIL = "single-free-demo@growpathai.local";
+const LOCAL_PERSONAL_PRO_PREVIEW_EMAIL = "single-pro-demo@growpathai.local";
 
 type AuthState = {
   token: string | null;
@@ -232,9 +233,16 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
   const personalParam = String(params.get("personal") || "").toLowerCase();
   const singleParam = String(params.get("single") || "").toLowerCase();
+  const paidParam = String(params.get("paid") || "").toLowerCase();
+  const isProPreview =
+    devPlan === "pro" ||
+    devPlan === "personal" ||
+    paidParam === "1" ||
+    paidParam === "true";
   const wantsPersonal =
     isPersonalPreviewRoute(pathname) ||
     devPlan === "free" ||
+    devPlan === "pro" ||
     devPlan === "personal" ||
     personalParam === "1" ||
     personalParam === "true" ||
@@ -246,8 +254,14 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
   const email =
     String(params.get("singleEmail") || params.get("personalEmail") || "")
       .trim()
-      .toLowerCase() || LOCAL_PERSONAL_PREVIEW_EMAIL;
-  const displayName = String(params.get("singleName") || "Single Free Demo");
+      .toLowerCase() ||
+    (isProPreview ? LOCAL_PERSONAL_PRO_PREVIEW_EMAIL : LOCAL_PERSONAL_PREVIEW_EMAIL);
+  const displayName = String(
+    params.get("singleName") ||
+      (isProPreview ? "Single User Pro Demo" : "Single Free Demo")
+  );
+  const plan = isProPreview ? "pro" : "free";
+  const subscriptionStatus = isProPreview ? "active" : "free";
 
   return {
     token: LOCAL_PERSONAL_PREVIEW_TOKEN,
@@ -256,22 +270,52 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
       email,
       displayName,
       role: "user" as const,
-      plan: "free",
-      subscriptionStatus: "free",
+      plan,
+      subscriptionStatus,
       emailVerified: true
     },
     ctx: {
       mode: "personal",
-      plan: "free",
-      requestedPlan: "free",
-      subscriptionStatus: "free",
+      plan,
+      requestedPlan: plan,
+      subscriptionStatus,
       capabilities: {
+        GROWS_PERSONAL_VIEW: true,
+        GROWS_PERSONAL_WRITE: true,
+        LOGS_PERSONAL_VIEW: true,
+        LOGS_PERSONAL_WRITE: true,
+        PLANTS_PERSONAL_VIEW: true,
+        PLANTS_PERSONAL_WRITE: true,
+        AI_ASSISTANT: true,
+        DIAGNOSE_BASIC: true,
+        DIAGNOSE_AI: true,
+        TOOLS_VPD: true,
+        FEEDING_SCHEDULE: true,
+        TASK_REMINDERS: true,
+        TOOL_TIMELINE_PLANNER: true,
+        ...(isProPreview
+          ? {
+              ALERTS_VIEW: true,
+              ALERTS_ACK: true,
+              DASHBOARD_ANALYTICS: true,
+              DASHBOARD_EXPORT: true,
+              DIAGNOSE_ADVANCED: true,
+              DIAGNOSE_EXPORT: true,
+              COURSES_SELL_PAID: true,
+              TOOL_NPK: true,
+              TOOL_HARVEST_ESTIMATOR: true,
+              TOOL_PDF_EXPORT: true,
+              TOOL_PHENO_MATRIX: true
+            }
+          : {}),
         COURSES_VIEW: true,
         COURSES_CREATE: true,
         FORUM_VIEW: true,
         FORUM_POST: true
       },
-      limits: {}
+      limits: isProPreview
+        ? { maxGrows: 999, maxPlants: 999, maxPaidCourses: 5, maxLessonsPerCourse: 20 }
+        : { maxGrows: 1, maxPlants: 1, maxPaidCourses: 1, maxLessonsPerCourse: 7 }
     }
   };
 }

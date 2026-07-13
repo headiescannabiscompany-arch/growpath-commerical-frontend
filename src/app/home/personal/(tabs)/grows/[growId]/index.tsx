@@ -20,6 +20,7 @@ import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
@@ -87,6 +88,30 @@ function timelinePreviewHref(event: PersonalGrowTimelineEvent) {
   return sourceObjectHref({ ...(event as any), workspaceType: "personal" });
 }
 
+function shareGrowHref(grow: PersonalGrow | null, growId: string) {
+  const tags = Array.from(
+    new Set([
+      ...(Array.isArray(grow?.growTags) ? grow.growTags : []),
+      ...Object.values(grow?.growInterests || {}).flat()
+    ])
+  );
+  const photos = Array.isArray(grow?.photos) ? grow.photos : [];
+  const query = new URLSearchParams({
+    growId,
+    title: `Grow update: ${grow?.name || "My grow"}`,
+    body: [
+      grow?.cultivar ? `Cultivar / variety: ${grow.cultivar}` : "",
+      grow?.status ? `Status: ${grow.status}` : "",
+      grow?.notes || "Sharing an update from my GrowPath grow workspace."
+    ]
+      .filter(Boolean)
+      .join("\n")
+  });
+  if (tags.length) query.set("growTags", tags.join(","));
+  if (photos.length) query.set("photos", photos.join(","));
+  return `/home/personal/forum/new-post?${query.toString()}`;
+}
+
 function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
   const href = timelinePreviewHref(event);
   const content = (
@@ -129,6 +154,15 @@ export default function GrowOverviewScreen() {
   const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const growTags = Array.from(
+    new Set([
+      ...(Array.isArray(grow?.growTags) ? grow.growTags : []),
+      ...Object.values(grow?.growInterests || {}).flat()
+    ])
+  );
+  const cannabisGrow = growTags.some((tag) =>
+    String(tag).toLowerCase().includes("cannabis")
+  );
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -213,6 +247,26 @@ export default function GrowOverviewScreen() {
         </View>
       </View>
 
+      {cannabisGrow ? (
+        <ContextualWorkflowLinks
+          title="Pheno / Genetics"
+          helper="Compare plants with this grow already selected. Results save through the same shared ToolRun workflow."
+          source="grow_detail_pheno"
+          growId={growId}
+          workflows={["pheno-matrix"]}
+        />
+      ) : null}
+
+      {cannabisGrow ? (
+        <ContextualWorkflowLinks
+          title="Harvest / Diagnosis"
+          helper="Use maturity observations and photos, then create a harvest recheck task from the saved result."
+          source="grow_detail_harvest"
+          growId={growId}
+          workflows={["harvest-readiness"]}
+        />
+      ) : null}
+
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Recent timeline</Text>
         {timeline.length ? (
@@ -258,6 +312,11 @@ export default function GrowOverviewScreen() {
         <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Add Task</Text>
+          </Pressable>
+        </Link>
+        <Link href={shareGrowHref(grow, growId) as any} asChild>
+          <Pressable style={styles.action} accessibilityLabel="Share grow to forum">
+            <Text style={styles.actionText}>Share Grow</Text>
           </Pressable>
         </Link>
       </View>

@@ -12,6 +12,7 @@ import {
 
 import { getPersonalGrowTimeline, type PersonalGrowTimelineEvent } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
@@ -298,6 +299,13 @@ export default function GrowTimelineScreen() {
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="timeline" />
+      <ContextualWorkflowLinks
+        title="Timeline report"
+        helper="Export this grow's journal, tasks, plants, and ToolRuns from the shared report workflow."
+        source="grow_timeline"
+        growId={growId}
+        workflows={["pdf-export"]}
+      />
 
       <View style={styles.filterRow}>
         {FILTERS.map((item) => {

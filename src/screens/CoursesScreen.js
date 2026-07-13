@@ -10,10 +10,12 @@ import {
   View
 } from "react-native";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
+import { flattenGrowInterests, normalizeInterestList } from "../utils/growInterests";
 import CourseDetailScreen from "./CourseDetailScreen";
 
 function normalizeList(payload) {
@@ -24,6 +26,27 @@ function normalizeList(payload) {
   return [];
 }
 
+function courseInterestTags(course) {
+  const structured =
+    course?.growInterests && !Array.isArray(course.growInterests)
+      ? flattenGrowInterests(course.growInterests)
+      : normalizeInterestList(course?.growInterests);
+  return Array.from(
+    new Set([
+      ...structured,
+      ...normalizeInterestList(course?.tags),
+      ...normalizeInterestList(course?.interestTags)
+    ])
+  );
+}
+
+function matchesCourseInterests(course, userInterests) {
+  const tags = courseInterestTags(course);
+  if (!tags.length || !userInterests.length) return true;
+  const selected = new Set(userInterests.map((item) => item.toLowerCase()));
+  return tags.some((tag) => selected.has(tag.toLowerCase()));
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -31,6 +54,7 @@ export default function CoursesScreen({ navigation } = {}) {
     ? params.courseId[0]
     : params?.courseId;
   const ent = useEntitlements();
+  const auth = useAuth();
   const access = getLearningAccess(ent);
   const canInvite = !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
 
@@ -107,6 +131,10 @@ export default function CoursesScreen({ navigation } = {}) {
   const paidCourseCount = useMemo(() => countPaidCourses(courses), [courses]);
   const paidLimitReached =
     access.maxPaidCourses !== null && paidCourseCount >= access.maxPaidCourses;
+  const userInterests = useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
 
   function openCourse(course) {
     if (navigation?.navigate) {
@@ -171,16 +199,37 @@ export default function CoursesScreen({ navigation } = {}) {
         <Pressable
           key={String(item?._id || item?.id || idx)}
           style={styles.card}
+          disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Text style={styles.cardTitle}>{String(item?.title || item?.name || "Untitled")}</Text>
-          {hasAnalytics ? <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text> : null}
+          <Text style={styles.cardTitle}>
+            {String(item?.title || item?.name || "Untitled")}
+          </Text>
+          {courseInterestTags(item).length ? (
+            <Text style={styles.meta}>
+              Grow interests: {courseInterestTags(item).join(" | ")}
+            </Text>
+          ) : (
+            <Text style={styles.meta}>Grow interests: General</Text>
+          )}
+          {!matchesCourseInterests(item, userInterests) ? (
+            <Text style={styles.lockedText}>
+              Hidden from your learning path until you add a matching grow interest.
+            </Text>
+          ) : null}
+          {hasAnalytics ? (
+            <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
+          ) : null}
           {access.canPublishCourses && item?.isPublished ? (
             <Pressable accessibilityRole="button" style={styles.smallBtn}>
               <Text style={styles.smallBtnText}>Unpublish</Text>
             </Pressable>
           ) : null}
-          <Text style={styles.link}>Open details</Text>
+          <Text style={styles.link}>
+            {matchesCourseInterests(item, userInterests)
+              ? "Open details"
+              : "Outside your grow interests"}
+          </Text>
         </Pressable>
       ))}
 
@@ -238,7 +287,11 @@ export default function CoursesScreen({ navigation } = {}) {
             onChangeText={setInviteName}
             placeholder="Invite user name"
           />
-          <Pressable accessibilityRole="button" style={styles.inviteBtn} onPress={handleInvite}>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.inviteBtn}
+            onPress={handleInvite}
+          >
             <Text style={styles.inviteText}>Invite</Text>
           </Pressable>
           {inviteMessage ? <Text style={styles.meta}>{inviteMessage}</Text> : null}
@@ -256,6 +309,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
+  lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
   card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   cardTitle: { fontWeight: "800" },
   btn: { marginTop: 10, paddingVertical: 10 },

@@ -37,7 +37,7 @@ function fallbackBalanceForPlan(plan) {
   };
 }
 
-export default function TokenBalanceWidget({ onPress }) {
+export default function TokenBalanceWidget({ onPress = undefined }) {
   const navigation = useNavigation();
   const entitlements = useEntitlements();
   const displayPlan = localPaidPreviewPlan(entitlements.plan);
@@ -66,9 +66,15 @@ export default function TokenBalanceWidget({ onPress }) {
   }, [displayPlan]);
 
   const effectiveBalance = useMemo(() => {
+    const planFallback = fallbackBalanceForPlan(displayPlan);
     const rawMax = Number(balance?.maxTokens);
-    if (!balance || !Number.isFinite(rawMax) || rawMax <= 0) {
-      return fallbackBalanceForPlan(displayPlan);
+    if (
+      !balance ||
+      !Number.isFinite(rawMax) ||
+      rawMax <= 0 ||
+      rawMax < planFallback.maxTokens
+    ) {
+      return planFallback;
     }
     return balance;
   }, [balance, displayPlan]);

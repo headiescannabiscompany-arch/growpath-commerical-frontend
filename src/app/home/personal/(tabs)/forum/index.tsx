@@ -61,7 +61,7 @@ function photoUri(value: any) {
   );
 }
 
-function photosOf(post: SocialPost) {
+function photosOf(post: SocialPost): string[] {
   const rows = [
     post.photos,
     post.photoUrls,
@@ -71,10 +71,10 @@ function photosOf(post: SocialPost) {
     post.images,
     post.imageUrl ? [post.imageUrl] : []
   ].find((value) => Array.isArray(value) && value.length);
-  return (rows || [])
+  return ((rows || []) as unknown[])
     .map(photoUri)
-    .map((uri) => resolveImageUri(uri))
-    .filter(Boolean);
+    .map((uri: string) => resolveImageUri(uri))
+    .filter((uri: string): uri is string => Boolean(uri));
 }
 
 function ForumPostImage({ photo, index }: { photo: string; index: number }) {

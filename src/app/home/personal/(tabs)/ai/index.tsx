@@ -140,6 +140,52 @@ function parseVpdCommand(
   return { temp: tempNum, unit, rh: rhNum };
 }
 
+function buildGrowDraftAction(text: string): AssistantAction | null {
+  const lower = text.toLowerCase();
+  const wantsGrowDraft =
+    /(build|create|start|plan|set up|setup).*(grow|garden|bed|orchard)/i.test(text) ||
+    /(grow|garden|bed|orchard).*(build|create|start|plan|set up|setup)/i.test(text);
+  if (!wantsGrowDraft) return null;
+
+  const tags = new Set<string>();
+  if (/cannabis|weed|marijuana/.test(lower)) tags.add("Cannabis");
+  if (/fruit tree|orchard|berry|berries|bush/.test(lower)) {
+    tags.add("Fruit Trees & Bushes");
+  }
+  if (/vegetable|veggie|food bed/.test(lower)) tags.add("Vegetables");
+  if (/flower bed|ornamental|flowers/.test(lower)) tags.add("Flowers / Ornamentals");
+  if (/herb/.test(lower)) tags.add("Herbs");
+  if (/houseplant/.test(lower)) tags.add("Houseplants");
+  if (/indoor|tent|grow room/.test(lower)) tags.add("Indoor");
+  if (/outdoor|outside|yard|orchard|garden bed/.test(lower)) tags.add("Outdoor");
+  if (/greenhouse/.test(lower)) tags.add("Greenhouse");
+  if (/raised bed/.test(lower)) tags.add("Raised Beds");
+  if (/hydro/.test(lower)) tags.add("Hydroponics");
+  if (/coco/.test(lower)) tags.add("Coco Coir");
+  if (/living soil|no[- ]till/.test(lower)) tags.add("Living Soil / No-Till");
+
+  const systemPreset = /hydro/.test(lower)
+    ? "hydro"
+    : /coco/.test(lower)
+      ? "coco"
+      : "soil";
+  const query = new URLSearchParams({
+    source: "ai",
+    systemPreset,
+    notes: text
+  });
+  if (tags.size) query.set("growTags", Array.from(tags).join(","));
+  return {
+    label: "Review Build a Grow draft",
+    href: `/home/personal/grows/new?${query.toString()}`
+  };
+}
+
+function mergeAction(actions: AssistantAction[], action: AssistantAction | null) {
+  if (!action || actions.some((item) => item.href === action.href)) return actions;
+  return [action, ...actions];
+}
+
 function rowTime(row: any, keys: string[]) {
   for (const key of keys) {
     const value = row?.[key];
@@ -471,9 +517,10 @@ export default function AiScreen() {
       setReferences([]);
       setProposedWrites([]);
       const reply = await askBackend(text);
+      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
-      setActions([]);
+      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
       setMessages((m) => [
         ...m,
         {
@@ -544,7 +591,16 @@ export default function AiScreen() {
                   );
                 })}
               </View>
-            ) : null}
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open AI-assisted Build a Grow"
+                onPress={() => router.push("/home/personal/grows/new?source=ai" as any)}
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionButtonText}>Build your first grow</Text>
+              </Pressable>
+            )}
           </View>
         )}
         {messages.map((m, idx) => (

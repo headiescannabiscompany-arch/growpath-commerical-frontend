@@ -29,6 +29,10 @@ import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "course-user", growInterests: {} } })
+}));
+
 jest.mock("@/entitlements", () => ({
   __esModule: true,
   CAPABILITY_KEYS: {
@@ -94,9 +98,17 @@ beforeEach(() => {
     }
     if (u.includes("/api/invite")) {
       if (inviteOk) {
-        return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ success: true })
+        };
       }
-      return { ok: false, status: 400, text: async () => JSON.stringify({ error: "Failed" }) };
+      return {
+        ok: false,
+        status: 400,
+        text: async () => JSON.stringify({ error: "Failed" })
+      };
     }
     return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
   });
@@ -198,9 +210,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "personal",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "PUBLISH_COURSES"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -214,9 +224,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "COMMERCIAL_HOME"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "COMMERCIAL_HOME"
     });
     inviteOk = true;
     const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
@@ -237,9 +245,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "COMMERCIAL_HOME"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "COMMERCIAL_HOME"
     });
     inviteOk = false;
     const { getByText, findByText, queryByText } = await renderWithNav();

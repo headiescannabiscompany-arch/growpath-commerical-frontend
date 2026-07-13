@@ -10,16 +10,21 @@ import {
   Pressable,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { createForumPost } from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
+import GrowInterestPicker from "@/components/GrowInterestPicker";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { INTEREST_TIERS } from "@/config/interests";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
-import { flattenTierSelections } from "@/utils/growInterests";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "@/utils/growInterests";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -31,6 +36,13 @@ type SelectedPhoto = {
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    title?: string | string[];
+    body?: string | string[];
+    growTags?: string | string[];
+    photos?: string | string[];
+    growId?: string | string[];
+  }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -48,26 +60,42 @@ export default function ForumNewPostRoute() {
         ? "Facility"
         : "User";
 
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const valueOf = (value: string | string[] | undefined) =>
+    String(Array.isArray(value) ? value[0] || "" : value || "");
+  const sharedTags = valueOf(params.growTags)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const sharedPhotos = valueOf(params.photos)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const initialInterests: Record<string, string[]> = sharedTags.length
+    ? (groupTagsByTier(sharedTags) as Record<string, string[]>)
+    : auth.user?.growInterests || (buildEmptyTierSelection() as Record<string, string[]>);
+  const interestOptionsOverride = Object.fromEntries(
+    INTEREST_TIERS.map((tier) => [
+      tier.id,
+      Array.from(
+        new Set([
+          ...(auth.user?.growInterests?.[tier.id] || []),
+          ...(initialInterests[tier.id] || [])
+        ])
+      )
+    ]).filter(([, values]) => (values as string[]).length)
+  ) as Record<string, string[]>;
+
+  const [title, setTitle] = useState(valueOf(params.title));
+  const [body, setBody] = useState(valueOf(params.body));
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
-  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
-  const [interestSelections, setInterestSelections] = useState<Record<string, string[]>>(
-    {}
+  const [photos, setPhotos] = useState<SelectedPhoto[]>(
+    sharedPhotos.map((uri) => ({ uri }))
   );
+  const [interestSelections, setInterestSelections] =
+    useState<Record<string, string[]>>(initialInterests);
 
   const selectedInterests = flattenTierSelections(interestSelections);
-
-  function toggleInterest(tierId: string, option: string) {
-    setInterestSelections((current) => {
-      const values = Array.isArray(current[tierId]) ? current[tierId] : [];
-      const nextValues = values.includes(option)
-        ? values.filter((item) => item !== option)
-        : [...values, option];
-      return { ...current, [tierId]: nextValues };
-    });
-  }
 
   const pickPhotos = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -193,35 +221,15 @@ export default function ForumNewPostRoute() {
         />
 
         <View style={styles.interestCard}>
-          <Text style={styles.cardTitle}>Grow interests</Text>
-          <Text style={styles.cardText}>
-            Add crop, environment, method, technique, goal, constraint, or experience tags
-            so the right growers can find this discussion.
-          </Text>
-          {INTEREST_TIERS.map((tier) => (
-            <View key={tier.id} style={styles.interestGroup}>
-              <Text style={styles.interestLabel}>{tier.label}</Text>
-              <View style={styles.tagRow}>
-                {tier.options.map((option) => {
-                  const selected = Boolean(interestSelections[tier.id]?.includes(option));
-                  return (
-                    <Pressable
-                      key={option}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Toggle grow interest ${option}`}
-                      onPress={() => toggleInterest(tier.id, option)}
-                      disabled={submitting || !canPost}
-                      style={[styles.tag, selected && styles.tagSelected]}
-                    >
-                      <Text style={[styles.tagText, selected && styles.tagTextSelected]}>
-                        {option}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
+          <GrowInterestPicker
+            title="Grow interests"
+            helperText="The composer starts from this grow or your profile interests, so unrelated crop categories stay out of the post."
+            value={interestSelections}
+            onChange={setInterestSelections}
+            enabledTierIds={INTEREST_TIERS.map((tier) => tier.id)}
+            tierOptionsOverride={interestOptionsOverride}
+            defaultExpanded={false}
+          />
           {selectedInterests.length ? (
             <Text style={styles.photoCount}>
               {selectedInterests.length} grow interest tag

@@ -7,6 +7,8 @@ import { Linking } from "react-native";
 const mockUseAuth = jest.fn();
 const mockUseEntitlements = jest.fn();
 const mockApiRequest = jest.fn();
+const mockListPersonalGrows = jest.fn();
+const mockCreatePersonalTask = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
@@ -22,6 +24,16 @@ jest.mock("@/entitlements", () => ({
 jest.mock("../src/api/apiRequest", () => ({
   __esModule: true,
   apiRequest: (...args) => mockApiRequest(...args)
+}));
+
+jest.mock("../src/api/grows", () => ({
+  __esModule: true,
+  listPersonalGrows: (...args) => mockListPersonalGrows(...args)
+}));
+
+jest.mock("../src/api/tasks", () => ({
+  __esModule: true,
+  createPersonalTask: (...args) => mockCreatePersonalTask(...args)
 }));
 
 // Avoid rendering the real embed in tests
@@ -63,6 +75,8 @@ describe("LiveSessionScreen QA", () => {
     mockUseAuth.mockReset();
     mockUseEntitlements.mockReset();
     mockApiRequest.mockReset();
+    mockListPersonalGrows.mockReset();
+    mockCreatePersonalTask.mockReset();
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
   });
 
@@ -120,6 +134,38 @@ describe("LiveSessionScreen QA", () => {
     ).toBeTruthy();
     fireEvent.press(getByText("Open Replay"));
     expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
+  });
+
+  it("creates a personal task at the configured live-stream date", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "live-1",
+      title: "Fruit tree pruning clinic",
+      description: "Bring your pruning questions.",
+      scheduledStart: "2026-08-02T18:00:00Z"
+    });
+    mockListPersonalGrows.mockResolvedValueOnce([
+      { _id: "grow-fruit", status: "active" }
+    ]);
+    mockCreatePersonalTask.mockResolvedValueOnce({ _id: "task-live" });
+
+    const { getByText } = renderWithNav({ sessionId: "live-1" });
+    await waitFor(() => expect(getByText("Add live reminder to My Tasks")).toBeTruthy());
+    fireEvent.press(getByText("Add live reminder to My Tasks"));
+
+    await waitFor(() => {
+      expect(mockCreatePersonalTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-fruit",
+          linkedLiveId: "live-1",
+          dueDate: "2026-08-02T18:00:00Z",
+          sourceType: "live_reminder",
+          reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+        })
+      );
+      expect(getByText("Reminder task created")).toBeTruthy();
+    });
   });
 
   it("keeps public campaign links on the public feed placement route", async () => {

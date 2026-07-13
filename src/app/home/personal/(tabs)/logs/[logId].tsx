@@ -23,6 +23,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { radius } from "@/theme/theme";
 
 function param(value?: string | string[]) {
@@ -304,6 +305,16 @@ export default function LogDetailScreen() {
                 </View>
               ) : null}
             </View>
+
+            <ContextualWorkflowLinks
+              title="Log report"
+              helper="Export the linked grow timeline with this journal entry kept as the launch source."
+              source="grow_log_detail"
+              growId={String(log.growId || "")}
+              plantId={String(log.plantId || "")}
+              logId={logId}
+              workflows={["pdf-export"]}
+            />
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>History Links</Text>

@@ -32,6 +32,19 @@ function optionalNumber(value) {
   return Number.isFinite(numeric) ? numeric : undefined;
 }
 
+function optionalDate(value) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date : undefined;
+}
+
+function stringList(value) {
+  if (!Array.isArray(value)) return [];
+  return Array.from(
+    new Set(value.map((item) => String(item || "").trim()).filter(Boolean))
+  );
+}
+
 function growLookupForUser(growId, userId) {
   const growFilters = [{ growId: String(growId) }];
   if (mongoose.isValidObjectId(String(growId))) growFilters.push({ _id: growId });
@@ -131,12 +144,39 @@ router.post("/", async (req, res) => {
     strain: req.body?.strain || req.body?.cultivar || undefined,
     cultivar: req.body?.cultivar || req.body?.strain || undefined,
     notes: req.body?.notes || undefined,
+    growTags: stringList(req.body?.growTags),
+    growInterests:
+      req.body?.growInterests && typeof req.body.growInterests === "object"
+        ? req.body.growInterests
+        : {},
+    cropTypes: stringList(req.body?.cropTypes),
+    environmentTypes: stringList(req.body?.environmentTypes),
+    growingMethods: stringList(req.body?.growingMethods),
+    draftSource: req.body?.draftSource === "ai_assistant" ? "ai_assistant" : "manual",
+    planning:
+      req.body?.planning && typeof req.body.planning === "object"
+        ? {
+            startType: String(req.body.planning.startType || "seed"),
+            plantCount: optionalNumber(req.body.planning.plantCount),
+            vegLengthWeeks: optionalNumber(req.body.planning.vegLengthWeeks),
+            expectedFlowerDays: optionalNumber(req.body.planning.expectedFlowerDays),
+            createStarterCalendar: Boolean(req.body.planning.createStarterCalendar)
+          }
+        : {},
     systemPreset: req.body?.systemPreset || undefined,
     anchorDateType: req.body?.anchorDateType || undefined,
-    anchorDate: req.body?.anchorDate ? new Date(req.body.anchorDate) : undefined,
-    startDate: req.body?.anchorDate ? new Date(req.body.anchorDate) : undefined,
+    anchorDate: optionalDate(req.body?.anchorDate),
+    startDate: optionalDate(req.body?.startDate || req.body?.anchorDate),
+    germinationDate: optionalDate(req.body?.germinationDate),
+    cloneCutDate: optionalDate(req.body?.cloneCutDate),
+    transplantDate: optionalDate(req.body?.transplantDate),
     timezone: req.body?.timezone || req.body?.timeZone || undefined,
-    flipDate: req.body?.flipDate ? new Date(req.body.flipDate) : undefined,
+    flipDate: optionalDate(req.body?.flipDate),
+    flowerDay1Date: optionalDate(req.body?.flowerDay1Date),
+    expectedHarvestDate: optionalDate(req.body?.expectedHarvestDate),
+    actualHarvestDate: optionalDate(req.body?.actualHarvestDate),
+    dryStartDate: optionalDate(req.body?.dryStartDate),
+    cureStartDate: optionalDate(req.body?.cureStartDate),
     potSize: req.body?.potSize || undefined,
     potCount: optionalNumber(req.body?.potCount),
     targetVpdBand: req.body?.targetVpdBand || undefined
