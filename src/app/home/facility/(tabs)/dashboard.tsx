@@ -357,8 +357,13 @@ export default function FacilityDashboardTab() {
       },
       {
         label: "Storefront",
-        detail: "View facility products and commercial links",
+        detail: "Public catalog; no public cannabis checkout",
         to: "/storefront"
+      },
+      {
+        label: "Sales & transfers",
+        detail: "Licensed recipients, manifests, shipments, and totals",
+        to: "/home/facility/transfers"
       }
     ],
     []

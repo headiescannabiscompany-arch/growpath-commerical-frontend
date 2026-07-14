@@ -45,8 +45,18 @@ function campaignHref(campaign: any) {
 }
 
 function productCanCheckout(product: any) {
+  if (isRegulatedCannabisProduct(product)) return false;
   return Boolean(
     product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
+  );
+}
+
+function isRegulatedCannabisProduct(product: any) {
+  return Boolean(
+    product?.regulatedCannabis === true ||
+    product?.isCannabis === true ||
+    product?.productType === "cannabis" ||
+    product?.category === "cannabis"
   );
 }
 
@@ -340,6 +350,7 @@ export default function PublicProductRoute() {
   const externalUrl =
     product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
   const canCheckout = productCanCheckout(product);
+  const licensedTransferOnly = isRegulatedCannabisProduct(product);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
   const links = publicLinks(storefront);
   const specs = product?.specs || {};
@@ -392,6 +403,14 @@ export default function PublicProductRoute() {
             ) : null}
             <Text style={styles.price}>{money(product)}</Text>
 
+            {licensedTransferOnly ? (
+              <Text style={styles.warning}>
+                Catalog only. Cannabis sales are not available through public checkout.
+                Licensed commercial recipients must complete verification and transfer
+                paperwork directly with the facility.
+              </Text>
+            ) : null}
+
             <View style={styles.actionRow}>
               {canCheckout ? (
                 <Pressable
@@ -405,7 +424,7 @@ export default function PublicProductRoute() {
                   </Text>
                 </Pressable>
               ) : null}
-              {externalUrl ? (
+              {externalUrl && !licensedTransferOnly ? (
                 <Pressable
                   accessibilityLabel={`Open external product ${product?.name || "product"}`}
                   style={styles.secondaryButton}
@@ -425,7 +444,7 @@ export default function PublicProductRoute() {
                   <Text style={styles.secondaryButtonText}>External Link</Text>
                 </Pressable>
               ) : null}
-              {!canCheckout && !externalUrl ? (
+              {!licensedTransferOnly && !canCheckout && !externalUrl ? (
                 <Text style={styles.meta}>
                   Checkout is not available for this product.
                 </Text>

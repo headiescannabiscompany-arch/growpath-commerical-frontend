@@ -79,6 +79,7 @@ export default function FacilityTabsLayout() {
         name="inventory"
         options={{ title: "Inventory", href: compactTabs ? null : undefined }}
       />
+      <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen
         name="sop-runs"

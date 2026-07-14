@@ -633,13 +633,15 @@ describe("commercial backend routes", () => {
   });
 
   test("uses metadata labels for public storefront link click breakdowns", async () => {
-    await request(app).post("/api/commercial/analytics/events").send({
-      eventType: "storefront_public_link_click",
-      storefrontSlug: "living-soil-labs",
-      targetUrl: "https://example.com/public-guide",
-      source: "public_storefront",
-      metadata: { label: "Public Guide" }
-    });
+    await request(app)
+      .post("/api/commercial/analytics/events")
+      .send({
+        eventType: "storefront_public_link_click",
+        storefrontSlug: "living-soil-labs",
+        targetUrl: "https://example.com/public-guide",
+        source: "public_storefront",
+        metadata: { label: "Public Guide" }
+      });
 
     const overview = await request(app).get("/api/commercial/analytics/overview");
 
@@ -851,6 +853,57 @@ describe("commercial backend routes", () => {
     });
   });
 
+  test("creates durable licensed facility transfer records", async () => {
+    const created = await request(app).post("/api/commercial/orders").send({
+      facilityId: "facility-1",
+      orderType: "licensed_cannabis_transfer",
+      inventoryItemId: "lot-1",
+      itemName: "Flower lot 24-A",
+      quantity: 10,
+      unit: "lb",
+      unitPrice: 900,
+      total: 9000,
+      recipientName: "Example Dispensary",
+      recipientLicense: "D-100",
+      recipientState: "ME"
+    });
+
+    expect(created.status).toBe(201);
+    expect(created.body.order).toMatchObject({
+      status: "draft",
+      facilityId: "facility-1",
+      orderType: "licensed_cannabis_transfer",
+      recipientLicense: "D-100",
+      total: 9000
+    });
+
+    const listed = await request(app).get("/api/commercial/orders");
+    expect(listed.body.orders).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ orderType: "licensed_cannabis_transfer" })
+      ])
+    );
+  });
+
+  test("blocks cannabis products from public storefront checkout", async () => {
+    const product = await request(app).post("/api/commercial/products").send({
+      name: "Cultivar lot 24-A",
+      status: "published",
+      category: "cannabis",
+      externalPurchaseUrl: "https://example.com/checkout"
+    });
+
+    const checkout = await request(createApp(false))
+      .post(`/api/commercial/products/${product.body.product.id}/checkout`)
+      .send({ source: "public_storefront" });
+
+    expect(checkout.status).toBe(403);
+    expect(checkout.body).toMatchObject({
+      success: false,
+      code: "LICENSED_TRANSFER_REQUIRED"
+    });
+  });
+
   test("creates commercial grows and course aliases for commercial workspace", async () => {
     const grow = await request(app).post("/api/commercial/grows").send({
       name: "Formula Trial Grow",
@@ -1010,9 +1063,7 @@ describe("commercial backend routes", () => {
       status: "active"
     });
 
-    const detail = await request(app).get(
-      `/api/commercial/grows/${grow.body.grow.id}`
-    );
+    const detail = await request(app).get(`/api/commercial/grows/${grow.body.grow.id}`);
     expect(detail.status).toBe(200);
     expect(detail.body.grow).toMatchObject({
       name: "Bloom Formula Trial",
@@ -1238,30 +1289,34 @@ describe("commercial backend routes", () => {
     });
     expect(product.status).toBe(201);
 
-    const batch = await request(app).post("/api/commercial/batches").send({
-      name: "Outdoor Tomato Soil/Input Trial Batch",
-      purpose: "commercial_crop_trial",
-      status: "ready",
-      productId: product.body.product.id,
-      productLineId: line.body.productLine.id,
-      ingredientSummary: `Soil options: ${weekTen.soilOptions.join(" vs ")}`,
-      mixingInstructions: "Track soil lot and input performance by cultivar."
-    });
+    const batch = await request(app)
+      .post("/api/commercial/batches")
+      .send({
+        name: "Outdoor Tomato Soil/Input Trial Batch",
+        purpose: "commercial_crop_trial",
+        status: "ready",
+        productId: product.body.product.id,
+        productLineId: line.body.productLine.id,
+        ingredientSummary: `Soil options: ${weekTen.soilOptions.join(" vs ")}`,
+        mixingInstructions: "Track soil lot and input performance by cultivar."
+      });
     expect(batch.status).toBe(201);
 
-    const grow = await request(app).post("/api/commercial/grows").send({
-      name: pack.realGrowData.normalizedRecords.grow.name,
-      purpose: pack.realGrowData.normalizedRecords.grow.purpose,
-      cropType: pack.workflow.cropType,
-      cultivar: pack.workflow.cultivars.join(" / "),
-      plantCount: weekFifteen.recoveryStatus.plantCount,
-      productId: product.body.product.id,
-      productLineId: line.body.productLine.id,
-      batchId: batch.body.batch.id,
-      measurementPlan: pack.realGrowData.normalizedRecords.cropTrial.measurementPlan,
-      publicShareStatus: "evidence_building",
-      status: "active"
-    });
+    const grow = await request(app)
+      .post("/api/commercial/grows")
+      .send({
+        name: pack.realGrowData.normalizedRecords.grow.name,
+        purpose: pack.realGrowData.normalizedRecords.grow.purpose,
+        cropType: pack.workflow.cropType,
+        cultivar: pack.workflow.cultivars.join(" / "),
+        plantCount: weekFifteen.recoveryStatus.plantCount,
+        productId: product.body.product.id,
+        productLineId: line.body.productLine.id,
+        batchId: batch.body.batch.id,
+        measurementPlan: pack.realGrowData.normalizedRecords.cropTrial.measurementPlan,
+        publicShareStatus: "evidence_building",
+        status: "active"
+      });
     expect(grow.status).toBe(201);
 
     const cropSummary = [

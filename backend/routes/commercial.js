@@ -244,8 +244,7 @@ async function resolveAnalyticsOwner(payload, fallbackUserId = "") {
   }
 
   const possibleStorefrontId = cleanString(
-    payload.storefrontId ||
-      (payload.objectType === "storefront" ? payload.objectId : "")
+    payload.storefrontId || (payload.objectType === "storefront" ? payload.objectId : "")
   );
   if (possibleStorefrontId) {
     const storefront = await CommercialRecord.findOne({
@@ -1037,6 +1036,19 @@ router.post("/products/:id/checkout", async (req, res) => {
   const product = dto(await CommercialRecord.findOne(productFilter).lean());
   if (!product)
     return res.status(404).json({ success: false, message: "Product not found" });
+  const regulatedCannabis =
+    product.regulatedCannabis === true ||
+    product.isCannabis === true ||
+    product.productType === "cannabis" ||
+    product.category === "cannabis";
+  if (regulatedCannabis) {
+    return res.status(403).json({
+      success: false,
+      code: "LICENSED_TRANSFER_REQUIRED",
+      message:
+        "Cannabis products cannot use public checkout. Record sales to verified licensed recipients through the facility transfer workflow."
+    });
+  }
   const externalUrl =
     product.externalPurchaseUrl || product.purchaseUrl || product.url || "";
   if (externalUrl) {
@@ -1179,9 +1191,15 @@ router.post("/trials/:id/ai-review", async (req, res) => {
     evidence:
       req.body?.evidence ||
       [
-        trial.effectivenessSummary ? `Effectiveness: ${trial.effectivenessSummary}` : null,
-        trial.harvestQualityNotes ? `Harvest quality: ${trial.harvestQualityNotes}` : null,
-        trial.commercialCropSummary ? `Crop summary: ${trial.commercialCropSummary}` : null
+        trial.effectivenessSummary
+          ? `Effectiveness: ${trial.effectivenessSummary}`
+          : null,
+        trial.harvestQualityNotes
+          ? `Harvest quality: ${trial.harvestQualityNotes}`
+          : null,
+        trial.commercialCropSummary
+          ? `Crop summary: ${trial.commercialCropSummary}`
+          : null
       ].filter(Boolean),
     limitations: req.body?.limitations || [
       "This review is based on saved trial data and user notes."
@@ -1408,6 +1426,7 @@ router.post("/campaigns/:id/click", async (req, res) => {
 });
 
 router.get("/orders", (req, res) => listRecords(req, res, "order", "orders"));
+router.post("/orders", (req, res) => createRecord(req, res, "order", "order", "draft"));
 router.patch("/orders/:id", (req, res) => updateRecord(req, res, "order", "order"));
 
 router.get("/links", (req, res) => listRecords(req, res, "link", "links"));
@@ -1597,7 +1616,8 @@ router.get("/analytics/overview", async (req, res) => {
       current.lastEventAt = eventTime;
     }
     const eventType = cleanString(event.payload?.eventType || event.name || "");
-    if (eventType && !current.eventTypes.includes(eventType)) current.eventTypes.push(eventType);
+    if (eventType && !current.eventTypes.includes(eventType))
+      current.eventTypes.push(eventType);
     map.set(cleanKey, current);
   };
   const topBreakdownRows = (map) =>

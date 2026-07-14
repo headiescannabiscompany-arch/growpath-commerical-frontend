@@ -200,6 +200,15 @@ export default function FacilityInventoryTab() {
           </View>
         </View>
 
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open sales and transfers"
+          onPress={() => router.push("/home/facility/transfers" as any)}
+          style={styles.ghostButton}
+        >
+          <Text style={styles.ghostText}>Sales & licensed transfers</Text>
+        </Pressable>
+
         <View style={styles.summaryCard}>
           <View>
             <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>

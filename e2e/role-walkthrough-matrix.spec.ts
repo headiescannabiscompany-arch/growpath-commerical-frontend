@@ -673,6 +673,45 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/commercial/orders") {
+      return fulfillJson(route, {
+        orders: [
+          {
+            id: "transfer-walkthrough-1",
+            facilityId: "facility-walkthrough-1",
+            orderType: "licensed_cannabis_transfer",
+            status: "approved",
+            inventoryItemId: "inventory-walkthrough-1",
+            itemName: "Cultivar lot 24-A",
+            lotNumber: "LOT-24-A",
+            quantity: 5,
+            unit: "lb",
+            unitPrice: 900,
+            total: 4500,
+            recipientName: "Licensed Example Dispensary",
+            recipientLicense: "D-100",
+            recipientState: "ME",
+            manifestNumber: "MAN-24-A"
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/facility/facility-walkthrough-1/inventory") {
+      return fulfillJson(route, {
+        items: [
+          {
+            id: "inventory-walkthrough-1",
+            name: "Cultivar lot 24-A",
+            sku: "LOT-24-A",
+            lotNumber: "LOT-24-A",
+            quantity: 20,
+            unit: "lb"
+          }
+        ]
+      });
+    }
+
     if (
       method === "GET" &&
       (path === "/api/facilities" || path === "/api/facilities/mine")
@@ -1027,6 +1066,7 @@ test.describe("role walkthrough matrix", () => {
       "/home/facility/plants",
       "/home/facility/logs",
       "/home/facility/inventory",
+      "/home/facility/transfers",
       "/home/facility/tasks",
       "/home/facility/sop-runs",
       "/home/facility/compliance",
@@ -1070,5 +1110,27 @@ test.describe("role walkthrough matrix", () => {
         await expectNoNotFound(page);
       }
     }
+  });
+
+  test("facility licensed sales use transfer records instead of public checkout", async ({
+    page
+  }) => {
+    await installRoleMocks(page, PERSONAS.facilityPaid);
+    await page.goto("/home/facility/transfers", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Licensed sales & transfers")).toBeVisible();
+    await expect(page.getByText(/no public cannabis checkout/i)).toBeVisible();
+    await expect(page.getByText("Licensed Example Dispensary")).toBeVisible();
+    await expect(page.getByText("$4,500.00").first()).toBeVisible();
+    await expect(page.getByText("Mark shipped & deduct inventory")).toBeVisible();
+  });
+
+  test("facility viewer sees licensed transfers read only", async ({ page }) => {
+    await installRoleMocks(page, PERSONAS.facilityViewer);
+    await page.goto("/home/facility/transfers?facilityRole=VIEWER", {
+      waitUntil: "domcontentloaded"
+    });
+    await expect(page.getByText(/viewer role can view shipment records/i)).toBeVisible();
+    await expect(page.getByText("New licensed transfer")).toHaveCount(0);
   });
 });
