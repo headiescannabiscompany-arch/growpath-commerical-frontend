@@ -28,6 +28,7 @@ import { listTeamMembers } from "@/api/team";
 import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 type Tone = "green" | "amber" | "blue" | "violet" | "red" | "slate" | "cyan" | "orange";
@@ -80,6 +81,8 @@ function dotToneStyle(tone: Tone) {
 
 export default function FacilityDashboardTab() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const facilityRole = String(entitlements.facilityRole || "VIEWER").toUpperCase();
   const { selectedId: facilityId } = useFacility();
   const { width } = useWindowDimensions();
   const isTablet = width >= 760;
@@ -306,6 +309,14 @@ export default function FacilityDashboardTab() {
     ];
   }, [counts, insights]);
 
+  const visibleQuick = useMemo(
+    () =>
+      facilityRole === "VIEWER"
+        ? quick.filter((item) => !["Team", "Inventory"].includes(item.label))
+        : quick,
+    [facilityRole, quick]
+  );
+
   const actionRows = useMemo(
     () => [
       { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai-ask" },
@@ -323,6 +334,31 @@ export default function FacilityDashboardTab() {
         label: "Room board",
         detail: "Rooms, batches, and access",
         to: "/home/facility/rooms"
+      },
+      {
+        label: "Connect sensors",
+        detail: "Pulse, TrolMaster, and room data",
+        to: "/home/facility/integrations"
+      },
+      {
+        label: "Forum",
+        detail: "Ask operators and share facility knowledge",
+        to: "/forum"
+      },
+      {
+        label: "Courses",
+        detail: "Training and facility learning",
+        to: "/courses"
+      },
+      {
+        label: "Facility feed",
+        detail: "Updates, products, and public-facing activity",
+        to: "/home/facility/feed"
+      },
+      {
+        label: "Storefront",
+        detail: "View facility products and commercial links",
+        to: "/storefront"
       }
     ],
     []
@@ -392,7 +428,7 @@ export default function FacilityDashboardTab() {
               </Pressable>
             </View>
             <View style={styles.grid}>
-              {quick.map((q) => (
+              {visibleQuick.map((q) => (
                 <Pressable
                   key={q.label}
                   accessibilityRole="button"

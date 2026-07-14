@@ -54,7 +54,7 @@ export default function FacilityTeamTab() {
   const ent = useEntitlements();
   const facilityRole = (ent.facilityRole as any) ?? null;
   const canInvite =
-    Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) && can(facilityRole, "TEAM_INVITE");
+    Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) || can(facilityRole, "TEAM_INVITE");
 
   const mapApiError = useApiErrorHandler();
   const mapApiErrorRef = useRef(mapApiError);
@@ -126,7 +126,7 @@ export default function FacilityTeamTab() {
   }, [items.length]);
 
   return (
-    <ScreenBoundary title="Team">
+    <ScreenBoundary title="Team" showBack backFallbackHref="/home/facility/dashboard">
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
 

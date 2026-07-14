@@ -8,12 +8,13 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { getFacilityComplianceExport } from "@/api/complianceExport";
 import { useFacility } from "@/state/useFacility";
 import { AICallBody, useAICall } from "@/hooks/useAICall";
 import { radius } from "@/theme/theme";
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 
 type Preset = {
   key: string;
@@ -313,6 +314,7 @@ function readinessArgsFromCounts(
 }
 
 export default function FacilityAiAskRoute() {
+  const router = useRouter();
   const params = useLocalSearchParams<{ preset?: string }>();
   const { selectedId: facilityId } = useFacility();
   const { callAI, loading, error, last } = useAICall(String(facilityId || ""));
@@ -424,6 +426,11 @@ export default function FacilityAiAskRoute() {
         </Text>
       </View>
 
+      <View style={styles.tokenPanel}>
+        <Text style={styles.sectionTitle}>AI usage</Text>
+        <TokenBalanceWidget onPress={() => router.push("/profile" as any)} />
+      </View>
+
       <View style={[styles.layout, isWide ? styles.layoutWide : null]}>
         <View style={styles.main}>
           <Text style={styles.sectionTitle}>Workflows</Text>
@@ -488,15 +495,6 @@ export default function FacilityAiAskRoute() {
               />
             ) : null}
 
-            <TextInput
-              accessibilityLabel="AI args JSON"
-              value={argsJson}
-              onChangeText={setArgsJson}
-              style={[styles.input, styles.code]}
-              placeholder="Args JSON"
-              multiline
-            />
-
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Run ${selected.title} AI workflow`}
@@ -517,47 +515,26 @@ export default function FacilityAiAskRoute() {
 
         <View style={[styles.side, isWide ? styles.sideWide : null]}>
           <View style={styles.panel}>
-            <Text style={styles.cardTitle}>Custom tool call</Text>
+            <Text style={styles.cardTitle}>Connected workflows</Text>
             <Text style={styles.cardDesc}>
-              Keep this for advanced users and support checks.
+              Open the shared tools where facility teams use their results.
             </Text>
-            <TextInput
-              accessibilityLabel="Custom AI tool"
-              value={tool}
-              onChangeText={setTool}
-              style={styles.input}
-              placeholder="Tool"
-              autoCapitalize="none"
-            />
-            <TextInput
-              accessibilityLabel="Custom AI function"
-              value={fn}
-              onChangeText={setFn}
-              style={styles.input}
-              placeholder="Function"
-              autoCapitalize="none"
-            />
-            <TextInput
-              accessibilityLabel="Custom AI grow id"
-              value={growId}
-              onChangeText={setGrowId}
-              style={styles.input}
-              placeholder="Grow ID when required"
-              autoCapitalize="none"
-            />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Run custom AI call"
-              onPress={() => run()}
-              disabled={!canRun}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                !canRun && styles.disabled,
-                pressed && styles.pressed
-              ]}
-            >
-              <Text style={styles.secondaryButtonText}>Run custom call</Text>
-            </Pressable>
+            {[
+              ["Environment review", "/home/facility/tools/environment"],
+              ["Recipe and NPK planning", "/home/facility/tools/recipe-builder"],
+              ["Harvest readiness", "/home/facility/tools/harvest-readiness"],
+              ["Tasks and schedules", "/home/facility/tasks"],
+              ["Compliance and evidence", "/home/facility/compliance"]
+            ].map(([label, href]) => (
+              <Pressable
+                key={href}
+                accessibilityRole="link"
+                onPress={() => router.push(href as any)}
+                style={({ pressed }) => [styles.workflowLink, pressed && styles.pressed]}
+              >
+                <Text style={styles.workflowLinkText}>{label}</Text>
+              </Pressable>
+            ))}
           </View>
 
           {localError || error ? (
@@ -662,6 +639,14 @@ const styles = StyleSheet.create({
   },
   h1: { color: "white", fontSize: 30, fontWeight: "900", marginBottom: 6 },
   sub: { color: "#cbd5e1", fontWeight: "700", maxWidth: 760 },
+  tokenPanel: {
+    backgroundColor: "white",
+    borderColor: "#d7ddd2",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 14
+  },
   layout: { gap: 14 },
   layoutWide: { alignItems: "flex-start", flexDirection: "row" },
   main: { flex: 1, minWidth: 0 },
@@ -725,6 +710,15 @@ const styles = StyleSheet.create({
     paddingVertical: 11
   },
   secondaryButtonText: { color: "white", fontWeight: "900" },
+  workflowLink: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#cbd5e1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  workflowLinkText: { color: "#166534", fontWeight: "900" },
   exportSummary: { color: "#166534", fontSize: 13, fontWeight: "800" },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.82 },

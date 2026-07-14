@@ -1,15 +1,22 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 
 import FacilityIntegrationsRoute from "@/app/home/facility/(tabs)/integrations";
 
-jest.mock("expo-router", () => {
-  const React = require("react");
-  return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
-  };
-});
+const mockPush = jest.fn();
 
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock("@/state/useFacility", () => ({
+  useFacility: () => ({ selectedId: "facility-1" })
+}));
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ facilityRole: "OWNER" })
+}));
+jest.mock("@/api/integrations", () => ({
+  listIntegrationConnections: jest.fn().mockResolvedValue([]),
+  createIntegrationConnection: jest.fn(),
+  testIntegrationConnection: jest.fn()
+}));
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -19,27 +26,18 @@ jest.mock("@/components/ScreenBoundary", () => {
 });
 
 describe("FacilityIntegrationsRoute", () => {
-  it("surfaces read-only provider import guidance and room preview handoff", () => {
+  it("makes Pulse and TrolMaster selectable and marks planned providers clearly", () => {
     const screen = render(<FacilityIntegrationsRoute />);
 
-    expect(screen.getByText("Sensor Integrations")).toBeTruthy();
-    expect(screen.getByText("Build rooms from controller data")).toBeTruthy();
-    expect(screen.getByText("Open Room Import Preview")).toBeTruthy();
+    expect(screen.getByText("Connect rooms and sensor data")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Select pulse integration"));
+    expect(screen.getByText("Pulse read-only telemetry")).toBeTruthy();
+    fireEvent.press(screen.getByText("Connect Pulse"));
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/tools/pulse");
 
-    for (const provider of ["Pulse", "TrolMaster", "AROYA", "Growlink"]) {
-      expect(screen.getByText(provider)).toBeTruthy();
-    }
-
-    expect(screen.getByText("Read-only sync comes first.")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Write/control endpoints stay disabled unless explicitly reviewed."
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        /Imported data should power rooms, alerts, VPD\/dew point review, AI summaries,/
-      )
-    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Select trolmaster integration"));
+    expect(screen.getByText("TrolMaster controller connection")).toBeTruthy();
+    expect(screen.getByLabelText("TrolMaster API key")).toBeTruthy();
+    expect(screen.getAllByText("Email to request").length).toBeGreaterThan(1);
   });
 });

@@ -103,12 +103,16 @@ export default function FacilityLogsTab() {
   }, [items.length]);
 
   return (
-    <ScreenBoundary title="Logs">
+    <ScreenBoundary title="Grow Journal">
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Logs</Text>
+          <Text style={styles.h1}>Grow Journal</Text>
+          <Text style={styles.muted}>
+            Operational grow notes and observations. Compliance evidence and exports live
+            together under Compliance.
+          </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 

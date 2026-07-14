@@ -19,6 +19,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 
 type AnyRec = Record<string, any>;
 
@@ -37,7 +38,16 @@ function renderKV(obj: AnyRec | null, key: string) {
 
   return (
     <View style={styles.kv} key={key}>
-      <Text style={styles.k}>{key}</Text>
+      <Text style={styles.k}>
+        {(
+          {
+            displayName: "Display name",
+            legalName: "Legal name",
+            createdAt: "Created",
+            license: "License number"
+          } as Record<string, string>
+        )[key] || key.replace(/Id$/, " ID")}
+      </Text>
       <Text style={styles.v}>{typeof v === "string" ? v : JSON.stringify(v)}</Text>
     </View>
   );
@@ -142,10 +152,7 @@ export default function FacilityProfileRoute() {
       "role",
       "createdAt"
     ];
-    const rest = Object.keys(me)
-      .filter((k) => !preferred.includes(k))
-      .sort();
-    return [...preferred.filter((k) => k in me), ...rest];
+    return preferred.filter((k) => k in me);
   }, [me]);
 
   const facilityKeys = useMemo(() => {
@@ -159,10 +166,7 @@ export default function FacilityProfileRoute() {
       "state",
       "createdAt"
     ];
-    const facilityRest = Object.keys(facility)
-      .filter((k) => !facilityPreferred.includes(k))
-      .sort();
-    return [...facilityPreferred.filter((k) => k in facility), ...facilityRest];
+    return facilityPreferred.filter((k) => k in facility);
   }, [facility]);
 
   return (
@@ -209,10 +213,7 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Selected Facility</Text>
-          <Text style={styles.muted}>
-            facilityId: {facilityId ? String(facilityId) : "(none)"}
-          </Text>
+          <Text style={styles.h1}>Facility</Text>
 
           {facility ? (
             <View style={styles.kvWrap}>
@@ -220,19 +221,55 @@ export default function FacilityProfileRoute() {
             </View>
           ) : (
             <Text style={styles.muted}>
-              No facility record found from /api/facilities.
+              Facility details are unavailable right now. Pull to refresh or switch
+              facilities.
             </Text>
           )}
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Me</Text>
+          <Text style={styles.h1}>Account</Text>
 
           {me ? (
             <View style={styles.kvWrap}>{meKeys.map((k) => renderKV(me, k))}</View>
           ) : (
-            <Text style={styles.muted}>No /api/me data.</Text>
+            <Text style={styles.muted}>Account details are unavailable right now.</Text>
           )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.h1}>AI usage</Text>
+          <TokenBalanceWidget onPress={() => router.push("/profile" as any)} />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.h1}>Facility setup</Text>
+          <Text style={styles.muted}>
+            Manage the people, sensor connections, training, and community attached to
+            this workspace.
+          </Text>
+          <View style={styles.actionRow}>
+            <ProfileAction
+              label="Team"
+              accessibilityLabel="Open facility team"
+              onPress={() => router.push("/home/facility/team" as any)}
+            />
+            <ProfileAction
+              label="Pulse / TrolMaster"
+              accessibilityLabel="Open facility integrations"
+              onPress={() => router.push("/home/facility/integrations" as any)}
+            />
+            <ProfileAction
+              label="Courses"
+              accessibilityLabel="Open courses"
+              onPress={() => router.push("/courses" as any)}
+            />
+            <ProfileAction
+              label="Forum"
+              accessibilityLabel="Open forum"
+              onPress={() => router.push("/forum" as any)}
+            />
+          </View>
         </View>
 
         <Pressable

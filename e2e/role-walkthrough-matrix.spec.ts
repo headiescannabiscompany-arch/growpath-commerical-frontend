@@ -6,7 +6,7 @@ type Persona = {
   requestedPlan: "free" | "pro" | "commercial" | "facility";
   subscriptionStatus: "free" | "active";
   mode: "personal" | "commercial" | "facility";
-  facilityRole?: "OWNER" | "MANAGER";
+  facilityRole?: "OWNER" | "MANAGER" | "STAFF" | "VIEWER";
 };
 
 const PERSONAS: Record<string, Persona> = {
@@ -53,6 +53,22 @@ const PERSONAS: Record<string, Persona> = {
     subscriptionStatus: "active",
     mode: "facility",
     facilityRole: "OWNER"
+  },
+  facilityStaff: {
+    key: "facility-staff",
+    email: "facility-staff@example.com",
+    requestedPlan: "facility",
+    subscriptionStatus: "active",
+    mode: "facility",
+    facilityRole: "STAFF"
+  },
+  facilityViewer: {
+    key: "facility-viewer",
+    email: "facility-viewer@example.com",
+    requestedPlan: "facility",
+    subscriptionStatus: "active",
+    mode: "facility",
+    facilityRole: "VIEWER"
   }
 };
 
@@ -65,6 +81,10 @@ function capabilitiesFor(persona: Persona) {
   const paidPersonal =
     persona.subscriptionStatus === "active" &&
     ["pro", "commercial", "facility"].includes(persona.requestedPlan);
+  const facilityManager = ["OWNER", "MANAGER"].includes(persona.facilityRole || "VIEWER");
+  const facilityWorker = [...["OWNER", "MANAGER", "STAFF"]].includes(
+    persona.facilityRole || "VIEWER"
+  );
   return {
     GROWS_PERSONAL_VIEW: true,
     GROWS_PERSONAL_WRITE: paidPersonal,
@@ -98,14 +118,25 @@ function capabilitiesFor(persona: Persona) {
     STORE_FRONT_VIEW: persona.mode === "commercial" || persona.mode === "facility",
     FACILITY_ACCESS: persona.mode === "facility",
     TASKS_READ: persona.mode === "facility",
-    TASKS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    TASKS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityWorker,
     GROWS_READ: persona.mode === "facility",
-    GROWS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    GROWS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     PLANTS_READ: persona.mode === "facility",
-    PLANTS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    PLANTS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     INVENTORY_READ: persona.mode === "facility",
     INVENTORY_WRITE:
-      persona.mode === "facility" && persona.subscriptionStatus === "active",
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     COMPLIANCE_READ: persona.mode === "facility",
     COMPLIANCE_WRITE:
       persona.mode === "facility" && persona.subscriptionStatus === "active",
@@ -114,7 +145,10 @@ function capabilitiesFor(persona: Persona) {
     SOP_RUNS_WRITE:
       persona.mode === "facility" && persona.subscriptionStatus === "active",
     TEAM_VIEW: persona.mode === "facility",
-    TEAM_INVITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    TEAM_INVITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     ROOMS_EQUIPMENT_STAFF: persona.mode === "facility"
   };
 }
@@ -965,8 +999,8 @@ test.describe("role walkthrough matrix", () => {
 
     await page.goto("/home/facility/ai-tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
-    await expect(page.getByText("AI Tools")).toBeVisible();
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByText("Facility AI")).toBeVisible();
+    await expect(page.getByText("AI usage")).toBeVisible();
   });
 
   test("facility paid reaches compliance and Ask AI workflow surfaces", async ({
@@ -1001,7 +1035,6 @@ test.describe("role walkthrough matrix", () => {
       "/home/facility/reports",
       "/home/facility/integrations",
       "/home/facility/profile",
-      "/home/facility/ai-tools",
       "/home/facility/ai-ask",
       "/home/facility/ai-template",
       "/home/facility/ai-validation",
@@ -1015,6 +1048,27 @@ test.describe("role walkthrough matrix", () => {
         new RegExp(`${route.replaceAll("/", "\\/")}(?:[/?#]|$)`)
       );
       await expect(page.getByText("Paid facility workflow")).toHaveCount(0);
+    }
+  });
+
+  test("facility staff and viewer keep role-appropriate operations and community access", async ({
+    page
+  }) => {
+    for (const persona of [PERSONAS.facilityStaff, PERSONAS.facilityViewer]) {
+      await installRoleMocks(page, persona);
+      for (const route of [
+        "/home/facility/dashboard",
+        "/home/facility/grows",
+        "/home/facility/plants",
+        "/home/facility/logs",
+        "/home/facility/integrations",
+        "/home/facility/feed",
+        "/forum",
+        "/courses"
+      ]) {
+        await page.goto(route, { waitUntil: "domcontentloaded" });
+        await expectNoNotFound(page);
+      }
     }
   });
 });

@@ -73,7 +73,7 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="logs"
-        options={{ title: "Logs", href: compactTabs ? null : undefined }}
+        options={{ title: "Journal", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
         name="inventory"
@@ -91,18 +91,12 @@ export default function FacilityTabsLayout() {
           tabBarLabel: compactTabs ? "Comp" : "Compliance"
         }}
       />
-      <Tabs.Screen
-        name="audit-logs"
-        options={{ title: "Audit", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen
         name="team"
         options={{ title: "Team", href: compactTabs ? null : undefined }}
       />
-      <Tabs.Screen
-        name="reports"
-        options={{ title: "Reports", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="reports" options={{ title: "Reports", href: null }} />
       <Tabs.Screen
         name="integrations"
         options={{ title: "Integrations", href: compactTabs ? null : undefined }}
@@ -116,16 +110,13 @@ export default function FacilityTabsLayout() {
         }}
       />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
-      <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />
+      <Tabs.Screen name="ai-ask" options={{ title: "AI", tabBarLabel: "AI" }} />
       <Tabs.Screen
         name="ai-diagnosis-photo"
         options={{ title: "Trichome Analysis", tabBarButton: () => null }}
       />
       <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen
-        name="ai-validation"
-        options={{ title: "AI QA", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="ai-validation" options={{ title: "AI QA", href: null }} />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
         options={{ href: null, title: "Create Inventory Item" }}
@@ -138,9 +129,19 @@ export default function FacilityTabsLayout() {
         name="tools/environment"
         options={{ href: null, title: "Environment Review" }}
       />
+      <Tabs.Screen name="tools/pulse" options={{ href: null, title: "Connect Pulse" }} />
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{ href: null, title: "Recipe Builder" }}
+      />
+      <Tabs.Screen name="tools/npk" options={{ href: null, title: "NPK Recipe" }} />
+      <Tabs.Screen
+        name="tools/soil-builder"
+        options={{ href: null, title: "Soil Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/feeding-schedule"
+        options={{ href: null, title: "Feeding Schedule" }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"
