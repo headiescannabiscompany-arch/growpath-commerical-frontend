@@ -116,11 +116,23 @@ function trackCommercialClick(payload: Record<string, any>) {
 }
 
 export default function PublicStorefrontCourseRoute() {
-  const params = useLocalSearchParams<{ slug?: string; courseId?: string }>();
+  const params = useLocalSearchParams<{
+    slug?: string;
+    courseId?: string;
+    checkout?: string;
+    course?: string;
+  }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedCourseId = useMemo(
     () => String(params.courseId || "").trim(),
     [params.courseId]
+  );
+  const checkoutResult = useMemo(
+    () =>
+      String(params.checkout || "")
+        .trim()
+        .toLowerCase(),
+    [params.checkout]
   );
 
   const [loading, setLoading] = useState(true);
@@ -311,6 +323,38 @@ export default function PublicStorefrontCourseRoute() {
         </AppCard>
       ) : (
         <>
+          {checkoutResult === "success" ? (
+            <AppCard>
+              <Text style={styles.successTitle}>Payment submitted</Text>
+              <Text style={styles.bodyText}>
+                Stripe returned successfully. Open the course to confirm enrollment and
+                unlock lessons after the payment webhook finishes.
+              </Text>
+              <Link
+                href={
+                  `/home/personal/courses?courseId=${encodeURIComponent(
+                    id
+                  )}&checkout=success` as any
+                }
+                asChild
+              >
+                <Pressable
+                  style={styles.primaryButton}
+                  accessibilityRole="link"
+                  accessibilityLabel="Open purchased course"
+                >
+                  <Text style={styles.primaryButtonText}>Open Purchased Course</Text>
+                </Pressable>
+              </Link>
+            </AppCard>
+          ) : checkoutResult === "canceled" ? (
+            <AppCard>
+              <Text style={styles.canceledTitle}>Checkout canceled</Text>
+              <Text style={styles.bodyText}>
+                No course access was changed. You can review the course and try again.
+              </Text>
+            </AppCard>
+          ) : null}
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
           <AppCard>
             <Text style={styles.cardTitle}>{publicItemTitle(course, "Course")}</Text>
@@ -571,6 +615,8 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", lineHeight: 20, marginTop: 4 },
   center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
   error: { color: "#B91C1C", fontWeight: "800" },
+  successTitle: { color: "#166534", fontSize: 18, fontWeight: "900" },
+  canceledTitle: { color: "#92400E", fontSize: 18, fontWeight: "900" },
   feedback: {
     backgroundColor: "#F1F5F9",
     borderRadius: radius.card,

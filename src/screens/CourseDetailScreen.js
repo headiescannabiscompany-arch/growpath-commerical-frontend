@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -89,6 +89,8 @@ export default function CourseDetailScreen({ route, navigation }) {
   const initialCourse = route?.params?.course || null;
   const rawId = route?.params?.id || route?.params?.courseId || rowId(initialCourse);
   const courseId = String(rawId || "");
+  const checkoutResult = String(route?.params?.checkout || "").toLowerCase();
+  const checkoutHandledRef = useRef(false);
 
   const [course, setCourse] = useState(initialCourse);
   const [reviews, setReviews] = useState([]);
@@ -171,7 +173,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     load();
   }, [load]);
 
-  async function refreshPaymentStatus() {
+  const refreshPaymentStatus = useCallback(async () => {
     if (!loadedCourseId) return null;
     try {
       const [payment, status] = await Promise.all([
@@ -188,7 +190,26 @@ export default function CourseDetailScreen({ route, navigation }) {
       setFeedback(error?.message || "Unable to refresh payment status.");
       return null;
     }
-  }
+  }, [loadedCourseId]);
+
+  useEffect(() => {
+    if (loading || checkoutHandledRef.current || !checkoutResult) return;
+    checkoutHandledRef.current = true;
+    if (checkoutResult === "canceled") {
+      setFeedback("Checkout was canceled. No course access was changed.");
+      return;
+    }
+    if (checkoutResult !== "success") return;
+    void (async () => {
+      const next = await refreshPaymentStatus();
+      const confirmed = Boolean(next?.enrolled || next?.isEnrolled);
+      setFeedback(
+        confirmed
+          ? "Payment confirmed. This course is unlocked."
+          : "Payment submitted. Stripe confirmation is still processing; refresh status in a moment."
+      );
+    })();
+  }, [checkoutResult, loading, refreshPaymentStatus]);
 
   async function enroll() {
     if (!loadedCourseId) return;

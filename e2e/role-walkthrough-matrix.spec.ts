@@ -121,6 +121,7 @@ function capabilitiesFor(persona: Persona) {
 
 async function installRoleMocks(page: any, persona: Persona) {
   const token = `${persona.key}-token`;
+  let paidCourseEnrolled = false;
 
   await page.addInitScript(
     ({ authToken, mode }) => {
@@ -283,6 +284,22 @@ async function installRoleMocks(page: any, persona: Persona) {
               methods: ["Living Soil / No-Till"]
             },
             lessons: []
+          },
+          {
+            id: "course-paid-buyer",
+            userId: "another-course-creator",
+            title: "Paid Indoor Course",
+            summary: "A paid course used to verify checkout and lesson access.",
+            status: "published",
+            isPublished: true,
+            priceCents: 2900,
+            price: 29,
+            access: "paid",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"]
+            },
+            lessons: [{ id: "paid-lesson-1", title: "Paid Lesson" }]
           }
         ]
       });
@@ -345,6 +362,47 @@ async function installRoleMocks(page: any, persona: Persona) {
           growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
           lessons: []
         }
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/course-paid-buyer") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-paid-buyer",
+          userId: "another-course-creator",
+          title: "Paid Indoor Course",
+          summary: "A paid course used to verify checkout and lesson access.",
+          status: "published",
+          isPublished: true,
+          priceCents: 2900,
+          price: 29,
+          access: "paid",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: [{ id: "paid-lesson-1", title: "Paid Lesson" }]
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/course-paid-buyer/enrollment-status") {
+      return fulfillJson(route, {
+        enrolled: paidCourseEnrolled,
+        isEnrolled: paidCourseEnrolled,
+        paymentStatus: paidCourseEnrolled ? "paid" : "not_started"
+      });
+    }
+
+    if (method === "GET" && path === "/api/payments/course/course-paid-buyer/status") {
+      return fulfillJson(route, {
+        enrolled: paidCourseEnrolled,
+        isEnrolled: paidCourseEnrolled,
+        paymentStatus: paidCourseEnrolled ? "paid" : "not_started"
+      });
+    }
+
+    if (method === "POST" && path === "/api/payments/checkout/course-paid-buyer") {
+      paidCourseEnrolled = true;
+      return fulfillJson(route, {
+        url: "http://localhost:8095/home/personal/courses?courseId=course-paid-buyer&checkout=success"
       });
     }
 
@@ -729,6 +787,19 @@ test.describe("role walkthrough matrix", () => {
     await page.getByPlaceholder("Title").fill("Recorded Lesson");
     await page.getByText("Save Lesson").click();
     await expect(page).toHaveURL(/home\/personal\/courses/);
+
+    await page.goto("/home/personal/courses?courseId=course-paid-buyer", {
+      waitUntil: "domcontentloaded"
+    });
+    await expect(page.getByText("$29.00 | published")).toBeVisible();
+    await expect(page.getByText("Start Checkout")).toBeVisible();
+    await page.getByText("Start Checkout").click();
+    await expect(page).toHaveURL(/courseId=course-paid-buyer&checkout=success/);
+    await expect(
+      page.getByText("Payment confirmed. This course is unlocked.")
+    ).toBeVisible();
+    await expect(page.getByText("Enrolled", { exact: true })).toBeVisible();
+    await expect(page.getByText("Paid Lesson")).toBeVisible();
 
     await page.goto("/home/personal/forum", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);

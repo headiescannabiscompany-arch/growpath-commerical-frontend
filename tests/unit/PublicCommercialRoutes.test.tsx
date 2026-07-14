@@ -525,6 +525,23 @@ describe("public commercial routes", () => {
     );
   });
 
+  it("turns a successful Stripe return into a clear course-unlock handoff", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      courseId: "course-1",
+      checkout: "success",
+      course: "course-1"
+    };
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() => expect(screen.getByText("Payment submitted")).toBeTruthy());
+    expect(screen.getByLabelText("Open purchased course")).toBeTruthy();
+    expect(screen.getByText("Open Purchased Course")).toBeTruthy();
+    expect(mockLinkHrefs).toContain(
+      "/home/personal/courses?courseId=course-1&checkout=success"
+    );
+  });
+
   it("loads the /storefront/:slug/courses/:courseId alias through the same course route", async () => {
     const screen = render(<PublicStorefrontCourseAliasRoute />);
 

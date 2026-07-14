@@ -70,6 +70,9 @@ export default function CoursesScreen({ navigation } = {}) {
   const requestedCourseId = Array.isArray(params?.courseId)
     ? params.courseId[0]
     : params?.courseId;
+  const checkoutResult = Array.isArray(params?.checkout)
+    ? params.checkout[0]
+    : params?.checkout;
   const ent = useEntitlements();
   const auth = useAuth();
   const access = getLearningAccess(ent);
@@ -194,7 +197,9 @@ export default function CoursesScreen({ navigation } = {}) {
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
-          route={{ params: { course: selectedCourse, id: selectedId } }}
+          route={{
+            params: { course: selectedCourse, id: selectedId, checkout: checkoutResult }
+          }}
           navigation={navigation}
         />
       </View>
