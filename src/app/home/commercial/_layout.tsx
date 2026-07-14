@@ -25,7 +25,8 @@ export default function CommercialTabsLayout() {
     pathname.includes("/courses/") ||
     pathname.includes("/batch-planner/") ||
     pathname.includes("/product-lines/") ||
-    pathname.includes("/trials/");
+    pathname.includes("/trials/") ||
+    pathname.includes("/tools/");
 
   const tabBarStyle = hideTabBar
     ? { display: "none" as const }
@@ -140,6 +141,21 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="batch-planner/[batchId]" options={{ href: null }} />
       <Tabs.Screen name="product-lines/[lineId]" options={{ href: null }} />
       <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />
+      <Tabs.Screen name="tools/ask-ai" options={{ href: null, title: "Ask AI" }} />
+      <Tabs.Screen name="tools/diagnose" options={{ href: null, title: "Diagnose" }} />
+      <Tabs.Screen
+        name="tools/environment"
+        options={{ href: null, title: "Environment Review" }}
+      />
+      <Tabs.Screen
+        name="tools/recipe-builder"
+        options={{ href: null, title: "Recipe Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/harvest-readiness"
+        options={{ href: null, title: "Harvest Readiness" }}
+      />
+      <Tabs.Screen name="tools/report" options={{ href: null, title: "Export Report" }} />
     </Tabs>
   );
 }

@@ -10,6 +10,7 @@ import {
   updateProductTrial
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -249,6 +250,18 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       {loading ? <Text style={styles.muted}>Loading product trial...</Text> : null}
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
+
+      <CommercialContextualTools
+        title="Analyze this product trial"
+        source="commercial_trial_detail"
+        trialId={trialId}
+        growId={String(trial?.growId || (trial as any)?.linkedGrowId || "")}
+        productId={String(trial?.productId || "")}
+        productLineId={String(trial?.productLineId || "")}
+        batchId={String((trial as any)?.batchId || "")}
+        prompt={`Review the product trial ${trialTitle(trial)} for evidence quality, limitations, plant health, environment, and claim readiness.`}
+        tools={["ask-ai", "diagnose", "environment", "harvest-readiness", "report"]}
+      />
 
       <AppCard>
         <Text style={styles.cardTitle}>Trial Record</Text>

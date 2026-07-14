@@ -11,6 +11,7 @@ import {
 } from "@/api/products";
 import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -361,6 +362,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     >
       {loading ? <Text style={styles.muted}>Loading product...</Text> : null}
       {error ? <InlineError error={error} /> : null}
+
+      <CommercialContextualTools
+        source="commercial_product_detail"
+        productId={productId}
+        productLineId={String((product as any)?.productLineId || "")}
+        prompt={`Review the commercial product ${productTitle(product)} and its linked formula, batch, evidence, and customer guidance.`}
+        tools={["ask-ai", "recipe-builder", "report"]}
+      />
 
       <AppCard>
         <Text style={styles.cardTitle}>Product Record</Text>

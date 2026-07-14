@@ -931,13 +931,22 @@ test.describe("role walkthrough matrix", () => {
       "/home/commercial/marketing",
       "/home/commercial/inventory",
       "/home/commercial/evidence-runs",
-      "/home/commercial/tasks"
+      "/home/commercial/tasks",
+      "/home/commercial/tools/ask-ai?growId=grow-walkthrough-1",
+      "/home/commercial/tools/diagnose?growId=grow-walkthrough-1",
+      "/home/commercial/tools/environment?growId=grow-walkthrough-1",
+      "/home/commercial/tools/recipe-builder?growId=grow-walkthrough-1",
+      "/home/commercial/tools/harvest-readiness?growId=grow-walkthrough-1",
+      "/home/commercial/tools/report?growId=grow-walkthrough-1"
     ];
 
     for (const route of routes) {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await expectNoNotFound(page);
-      await expect(page).toHaveURL(new RegExp(`${route.replaceAll("/", "\\/")}(?:[/?#]|$)`));
+      const pathname = route.split("?")[0];
+      await expect(page).toHaveURL(
+        new RegExp(`${pathname.replaceAll("/", "\\/")}(?:[/?#]|$)`)
+      );
       await expect(page.getByText("Commercial workflow")).toHaveCount(0);
     }
   });

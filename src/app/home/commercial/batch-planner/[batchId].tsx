@@ -9,6 +9,7 @@ import {
 } from "@/api/commercialWorkflows";
 import { apiRequest } from "@/api/apiRequest";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -187,6 +188,16 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       {loading ? <Text style={styles.muted}>Loading commercial batch...</Text> : null}
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
+
+      <CommercialContextualTools
+        source="commercial_batch_detail"
+        batchId={batchId}
+        growId={String(batch?.linkedTrialId || batch?.trialGrowId || "")}
+        productId={String(batch?.productId || "")}
+        productLineId={String(batch?.productLineId || "")}
+        prompt={`Review the commercial batch ${batchTitle(batch)} for formula accuracy, release timing, production risks, and trial readiness.`}
+        tools={["ask-ai", "recipe-builder", "environment", "report"]}
+      />
 
       <AppCard>
         <Text style={styles.cardTitle}>Batch Record</Text>
