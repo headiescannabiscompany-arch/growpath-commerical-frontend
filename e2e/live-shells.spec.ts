@@ -8,7 +8,7 @@ type LiveUser = {
 
 const USERS: LiveUser[] = [
   {
-    email: process.env.E2E_PERSONAL_EMAIL || "free@growpathai.com",
+    email: process.env.E2E_PERSONAL_EMAIL || "single@growpathai.com",
     password:
       process.env.E2E_PERSONAL_PASSWORD || process.env.E2E_PASSWORD || "Test1234!",
     expectedMode: "personal"
