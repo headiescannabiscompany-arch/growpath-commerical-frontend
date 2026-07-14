@@ -60,6 +60,7 @@ if (exportResult.status !== 0) {
 const fallbackRoutes = [
   "login",
   "register",
+  "accept-facility-invite",
   "courses",
   "courses/create",
   "courses/add-lesson",
