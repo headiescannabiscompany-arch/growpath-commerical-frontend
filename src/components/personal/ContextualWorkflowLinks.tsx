@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "expo-router";
+import * as ExpoRouter from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
@@ -65,6 +65,11 @@ type Props = {
   initialValues?: Record<string, string | number | boolean | null | undefined>;
 };
 
+const useContextualRouter =
+  typeof ExpoRouter.useRouter === "function"
+    ? ExpoRouter.useRouter
+    : () => ({ push: ExpoRouter.router?.push });
+
 export function contextualWorkflowHref(
   workflow: ContextualWorkflowKey,
   context: Omit<Props, "title" | "helper" | "workflows">
@@ -88,6 +93,8 @@ export default function ContextualWorkflowLinks({
   workflows,
   ...context
 }: Props) {
+  const router = useContextualRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -96,20 +103,18 @@ export default function ContextualWorkflowLinks({
         {workflows.map((workflow) => {
           const definition = WORKFLOWS[workflow];
           return (
-            <Link
+            <Pressable
               key={workflow}
-              href={contextualWorkflowHref(workflow, context) as any}
-              asChild
+              accessibilityRole="link"
+              accessibilityLabel={`${definition.label} from ${context.source}`}
+              onPress={() =>
+                router.push?.(contextualWorkflowHref(workflow, context) as any)
+              }
+              style={StyleSheet.flatten(styles.action)}
             >
-              <Pressable
-                accessibilityRole="link"
-                accessibilityLabel={`${definition.label} from ${context.source}`}
-                style={styles.action}
-              >
-                <Text style={styles.actionTitle}>{definition.label}</Text>
-                <Text style={styles.actionDescription}>{definition.description}</Text>
-              </Pressable>
-            </Link>
+              <Text style={styles.actionTitle}>{definition.label}</Text>
+              <Text style={styles.actionDescription}>{definition.description}</Text>
+            </Pressable>
           );
         })}
       </View>

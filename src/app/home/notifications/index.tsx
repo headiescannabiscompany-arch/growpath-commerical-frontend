@@ -51,7 +51,8 @@ function rowId(row: NotificationRow) {
 }
 
 function sourceHref(row: NotificationRow) {
-  if (row.courseId) return `/courses?courseId=${encodeURIComponent(String(row.courseId))}`;
+  if (row.courseId)
+    return `/courses?courseId=${encodeURIComponent(String(row.courseId))}`;
   return sourceObjectHref(row) || "/home/schedule";
 }
 

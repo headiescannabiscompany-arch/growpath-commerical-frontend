@@ -301,7 +301,9 @@ function courseToItem(course: any): CalendarItem {
 }
 
 function courseLiveToItem(session: any): CalendarItem {
-  const id = String(session?.sessionId || session?.id || session?.scheduledStart || "live");
+  const id = String(
+    session?.sessionId || session?.id || session?.scheduledStart || "live"
+  );
   const courseId = String(session?.courseId || "");
   return {
     id: `${courseId}-${id}`,
@@ -359,19 +361,23 @@ export default function HomeScheduleRoute() {
     setLoading(true);
     setFeedback("");
     try {
-      const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes] = await Promise.all([
-        apiRequest(endpoints.tasksGlobal, { method: "GET" }),
-        apiRequest("/api/commercial/lives", { method: "GET" }).catch(() => ({
-          lives: []
-        })),
-        apiRequest("/api/courses/mine/live-events", { method: "GET" }).catch(() => ({
-          liveEvents: []
-        })),
-        apiRequest("/api/commercial/courses", { method: "GET" }).catch(() => ({
-          courses: []
-        })),
-        apiRequest("/api/commercial/feed", { method: "GET" }).catch(() => ({ items: [] }))
-      ]);
+      const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes] = await Promise.all(
+        [
+          apiRequest(endpoints.tasksGlobal, { method: "GET" }),
+          apiRequest("/api/commercial/lives", { method: "GET" }).catch(() => ({
+            lives: []
+          })),
+          apiRequest("/api/courses/mine/live-events", { method: "GET" }).catch(() => ({
+            liveEvents: []
+          })),
+          apiRequest("/api/commercial/courses", { method: "GET" }).catch(() => ({
+            courses: []
+          })),
+          apiRequest("/api/commercial/feed", { method: "GET" }).catch(() => ({
+            items: []
+          }))
+        ]
+      );
       setItems([
         ...asArray(tasksRes, "tasks").map(taskToItem),
         ...asArray(livesRes, "lives").map(liveToItem),
