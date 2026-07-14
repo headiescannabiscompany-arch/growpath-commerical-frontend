@@ -297,7 +297,9 @@ async function installRoleMocks(page: any, persona: Persona) {
             summary: "The draft remains visible after creation.",
             status: "draft",
             isPublished: false,
-            priceCents: 0,
+            priceCents: 1900,
+            price: 19,
+            access: "paid",
             growInterests: {
               crops: ["Cannabis"],
               environment: ["Indoor"]
@@ -312,6 +314,7 @@ async function installRoleMocks(page: any, persona: Persona) {
       method === "POST" &&
       (path === "/api/courses/create" || path === "/api/courses")
     ) {
+      const body = request.postDataJSON();
       return fulfillJson(
         route,
         {
@@ -319,7 +322,9 @@ async function installRoleMocks(page: any, persona: Persona) {
           title: "Recorded Course Draft",
           summary: "The draft remains visible after creation.",
           status: "draft",
-          priceCents: 0,
+          priceCents: body?.priceCents || 0,
+          price: body?.price || 0,
+          access: body?.access || "free",
           growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
           lessons: []
         },
@@ -334,7 +339,25 @@ async function installRoleMocks(page: any, persona: Persona) {
           title: "Recorded Course Draft",
           summary: "The draft remains visible after creation.",
           status: "draft",
-          priceCents: 0,
+          priceCents: 1900,
+          price: 19,
+          access: "paid",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        }
+      });
+    }
+
+    if (method === "PUT" && path === "/api/courses/course-new") {
+      const body = request.postDataJSON();
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          status: "draft",
+          priceCents: body?.priceCents || 0,
+          price: body?.price || 0,
+          access: body?.access || "free",
           growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
           lessons: []
         }
@@ -687,10 +710,17 @@ test.describe("role walkthrough matrix", () => {
     await expectNoNotFound(page);
     await expect(page.getByText("Course grow interests")).toBeVisible();
     await page.getByLabel("Course title").fill("Recorded Course Draft");
+    await page.getByLabel("Set a paid course fee").click();
+    await page.getByLabel("Course price USD").fill("19.00");
+    await expect(page.getByText("Learners will see: $19.00")).toBeVisible();
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByText("Create Draft").click();
     await expect(page).toHaveURL(/home\/personal\/courses(?:\?|$)/);
     await expect(page.getByText("Recorded Course Draft").first()).toBeVisible();
+    await expect(page.getByLabel("Edit course price USD")).toHaveValue("19.00");
+    await page.getByLabel("Edit course price USD").fill("24.00");
+    await page.getByLabel("Save course fee").click();
+    await expect(page.getByText("Course fee saved: $24.00.")).toBeVisible();
     await expect(page.getByText("Add Lesson")).toBeVisible();
 
     await page.getByText("Add Lesson").click();

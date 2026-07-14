@@ -149,6 +149,7 @@ export default function CreateCourseScreen({ navigation }) {
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
   const [linkedForumThreadIds, setLinkedForumThreadIds] = useState("");
+  const [pricingMode, setPricingMode] = useState("free");
   const [price, setPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -263,11 +264,11 @@ export default function CreateCourseScreen({ navigation }) {
       Alert.alert("Unavailable", "Course creation is unavailable for this account.");
       return;
     }
-    if (price.trim() && priceCents == null) {
-      Alert.alert("Invalid price", "Price must be a number greater than or equal to 0.");
+    if (pricingMode === "paid" && (!price.trim() || !priceCents)) {
+      Alert.alert("Invalid price", "Enter a paid course fee greater than $0.00.");
       return;
     }
-    if ((priceCents || 0) > 0 && !access.canSellPaidCourses) {
+    if (pricingMode === "paid" && !access.canSellPaidCourses) {
       Alert.alert(
         "Paid courses unavailable",
         "Paid course sales require COURSES_SELL_PAID."
@@ -332,8 +333,10 @@ export default function CreateCourseScreen({ navigation }) {
         linkedProductIds: splitPlanLines(linkedProductIds),
         linkedGrowIds: splitPlanLines(linkedGrowIds),
         linkedForumThreadIds: splitPlanLines(linkedForumThreadIds),
-        priceCents: priceCents ?? 0,
-        access: (priceCents || 0) > 0 ? "paid" : "free",
+        priceCents: pricingMode === "paid" ? priceCents : 0,
+        price: pricingMode === "paid" ? (priceCents || 0) / 100 : 0,
+        currency: "usd",
+        access: pricingMode,
         status: "draft",
         isPublished: false,
         workspace: entitlements.mode || "personal",
@@ -662,15 +665,62 @@ export default function CreateCourseScreen({ navigation }) {
           {!access.canSellPaidCourses ? (
             <Text style={styles.helpText}>Paid prices require COURSES_SELL_PAID.</Text>
           ) : null}
-          <TextInput
-            value={price}
-            onChangeText={setPrice}
-            keyboardType="decimal-pad"
-            placeholder="0.00"
-            editable={access.canCreateCourses && access.canSellPaidCourses && !submitting}
-            style={styles.input}
-            accessibilityLabel="Course price USD"
-          />
+          <View style={styles.pricingModeRow}>
+            <TouchableOpacity
+              onPress={() => {
+                setPricingMode("free");
+                setPrice("");
+              }}
+              disabled={!access.canCreateCourses || submitting}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: pricingMode === "free" }}
+              accessibilityLabel="Make course free"
+              style={[
+                styles.pricingModeButton,
+                pricingMode === "free" && styles.pricingModeButtonActive
+              ]}
+            >
+              <Text style={styles.pricingModeText}>Free</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setPricingMode("paid")}
+              disabled={
+                !access.canCreateCourses || !access.canSellPaidCourses || submitting
+              }
+              accessibilityRole="radio"
+              accessibilityState={{ selected: pricingMode === "paid" }}
+              accessibilityLabel="Set a paid course fee"
+              style={[
+                styles.pricingModeButton,
+                pricingMode === "paid" && styles.pricingModeButtonActive,
+                (!access.canSellPaidCourses || submitting) && styles.buttonDisabled
+              ]}
+            >
+              <Text style={styles.pricingModeText}>Paid</Text>
+            </TouchableOpacity>
+          </View>
+          {pricingMode === "paid" ? (
+            <>
+              <Text style={styles.label}>Course fee (USD)</Text>
+              <TextInput
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="decimal-pad"
+                placeholder="19.00"
+                editable={
+                  access.canCreateCourses && access.canSellPaidCourses && !submitting
+                }
+                style={styles.input}
+                accessibilityLabel="Course price USD"
+              />
+              <Text style={styles.pricePreview}>
+                Learners will see:{" "}
+                {priceCents ? `$${(priceCents / 100).toFixed(2)}` : "Enter a fee"}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.pricePreview}>Learners will see: Free</Text>
+          )}
           <Text style={styles.helpText}>
             Paid course limit:{" "}
             {access.maxPaidCourses === null ? "unlimited" : access.maxPaidCourses}
@@ -778,6 +828,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0fdf4"
   },
   workflowTitle: { color: "#166534", fontWeight: "900" },
+  pricingModeRow: { flexDirection: "row", gap: 8 },
+  pricingModeButton: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: radius.card,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    backgroundColor: "#ffffff"
+  },
+  pricingModeButtonActive: {
+    borderColor: "#15803d",
+    backgroundColor: "#dcfce7"
+  },
+  pricingModeText: { color: "#166534", fontWeight: "900" },
+  pricePreview: { color: "#166534", fontWeight: "800" },
   sectionCard: {
     borderWidth: 1,
     borderColor: "#e2e8f0",

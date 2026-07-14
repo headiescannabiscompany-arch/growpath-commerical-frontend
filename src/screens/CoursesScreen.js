@@ -57,6 +57,13 @@ function matchesCourseInterests(course, userInterests) {
   return tags.some((tag) => selected.has(tag.toLowerCase()));
 }
 
+function coursePriceLabel(course) {
+  const cents = Number(course?.priceCents || 0);
+  if (Number.isFinite(cents) && cents > 0) return `$${(cents / 100).toFixed(2)}`;
+  const dollars = Number(course?.price || 0);
+  return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -97,7 +104,12 @@ export default function CoursesScreen({ navigation } = {}) {
         }
         const list = mergeCourses(
           publicResult.status === "fulfilled" ? normalizeList(publicResult.value) : [],
-          ownedResult.status === "fulfilled" ? normalizeList(ownedResult.value) : []
+          ownedResult.status === "fulfilled"
+            ? normalizeList(ownedResult.value).map((course) => ({
+                ...course,
+                _viewerOwnsCourse: true
+              }))
+            : []
         );
         const filtered = access.canSeePaidCourses
           ? list
@@ -229,6 +241,7 @@ export default function CoursesScreen({ navigation } = {}) {
               ? "Published"
               : "Draft"}
           </Text>
+          <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
           {courseInterestTags(item).length ? (
             <Text style={styles.meta}>
               Grow interests: {courseInterestTags(item).join(" | ")}
@@ -335,6 +348,7 @@ const styles = StyleSheet.create({
   error: { color: "crimson", marginBottom: 10 },
   lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
   statusText: { color: "#166534", fontWeight: "800", marginTop: 4 },
+  priceText: { color: "#0F172A", fontWeight: "900", marginTop: 4 },
   card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   cardTitle: { fontWeight: "800" },
   btn: { marginTop: 10, paddingVertical: 10 },

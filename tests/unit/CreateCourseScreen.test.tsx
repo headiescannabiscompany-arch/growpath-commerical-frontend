@@ -12,6 +12,7 @@ const mockUploadCourseMedia = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockGetDocumentAsync = jest.fn();
+let mockCanSellPaidCourses = false;
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: mockReplace })
@@ -70,7 +71,9 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: "personal",
     limits: { maxPaidCourses: 1, maxLessonsPerCourse: 12 },
-    can: (capability: string) => capability === "COURSES_VIEW"
+    can: (capability: string) =>
+      capability === "COURSES_VIEW" ||
+      (mockCanSellPaidCourses && capability === "COURSES_SELL_PAID")
   })
 }));
 
@@ -81,6 +84,7 @@ jest.mock("@/auth/AuthContext", () => ({
 describe("CreateCourseScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockCanSellPaidCourses = false;
     jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
     mockCreateCourse.mockResolvedValue({ id: "course-new", title: "Living Soil 101" });
     mockPersistImageUri.mockImplementation(async (uri) =>
@@ -208,6 +212,29 @@ describe("CreateCourseScreen", () => {
       pathname: "/home/personal/courses",
       params: { courseId: "course-new" }
     });
+  });
+
+  it("creates a paid draft with a visible USD fee", async () => {
+    mockCanSellPaidCourses = true;
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Paid Soil Course");
+    fireEvent.press(screen.getByLabelText("Set a paid course fee"));
+    fireEvent.changeText(screen.getByLabelText("Course price USD"), "19.00");
+
+    expect(screen.getByText("Learners will see: $19.00")).toBeTruthy();
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Paid Soil Course",
+        access: "paid",
+        priceCents: 1900,
+        price: 19,
+        currency: "usd"
+      })
+    );
   });
 
   it("uploads a selected course cover image before creating the draft", async () => {

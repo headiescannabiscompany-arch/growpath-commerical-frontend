@@ -23,7 +23,8 @@ import {
   sendWatchTime,
   submitForReview,
   trackDropoff,
-  trackLessonView
+  trackLessonView,
+  updateCourse
 } from "../api/courses";
 import {
   getCoursePaymentStatus,
@@ -33,6 +34,7 @@ import {
 } from "../api/coursePayments";
 import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
@@ -42,10 +44,14 @@ function rowId(row) {
 }
 
 function normalizeCourse(payload, fallback) {
-  if (payload?.course) return payload.course;
-  if (payload?.data?.course) return payload.data.course;
-  if (payload?.data && !Array.isArray(payload.data)) return payload.data;
-  return payload || fallback || null;
+  const next = payload?.course
+    ? payload.course
+    : payload?.data?.course
+      ? payload.data.course
+      : payload?.data && !Array.isArray(payload.data)
+        ? payload.data
+        : payload;
+  return next ? { ...(fallback || {}), ...next } : fallback || null;
 }
 
 function normalizeList(payload, key) {
@@ -77,6 +83,7 @@ async function openCheckoutUrl(url) {
 
 export default function CourseDetailScreen({ route, navigation }) {
   const router = useRouter();
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const initialCourse = route?.params?.course || null;
@@ -95,6 +102,10 @@ export default function CourseDetailScreen({ route, navigation }) {
   const [disputeReason, setDisputeReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [salesRange, setSalesRange] = useState("last_30_days");
+  const [courseFee, setCourseFee] = useState(() => {
+    const cents = Number(initialCourse?.priceCents || 0);
+    return cents > 0 ? (cents / 100).toFixed(2) : "";
+  });
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
@@ -110,6 +121,23 @@ export default function CourseDetailScreen({ route, navigation }) {
     enrollment?.checkoutStatus ||
     enrollment?.status ||
     "not_started";
+  const viewerId = String(auth.user?._id || auth.user?.id || "");
+  const ownerId = String(
+    course?.userId ||
+      course?.creatorId ||
+      course?.authorId ||
+      course?.creator?._id ||
+      course?.creator?.id ||
+      ""
+  );
+  const ownsCourse = Boolean(
+    course?._viewerOwnsCourse || (viewerId && ownerId === viewerId)
+  );
+
+  useEffect(() => {
+    const cents = Number(course?.priceCents || 0);
+    setCourseFee(cents > 0 ? (cents / 100).toFixed(2) : "");
+  }, [course?.priceCents]);
 
   const load = useCallback(async () => {
     if (!access.canViewCourses) {
@@ -186,6 +214,46 @@ export default function CourseDetailScreen({ route, navigation }) {
       }
     } catch (error) {
       setFeedback(error?.message || "Unable to start enrollment.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveCourseFee() {
+    if (!loadedCourseId || !ownsCourse || !access.canSellPaidCourses) return;
+    const numeric = Number(courseFee);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      setFeedback("Enter a valid course fee of $0.00 or more.");
+      return;
+    }
+    const cents = Math.round(numeric * 100);
+    setSaving(true);
+    setFeedback("");
+    try {
+      const payload = { ...(course || {}) };
+      delete payload._viewerOwnsCourse;
+      delete payload.id;
+      delete payload._id;
+      const updated = await updateCourse(loadedCourseId, {
+        ...payload,
+        priceCents: cents,
+        price: cents / 100,
+        currency: "usd",
+        access: cents > 0 ? "paid" : "free"
+      });
+      setCourse((current) => ({
+        ...current,
+        ...normalizeCourse(updated, current),
+        _viewerOwnsCourse: true,
+        priceCents: cents,
+        price: cents / 100,
+        access: cents > 0 ? "paid" : "free"
+      }));
+      setFeedback(
+        `Course fee saved: ${cents > 0 ? `$${(cents / 100).toFixed(2)}` : "Free"}.`
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to save the course fee.");
     } finally {
       setSaving(false);
     }
@@ -383,7 +451,40 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
-      {!enrolled ? (
+      {ownsCourse ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Creator pricing</Text>
+          {access.canSellPaidCourses ? (
+            <>
+              <Text style={styles.meta}>
+                Enter 0.00 for a free course or set the learner fee in USD.
+              </Text>
+              <TextInput
+                value={courseFee}
+                onChangeText={setCourseFee}
+                placeholder="0.00"
+                keyboardType="decimal-pad"
+                editable={!saving}
+                style={styles.input}
+                accessibilityLabel="Edit course price USD"
+              />
+              <Pressable
+                disabled={saving}
+                onPress={saveCourseFee}
+                style={[styles.primaryBtn, saving && styles.disabled]}
+                accessibilityRole="button"
+                accessibilityLabel="Save course fee"
+              >
+                <Text style={styles.primaryText}>
+                  {saving ? "Saving..." : "Save Course Fee"}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <Text style={styles.meta}>Upgrade to sell this course for a fee.</Text>
+          )}
+        </View>
+      ) : !enrolled ? (
         <Pressable disabled={saving} onPress={enroll} style={styles.primaryBtn}>
           <Text style={styles.primaryText}>
             {saving ? "Saving..." : isPaidCourse ? "Start Checkout" : "Enroll"}
@@ -392,27 +493,31 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : (
         <Text style={styles.badge}>Enrolled</Text>
       )}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Purchase Status</Text>
-        <Text style={styles.meta}>Enrollment: {enrolled ? "confirmed" : "pending"}</Text>
-        <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
-        <Text style={styles.meta}>
-          Refund: {String(enrollment?.refundStatus || "none")}
-        </Text>
-        <Text style={styles.meta}>
-          Dispute: {String(enrollment?.disputeStatus || "none")}
-        </Text>
-        <Text style={styles.meta}>
-          Earnings: {String(enrollment?.earningsStatus || "pending_webhook")}
-        </Text>
-        <Pressable
-          disabled={saving}
-          onPress={refreshPaymentStatus}
-          style={styles.secondaryBtn}
-        >
-          <Text style={styles.secondaryText}>Refresh Status</Text>
-        </Pressable>
-      </View>
+      {!ownsCourse ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Purchase Status</Text>
+          <Text style={styles.meta}>
+            Enrollment: {enrolled ? "confirmed" : "pending"}
+          </Text>
+          <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
+          <Text style={styles.meta}>
+            Refund: {String(enrollment?.refundStatus || "none")}
+          </Text>
+          <Text style={styles.meta}>
+            Dispute: {String(enrollment?.disputeStatus || "none")}
+          </Text>
+          <Text style={styles.meta}>
+            Earnings: {String(enrollment?.earningsStatus || "pending_webhook")}
+          </Text>
+          <Pressable
+            disabled={saving}
+            onPress={refreshPaymentStatus}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Refresh Status</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
