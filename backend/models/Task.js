@@ -26,6 +26,9 @@ const TaskSchema = new mongoose.Schema(
     sourceToolRunId: { type: String, default: null },
     sourceDiagnosisId: { type: String, default: null },
     linkedLogId: { type: String, default: null },
+    linkedCourseId: { type: String, default: null, index: true },
+    linkedLiveId: { type: String, default: null, index: true },
+    actionUrl: { type: String, default: null },
     isActive: { type: Boolean, default: true, index: true },
     deletedAt: { type: Date, default: null, index: true }
   },

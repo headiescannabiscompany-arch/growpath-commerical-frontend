@@ -1406,7 +1406,12 @@ router.post("/tasks", async (req, res, next) => {
       sourceObjectId: sourceFields.sourceObjectId,
       sourceToolRunId: sourceFields.sourceToolRunId,
       sourceDiagnosisId: sourceFields.sourceDiagnosisId,
-      linkedLogId: sourceFields.linkedLogId
+      linkedLogId: sourceFields.linkedLogId,
+      linkedCourseId: req.body?.linkedCourseId
+        ? String(req.body.linkedCourseId)
+        : null,
+      linkedLiveId: req.body?.linkedLiveId ? String(req.body.linkedLiveId) : null,
+      actionUrl: req.body?.actionUrl ? String(req.body.actionUrl) : null
     });
     await linkTaskToSourceRecords(uid, row._id, sourceFields);
     return res

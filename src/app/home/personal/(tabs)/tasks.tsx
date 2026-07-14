@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -518,6 +519,16 @@ export default function PersonalTaskCenterRoute() {
                   <Text style={styles.ghostButtonText}>View Source</Text>
                 </Pressable>
               </Link>
+            ) : null}
+            {task.actionUrl ? (
+              <Pressable
+                style={styles.ghostButton}
+                accessibilityRole="link"
+                accessibilityLabel="Open scheduled live stream"
+                onPress={() => void Linking.openURL(String(task.actionUrl))}
+              >
+                <Text style={styles.ghostButtonText}>Open Live Stream</Text>
+              </Pressable>
             ) : null}
             {showLinkedObjectPath ? (
               <Link href={linkedObjectPath as any} asChild>

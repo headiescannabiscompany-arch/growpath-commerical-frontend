@@ -107,20 +107,6 @@ function uploadedMediaRecord(asset, uploaded, kind) {
   };
 }
 
-function buildLiveSessions(input) {
-  return splitPlanLines(input).map((title) => ({
-    title,
-    description: "",
-    scheduledStart: null,
-    scheduledEnd: null,
-    timezone: "",
-    platform: "",
-    meetingUrl: "",
-    replayVideoId: "",
-    status: "scheduled"
-  }));
-}
-
 export default function CreateCourseScreen({ navigation }) {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -135,9 +121,12 @@ export default function CreateCourseScreen({ navigation }) {
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState("");
-  const [cropType, setCropType] = useState("");
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
     buildEmptyTierSelection()
+  );
+  const selectedCropTypes = useMemo(
+    () => growInterestSelections.crops || [],
+    [growInterestSelections.crops]
   );
   const [curriculumPlan, setCurriculumPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
@@ -145,7 +134,14 @@ export default function CreateCourseScreen({ navigation }) {
   const [mediaPlan, setMediaPlan] = useState("");
   const [mediaFiles, setMediaFiles] = useState([]);
   const [mediaImages, setMediaImages] = useState([]);
-  const [liveSessionPlan, setLiveSessionPlan] = useState("");
+  const [liveSessions, setLiveSessions] = useState([]);
+  const [liveTitle, setLiveTitle] = useState("");
+  const [liveStart, setLiveStart] = useState("");
+  const [liveEnd, setLiveEnd] = useState("");
+  const [liveTimezone, setLiveTimezone] = useState(
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+  );
+  const [twitchChannel, setTwitchChannel] = useState("");
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
   const [linkedForumThreadIds, setLinkedForumThreadIds] = useState("");
@@ -305,7 +301,6 @@ export default function CreateCourseScreen({ navigation }) {
       const mediaAssets = [...uploadedMediaFiles, ...uploadedCourseImages].filter(
         (asset) => asset.storageUrl
       );
-      const liveSessions = buildLiveSessions(liveSessionPlan);
       const persistedCoverImageUrl = await persistImageUri(coverImageUrl.trim());
       const growInterestTags = flattenTierSelections(growInterestSelections);
       const course = await createCourse({
@@ -315,14 +310,16 @@ export default function CreateCourseScreen({ navigation }) {
         coverImageUrl: persistedCoverImageUrl || "",
         category: category.trim(),
         difficulty: difficulty.trim(),
-        cropType: cropType.trim(),
+        cropType: selectedCropTypes[0] || "",
         growInterests: growInterestSelections,
         interestTags: growInterestTags,
         tags: growInterestTags,
         curriculumPlan: curriculumPlan.trim(),
         documentPlan: documentPlan.trim(),
         mediaPlan: mediaPlan.trim(),
-        liveSessionPlan: liveSessionPlan.trim(),
+        liveSessionPlan: liveSessions
+          .map((session) => `${session.title} | ${session.scheduledStart} | ${session.meetingUrl}`)
+          .join("\n"),
         lessons,
         documents,
         mediaAssets,
@@ -495,22 +492,16 @@ export default function CreateCourseScreen({ navigation }) {
             style={styles.input}
             accessibilityLabel="Course difficulty"
           />
-          <Text style={styles.label}>Crop type</Text>
-          <TextInput
-            value={cropType}
-            onChangeText={setCropType}
-            placeholder="Tomatoes, houseplants, microgreens, specialty crops, etc."
-            editable={access.canCreateCourses && !submitting}
-            style={styles.input}
-            accessibilityLabel="Course crop type"
-          />
           <GrowInterestPicker
             title="Course grow interests"
-            helperText="Choose who this course is for. These tags control recommendations and learning-path visibility."
+            helperText="Select crop type under What You Grow, then choose the matching environment and methods. These selections control recommendations and learning-path visibility."
             value={growInterestSelections}
             onChange={setGrowInterestSelections}
             defaultExpanded={false}
           />
+          <Text style={styles.helpText} accessibilityLabel="Selected course crop types">
+            Crop type: {selectedCropTypes.length ? selectedCropTypes.join(", ") : "Select from What You Grow"}
+          </Text>
         </View>
 
         <View style={styles.sectionCard}>
@@ -618,15 +609,110 @@ export default function CreateCourseScreen({ navigation }) {
 
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>4. Live sessions</Text>
+          <Text style={styles.helpText}>
+            Schedule a real Twitch live. Learners can open the channel and create a dated reminder in My Tasks.
+          </Text>
+          <Text style={styles.label}>Session title</Text>
           <TextInput
-            value={liveSessionPlan}
-            onChangeText={setLiveSessionPlan}
-            placeholder="Live topics, schedule windows, duration, replay plan"
-            multiline
+            value={liveTitle}
+            onChangeText={setLiveTitle}
+            placeholder="Live soil-building Q&A"
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
-            accessibilityLabel="Course live sessions"
+            style={styles.input}
+            accessibilityLabel="Live session title"
           />
+          <Text style={styles.label}>Start date and time</Text>
+          <TextInput
+            value={liveStart}
+            onChangeText={setLiveStart}
+            placeholder="2026-07-20T19:00:00-04:00"
+            editable={access.canCreateCourses && !submitting}
+            style={styles.input}
+            accessibilityLabel="Live session start"
+          />
+          <Text style={styles.label}>End date and time</Text>
+          <TextInput
+            value={liveEnd}
+            onChangeText={setLiveEnd}
+            placeholder="2026-07-20T20:00:00-04:00"
+            editable={access.canCreateCourses && !submitting}
+            style={styles.input}
+            accessibilityLabel="Live session end"
+          />
+          <Text style={styles.label}>Timezone</Text>
+          <TextInput
+            value={liveTimezone}
+            onChangeText={setLiveTimezone}
+            placeholder="America/New_York"
+            editable={access.canCreateCourses && !submitting}
+            style={styles.input}
+            accessibilityLabel="Live session timezone"
+          />
+          <Text style={styles.label}>Twitch channel</Text>
+          <TextInput
+            value={twitchChannel}
+            onChangeText={setTwitchChannel}
+            placeholder="Channel name or twitch.tv/channel URL"
+            autoCapitalize="none"
+            editable={access.canCreateCourses && !submitting}
+            style={styles.input}
+            accessibilityLabel="Live session Twitch channel"
+          />
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Add scheduled Twitch session"
+            disabled={!liveTitle.trim() || !liveStart.trim() || !twitchChannel.trim()}
+            onPress={() => {
+              const channel = twitchChannel
+                .trim()
+                .replace(/^https?:\/\/(?:www\.)?twitch\.tv\//i, "")
+                .split(/[/?#]/)[0];
+              if (!channel) return;
+              setLiveSessions((current) => [
+                ...current,
+                {
+                  id: `live-${Date.now()}`,
+                  title: liveTitle.trim(),
+                  description: `Watch live on Twitch: https://www.twitch.tv/${channel}`,
+                  scheduledStart: liveStart.trim(),
+                  scheduledEnd: liveEnd.trim() || null,
+                  timezone: liveTimezone.trim() || "UTC",
+                  platform: "twitch",
+                  twitchChannel: channel,
+                  meetingUrl: `https://www.twitch.tv/${channel}`,
+                  watchUrl: `https://www.twitch.tv/${channel}`,
+                  replayVideoId: "",
+                  status: "scheduled",
+                  createLearnerTask: true,
+                  reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+                }
+              ]);
+              setLiveTitle("");
+              setLiveStart("");
+              setLiveEnd("");
+            }}
+            style={[
+              styles.uploadButton,
+              (!liveTitle.trim() || !liveStart.trim() || !twitchChannel.trim()) &&
+                styles.buttonDisabled
+            ]}
+          >
+            <Text style={styles.uploadButtonText}>Add Scheduled Live</Text>
+          </TouchableOpacity>
+          {liveSessions.map((session, index) => (
+            <View key={session.id} style={styles.workflowCard}>
+              <Text style={styles.workflowTitle}>{session.title}</Text>
+              <Text style={styles.helpText}>{session.scheduledStart} · {session.timezone}</Text>
+              <Text style={styles.helpText}>{session.meetingUrl}</Text>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={`Remove live session ${session.title}`}
+                onPress={() => setLiveSessions((current) => current.filter((_, row) => row !== index))}
+              >
+                <Text style={styles.secondaryButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
 
         <View style={styles.sectionCard}>

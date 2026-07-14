@@ -205,6 +205,7 @@ export interface PersonalTask {
   linkedLessonId?: string | null;
   linkedCourseAssignmentId?: string | null;
   linkedLiveId?: string | null;
+  actionUrl?: string | null;
   linkedAlertId?: string | null;
   linkedSensorAlertId?: string | null;
   linkedFacilityId?: string | null;
@@ -278,6 +279,7 @@ export async function createPersonalTask(data: {
   linkedLessonId?: string | null;
   linkedCourseAssignmentId?: string | null;
   linkedLiveId?: string | null;
+  actionUrl?: string | null;
   linkedAlertId?: string | null;
   linkedFacilityId?: string | null;
   linkedRoomId?: string | null;

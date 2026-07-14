@@ -28,9 +28,10 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
+let mockGrowInterests = {};
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "course-user", growInterests: {} } })
+  useAuth: () => ({ user: { id: "course-user", growInterests: mockGrowInterests } })
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -57,7 +58,10 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   clear: jest.fn()
 }));
 
-import CoursesScreen from "../src/screens/CoursesScreen.js";
+import CoursesScreen, {
+  courseInterestTags,
+  matchesCourseInterests
+} from "../src/screens/CoursesScreen.js";
 
 // All plan/role logic is now capability-driven in the app. These tests simulate plan switching via UI, but assertions should reflect capability-driven gating.
 
@@ -86,6 +90,7 @@ const mockCourses = [
 
 beforeEach(() => {
   mockUseEntitlements.mockReset();
+  mockGrowInterests = {};
   inviteOk = true;
   global.fetch = jest.fn(async (url) => {
     const u = String(url || "");
@@ -123,6 +128,17 @@ describe("CoursesScreen QA (capability-driven)", () => {
       </NavigationContainer>
     );
   };
+
+  it("canonicalizes legacy crop types and rejects courses for a different selected crop", () => {
+    const tomatoCourse = { cropType: "Tomatoes", tags: ["Outdoor"] };
+    expect(courseInterestTags(tomatoCourse)).toEqual(
+      expect.arrayContaining(["Vegetables", "Outdoor"])
+    );
+    expect(matchesCourseInterests(tomatoCourse, ["Vegetables", "Indoor"])).toBe(true);
+    expect(matchesCourseInterests(tomatoCourse, ["Fruit Trees & Bushes", "Outdoor"])).toBe(
+      false
+    );
+  });
 
   it("shows only free courses if cannot see paid courses", async () => {
     mockUseEntitlements.mockReturnValue({

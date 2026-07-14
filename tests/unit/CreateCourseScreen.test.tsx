@@ -155,10 +155,20 @@ describe("CreateCourseScreen", () => {
       screen.getByLabelText("Course media plan"),
       "Two 20 minute videos"
     );
+    fireEvent.changeText(screen.getByLabelText("Live session title"), "Live Q&A");
     fireEvent.changeText(
-      screen.getByLabelText("Course live sessions"),
-      "Live Q&A\nRecipe review"
+      screen.getByLabelText("Live session start"),
+      "2026-07-20T19:00:00-04:00"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Live session end"),
+      "2026-07-20T20:00:00-04:00"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Live session Twitch channel"),
+      "https://www.twitch.tv/growpath"
+    );
+    fireEvent.press(screen.getByLabelText("Add scheduled Twitch session"));
     fireEvent.changeText(
       screen.getByLabelText("Linked product ids"),
       "product-1\nproduct-2"
@@ -188,8 +198,16 @@ describe("CreateCourseScreen", () => {
           expect.objectContaining({ title: "Soil checklist", status: "planned" })
         ],
         liveSessions: [
-          expect.objectContaining({ title: "Live Q&A", status: "scheduled" }),
-          expect.objectContaining({ title: "Recipe review", status: "scheduled" })
+          expect.objectContaining({
+            title: "Live Q&A",
+            scheduledStart: "2026-07-20T19:00:00-04:00",
+            scheduledEnd: "2026-07-20T20:00:00-04:00",
+            platform: "twitch",
+            twitchChannel: "growpath",
+            meetingUrl: "https://www.twitch.tv/growpath",
+            createLearnerTask: true,
+            status: "scheduled"
+          })
         ],
         authoringPlan: expect.objectContaining({
           step: "draft",

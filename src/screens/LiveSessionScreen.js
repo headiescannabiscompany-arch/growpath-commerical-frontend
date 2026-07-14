@@ -144,6 +144,7 @@ export default function LiveSessionScreen({ route }) {
         growId,
         linkedGrowId: growId,
         linkedLiveId: String(session?._id || session?.id || sessionId),
+        actionUrl: watchUrl || null,
         title: `Attend live: ${String(session?.title || "GrowPath session")}`,
         description: String(session?.description || "Open the GrowPath live session."),
         dueDate: String(startsAt),

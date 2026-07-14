@@ -34,6 +34,8 @@ import {
 } from "../api/coursePayments";
 import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { listPersonalGrows } from "@/api/grows";
+import { createPersonalTask } from "@/api/tasks";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
@@ -108,9 +110,14 @@ export default function CourseDetailScreen({ route, navigation }) {
     const cents = Number(initialCourse?.priceCents || 0);
     return cents > 0 ? (cents / 100).toFixed(2) : "";
   });
+  const [liveReminderIds, setLiveReminderIds] = useState([]);
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
+  const liveSessions = useMemo(
+    () => normalizeList(course?.liveSessions, "liveSessions"),
+    [course]
+  );
   const enrolled = Boolean(
     enrollment?.enrolled ||
     enrollment?.isEnrolled ||
@@ -418,6 +425,63 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
+  async function addLiveReminder(session, index) {
+    const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+    if (!session?.scheduledStart || liveReminderIds.includes(sessionKey)) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      const grows = await listPersonalGrows();
+      const grow =
+        grows.find((item) => String(item?.status || "active").toLowerCase() === "active") ||
+        grows[0];
+      const growId = String(grow?.id || grow?._id || "");
+      if (!growId) {
+        setFeedback("Create a grow first so the live reminder has a task workspace.");
+        return;
+      }
+      const watchUrl = String(
+        session?.watchUrl ||
+          session?.meetingUrl ||
+          (session?.twitchChannel
+            ? `https://www.twitch.tv/${session.twitchChannel}`
+            : "")
+      );
+      const task = await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedCourseId: loadedCourseId,
+        linkedLiveId: sessionKey,
+        actionUrl: watchUrl || null,
+        title: `Watch live: ${String(session?.title || course?.title || "Course session")}`,
+        description: [
+          String(session?.description || "Scheduled course live session."),
+          watchUrl ? `Watch: ${watchUrl}` : ""
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        dueDate: String(session.scheduledStart),
+        endAt: session?.scheduledEnd || null,
+        allDay: false,
+        priority: "high",
+        calendarType: "live_session",
+        sourceType: "course_live_reminder",
+        sourceObjectId: loadedCourseId,
+        reminderPlan: session?.reminderPlan || {
+          label: "1 hour before",
+          channels: ["in_app"]
+        }
+      });
+      if (!task) throw new Error("The reminder task could not be saved.");
+      setLiveReminderIds((current) => [...current, sessionKey]);
+      setFeedback("Live-session reminder added to My Tasks and Calendar.");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to create the live reminder task.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function addLesson() {
     if (!loadedCourseId) return;
     if (!navigation?.navigate) {
@@ -594,6 +658,59 @@ export default function CourseDetailScreen({ route, navigation }) {
           </View>
         ))}
         {!lessons.length ? <Text style={styles.meta}>No lessons returned.</Text> : null}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Scheduled live sessions</Text>
+        {liveSessions.map((session, index) => {
+          const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+          const watchUrl = String(
+            session?.watchUrl ||
+              session?.meetingUrl ||
+              (session?.twitchChannel
+                ? `https://www.twitch.tv/${session.twitchChannel}`
+                : "")
+          );
+          return (
+            <View key={sessionKey} style={styles.row}>
+              <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
+              <Text style={styles.meta}>
+                {session?.scheduledStart || "Date not scheduled"}
+                {session?.timezone ? ` · ${session.timezone}` : ""}
+              </Text>
+              <View style={styles.actions}>
+                {watchUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Watch ${session?.title || "course live"} on Twitch`}
+                    onPress={() => Linking.openURL(watchUrl)}
+                    style={styles.primaryBtn}
+                  >
+                    <Text style={styles.primaryText}>Watch on Twitch</Text>
+                  </Pressable>
+                ) : null}
+                {session?.scheduledStart ? (
+                  <Pressable
+                    disabled={saving || liveReminderIds.includes(sessionKey)}
+                    onPress={() => addLiveReminder(session, index)}
+                    style={styles.secondaryBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${session?.title || "live session"} reminder to My Tasks`}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {liveReminderIds.includes(sessionKey)
+                        ? "Reminder task created"
+                        : "Add to My Tasks"}
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
+          );
+        })}
+        {!liveSessions.length ? (
+          <Text style={styles.meta}>No live sessions scheduled.</Text>
+        ) : null}
       </View>
 
       <PersonalFeedPlacement

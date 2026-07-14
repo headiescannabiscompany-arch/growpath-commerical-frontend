@@ -15,7 +15,12 @@ import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
-import { flattenGrowInterests, normalizeInterestList } from "../utils/growInterests";
+import {
+  canonicalGrowInterestTag,
+  flattenGrowInterests,
+  groupTagsByTier,
+  normalizeInterestList
+} from "../utils/growInterests";
 import CourseDetailScreen from "./CourseDetailScreen";
 
 function normalizeList(payload) {
@@ -36,7 +41,7 @@ function mergeCourses(...lists) {
   return Array.from(merged.values());
 }
 
-function courseInterestTags(course) {
+export function courseInterestTags(course) {
   const structured =
     course?.growInterests && !Array.isArray(course.growInterests)
       ? flattenGrowInterests(course.growInterests)
@@ -45,15 +50,28 @@ function courseInterestTags(course) {
     new Set([
       ...structured,
       ...normalizeInterestList(course?.tags),
-      ...normalizeInterestList(course?.interestTags)
+      ...normalizeInterestList(course?.interestTags),
+      canonicalGrowInterestTag(course?.cropType)
     ])
-  );
+  ).filter(Boolean);
 }
 
-function matchesCourseInterests(course, userInterests) {
-  const tags = courseInterestTags(course);
+export function matchesCourseInterests(course, userInterests) {
+  const tags = courseInterestTags(course).map(canonicalGrowInterestTag).filter(Boolean);
   if (!tags.length || !userInterests.length) return true;
-  const selected = new Set(userInterests.map((item) => item.toLowerCase()));
+  const normalizedUserInterests = userInterests
+    .map(canonicalGrowInterestTag)
+    .filter(Boolean);
+  const courseCrops = groupTagsByTier(tags).crops || [];
+  const userCrops = groupTagsByTier(normalizedUserInterests).crops || [];
+  if (
+    courseCrops.length &&
+    userCrops.length &&
+    !courseCrops.some((crop) => userCrops.includes(crop))
+  ) {
+    return false;
+  }
+  const selected = new Set(normalizedUserInterests.map((item) => item.toLowerCase()));
   return tags.some((tag) => selected.has(tag.toLowerCase()));
 }
 

@@ -14,6 +14,29 @@ INTEREST_TIERS.forEach((tier) => {
   });
 });
 
+const LEGACY_CROP_ALIASES = [
+  [/cannabis|hemp|marijuana/i, "Cannabis"],
+  [/tomato|pepper|vegetable|veggie|lettuce|cucumber|squash|bean/i, "Vegetables"],
+  [/\bherb|basil|cilantro|parsley|mint\b/i, "Herbs"],
+  [/fruit|tree|bush|berry|orchard|citrus|apple|peach/i, "Fruit Trees & Bushes"],
+  [/houseplant|indoor plant|pothos|philodendron/i, "Houseplants"],
+  [/succulent|cacti|cactus/i, "Succulents & Cacti"],
+  [/flower|ornamental/i, "Flowers / Ornamentals"],
+  [/microgreen/i, "Microgreens"],
+  [/mushroom|fungi/i, "Mushrooms"]
+];
+
+export function canonicalGrowInterestTag(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+  const exact = Object.keys(TAG_TO_TIER).find(
+    (option) => option.toLowerCase() === clean.toLowerCase()
+  );
+  if (exact) return exact;
+  const cropAlias = LEGACY_CROP_ALIASES.find(([pattern]) => pattern.test(clean));
+  return cropAlias?.[1] || clean;
+}
+
 export function getTier1Metadata() {
   return tierOneMetadata;
 }
