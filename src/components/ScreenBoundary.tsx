@@ -1,6 +1,5 @@
 import React from "react";
 import { Text, ScrollView, View } from "react-native";
-import FacilityWorkflowNav from "@/components/facility/FacilityWorkflowNav";
 import BackButton from "@/components/nav/BackButton";
 import { captureException } from "@/utils/monitoring";
 
@@ -34,19 +33,13 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
 
     if (!this.state.error) {
       if (!showBack) {
-        return (
-          <View style={{ flex: 1 }}>
-            <FacilityWorkflowNav />
-            {this.props.children}
-          </View>
-        );
+        return <View style={{ flex: 1 }}>{this.props.children}</View>;
       }
       return (
         <View style={{ flex: 1 }}>
           <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
             <BackButton fallbackHref={fallbackHref} />
           </View>
-          <FacilityWorkflowNav />
           {this.props.children}
         </View>
       );

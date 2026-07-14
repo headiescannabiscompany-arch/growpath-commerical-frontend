@@ -911,7 +911,9 @@ test.describe("role walkthrough matrix", () => {
     await expect(page.getByLabel("Upload marketing plan ad image")).toBeVisible();
   });
 
-  test("commercial paid routes stay inside the commercial workspace", async ({ page }) => {
+  test("commercial paid routes stay inside the commercial workspace", async ({
+    page
+  }) => {
     await installRoleMocks(page, PERSONAS.commercialPaid);
 
     const routes = [
@@ -979,5 +981,40 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/facility/compliance", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByText(/Compliance/i).first()).toBeVisible();
+  });
+
+  test("facility paid routes stay inside the facility workspace", async ({ page }) => {
+    await installRoleMocks(page, PERSONAS.facilityPaid);
+
+    const routes = [
+      "/home/facility/dashboard",
+      "/home/facility/rooms",
+      "/home/facility/grows",
+      "/home/facility/plants",
+      "/home/facility/logs",
+      "/home/facility/inventory",
+      "/home/facility/tasks",
+      "/home/facility/sop-runs",
+      "/home/facility/compliance",
+      "/home/facility/audit-logs",
+      "/home/facility/team",
+      "/home/facility/reports",
+      "/home/facility/integrations",
+      "/home/facility/profile",
+      "/home/facility/ai-tools",
+      "/home/facility/ai-ask",
+      "/home/facility/ai-template",
+      "/home/facility/ai-validation",
+      "/home/facility/ai-diagnosis-photo"
+    ];
+
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expectNoNotFound(page);
+      await expect(page).toHaveURL(
+        new RegExp(`${route.replaceAll("/", "\\/")}(?:[/?#]|$)`)
+      );
+      await expect(page.getByText("Paid facility workflow")).toHaveCount(0);
+    }
   });
 });

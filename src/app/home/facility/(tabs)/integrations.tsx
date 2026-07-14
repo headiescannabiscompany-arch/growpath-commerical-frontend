@@ -45,9 +45,9 @@ export default function FacilityIntegrationsRoute() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Build rooms from controller data</Text>
           <Text style={styles.body}>
-            The connected workflow lives in Facility Rooms. Paste detected controller,
-            hub, module, or sensor names there to preview suggested rooms, normalized
-            metrics, devices, and read-only integration mappings.
+            Connection setup lives in Facility Rooms. Paste detected controller, hub,
+            module, or sensor names there to preview suggested rooms, normalized metrics,
+            devices, and read-only integration mappings.
           </Text>
           <View style={styles.providerGrid}>
             {PROVIDERS.map((provider) => (

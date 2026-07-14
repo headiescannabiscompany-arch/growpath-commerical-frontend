@@ -325,7 +325,7 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Inspection workflow</Text>
+              <Text style={styles.cardTitle}>Inspection readiness</Text>
               <Text style={styles.muted}>
                 Use the current compliance counts to export evidence, run AI readiness,
                 and keep SOP run proof current.

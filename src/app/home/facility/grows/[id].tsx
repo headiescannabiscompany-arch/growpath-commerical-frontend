@@ -13,6 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
@@ -149,11 +150,29 @@ export default function FacilityGrowDetail() {
         ) : null}
 
         {item ? (
-          <View style={styles.card}>
-            <Text style={styles.h1}>{pickTitle(item)}</Text>
-            <Text style={styles.muted}>ID: {String(id)}</Text>
-            <View style={styles.kvWrap}>{keys.map((key) => renderKV(item, key))}</View>
-          </View>
+          <>
+            <FacilityContextualTools
+              title="Grow tools"
+              tools={[
+                "ask-ai",
+                "diagnose",
+                "environment",
+                "recipe-builder",
+                "harvest-readiness",
+                "reports"
+              ]}
+              source="facility-grow-detail"
+              facilityId={facilityId ?? undefined}
+              growId={String(id)}
+              roomId={String(item.roomId ?? "")}
+              prompt={`Review ${pickTitle(item)} and recommend the next facility action.`}
+            />
+            <View style={styles.card}>
+              <Text style={styles.h1}>{pickTitle(item)}</Text>
+              <Text style={styles.muted}>ID: {String(id)}</Text>
+              <View style={styles.kvWrap}>{keys.map((key) => renderKV(item, key))}</View>
+            </View>
+          </>
         ) : null}
       </ScrollView>
     </ScreenBoundary>

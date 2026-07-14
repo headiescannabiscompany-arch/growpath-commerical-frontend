@@ -23,6 +23,7 @@ import {
 import { createRoom, deleteRoom, fetchRooms, updateRoom, type Room } from "@/api/rooms";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
@@ -658,6 +659,14 @@ export default function FacilityRoomsTab() {
           </View>
           {loading ? <ActivityIndicator /> : null}
         </View>
+
+        <FacilityContextualTools
+          title="Facility environment tools"
+          tools={["ask-ai", "environment", "diagnose", "reports"]}
+          source="facility-rooms"
+          facilityId={facilityId ?? undefined}
+          prompt="Review facility rooms, equipment, and environment readings for risks and next actions."
+        />
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Controller Room Import Preview</Text>

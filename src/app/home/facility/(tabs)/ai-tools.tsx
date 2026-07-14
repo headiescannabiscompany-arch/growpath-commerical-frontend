@@ -60,7 +60,7 @@ export default function FacilityAiToolsRoute() {
 
       <View style={styles.card}>
         <Text style={styles.title}>AI Templates</Text>
-        <Text style={styles.desc}>Use prebuilt AI workflows for common tasks.</Text>
+        <Text style={styles.desc}>Use guided AI tools for common facility work.</Text>
         <Link
           accessibilityRole="button"
           accessibilityLabel="Open AI templates"

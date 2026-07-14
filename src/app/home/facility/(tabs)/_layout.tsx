@@ -12,6 +12,7 @@ export function shouldHideFacilityTabBar(pathname = "") {
     pathname.includes("/ai-template") ||
     pathname.includes("/inventory/new") ||
     pathname.includes("/inventory/") ||
+    pathname.includes("/tools/") ||
     pathname.includes("/CreateInventoryItemScreen") ||
     pathname.includes("/InventoryItemDetailScreen")
   );
@@ -58,12 +59,8 @@ export default function FacilityTabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Setup",
-          tabBarLabel: "Setup",
-          href: compactTabs ? null : undefined
-        }}
+        name="dashboard"
+        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
       <Tabs.Screen
@@ -107,12 +104,16 @@ export default function FacilityTabsLayout() {
         options={{ title: "Reports", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
-        name="dashboard"
-        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
-      />
-      <Tabs.Screen
         name="integrations"
         options={{ title: "Integrations", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarLabel: "Profile",
+          href: compactTabs ? null : undefined
+        }}
       />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
       <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />
@@ -132,6 +133,18 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen
         name="InventoryItemDetailScreen"
         options={{ href: null, title: "Inventory Item" }}
+      />
+      <Tabs.Screen
+        name="tools/environment"
+        options={{ href: null, title: "Environment Review" }}
+      />
+      <Tabs.Screen
+        name="tools/recipe-builder"
+        options={{ href: null, title: "Recipe Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/harvest-readiness"
+        options={{ href: null, title: "Harvest Readiness" }}
       />
     </Tabs>
   );
