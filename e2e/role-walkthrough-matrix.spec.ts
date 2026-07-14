@@ -692,7 +692,17 @@ test.describe("role walkthrough matrix", () => {
       waitUntil: "domcontentloaded"
     });
     await expectNoNotFound(page);
-    await expect(page.getByText(/Upgrade to save journal entries/i)).toBeVisible();
+    await expect(page.getByLabel("Attach log photos")).toBeVisible();
+
+    await page.goto("/courses/create?from=/home/personal/courses", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByLabel("Set a paid course fee")).toBeEnabled();
+    await page.getByLabel("Set a paid course fee").click();
+    await page.getByLabel("Course price USD").fill("9.00");
+    await expect(page.getByText("Learners will see: $9.00")).toBeVisible();
+    await expect(page.getByText("Paid course limit: 1")).toBeVisible();
   });
 
   test("personal pro contextual workflow crawler", async ({ page }) => {

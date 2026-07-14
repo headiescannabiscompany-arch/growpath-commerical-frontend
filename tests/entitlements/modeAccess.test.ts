@@ -14,6 +14,7 @@ import {
   getEffectivePlan,
   resolveDevEntitlementsPlan,
   resolveEntitlementsMode,
+  resolveRequestedPlan,
   resolveWorkspaceMode,
   shouldApplyFacilityRoleCapabilities
 } from "../../src/entitlements/EntitlementsProvider";
@@ -32,6 +33,20 @@ describe("entitlement mode access", () => {
     expect(getEffectivePlan("pro", "active")).toBe("pro");
     expect(getEffectivePlan("commercial", "trialing")).toBe("commercial");
     expect(getEffectivePlan("facility", "trial")).toBe("facility");
+  });
+
+  it("prefers canonical me context over a stale free user plan", () => {
+    const requestedPlan = resolveRequestedPlan(
+      { requestedPlan: "pro", plan: "pro", subscriptionStatus: "active" },
+      { plan: "free", subscriptionStatus: "active" },
+      "free"
+    );
+    const capabilities: Record<string, boolean> = {};
+
+    expect(requestedPlan).toBe("pro");
+    expect(getEffectivePlan(requestedPlan, "active")).toBe("pro");
+    applyPlanCapabilities(capabilities, requestedPlan, "personal");
+    expect(capabilities[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
   });
 
   it("accepts local paid entitlement overrides only in dev", () => {
@@ -295,7 +310,7 @@ describe("entitlement mode access", () => {
       expect(caps[CAPABILITY_KEYS.SEE_PAID_COURSES]).toBe(true);
       expect(caps[CAPABILITY_KEYS.COURSES_CREATE]).toBe(true);
     }
-    expect(freeCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).not.toBe(true);
+    expect(freeCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
     expect(proCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
 
     expect(applyDefaultCourseLimits({}, "free")).toMatchObject({

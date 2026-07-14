@@ -53,6 +53,7 @@ const LIMITS_BY_PLAN = {
 const PLAN_CAPS = {
   free: new Set([
     CAP.COURSES_CREATE,
+    CAP.COURSES_SELL_PAID,
     CAP.TOOL_SOIL,
     CAP.TOOL_NPK,
     CAP.TOOL_VPD,
@@ -60,6 +61,7 @@ const PLAN_CAPS = {
   ]),
   pro: new Set([
     CAP.COURSES_CREATE,
+    CAP.COURSES_SELL_PAID,
     CAP.TOOL_SOIL,
     CAP.TOOL_NPK,
     CAP.TOOL_VPD,

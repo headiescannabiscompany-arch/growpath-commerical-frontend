@@ -230,6 +230,7 @@ export function applyUniversalCapabilities(normalized: Record<string, boolean>) 
   normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
   normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
+  normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
   normalized[CAPABILITY_KEYS.FORUM_POST] = true;
 }
@@ -364,6 +365,14 @@ export function shouldApplyFacilityRoleCapabilities(
   return mode === "facility" && String(plan || "").toLowerCase() === "facility";
 }
 
+export function resolveRequestedPlan(
+  ctx: any,
+  user: any,
+  previousPlan: string | null = null
+) {
+  return ctx?.requestedPlan ?? ctx?.plan ?? user?.plan ?? previousPlan ?? "free";
+}
+
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
@@ -373,13 +382,7 @@ function applyServerCtx(
 ): Omit<EntitlementsState, "can"> {
   const devPlan = resolveDevEntitlementsPlan();
   const effectiveCtx = applyDevEntitlementsOverride(ctx, devPlan);
-  const requestedPlan =
-    devPlan ??
-    user?.plan ??
-    effectiveCtx?.requestedPlan ??
-    effectiveCtx?.plan ??
-    prev.plan ??
-    "free";
+  const requestedPlan = devPlan ?? resolveRequestedPlan(effectiveCtx, user, prev.plan);
   const subscriptionStatus =
     effectiveCtx?.subscriptionStatus ??
     effectiveCtx?.user?.subscriptionStatus ??
@@ -486,6 +489,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
           [CAPABILITY_KEYS.COURSES_VIEW]: true,
           [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
           [CAPABILITY_KEYS.COURSES_CREATE]: true,
+          [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
           [CAPABILITY_KEYS.FORUM_VIEW]: true,
           [CAPABILITY_KEYS.FORUM_POST]: true
         },

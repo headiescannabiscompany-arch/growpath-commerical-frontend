@@ -12,7 +12,6 @@ const mockUploadCourseMedia = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockGetDocumentAsync = jest.fn();
-let mockCanSellPaidCourses = false;
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: mockReplace })
@@ -72,8 +71,7 @@ jest.mock("@/entitlements", () => ({
     mode: "personal",
     limits: { maxPaidCourses: 1, maxLessonsPerCourse: 12 },
     can: (capability: string) =>
-      capability === "COURSES_VIEW" ||
-      (mockCanSellPaidCourses && capability === "COURSES_SELL_PAID")
+      capability === "COURSES_VIEW" || capability === "COURSES_SELL_PAID"
   })
 }));
 
@@ -84,7 +82,6 @@ jest.mock("@/auth/AuthContext", () => ({
 describe("CreateCourseScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    mockCanSellPaidCourses = false;
     jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
     mockCreateCourse.mockResolvedValue({ id: "course-new", title: "Living Soil 101" });
     mockPersistImageUri.mockImplementation(async (uri) =>
@@ -215,7 +212,6 @@ describe("CreateCourseScreen", () => {
   });
 
   it("creates a paid draft with a visible USD fee", async () => {
-    mockCanSellPaidCourses = true;
     const screen = render(<CreateCourseScreen />);
 
     fireEvent.changeText(screen.getByLabelText("Course title"), "Paid Soil Course");

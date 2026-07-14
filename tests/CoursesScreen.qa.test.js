@@ -173,17 +173,17 @@ describe("CoursesScreen QA (capability-driven)", () => {
     });
   });
 
-  it("lets free course viewers start a course draft even without explicit create capability", async () => {
+  it("lets free course viewers create and sell paid courses within limits", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
       limits: { maxPaidCourses: 1 },
-      can: (cap) => cap === "COURSES_VIEW"
+      can: (cap) => cap === "COURSES_VIEW" || cap === "COURSES_SELL_PAID"
     });
-    const { getByText } = await renderWithNav();
+    const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
-      expect(getByText("Paid course sales require `COURSES_SELL_PAID`.")).toBeTruthy();
+      expect(queryByText("Paid course sales require `COURSES_SELL_PAID`.")).toBeNull();
     });
   });
 
