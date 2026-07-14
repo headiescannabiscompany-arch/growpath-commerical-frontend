@@ -33,9 +33,13 @@ function normalizeRoomsResponse(response: any): Room[] {
       ? response.rooms
       : Array.isArray(response?.items)
         ? response.items
-        : Array.isArray(response?.data)
-          ? response.data
-          : [];
+        : Array.isArray(response?.data?.rooms)
+          ? response.data.rooms
+          : Array.isArray(response?.data?.items)
+            ? response.data.items
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
 
   return rows.map(normalizeRoom).filter(Boolean) as Room[];
 }

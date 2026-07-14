@@ -133,7 +133,11 @@ export default function FacilitySopRunsIndexRoute() {
       refreshing={refreshing}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text style={styles.h1}>SOP Runs</Text>
+          <Text style={styles.h1}>SOP Library & Runs</Text>
+          <Text style={styles.summaryLabel}>
+            Manage approved facility procedures here, then assign and perform them in a
+            grow.
+          </Text>
           <View style={styles.links}>
             <Link
               accessibilityRole="button"
@@ -149,7 +153,7 @@ export default function FacilitySopRunsIndexRoute() {
               href="/home/facility/sop-runs/presets"
               style={styles.link}
             >
-              Presets
+              SOP Library
             </Link>
             <Link
               accessibilityRole="button"

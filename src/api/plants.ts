@@ -12,7 +12,9 @@ export type Plant = {
 
 function normalizePlantList(res: any) {
   if (Array.isArray(res)) return res;
-  return res?.plants ?? res?.data ?? [];
+  return (
+    res?.plants ?? res?.items ?? res?.data?.plants ?? res?.data?.items ?? res?.data ?? []
+  );
 }
 
 function normalizePlantEntity(res: any) {

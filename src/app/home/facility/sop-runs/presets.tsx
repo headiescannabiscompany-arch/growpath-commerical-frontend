@@ -8,6 +8,7 @@ import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
 import type { SOPTemplate } from "@/api/sop";
 import { radius } from "@/theme/theme";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 function pickId(x: SOPTemplate, idx: number) {
   return String(x?.id ?? x?._id ?? `template-${idx}`);
@@ -19,6 +20,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 
 export default function FacilitySopRunsPresetsRoute() {
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
+  const canManage = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const { templates, isLoading, createTemplate, creating, refetch } =
     useSopTemplates(facilityId);
   const [title, setTitle] = useState("");
@@ -52,30 +55,40 @@ export default function FacilitySopRunsPresetsRoute() {
       backFallbackHref="/home/facility/sop-runs"
     >
       <View style={styles.container}>
-        <Text style={styles.h1}>SOP Presets</Text>
-        <TextInput
-          accessibilityLabel="SOP preset title"
-          style={styles.input}
-          placeholder="Template title"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <TextInput
-          accessibilityLabel="SOP preset content"
-          style={[styles.input, styles.notes]}
-          placeholder="Template content"
-          value={content}
-          onChangeText={setContent}
-          multiline
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Create SOP preset"
-          onPress={create}
-          style={styles.btn}
-        >
-          <Text style={styles.btnText}>{creating ? "Saving..." : "Create Preset"}</Text>
-        </Pressable>
+        <Text style={styles.h1}>SOP Library</Text>
+        <Text style={styles.sub}>
+          Owners and managers publish procedures. Staff can open and perform assigned
+          checklists.
+        </Text>
+        {canManage ? (
+          <>
+            <TextInput
+              accessibilityLabel="SOP preset title"
+              style={styles.input}
+              placeholder="Template title"
+              value={title}
+              onChangeText={setTitle}
+            />
+            <TextInput
+              accessibilityLabel="SOP preset content"
+              style={[styles.input, styles.notes]}
+              placeholder="Template content"
+              value={content}
+              onChangeText={setContent}
+              multiline
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Create SOP preset"
+              onPress={create}
+              style={styles.btn}
+            >
+              <Text style={styles.btnText}>
+                {creating ? "Saving..." : "Create Preset"}
+              </Text>
+            </Pressable>
+          </>
+        ) : null}
         {msg ? <Text style={styles.msg}>{msg}</Text> : null}
         {isLoading ? <Text>Loading presets...</Text> : null}
         <FlatList

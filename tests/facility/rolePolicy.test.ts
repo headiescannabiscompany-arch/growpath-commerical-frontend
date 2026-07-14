@@ -4,6 +4,16 @@ import { can } from "../../src/facility/roleGates";
 import { roleCapabilities } from "../../src/permissions/rolePolicy";
 
 describe("facility role write policy", () => {
+  it("keeps invitations and role administration owner-only", () => {
+    const owner = new Set(roleCapabilities("OWNER"));
+    const manager = new Set(roleCapabilities("MANAGER"));
+
+    expect(owner.has(CAPABILITY_KEYS.TEAM_INVITE)).toBe(true);
+    expect(manager.has(CAPABILITY_KEYS.TEAM_INVITE)).toBe(false);
+    expect(manager.has(CAPABILITY_KEYS.TEAM_UPDATE_ROLE)).toBe(false);
+    expect(manager.has(CAPABILITY_KEYS.TEAM_REMOVE)).toBe(false);
+  });
+
   it("limits STAFF capabilities to tasks, logs, and read-only core records", () => {
     const capabilities = new Set(roleCapabilities("STAFF"));
 

@@ -15,7 +15,14 @@ export type Grow = {
 };
 
 function normalizeGrowList(res: any) {
-  const raw = Array.isArray(res) ? res : (res?.grows ?? res?.data ?? []);
+  const raw = Array.isArray(res)
+    ? res
+    : (res?.grows ??
+      res?.items ??
+      res?.data?.grows ??
+      res?.data?.items ??
+      res?.data ??
+      []);
   return Array.isArray(raw)
     ? raw.map((grow) => {
         if (!grow || typeof grow !== "object") return grow;

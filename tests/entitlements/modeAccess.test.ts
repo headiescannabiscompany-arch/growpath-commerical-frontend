@@ -247,7 +247,7 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).not.toBe(true);
   });
 
-  it("grants managers operational, team, compliance, and settings writes", () => {
+  it("grants managers operational writes without owner account controls", () => {
     const normalized: Record<string, boolean> = {};
 
     applyFacilityRoleCapabilities(normalized, "MANAGER");
@@ -258,8 +258,10 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.INVENTORY_WRITE]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE]).toBe(true);
-    expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).toBe(true);
-    expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TEAM_UPDATE_ROLE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TEAM_REMOVE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).not.toBe(true);
   });
 
   it("grants commercial inventory write to active commercial workspaces", () => {

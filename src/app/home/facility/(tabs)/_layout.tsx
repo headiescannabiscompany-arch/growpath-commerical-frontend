@@ -63,18 +63,9 @@ export default function FacilityTabsLayout() {
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen
-        name="grows"
-        options={{ title: "Grows", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen
-        name="plants"
-        options={{ title: "Plants", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen
-        name="logs"
-        options={{ title: "Journal", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="grows" options={{ title: "Grows", href: null }} />
+      <Tabs.Screen name="plants" options={{ title: "Plants", href: null }} />
+      <Tabs.Screen name="logs" options={{ title: "Journal", href: null }} />
       <Tabs.Screen
         name="inventory"
         options={{ title: "Inventory", href: compactTabs ? null : undefined }}

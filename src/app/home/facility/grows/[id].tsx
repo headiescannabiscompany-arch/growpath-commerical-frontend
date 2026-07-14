@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -151,6 +152,43 @@ export default function FacilityGrowDetail() {
 
         {item ? (
           <>
+            <View style={styles.card}>
+              <Text style={styles.h1}>Grow workspace</Text>
+              <Text style={styles.muted}>
+                {item.roomName ? `${item.roomName} → ` : ""}
+                {pickTitle(item)}
+              </Text>
+              <View style={styles.workspaceGrid}>
+                {[
+                  ["Plants", "/home/facility/plants"],
+                  ["Journal & timeline", "/home/facility/logs"],
+                  ["Tasks & calendar", "/home/facility/tasks"],
+                  ["Inventory usage", "/home/facility/inventory"],
+                  ["Assigned SOPs", "/home/facility/sop-runs"],
+                  ["Environment & devices", "/home/facility/integrations"],
+                  ["Ask GrowPath AI", "/home/facility/ai-ask"]
+                ].map(([label, pathname]) => (
+                  <Pressable
+                    key={label}
+                    onPress={() =>
+                      router.push({
+                        pathname: pathname as any,
+                        params: {
+                          growId: String(id),
+                          roomId: String(item.roomId ?? ""),
+                          contextName: pickTitle(item)
+                        }
+                      })
+                    }
+                    style={styles.workspaceAction}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.workspaceLabel}>{label}</Text>
+                    <Text style={styles.workspaceArrow}>{">"}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
             <FacilityContextualTools
               title="Grow tools"
               tools={[
@@ -197,5 +235,16 @@ const styles = StyleSheet.create({
   k: { fontSize: 12, opacity: 0.7 },
   v: { fontSize: 14 },
   empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" }
+  emptyTitle: { fontSize: 16, fontWeight: "800" },
+  workspaceGrid: { gap: 8, marginTop: 4 },
+  workspaceAction: {
+    alignItems: "center",
+    backgroundColor: "rgba(35, 118, 74, 0.07)",
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 12
+  },
+  workspaceLabel: { fontSize: 14, fontWeight: "800" },
+  workspaceArrow: { fontSize: 18, opacity: 0.55 }
 });

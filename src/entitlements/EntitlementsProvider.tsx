@@ -216,13 +216,16 @@ export function applyFacilityRoleCapabilities(
     normalized[CAPABILITY_KEYS.GROWLOGS_WRITE] = true;
   }
 
-  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
+  if (facilityRole === "OWNER") {
     normalized[CAPABILITY_KEYS.TEAM_INVITE] = true;
     normalized[CAPABILITY_KEYS.TEAM_UPDATE_ROLE] = true;
     normalized[CAPABILITY_KEYS.TEAM_REMOVE] = true;
+    normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT] = true;
+  }
+
+  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
     normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE] = true;
     normalized[CAPABILITY_KEYS.EXPORT_COMPLIANCE] = true;
-    normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT] = true;
   }
 }
 

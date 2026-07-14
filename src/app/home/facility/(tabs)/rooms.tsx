@@ -669,61 +669,114 @@ export default function FacilityRoomsTab() {
         />
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Controller Room Import Preview</Text>
+          <Text style={styles.cardTitle}>Facility rooms</Text>
           <Text style={styles.muted}>
-            Paste detected controller, hub, module, or sensor names from Pulse,
-            TrolMaster, Growlink, AROYA, SensorPush, or similar providers. GrowPath
-            suggests rooms first so the facility can start from imported structure instead
-            of a blank setup.
+            Open a room to continue through its grows, plants, work, and environment.
           </Text>
-          <TextInput
-            value={importProvider}
-            onChangeText={setImportProvider}
-            style={styles.input}
-            accessibilityLabel="Facility import provider"
-            placeholder="Provider, e.g. TrolMaster, Pulse, Growlink"
-          />
-          <TextInput
-            value={importDeviceText}
-            onChangeText={setImportDeviceText}
-            style={[styles.input, styles.textArea]}
-            accessibilityLabel="Facility import device list"
-            multiline
-            placeholder={"Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH"}
-          />
-          {roomImportPreview.length ? (
-            <View style={styles.importPreviewList}>
-              {roomImportPreview.map((room) => (
-                <View key={room.name} style={styles.importPreviewRow}>
-                  <Text style={styles.rowTitle}>{room.name}</Text>
+          {rooms.length ? (
+            rooms.map((room) => {
+              const id = rowId(room);
+              const linkedEquipment = equipment.filter(
+                (item) => String(item.roomId ?? "") === id
+              ).length;
+              const linkedCycles = cycles.filter(
+                (item) => String(item.roomId ?? "") === id
+              );
+              return (
+                <Pressable
+                  key={id || room.name}
+                  onPress={() => {
+                    setActiveRoomId(id);
+                    router.push({
+                      pathname: "/home/facility/grows",
+                      params: { roomId: id, roomName: room.name || "Room" }
+                    });
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${room.name || "room"}`}
+                  style={styles.row}
+                >
+                  <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
                   <Text style={styles.rowMeta}>
-                    {room.roomType} | {room.devices.length} device
-                    {room.devices.length === 1 ? "" : "s"}
+                    {[
+                      room.roomType || "room",
+                      room.stage || "no active stage",
+                      `${linkedCycles.length} grows`,
+                      `${linkedEquipment} connected devices`
+                    ].join(" | ")}
                   </Text>
-                  {room.metrics.length ? (
-                    <Text style={styles.rowMeta}>Metrics: {room.metrics.join(", ")}</Text>
-                  ) : (
-                    <Text style={styles.rowMeta}>Metrics need manual mapping</Text>
-                  )}
-                </View>
-              ))}
-            </View>
-          ) : null}
-          <Pressable
-            onPress={createImportedRooms}
-            disabled={saving || !canEditRooms || !roomImportPreview.length}
-            accessibilityRole="button"
-            accessibilityLabel="Create imported facility rooms"
-            style={[
-              styles.primaryBtn,
-              (saving || !canEditRooms || !roomImportPreview.length) && styles.disabled
-            ]}
-          >
-            <Text style={styles.primaryText}>
-              {saving ? "Creating..." : "Create Previewed Rooms"}
+                  <Text style={styles.rowMeta}>Open room workspace {">"}</Text>
+                </Pressable>
+              );
+            })
+          ) : (
+            <Text style={styles.muted}>
+              No rooms were returned for this facility. Refresh or verify the selected
+              facility and integration mapping.
             </Text>
-          </Pressable>
+          )}
         </View>
+
+        {canEditRooms ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Controller Room Import Preview</Text>
+            <Text style={styles.muted}>
+              Paste detected controller, hub, module, or sensor names from Pulse,
+              TrolMaster, Growlink, AROYA, SensorPush, or similar providers. GrowPath
+              suggests rooms first so the facility can start from imported structure
+              instead of a blank setup.
+            </Text>
+            <TextInput
+              value={importProvider}
+              onChangeText={setImportProvider}
+              style={styles.input}
+              accessibilityLabel="Facility import provider"
+              placeholder="Provider, e.g. TrolMaster, Pulse, Growlink"
+            />
+            <TextInput
+              value={importDeviceText}
+              onChangeText={setImportDeviceText}
+              style={[styles.input, styles.textArea]}
+              accessibilityLabel="Facility import device list"
+              multiline
+              placeholder={"Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH"}
+            />
+            {roomImportPreview.length ? (
+              <View style={styles.importPreviewList}>
+                {roomImportPreview.map((room) => (
+                  <View key={room.name} style={styles.importPreviewRow}>
+                    <Text style={styles.rowTitle}>{room.name}</Text>
+                    <Text style={styles.rowMeta}>
+                      {room.roomType} | {room.devices.length} device
+                      {room.devices.length === 1 ? "" : "s"}
+                    </Text>
+                    {room.metrics.length ? (
+                      <Text style={styles.rowMeta}>
+                        Metrics: {room.metrics.join(", ")}
+                      </Text>
+                    ) : (
+                      <Text style={styles.rowMeta}>Metrics need manual mapping</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            <Pressable
+              onPress={createImportedRooms}
+              disabled={saving || !canEditRooms || !roomImportPreview.length}
+              accessibilityRole="button"
+              accessibilityLabel="Create imported facility rooms"
+              style={[
+                styles.primaryBtn,
+                (saving || !canEditRooms || !roomImportPreview.length) && styles.disabled
+              ]}
+            >
+              <Text style={styles.primaryText}>
+                {saving ? "Creating..." : "Create Previewed Rooms"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>New Room</Text>

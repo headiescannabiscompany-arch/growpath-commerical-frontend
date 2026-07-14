@@ -15,7 +15,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 type AnyRec = Record<string, any>;
 
@@ -50,6 +50,10 @@ function pickSubtitle(x: AnyRec): string {
 
 export default function FacilityGrowsTab() {
   const router = useRouter();
+  const { roomId, roomName } = useLocalSearchParams<{
+    roomId?: string;
+    roomName?: string;
+  }>();
   const { selectedId: facilityId } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
@@ -77,7 +81,16 @@ export default function FacilityGrowsTab() {
       try {
         clearError();
         const res = await apiRequest(endpoints.grows(facilityId));
-        setItems(asArray(res));
+        const rows = asArray(res);
+        setItems(
+          roomId
+            ? rows.filter(
+                (row) =>
+                  String(row.roomId ?? row.room?._id ?? row.room?.id ?? "") ===
+                  String(roomId)
+              )
+            : rows
+        );
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -85,7 +98,7 @@ export default function FacilityGrowsTab() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId, roomId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -102,12 +115,18 @@ export default function FacilityGrowsTab() {
   }, [items.length]);
 
   return (
-    <ScreenBoundary title="Grows">
+    <ScreenBoundary
+      title={roomName ? `${roomName} grows` : "Grows"}
+      showBack
+      backFallbackHref="/home/facility/rooms"
+    >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Grows</Text>
+          <Text style={styles.h1}>
+            {roomName ? `${roomName} → Grows` : "Facility Grows"}
+          </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 
