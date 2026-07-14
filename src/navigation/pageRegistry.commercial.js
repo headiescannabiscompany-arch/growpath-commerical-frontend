@@ -11,21 +11,21 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../screens/commercial/CommercialDashboardScreen.js").default
   },
   {
-    name: "Profile",
-    label: "Setup",
-    icon: "person-outline",
-    capabilityKey: "view.profile",
+    name: "Storefront",
+    label: "Storefront",
+    icon: "storefront-outline",
+    capabilityKey: "commercial.storefront",
     primary: true,
-    group: "setup",
-    component: require("../app/home/commercial/profile").default
+    group: "storefront",
+    component: require("../app/home/commercial/storefront").default
   },
   {
     name: "CommercialProducts",
-    label: "Product Catalog",
+    label: "Products",
     icon: "pricetags-outline",
     capabilityKey: "commercial.products",
     primary: true,
-    group: "catalog",
+    group: "products",
     component: require("../app/home/commercial/products").default
   },
   {
@@ -34,7 +34,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "albums-outline",
     capabilityKey: "commercial.products",
     primary: false,
-    group: "catalog",
+    group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/product-lines").default
   },
@@ -44,7 +44,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "flask-outline",
     capabilityKey: "commercial.batchPlanner",
     primary: false,
-    group: "catalog",
+    group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/batch-planner").default
   },
@@ -54,7 +54,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "cube-outline",
     capabilityKey: "commercial.inventory",
     primary: false,
-    group: "catalog",
+    group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/inventory").default
   },
@@ -64,7 +64,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "leaf-outline",
     capabilityKey: "commercial.grows",
     primary: false,
-    group: "evidence",
+    group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/evidence-runs").default
   },
@@ -74,18 +74,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "analytics-outline",
     capabilityKey: "commercial.trials",
     primary: false,
-    group: "evidence",
+    group: "products",
     supportSurface: true,
     component: require("../app/home/commercial/trials").default
-  },
-  {
-    name: "Storefront",
-    label: "Storefront",
-    icon: "storefront-outline",
-    capabilityKey: "commercial.storefront",
-    primary: true,
-    group: "storefront",
-    component: require("../app/home/commercial/storefront").default
   },
   {
     name: "Courses",
@@ -206,5 +197,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     primary: true,
     group: "operations",
     component: require("../app/home/commercial/tasks").default
+  },
+  {
+    name: "Profile",
+    label: "Profile",
+    icon: "person-outline",
+    capabilityKey: "view.profile",
+    primary: true,
+    group: "setup",
+    component: require("../app/home/commercial/profile").default
   }
 ];

@@ -22,24 +22,19 @@ export default function CommercialTabs() {
         options={{ title: "Dashboard" }}
       />
       <Tab.Screen
-        name="CommercialProfile"
-        component={CommercialProfileRoute}
-        options={{ title: "Setup" }}
-      />
-      <Tab.Screen
-        name="CommercialProducts"
-        component={CommercialProductsRoute}
-        options={{ title: "Catalog" }}
-      />
-      <Tab.Screen
         name="Storefront"
         component={CommercialStorefrontRoute}
         options={{ title: "Storefront" }}
       />
       <Tab.Screen
+        name="CommercialProducts"
+        component={CommercialProductsRoute}
+        options={{ title: "Products" }}
+      />
+      <Tab.Screen
         name="CommercialCourses"
         component={CommercialCoursesRoute}
-        options={{ title: "Education" }}
+        options={{ title: "Courses" }}
       />
       <Tab.Screen
         name="CommercialLives"
@@ -60,6 +55,11 @@ export default function CommercialTabs() {
         name="CommercialAnalytics"
         component={CommercialAnalyticsRoute}
         options={{ title: "Analytics" }}
+      />
+      <Tab.Screen
+        name="CommercialProfile"
+        component={CommercialProfileRoute}
+        options={{ title: "Profile" }}
       />
     </Tab.Navigator>
   );

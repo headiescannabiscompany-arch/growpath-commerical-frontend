@@ -125,7 +125,12 @@ export default function CommercialWorkflowNav({ routeKey }: { routeKey: string }
               <Pressable
                 accessibilityRole="link"
                 accessibilityState={{ selected: active }}
-                style={[styles.step, active ? styles.stepActive : null]}
+                // Expo Router's web Link forwards this style to an <a>. React DOM
+                // cannot apply React Native's array style directly to that node.
+                style={StyleSheet.flatten([
+                  styles.step,
+                  active ? styles.stepActive : null
+                ])}
               >
                 <Text
                   style={[styles.stepNumber, active ? styles.stepNumberActive : null]}

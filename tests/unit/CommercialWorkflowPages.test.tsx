@@ -761,7 +761,7 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Your storefront is the public brand home base. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe."
+        "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path."
       )
     ).toBeTruthy();
     expect(screen.getByText("Action Items")).toBeTruthy();

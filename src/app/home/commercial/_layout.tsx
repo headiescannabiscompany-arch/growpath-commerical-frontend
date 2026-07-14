@@ -61,10 +61,10 @@ export default function CommercialTabsLayout() {
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen
-        name="grows"
+        name="grows/index"
         options={{ title: "Product Trial Evidence Runs", href: null }}
       />
-      <Tabs.Screen name="storefront" options={{ title: "Storefront" }} />
+      <Tabs.Screen name="storefront/index" options={{ title: "Storefront" }} />
       <Tabs.Screen
         name="storefront/edit"
         options={{ href: null, title: "Edit Storefront" }}
@@ -73,7 +73,7 @@ export default function CommercialTabsLayout() {
         name="storefront/preview"
         options={{ href: null, title: "Storefront Preview" }}
       />
-      <Tabs.Screen name="products" options={{ title: "Products" }} />
+      <Tabs.Screen name="products/index" options={{ title: "Products" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
       <Tabs.Screen name="lives" options={{ title: "Lives" }} />
       <Tabs.Screen name="feed" options={{ title: "Feed / Campaigns" }} />
@@ -117,7 +117,7 @@ export default function CommercialTabsLayout() {
         options={{ href: null, title: "Product Trial Evidence Run Detail" }}
       />
       <Tabs.Screen
-        name="evidence-runs"
+        name="evidence-runs/index"
         options={{ href: null, title: "Product Trial Evidence Runs" }}
       />
       <Tabs.Screen
