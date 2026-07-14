@@ -105,7 +105,7 @@ describe("facility SOP run nested back behavior", () => {
 
     const presets = render(<FacilitySopRunsPresetsRoute />);
     expect(presets.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy();
-    expect(presets.getByText("SOP Presets")).toBeTruthy();
+    expect(presets.getByText("SOP Library")).toBeTruthy();
   });
 
   it("uses shared back behavior on SOP compare routes", async () => {
