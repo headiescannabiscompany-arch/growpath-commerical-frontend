@@ -673,7 +673,7 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
-    if (method === "GET" && path === "/api/commercial/orders") {
+    if (method === "GET" && path === "/api/facility/facility-walkthrough-1/transfers") {
       return fulfillJson(route, {
         orders: [
           {

@@ -232,7 +232,9 @@ export default function FacilityInventoryTab() {
 
         {!canWriteInventory ? (
           <Text style={styles.lockedText}>
-            Inventory changes unlock after facility checkout is active.
+            Your facility role or plan does not allow inventory changes. Viewers remain
+            read-only; owners and managers can manage stock when inventory access is
+            active.
           </Text>
         ) : (
           <Pressable

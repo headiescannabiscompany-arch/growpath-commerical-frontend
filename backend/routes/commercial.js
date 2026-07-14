@@ -69,6 +69,59 @@ function requireUser(req, res) {
   return userId;
 }
 
+function facilityContext(req) {
+  return {
+    facilityId: cleanString(req.ctx?.facilityId || req.user?.facilityId),
+    facilityRole: cleanString(
+      req.ctx?.facilityRole || req.user?.facilityRole
+    ).toUpperCase()
+  };
+}
+
+function requireFacilityTransferAccess(req, res, allowedRoles) {
+  const userId = requireUser(req, res);
+  if (!userId) return null;
+  const requestedFacilityId = cleanString(req.params?.facilityId);
+  const context = facilityContext(req);
+  if (!requestedFacilityId || context.facilityId !== requestedFacilityId) {
+    res.status(403).json({
+      success: false,
+      code: "FACILITY_ACCESS_DENIED",
+      message: "The requested facility does not match your active facility membership."
+    });
+    return null;
+  }
+  if (!allowedRoles.includes(context.facilityRole)) {
+    res.status(403).json({
+      success: false,
+      code: "FACILITY_ROLE_DENIED",
+      message: "Your facility role cannot perform this transfer action."
+    });
+    return null;
+  }
+  return { userId, ...context };
+}
+
+function transferValidation(payload) {
+  const errors = [];
+  if (!cleanString(payload.inventoryItemId)) errors.push("inventoryItemId is required");
+  if (!cleanString(payload.itemName)) errors.push("itemName is required");
+  if (!(Number(payload.quantity) > 0)) errors.push("quantity must be greater than zero");
+  if (!(Number(payload.unitPrice) >= 0)) errors.push("unitPrice must be zero or greater");
+  if (!cleanString(payload.recipientName)) errors.push("recipientName is required");
+  if (!cleanString(payload.recipientLicense)) errors.push("recipientLicense is required");
+  if (!cleanString(payload.recipientState)) errors.push("recipientState is required");
+  return errors;
+}
+
+const TRANSFER_TRANSITIONS = {
+  draft: ["approved", "cancelled"],
+  approved: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: []
+};
+
 function baseQuery(userId, recordType) {
   return { userId, recordType, deletedAt: null };
 }
@@ -1424,6 +1477,188 @@ router.post("/campaigns/:id/click", async (req, res) => {
   ).lean();
   res.json({ success: true, clickCount, event, campaign: dto(updated) });
 });
+
+router.get("/facility/:facilityId/transfers", async (req, res) => {
+  const access = requireFacilityTransferAccess(req, res, [
+    "OWNER",
+    "MANAGER",
+    "STAFF",
+    "VIEWER"
+  ]);
+  if (!access) return;
+  const rows = await CommercialRecord.find({
+    recordType: "facilityTransfer",
+    "payload.facilityId": access.facilityId,
+    deletedAt: null
+  })
+    .sort({ createdAt: -1 })
+    .limit(250)
+    .lean();
+  const transfers = (rows || []).map(dto);
+  return res.json({ success: true, transfers, orders: transfers, items: transfers });
+});
+
+router.post("/facility/:facilityId/transfers", async (req, res) => {
+  const access = requireFacilityTransferAccess(req, res, ["OWNER", "MANAGER"]);
+  if (!access) return;
+  const errors = transferValidation(req.body || {});
+  if (errors.length) {
+    return res.status(400).json({ success: false, code: "VALIDATION_ERROR", errors });
+  }
+  const now = new Date().toISOString();
+  const payload = {
+    ...createPayload(req.body),
+    facilityId: access.facilityId,
+    orderType: "licensed_cannabis_transfer",
+    status: "draft",
+    total: Math.round(Number(req.body.quantity) * Number(req.body.unitPrice) * 100) / 100,
+    inventoryMovementStatus: "not_required",
+    auditEvents: [
+      {
+        action: "transfer_created",
+        actorUserId: access.userId,
+        actorRole: access.facilityRole,
+        at: now,
+        toStatus: "draft"
+      }
+    ]
+  };
+  const created = await CommercialRecord.create({
+    userId: access.userId,
+    recordType: "facilityTransfer",
+    name: cleanString(payload.itemName),
+    title: cleanString(payload.itemName),
+    status: "draft",
+    payload
+  });
+  return res
+    .status(201)
+    .json({ success: true, transfer: dto(created), item: dto(created) });
+});
+
+router.post("/facility/:facilityId/transfers/:id/transition", async (req, res) => {
+  const requestedStatus = cleanString(req.body?.status).toLowerCase();
+  const roles =
+    requestedStatus === "approved" || requestedStatus === "cancelled"
+      ? ["OWNER", "MANAGER"]
+      : ["OWNER", "MANAGER", "STAFF"];
+  const access = requireFacilityTransferAccess(req, res, roles);
+  if (!access) return;
+  const query = {
+    recordType: "facilityTransfer",
+    "payload.facilityId": access.facilityId,
+    _id: req.params.id,
+    deletedAt: null
+  };
+  const current = dto(await CommercialRecord.findOne(query).lean());
+  if (!current)
+    return res.status(404).json({ success: false, message: "Transfer not found" });
+  const allowed = TRANSFER_TRANSITIONS[current.status] || [];
+  if (!allowed.includes(requestedStatus)) {
+    return res.status(409).json({
+      success: false,
+      code: "INVALID_STATUS_TRANSITION",
+      message: `Cannot change transfer from ${current.status} to ${requestedStatus}.`
+    });
+  }
+  if (requestedStatus === "delivered" && current.inventoryMovementStatus !== "applied") {
+    return res.status(409).json({
+      success: false,
+      code: "INVENTORY_MOVEMENT_PENDING",
+      message: "Confirm the shipment inventory deduction before marking it delivered."
+    });
+  }
+  const now = new Date().toISOString();
+  const movementId =
+    requestedStatus === "shipped"
+      ? current.inventoryMovementId || `transfer:${req.params.id}:shipment`
+      : current.inventoryMovementId;
+  const auditEvents = [
+    ...(Array.isArray(current.auditEvents) ? current.auditEvents : []),
+    {
+      action: `transfer_${requestedStatus}`,
+      actorUserId: access.userId,
+      actorRole: access.facilityRole,
+      at: now,
+      fromStatus: current.status,
+      toStatus: requestedStatus
+    }
+  ];
+  const fields = {
+    status: requestedStatus,
+    auditEvents,
+    ...(requestedStatus === "shipped"
+      ? {
+          shippedAt: now,
+          inventoryMovementId: movementId,
+          inventoryMovementStatus: "pending"
+        }
+      : {}),
+    ...(requestedStatus === "delivered" ? { deliveredAt: now } : {})
+  };
+  const updated = await CommercialRecord.findOneAndUpdate(
+    query,
+    {
+      status: requestedStatus,
+      $set: Object.fromEntries(
+        Object.entries(fields).map(([key, value]) => [`payload.${key}`, value])
+      )
+    },
+    { new: true }
+  ).lean();
+  return res.json({ success: true, transfer: dto(updated), item: dto(updated) });
+});
+
+router.post(
+  "/facility/:facilityId/transfers/:id/inventory-confirmed",
+  async (req, res) => {
+    const access = requireFacilityTransferAccess(req, res, ["OWNER", "MANAGER", "STAFF"]);
+    if (!access) return;
+    const query = {
+      recordType: "facilityTransfer",
+      "payload.facilityId": access.facilityId,
+      _id: req.params.id,
+      deletedAt: null
+    };
+    const current = dto(await CommercialRecord.findOne(query).lean());
+    if (!current)
+      return res.status(404).json({ success: false, message: "Transfer not found" });
+    if (
+      current.status !== "shipped" ||
+      current.inventoryMovementStatus !== "pending" ||
+      cleanString(req.body?.movementId) !== cleanString(current.inventoryMovementId)
+    ) {
+      return res.status(409).json({
+        success: false,
+        code: "INVENTORY_CONFIRMATION_REJECTED",
+        message:
+          "This inventory movement is not pending or the movement ID does not match."
+      });
+    }
+    const now = new Date().toISOString();
+    const auditEvents = [
+      ...(Array.isArray(current.auditEvents) ? current.auditEvents : []),
+      {
+        action: "inventory_deduction_confirmed",
+        actorUserId: access.userId,
+        actorRole: access.facilityRole,
+        at: now
+      }
+    ];
+    const updated = await CommercialRecord.findOneAndUpdate(
+      query,
+      {
+        $set: {
+          "payload.inventoryMovementStatus": "applied",
+          "payload.inventoryAppliedAt": now,
+          "payload.auditEvents": auditEvents
+        }
+      },
+      { new: true }
+    ).lean();
+    return res.json({ success: true, transfer: dto(updated), item: dto(updated) });
+  }
+);
 
 router.get("/orders", (req, res) => listRecords(req, res, "order", "orders"));
 router.post("/orders", (req, res) => createRecord(req, res, "order", "order", "draft"));

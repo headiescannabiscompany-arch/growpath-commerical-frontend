@@ -31,6 +31,7 @@ type ProductForm = {
   externalPurchaseUrl: string;
   stripeProductId: string;
   stripePriceId: string;
+  regulatedCannabis: boolean;
   status: "draft" | "published";
 };
 
@@ -52,6 +53,7 @@ const EMPTY_FORM: ProductForm = {
   externalPurchaseUrl: "",
   stripeProductId: "",
   stripePriceId: "",
+  regulatedCannabis: false,
   status: "draft"
 };
 
@@ -134,7 +136,11 @@ function formPublishBlockers(form: ProductForm) {
   if (!Number(form.price)) blockers.push("add price");
   if (!hasText(form.unitSize)) blockers.push("add size/weight");
   if (!splitList(form.growInterests).length) blockers.push("add grow interests");
-  if (!hasText(form.externalPurchaseUrl) && !hasText(form.stripePriceId)) {
+  if (
+    !form.regulatedCannabis &&
+    !hasText(form.externalPurchaseUrl) &&
+    !hasText(form.stripePriceId)
+  ) {
     blockers.push("add checkout link or Stripe price");
   }
   return blockers;
@@ -223,6 +229,9 @@ export default function CommercialProductsRoute({
         externalPurchaseUrl: form.externalPurchaseUrl.trim(),
         stripeProductId: form.stripeProductId.trim() || undefined,
         stripePriceId: form.stripePriceId.trim() || undefined,
+        regulatedCannabis: form.regulatedCannabis,
+        isCannabis: form.regulatedCannabis,
+        productType: form.regulatedCannabis ? "cannabis" : undefined,
         specs: hasProductSpecs(form)
           ? {
               unitSize: form.unitSize.trim() || undefined,
@@ -386,6 +395,29 @@ export default function CommercialProductsRoute({
             placeholder="Product name"
             style={styles.input}
           />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: form.regulatedCannabis }}
+            accessibilityLabel="Regulated cannabis product"
+            onPress={() =>
+              setForm((prev) => ({
+                ...prev,
+                regulatedCannabis: !prev.regulatedCannabis,
+                externalPurchaseUrl: !prev.regulatedCannabis
+                  ? ""
+                  : prev.externalPurchaseUrl,
+                stripeProductId: !prev.regulatedCannabis ? "" : prev.stripeProductId,
+                stripePriceId: !prev.regulatedCannabis ? "" : prev.stripePriceId
+              }))
+            }
+            style={[styles.classification, form.regulatedCannabis && styles.selected]}
+          >
+            <Text style={styles.classificationTitle}>Regulated cannabis</Text>
+            <Text style={styles.body}>
+              Catalog and licensed facility transfers only. Public checkout links are
+              removed.
+            </Text>
+          </Pressable>
           <TextInput
             value={form.category}
             onChangeText={(category) => setForm((prev) => ({ ...prev, category }))}
@@ -455,33 +487,39 @@ export default function CommercialProductsRoute({
             placeholder="Currency"
             style={styles.input}
           />
-          <TextInput
-            value={form.externalPurchaseUrl}
-            onChangeText={(externalPurchaseUrl) =>
-              setForm((prev) => ({ ...prev, externalPurchaseUrl }))
-            }
-            accessibilityLabel="Commercial product external purchase URL"
-            placeholder="External purchase URL"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.stripeProductId}
-            onChangeText={(stripeProductId) =>
-              setForm((prev) => ({ ...prev, stripeProductId }))
-            }
-            accessibilityLabel="Commercial product Stripe product ID"
-            placeholder="Stripe product ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.stripePriceId}
-            onChangeText={(stripePriceId) =>
-              setForm((prev) => ({ ...prev, stripePriceId }))
-            }
-            accessibilityLabel="Commercial product Stripe price ID"
-            placeholder="Stripe price ID"
-            style={styles.input}
-          />
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.externalPurchaseUrl}
+              onChangeText={(externalPurchaseUrl) =>
+                setForm((prev) => ({ ...prev, externalPurchaseUrl }))
+              }
+              accessibilityLabel="Commercial product external purchase URL"
+              placeholder="External purchase URL"
+              style={styles.input}
+            />
+          ) : null}
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.stripeProductId}
+              onChangeText={(stripeProductId) =>
+                setForm((prev) => ({ ...prev, stripeProductId }))
+              }
+              accessibilityLabel="Commercial product Stripe product ID"
+              placeholder="Stripe product ID"
+              style={styles.input}
+            />
+          ) : null}
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.stripePriceId}
+              onChangeText={(stripePriceId) =>
+                setForm((prev) => ({ ...prev, stripePriceId }))
+              }
+              accessibilityLabel="Commercial product Stripe price ID"
+              placeholder="Stripe price ID"
+              style={styles.input}
+            />
+          ) : null}
         </View>
         <TextInput
           value={form.guaranteedAnalysis}
@@ -928,6 +966,18 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5
   },
+  classification: {
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 10
+  },
+  selected: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#D97706",
+    borderWidth: 2
+  },
+  classificationTitle: { color: "#78350F", fontWeight: "900" },
   list: {
     gap: 10,
     marginTop: 12

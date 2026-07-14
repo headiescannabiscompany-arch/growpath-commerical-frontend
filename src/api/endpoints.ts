@@ -28,8 +28,11 @@ export const endpoints = {
     facilityPath(facilityId, `/inventory/${id}`),
   inventoryAdjust: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/inventory/${id}/adjust`),
-  facilityTransfers: `${BASE}/commercial/orders`,
-  facilityTransfer: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
+  facilityTransfers: (facilityId: string) => facilityPath(facilityId, "/transfers"),
+  facilityTransfer: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/transfers/${encodeURIComponent(id)}`),
+  facilityTransferTransition: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/transfers/${encodeURIComponent(id)}/transition`),
 
   // grows
   grows: (facilityId: string) => facilityPath(facilityId, "/grows"),

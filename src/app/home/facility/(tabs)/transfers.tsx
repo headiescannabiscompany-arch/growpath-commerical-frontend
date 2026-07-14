@@ -15,7 +15,7 @@ import { endpoints } from "@/api/endpoints";
 import {
   createFacilityTransfer,
   listFacilityTransfers,
-  updateFacilityTransfer
+  transitionFacilityTransfer
 } from "@/api/facilityTransfers";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -173,25 +173,7 @@ export default function FacilityTransfersScreen() {
     if (!transferId || !facilityId) return;
     setSaving(true);
     try {
-      const timestamps =
-        status === "shipped"
-          ? { shippedAt: new Date().toISOString() }
-          : status === "delivered"
-            ? { deliveredAt: new Date().toISOString() }
-            : {};
-      await updateFacilityTransfer(transferId, { status, ...timestamps });
-      if (status === "shipped" && transfer.status !== "shipped") {
-        await apiRequest(
-          endpoints.inventoryAdjust(facilityId, transfer.inventoryItemId),
-          {
-            method: "POST",
-            body: {
-              delta: -Number(transfer.quantity),
-              reason: `Licensed transfer ${transfer.manifestNumber || transferId}`
-            }
-          }
-        );
-      }
+      await transitionFacilityTransfer(transferId, facilityId, status);
       await load();
     } catch (e: any) {
       Alert.alert("Status not updated", e?.message || String(e));
@@ -424,7 +406,9 @@ export default function FacilityTransfersScreen() {
                   <Text style={styles.primaryText}>Mark shipped & deduct inventory</Text>
                 </Pressable>
               ) : null}
-              {canShip && transfer.status === "shipped" ? (
+              {canShip &&
+              transfer.status === "shipped" &&
+              transfer.inventoryMovementStatus === "applied" ? (
                 <Pressable
                   disabled={saving}
                   style={styles.secondary}

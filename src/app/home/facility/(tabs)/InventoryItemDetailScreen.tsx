@@ -251,7 +251,7 @@ export default function InventoryItemDetailScreen() {
           <Text style={styles.cardTitle}>Item details</Text>
           {!canWriteInventory ? (
             <Text style={styles.lockedText}>
-              Inventory changes unlock after facility checkout is active.
+              Your facility role or plan does not allow inventory changes.
             </Text>
           ) : null}
           <TextInput
@@ -303,7 +303,7 @@ export default function InventoryItemDetailScreen() {
           </Text>
           {!canWriteInventory ? (
             <Text style={styles.lockedText}>
-              Inventory changes unlock after facility checkout is active.
+              Your facility role or plan does not allow inventory changes.
             </Text>
           ) : null}
 

@@ -25,6 +25,11 @@ import {
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
+import {
+  isRegulatedCannabisProduct,
+  publicProductCanCheckout,
+  publicProductExternalUrl
+} from "@/utils/regulatedCommerce";
 
 function money(product: any) {
   const cents = Number(product?.priceCents || 0);
@@ -35,18 +40,6 @@ function money(product: any) {
 
 function productId(product: any) {
   return String(product?.id || product?._id || product?.productId || "");
-}
-
-function productCanCheckout(product: any) {
-  return Boolean(
-    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
-  );
-}
-
-function productExternalUrl(product: any) {
-  return (
-    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link
-  );
 }
 
 async function openCheckoutUrl(url: string) {
@@ -125,6 +118,13 @@ export default function PublicStorefrontRoute() {
   }, [slug, storefront]);
 
   async function buy(product: any) {
+    if (isRegulatedCannabisProduct(product)) {
+      Alert.alert(
+        "Licensed transfer required",
+        "Cannabis products cannot be purchased through public checkout."
+      );
+      return;
+    }
     const id = productId(product);
     if (!id) return;
     setBusyId(id);
@@ -160,7 +160,7 @@ export default function PublicStorefrontRoute() {
 
   async function openExternalProduct(product: any) {
     const id = productId(product);
-    const url = productExternalUrl(product);
+    const url = publicProductExternalUrl(product);
     if (!url) return;
     trackCommercialClick({
       eventType: "product_external_link_click",
@@ -343,8 +343,9 @@ export default function PublicStorefrontRoute() {
           {visibleProducts.length ? (
             visibleProducts.map((product) => {
               const id = productId(product);
-              const canCheckout = productCanCheckout(product);
-              const externalUrl = productExternalUrl(product);
+              const regulatedCannabis = isRegulatedCannabisProduct(product);
+              const canCheckout = publicProductCanCheckout(product);
+              const externalUrl = publicProductExternalUrl(product);
               return (
                 <View key={id || product?.name} style={styles.product}>
                   <View style={styles.productBody}>
@@ -358,6 +359,11 @@ export default function PublicStorefrontRoute() {
                       </Text>
                     ) : null}
                     <Text style={styles.price}>{money(product)}</Text>
+                    {regulatedCannabis ? (
+                      <Text style={styles.warning}>
+                        Catalog only · licensed commercial transfer required
+                      </Text>
+                    ) : null}
                   </View>
                   <View style={styles.productActions}>
                     <Link
@@ -634,6 +640,7 @@ const styles = StyleSheet.create({
   },
   productName: { color: "#111827", fontSize: 16, fontWeight: "800" },
   price: { color: "#166534", fontWeight: "800" },
+  warning: { color: "#92400E", fontSize: 12, fontWeight: "800" },
   profilePanel: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",

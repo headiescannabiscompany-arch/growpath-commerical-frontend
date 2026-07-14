@@ -166,6 +166,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
   const [stripeProductId, setStripeProductId] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
+  const [regulatedCannabis, setRegulatedCannabis] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -192,6 +193,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
     setStripeProductId(next?.stripeProductId || "");
     setStripePriceId(next?.stripePriceId || "");
+    setRegulatedCannabis(Boolean(next?.regulatedCannabis || next?.isCannabis));
   }, []);
 
   const load = useCallback(async () => {
@@ -239,9 +241,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       growInterests: splitList(growInterests),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
-      externalPurchaseUrl: externalPurchaseUrl.trim(),
-      stripeProductId: stripeProductId.trim(),
-      stripePriceId: stripePriceId.trim(),
+      externalPurchaseUrl: regulatedCannabis ? "" : externalPurchaseUrl.trim(),
+      stripeProductId: regulatedCannabis ? "" : stripeProductId.trim(),
+      stripePriceId: regulatedCannabis ? "" : stripePriceId.trim(),
+      regulatedCannabis,
+      isCannabis: regulatedCannabis,
+      productType: regulatedCannabis ? "cannabis" : undefined,
       specs: {
         ...(product?.specs || {}),
         unitSize: unitSize.trim() || product?.specs?.unitSize,
@@ -289,9 +294,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         growInterests: splitList(growInterests),
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
-        externalPurchaseUrl: externalPurchaseUrl.trim(),
-        stripeProductId: stripeProductId.trim() || undefined,
-        stripePriceId: stripePriceId.trim() || undefined,
+        externalPurchaseUrl: regulatedCannabis ? "" : externalPurchaseUrl.trim(),
+        stripeProductId: regulatedCannabis ? "" : stripeProductId.trim() || undefined,
+        stripePriceId: regulatedCannabis ? "" : stripePriceId.trim() || undefined,
+        regulatedCannabis,
+        isCannabis: regulatedCannabis,
+        productType: regulatedCannabis ? "cannabis" : undefined,
         specs: {
           ...(product?.specs || {}),
           unitSize: unitSize.trim() || product?.specs?.unitSize,
@@ -667,30 +675,60 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             style={styles.input}
             value={growInterests}
           />
-          <TextInput
-            accessibilityLabel="Commercial product detail external URL"
-            autoCapitalize="none"
-            onChangeText={setExternalPurchaseUrl}
-            placeholder="External purchase URL"
-            style={styles.input}
-            value={externalPurchaseUrl}
-          />
-          <TextInput
-            accessibilityLabel="Commercial product detail Stripe product ID"
-            autoCapitalize="none"
-            onChangeText={setStripeProductId}
-            placeholder="Stripe product ID"
-            style={styles.input}
-            value={stripeProductId}
-          />
-          <TextInput
-            accessibilityLabel="Commercial product detail Stripe price ID"
-            autoCapitalize="none"
-            onChangeText={setStripePriceId}
-            placeholder="Stripe price ID"
-            style={styles.input}
-            value={stripePriceId}
-          />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: regulatedCannabis }}
+            accessibilityLabel="Regulated cannabis product"
+            onPress={() => {
+              const next = !regulatedCannabis;
+              setRegulatedCannabis(next);
+              if (next) {
+                setExternalPurchaseUrl("");
+                setStripeProductId("");
+                setStripePriceId("");
+              }
+            }}
+            style={[
+              styles.selectorButton,
+              regulatedCannabis && styles.selectedSelectorButton
+            ]}
+          >
+            <Text style={styles.selectorButtonText}>
+              {regulatedCannabis
+                ? "Regulated cannabis · catalog only"
+                : "Mark as regulated cannabis"}
+            </Text>
+          </Pressable>
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail external URL"
+              autoCapitalize="none"
+              onChangeText={setExternalPurchaseUrl}
+              placeholder="External purchase URL"
+              style={styles.input}
+              value={externalPurchaseUrl}
+            />
+          ) : null}
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail Stripe product ID"
+              autoCapitalize="none"
+              onChangeText={setStripeProductId}
+              placeholder="Stripe product ID"
+              style={styles.input}
+              value={stripeProductId}
+            />
+          ) : null}
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail Stripe price ID"
+              autoCapitalize="none"
+              onChangeText={setStripePriceId}
+              placeholder="Stripe price ID"
+              style={styles.input}
+              value={stripePriceId}
+            />
+          ) : null}
         </View>
         <TextInput
           accessibilityLabel="Commercial product detail short description"

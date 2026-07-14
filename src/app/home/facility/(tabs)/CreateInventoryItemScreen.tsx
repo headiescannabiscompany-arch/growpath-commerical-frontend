@@ -62,7 +62,8 @@ export default function FacilityCreateInventoryItemScreen() {
         <Text style={styles.h1}>Create Inventory Item</Text>
         {!canWriteInventory ? (
           <Text style={styles.lockedText}>
-            Inventory changes unlock after facility checkout is active.
+            Your facility role or plan does not allow inventory changes. Ask an owner or
+            manager to update inventory access.
           </Text>
         ) : null}
         <TextInput

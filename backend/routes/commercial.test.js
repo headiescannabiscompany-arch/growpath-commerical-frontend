@@ -132,6 +132,23 @@ function createApp(withUser = true) {
   return app;
 }
 
+function createFacilityApp({
+  userId = TEST_USER,
+  facilityId = "facility-1",
+  facilityRole = "OWNER"
+} = {}) {
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    req.userId = userId;
+    req.user = { _id: userId, id: userId };
+    req.ctx = { userId, facilityId, facilityRole };
+    next();
+  });
+  app.use("/api/commercial", require("./commercial"));
+  return app;
+}
+
 function livePack(accountType) {
   const pack = liveTestPacks.packs.find((item) => item.accountType === accountType);
   if (!pack) throw new Error(`Missing ${accountType} live test pack`);
@@ -902,6 +919,74 @@ describe("commercial backend routes", () => {
       success: false,
       code: "LICENSED_TRANSFER_REQUIRED"
     });
+  });
+
+  test("shares validated facility transfers by facility and enforces roles", async () => {
+    const owner = createFacilityApp();
+    const created = await request(owner)
+      .post("/api/commercial/facility/facility-1/transfers")
+      .send({
+        facilityId: "facility-1",
+        inventoryItemId: "lot-1",
+        itemName: "Flower lot 24-A",
+        quantity: 10,
+        unit: "lb",
+        unitPrice: 900,
+        recipientName: "Example Dispensary",
+        recipientLicense: "D-100",
+        recipientState: "ME"
+      });
+    expect(created.status).toBe(201);
+    const transferId = created.body.transfer.id;
+
+    const viewer = createFacilityApp({ userId: "viewer-1", facilityRole: "VIEWER" });
+    const listed = await request(viewer).get(
+      "/api/commercial/facility/facility-1/transfers"
+    );
+    expect(listed.body.transfers).toHaveLength(1);
+    expect(
+      await request(viewer)
+        .post("/api/commercial/facility/facility-1/transfers")
+        .send({ facilityId: "facility-1" })
+    ).toMatchObject({ status: 403 });
+
+    const approved = await request(owner)
+      .post(`/api/commercial/facility/facility-1/transfers/${transferId}/transition`)
+      .send({ facilityId: "facility-1", status: "approved" });
+    expect(approved.status).toBe(200);
+
+    const staff = createFacilityApp({ userId: "staff-1", facilityRole: "STAFF" });
+    const shipped = await request(staff)
+      .post(`/api/commercial/facility/facility-1/transfers/${transferId}/transition`)
+      .send({ facilityId: "facility-1", status: "shipped" });
+    expect(shipped.body.transfer).toMatchObject({
+      status: "shipped",
+      inventoryMovementStatus: "pending"
+    });
+    const movementId = shipped.body.transfer.inventoryMovementId;
+
+    const duplicate = await request(staff)
+      .post(`/api/commercial/facility/facility-1/transfers/${transferId}/transition`)
+      .send({ facilityId: "facility-1", status: "shipped" });
+    expect(duplicate.status).toBe(409);
+
+    const deliveredEarly = await request(staff)
+      .post(`/api/commercial/facility/facility-1/transfers/${transferId}/transition`)
+      .send({ facilityId: "facility-1", status: "delivered" });
+    expect(deliveredEarly.body.code).toBe("INVENTORY_MOVEMENT_PENDING");
+
+    const confirmed = await request(staff)
+      .post(
+        `/api/commercial/facility/facility-1/transfers/${transferId}/inventory-confirmed`
+      )
+      .send({ facilityId: "facility-1", movementId });
+    expect(confirmed.body.transfer.inventoryMovementStatus).toBe("applied");
+
+    const delivered = await request(staff)
+      .post(`/api/commercial/facility/facility-1/transfers/${transferId}/transition`)
+      .send({ facilityId: "facility-1", status: "delivered" });
+    expect(delivered.body.transfer.status).toBe("delivered");
+    expect(delivered.body.transfer.auditEvents.length).toBeGreaterThanOrEqual(5);
   });
 
   test("creates commercial grows and course aliases for commercial workspace", async () => {

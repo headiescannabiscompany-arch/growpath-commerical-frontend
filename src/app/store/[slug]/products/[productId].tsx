@@ -19,6 +19,10 @@ import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
+import {
+  isRegulatedCannabisProduct,
+  publicProductCanCheckout
+} from "@/utils/regulatedCommerce";
 
 function asArray(value: any) {
   return Array.isArray(value) ? value : [];
@@ -45,19 +49,7 @@ function campaignHref(campaign: any) {
 }
 
 function productCanCheckout(product: any) {
-  if (isRegulatedCannabisProduct(product)) return false;
-  return Boolean(
-    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
-  );
-}
-
-function isRegulatedCannabisProduct(product: any) {
-  return Boolean(
-    product?.regulatedCannabis === true ||
-    product?.isCannabis === true ||
-    product?.productType === "cannabis" ||
-    product?.category === "cannabis"
-  );
+  return publicProductCanCheckout(product);
 }
 
 function lineKey(line: any) {

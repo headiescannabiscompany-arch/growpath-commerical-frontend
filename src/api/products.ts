@@ -36,6 +36,9 @@ export type Product = {
   externalPurchaseUrl?: string;
   stripeProductId?: string;
   stripePriceId?: string;
+  regulatedCannabis?: boolean;
+  isCannabis?: boolean;
+  productType?: string;
   status?: "draft" | "published";
   createdAt?: string;
   updatedAt?: string;

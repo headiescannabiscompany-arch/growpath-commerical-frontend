@@ -7,17 +7,24 @@ import {
 } from "@/features/facility/transfers";
 
 export async function listFacilityTransfers(facilityId: string) {
-  const result = await apiRequest(endpoints.facilityTransfers);
+  const result = await apiRequest(endpoints.facilityTransfers(facilityId));
   return normalizeFacilityTransfers(result, facilityId);
 }
 
 export async function createFacilityTransfer(input: FacilityTransfer) {
-  return apiRequest(endpoints.facilityTransfers, { method: "POST", body: input });
+  return apiRequest(endpoints.facilityTransfers(input.facilityId), {
+    method: "POST",
+    body: input
+  });
 }
 
-export async function updateFacilityTransfer(
+export async function transitionFacilityTransfer(
   id: string,
-  body: Partial<FacilityTransfer> & { status?: FacilityTransferStatus }
+  facilityId: string,
+  status: FacilityTransferStatus
 ) {
-  return apiRequest(endpoints.facilityTransfer(id), { method: "PATCH", body });
+  return apiRequest(endpoints.facilityTransferTransition(facilityId, id), {
+    method: "POST",
+    body: { facilityId, status }
+  });
 }

@@ -29,6 +29,16 @@ export type FacilityTransfer = {
   shippedAt?: string;
   deliveredAt?: string;
   notes?: string;
+  inventoryMovementStatus?: "not_required" | "pending" | "applied";
+  inventoryMovementId?: string;
+  auditEvents?: Array<{
+    action: string;
+    actorUserId?: string;
+    actorRole?: string;
+    at: string;
+    fromStatus?: string;
+    toStatus?: string;
+  }>;
   createdAt?: string;
 };
 
