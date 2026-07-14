@@ -363,6 +363,61 @@ router.get("/mine", async (req, res) => {
   });
 });
 
+router.get("/mine/live-events", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const [enrollments, ownedCourses, rsvps] = await Promise.all([
+    CommercialRecord.find({
+      userId,
+      recordType: "courseEnrollment",
+      deletedAt: null,
+      status: "active"
+    }).lean(),
+    CommercialRecord.find(baseQuery(userId)).lean(),
+    CommercialRecord.find({
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      status: "active"
+    }).lean()
+  ]);
+  const enrolledIds = (enrollments || []).map((row) => String(row.payload?.courseId || ""));
+  const enrolledCourses = enrolledIds.length
+    ? await CommercialRecord.find({
+        _id: { $in: enrolledIds },
+        recordType: "course",
+        deletedAt: null
+      }).lean()
+    : [];
+  const rsvpKeys = new Set(
+    (rsvps || []).map(
+      (row) => `${String(row.payload?.courseId || "")}:${String(row.payload?.sessionId || "")}`
+    )
+  );
+  const courses = [...(ownedCourses || []), ...(enrolledCourses || [])];
+  const seen = new Set();
+  const liveEvents = [];
+  for (const row of courses) {
+    const course = dto(row);
+    if (!course || seen.has(course.id)) continue;
+    seen.add(course.id);
+    for (const session of Array.isArray(course.liveSessions) ? course.liveSessions : []) {
+      const sessionId = String(session.id || session._id || session.scheduledStart || "");
+      liveEvents.push({
+        ...session,
+        id: sessionId,
+        sessionId,
+        courseId: course.id,
+        courseTitle: course.title || course.name,
+        workspaceType: "personal",
+        sourceType: "course_live",
+        rsvped: rsvpKeys.has(`${course.id}:${sessionId}`)
+      });
+    }
+  }
+  res.json({ success: true, liveEvents, items: liveEvents });
+});
+
 router.post("/create", createCourseRecord);
 
 router.get("/:id", async (req, res) => {
@@ -457,6 +512,94 @@ router.get("/:id/enrollment-status", async (req, res) => {
     }).lean()
   );
   res.json({ success: true, enrolled: Boolean(enrollment), enrollment });
+});
+
+router.get("/:id/live-rsvps", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const rows = await CommercialRecord.find({
+    userId,
+    recordType: "courseLiveRsvp",
+    deletedAt: null,
+    "payload.courseId": req.params.id,
+    status: "active"
+  }).lean();
+  res.json({
+    success: true,
+    sessionIds: (rows || []).map((row) => String(row.payload?.sessionId || "")).filter(Boolean)
+  });
+});
+
+router.post("/:id/lives/:sessionId/rsvp", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({
+      _id: req.params.id,
+      recordType: "course",
+      deletedAt: null
+    }).lean()
+  );
+  if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+  const session = (course.liveSessions || []).find(
+    (item) =>
+      String(item.id || item._id || item.scheduledStart || "") ===
+      String(req.params.sessionId)
+  );
+  if (!session)
+    return res.status(404).json({ success: false, message: "Live session not found" });
+  const payload = {
+    courseId: req.params.id,
+    sessionId: req.params.sessionId,
+    title: session.title || course.title || "Course live",
+    scheduledStart: session.scheduledStart || null,
+    scheduledEnd: session.scheduledEnd || null,
+    timezone: session.timezone || "UTC",
+    watchUrl:
+      session.watchUrl ||
+      session.meetingUrl ||
+      (session.twitchChannel ? `https://www.twitch.tv/${session.twitchChannel}` : ""),
+    reminderPlan: req.body?.reminderPlan || session.reminderPlan || {
+      label: "1 hour before",
+      channels: ["in_app"]
+    },
+    rsvpedAt: new Date().toISOString()
+  };
+  const row = await CommercialRecord.findOneAndUpdate(
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      "payload.courseId": req.params.id,
+      "payload.sessionId": req.params.sessionId
+    },
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      name: payload.title,
+      title: payload.title,
+      status: "active",
+      payload
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  ).lean();
+  res.status(201).json({ success: true, rsvped: true, rsvp: dto(row) });
+});
+
+router.delete("/:id/lives/:sessionId/rsvp", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  await CommercialRecord.findOneAndUpdate(
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      "payload.courseId": req.params.id,
+      "payload.sessionId": req.params.sessionId
+    },
+    { status: "canceled", deletedAt: new Date() }
+  );
+  res.json({ success: true, rsvped: false });
 });
 
 router.post("/:id/review", async (req, res) => {

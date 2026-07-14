@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -50,6 +51,7 @@ function rowId(row: NotificationRow) {
 }
 
 function sourceHref(row: NotificationRow) {
+  if (row.courseId) return `/courses?courseId=${encodeURIComponent(String(row.courseId))}`;
   return sourceObjectHref(row) || "/home/schedule";
 }
 
@@ -224,8 +226,32 @@ export default function NotificationCenterRoute() {
     setLoading(true);
     setError("");
     try {
-      const response = await apiRequest("/api/notifications", { method: "GET" });
-      setNotifications(rows(response));
+      const [response, courseLivesResponse] = await Promise.all([
+        apiRequest("/api/notifications", { method: "GET" }),
+        apiRequest("/api/courses/mine/live-events", { method: "GET" }).catch(() => ({
+          liveEvents: []
+        }))
+      ]);
+      const liveReminders = rows(courseLivesResponse)
+        .filter((session) => session.rsvped && session.scheduledStart)
+        .map((session) => ({
+          id: `course-live-${session.courseId}-${session.sessionId || session.id}`,
+          title: `Upcoming live: ${session.title || session.courseTitle || "Course session"}`,
+          body: `Scheduled for ${session.scheduledStart}${session.timezone ? ` (${session.timezone})` : ""}.`,
+          sourceType: "live_event",
+          sourceId: session.sessionId || session.id,
+          linkedLiveId: session.sessionId || session.id,
+          linkedCourseId: session.courseId,
+          courseId: session.courseId,
+          actionUrl: session.watchUrl || session.meetingUrl,
+          scheduledFor: session.scheduledStart,
+          channel: "in_app",
+          workspaceType: "personal",
+          status: "scheduled",
+          read: false,
+          _courseLive: true
+        }));
+      setNotifications([...liveReminders, ...rows(response)]);
     } catch (err: any) {
       setError(err?.message || "Unable to load notifications.");
     } finally {
@@ -261,6 +287,17 @@ export default function NotificationCenterRoute() {
     setFeedback("");
     setError("");
     try {
+      if (row._courseLive) {
+        setNotifications((current) =>
+          current.map((item) =>
+            rowId(item) === id
+              ? { ...item, read: true, readAt: new Date().toISOString(), status: "read" }
+              : item
+          )
+        );
+        setFeedback("Live reminder marked read.");
+        return;
+      }
       await apiRequest(`/api/notifications/read/${encodeURIComponent(id)}`, {
         method: "POST"
       });
@@ -441,6 +478,16 @@ export default function NotificationCenterRoute() {
                   <Text style={styles.linkButtonText}>View Source</Text>
                 </Pressable>
               </Link>
+              {row.actionUrl ? (
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel="Open live stream from reminder"
+                  onPress={() => void Linking.openURL(String(row.actionUrl))}
+                  style={styles.linkButton}
+                >
+                  <Text style={styles.linkButtonText}>Watch on Twitch</Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Create task from notification"

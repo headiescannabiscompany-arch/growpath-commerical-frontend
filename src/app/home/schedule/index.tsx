@@ -300,6 +300,28 @@ function courseToItem(course: any): CalendarItem {
   };
 }
 
+function courseLiveToItem(session: any): CalendarItem {
+  const id = String(session?.sessionId || session?.id || session?.scheduledStart || "live");
+  const courseId = String(session?.courseId || "");
+  return {
+    id: `${courseId}-${id}`,
+    itemType: "live",
+    title: String(session?.title || `${session?.courseTitle || "Course"} live`),
+    startAt: String(session?.scheduledStart || ""),
+    endAt: String(session?.scheduledEnd || ""),
+    status: String(session?.status || "scheduled"),
+    workspaceType: "personal",
+    sourceType: "course",
+    sourceId: courseId,
+    reminder: session?.rsvped
+      ? String(session?.reminderPlan?.label || "RSVP · 1 hour before")
+      : "Course event · RSVP available",
+    href: courseId
+      ? `/courses?courseId=${encodeURIComponent(courseId)}`
+      : "/home/personal/courses"
+  };
+}
+
 function campaignToItem(campaign: any): CalendarItem {
   const id = String(campaign?.id || campaign?._id || campaign?.title || "campaign");
   const workspaceType = String(campaign?.workspaceType || "commercial");
@@ -337,10 +359,13 @@ export default function HomeScheduleRoute() {
     setLoading(true);
     setFeedback("");
     try {
-      const [tasksRes, livesRes, coursesRes, feedRes] = await Promise.all([
+      const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes] = await Promise.all([
         apiRequest(endpoints.tasksGlobal, { method: "GET" }),
         apiRequest("/api/commercial/lives", { method: "GET" }).catch(() => ({
           lives: []
+        })),
+        apiRequest("/api/courses/mine/live-events", { method: "GET" }).catch(() => ({
+          liveEvents: []
         })),
         apiRequest("/api/commercial/courses", { method: "GET" }).catch(() => ({
           courses: []
@@ -350,6 +375,7 @@ export default function HomeScheduleRoute() {
       setItems([
         ...asArray(tasksRes, "tasks").map(taskToItem),
         ...asArray(livesRes, "lives").map(liveToItem),
+        ...asArray(courseLivesRes, "liveEvents").map(courseLiveToItem),
         ...asArray(coursesRes, "courses").map(courseToItem),
         ...asArray(feedRes, "items").map(campaignToItem)
       ]);

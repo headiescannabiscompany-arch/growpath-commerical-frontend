@@ -73,8 +73,22 @@ const mockCommercialRecord = {
     rows.unshift(row);
     return makeDoc(row);
   }),
-  findOneAndUpdate: jest.fn((query, patch) => {
+  findOneAndUpdate: jest.fn((query, patch, options = {}) => {
     const index = rows.findIndex((row) => matches(row, query));
+    if (index < 0 && options.upsert) {
+      const inserted = applyPatch(
+        {
+          _id: `course-${rows.length + 1}`,
+          userId: query.userId,
+          recordType: query.recordType,
+          deletedAt: null,
+          payload: {}
+        },
+        patch
+      );
+      rows.unshift(inserted);
+      return one(inserted);
+    }
     if (index < 0) return one(null);
     rows[index] = applyPatch(rows[index], patch);
     return one(rows[index]);
@@ -246,6 +260,44 @@ describe("generic courses backend routes", () => {
     const reviews = await request(app).get(`/api/courses/${created.body.id}/reviews`);
     expect(reviews.status).toBe(200);
     expect(reviews.body.reviews).toHaveLength(1);
+  });
+
+  test("enrolled learners can RSVP and receive course lives in their calendar feed", async () => {
+    const app = createApp();
+    const created = await request(app).post("/api/courses/create").send({
+      title: "Live Grow Class",
+      status: "published",
+      liveSessions: [
+        {
+          id: "live-1",
+          title: "Canopy Q&A",
+          scheduledStart: "2026-08-01T19:00:00-04:00",
+          timezone: "America/New_York",
+          twitchChannel: "growpath",
+          meetingUrl: "https://www.twitch.tv/growpath"
+        }
+      ]
+    });
+    await request(app).post(`/api/courses/${created.body.id}/enroll`);
+
+    const rsvp = await request(app)
+      .post(`/api/courses/${created.body.id}/lives/live-1/rsvp`)
+      .send({ reminderPlan: { label: "1 hour before", channels: ["in_app"] } });
+    expect(rsvp.status).toBe(201);
+    expect(rsvp.body).toMatchObject({ success: true, rsvped: true });
+
+    const status = await request(app).get(`/api/courses/${created.body.id}/live-rsvps`);
+    expect(status.body.sessionIds).toEqual(["live-1"]);
+
+    const calendar = await request(app).get("/api/courses/mine/live-events");
+    expect(calendar.body.liveEvents).toEqual([
+      expect.objectContaining({
+        sessionId: "live-1",
+        courseId: created.body.id,
+        title: "Canopy Q&A",
+        rsvped: true
+      })
+    ]);
   });
 
   test("public course list only returns published courses", async () => {

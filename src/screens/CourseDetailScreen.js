@@ -26,6 +26,7 @@ import {
   trackLessonView,
   updateCourse
 } from "../api/courses";
+import { apiRequest } from "../api/apiRequest";
 import {
   getCoursePaymentStatus,
   openCourseDispute,
@@ -111,6 +112,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     return cents > 0 ? (cents / 100).toFixed(2) : "";
   });
   const [liveReminderIds, setLiveReminderIds] = useState([]);
+  const [liveRsvpIds, setLiveRsvpIds] = useState([]);
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
@@ -179,6 +181,19 @@ export default function CourseDetailScreen({ route, navigation }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!loadedCourseId) return;
+    let alive = true;
+    apiRequest(`/api/courses/${encodeURIComponent(loadedCourseId)}/live-rsvps`)
+      .then((response) => {
+        if (alive) setLiveRsvpIds(response?.sessionIds || []);
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [loadedCourseId]);
 
   const refreshPaymentStatus = useCallback(async () => {
     if (!loadedCourseId) return null;
@@ -482,6 +497,44 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
+  async function toggleLiveRsvp(session, index) {
+    const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+    if (!loadedCourseId || !sessionKey || saving) return;
+    const isRsvped = liveRsvpIds.includes(sessionKey);
+    setSaving(true);
+    setFeedback("");
+    try {
+      await apiRequest(
+        `/api/courses/${encodeURIComponent(loadedCourseId)}/lives/${encodeURIComponent(sessionKey)}/rsvp`,
+        {
+          method: isRsvped ? "DELETE" : "POST",
+          body: isRsvped
+            ? undefined
+            : {
+                reminderPlan: session?.reminderPlan || {
+                  label: "1 hour before",
+                  channels: ["in_app"]
+                }
+              }
+        }
+      );
+      setLiveRsvpIds((current) =>
+        isRsvped
+          ? current.filter((id) => id !== sessionKey)
+          : [...current, sessionKey]
+      );
+      setFeedback(
+        isRsvped
+          ? "Live RSVP canceled. The course event remains visible on your calendar."
+          : "You are going. GrowPath will keep this live in your course calendar and reminder center."
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to update the live RSVP.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function addLesson() {
     if (!loadedCourseId) return;
     if (!navigation?.navigate) {
@@ -671,6 +724,11 @@ export default function CourseDetailScreen({ route, navigation }) {
                 ? `https://www.twitch.tv/${session.twitchChannel}`
                 : "")
           );
+          const twitchChannel = String(session?.twitchChannel || "");
+          const twitchScheduleUrl = twitchChannel
+            ? `https://www.twitch.tv/${twitchChannel}/schedule`
+            : "";
+          const isRsvped = liveRsvpIds.includes(sessionKey);
           return (
             <View key={sessionKey} style={styles.row}>
               <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
@@ -679,6 +737,17 @@ export default function CourseDetailScreen({ route, navigation }) {
                 {session?.timezone ? ` · ${session.timezone}` : ""}
               </Text>
               <View style={styles.actions}>
+                <Pressable
+                  disabled={saving}
+                  onPress={() => toggleLiveRsvp(session, index)}
+                  style={isRsvped ? styles.secondaryBtn : styles.primaryBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${isRsvped ? "Cancel RSVP for" : "RSVP to"} ${session?.title || "course live"}`}
+                >
+                  <Text style={isRsvped ? styles.secondaryText : styles.primaryText}>
+                    {isRsvped ? "Going · Cancel RSVP" : "Remind Me / RSVP"}
+                  </Text>
+                </Pressable>
                 {watchUrl ? (
                   <Pressable
                     accessibilityRole="link"
@@ -687,6 +756,16 @@ export default function CourseDetailScreen({ route, navigation }) {
                     style={styles.primaryBtn}
                   >
                     <Text style={styles.primaryText}>Watch on Twitch</Text>
+                  </Pressable>
+                ) : null}
+                {twitchScheduleUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Open ${session?.title || "course live"} Twitch schedule`}
+                    onPress={() => Linking.openURL(twitchScheduleUrl)}
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryText}>Twitch Schedule / Follow</Text>
                   </Pressable>
                 ) : null}
                 {session?.scheduledStart ? (
@@ -700,7 +779,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                     <Text style={styles.secondaryText}>
                       {liveReminderIds.includes(sessionKey)
                         ? "Reminder task created"
-                        : "Add to My Tasks"}
+                        : "Optional: Add Task"}
                     </Text>
                   </Pressable>
                 ) : null}
