@@ -911,6 +911,37 @@ test.describe("role walkthrough matrix", () => {
     await expect(page.getByLabel("Upload marketing plan ad image")).toBeVisible();
   });
 
+  test("commercial paid routes stay inside the commercial workspace", async ({ page }) => {
+    await installRoleMocks(page, PERSONAS.commercialPaid);
+
+    const routes = [
+      "/home/commercial",
+      "/home/commercial/storefront",
+      "/home/commercial/products",
+      "/home/commercial/courses",
+      "/home/commercial/lives",
+      "/home/commercial/feed",
+      "/home/commercial/orders",
+      "/home/commercial/analytics",
+      "/home/commercial/profile",
+      "/home/commercial/batch-planner",
+      "/home/commercial/product-lines",
+      "/home/commercial/trials",
+      "/home/commercial/community",
+      "/home/commercial/marketing",
+      "/home/commercial/inventory",
+      "/home/commercial/evidence-runs",
+      "/home/commercial/tasks"
+    ];
+
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expectNoNotFound(page);
+      await expect(page).toHaveURL(new RegExp(`${route.replaceAll("/", "\\/")}(?:[/?#]|$)`));
+      await expect(page.getByText("Commercial workflow")).toHaveCount(0);
+    }
+  });
+
   test("facility free reaches facility shell and AI entry without paid write controls", async ({
     page
   }) => {
