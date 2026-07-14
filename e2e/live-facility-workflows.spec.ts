@@ -12,7 +12,10 @@ async function loginSeedFacilityUser(page: any) {
 
 test("Facility workflow: auto-select facility, create room, create task", async ({ page }) => {
   await loginSeedFacilityUser(page);
-  await expect(page.getByText("Facility Dashboard")).toBeVisible({ timeout: 30000 });
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({
+    timeout: 30000
+  });
+  await expect(page.getByText("Operations Live")).toBeVisible();
 
   await page.getByRole("tab", { name: /Rooms/ }).click();
   await expect(page.getByRole("heading", { name: "Rooms" })).toBeVisible({
