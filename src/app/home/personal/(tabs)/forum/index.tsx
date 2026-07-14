@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
@@ -12,10 +12,12 @@ import {
 } from "react-native";
 
 import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
+import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 function titleOf(post: SocialPost) {
   return String(post.title || post.text || post.content || post.body || "Forum post");
@@ -37,13 +39,26 @@ function timeOf(post: SocialPost) {
 }
 
 function tagsOf(post: SocialPost) {
+  const interests = (post as any).growInterests;
   const tags =
-    (post as any).growInterests ||
-    (post as any).growTags ||
-    (post as any).tags ||
-    (post as any).topicTags ||
-    [];
-  return Array.isArray(tags) ? tags.filter(Boolean).slice(0, 4) : [];
+    interests && !Array.isArray(interests)
+      ? flattenGrowInterests(interests)
+      : normalizeInterestList(interests);
+  return Array.from(
+    new Set([
+      ...tags,
+      ...normalizeInterestList((post as any).growTags),
+      ...normalizeInterestList((post as any).tags),
+      ...normalizeInterestList((post as any).topicTags)
+    ])
+  ).slice(0, 6);
+}
+
+function matchesInterests(post: SocialPost, interests: string[]) {
+  const tags = tagsOf(post);
+  if (!tags.length || !interests.length) return true;
+  const selected = new Set(interests.map((item) => item.toLowerCase()));
+  return tags.some((tag) => selected.has(String(tag).toLowerCase()));
 }
 
 function photoUri(value: any) {
@@ -100,6 +115,7 @@ function ForumPostImage({ photo, index }: { photo: string; index: number }) {
 }
 
 export default function ForumRoute() {
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -108,6 +124,18 @@ export default function ForumRoute() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [feedScope, setFeedScope] = useState<"for-you" | "all">("for-you");
+  const userInterests = useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
+  const visiblePosts = useMemo(
+    () =>
+      feedScope === "all"
+        ? posts
+        : posts.filter((post) => matchesInterests(post, userInterests)),
+    [feedScope, posts, userInterests]
+  );
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -157,16 +185,58 @@ export default function ForumRoute() {
         </View>
       </View>
       {canPost ? (
-        <Link href="/home/personal/forum/new-post" asChild>
-          <Pressable
-            style={styles.composer}
-            accessibilityRole="button"
-            accessibilityLabel="Create forum post"
+        <View style={styles.composerGrid}>
+          <Link href="/home/personal/forum/new-post" asChild>
+            <Pressable
+              style={styles.composer}
+              accessibilityRole="button"
+              accessibilityLabel="Create forum post"
+            >
+              <Text style={styles.composerTitle}>New Discussion</Text>
+              <Text style={styles.cardText}>Ask or share with growers like you.</Text>
+            </Pressable>
+          </Link>
+          <Link
+            href={{
+              pathname: "/home/personal/forum/new-post",
+              params: {
+                purpose: "diagnosis",
+                title: "Diagnosis help: ",
+                body: "What I am seeing:\n\nWhat changed recently:\n\nEnvironment / feeding details:\n"
+              }
+            }}
+            asChild
           >
-            <Text style={styles.composerTitle}>New Discussion</Text>
-            <Text style={styles.cardText}>What do you want to ask or share?</Text>
-          </Pressable>
-        </Link>
+            <Pressable
+              style={styles.quickComposer}
+              accessibilityRole="button"
+              accessibilityLabel="Ask forum for diagnosis help"
+            >
+              <Text style={styles.quickComposerTitle}>Ask for Diagnosis Help</Text>
+              <Text style={styles.cardText}>
+                Start with a useful issue template and add photos.
+              </Text>
+            </Pressable>
+          </Link>
+          <Link
+            href={{
+              pathname: "/home/personal/forum/new-post",
+              params: { purpose: "grow_update", title: "Grow update: " }
+            }}
+            asChild
+          >
+            <Pressable
+              style={styles.quickComposer}
+              accessibilityRole="button"
+              accessibilityLabel="Share a grow update to forum"
+            >
+              <Text style={styles.quickComposerTitle}>Share a Grow Update</Text>
+              <Text style={styles.cardText}>
+                Attach the grow from its dashboard for full context.
+              </Text>
+            </Pressable>
+          </Link>
+        </View>
       ) : null}
 
       <View style={styles.feedHeader}>
@@ -174,6 +244,28 @@ export default function ForumRoute() {
         <Text style={styles.feedSubtitle}>
           Latest discussions from growers, tagged by grow interests.
         </Text>
+        <View style={styles.scopeRow}>
+          {(["for-you", "all"] as const).map((scope) => (
+            <Pressable
+              key={scope}
+              onPress={() => setFeedScope(scope)}
+              style={[styles.scopeBtn, feedScope === scope && styles.scopeBtnActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: feedScope === scope }}
+              accessibilityLabel={
+                scope === "for-you"
+                  ? "Show forum posts for my grow interests"
+                  : "Show all forum posts"
+              }
+            >
+              <Text
+                style={[styles.scopeText, feedScope === scope && styles.scopeTextActive]}
+              >
+                {scope === "for-you" ? "For You" : "All Discussions"}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       {feedback ? (
@@ -201,13 +293,20 @@ export default function ForumRoute() {
           <ActivityIndicator />
         </View>
       ) : null}
-      {!loading && canView && !feedback && !posts.length ? (
+      {!loading && canView && !feedback && !visiblePosts.length ? (
         <View style={styles.card}>
-          <Text style={styles.cardText}>No posts yet.</Text>
+          <Text style={styles.cardTitle}>
+            {posts.length ? "No matching discussions" : "No posts yet"}
+          </Text>
+          <Text style={styles.cardText}>
+            {posts.length
+              ? "Try All Discussions, or update your grow interests in Profile."
+              : "Start the first discussion for your grow interests."}
+          </Text>
         </View>
       ) : null}
 
-      {posts.map((post) => {
+      {visiblePosts.map((post) => {
         const id = postId(post);
         const photos = photosOf(post);
         return (
@@ -256,7 +355,8 @@ export default function ForumRoute() {
                 </View>
               ) : null}
               <Text style={styles.meta}>
-                {post.likeCount || 0} likes | {(post.comments || []).length} replies
+                {post.likeCount || 0} likes |{" "}
+                {(post as any).commentCount ?? (post.comments || []).length} replies
               </Text>
               <Text style={styles.openText}>Open discussion</Text>
             </Pressable>
@@ -301,6 +401,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0FDF4",
     gap: 4
   },
+  composerGrid: { gap: 10 },
+  quickComposer: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 12,
+    backgroundColor: "#FFFFFF",
+    gap: 4
+  },
+  quickComposerTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   composerTitle: { color: "#166534", fontSize: 16, fontWeight: "900" },
   feedHeader: {
     borderBottomWidth: 1,
@@ -310,6 +420,17 @@ const styles = StyleSheet.create({
   },
   feedTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
   feedSubtitle: { color: "#64748B", marginTop: 2 },
+  scopeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  scopeBtn: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7
+  },
+  scopeBtnActive: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
+  scopeText: { color: "#475569", fontSize: 12, fontWeight: "800" },
+  scopeTextActive: { color: "#166534" },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   tag: {
     borderWidth: 1,

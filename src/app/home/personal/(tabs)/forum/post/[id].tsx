@@ -30,6 +30,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 type CommentRow = {
   id?: string;
@@ -136,6 +137,45 @@ function likeTotal(post: SocialPost | null) {
   if (!post) return 0;
   if (typeof post.likeCount === "number") return post.likeCount;
   return Array.isArray(post.likes) ? post.likes.length : 0;
+}
+
+function tagsOf(post: SocialPost | null) {
+  if (!post) return [];
+  const interests = (post as any).growInterests;
+  const structured =
+    interests && !Array.isArray(interests)
+      ? flattenGrowInterests(interests)
+      : normalizeInterestList(interests);
+  return Array.from(
+    new Set([
+      ...structured,
+      ...normalizeInterestList((post as any).growTags),
+      ...normalizeInterestList((post as any).tags)
+    ])
+  );
+}
+
+function ForumImage({ uri, style, label }: { uri: string; style: any; label: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <View
+        style={[style, styles.imageFallback]}
+        accessibilityLabel={`${label} unavailable`}
+      >
+        <Text style={styles.imageFallbackText}>Photo unavailable</Text>
+      </View>
+    );
+  }
+  return (
+    <Image
+      source={{ uri }}
+      style={style}
+      resizeMode="cover"
+      accessibilityLabel={label}
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 export default function ForumPostDetailRoute() {
@@ -379,15 +419,28 @@ export default function ForumPostDetailRoute() {
                     : ""}
                 </Text>
                 {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
+                {tagsOf(post).length ? (
+                  <View style={styles.tagRow}>
+                    {tagsOf(post).map((tag) => (
+                      <Text key={tag} style={styles.tag}>
+                        {tag}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+                {(post as any).growId || (post as any).linkedGrowId ? (
+                  <Text style={styles.contextText}>
+                    Attached grow: {(post as any).growId || (post as any).linkedGrowId}
+                  </Text>
+                ) : null}
                 {photosOf(post).length ? (
                   <View style={styles.photoGrid}>
                     {photosOf(post).map((photo, index) => (
-                      <Image
+                      <ForumImage
                         key={`${photo}-${index}`}
-                        source={{ uri: photo }}
+                        uri={photo}
                         style={styles.postPhoto}
-                        resizeMode="cover"
-                        accessibilityLabel={`Forum post photo ${index + 1}`}
+                        label={`Forum post photo ${index + 1}`}
                       />
                     ))}
                   </View>
@@ -489,11 +542,10 @@ export default function ForumPostDetailRoute() {
                   <View style={styles.photoGrid}>
                     {commentPhotoUris.map((uri, index) => (
                       <View key={`${uri}-${index}`}>
-                        <Image
-                          source={{ uri: resolveImageUri(uri) }}
+                        <ForumImage
+                          uri={resolveImageUri(uri)}
                           style={styles.commentPhoto}
-                          resizeMode="cover"
-                          accessibilityLabel={`Forum comment draft photo ${index + 1}`}
+                          label={`Forum comment draft photo ${index + 1}`}
                         />
                         <Pressable
                           onPress={() =>
@@ -540,12 +592,11 @@ export default function ForumPostDetailRoute() {
                 {commentPhotos(comment).length ? (
                   <View style={styles.photoGrid}>
                     {commentPhotos(comment).map((photo, index) => (
-                      <Image
+                      <ForumImage
                         key={`${photo}-${index}`}
-                        source={{ uri: photo }}
+                        uri={photo}
                         style={styles.commentPhoto}
-                        resizeMode="cover"
-                        accessibilityLabel={`Forum comment photo ${index + 1}`}
+                        label={`Forum comment photo ${index + 1}`}
                       />
                     ))}
                   </View>
@@ -580,6 +631,24 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
+  imageFallback: { alignItems: "center", justifyContent: "center", padding: 8 },
+  imageFallbackText: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  tag: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 999,
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
+    paddingHorizontal: 9,
+    paddingVertical: 4
+  },
+  contextText: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 4 },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",

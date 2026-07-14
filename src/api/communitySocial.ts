@@ -14,6 +14,12 @@ export type SocialPost = {
   likeCount?: number;
   likes?: any[];
   comments?: any[];
+  commentCount?: number;
+  tags?: string[];
+  growInterests?: string[] | Record<string, string[]>;
+  growTags?: string[];
+  attachments?: any[];
+  media?: any[];
   photos?: string[];
   photoUrls?: string[];
   imageUrl?: string;
@@ -72,6 +78,10 @@ export async function createForumPost(data: {
   authorType?: "user" | "commercial" | "facility" | "moderator";
   authorId?: string | null;
   workspaceContext?: "personal" | "commercial" | "facility" | string;
+  growId?: string;
+  plantId?: string;
+  diagnosisId?: string;
+  toolRunId?: string;
 }): Promise<SocialPost> {
   const photos = await persistImageUris(data.photos || []);
   const tags = data.tags?.length
@@ -92,6 +102,14 @@ export async function createForumPost(data: {
       authorType: data.authorType,
       authorId: data.authorId,
       workspaceContext: data.workspaceContext,
+      growId: data.growId,
+      linkedGrowId: data.growId,
+      plantId: data.plantId,
+      linkedPlantId: data.plantId,
+      diagnosisId: data.diagnosisId,
+      linkedDiagnosisId: data.diagnosisId,
+      toolRunId: data.toolRunId,
+      linkedToolRunId: data.toolRunId,
       photos,
       ...(tags ? { tags } : {}),
       ...(growInterests ? { growInterests } : {})

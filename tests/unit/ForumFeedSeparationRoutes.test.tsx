@@ -12,6 +12,7 @@ const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
 const mockCreateForumPost = jest.fn();
 const mockReplace = jest.fn();
+let mockGrowInterests: Record<string, string[]> = {};
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -26,7 +27,8 @@ jest.mock("expo-router", () => {
     useRouter: () => ({
       back: jest.fn(),
       replace: mockReplace
-    })
+    }),
+    useLocalSearchParams: () => ({})
   };
 });
 
@@ -49,7 +51,13 @@ jest.mock("@/api/communitySocial", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "user-1", email: "grower@growpathai.com" } })
+  useAuth: () => ({
+    user: {
+      id: "user-1",
+      email: "grower@growpathai.com",
+      growInterests: mockGrowInterests
+    }
+  })
 }));
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -102,6 +110,7 @@ describe("Forum and feed separation copy", () => {
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
+    mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
   });
 
   it("frames the forum as discussion while feed placements stay campaigns", async () => {
@@ -134,8 +143,9 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Posting as User")).toBeTruthy();
     expect(screen.getByText("Workspace: personal")).toBeTruthy();
     expect(screen.getByText("Grow interests")).toBeTruthy();
-    expect(screen.getByText("What You Grow")).toBeTruthy();
-    expect(screen.getByText("Environment")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Toggle Grow interests"));
+    expect(screen.getByText(/What You Grow/)).toBeTruthy();
+    expect(screen.getByText(/Environment/)).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
     expect(
@@ -151,8 +161,9 @@ describe("Forum and feed separation copy", () => {
       screen.getByLabelText("Forum post body"),
       "What changed before this issue?"
     );
-    fireEvent.press(screen.getByLabelText("Toggle grow interest Cannabis"));
-    fireEvent.press(screen.getByLabelText("Toggle grow interest Indoor"));
+    fireEvent.press(screen.getByLabelText("Toggle Grow interests"));
+    expect(screen.getByLabelText("Toggle grow interest Cannabis")).toBeTruthy();
+    expect(screen.getByLabelText("Toggle grow interest Indoor")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Publish forum post"));
 
     await waitFor(() =>
@@ -167,7 +178,10 @@ describe("Forum and feed separation copy", () => {
         growInterests: ["Cannabis", "Indoor"]
       })
     );
-    expect(mockReplace).toHaveBeenCalledWith("/home/personal/forum");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/home/personal/forum/post/[id]",
+      params: { id: "thread-new" }
+    });
   });
 
   it("keeps forum guidelines as a nested forum page with shared back behavior", () => {
@@ -239,6 +253,25 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Cannabis")).toBeTruthy();
     expect(screen.getByText("Indoor")).toBeTruthy();
     expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
+  });
+
+  it("defaults to matching grow interests while keeping an all-discussions escape hatch", async () => {
+    mockGrowInterests = { crops: ["Fruit Trees"], environment: ["Outdoor"] };
+    mockListForumPosts.mockResolvedValue([
+      {
+        id: "orchard",
+        title: "Apple pruning",
+        growInterests: { crops: ["Fruit Trees"] }
+      },
+      { id: "cannabis", title: "Indoor cannabis", growInterests: { crops: ["Cannabis"] } }
+    ]);
+
+    const screen = render(<ForumRoute />);
+    await waitFor(() => expect(screen.getByText("Apple pruning")).toBeTruthy());
+    expect(screen.queryByText("Indoor cannabis")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Show all forum posts"));
+    expect(screen.getByText("Indoor cannabis")).toBeTruthy();
   });
 
   it("opens community forum previews through the shared forum detail route", async () => {

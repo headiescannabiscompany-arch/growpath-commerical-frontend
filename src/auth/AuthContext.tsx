@@ -272,7 +272,13 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
       role: "user" as const,
       plan,
       subscriptionStatus,
-      emailVerified: true
+      emailVerified: true,
+      growInterests: {
+        crops: ["Cannabis"],
+        environment: ["Indoor"],
+        methods: ["Living Soil / No-Till"],
+        experience: ["Intermediate"]
+      }
     },
     ctx: {
       mode: "personal",

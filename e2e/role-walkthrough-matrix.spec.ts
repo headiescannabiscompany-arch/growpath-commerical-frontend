@@ -360,6 +360,90 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/forum/feed/latest") {
+      return fulfillJson(route, {
+        posts: [
+          {
+            id: "forum-walkthrough-1",
+            title: "Indoor leaf help",
+            body: "The newest leaves are curling after the room warmed up.",
+            author: { displayName: "Walkthrough Grower" },
+            commentCount: 2,
+            growId: "grow-walkthrough-1",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
+            photos: ["/uploads/forum-missing-photo.jpg"],
+            createdAt: "2026-07-12T00:00:00.000Z"
+          },
+          {
+            id: "forum-orchard-1",
+            title: "Orchard pruning notes",
+            body: "A fruit tree discussion that should stay outside this interest feed.",
+            growInterests: { crops: ["Fruit Trees"], environment: ["Outdoor"] }
+          }
+        ]
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/forum/forum-walkthrough-1" || path === "/api/forum/forum-created-1")
+    ) {
+      return fulfillJson(route, {
+        post: {
+          id: path.endsWith("forum-created-1")
+            ? "forum-created-1"
+            : "forum-walkthrough-1",
+          title: path.endsWith("forum-created-1")
+            ? "Recorded grow update"
+            : "Indoor leaf help",
+          body: "Shared from the Personal Pro walkthrough with grow context.",
+          author: { displayName: "Walkthrough Grower" },
+          growId: "grow-walkthrough-1",
+          growInterests: {
+            crops: ["Cannabis"],
+            environment: ["Indoor"],
+            methods: ["Living Soil / No-Till"]
+          },
+          photos: ["/uploads/forum-detail-missing.jpg"]
+        }
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/forum/forum-walkthrough-1/comments" ||
+        path === "/api/forum/forum-created-1/comments")
+    ) {
+      return fulfillJson(route, {
+        comments: [
+          {
+            id: "comment-walkthrough-1",
+            text: "Check the lights-off humidity window too.",
+            author: { displayName: "Helpful Grower" },
+            photos: ["/uploads/forum-comment-missing.jpg"]
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/forum/create") {
+      return fulfillJson(
+        route,
+        {
+          post: {
+            id: "forum-created-1",
+            title: "Recorded grow update",
+            growId: "grow-walkthrough-1"
+          }
+        },
+        201
+      );
+    }
+
     if (method === "GET" && path === "/api/commercial/products") {
       return fulfillJson(route, {
         products: [
@@ -615,6 +699,37 @@ test.describe("role walkthrough matrix", () => {
     await page.getByPlaceholder("Title").fill("Recorded Lesson");
     await page.getByText("Save Lesson").click();
     await expect(page).toHaveURL(/home\/personal\/courses/);
+
+    await page.goto("/home/personal/forum", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Ask for Diagnosis Help")).toBeVisible();
+    await expect(page.getByText("Share a Grow Update")).toBeVisible();
+    await expect(page.getByText("Indoor leaf help")).toBeVisible();
+    await expect(page.getByText("Orchard pruning notes")).toBeHidden();
+
+    await page.getByLabel("Show all forum posts").click();
+    await expect(page.getByText("Orchard pruning notes")).toBeVisible();
+    await page.getByText("Indoor leaf help").click();
+    await expect(page).toHaveURL(/forum\/post\/forum-walkthrough-1/);
+    await expect(page.getByText("Attached grow: grow-walkthrough-1")).toBeVisible();
+    await expect(page.getByLabel("Attach forum comment photos")).toBeVisible();
+    await expect(
+      page.getByText("Check the lights-off humidity window too.")
+    ).toBeVisible();
+
+    await page.goto(
+      "/home/personal/forum/new-post?purpose=grow_update&growId=grow-walkthrough-1",
+      { waitUntil: "domcontentloaded" }
+    );
+    await expect(page.getByText("Grow update", { exact: true })).toBeVisible();
+    await page.getByLabel("Forum post title").fill("Recorded grow update");
+    await page
+      .getByLabel("Forum post body")
+      .fill("A healthy canopy update shared directly from my active grow.");
+    await page.getByLabel("Publish forum post").click();
+    await expect(page).toHaveURL(/forum\/post\/forum-created-1/);
+    await expect(page.getByText("Recorded grow update")).toBeVisible();
+    await expect(page.getByText("Attached grow: grow-walkthrough-1")).toBeVisible();
   });
 
   test("commercial free keeps commercial shell but shows free plan constraints", async ({

@@ -42,6 +42,10 @@ export default function ForumNewPostRoute() {
     growTags?: string | string[];
     photos?: string | string[];
     growId?: string | string[];
+    plantId?: string | string[];
+    diagnosisId?: string | string[];
+    toolRunId?: string | string[];
+    purpose?: string | string[];
   }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
@@ -70,6 +74,11 @@ export default function ForumNewPostRoute() {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+  const growId = valueOf(params.growId);
+  const plantId = valueOf(params.plantId);
+  const diagnosisId = valueOf(params.diagnosisId);
+  const toolRunId = valueOf(params.toolRunId);
+  const purpose = valueOf(params.purpose) || "discussion";
   const initialInterests: Record<string, string[]> = sharedTags.length
     ? (groupTagsByTier(sharedTags) as Record<string, string[]>)
     : auth.user?.growInterests || (buildEmptyTierSelection() as Record<string, string[]>);
@@ -133,7 +142,7 @@ export default function ForumNewPostRoute() {
     setSubmitting(true);
     setFeedback("");
     try {
-      await createForumPost({
+      const created = await createForumPost({
         title: nextTitle,
         body: nextBody,
         authorType,
@@ -141,9 +150,21 @@ export default function ForumNewPostRoute() {
         workspaceContext,
         photos: photos.map((photo) => photo.uri),
         tags: selectedInterests,
-        growInterests: selectedInterests
+        growInterests: selectedInterests,
+        ...(growId ? { growId } : {}),
+        ...(plantId ? { plantId } : {}),
+        ...(diagnosisId ? { diagnosisId } : {}),
+        ...(toolRunId ? { toolRunId } : {})
       });
-      router.replace("/home/personal/forum");
+      const createdId = String(created?._id || created?.id || "");
+      router.replace(
+        createdId
+          ? {
+              pathname: "/home/personal/forum/post/[id]",
+              params: { id: createdId, ...(growId ? { growId } : {}) }
+            }
+          : "/home/personal/forum"
+      );
     } catch (error: any) {
       setFeedback(error?.message || "Unable to create discussion.");
     } finally {
@@ -159,7 +180,11 @@ export default function ForumNewPostRoute() {
     router,
     selectedInterests,
     title,
-    workspaceContext
+    workspaceContext,
+    growId,
+    plantId,
+    diagnosisId,
+    toolRunId
   ]);
 
   const disabled = !title.trim() || !body.trim() || submitting || !canPost;
@@ -199,6 +224,28 @@ export default function ForumNewPostRoute() {
             outreach.
           </Text>
         </View>
+
+        {purpose !== "discussion" || growId || plantId || diagnosisId || toolRunId ? (
+          <View style={styles.contextCard}>
+            <Text style={styles.contextTitle}>
+              {purpose === "diagnosis"
+                ? "Diagnosis help request"
+                : purpose === "grow_update"
+                  ? "Grow update"
+                  : "Attached context"}
+            </Text>
+            <Text style={styles.identityText}>
+              {[
+                growId && `Grow ${growId}`,
+                plantId && `Plant ${plantId}`,
+                diagnosisId && `Diagnosis ${diagnosisId}`,
+                toolRunId && `Tool run ${toolRunId}`
+              ]
+                .filter(Boolean)
+                .join(" | ") || "Add photos and details so replies can be specific."}
+            </Text>
+          </View>
+        ) : null}
 
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
@@ -359,6 +406,14 @@ const styles = StyleSheet.create({
   },
   identityTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   identityText: { color: "#475569", fontSize: 13, fontWeight: "700", marginTop: 4 },
+  contextCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 12
+  },
+  contextTitle: { color: "#166534", fontSize: 15, fontWeight: "900" },
   interestCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",

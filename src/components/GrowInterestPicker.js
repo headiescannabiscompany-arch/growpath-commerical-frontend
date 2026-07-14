@@ -65,6 +65,9 @@ export default function GrowInterestPicker({
         style={[styles.headerRow, !collapsible && styles.headerRowStatic]}
         activeOpacity={collapsible ? 0.7 : 1}
         onPress={toggleExpanded}
+        accessibilityRole={collapsible ? "button" : undefined}
+        accessibilityLabel={collapsible ? `Toggle ${title}` : undefined}
+        accessibilityState={collapsible ? { expanded } : undefined}
       >
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{title}</Text>
@@ -110,6 +113,9 @@ export default function GrowInterestPicker({
                         key={option}
                         style={[styles.chip, active && styles.chipActive]}
                         onPress={() => handleToggle(tier.id, option)}
+                        accessibilityRole="checkbox"
+                        accessibilityLabel={`Toggle grow interest ${option}`}
+                        accessibilityState={{ checked: Boolean(active) }}
                       >
                         <Text style={[styles.chipText, active && styles.chipTextActive]}>
                           {option}
