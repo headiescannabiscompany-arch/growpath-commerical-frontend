@@ -208,7 +208,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Linked Commercial Workflow</Text>
+        <Text style={styles.cardTitle}>Connected records</Text>
         <Text style={styles.body}>
           Batches should link to products, product lines, evidence runs, feed campaigns,
           and storefront proof only when the evidence is strong enough.
@@ -263,8 +263,8 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       <AppCard>
         <Text style={styles.cardTitle}>Formula Evidence</Text>
         <Text style={styles.body}>
-          Keep guaranteed analysis and release timing visible so public product copy does
-          not collapse formula work into a toy NPK claim.
+          Keep guaranteed analysis and release timing visible so public product details
+          accurately describe the formula and its expected behavior.
         </Text>
         <TextInput
           accessibilityLabel="Commercial batch detail status"
@@ -332,22 +332,6 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             {saving ? "Saving..." : "Save Batch Detail"}
           </Text>
         </Pressable>
-      </AppCard>
-
-      <AppCard>
-        <Text style={styles.cardTitle}>Commercial Use Rules</Text>
-        <Text style={styles.bullet}>
-          Do not call the module Living Soil Labs in the app.
-        </Text>
-        <Text style={styles.bullet}>
-          Use guaranteed analysis plus release timing, not only NPK.
-        </Text>
-        <Text style={styles.bullet}>
-          Treat compost/castings and organic release as estimated.
-        </Text>
-        <Text style={styles.bullet}>
-          Link trial results before making public product claims.
-        </Text>
       </AppCard>
     </AppPage>
   );

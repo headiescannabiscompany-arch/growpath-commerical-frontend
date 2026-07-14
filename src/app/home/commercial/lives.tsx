@@ -315,7 +315,7 @@ export default function CommercialLivesRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Live workflow status</Text>
+        <Text style={styles.cardTitle}>Live session readiness</Text>
         <Text style={styles.body}>
           Live records capture schedule, destination links, Twitch channel/embed fields,
           EventSub status, notification plan, replay URL, setup warnings, and setup task

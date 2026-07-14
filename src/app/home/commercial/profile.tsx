@@ -92,19 +92,8 @@ export default function CommercialProfileRoute() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  const legacyProfileUrl = useMemo(
-    () => (form.slug.trim() ? `/brands/${form.slug.trim()}` : "/brands/your-brand-slug"),
-    [form.slug]
-  );
   const publicStoreUrl = useMemo(
     () => (form.slug.trim() ? `/store/${form.slug.trim()}` : "/store/your-brand-slug"),
-    [form.slug]
-  );
-  const publicStorefrontAliasUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/storefront/${form.slug.trim()}`
-        : "/storefront/your-brand-slug",
     [form.slug]
   );
   const publicProductUrl = useMemo(
@@ -112,13 +101,6 @@ export default function CommercialProfileRoute() {
       form.slug.trim()
         ? `/store/${form.slug.trim()}/products/product-id`
         : "/store/your-brand-slug/products/product-id",
-    [form.slug]
-  );
-  const publicProductAliasUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/storefront/${form.slug.trim()}/products/product-id`
-        : "/storefront/your-brand-slug/products/product-id",
     [form.slug]
   );
 
@@ -315,19 +297,12 @@ export default function CommercialProfileRoute() {
         <Text style={styles.body}>
           Free, Pro, commercial, and facility users should be able to discover this brand
           from feed campaigns, product cards, courses, forum threads, store search,
-          similar storefronts, and direct public Storefront URLs. The older Brand Profile
-          URL remains available only as a legacy compatibility route.
+          similar storefronts, and direct public store URLs. Use one public store link
+          everywhere so customers always land on the same brand experience.
         </Text>
         <View style={styles.urlList}>
           <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
-          <Text style={styles.urlText}>Legacy brand profile: {legacyProfileUrl}</Text>
-          <Text style={styles.urlText}>
-            Public storefront alias: {publicStorefrontAliasUrl}
-          </Text>
           <Text style={styles.urlText}>Public product detail: {publicProductUrl}</Text>
-          <Text style={styles.urlText}>
-            Public product alias: {publicProductAliasUrl}
-          </Text>
           <Text style={styles.urlText}>
             Similar storefronts and return-to-feed actions stay available from public
             pages.

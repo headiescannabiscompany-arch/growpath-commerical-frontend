@@ -324,7 +324,7 @@ export default function CommercialCoursesRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Course creation workflow</Text>
+        <Text style={styles.cardTitle}>Create a course</Text>
         <Text style={styles.body}>
           All user types can create courses. Commercial courses should add storefront
           context: product use, grow methods, plant care, seasonal gardening, support, and

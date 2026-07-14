@@ -940,7 +940,7 @@ describe("commercial workflow pages", () => {
     expect(screen.queryByText(/Commercial community/)).toBeNull();
     expect(screen.getByText("Open Forum Directory")).toBeTruthy();
     expect(screen.queryByText("Open Communities")).toBeNull();
-    expect(screen.getByText("Support thread workflow")).toBeTruthy();
+    expect(screen.getByText("Turn answers into support content")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
@@ -1025,7 +1025,7 @@ describe("commercial workflow pages", () => {
     const screen = render(<CommercialCoursesRoute />);
 
     expect(screen.getByText("Commercial Course Builder")).toBeTruthy();
-    expect(screen.getByText("Course creation workflow")).toBeTruthy();
+    expect(screen.getByText("Create a course")).toBeTruthy();
     expect(
       screen.getByText(/Commercial courses should add storefront context/)
     ).toBeTruthy();
@@ -1430,8 +1430,8 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getByText("Marketing Planner")).toBeTruthy();
     expect(screen.getByText("Content launch planner")).toBeTruthy();
-    expect(screen.getByText("Product drop workflow")).toBeTruthy();
-    expect(screen.getByText("Trial-to-content workflow")).toBeTruthy();
+    expect(screen.getByText("Plan a product launch")).toBeTruthy();
+    expect(screen.getByText("Turn trial results into content")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     await waitFor(() =>
@@ -1559,7 +1559,7 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getAllByText("Products").length).toBeGreaterThan(0);
     expect(screen.getByText("Product catalog")).toBeTruthy();
-    expect(screen.getByText("Public product page workflow")).toBeTruthy();
+    expect(screen.getByText("Public product page")).toBeTruthy();
     expect(
       screen.getByText(
         "Published products should be inspectable from public storefronts and public storefront pages. Users should be able to move from feed to storefront to product detail to external purchase or support."
@@ -2310,7 +2310,7 @@ describe("commercial workflow pages", () => {
     const screen = render(<CommercialBatchPlannerRoute />);
 
     expect(screen.getByText("Soil & Nutrient Batch Planner")).toBeTruthy();
-    expect(screen.getByText("Formula-to-product workflow")).toBeTruthy();
+    expect(screen.getByText("From formula to product")).toBeTruthy();
     expect(screen.getByText("Effectiveness loop")).toBeTruthy();
     expect(screen.getByText("Naming rule")).toBeTruthy();
     expect(screen.getByText("Product Lines")).toBeTruthy();
@@ -2388,8 +2388,8 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText("Formula Evidence")).toBeTruthy();
-    expect(screen.getByText("Linked Commercial Workflow")).toBeTruthy();
-    expect(screen.getByText("Commercial Use Rules")).toBeTruthy();
+    expect(screen.getByText("Connected records")).toBeTruthy();
+    expect(screen.queryByText("Commercial Use Rules")).toBeNull();
     expect(screen.getByText("Evidence run ID")).toBeTruthy();
     expect(screen.getAllByText("trial-1").length).toBeGreaterThan(0);
     expect(

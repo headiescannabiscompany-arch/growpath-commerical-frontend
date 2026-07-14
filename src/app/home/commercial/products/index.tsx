@@ -676,7 +676,7 @@ export default function CommercialProductsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Public product page workflow</Text>
+        <Text style={styles.cardTitle}>Public product page</Text>
         <Text style={styles.body}>
           Published products should be inspectable from public storefronts and public
           storefront pages. Users should be able to move from feed to storefront to

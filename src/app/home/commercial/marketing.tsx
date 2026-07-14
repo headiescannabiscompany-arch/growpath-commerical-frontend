@@ -492,7 +492,7 @@ export default function CommercialMarketingRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product drop workflow</Text>
+        <Text style={styles.cardTitle}>Plan a product launch</Text>
         <Text style={styles.body}>
           A product drop should start from the product or product line, then create a
           storefront update, linked feed campaign, support thread, and optional
@@ -506,7 +506,7 @@ export default function CommercialMarketingRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Trial-to-content workflow</Text>
+        <Text style={styles.cardTitle}>Turn trial results into content</Text>
         <Text style={styles.body}>
           Trial results should become public proof only when there is enough saved grow
           data. Marketing should point back to product trials, evidence reports, and

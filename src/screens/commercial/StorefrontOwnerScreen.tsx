@@ -389,9 +389,7 @@ export default function Storefront({
   }, [storefront]);
 
   const publicSlug = storeDraft.slug.trim() || "your-brand";
-  const publicProfilePath = `/brands/${publicSlug}`;
   const publicStorePath = `/store/${publicSlug}`;
-  const publicStorefrontAliasPath = `/storefront/${publicSlug}`;
   const publishedProducts = useMemo(
     () => products.filter((product) => productIsPublished(product)),
     [products]
@@ -1162,43 +1160,17 @@ export default function Storefront({
           <Text style={styles.helperText}>
             Free, Pro, commercial, and facility users can reach this brand from feed
             campaigns, forum replies, course pages, product cards, and public search
-            surfaces. Storefronts should make it easy to view as a user, open the brand
-            storefront, open support discussions, and follow product links. The brand
-            profile URL is kept as a legacy compatibility view.
+            surfaces. Use the store page as the single public home for the brand,
+            products, courses, live sessions, and support links.
           </Text>
           <View style={styles.publicLinkBox}>
-            <Text style={styles.publicLinkLabel}>Legacy brand profile</Text>
-            <Text selectable style={styles.publicLinkText}>
-              {currentPublicUrl(publicProfilePath)}
-            </Text>
-          </View>
-          <View style={styles.publicLinkBox}>
-            <Text style={styles.publicLinkLabel}>Store page</Text>
+            <Text style={styles.publicLinkLabel}>Public store</Text>
             <Text selectable style={styles.publicLinkText}>
               {currentPublicUrl(publicStorePath)}
             </Text>
           </View>
-          <View style={styles.publicLinkBox}>
-            <Text style={styles.publicLinkLabel}>Storefront alias</Text>
-            <Text selectable style={styles.publicLinkText}>
-              {currentPublicUrl(publicStorefrontAliasPath)}
-            </Text>
-          </View>
           <View style={styles.previewActions}>
-            <PublicPreviewLink href={publicStorePath} label="View as User: Store Page" />
-            <PublicPreviewLink
-              href={publicStorefrontAliasPath}
-              label="View as User: Storefront Alias"
-            />
-            <PublicPreviewLink
-              href={publicProfilePath}
-              label="View as User: Legacy Profile"
-            />
-          </View>
-          <View style={styles.discoveryActions}>
-            <Text style={styles.discoveryAction}>View similar brands</Text>
-            <Text style={styles.discoveryAction}>Return to campaign placements</Text>
-            <Text style={styles.discoveryAction}>Open forum/support discussions</Text>
+            <PublicPreviewLink href={publicStorePath} label="View Public Store" />
           </View>
         </AppCard>
 

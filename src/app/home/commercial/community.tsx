@@ -388,7 +388,7 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Support thread workflow</Text>
+        <Text style={styles.cardTitle}>Turn answers into support content</Text>
         <Text style={styles.body}>
           A commercial support answer should be able to point users to the exact product,
           course, public product page, trial result, or storefront involved in the

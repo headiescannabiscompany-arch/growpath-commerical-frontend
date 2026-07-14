@@ -257,13 +257,11 @@ describe("Storefront route", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("Featured Courses")).toBeTruthy();
-    expect(screen.getByText("View as User: Store Page")).toBeTruthy();
-    expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
-    expect(screen.getByText("Legacy brand profile")).toBeTruthy();
-    expect(screen.getByText("View as User: Legacy Profile")).toBeTruthy();
+    expect(screen.getByText("View Public Store")).toBeTruthy();
+    expect(screen.queryByText("Legacy brand profile")).toBeNull();
     expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
-    expect(screen.getByTestId("link-/storefront/grow-shop")).toBeTruthy();
-    expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
+    expect(screen.queryByTestId("link-/storefront/grow-shop")).toBeNull();
+    expect(screen.queryByTestId("link-/brands/grow-shop")).toBeNull();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0);
@@ -272,7 +270,7 @@ describe("Storefront route", () => {
       screen.getAllByText(/Interests living soil, dry amendments/).length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Open Line")).toBeTruthy();
-    expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
+    expect(screen.getByText("View Public Store")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/product-lines/line-1")).toBeTruthy();
     expect(
       screen.getAllByTestId("link-/store/grow-shop?line=line-1").length

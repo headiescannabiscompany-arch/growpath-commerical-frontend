@@ -419,7 +419,7 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Pro workflow retained</Text>
+        <Text style={styles.cardTitle}>Advanced planning tools</Text>
         <Text style={styles.body}>
           Commercial users should not lose Pro grow behavior. Evidence runs remain the
           evidence anchor for plant records, logs, tool runs, tasks, photos, and reports

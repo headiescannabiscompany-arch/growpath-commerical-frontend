@@ -175,8 +175,8 @@ export default function CommercialBatchPlannerRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Commercial batch fields</Text>
         <Text style={styles.body}>
-          Commercial users need product/formula fields on top of the normal batch planner.
-          Do not call this Living Soil Labs inside the app.
+          Track formula versions, guaranteed analysis, release timing, inventory, cost,
+          and the products or trials connected to each batch.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -412,7 +412,7 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Formula-to-product workflow</Text>
+        <Text style={styles.cardTitle}>From formula to product</Text>
         <Text style={styles.body}>
           Commercial batch planning should turn a purpose-built recipe into a
           product-ready formula only after the formula has batch records, cost context,
