@@ -51,7 +51,7 @@ export const ScreenMatrix = {
   FacilityTeam: {
     requiredCaps: [CAP.FAC_TEAM],
     actions: {
-      invite: { type: "facilityRole", allow: ["OWNER", "MANAGER"] }
+      invite: { type: "facilityRole", allow: ["OWNER"] }
     }
   }
 } as const;

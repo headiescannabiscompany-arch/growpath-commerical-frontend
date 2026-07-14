@@ -428,7 +428,7 @@ export default function FacilityAiAskRoute() {
 
       <View style={styles.tokenPanel}>
         <Text style={styles.sectionTitle}>AI usage</Text>
-        <TokenBalanceWidget onPress={() => router.push("/profile" as any)} />
+        <TokenBalanceWidget interactive={false} />
       </View>
 
       <View style={[styles.layout, isWide ? styles.layoutWide : null]}>

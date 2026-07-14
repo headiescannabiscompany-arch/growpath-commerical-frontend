@@ -239,7 +239,7 @@ export default function FacilityProfileRoute() {
 
         <View style={styles.card}>
           <Text style={styles.h1}>AI usage</Text>
-          <TokenBalanceWidget onPress={() => router.push("/profile" as any)} />
+          <TokenBalanceWidget interactive={false} />
         </View>
 
         <View style={styles.card}>

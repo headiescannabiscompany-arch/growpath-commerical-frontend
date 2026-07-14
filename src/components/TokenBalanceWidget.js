@@ -37,7 +37,7 @@ function fallbackBalanceForPlan(plan) {
   };
 }
 
-export default function TokenBalanceWidget({ onPress = undefined }) {
+export default function TokenBalanceWidget({ onPress = undefined, interactive = true }) {
   const navigation = useNavigation();
   const entitlements = useEntitlements();
   const displayPlan = localPaidPreviewPlan(entitlements.plan);
@@ -117,10 +117,14 @@ export default function TokenBalanceWidget({ onPress = undefined }) {
 
   if (loading) return null;
 
+  const Container = interactive ? TouchableOpacity : View;
+
   return (
-    <TouchableOpacity
+    <Container
       style={[styles.container, isLow && styles.containerLow]}
-      onPress={onPress || (() => navigation.navigate("TokenInfo"))}
+      {...(interactive
+        ? { onPress: onPress || (() => navigation.navigate("TokenInfo")) }
+        : {})}
     >
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
@@ -144,10 +148,12 @@ export default function TokenBalanceWidget({ onPress = undefined }) {
         <Text style={styles.description}>{refillCopy}</Text>
       </View>
 
-      <View style={styles.ctaRow}>
-        <Text style={styles.ctaText}>See how tokens work</Text>
-      </View>
-    </TouchableOpacity>
+      {interactive ? (
+        <View style={styles.ctaRow}>
+          <Text style={styles.ctaText}>See how tokens work</Text>
+        </View>
+      ) : null}
+    </Container>
   );
 }
 

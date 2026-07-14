@@ -55,7 +55,11 @@ export async function inviteTeamMember(
       body: data
     });
   }
-  return inviteRes?.invited ?? inviteRes;
+  const invited = inviteRes?.invited ?? inviteRes;
+  return {
+    ...(invited && typeof invited === "object" ? invited : {}),
+    emailDelivery: inviteRes?.emailDelivery ?? invited?.emailDelivery ?? null
+  };
 }
 
 export async function updateTeamMemberRole(

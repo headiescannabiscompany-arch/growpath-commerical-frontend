@@ -66,7 +66,9 @@ export default function FacilityTeamTab() {
   const [refreshing, setRefreshing] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("STAFF");
   const [inviting, setInviting] = useState(false);
+  const [inviteFeedback, setInviteFeedback] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -99,10 +101,15 @@ export default function FacilityTeamTab() {
     setInviting(true);
     try {
       setError(null);
-      await inviteTeamMember(facilityId, {
+      const result: any = await inviteTeamMember(facilityId, {
         email: inviteEmailValue,
-        role: "STAFF"
+        role: inviteRole
       });
+      setInviteFeedback(
+        result?.emailDelivery?.sent
+          ? `Invite emailed to ${inviteEmailValue} as ${inviteRole.toLowerCase()}.`
+          : `Invite saved for ${inviteEmailValue}, but email delivery was not confirmed.`
+      );
       setInviteEmail("");
       await load({ refresh: true });
     } catch (e) {
@@ -110,7 +117,7 @@ export default function FacilityTeamTab() {
     } finally {
       setInviting(false);
     }
-  }, [canInvite, facilityId, inviteEmail, load]);
+  }, [canInvite, facilityId, inviteEmail, inviteRole, load]);
 
   useEffect(() => {
     if (!facilityId) {
@@ -149,6 +156,29 @@ export default function FacilityTeamTab() {
             editable={canInvite}
           />
 
+          {canInvite ? (
+            <View style={styles.roleRow}>
+              {["MANAGER", "STAFF", "VIEWER"].map((role) => (
+                <Pressable
+                  key={role}
+                  onPress={() => setInviteRole(role)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Invite as ${role.toLowerCase()}`}
+                  style={[styles.roleButton, inviteRole === role && styles.roleSelected]}
+                >
+                  <Text
+                    style={[
+                      styles.roleText,
+                      inviteRole === role && styles.roleTextSelected
+                    ]}
+                  >
+                    {role.charAt(0) + role.slice(1).toLowerCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Send team invite"
@@ -164,9 +194,10 @@ export default function FacilityTeamTab() {
           </Pressable>
           {!canInvite ? (
             <Text style={styles.muted}>
-              Only facility owners and managers can invite team members.
+              Only the facility owner can invite team members and assign access.
             </Text>
           ) : null}
+          {inviteFeedback ? <Text style={styles.feedback}>{inviteFeedback}</Text> : null}
         </View>
 
         {loading ? (
@@ -254,6 +285,18 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.5 },
   btnText: { fontWeight: "900" },
+  roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+  roleButton: {
+    borderColor: "rgba(0,0,0,0.14)",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  roleSelected: { backgroundColor: "#166534", borderColor: "#166534" },
+  roleText: { fontWeight: "800" },
+  roleTextSelected: { color: "white" },
+  feedback: { color: "#166534", fontWeight: "800", marginTop: 10 },
 
   pressed: { opacity: 0.85 },
 

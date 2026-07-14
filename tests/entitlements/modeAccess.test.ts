@@ -226,7 +226,7 @@ describe("entitlement mode access", () => {
 
   it("applies facility role capabilities only after paid facility access is effective", () => {
     expect(shouldApplyFacilityRoleCapabilities("facility", "facility")).toBe(true);
-    expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);
+    expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(true);
     expect(shouldApplyFacilityRoleCapabilities("commercial", "facility")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("personal", "facility")).toBe(false);
   });
