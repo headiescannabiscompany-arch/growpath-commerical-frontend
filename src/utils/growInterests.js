@@ -15,6 +15,7 @@ INTEREST_TIERS.forEach((tier) => {
 });
 
 const LEGACY_CROP_ALIASES = [
+  // sensitive-ok: owner-approved taxonomy aliases map legacy crop labels to the canonical interest.
   [/cannabis|hemp|marijuana/i, "Cannabis"],
   [/tomato|pepper|vegetable|veggie|lettuce|cucumber|squash|bean/i, "Vegetables"],
   [/\bherb|basil|cilantro|parsley|mint\b/i, "Herbs"],
