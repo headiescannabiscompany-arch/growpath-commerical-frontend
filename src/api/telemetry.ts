@@ -156,6 +156,8 @@ function normalizePoint(raw: any): TelemetryPoint {
     vpdKpa: raw?.vpdKpa ?? null,
     co2Ppm: raw?.co2Ppm ?? null,
     lightLux: raw?.lightLux ?? null,
+    lightValue: raw?.lightValue ?? null,
+    lightUnit: raw?.lightUnit ?? null,
     ppfd: raw?.ppfd ?? null,
     airPressureHpa: raw?.airPressureHpa ?? null,
     voc: raw?.voc ?? null

@@ -26,6 +26,9 @@ export type SocialPost = {
   images?: string[];
   createdAt?: string;
   updatedAt?: string;
+  isHidden?: boolean;
+  moderationStatus?: "clean" | "reported" | "reviewed" | "held" | string;
+  moderationNotice?: string | null;
 };
 
 export type Guild = {

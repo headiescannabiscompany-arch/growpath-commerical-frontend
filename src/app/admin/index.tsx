@@ -48,7 +48,22 @@ type ModerationCase = {
   severity: string;
   status: string;
   action: string;
+  evidenceSnapshot?: {
+    automated?: boolean;
+    classification?: {
+      category?: string;
+      confidence?: number;
+      matchedSignals?: string[];
+      policyVersion?: string;
+    };
+    content?: { title?: string; body?: string; content?: string; tags?: string[] };
+  };
 };
+
+function moderationPreview(item: ModerationCase) {
+  const content = item.evidenceSnapshot?.content;
+  return String(content?.content || content?.body || content?.title || "").trim();
+}
 
 type EvidenceRequest = {
   _id: string;
@@ -368,6 +383,23 @@ export default function PlatformAdminRoute() {
                   {item.targetType} · {item.severity} · {item.status}
                 </Text>
                 <Text style={styles.meta}>{item.reason}</Text>
+                {moderationPreview(item) ? (
+                  <Text style={styles.evidencePreview} numberOfLines={4}>
+                    “{moderationPreview(item)}”
+                  </Text>
+                ) : null}
+                {item.evidenceSnapshot?.classification ? (
+                  <Text style={styles.meta}>
+                    Automated triage · {item.evidenceSnapshot.classification.category} ·{" "}
+                    {Math.round(
+                      Number(item.evidenceSnapshot.classification.confidence || 0) * 100
+                    )}
+                    % confidence
+                    {item.evidenceSnapshot.classification.matchedSignals?.length
+                      ? ` · ${item.evidenceSnapshot.classification.matchedSignals.join(", ")}`
+                      : ""}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.actions}>
                 <Pressable
@@ -382,7 +414,7 @@ export default function PlatformAdminRoute() {
                   style={styles.secondaryButton}
                   onPress={() => void moderateContent(item, "restore")}
                 >
-                  <Text style={styles.secondaryText}>Restore</Text>
+                  <Text style={styles.secondaryText}>Approve / restore</Text>
                 </Pressable>
               </View>
             </View>
@@ -476,6 +508,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   caseTitle: { color: "#0F172A", fontWeight: "900", textTransform: "capitalize" },
+  evidencePreview: {
+    color: "#334155",
+    backgroundColor: "#F8FAFC",
+    borderRadius: radius.card,
+    marginTop: 6,
+    padding: 9,
+    lineHeight: 19
+  },
   dangerButton: {
     backgroundColor: "#991B1B",
     borderRadius: radius.card,

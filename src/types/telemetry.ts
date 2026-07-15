@@ -1,9 +1,4 @@
-export type TelemetrySourceType =
-  | "pulse"
-  | "ubibot"
-  | "growlink"
-  | "upload"
-  | "manual";
+export type TelemetrySourceType = "pulse" | "ubibot" | "growlink" | "upload" | "manual";
 
 export type TelemetrySource = {
   id: string;
@@ -31,6 +26,8 @@ export type TelemetryPoint = {
   vpdKpa?: number | null;
   co2Ppm?: number | null;
   lightLux?: number | null;
+  lightValue?: number | null;
+  lightUnit?: string | null;
   ppfd?: number | null;
   airPressureHpa?: number | null;
   voc?: number | null;
@@ -57,6 +54,14 @@ export type BulkIngestTelemetryPointsInput = {
     leafTempC?: number | null;
     canopyTempC?: number | null;
     canopyRh?: number | null;
+    vpdKpa?: number | null;
+    co2Ppm?: number | null;
+    lightLux?: number | null;
+    lightValue?: number | null;
+    lightUnit?: string | null;
+    ppfd?: number | null;
+    airPressureHpa?: number | null;
+    voc?: number | null;
   }>;
 };
 

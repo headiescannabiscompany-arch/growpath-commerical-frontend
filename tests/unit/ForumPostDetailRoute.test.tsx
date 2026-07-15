@@ -89,6 +89,7 @@ describe("ForumPostDetailRoute", () => {
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
+    mockAddForumComment.mockResolvedValue({ id: "comment-new" });
   });
 
   it("creates a grow task from forum advice with the forum source link", async () => {
@@ -139,5 +140,30 @@ describe("ForumPostDetailRoute", () => {
 
     expect(screen.getAllByText("Forum member").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText("Community member")).toBeNull();
+  });
+
+  it("keeps a held sales-language comment in the composer and explains review", async () => {
+    mockAddForumComment.mockResolvedValueOnce({
+      id: "held-comment",
+      isHidden: true,
+      moderationStatus: "held",
+      moderationNotice: "This comment is hidden while a human moderator reviews it."
+    });
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Forum comment"),
+      "Cannabis flower for sale. DM me for shipping."
+    );
+    fireEvent.press(screen.getByLabelText("Submit forum comment"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("This comment is hidden while a human moderator reviews it.")
+      ).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Forum comment").props.value).toContain("for sale");
+    expect(mockListForumComments).toHaveBeenCalledTimes(1);
   });
 });

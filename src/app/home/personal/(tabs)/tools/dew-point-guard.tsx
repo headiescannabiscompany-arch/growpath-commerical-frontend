@@ -32,7 +32,9 @@ import {
   dewPointC,
   fToC,
   mapCsvToPoints,
-  parseCsvText
+  normalizeTelemetryTimestamp,
+  parseCsvText,
+  suggestedTelemetryMapping
 } from "@/features/personal/tools/dewPointGuard/engine";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
@@ -166,23 +168,11 @@ const PULSE_IMPORTED_METRICS = [
   "vpd"
 ];
 
-function hasTimezoneInfo(ts: string): boolean {
-  return /(?:Z|[+-]\d{2}:\d{2})$/i.test(ts);
-}
-
 function normalizeCsvTimestampToIso(
   tsRaw: string,
   sourceTimezone: string
 ): string | null {
-  const raw = String(tsRaw || "").trim();
-  if (!raw) return null;
-  // v1 deterministic rule: explicit offset/Z respected; naive timestamps are treated as UTC.
-  // Keep this consistent until timezone-aware parsing is introduced.
-  void sourceTimezone;
-  const normalized = hasTimezoneInfo(raw) ? raw : `${raw}Z`;
-  const ms = Date.parse(normalized);
-  if (!Number.isFinite(ms)) return null;
-  return new Date(ms).toISOString();
+  return normalizeTelemetryTimestamp(tsRaw, sourceTimezone);
 }
 
 function dewPointInspectionTaskMetadata(riskBand: string) {
@@ -200,13 +190,19 @@ function dewPointInspectionTaskMetadata(riskBand: string) {
   };
 }
 
-export default function DewPointGuardTool() {
+export default function DewPointGuardTool({
+  historyImportMode = false
+}: {
+  historyImportMode?: boolean;
+} = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
   const growId = asString(params.growId);
   const plantContext = useToolPlantContext(growId, asString(params.plantId) || "");
 
-  const [mode, setMode] = useState<"manual" | "source">("manual");
+  const [mode, setMode] = useState<"manual" | "source">(
+    historyImportMode ? "source" : "manual"
+  );
   const [savingAndOpening, setSavingAndOpening] = useState(false);
   const [creatingInspectionTask, setCreatingInspectionTask] = useState(false);
   const [resultFeedback, setResultFeedback] = useState("");
@@ -258,6 +254,15 @@ export default function DewPointGuardTool() {
   const [csvTempUnit, setCsvTempUnit] = useState<"F" | "C">("F");
   const [parsingCsv, setParsingCsv] = useState(false);
   const [csvLimitNotice, setCsvLimitNotice] = useState("");
+  const [csvImportSummary, setCsvImportSummary] = useState("");
+  const [csvWarnings, setCsvWarnings] = useState<string[]>([]);
+  const [csvDetectedExtras, setCsvDetectedExtras] = useState<
+    Pick<CsvMapping, "vpdCol" | "co2Col" | "lightCol" | "lightKind">
+  >({});
+  const [csvSourceConfig, setCsvSourceConfig] = useState<Record<string, any>>({});
+  const [sourceTimezone, setSourceTimezone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"
+  );
   const [activeCsvMapTarget, setActiveCsvMapTarget] = useState<"ts" | "temp" | "rh">(
     "ts"
   );
@@ -449,9 +454,14 @@ export default function DewPointGuardTool() {
       const created = await createTelemetrySource({
         growId,
         type,
-        name: type === "manual" ? "Manual Telemetry" : "Upload Telemetry",
-        timezone: "America/New_York",
-        config: {}
+        name:
+          type === "manual"
+            ? "Manual Telemetry"
+            : csvSourceConfig.provider === "ac_infinity"
+              ? "AC Infinity CSV History"
+              : "Upload Telemetry",
+        timezone: sourceTimezone,
+        config: type === "upload" ? csvSourceConfig : {}
       });
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
@@ -562,11 +572,51 @@ export default function DewPointGuardTool() {
     setCsvText(text);
     setCsvHeaders(parsed.headers);
     setCsvRows(parsed.rows);
-    setCsvTsHeader(bestHeader(parsed.headers, ["timestamp", "time", "ts", "date"]));
-    setCsvTempHeader(
-      bestHeader(parsed.headers, ["tempf", "tempc", "temperature", "temp", "airtemp"])
+    const suggested = suggestedTelemetryMapping(parsed);
+    setCsvTsHeader(
+      suggested
+        ? parsed.headers[suggested.tsCol]
+        : bestHeader(parsed.headers, ["timestamp", "time", "ts", "date"])
     );
-    setCsvRhHeader(bestHeader(parsed.headers, ["rh", "humidity", "relative humidity"]));
+    setCsvTempHeader(
+      suggested
+        ? parsed.headers[suggested.tempCol]
+        : bestHeader(parsed.headers, ["tempf", "tempc", "temperature", "temp", "airtemp"])
+    );
+    setCsvRhHeader(
+      suggested
+        ? parsed.headers[suggested.rhCol]
+        : bestHeader(parsed.headers, ["rh", "humidity", "relative humidity"])
+    );
+    if (suggested) setCsvTempUnit(suggested.tempUnit);
+    setCsvDetectedExtras(
+      suggested
+        ? {
+            vpdCol: suggested.vpdCol,
+            co2Col: suggested.co2Col,
+            lightCol: suggested.lightCol,
+            lightKind: suggested.lightKind
+          }
+        : {}
+    );
+    setCsvImportSummary(
+      parsed.provider === "ac_infinity"
+        ? `AC Infinity export detected · ${parsed.rows.length} nonblank data rows · ${parsed.metadata?.["Start Time"] || "unknown start"} to ${parsed.metadata?.["End Time"] || "unknown end"}`
+        : `Generic telemetry CSV · ${parsed.rows.length} nonblank data rows`
+    );
+    setCsvWarnings(parsed.warnings || []);
+    setCsvSourceConfig({
+      provider: parsed.provider || "generic",
+      importMode: "csv",
+      headerRowIndex: parsed.headerRowIndex || 0,
+      columns: parsed.headers,
+      historyWindow: {
+        start: parsed.metadata?.["Start Time"] || null,
+        end: parsed.metadata?.["End Time"] || null,
+        sampleFrequency: parsed.metadata?.["Sample Frequency"] || null
+      },
+      temperatureUnit: parsed.metadata?.["Temperature Units"] || null
+    });
     setCsvLimitNotice("");
   }
 
@@ -755,7 +805,8 @@ export default function DewPointGuardTool() {
         tsCol: headerIndex(csvHeaders, csvTsHeader),
         tempCol: headerIndex(csvHeaders, csvTempHeader),
         rhCol: headerIndex(csvHeaders, csvRhHeader),
-        tempUnit: csvTempUnit
+        tempUnit: csvTempUnit,
+        ...csvDetectedExtras
       };
       if (mapping.tsCol < 0 || mapping.tempCol < 0 || mapping.rhCol < 0) {
         Alert.alert(
@@ -774,7 +825,7 @@ export default function DewPointGuardTool() {
         }
       )
         .filter((p) => !!p.ts)
-        .map((p, idx) => ({ ts: p.ts, airTempC: p.airTempC, rh: p.rh, _idx: idx }));
+        .map((p, idx) => ({ ...p, _idx: idx }));
 
       if (!parsedPoints.length) {
         Alert.alert(
@@ -796,7 +847,16 @@ export default function DewPointGuardTool() {
           ? `CSV capped to most recent ${CSV_MAX_ROWS} rows (from ${sorted.length}).`
           : ""
       );
-      const points = clipped.map((p) => ({ ts: p.ts, airTempC: p.airTempC, rh: p.rh }));
+      const points = clipped.map((point) => ({
+        ts: point.ts,
+        airTempC: point.airTempC,
+        rh: point.rh,
+        vpdKpa: point.vpdKpa,
+        co2Ppm: point.co2Ppm,
+        lightLux: point.lightLux,
+        lightValue: point.lightValue,
+        lightUnit: point.lightUnit
+      }));
 
       const res = await bulkIngestTelemetryPoints({
         sourceId: selectedSource.id,
@@ -1112,40 +1172,49 @@ export default function DewPointGuardTool() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 28 }}>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_dew_point_guard"
-        longContent
-      />
+      {!historyImportMode ? (
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_dew_point_guard"
+          longContent
+        />
+      ) : null}
       <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 6 }}>
-        Dew Point Guard
+        {historyImportMode ? "Import controller and grow history" : "Dew Point Guard"}
       </Text>
       <Text style={{ marginBottom: 16, color: "#444" }}>
-        Manual estimate default; telemetry-backed window analysis available (source
-        creation + manual ingest included).
+        {historyImportMode
+          ? "Preview and map an exported controller CSV, then save duplicate-safe environment readings to this grow. Manufacturer passwords are never required."
+          : "Manual estimate default; telemetry-backed window analysis available (source creation + manual ingest included)."}
       </Text>
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
+      {!historyImportMode ? (
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
+      ) : null}
 
-      <Text style={{ fontWeight: "800", marginBottom: 8 }}>Data mode</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
-        <Chip
-          testID="dpg-mode-manual"
-          label="Manual"
-          active={mode === "manual"}
-          onPress={() => setMode("manual")}
-        />
-        <Chip
-          testID="dpg-mode-source"
-          label="Telemetry Source"
-          active={mode === "source"}
-          onPress={() => setMode("source")}
-        />
-      </View>
+      {!historyImportMode ? (
+        <>
+          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Data mode</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
+            <Chip
+              testID="dpg-mode-manual"
+              label="Manual"
+              active={mode === "manual"}
+              onPress={() => setMode("manual")}
+            />
+            <Chip
+              testID="dpg-mode-source"
+              label="Telemetry Source"
+              active={mode === "source"}
+              onPress={() => setMode("source")}
+            />
+          </View>
+        </>
+      ) : null}
 
       {mode === "source" ? (
         <View
@@ -1158,6 +1227,22 @@ export default function DewPointGuardTool() {
           }}
         >
           <Text style={{ fontWeight: "800", marginBottom: 8 }}>Telemetry source</Text>
+          <Text style={{ color: "#444", marginBottom: 5 }}>Grow timezone</Text>
+          <TextInput
+            testID="dpg-source-timezone"
+            value={sourceTimezone}
+            onChangeText={setSourceTimezone}
+            autoCapitalize="none"
+            placeholder="America/New_York"
+            style={{
+              borderWidth: 1,
+              borderColor: "#ddd",
+              borderRadius: radius.card,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              marginBottom: 10
+            }}
+          />
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
             <Pressable
               testID="dpg-load-sources"
@@ -1388,6 +1473,44 @@ export default function DewPointGuardTool() {
             />
             {csvHeaders.length ? (
               <View style={{ marginBottom: 10 }}>
+                {csvImportSummary ? (
+                  <Text
+                    testID="dpg-csv-import-summary"
+                    style={{ color: "#166534", fontWeight: "800", marginBottom: 6 }}
+                  >
+                    {csvImportSummary}
+                  </Text>
+                ) : null}
+                {csvWarnings.map((warning) => (
+                  <Text
+                    key={warning}
+                    testID="dpg-csv-warning"
+                    style={{ color: "#92400e", lineHeight: 19, marginBottom: 6 }}
+                  >
+                    {warning}
+                  </Text>
+                ))}
+                {!selectedSourceId ? (
+                  <Pressable
+                    testID="dpg-create-source-from-csv"
+                    disabled={creatingSource}
+                    onPress={() => void createSourceInline("upload")}
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: "#166534",
+                      borderRadius: radius.card,
+                      marginBottom: 10,
+                      opacity: creatingSource ? 0.6 : 1,
+                      paddingVertical: 11
+                    }}
+                  >
+                    <Text style={{ color: "white", fontWeight: "900" }}>
+                      {creatingSource
+                        ? "Creating history source..."
+                        : "Create source from this export"}
+                    </Text>
+                  </Pressable>
+                ) : null}
                 <Text style={{ fontWeight: "700", marginBottom: 4 }}>
                   Map timestamp column
                 </Text>

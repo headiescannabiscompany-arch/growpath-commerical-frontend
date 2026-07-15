@@ -22,7 +22,14 @@ export function dewPointC(tempC: number, rhPct: number) {
   return (b * gamma) / (a - gamma);
 }
 
-export type ParsedCsv = { headers: string[]; rows: string[][] };
+export type ParsedCsv = {
+  headers: string[];
+  rows: string[][];
+  metadata?: Record<string, string>;
+  provider?: "ac_infinity" | "generic";
+  headerRowIndex?: number;
+  warnings?: string[];
+};
 
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -30,10 +37,10 @@ function parseCsvLine(line: string): string[] {
   let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
-    if (ch === "\"") {
+    if (ch === '"') {
       const next = line[i + 1];
-      if (inQuotes && next === "\"") {
-        cur += "\"";
+      if (inQuotes && next === '"') {
+        cur += '"';
         i++;
       } else {
         inQuotes = !inQuotes;
@@ -52,13 +59,176 @@ function parseCsvLine(line: string): string[] {
 }
 
 export function parseCsvText(csvText: string): ParsedCsv {
-  const text = String(csvText || "").replace(/\r\n/g, "\n").trim();
+  const text = String(csvText || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u00a0\u202f]/g, " ")
+    .trim();
   const lines = text ? text.split("\n") : [];
   if (!lines.length) return { headers: [], rows: [] };
 
-  const headers = parseCsvLine(lines[0]);
-  const rows = lines.slice(1).filter(Boolean).map(parseCsvLine);
-  return { headers, rows };
+  const parsedLines = lines.map(parseCsvLine);
+  const telemetryHeaderIndex = parsedLines.findIndex((row) => {
+    const normalized = row.map((cell) =>
+      String(cell || "")
+        .trim()
+        .toLowerCase()
+    );
+    const hasTime = normalized.some((cell) => cell === "time" || cell === "timestamp");
+    const hasEnvironment = normalized.some(
+      (cell) => cell.includes("temperature") || cell.includes("humidity")
+    );
+    return hasTime && hasEnvironment;
+  });
+  const headerRowIndex = telemetryHeaderIndex >= 0 ? telemetryHeaderIndex : 0;
+  const headers = parsedLines[headerRowIndex];
+  const rows = parsedLines
+    .slice(headerRowIndex + 1)
+    .filter((row) => row.some((cell) => String(cell || "").trim()));
+  const metadata = Object.fromEntries(
+    parsedLines
+      .slice(0, headerRowIndex)
+      .map((row) => [String(row[0] || "").trim(), String(row[1] || "").trim()])
+      .filter(([key]) => Boolean(key))
+  );
+  const provider =
+    headerRowIndex > 0 &&
+    headers.some((header) =>
+      /^inside (?:temperature|relative humidity|vpd)$/i.test(header)
+    )
+      ? "ac_infinity"
+      : "generic";
+  const warnings: string[] = [];
+  if (
+    provider === "ac_infinity" &&
+    /24\s*hrs?/i.test(metadata["Sample Frequency"] || "")
+  ) {
+    warnings.push(
+      "This export contains one sample per day. Use a shorter AC Infinity sample frequency to analyze lights-off spikes and equipment response."
+    );
+  }
+
+  return { headers, rows, metadata, provider, headerRowIndex, warnings };
+}
+
+export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null {
+  const normalized = parsed.headers.map((header) => header.trim().toLowerCase());
+  const find = (preferred: string[], fallback: RegExp) => {
+    for (const value of preferred) {
+      const exact = normalized.indexOf(value);
+      if (exact >= 0) return exact;
+    }
+    return normalized.findIndex((value) => fallback.test(value));
+  };
+  const tsCol = find(["time", "timestamp"], /(?:^|\s)(?:time|timestamp)(?:$|\s)/);
+  const tempCol = find(
+    ["inside temperature", "air temperature", "temperature", "tempf", "tempc"],
+    /temperature|(?:^|\s)temp(?:$|\s)/
+  );
+  const rhCol = find(
+    ["inside relative humidity", "relative humidity", "humidity", "rh"],
+    /humidity|(?:^|\s)rh(?:$|\s)/
+  );
+  if ([tsCol, tempCol, rhCol].some((index) => index < 0)) return null;
+  const units = String(parsed.metadata?.["Temperature Units"] || "").toUpperCase();
+  const optionalExact = (...values: string[]) => {
+    for (const value of values) {
+      const index = normalized.indexOf(value);
+      if (index >= 0) return index;
+    }
+    return undefined;
+  };
+  const lightCol = optionalExact("light (sensor 1)", "light", "lux");
+  return {
+    tsCol,
+    tempCol,
+    rhCol,
+    tempUnit: units.includes("C") ? "C" : "F",
+    vpdCol: optionalExact("inside vpd", "vpd"),
+    co2Col: optionalExact("co₂ (sensor 1)", "co2 (sensor 1)", "co₂", "co2"),
+    lightCol,
+    lightKind:
+      lightCol == null
+        ? undefined
+        : normalized[lightCol].includes("lux")
+          ? "lux"
+          : "manufacturer_reported"
+  };
+}
+
+function timezoneWallParts(date: Date, timeZone: string) {
+  const entries = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  return Object.fromEntries(entries.map((part) => [part.type, part.value]));
+}
+
+export function normalizeTelemetryTimestamp(
+  value: string,
+  timeZone = "UTC"
+): string | null {
+  const raw = String(value || "")
+    .replace(/[\u00a0\u202f]/g, " ")
+    .trim();
+  if (!raw) return null;
+  if (/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw)) {
+    const explicit = Date.parse(raw);
+    return Number.isFinite(explicit) ? new Date(explicit).toISOString() : null;
+  }
+
+  const match = raw.match(
+    /^(\d{1,4})[/-](\d{1,2})[/-](\d{1,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i
+  );
+  if (!match) return null;
+  const yearFirst = match[1].length === 4;
+  const year = Number(yearFirst ? match[1] : match[3]);
+  const month = Number(yearFirst ? match[2] : match[1]);
+  const day = Number(yearFirst ? match[3] : match[2]);
+  let hour = Number(match[4] || 0);
+  const minute = Number(match[5] || 0);
+  const second = Number(match[6] || 0);
+  const meridiem = String(match[7] || "").toUpperCase();
+  if (meridiem === "AM" && hour === 12) hour = 0;
+  if (meridiem === "PM" && hour < 12) hour += 12;
+  if (
+    year < 1900 ||
+    year > 2200 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59
+  ) {
+    return null;
+  }
+
+  const desiredWallMs = Date.UTC(year, month - 1, day, hour, minute, second);
+  let guessMs = desiredWallMs;
+  try {
+    for (let i = 0; i < 3; i += 1) {
+      const parts = timezoneWallParts(new Date(guessMs), timeZone);
+      const representedWallMs = Date.UTC(
+        Number(parts.year),
+        Number(parts.month) - 1,
+        Number(parts.day),
+        Number(parts.hour),
+        Number(parts.minute),
+        Number(parts.second)
+      );
+      guessMs += desiredWallMs - representedWallMs;
+    }
+  } catch {
+    return null;
+  }
+  return new Date(guessMs).toISOString();
 }
 
 export type CsvMapping = {
@@ -66,6 +236,10 @@ export type CsvMapping = {
   tempCol: number;
   rhCol: number;
   tempUnit: "F" | "C";
+  vpdCol?: number;
+  co2Col?: number;
+  lightCol?: number;
+  lightKind?: "lux" | "manufacturer_reported";
 };
 
 export type TelemetryPointLike = {
@@ -73,6 +247,11 @@ export type TelemetryPointLike = {
   airTempC: number;
   rh: number;
   dewPointC?: number;
+  vpdKpa?: number | null;
+  co2Ppm?: number | null;
+  lightLux?: number | null;
+  lightValue?: number | null;
+  lightUnit?: string | null;
 };
 
 export type MapCsvToPointsOptions = {
@@ -90,6 +269,13 @@ export function mapCsvToPoints(
     const tsRaw = String(row[mapping.tsCol] ?? "").trim();
     const tempRaw = Number(String(row[mapping.tempCol] ?? "").trim());
     const rhRaw = Number(String(row[mapping.rhCol] ?? "").trim());
+    const optionalValue = (index: number | undefined) => {
+      if (index == null || index < 0) return null;
+      const raw = String(row[index] ?? "").trim();
+      if (!raw) return null;
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : null;
+    };
     const normalizedTs = options?.normalizeTimestamp
       ? options.normalizeTimestamp(tsRaw)
       : tsRaw;
@@ -101,7 +287,20 @@ export function mapCsvToPoints(
     if (!Number.isFinite(rhRaw) || rhRaw < 0 || rhRaw > 100) continue;
 
     const airTempC = mapping.tempUnit === "F" ? fToC(tempRaw) : tempRaw;
-    pts.push({ ts: t.toISOString(), airTempC, rh: rhRaw });
+    pts.push({
+      ts: t.toISOString(),
+      airTempC,
+      rh: rhRaw,
+      vpdKpa: optionalValue(mapping.vpdCol),
+      co2Ppm: optionalValue(mapping.co2Col),
+      lightLux: mapping.lightKind === "lux" ? optionalValue(mapping.lightCol) : null,
+      lightValue:
+        mapping.lightKind === "manufacturer_reported"
+          ? optionalValue(mapping.lightCol)
+          : null,
+      lightUnit:
+        mapping.lightKind === "manufacturer_reported" ? "manufacturer_reported" : null
+    });
   }
 
   pts.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));

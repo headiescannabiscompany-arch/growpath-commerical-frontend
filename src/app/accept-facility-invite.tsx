@@ -19,6 +19,7 @@ export default function AcceptFacilityInviteScreen() {
   const auth = useAuth();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [displayName, setDisplayName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +40,7 @@ export default function AcceptFacilityInviteScreen() {
     try {
       const result: any = await apiRequest("/api/auth/accept-facility-invite", {
         method: "POST",
-        body: { token, displayName, password }
+        body: { token, displayName, password, dateOfBirth }
       });
       await auth.login(String(result.email), password);
       router.replace("/home/facility");
@@ -68,6 +69,19 @@ export default function AcceptFacilityInviteScreen() {
           onChangeText={setDisplayName}
           placeholder="Your name"
         />
+        <TextInput
+          accessibilityLabel="Invite date of birth"
+          style={styles.input}
+          value={dateOfBirth}
+          onChangeText={setDateOfBirth}
+          placeholder="Date of birth (YYYY-MM-DD)"
+          autoCapitalize="none"
+          keyboardType="numbers-and-punctuation"
+        />
+        <Text style={styles.helper}>
+          Required only when this invitation creates a new GrowPathAI account. It is used
+          for age eligibility and is not shown publicly.
+        </Text>
         <TextInput
           style={styles.input}
           value={password}
@@ -123,6 +137,7 @@ const styles = StyleSheet.create({
   },
   title: { color: "#14532d", fontSize: 24, fontWeight: "900" },
   copy: { color: "#475569", lineHeight: 21 },
+  helper: { color: "#64748b", fontSize: 12, lineHeight: 17 },
   input: {
     backgroundColor: "white",
     borderColor: "#cbd5e1",

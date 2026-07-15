@@ -63,6 +63,18 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
   }
 ];
 
+function ageFromDate(value: string) {
+  const birth = new Date(`${value}T00:00:00Z`);
+  if (!value || Number.isNaN(birth.getTime())) return null;
+  const now = new Date();
+  let age = now.getUTCFullYear() - birth.getUTCFullYear();
+  const monthDelta = now.getUTCMonth() - birth.getUTCMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && now.getUTCDate() < birth.getUTCDate())) {
+    age -= 1;
+  }
+  return age >= 0 && age <= 125 ? age : null;
+}
+
 export default function RegisterScreen() {
   const router = useRouter();
   const auth = useAuth();
@@ -73,19 +85,26 @@ export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [showCannabisContent, setShowCannabisContent] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
+    const age = ageFromDate(dateOfBirth);
     return (
       name.trim().length >= 2 &&
       email.trim().length > 3 &&
       password.length >= 1 &&
+      age !== null &&
+      age >= 13 &&
       !submitting
     );
-  }, [name, email, password, submitting]);
+  }, [name, email, password, dateOfBirth, submitting]);
+  const age = ageFromDate(dateOfBirth);
+  const cannabisEligible = age !== null && age >= 21;
 
   async function onSubmit() {
     setErrMsg(null);
@@ -100,7 +119,9 @@ export default function RegisterScreen() {
         email: normalizedEmail,
         password,
         plan: choice.key,
-        mode: choice.mode
+        mode: choice.mode,
+        dateOfBirth,
+        showCannabisContent: cannabisEligible && showCannabisContent
       };
       const signupResult = await auth.signup(payload);
       if (signupResult.emailVerificationRequired && !signupResult.token) {
@@ -207,6 +228,52 @@ export default function RegisterScreen() {
             onSubmitEditing={onSubmit}
             returnKeyType="go"
           />
+
+          <TextInput
+            accessibilityLabel="Register date of birth"
+            style={styles.input}
+            placeholder="Date of birth (YYYY-MM-DD)"
+            placeholderTextColor="#6b7280"
+            value={dateOfBirth}
+            onChangeText={(value) => {
+              setDateOfBirth(value);
+              if ((ageFromDate(value) || 0) < 21) setShowCannabisContent(false);
+            }}
+            autoCapitalize="none"
+            keyboardType="numbers-and-punctuation"
+          />
+          <Text style={styles.ageHelper}>
+            Date of birth is used for age eligibility and is never displayed publicly.
+            Cannabis content stays hidden unless an eligible user chooses to show it.
+          </Text>
+          {dateOfBirth && age !== null && age < 13 ? (
+            <Text style={styles.error}>
+              This account cannot be created through the standard signup flow.
+            </Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{
+              checked: showCannabisContent,
+              disabled: !cannabisEligible
+            }}
+            accessibilityLabel="Show cannabis content"
+            disabled={!cannabisEligible}
+            onPress={() => setShowCannabisContent((current) => !current)}
+            style={[
+              styles.contentChoice,
+              showCannabisContent && styles.contentChoiceSelected,
+              !cannabisEligible && styles.buttonDisabled
+            ]}
+          >
+            <Text style={styles.contentChoiceTitle}>
+              {showCannabisContent ? "✓ " : ""}Show cannabis content
+            </Text>
+            <Text style={styles.ageHelper}>
+              Optional for age-eligible accounts. You can hide it again or add a parental
+              lock from account settings.
+            </Text>
+          </Pressable>
 
           {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
           {infoMsg ? <Text style={styles.success}>{infoMsg}</Text> : null}
@@ -332,6 +399,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12
   },
+  ageHelper: { color: "#64748b", fontSize: 12, lineHeight: 17 },
+  contentChoice: {
+    borderColor: "#cbd5e1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 4,
+    marginBottom: 12,
+    marginTop: 10,
+    padding: 11
+  },
+  contentChoiceSelected: { backgroundColor: "#F0FDF4", borderColor: "#166534" },
+  contentChoiceTitle: { color: "#0F172A", fontWeight: "900" },
   error: { color: "#b91c1c", fontWeight: "700", marginBottom: 12 },
   success: { color: "#166534", fontWeight: "700", marginBottom: 12 },
   button: {

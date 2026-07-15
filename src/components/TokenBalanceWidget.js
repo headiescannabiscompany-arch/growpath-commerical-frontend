@@ -7,6 +7,9 @@ import { radius } from "../theme/theme";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+/**
+ * @param {{ onPress?: () => void, interactive?: boolean }} props
+ */
 export default function TokenBalanceWidget({ onPress = undefined, interactive = true }) {
   const router = useRouter();
   const [balance, setBalance] = useState(null);

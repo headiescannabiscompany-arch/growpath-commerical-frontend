@@ -14,6 +14,10 @@ export type AuthUser = {
   subscriptionStatus: string | null;
   emailVerified?: boolean;
   growInterests?: Record<string, string[]>;
+  ageBand?: "13_17" | "18_20" | "21_plus" | "unknown";
+  cannabisEligible?: boolean;
+  cannabisVisibility?: "show" | "hide";
+  parentalLockEnabled?: boolean;
 };
 
 export type SignupBody = {
@@ -23,6 +27,8 @@ export type SignupBody = {
   password: string;
   plan?: "free" | "pro" | "commercial" | "facility";
   mode?: "personal" | "commercial" | "facility";
+  dateOfBirth?: string;
+  showCannabisContent?: boolean;
 };
 
 export type LoginBody = {
@@ -88,7 +94,8 @@ function normalizeSignupArgs(a: SignupBody | string, b?: string, c?: string): Si
     email: String(a || ""),
     password: String(b || ""),
     displayName: String(c || ""),
-    name: String(c || "")
+    name: String(c || ""),
+    dateOfBirth: ""
   };
 }
 
@@ -185,6 +192,22 @@ export async function resetPassword(
     auth: false,
     body: { token, password }
   }) as Promise<ResetPasswordResponse>;
+}
+
+export function updateContentControls(body: {
+  cannabisVisibility: "show" | "hide";
+  parentalLockEnabled?: boolean;
+  currentPin?: string;
+  newPin?: string;
+}) {
+  return apiRequest<{
+    ok: true;
+    contentControls: {
+      cannabisVisibility: "show" | "hide";
+      parentalLockEnabled: boolean;
+      cannabisEligible: boolean;
+    };
+  }>("/api/me/content-controls", { method: "PATCH", body });
 }
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */

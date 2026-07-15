@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
-import { requestEmailVerification } from "@/api/auth";
+import { requestEmailVerification, updateContentControls } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ReportBugButton from "@/components/ReportBugButton";
@@ -118,6 +118,9 @@ export default function ProfileScreen() {
   const [privacyFeedback, setPrivacyFeedback] = useState("");
   const [privacyError, setPrivacyError] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [contentControlBusy, setContentControlBusy] = useState(false);
+  const [parentalPin, setParentalPin] = useState("");
+  const [contentControlFeedback, setContentControlFeedback] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const mode = ent.mode || "personal";
@@ -166,6 +169,39 @@ export default function ProfileScreen() {
       setEmailError(e?.message || "Unable to request verification email.");
     } finally {
       setResendingVerification(false);
+    }
+  };
+
+  const saveContentControls = async (input: {
+    cannabisVisibility: "show" | "hide";
+    parentalLockEnabled?: boolean;
+    enablingLock?: boolean;
+  }) => {
+    setContentControlBusy(true);
+    setContentControlFeedback("");
+    try {
+      const result = await updateContentControls({
+        cannabisVisibility: input.cannabisVisibility,
+        parentalLockEnabled: input.parentalLockEnabled,
+        ...(input.enablingLock ? { newPin: parentalPin } : { currentPin: parentalPin })
+      });
+      setParentalPin("");
+      setContentControlFeedback(
+        result.contentControls.parentalLockEnabled
+          ? "Cannabis content controls are protected by the parental PIN."
+          : result.contentControls.cannabisVisibility === "show"
+            ? "Cannabis content is visible for this account."
+            : "Cannabis content is hidden."
+      );
+      await auth.retryMe();
+    } catch (error: any) {
+      setContentControlFeedback(
+        error?.data?.error?.message ||
+          error?.message ||
+          "Unable to update content controls."
+      );
+    } finally {
+      setContentControlBusy(false);
     }
   };
 
@@ -431,6 +467,85 @@ export default function ProfileScreen() {
         >
           <Text style={styles.accountActionText}>Edit Grow Interests</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Cannabis content and parental lock</Text>
+        <Text style={styles.mutedText}>
+          Cannabis posts, courses, feed recommendations, and related tools can be hidden
+          without affecting fruit, vegetable, flower, tree, or general gardening content.
+        </Text>
+        <Text style={styles.rowValue}>
+          Cannabis content:{" "}
+          {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
+        </Text>
+        <Text style={styles.mutedText}>
+          Age eligibility: {auth.user?.ageBand || "verification needed"} · Parental lock:{" "}
+          {auth.user?.parentalLockEnabled ? "On" : "Off"}
+        </Text>
+        <TextInput
+          accessibilityLabel="Parental content control PIN"
+          style={styles.input}
+          value={parentalPin}
+          onChangeText={setParentalPin}
+          placeholder={
+            auth.user?.parentalLockEnabled
+              ? "Current parental PIN"
+              : "New 4–12 digit parental PIN"
+          }
+          keyboardType="number-pad"
+          secureTextEntry
+        />
+        <View style={styles.actionGrid}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Hide cannabis content"
+            disabled={contentControlBusy}
+            style={styles.planAction}
+            onPress={() => void saveContentControls({ cannabisVisibility: "hide" })}
+          >
+            <Text style={styles.planActionText}>Hide cannabis</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Show cannabis content"
+            disabled={contentControlBusy || !auth.user?.cannabisEligible}
+            style={[
+              styles.planAction,
+              (!auth.user?.cannabisEligible || contentControlBusy) && { opacity: 0.5 }
+            ]}
+            onPress={() => void saveContentControls({ cannabisVisibility: "show" })}
+          >
+            <Text style={styles.planActionText}>Show cannabis</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              auth.user?.parentalLockEnabled
+                ? "Disable parental lock"
+                : "Enable parental lock"
+            }
+            disabled={contentControlBusy || parentalPin.length < 4}
+            style={[
+              styles.planAction,
+              (contentControlBusy || parentalPin.length < 4) && { opacity: 0.5 }
+            ]}
+            onPress={() =>
+              void saveContentControls({
+                cannabisVisibility: "hide",
+                parentalLockEnabled: !auth.user?.parentalLockEnabled,
+                enablingLock: !auth.user?.parentalLockEnabled
+              })
+            }
+          >
+            <Text style={styles.planActionText}>
+              {auth.user?.parentalLockEnabled ? "Disable lock" : "Enable lock + hide"}
+            </Text>
+          </Pressable>
+        </View>
+        {contentControlFeedback ? (
+          <Text style={styles.feedback}>{contentControlFeedback}</Text>
+        ) : null}
       </View>
       <PersonalFeedPlacement placement="middle" routeKey="personal_profile" longContent />
 

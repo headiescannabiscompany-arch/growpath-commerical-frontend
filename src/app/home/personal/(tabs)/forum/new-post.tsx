@@ -156,6 +156,13 @@ export default function ForumNewPostRoute() {
         ...(diagnosisId ? { diagnosisId } : {}),
         ...(toolRunId ? { toolRunId } : {})
       });
+      if (created?.isHidden || created?.moderationStatus === "held") {
+        setFeedback(
+          created?.moderationNotice ||
+            "This post is hidden while a human moderator reviews it."
+        );
+        return;
+      }
       const createdId = String(created?._id || created?.id || "");
       router.replace(
         createdId

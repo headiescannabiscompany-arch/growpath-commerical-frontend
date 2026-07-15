@@ -10,6 +10,7 @@ const mockLogout = jest.fn();
 const mockRetryMe = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockUpdateContentControls = jest.fn();
 
 jest.mock("@/api/users", () => ({
   deleteAccount: (...args: any[]) => mockDeleteAccount(...args),
@@ -18,7 +19,8 @@ jest.mock("@/api/users", () => ({
 }));
 
 jest.mock("@/api/auth", () => ({
-  requestEmailVerification: jest.fn()
+  requestEmailVerification: jest.fn(),
+  updateContentControls: (...args: any[]) => mockUpdateContentControls(...args)
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -30,7 +32,11 @@ jest.mock("@/auth/AuthContext", () => ({
       role: "user",
       plan: "free",
       subscriptionStatus: "free",
-      emailVerified: true
+      emailVerified: true,
+      ageBand: "21_plus",
+      cannabisEligible: true,
+      cannabisVisibility: "show",
+      parentalLockEnabled: true
     },
     logout: (...args: any[]) => mockLogout(...args),
     retryMe: (...args: any[]) => mockRetryMe(...args)
@@ -63,6 +69,12 @@ jest.mock("@/components/layout/AppCard", () => {
   return ({ children }: any) => React.createElement(View, null, children);
 });
 
+jest.mock("@/components/TokenBalanceWidget", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return () => React.createElement(Text, null, "10 of 10 AI tokens");
+});
+
 describe("Profile privacy controls", () => {
   beforeEach(() => {
     mockDeleteAccount.mockReset();
@@ -71,17 +83,26 @@ describe("Profile privacy controls", () => {
     mockRetryMe.mockReset();
     mockReplace.mockReset();
     mockPush.mockReset();
+    mockUpdateContentControls.mockReset();
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
+    mockUpdateContentControls.mockResolvedValue({
+      ok: true,
+      contentControls: {
+        cannabisVisibility: "hide",
+        parentalLockEnabled: true,
+        cannabisEligible: true
+      }
+    });
   });
 
   it("requires typed confirmation before initiating account deletion", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(
-      (_title, _message, buttons) => {
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
         const destructive = buttons?.find((button) => button.style === "destructive");
         destructive?.onPress?.();
-      }
-    );
+      });
 
     const screen = render(<Profile />);
 
@@ -111,5 +132,18 @@ describe("Profile privacy controls", () => {
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
+
+  it("lets an adult account hide cannabis without entering the parental PIN", async () => {
+    const screen = render(<Profile />);
+    fireEvent.press(screen.getByLabelText("Hide cannabis content"));
+
+    await waitFor(() =>
+      expect(mockUpdateContentControls).toHaveBeenCalledWith({
+        cannabisVisibility: "hide",
+        currentPin: ""
+      })
+    );
+    expect(mockRetryMe).toHaveBeenCalled();
   });
 });

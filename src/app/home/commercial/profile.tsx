@@ -11,6 +11,7 @@ import ReportBugButton from "@/components/ReportBugButton";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import CannabisContentControls from "@/components/account/CannabisContentControls";
 
 type ProfileForm = {
   businessName: string;
@@ -346,6 +347,8 @@ export default function CommercialProfileRoute() {
           <ReportBugButton location="Commercial profile" />
         </View>
       </AppCard>
+
+      <CannabisContentControls />
     </AppPage>
   );
 }

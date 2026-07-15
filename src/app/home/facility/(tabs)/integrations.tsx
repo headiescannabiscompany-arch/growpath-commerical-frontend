@@ -29,15 +29,6 @@ const PLANNED = [
   "Monnit"
 ];
 
-const HISTORY_IMPORTS = [
-  "AC Infinity",
-  "Spider Farmer",
-  "Mars Hydro",
-  "VIVOSUN",
-  "Grand Master LED",
-  "Medic Grow"
-];
-
 export default function FacilityIntegrationsRoute() {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -187,19 +178,22 @@ export default function FacilityIntegrationsRoute() {
           >
             <Text style={styles.primaryActionText}>Import grow history</Text>
           </Pressable>
-          <Text style={styles.body}>Supported export workflows:</Text>
+          <Text style={styles.body}>Import methods:</Text>
           <View style={styles.providerGrid}>
-            {HISTORY_IMPORTS.map((provider) => (
-              <View key={provider} style={styles.importProvider}>
-                <Text style={styles.importProviderText}>{provider}</Text>
-                <Text style={styles.importStatus}>CSV mapping</Text>
-              </View>
-            ))}
+            <View style={styles.importProvider}>
+              <Text style={styles.importProviderText}>Controller CSV</Text>
+              <Text style={styles.importStatus}>Available · AC Infinity verified</Text>
+            </View>
+            <View style={styles.importProvider}>
+              <Text style={styles.importProviderText}>PDF source document</Text>
+              <Text style={styles.comingSoon}>Reviewed extraction planned</Text>
+            </View>
           </View>
           <Text style={styles.body}>
-            PDF reports can be retained as source documents after GrowPath&apos;s reviewed
-            PDF extraction workflow is enabled. CSV is the verified data-import path
-            today.
+            CSV is the verified structured-data path today. GrowPath detects supported
+            layouts when possible and still lets you map unknown controller exports
+            manually. PDF reports can be retained as source evidence once reviewed
+            extraction is enabled.
           </Text>
         </View>
 

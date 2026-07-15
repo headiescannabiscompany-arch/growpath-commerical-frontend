@@ -20,6 +20,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import CannabisContentControls from "@/components/account/CannabisContentControls";
 
 type AnyRec = Record<string, any>;
 
@@ -254,6 +255,8 @@ export default function FacilityProfileRoute() {
           <Text style={styles.h1}>AI usage</Text>
           <TokenBalanceWidget interactive={false} />
         </View>
+
+        <CannabisContentControls />
 
         <View style={styles.card}>
           <Text style={styles.h1}>Facility setup</Text>

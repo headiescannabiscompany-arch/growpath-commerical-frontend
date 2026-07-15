@@ -264,7 +264,18 @@ export default function ForumPostDetailRoute() {
     setSaving(true);
     setFeedback("");
     try {
-      await addForumComment(targetId, text || "Photo comment", commentPhotoUris);
+      const created: any = await addForumComment(
+        targetId,
+        text || "Photo comment",
+        commentPhotoUris
+      );
+      if (created?.isHidden || created?.moderationStatus === "held") {
+        setFeedback(
+          created?.moderationNotice ||
+            "This comment is hidden while a human moderator reviews it."
+        );
+        return;
+      }
       setCommentText("");
       setCommentPhotoUris([]);
       const nextComments = await listForumComments(targetId);
