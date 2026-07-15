@@ -83,7 +83,7 @@ export default function FacilityDashboardTab() {
   const router = useRouter();
   const entitlements = useEntitlements();
   const facilityRole = String(entitlements.facilityRole || "VIEWER").toUpperCase();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const { width } = useWindowDimensions();
   const isTablet = width >= 760;
   const isDesktop = width >= 1040;
@@ -395,7 +395,7 @@ export default function FacilityDashboardTab() {
             </Text>
             <Text style={[styles.h1, isTv ? styles.h1Tv : null]}>Operations Live</Text>
             <Text style={[styles.muted, isTv ? styles.mutedTv : null]}>
-              {facilityId ? String(facilityId) : "(none)"}
+              {String(selectedFacility?.name || "Facility operations")}
             </Text>
           </View>
           <View style={styles.heroStats}>

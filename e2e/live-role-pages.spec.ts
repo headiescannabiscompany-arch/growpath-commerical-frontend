@@ -30,6 +30,10 @@ async function inspectPages(
         }
       );
       await expect(page.getByText(/page not found|route not found/i)).toHaveCount(0);
+      await expect(page.getByText(/^Loading(?:\s|\.{3})/i)).toHaveCount(0, {
+        timeout: 30000
+      });
+      await expect(page.getByRole("progressbar")).toHaveCount(0, { timeout: 30000 });
       if (item.path === "/home/commercial") {
         await expect(page.getByText("Loading dashboard data...")).toHaveCount(0, {
           timeout: 30000
