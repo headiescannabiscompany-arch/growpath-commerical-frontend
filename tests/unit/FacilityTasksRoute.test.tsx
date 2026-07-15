@@ -5,6 +5,7 @@ import FacilityTasksRoute from "@/app/home/facility/(tabs)/tasks";
 
 const mockCreateTask = jest.fn();
 const mockGetFacilityTasks = jest.fn();
+const mockListTeamMembers = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 
@@ -15,12 +16,17 @@ function addDaysKey(days: number) {
 }
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace })
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
+  useLocalSearchParams: () => ({})
 }));
 
 jest.mock("@/api/tasks", () => ({
   createTask: (...args: any[]) => mockCreateTask(...args),
   getFacilityTasks: (...args: any[]) => mockGetFacilityTasks(...args)
+}));
+
+jest.mock("@/api/team", () => ({
+  listTeamMembers: (...args: any[]) => mockListTeamMembers(...args)
 }));
 
 jest.mock("@/components/InlineError", () => ({
@@ -96,6 +102,9 @@ describe("FacilityTasksRoute", () => {
         linkedFeedCampaignId: "campaign-linked-1"
       }
     ]);
+    mockListTeamMembers.mockResolvedValue([
+      { id: "member-1", userId: "user-1", name: "Alex Grower", role: "STAFF" }
+    ]);
     mockCreateTask.mockResolvedValue({ id: "task-created" });
   });
 
@@ -129,7 +138,7 @@ describe("FacilityTasksRoute", () => {
       screen.getByLabelText("Facility task reminder preset 24 hours before")
     );
     fireEvent.press(screen.getByLabelText("Facility task recurrence preset weekly"));
-    fireEvent.changeText(screen.getByLabelText("Facility task assignee"), "user-1");
+    fireEvent.press(screen.getByLabelText("Assign facility task to Alex Grower"));
     fireEvent.press(screen.getByLabelText("Set facility task source sop"));
     fireEvent.changeText(screen.getByLabelText("Facility task source object"), "sop-7");
     fireEvent.changeText(screen.getByLabelText("Facility task room"), "clone-room");
@@ -142,7 +151,7 @@ describe("FacilityTasksRoute", () => {
         title: "Sanitize clone trays",
         notes: "After clone pull.",
         dueDate: addDaysKey(7),
-        assignedTo: "user-1",
+        assignedToUserId: "user-1",
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "clone-room",

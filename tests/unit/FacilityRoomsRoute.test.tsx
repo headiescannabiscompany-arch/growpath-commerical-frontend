@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FacilityRoomsTab from "@/app/home/facility/(tabs)/rooms";
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 const mockCreateRoom = jest.fn();
 const mockDeleteRoom = jest.fn();
 const mockFetchRooms = jest.fn();
@@ -17,7 +18,7 @@ let mockRoomParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRoomParams,
-  useRouter: () => ({ replace: mockReplace, push: jest.fn() })
+  useRouter: () => ({ replace: mockReplace, push: mockPush })
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -81,19 +82,15 @@ describe("FacilityRoomsTab", () => {
   });
 
   it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {
+    mockRoomParams = {
+      importProvider: "Pulse",
+      importDevices:
+        "Flower Room 1 Temp/RH\nFlower Room 1 CO2\nFlower Room 1 Substrate EC\nFlower Room 1 Irrigation Alarm\nFlower Room 1 High Humidity Alarm\nVeg Room Temp/RH\nExisting Dry Room Temp/RH\nExisting Dry Room Reservoir pH Temp"
+    };
     const screen = render(<FacilityRoomsTab />);
 
-    await waitFor(() => expect(screen.getByText("Bring in controller rooms")).toBeTruthy());
-    expect(screen.queryByLabelText("Facility import device list")).toBeNull();
-    fireEvent.press(screen.getByLabelText("Open controller room import"));
-    expect(screen.getByText("Import controller rooms")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Import controller rooms")).toBeTruthy());
     expect(mockFetchRooms).toHaveBeenCalledWith("facility-1");
-
-    fireEvent.changeText(screen.getByLabelText("Facility import provider"), "Pulse");
-    fireEvent.changeText(
-      screen.getByLabelText("Facility import device list"),
-      "Flower Room 1 Temp/RH\nFlower Room 1 CO2\nFlower Room 1 Substrate EC\nFlower Room 1 Irrigation Alarm\nFlower Room 1 High Humidity Alarm\nVeg Room Temp/RH\nExisting Dry Room Temp/RH\nExisting Dry Room Reservoir pH Temp"
-    );
 
     expect(screen.getByText("Flower Room 1")).toBeTruthy();
     expect(screen.getByText("Veg Room")).toBeTruthy();
@@ -342,16 +339,13 @@ describe("FacilityRoomsTab", () => {
     mockFetchRooms.mockResolvedValue([]);
     mockListEquipment.mockResolvedValue([]);
 
+    mockRoomParams = {
+      importProvider: "TrolMaster",
+      importDevices: "TrolMaster Hydro-X Pro Flower Room 2 Temp/RH\nPulse Veg Room CO2"
+    };
     const screen = render(<FacilityRoomsTab />);
 
-    await waitFor(() => expect(screen.getByText("Bring in controller rooms")).toBeTruthy());
-    fireEvent.press(screen.getByLabelText("Open controller room import"));
-
-    fireEvent.changeText(screen.getByLabelText("Facility import provider"), "TrolMaster");
-    fireEvent.changeText(
-      screen.getByLabelText("Facility import device list"),
-      "TrolMaster Hydro-X Pro Flower Room 2 Temp/RH\nPulse Veg Room CO2"
-    );
+    await waitFor(() => expect(screen.getByText("Import controller rooms")).toBeTruthy());
 
     expect(screen.getByText("Flower Room 2")).toBeTruthy();
     expect(screen.getByText("Veg Room")).toBeTruthy();
