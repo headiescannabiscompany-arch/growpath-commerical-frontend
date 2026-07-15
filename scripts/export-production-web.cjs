@@ -152,6 +152,7 @@ const fallbackRoutes = [
   "home/facility/tools/environment",
   "home/facility/tools/feeding-schedule",
   "home/facility/tools/harvest-readiness",
+  "home/facility/tools/history-import",
   "home/facility/tools/npk",
   "home/facility/tools/pulse",
   "home/facility/tools/recipe-builder",
