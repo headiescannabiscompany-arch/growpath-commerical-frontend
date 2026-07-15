@@ -132,6 +132,11 @@ export default function Index() {
       return { kind: "nav" as const, href: "/login" };
     }
 
+    if (String(auth.user?.role || "").toLowerCase() === "admin") {
+      console.log("[INDEX] Platform admin -> /admin");
+      return { kind: "nav" as const, href: "/admin" };
+    }
+
     console.log("[INDEX] ent.mode:", ent.mode);
     console.log("[INDEX] ent.plan:", ent.plan);
     console.log("[INDEX] facility.isReady:", facility?.isReady);

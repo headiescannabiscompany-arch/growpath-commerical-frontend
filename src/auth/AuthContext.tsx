@@ -18,7 +18,7 @@ import {
   type SignupResponse
 } from "../api/auth";
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
-import { setOnUnauthorized } from "../api/apiRequest";
+import { apiRequest, setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
 
 const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
@@ -507,6 +507,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token,
     isHydrating
   });
+
+  useEffect(() => {
+    if (!token || !user?.id || token.startsWith("local-preview-")) return;
+    let active = true;
+    const heartbeat = () => {
+      if (!active) return;
+      void apiRequest("/api/presence/heartbeat", {
+        method: "POST",
+        silent: true,
+        invalidateOn401: false
+      }).catch(() => undefined);
+    };
+    heartbeat();
+    const interval = setInterval(heartbeat, 2 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [token, user?.id]);
 
   async function login(email: string, password: string) {
     try {
