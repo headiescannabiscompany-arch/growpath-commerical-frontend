@@ -35,6 +35,15 @@ async function inspectPages(
           timeout: 30000
         });
       }
+      if (item.path === "/home/facility/profile") {
+        await expect(page.getByText("Loading profile...")).toHaveCount(0, {
+          timeout: 15000
+        });
+        await expect(page.getByText("AI Tokens")).toBeVisible({ timeout: 15000 });
+      }
+      if (item.path === "/home/facility/ai-tools") {
+        await expect(page.getByText("AI Tokens")).toBeVisible({ timeout: 15000 });
+      }
       await page.screenshot({
         path: testInfo.outputPath(`${item.key}.png`),
         fullPage: true
@@ -122,6 +131,10 @@ test("Facility owner production page crawl", async ({ page }, testInfo) => {
     { path: "/home/facility/team", heading: /Team/i, key: "facility-team" },
     { path: "/home/facility/ai-tools", heading: /AI/i, key: "facility-ai" },
     { path: "/home/facility/profile", heading: /Profile/i, key: "facility-profile" },
-    { path: "/home/facility/feed", heading: /Feed/i, key: "facility-feed" }
+    {
+      path: "/home/facility/feed",
+      heading: /Facility Outreach/i,
+      key: "facility-feed"
+    }
   ]);
 });
