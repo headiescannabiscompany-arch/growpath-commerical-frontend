@@ -4,8 +4,13 @@ import { render, waitFor } from "@testing-library/react-native";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 
 const mockGetTokenBalance = jest.fn();
+let mockAuthState: any;
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn() })
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => mockAuthState
 }));
 
 jest.mock("@/api/tokens", () => ({
@@ -18,6 +23,11 @@ describe("TokenBalanceWidget", () => {
   beforeEach(() => {
     mockGetTokenBalance.mockReset();
     mockGetTokenBalance.mockRejectedValue(new Error("offline"));
+    mockAuthState = {
+      token: "authenticated-token",
+      user: { plan: "free", subscriptionStatus: "free" },
+      ctx: { plan: "free", subscriptionStatus: "free" }
+    };
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -73,5 +83,24 @@ describe("TokenBalanceWidget", () => {
         "Live balance is unavailable. No estimated balance is being shown."
       )
     ).toBeNull();
+  });
+
+  it("refreshes a stale free balance after the account becomes paid", async () => {
+    mockGetTokenBalance
+      .mockResolvedValueOnce({ aiTokens: 10, maxTokens: 10 })
+      .mockResolvedValueOnce({ aiTokens: 100, maxTokens: 100 });
+
+    const screen = render(<TokenBalanceWidget />);
+    await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
+
+    mockAuthState = {
+      ...mockAuthState,
+      user: { plan: "pro", subscriptionStatus: "active" },
+      ctx: { plan: "pro", subscriptionStatus: "active" }
+    };
+    screen.rerender(<TokenBalanceWidget />);
+
+    await waitFor(() => expect(screen.getByText("100 / 100")).toBeTruthy());
+    expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
   });
 });

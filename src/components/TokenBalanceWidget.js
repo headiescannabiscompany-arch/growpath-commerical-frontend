@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { getTokenBalance } from "../api/tokens";
+import { useAuth } from "../auth/AuthContext";
 import { radius } from "../theme/theme";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -12,14 +13,24 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
  */
 export default function TokenBalanceWidget({ onPress = undefined, interactive = true }) {
   const router = useRouter();
+  const auth = useAuth();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const accountStateKey = [
+    auth?.token || "",
+    auth?.user?.plan || "",
+    auth?.user?.subscriptionStatus || "",
+    auth?.ctx?.plan || "",
+    auth?.ctx?.subscriptionStatus || ""
+  ].join("|");
 
   useEffect(() => {
     let alive = true;
 
     async function load() {
+      setLoading(true);
+      setLoadFailed(false);
       try {
         const res = await getTokenBalance(undefined, { timeoutMs: 8000 });
         if (alive) setBalance(res?.data ?? res);
@@ -35,7 +46,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     return () => {
       alive = false;
     };
-  }, []);
+  }, [accountStateKey]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);
