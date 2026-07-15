@@ -11,7 +11,9 @@ type ApiTraceEntry = {
 async function safeBodySnippet(resp: any): Promise<string> {
   try {
     const text = await resp.text();
-    return String(text || "").replace(/\s+/g, " ").slice(0, 300);
+    return String(text || "")
+      .replace(/\s+/g, " ")
+      .slice(0, 300);
   } catch {
     return "";
   }
@@ -35,7 +37,9 @@ async function waitForApiResponse(
   try {
     return await page.waitForResponse(predicate, { timeout });
   } catch {
-    throw new Error(`${label} timed out after ${timeout}ms.\nRecent API trace:\n${formatTrace(trace)}`);
+    throw new Error(
+      `${label} timed out after ${timeout}ms.\nRecent API trace:\n${formatTrace(trace)}`
+    );
   }
 }
 
@@ -53,7 +57,10 @@ async function loginSeedUser(page: any) {
     (r: any) =>
       r.request().method() === "POST" &&
       r.url().includes("/api/auth/login") &&
-      (r.status() === 200 || r.status() === 201 || r.status() === 401 || r.status() === 403),
+      (r.status() === 200 ||
+        r.status() === 201 ||
+        r.status() === 401 ||
+        r.status() === 403),
     { timeout: 30000 }
   );
 
@@ -73,15 +80,20 @@ async function loginSeedUser(page: any) {
     );
   }
 
-  await page.waitForURL((url: URL) => !/\/(\(auth\)\/)?(login|auth)(\/|$)/.test(url.pathname), {
-    timeout: 30000
-  });
+  await page.waitForURL(
+    (url: URL) => !/\/(\(auth\)\/)?(login|auth)(\/|$)/.test(url.pathname),
+    {
+      timeout: 30000
+    }
+  );
 }
 
-test("Personal Grows: list -> create -> open", async ({ page }) => {
+test("Personal Grows: list -> create -> open", async ({ page }, testInfo) => {
   const apiTrace: ApiTraceEntry[] = [];
   const isTrackedApi = (url: string) =>
-    url.includes("/api/me") || url.includes("/api/personal/grows") || url.includes("/api/auth/login");
+    url.includes("/api/me") ||
+    url.includes("/api/personal/grows") ||
+    url.includes("/api/auth/login");
 
   page.on("response", async (resp) => {
     const url = resp.url();
@@ -152,12 +164,19 @@ test("Personal Grows: list -> create -> open", async ({ page }) => {
     expect(createJson.success).toBe(true);
   }
 
-  await expect(page.getByRole("heading", { name: "Grows" }).first()).toBeVisible();
-  await expect(page.getByText(growName)).toBeVisible();
-
-  await page.getByText(growName).click();
+  await expect(page.getByText(`Grow created: ${growName}`)).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("personal-grow-created-next-steps.png"),
+    fullPage: true
+  });
+  await page.getByRole("button", { name: "Open Grow Dashboard" }).click();
   await page.waitForURL(/\/home\/personal\/grows\/[^/?#]+/, { timeout: 15000 });
   const openedGrowId = page.url().split("/home/personal/grows/")[1]?.split(/[?#]/)[0];
   expect(openedGrowId).toBeTruthy();
-  await expect(page.getByText(`Grow ${openedGrowId}`).first()).toBeVisible();
+  expect(openedGrowId).not.toBe("new");
+  await expect(page.getByText(growName).first()).toBeVisible({ timeout: 30000 });
+  await page.screenshot({
+    path: testInfo.outputPath("personal-grow-dashboard.png"),
+    fullPage: true
+  });
 });

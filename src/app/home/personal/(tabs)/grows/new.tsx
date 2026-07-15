@@ -976,8 +976,15 @@ export default function NewGrowScreen() {
           <View
             style={{
               flex: 1,
+              position: Platform.OS === "web" ? ("fixed" as any) : "relative",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              zIndex: 1000,
               backgroundColor: "rgba(15, 23, 42, 0.35)",
               justifyContent: "center",
+              alignItems: "center",
               padding: 20
             }}
           >
@@ -986,7 +993,16 @@ export default function NewGrowScreen() {
                 backgroundColor: "#FFFFFF",
                 borderRadius: radius.card,
                 padding: 18,
-                gap: 10
+                gap: 10,
+                width: "100%",
+                maxWidth: 560,
+                borderWidth: 1,
+                borderColor: "#CBD5E1",
+                shadowColor: "#0F172A",
+                shadowOpacity: 0.22,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 12 },
+                elevation: 12
               }}
             >
               <Text style={{ fontSize: 20, fontWeight: "900", color: "#0F172A" }}>
