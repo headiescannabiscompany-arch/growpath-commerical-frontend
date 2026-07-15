@@ -10,7 +10,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { listIntegrationConnections, type IntegrationConnection } from "@/api/integrations";
+import {
+  listIntegrationConnections,
+  type IntegrationConnection
+} from "@/api/integrations";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { radius } from "@/theme/theme";
 import { useEntitlements } from "@/entitlements";
@@ -122,8 +125,9 @@ export default function FacilityIntegrationsRoute() {
             <Text style={styles.cardTitle}>TrolMaster developer access</Text>
             <Text style={styles.body}>
               TrolMaster publishes an official developer portal for API subscriptions,
-              credentials, usage, documentation, and live API testing. GrowPath will enable
-              this connection after its read-only adapter is implemented and verified.
+              credentials, usage, documentation, and live API testing. GrowPath will
+              enable this connection after its read-only adapter is implemented and
+              verified.
             </Text>
             <Pressable
               style={styles.primaryAction}
@@ -131,7 +135,10 @@ export default function FacilityIntegrationsRoute() {
             >
               <Text style={styles.primaryActionText}>Open developer portal</Text>
             </Pressable>
-            <Pressable style={styles.secondaryAction} onPress={() => requestProvider("TrolMaster")}>
+            <Pressable
+              style={styles.secondaryAction}
+              onPress={() => requestProvider("TrolMaster")}
+            >
               <Text style={styles.secondaryActionText}>Ask GrowPath to enable it</Text>
             </Pressable>
           </View>

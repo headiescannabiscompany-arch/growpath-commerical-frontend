@@ -118,7 +118,9 @@ export default function FacilityProfileRoute() {
         ]);
 
         setMe(
-          meResult.status === "fulfilled" ? unwrapRecord(meResult.value) : auth.user ?? null
+          meResult.status === "fulfilled"
+            ? unwrapRecord(meResult.value)
+            : (auth.user ?? null)
         );
 
         const facilities =
