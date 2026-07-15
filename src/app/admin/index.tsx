@@ -40,6 +40,26 @@ type AdminUser = {
   lastActiveAt?: string;
 };
 
+type ModerationCase = {
+  _id: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  severity: string;
+  status: string;
+  action: string;
+};
+
+type EvidenceRequest = {
+  _id: string;
+  requestType: string;
+  requesterName: string;
+  requesterOrganization?: string;
+  scope: string;
+  status: string;
+  preservationHold: boolean;
+};
+
 function Metric({
   label,
   value,
@@ -64,6 +84,8 @@ export default function PlatformAdminRoute() {
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const [overview, setOverview] = useState<Overview | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
+  const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -78,12 +100,21 @@ export default function PlatformAdminRoute() {
     setError("");
     try {
       const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
-      const [overviewResponse, usersResponse] = await Promise.all([
-        apiRequest("/api/admin/overview"),
-        apiRequest(`/api/admin/users${suffix}`)
-      ]);
+      const [overviewResponse, usersResponse, moderationResponse, evidenceResponse] =
+        await Promise.all([
+          apiRequest("/api/admin/overview"),
+          apiRequest(`/api/admin/users${suffix}`),
+          apiRequest("/api/admin/moderation-cases"),
+          apiRequest("/api/admin/evidence-requests")
+        ]);
       setOverview(overviewResponse?.overview || null);
       setUsers(Array.isArray(usersResponse?.users) ? usersResponse.users : []);
+      setModerationCases(
+        Array.isArray(moderationResponse?.cases) ? moderationResponse.cases : []
+      );
+      setEvidenceRequests(
+        Array.isArray(evidenceResponse?.requests) ? evidenceResponse.requests : []
+      );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
     } finally {
@@ -150,6 +181,40 @@ export default function PlatformAdminRoute() {
       setNoticeMessage("");
     } catch (err: any) {
       setError(err?.message || "Notice delivery failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function moderateContent(item: ModerationCase, action: "hide" | "restore") {
+    setBusyId(item._id);
+    try {
+      await apiRequest(`/api/admin/moderation-cases/${item._id}/action`, {
+        method: "POST",
+        body: { action }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Content moderation action failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function preserveEvidence(item: EvidenceRequest) {
+    setBusyId(item._id);
+    try {
+      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
+        method: "PATCH",
+        body: {
+          status: "preserved",
+          preservationHold: true,
+          reason: "Platform owner approved preservation hold"
+        }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Evidence preservation failed.");
     } finally {
       setBusyId("");
     }
@@ -291,6 +356,81 @@ export default function PlatformAdminRoute() {
         ))}
       </View>
 
+      <AppCard
+        title="Moderation cases"
+        subtitle="Review evidence snapshots before hiding or restoring public content."
+      >
+        {moderationCases.length ? (
+          moderationCases.slice(0, 20).map((item) => (
+            <View key={item._id} style={styles.caseRow}>
+              <View style={styles.caseCopy}>
+                <Text style={styles.caseTitle}>
+                  {item.targetType} · {item.severity} · {item.status}
+                </Text>
+                <Text style={styles.meta}>{item.reason}</Text>
+              </View>
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.warningButton}
+                  onPress={() => void moderateContent(item, "hide")}
+                >
+                  <Text style={styles.warningText}>Hide content</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void moderateContent(item, "restore")}
+                >
+                  <Text style={styles.secondaryText}>Restore</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.meta}>No moderation cases are waiting for review.</Text>
+        )}
+      </AppCard>
+
+      <AppCard
+        title="Legal and evidence requests"
+        subtitle="Preservation is separate from disclosure. Legal review is still required."
+      >
+        {evidenceRequests.length ? (
+          evidenceRequests.slice(0, 20).map((item) => (
+            <View key={item._id} style={styles.caseRow}>
+              <View style={styles.caseCopy}>
+                <Text style={styles.caseTitle}>
+                  {item.requestType} · {item.status}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.requesterName}
+                  {item.requesterOrganization ? ` · ${item.requesterOrganization}` : ""}
+                </Text>
+                <Text style={styles.meta}>{item.scope}</Text>
+              </View>
+              <Pressable
+                disabled={busyId === item._id || item.preservationHold}
+                style={
+                  item.preservationHold ? styles.secondaryButton : styles.primaryButton
+                }
+                onPress={() => void preserveEvidence(item)}
+              >
+                <Text
+                  style={
+                    item.preservationHold ? styles.secondaryText : styles.primaryText
+                  }
+                >
+                  {item.preservationHold ? "Preservation active" : "Preserve evidence"}
+                </Text>
+              </Pressable>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.meta}>No legal or evidence requests have been opened.</Text>
+        )}
+      </AppCard>
+
       {noticeUser ? (
         <AppCard
           title={`Email ${noticeUser.email}`}
@@ -326,6 +466,16 @@ export default function PlatformAdminRoute() {
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   body: { color: "#475569", lineHeight: 21, marginTop: 6 },
+  caseCopy: { flex: 1, minWidth: 220 },
+  caseRow: {
+    borderBottomColor: "#E2E8F0",
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    paddingVertical: 12
+  },
+  caseTitle: { color: "#0F172A", fontWeight: "900", textTransform: "capitalize" },
   dangerButton: {
     backgroundColor: "#991B1B",
     borderRadius: radius.card,
