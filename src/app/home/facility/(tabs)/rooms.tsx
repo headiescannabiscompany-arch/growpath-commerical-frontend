@@ -328,6 +328,7 @@ export default function FacilityRoomsTab() {
   const [estimatedPlantCount, setEstimatedPlantCount] = useState("");
   const [importProvider, setImportProvider] = useState("TrolMaster / Pulse");
   const [importDeviceText, setImportDeviceText] = useState("");
+  const [showRoomImport, setShowRoomImport] = useState(false);
 
   const roomAccess = getFacilityRoomAccess({
     can: ent?.can,
@@ -364,7 +365,10 @@ export default function FacilityRoomsTab() {
     const provider = Array.isArray(params.importProvider)
       ? params.importProvider[0]
       : params.importProvider;
-    if (deviceNames) setImportDeviceText(String(deviceNames));
+    if (deviceNames) {
+      setImportDeviceText(String(deviceNames));
+      setShowRoomImport(true);
+    }
     if (provider) setImportProvider(String(provider));
   }, [params.importDevices, params.importProvider]);
 
@@ -732,9 +736,27 @@ export default function FacilityRoomsTab() {
           )}
         </View>
 
-        {canEditRooms ? (
+        {canEditRooms && !showRoomImport ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Controller Room Import Preview</Text>
+            <Text style={styles.cardTitle}>Bring in controller rooms</Text>
+            <Text style={styles.muted}>
+              Import discovered device names when setting up Pulse, TrolMaster, or another
+              controller. Your normal room list stays the primary workspace.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open controller room import"
+              onPress={() => setShowRoomImport(true)}
+              style={styles.primaryBtn}
+            >
+              <Text style={styles.primaryText}>Import controller rooms</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {canEditRooms && showRoomImport ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Import controller rooms</Text>
             <Text style={styles.muted}>
               Paste detected controller, hub, module, or sensor names from Pulse,
               TrolMaster, Growlink, AROYA, SensorPush, or similar providers. GrowPath
@@ -787,8 +809,16 @@ export default function FacilityRoomsTab() {
               ]}
             >
               <Text style={styles.primaryText}>
-                {saving ? "Creating..." : "Create Previewed Rooms"}
+                {saving ? "Creating..." : "Create previewed rooms"}
               </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close controller room import"
+              onPress={() => setShowRoomImport(false)}
+              style={styles.pill}
+            >
+              <Text style={styles.pillText}>Close import</Text>
             </Pressable>
           </View>
         ) : null}

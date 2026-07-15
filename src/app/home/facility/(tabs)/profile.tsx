@@ -42,6 +42,16 @@ function renderKV(obj: AnyRec | null, key: string) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
+  const displayValue =
+    key === "createdAt" && !Number.isNaN(Date.parse(String(v)))
+      ? new Date(String(v)).toLocaleDateString()
+      : key === "role" || key === "plan"
+        ? String(v)
+            .toLowerCase()
+            .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase())
+        : typeof v === "string"
+          ? v
+          : JSON.stringify(v);
 
   return (
     <View style={styles.kv} key={key}>
@@ -55,7 +65,7 @@ function renderKV(obj: AnyRec | null, key: string) {
           } as Record<string, string>
         )[key] || key.replace(/Id$/, " ID")}
       </Text>
-      <Text style={styles.v}>{typeof v === "string" ? v : JSON.stringify(v)}</Text>
+      <Text style={styles.v}>{displayValue}</Text>
     </View>
   );
 }
@@ -162,30 +172,13 @@ export default function FacilityProfileRoute() {
 
   const meKeys = useMemo(() => {
     if (!me) return [];
-    const preferred = [
-      "id",
-      "_id",
-      "email",
-      "name",
-      "displayName",
-      "plan",
-      "role",
-      "createdAt"
-    ];
+    const preferred = ["email", "name", "displayName", "plan", "role", "createdAt"];
     return preferred.filter((k) => k in me);
   }, [me]);
 
   const facilityKeys = useMemo(() => {
     if (!facility) return [];
-    const facilityPreferred = [
-      "id",
-      "_id",
-      "name",
-      "legalName",
-      "license",
-      "state",
-      "createdAt"
-    ];
+    const facilityPreferred = ["name", "legalName", "license", "state", "createdAt"];
     return facilityPreferred.filter((k) => k in facility);
   }, [facility]);
 

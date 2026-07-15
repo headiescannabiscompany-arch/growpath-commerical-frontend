@@ -83,9 +83,10 @@ describe("FacilityRoomsTab", () => {
   it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {
     const screen = render(<FacilityRoomsTab />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Controller Room Import Preview")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("Bring in controller rooms")).toBeTruthy());
+    expect(screen.queryByLabelText("Facility import device list")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Open controller room import"));
+    expect(screen.getByText("Import controller rooms")).toBeTruthy();
     expect(mockFetchRooms).toHaveBeenCalledWith("facility-1");
 
     fireEvent.changeText(screen.getByLabelText("Facility import provider"), "Pulse");
@@ -343,9 +344,8 @@ describe("FacilityRoomsTab", () => {
 
     const screen = render(<FacilityRoomsTab />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Controller Room Import Preview")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("Bring in controller rooms")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Open controller room import"));
 
     fireEvent.changeText(screen.getByLabelText("Facility import provider"), "TrolMaster");
     fireEvent.changeText(
