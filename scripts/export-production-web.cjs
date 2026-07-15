@@ -58,6 +58,7 @@ if (exportResult.status !== 0) {
 }
 
 const fallbackRoutes = [
+  "admin",
   "login",
   "register",
   "accept-facility-invite",
