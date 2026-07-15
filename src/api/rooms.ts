@@ -13,7 +13,14 @@ export type Room = {
   lastActivityAt?: string;
   plantCount?: number;
   lightCount?: number;
+  environmentType?: string;
+  dimensions?: { length?: number; width?: number; height?: number; unit?: string };
+  location?: { city?: string; region?: string; postalCode?: string; country?: string };
+  baselines?: Record<string, unknown>;
+  roomProfile?: Record<string, unknown>;
 };
+
+export type RoomDraft = Omit<Partial<Room>, "id" | "createdAt"> & { name: string };
 
 function normalizeRoom(raw: any): Room | null {
   if (!raw || typeof raw !== "object") return null;
@@ -49,17 +56,7 @@ export async function fetchRooms(facilityId: string): Promise<Room[]> {
   return normalizeRoomsResponse(listRes);
 }
 
-export async function createRoom(
-  facilityId: string,
-  data: {
-    name: string;
-    roomType?: string;
-    trackingMode?: string;
-    zoneName?: string;
-    zoneId?: string;
-    stage?: string;
-  }
-) {
+export async function createRoom(facilityId: string, data: RoomDraft) {
   const createRes = await apiRequest(endpoints.rooms(facilityId), {
     method: "POST",
     body: data

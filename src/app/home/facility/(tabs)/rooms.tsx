@@ -21,6 +21,7 @@ import {
   type EquipmentItem
 } from "@/api/facilityWorkflows";
 import { createRoom, deleteRoom, fetchRooms, updateRoom, type Room } from "@/api/rooms";
+import { askFormAssistant, type FormAssistantResponse } from "@/api/formAssistant";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
@@ -44,13 +45,24 @@ const ROOM_TYPES = [
   { value: "flower", label: "Flower" },
   { value: "veg", label: "Veg" },
   { value: "clone", label: "Clone" },
+  { value: "tissue culture", label: "Tissue Culture" },
+  { value: "grow tent", label: "Grow Tent" },
+  { value: "outdoor bed", label: "Outdoor / Raised Bed" },
   { value: "mother", label: "Mother" },
   { value: "dry", label: "Dry" },
   { value: "cure", label: "Cure" },
   { value: "seedling", label: "Seedling" },
   { value: "other", label: "Other" }
 ] as const;
-const CYCLE_STAGES = ["clone", "veg", "flower", "dry", "cure", "complete"] as const;
+const CYCLE_STAGES = [
+  "tissue culture",
+  "clone",
+  "veg",
+  "flower",
+  "dry",
+  "cure",
+  "complete"
+] as const;
 const CYCLE_STATUSES = ["planned", "active", "paused", "complete"] as const;
 
 function normalizedCycleStatus(cycle: BatchCycle) {
@@ -72,6 +84,9 @@ function inferRoomType(name: string) {
   if (lower.includes("cure")) return "cure";
   if (lower.includes("seed")) return "seedling";
   if (lower.includes("greenhouse")) return "greenhouse";
+  if (lower.includes("tissue") || lower.includes("microprop")) return "tissue culture";
+  if (lower.includes("tent")) return "grow tent";
+  if (lower.includes("raised bed") || lower.includes("outdoor")) return "outdoor bed";
   return "other";
 }
 
@@ -318,6 +333,18 @@ export default function FacilityRoomsTab() {
     useState<(typeof TRACKING_MODES)[number]>("batch");
   const [roomZoneName, setRoomZoneName] = useState("");
   const [roomStage, setRoomStage] = useState("");
+  const [roomDescription, setRoomDescription] = useState("");
+  const [roomLocation, setRoomLocation] = useState("");
+  const [roomDimensions, setRoomDimensions] = useState<{
+    length?: number;
+    width?: number;
+    height?: number;
+    unit?: string;
+  }>({});
+  const [assistantResult, setAssistantResult] = useState<FormAssistantResponse | null>(
+    null
+  );
+  const [assistantBusy, setAssistantBusy] = useState(false);
 
   const [equipmentName, setEquipmentName] = useState("");
   const [equipmentType, setEquipmentType] = useState("light");
@@ -442,11 +469,20 @@ export default function FacilityRoomsTab() {
         roomType: roomType.trim() || undefined,
         trackingMode: roomTrackingMode,
         zoneName: roomZoneName.trim() || undefined,
-        stage: roomStage.trim() || undefined
+        stage: roomStage.trim() || undefined,
+        dimensions: Object.keys(roomDimensions).length ? roomDimensions : undefined,
+        location: roomLocation.trim() ? { city: roomLocation.trim() } : undefined,
+        roomProfile: roomDescription.trim()
+          ? { setupDescription: roomDescription.trim() }
+          : undefined
       });
       setRoomName("");
       setRoomZoneName("");
       setRoomStage("");
+      setRoomDescription("");
+      setRoomLocation("");
+      setRoomDimensions({});
+      setAssistantResult(null);
       setFeedback("Room created.");
       await load({ refresh: true });
     } catch (e) {
@@ -454,6 +490,55 @@ export default function FacilityRoomsTab() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function getRoomFormHelp() {
+    if (!facilityId || !roomDescription.trim()) return;
+    setAssistantBusy(true);
+    clearError();
+    try {
+      const result = await askFormAssistant({
+        formType: "facility_room",
+        facilityId,
+        description: roomDescription.trim(),
+        existingValues: {
+          name: roomName,
+          stage: roomStage,
+          zoneName: roomZoneName,
+          location: roomLocation
+        }
+      });
+      setAssistantResult(result);
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setAssistantBusy(false);
+    }
+  }
+
+  function applyRoomSuggestions() {
+    for (const suggestion of assistantResult?.suggestions || []) {
+      if (suggestion.field === "roomType") setRoomType(suggestion.value as any);
+      if (suggestion.field === "stage") setRoomStage(String(suggestion.value));
+      if (suggestion.field === "environmentType") {
+        // Environment is retained in the setup description until its dedicated field ships.
+        setRoomDescription((value) =>
+          value.includes("Environment:")
+            ? value
+            : `${value}\nEnvironment: ${String(suggestion.value)}`.trim()
+        );
+      }
+      const dimension = suggestion.field.match(
+        /^dimensions\.(length|width|height|unit)$/
+      );
+      if (dimension) {
+        setRoomDimensions((current) => ({
+          ...current,
+          [dimension[1]]: suggestion.value
+        }));
+      }
+    }
+    setFeedback("Reviewed AI suggestions applied. Confirm the form before creating.");
   }
 
   async function createImportedRooms() {
@@ -487,11 +572,14 @@ export default function FacilityRoomsTab() {
         const roomKey = room.name.trim().toLowerCase();
         let savedRoom = existingRoomsByName.get(roomKey);
         if (!savedRoom) {
-          savedRoom = await createRoom(facilityId, {
+          const createdRoom = await createRoom(facilityId, {
             name: room.name,
             roomType: room.roomType,
             trackingMode: "batch"
           });
+          if (!createdRoom)
+            throw new Error(`Unable to create imported room ${room.name}`);
+          savedRoom = createdRoom;
           existingRoomsByName.set(roomKey, savedRoom);
           createdRoomCount += 1;
         }
@@ -738,18 +826,19 @@ export default function FacilityRoomsTab() {
 
         {canEditRooms && !showRoomImport ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Bring in controller rooms</Text>
+            <Text style={styles.cardTitle}>Connect or import room data</Text>
             <Text style={styles.muted}>
-              Import discovered device names when setting up Pulse, TrolMaster, or another
-              controller. Your normal room list stays the primary workspace.
+              Connect Pulse, request TrolMaster access, or import controller history from
+              CSV/PDF in Integrations. Discovered rooms return here for review and
+              mapping.
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Open controller room import"
-              onPress={() => setShowRoomImport(true)}
+              accessibilityLabel="Open facility integrations for room data"
+              onPress={() => router.push("/home/facility/integrations")}
               style={styles.primaryBtn}
             >
-              <Text style={styles.primaryText}>Import controller rooms</Text>
+              <Text style={styles.primaryText}>Open connections and history import</Text>
             </Pressable>
           </View>
         ) : null}
@@ -758,10 +847,8 @@ export default function FacilityRoomsTab() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Import controller rooms</Text>
             <Text style={styles.muted}>
-              Paste detected controller, hub, module, or sensor names from Pulse,
-              TrolMaster, Growlink, AROYA, SensorPush, or similar providers. GrowPath
-              suggests rooms first so the facility can start from imported structure
-              instead of a blank setup.
+              These device names were discovered by an integration. Review GrowPathAI’s
+              proposed room mapping before creating anything.
             </Text>
             <TextInput
               value={importProvider}
@@ -829,6 +916,70 @@ export default function FacilityRoomsTab() {
             <Text style={styles.muted}>{roomAccess.hiddenRoomReason}</Text>
           ) : (
             <View style={styles.form}>
+              <Text style={styles.sectionTitle}>Ask AI to help describe this space</Text>
+              <Text style={styles.muted}>
+                Tell us what you know, such as “4 × 8 indoor tent,” “outdoor raised flower
+                bed,” “greenhouse,” or “tissue-culture room.” AI asks for missing facts
+                and labels calculations or assumptions before anything is applied.
+              </Text>
+              <TextInput
+                value={roomDescription}
+                onChangeText={setRoomDescription}
+                style={[styles.input, styles.textArea]}
+                accessibilityLabel="Describe new room for AI assistance"
+                multiline
+                placeholder="Describe the space, dimensions, crop purpose, known temperature/RH, equipment, and location if outdoor."
+              />
+              <Pressable
+                onPress={getRoomFormHelp}
+                disabled={assistantBusy || !roomDescription.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="Ask AI to help fill out new room"
+                style={[
+                  styles.primaryBtn,
+                  (assistantBusy || !roomDescription.trim()) && styles.disabled
+                ]}
+              >
+                <Text style={styles.primaryText}>
+                  {assistantBusy ? "Reviewing..." : "Ask AI to help fill this out"}
+                </Text>
+              </Pressable>
+              {assistantResult ? (
+                <View style={styles.importPreviewList}>
+                  {assistantResult.questions.length ? (
+                    <View>
+                      <Text style={styles.sectionTitle}>
+                        Questions before we infer more
+                      </Text>
+                      {assistantResult.questions.map((question) => (
+                        <Text key={question} style={styles.rowMeta}>
+                          • {question}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  {assistantResult.suggestions.length ? (
+                    <View>
+                      <Text style={styles.sectionTitle}>Reviewable suggestions</Text>
+                      {assistantResult.suggestions.map((suggestion) => (
+                        <Text key={suggestion.field} style={styles.rowMeta}>
+                          {suggestion.field}: {String(suggestion.value)} ·{" "}
+                          {suggestion.source}
+                          {suggestion.source === "inferred" ? " · review required" : ""}
+                        </Text>
+                      ))}
+                      <Pressable
+                        onPress={applyRoomSuggestions}
+                        accessibilityRole="button"
+                        accessibilityLabel="Apply reviewed AI room suggestions"
+                        style={styles.pill}
+                      >
+                        <Text style={styles.pillText}>Apply reviewed suggestions</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
               <TextInput
                 value={roomName}
                 onChangeText={setRoomName}
@@ -843,6 +994,15 @@ export default function FacilityRoomsTab() {
                 accessibilityLabel="New room zone or area"
                 placeholder="Zone or area, optional"
               />
+              {(roomType === "outdoor bed" || roomType === "greenhouse") && (
+                <TextInput
+                  value={roomLocation}
+                  onChangeText={setRoomLocation}
+                  style={styles.input}
+                  accessibilityLabel="New room city or region"
+                  placeholder="City, region, or postal code for weather context"
+                />
+              )}
               <View style={styles.pillRow}>
                 {ROOM_TYPES.map((type) => (
                   <Pressable
@@ -1225,6 +1385,7 @@ const styles = StyleSheet.create({
     gap: 10
   },
   cardTitle: { fontSize: 16, fontWeight: "900" },
+  sectionTitle: { fontSize: 14, fontWeight: "900", marginTop: 2 },
   form: { gap: 8 },
   input: {
     borderWidth: 1,

@@ -16,7 +16,13 @@ async function inspectPages(
   pages: Array<{ path: string; heading: RegExp; key: string }>
 ) {
   const runtimeErrors: string[] = [];
+  const failedApiResponses: string[] = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  page.on("response", (response) => {
+    if (response.status() >= 400 && response.url().includes("/api/")) {
+      failedApiResponses.push(`${response.status()} ${response.request().method()} ${response.url()}`);
+    }
+  });
 
   for (const item of pages) {
     await test.step(item.path, async () => {
@@ -30,7 +36,6 @@ async function inspectPages(
         }
       );
       await expect(page.getByText(/page not found|route not found/i)).toHaveCount(0);
-      await expect(page.getByText(/^NOT_FOUND$/)).toHaveCount(0);
       await expect(page.getByText(/^Loading(?:\s|\.{3})/i)).toHaveCount(0, {
         timeout: 30000
       });
@@ -59,6 +64,10 @@ async function inspectPages(
   expect(runtimeErrors, `Browser runtime errors:\n${runtimeErrors.join("\n")}`).toEqual(
     []
   );
+  expect(
+    failedApiResponses,
+    `Failed API responses:\n${failedApiResponses.join("\n")}`
+  ).toEqual([]);
 }
 
 test("Single Pro production page crawl", async ({ page }, testInfo) => {

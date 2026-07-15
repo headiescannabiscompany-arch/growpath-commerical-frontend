@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -16,7 +17,13 @@ import { InlineError } from "@/components/InlineError";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { can } from "@/facility/roleGates";
 import { useFacility } from "@/state/useFacility";
-import { inviteTeamMember, listTeamMembers } from "@/api/team";
+import {
+  inviteTeamMember,
+  listTeamMembers,
+  removeTeamMember,
+  updateTeamMemberRole
+} from "@/api/team";
+import type { FacilityRole } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
 
@@ -55,6 +62,7 @@ export default function FacilityTeamTab() {
   const facilityRole = (ent.facilityRole as any) ?? null;
   const canInvite =
     Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) || can(facilityRole, "TEAM_INVITE");
+  const isOwner = String(facilityRole || "").toUpperCase() === "OWNER";
 
   const mapApiError = useApiErrorHandler();
   const mapApiErrorRef = useRef(mapApiError);
@@ -66,9 +74,10 @@ export default function FacilityTeamTab() {
   const [refreshing, setRefreshing] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("STAFF");
+  const [inviteRole, setInviteRole] = useState<FacilityRole>("STAFF");
   const [inviting, setInviting] = useState(false);
   const [inviteFeedback, setInviteFeedback] = useState("");
+  const [busyMemberId, setBusyMemberId] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -119,6 +128,54 @@ export default function FacilityTeamTab() {
     }
   }, [canInvite, facilityId, inviteEmail, inviteRole, load]);
 
+  const changeRole = useCallback(
+    async (userId: string, role: "MANAGER" | "STAFF" | "VIEWER") => {
+      if (!facilityId || !isOwner || !userId) return;
+      setBusyMemberId(userId);
+      try {
+        setError(null);
+        await updateTeamMemberRole(facilityId, userId, { role });
+        await load({ refresh: true });
+      } catch (e) {
+        setError(mapApiErrorRef.current.toInlineError(e));
+      } finally {
+        setBusyMemberId("");
+      }
+    },
+    [facilityId, isOwner, load]
+  );
+
+  const removeMember = useCallback(
+    async (userId: string) => {
+      if (!facilityId || !isOwner || !userId) return;
+      setBusyMemberId(userId);
+      try {
+        setError(null);
+        await removeTeamMember(facilityId, userId);
+        await load({ refresh: true });
+      } catch (e) {
+        setError(mapApiErrorRef.current.toInlineError(e));
+      } finally {
+        setBusyMemberId("");
+      }
+    },
+    [facilityId, isOwner, load]
+  );
+
+  const confirmRemoveMember = useCallback(
+    (userId: string, label: string) => {
+      Alert.alert(
+        "Remove facility member?",
+        `${label} will lose access to this facility. Their historical task and audit records remain.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Remove", style: "destructive", onPress: () => removeMember(userId) }
+        ]
+      );
+    },
+    [removeMember]
+  );
+
   useEffect(() => {
     if (!facilityId) {
       router.replace("/home/facility/select");
@@ -158,7 +215,7 @@ export default function FacilityTeamTab() {
 
           {canInvite ? (
             <View style={styles.roleRow}>
-              {["MANAGER", "STAFF", "VIEWER"].map((role) => (
+              {(["MANAGER", "STAFF", "VIEWER"] as FacilityRole[]).map((role) => (
                 <Pressable
                   key={role}
                   onPress={() => setInviteRole(role)}
@@ -227,8 +284,11 @@ export default function FacilityTeamTab() {
             ) : null
           }
           renderItem={({ item }) => {
+            const memberId = pickId(item);
             const title = pickTitle(item);
             const subtitle = pickSubtitle(item);
+            const memberRole = String(item?.role || "").toUpperCase();
+            const canManageMember = isOwner && memberRole !== "OWNER" && memberId;
 
             return (
               <View style={styles.row}>
@@ -241,6 +301,59 @@ export default function FacilityTeamTab() {
                       {subtitle}
                     </Text>
                   ) : null}
+                  <View style={styles.memberActions}>
+                    {memberId ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Assign task to ${title}`}
+                        onPress={() =>
+                          router.push(
+                            `/home/facility/tasks?assignee=${encodeURIComponent(memberId)}` as any
+                          )
+                        }
+                        style={styles.smallButton}
+                      >
+                        <Text style={styles.smallButtonText}>Assign task</Text>
+                      </Pressable>
+                    ) : null}
+                    {canManageMember
+                      ? (["MANAGER", "STAFF", "VIEWER"] as const).map((role) => (
+                          <Pressable
+                            key={role}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Change ${title} role to ${role.toLowerCase()}`}
+                            disabled={busyMemberId === memberId || memberRole === role}
+                            onPress={() => changeRole(memberId, role)}
+                            style={[
+                              styles.smallButton,
+                              memberRole === role && styles.smallButtonSelected
+                            ]}
+                          >
+                            <Text style={styles.smallButtonText}>
+                              {role.charAt(0) + role.slice(1).toLowerCase()}
+                            </Text>
+                          </Pressable>
+                        ))
+                      : null}
+                    {canManageMember ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remove ${title} from facility`}
+                        disabled={busyMemberId === memberId}
+                        onPress={() =>
+                          confirmRemoveMember(
+                            memberId,
+                            String(item.name || item.email || "This member")
+                          )
+                        }
+                        style={[styles.smallButton, styles.removeButton]}
+                      >
+                        <Text style={styles.removeButtonText}>
+                          {busyMemberId === memberId ? "Working..." : "Remove"}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             );
@@ -312,6 +425,18 @@ const styles = StyleSheet.create({
   },
   rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
   rowSub: { opacity: 0.7 },
+  memberActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  smallButton: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  smallButtonSelected: { backgroundColor: "#DCFCE7", borderColor: "#16A34A" },
+  smallButtonText: { color: "#334155", fontSize: 12, fontWeight: "800" },
+  removeButton: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
+  removeButtonText: { color: "#991B1B", fontSize: 12, fontWeight: "800" },
 
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }

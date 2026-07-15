@@ -10,12 +10,13 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { createTask as createFacilityTask, getFacilityTasks } from "@/api/tasks";
+import { listTeamMembers, type TeamMember } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
@@ -42,6 +43,17 @@ const sourceTypes = [
   "product_batch",
   "product_trial",
   "forum"
+] as const;
+
+const CULTIVATION_TASK_PRESETS = [
+  { label: "Water", title: "Water and check dryback", recurrence: "weekly" },
+  { label: "Feed", title: "Feed and check pH / EC response", recurrence: "weekly" },
+  { label: "IPM", title: "Inspect IPM and record findings", recurrence: "weekly" },
+  {
+    label: "Defoliate",
+    title: "Review canopy and defoliate if needed",
+    recurrence: "monthly"
+  }
 ] as const;
 
 function asArray(res: any): AnyRec[] {
@@ -184,6 +196,7 @@ function calendarMetadataForFacilityTask(sourceType: string) {
 
 export default function FacilityTasksRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ assignee?: string | string[] }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
 
@@ -199,6 +212,7 @@ export default function FacilityTasksRoute() {
   );
 
   const [items, setItems] = useState<AnyRec[]>([]);
+  const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -215,6 +229,20 @@ export default function FacilityTasksRoute() {
   const [newRequiresProof, setNewRequiresProof] = useState(false);
   const [newRequiresApproval, setNewRequiresApproval] = useState(false);
 
+  const taskAccess = getFacilityTaskAccess({
+    can: ent?.can,
+    facilityRole: ent?.facilityRole
+  });
+  const canWrite = taskAccess.canCreateTask;
+  const canAssign = taskAccess.canAssignTask;
+
+  useEffect(() => {
+    const requested = Array.isArray(params.assignee)
+      ? params.assignee[0]
+      : params.assignee;
+    if (requested) setNewAssignedTo(String(requested));
+  }, [params.assignee]);
+
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
       if (!facilityId) return;
@@ -224,8 +252,12 @@ export default function FacilityTasksRoute() {
 
       try {
         clearError();
-        const res = await getFacilityTasks(facilityId);
+        const [res, team] = await Promise.all([
+          getFacilityTasks(facilityId),
+          canAssign ? listTeamMembers(facilityId) : Promise.resolve([])
+        ]);
         setItems(asArray(res));
+        setMembers(team);
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -233,7 +265,7 @@ export default function FacilityTasksRoute() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId, canAssign, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -243,13 +275,6 @@ export default function FacilityTasksRoute() {
     }
     load();
   }, [facilityId, load, router]);
-
-  const taskAccess = getFacilityTaskAccess({
-    can: ent?.can,
-    facilityRole: ent?.facilityRole
-  });
-  const canWrite = taskAccess.canCreateTask;
-  const canAssign = taskAccess.canAssignTask;
 
   const createTask = useCallback(async () => {
     if (!facilityId || !canWrite) return;
@@ -264,7 +289,7 @@ export default function FacilityTasksRoute() {
         title,
         notes: newNotes.trim() || undefined,
         dueDate: newDueDate.trim() || undefined,
-        assignedTo: canAssign ? newAssignedTo.trim() || undefined : undefined,
+        assignedToUserId: canAssign ? newAssignedTo.trim() || undefined : undefined,
         sourceType: newSourceType,
         sourceObjectId: cleanSourceObjectId || undefined,
         roomId: cleanRoomId || undefined,
@@ -331,6 +356,23 @@ export default function FacilityTasksRoute() {
           ) : (
             <View style={styles.form}>
               <Text style={styles.label}>Title</Text>
+              <View style={styles.chipRow}>
+                {CULTIVATION_TASK_PRESETS.map((preset) => (
+                  <Pressable
+                    key={preset.label}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use ${preset.label} task template`}
+                    onPress={() => {
+                      setNewTitle(preset.title);
+                      setNewRecurrence(preset.recurrence);
+                      setNewSourceType("room");
+                    }}
+                    style={styles.chip}
+                  >
+                    <Text style={styles.chipText}>{preset.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
               <TextInput
                 accessibilityLabel="Facility task title"
                 value={newTitle}
@@ -364,14 +406,34 @@ export default function FacilityTasksRoute() {
 
               {canAssign ? (
                 <>
-                  <Text style={styles.label}>Assign to user id (optional)</Text>
-                  <TextInput
-                    accessibilityLabel="Facility task assignee"
-                    value={newAssignedTo}
-                    onChangeText={setNewAssignedTo}
-                    style={styles.input}
-                    placeholder="user id"
-                  />
+                  <Text style={styles.label}>Assign to team member</Text>
+                  <View style={styles.chipRow}>
+                    {members.map((member) => {
+                      const memberId = String(member.userId || member.id || "");
+                      const label = member.name || member.email || memberId;
+                      return (
+                        <Pressable
+                          key={memberId}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Assign facility task to ${label}`}
+                          onPress={() => setNewAssignedTo(memberId)}
+                          style={[
+                            styles.chip,
+                            newAssignedTo === memberId && styles.chipSelected
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              newAssignedTo === memberId && styles.chipTextSelected
+                            ]}
+                          >
+                            {label} · {String(member.role || "member").toLowerCase()}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </>
               ) : (
                 <Text style={styles.muted}>
