@@ -183,9 +183,9 @@ describe("CoursesScreen QA (capability-driven)", () => {
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
       expect(getByText("Paid course limit: 1/1")).toBeTruthy();
-      expect(getByText("Storage used: 0 MB / plan limit")).toBeTruthy();
-      expect(getByText("Live sessions this month: 0 / plan limit")).toBeTruthy();
-      expect(getByText("Uploaded video storage: 0 GB / plan limit")).toBeTruthy();
+      expect(getByText("Course media: ready for uploads")).toBeTruthy();
+      expect(getByText("Live sessions this month: 0 scheduled")).toBeTruthy();
+      expect(getByText("Course Builder Workflow")).toBeTruthy();
     });
   });
 
