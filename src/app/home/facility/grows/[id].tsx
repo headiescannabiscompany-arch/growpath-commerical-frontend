@@ -31,17 +31,10 @@ function pickTitle(x: AnyRec): string {
   return String(x?.name ?? x?.title ?? x?.strain ?? x?.label ?? "Grow Detail");
 }
 
-function renderKV(obj: AnyRec, key: string) {
-  const value = obj?.[key];
-  if (value === undefined || value === null || value === "") return null;
-  return (
-    <View style={styles.kv} key={key}>
-      <Text style={styles.k}>{key}</Text>
-      <Text style={styles.v}>
-        {typeof value === "string" ? value : JSON.stringify(value)}
-      </Text>
-    </View>
-  );
+function readableDate(value: unknown) {
+  if (!value) return "Not set";
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
 }
 
 export default function FacilityGrowDetail() {
@@ -99,30 +92,6 @@ export default function FacilityGrowDetail() {
 
   const title = useMemo(() => (item ? pickTitle(item) : "Grow Detail"), [item]);
 
-  const keys = useMemo(() => {
-    if (!item) return [];
-    const preferred = [
-      "id",
-      "_id",
-      "name",
-      "title",
-      "strain",
-      "phase",
-      "stage",
-      "status",
-      "roomId",
-      "roomName",
-      "startedAt",
-      "startDate",
-      "createdAt",
-      "updatedAt"
-    ];
-    const rest = Object.keys(item)
-      .filter((key) => !preferred.includes(key))
-      .sort();
-    return [...preferred.filter((key) => key in item), ...rest];
-  }, [item]);
-
   return (
     <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/grows">
       <ScrollView
@@ -153,11 +122,38 @@ export default function FacilityGrowDetail() {
         {item ? (
           <>
             <View style={styles.card}>
-              <Text style={styles.h1}>Grow workspace</Text>
+              <Text style={styles.h1}>Overview</Text>
               <Text style={styles.muted}>
                 {item.roomName ? `${item.roomName} → ` : ""}
                 {pickTitle(item)}
               </Text>
+              <View style={styles.summaryGrid}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Stage</Text>
+                  <Text style={styles.summaryValue}>
+                    {String(item.stage ?? item.phase ?? "Not set")}
+                  </Text>
+                </View>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Status</Text>
+                  <Text style={styles.summaryValue}>
+                    {String(item.status ?? "Active")}
+                  </Text>
+                </View>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Started</Text>
+                  <Text style={styles.summaryValue}>
+                    {readableDate(item.startedAt ?? item.startDate ?? item.createdAt)}
+                  </Text>
+                </View>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryLabel}>Plants</Text>
+                  <Text style={styles.summaryValue}>
+                    {String(item.plantCount ?? item.estimatedPlantCount ?? "Open plants")}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.sectionTitle}>Grow workspace</Text>
               <View style={styles.workspaceGrid}>
                 {[
                   ["Plants", "/home/facility/plants"],
@@ -206,11 +202,6 @@ export default function FacilityGrowDetail() {
               roomId={String(item.roomId ?? "")}
               prompt={`Review ${pickTitle(item)} and recommend the next facility action.`}
             />
-            <View style={styles.card}>
-              <Text style={styles.h1}>{pickTitle(item)}</Text>
-              <Text style={styles.muted}>ID: {String(id)}</Text>
-              <View style={styles.kvWrap}>{keys.map((key) => renderKV(item, key))}</View>
-            </View>
           </>
         ) : null}
       </ScrollView>
@@ -231,10 +222,16 @@ const styles = StyleSheet.create({
     padding: 14
   },
   h1: { fontSize: 18, fontWeight: "900" },
-  kvWrap: { gap: 10, marginTop: 8 },
-  kv: { gap: 4 },
-  k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
+  sectionTitle: { fontSize: 14, fontWeight: "900", marginTop: 4 },
+  summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  summaryItem: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 10,
+    minWidth: 120,
+    padding: 10
+  },
+  summaryLabel: { color: "#64748b", fontSize: 11, fontWeight: "800" },
+  summaryValue: { color: "#172317", fontSize: 14, fontWeight: "900", marginTop: 3 },
   empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
   emptyTitle: { fontSize: 16, fontWeight: "800" },
   workspaceGrid: { gap: 8, marginTop: 4 },

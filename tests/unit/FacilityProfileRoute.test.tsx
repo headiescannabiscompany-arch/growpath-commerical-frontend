@@ -12,7 +12,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: mockPush,
     replace: mockReplace
-  })
+  }),
+  usePathname: () => "/home/facility/profile"
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -69,7 +70,13 @@ describe("FacilityProfileRoute", () => {
     mockLogout.mockReset();
     mockPush.mockReset();
     mockReplace.mockReset();
-    mockApiRequest.mockResolvedValue({});
+    mockApiRequest.mockImplementation((path: string) =>
+      Promise.resolve(
+        path === "/api/tokens/balance"
+          ? { aiTokens: 100, maxTokens: 100, refreshCadence: "weekly" }
+          : {}
+      )
+    );
   });
 
   it("shows workspace boundaries and opens account mode routes", async () => {

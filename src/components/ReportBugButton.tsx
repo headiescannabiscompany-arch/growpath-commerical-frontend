@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
@@ -59,12 +59,15 @@ function bugTemplate(args: {
 
 export default function ReportBugButton({
   location,
+  workspace,
   label = "Report Bug"
 }: {
-  location: string;
+  location?: string;
+  workspace?: string;
   label?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const auth = useAuth();
   const entitlements = useEntitlements();
   const email = String(auth.user?.email || "").trim();
@@ -73,6 +76,10 @@ export default function ReportBugButton({
   const plan = String(entitlements.plan || "unknown");
   const facilityId = String((entitlements as any).facilityId || "").trim();
   const facilityRole = String((entitlements as any).facilityRole || "").trim();
+  const reportLocation =
+    String(location || "").trim() ||
+    String(pathname || "").trim() ||
+    `${String(workspace || mode || "app")} workspace`;
 
   return (
     <Pressable
@@ -87,7 +94,9 @@ export default function ReportBugButton({
             name: userName(auth.user),
             email,
             accountEmail: email,
-            subject: `Bug report - ${mode} - ${location}`,
+            workspace: String(workspace || mode || ""),
+            page: reportLocation,
+            subject: `Bug report - ${mode} - ${reportLocation}`,
             message: bugTemplate({
               email,
               userId,
@@ -95,7 +104,7 @@ export default function ReportBugButton({
               plan,
               facilityId,
               facilityRole,
-              location
+              location: reportLocation
             })
           }
         } as any)

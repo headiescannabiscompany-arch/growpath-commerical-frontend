@@ -311,6 +311,7 @@ describe("entitlement mode access", () => {
       expect(caps[CAPABILITY_KEYS.COURSES_VIEW]).toBe(true);
       expect(caps[CAPABILITY_KEYS.SEE_PAID_COURSES]).toBe(true);
       expect(caps[CAPABILITY_KEYS.COURSES_CREATE]).toBe(true);
+      expect(caps[CAPABILITY_KEYS.PUBLISH_COURSES]).toBe(true);
     }
     expect(freeCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
     expect(proCaps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);

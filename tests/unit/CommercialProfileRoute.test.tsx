@@ -10,7 +10,8 @@ jest.mock("expo-router", () => {
   const React = require("react");
   return {
     Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
-    useRouter: () => ({ push: mockPush })
+    useRouter: () => ({ push: mockPush }),
+    usePathname: () => "/home/commercial/profile"
   };
 });
 

@@ -12,6 +12,7 @@ import {
   ProductLine
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CreatorAccessNotice from "@/components/courses/CreatorAccessNotice";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -324,6 +325,7 @@ export default function CommercialCoursesRoute() {
         </View>
       }
     >
+      <CreatorAccessNotice />
       <AppCard>
         <Text style={styles.cardTitle}>Create a course</Text>
         <Text style={styles.body}>

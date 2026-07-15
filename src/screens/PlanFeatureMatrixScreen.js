@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
+import CreatorAccessNotice from "../components/courses/CreatorAccessNotice";
 import {
   COMMERCIAL_PLAN_PRICE_DISPLAY,
   FACILITY_PLAN_PRICE_DISPLAY,
@@ -67,6 +68,7 @@ export default function PlanFeatureMatrixScreen({ navigation }) {
         *Free/pro users: First course requires approval. Paid course limit and lesson cap
         apply. All plans: 15% platform fee on course sales.
       </Text>
+      <CreatorAccessNotice />
       <PrimaryButton
         title="Choose Plan"
         onPress={() => navigation?.navigate?.("RegisterScreen")}

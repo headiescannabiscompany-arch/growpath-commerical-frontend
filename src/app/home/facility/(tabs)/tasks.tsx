@@ -20,6 +20,8 @@ import { listTeamMembers, type TeamMember } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
+import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
+import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { radius } from "@/theme/theme";
 
@@ -63,6 +65,18 @@ function asArray(res: any): AnyRec[] {
   if (Array.isArray(res?.results)) return res.results;
   if (Array.isArray(res?.tasks)) return res.tasks;
   return [];
+}
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function rowId(row: AnyRec) {
+  return String(row?.id ?? row?._id ?? row?.growId ?? row?.roomId ?? "");
+}
+
+function rowName(row: AnyRec, fallback: string) {
+  return String(row?.name ?? row?.title ?? row?.label ?? fallback);
 }
 
 function pickId(x: AnyRec): string {
@@ -196,9 +210,19 @@ function calendarMetadataForFacilityTask(sourceType: string) {
 
 export default function FacilityTasksRoute() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ assignee?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    assignee?: string | string[];
+    growId?: string | string[];
+    roomId?: string | string[];
+    contextName?: string | string[];
+  }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
+  const { rooms } = useFacilityRooms(facilityId);
+  const { grows } = useFacilityGrows(facilityId);
+  const contextGrowId = String(firstParam(params.growId) || "");
+  const contextRoomId = String(firstParam(params.roomId) || "");
+  const contextName = String(firstParam(params.contextName) || "");
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -226,8 +250,10 @@ export default function FacilityTasksRoute() {
     useState<(typeof sourceTypes)[number]>("manual");
   const [newSourceObjectId, setNewSourceObjectId] = useState("");
   const [newRoomId, setNewRoomId] = useState("");
+  const [newGrowId, setNewGrowId] = useState("");
   const [newRequiresProof, setNewRequiresProof] = useState(false);
   const [newRequiresApproval, setNewRequiresApproval] = useState(false);
+  const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
 
   const taskAccess = getFacilityTaskAccess({
     can: ent?.can,
@@ -235,13 +261,27 @@ export default function FacilityTasksRoute() {
   });
   const canWrite = taskAccess.canCreateTask;
   const canAssign = taskAccess.canAssignTask;
+  const availableGrows = useMemo(
+    () =>
+      newRoomId
+        ? grows.filter(
+            (grow) =>
+              String(grow?.roomId ?? grow?.room?._id ?? grow?.room?.id ?? "") ===
+              newRoomId
+          )
+        : grows,
+    [grows, newRoomId]
+  );
 
   useEffect(() => {
-    const requested = Array.isArray(params.assignee)
-      ? params.assignee[0]
-      : params.assignee;
+    const requested = firstParam(params.assignee);
     if (requested) setNewAssignedTo(String(requested));
   }, [params.assignee]);
+
+  useEffect(() => {
+    if (contextGrowId) setNewGrowId(contextGrowId);
+    if (contextRoomId) setNewRoomId(contextRoomId);
+  }, [contextGrowId, contextRoomId]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -253,7 +293,10 @@ export default function FacilityTasksRoute() {
       try {
         clearError();
         const [res, team] = await Promise.all([
-          getFacilityTasks(facilityId),
+          getFacilityTasks(facilityId, {
+            growId: contextGrowId || undefined,
+            roomId: contextRoomId || undefined
+          }),
           canAssign ? listTeamMembers(facilityId) : Promise.resolve([])
         ]);
         setItems(asArray(res));
@@ -265,7 +308,7 @@ export default function FacilityTasksRoute() {
         setRefreshing(false);
       }
     },
-    [facilityId, canAssign, clearError, handleApiError]
+    [facilityId, canAssign, contextGrowId, contextRoomId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -293,6 +336,7 @@ export default function FacilityTasksRoute() {
         sourceType: newSourceType,
         sourceObjectId: cleanSourceObjectId || undefined,
         roomId: cleanRoomId || undefined,
+        growId: newGrowId.trim() || undefined,
         ...calendarMetadataForFacilityTask(newSourceType),
         ...linkedFieldsForSource(newSourceType, cleanSourceObjectId, cleanRoomId),
         reminderPlan: newReminder.trim()
@@ -311,7 +355,8 @@ export default function FacilityTasksRoute() {
       setNewAssignedTo("");
       setNewSourceType("manual");
       setNewSourceObjectId("");
-      setNewRoomId("");
+      setNewRoomId(contextRoomId);
+      setNewGrowId(contextGrowId);
       setNewRequiresProof(false);
       setNewRequiresApproval(false);
       await load({ refresh: true });
@@ -333,8 +378,11 @@ export default function FacilityTasksRoute() {
     newSourceType,
     newSourceObjectId,
     newRoomId,
+    newGrowId,
     newRequiresProof,
     newRequiresApproval,
+    contextGrowId,
+    contextRoomId,
     clearError,
     handleApiError,
     load
@@ -346,11 +394,25 @@ export default function FacilityTasksRoute() {
   }, [items.length]);
 
   return (
-    <ScreenBoundary title="Tasks">
+    <ScreenBoundary
+      title={contextName ? `${contextName} tasks` : "Tasks"}
+      showBack={Boolean(contextGrowId)}
+      backFallbackHref={
+        contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
+      }
+    >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>New Task</Text>
+          {contextName ? (
+            <View style={styles.contextBanner}>
+              <Text style={styles.contextTitle}>{contextName}</Text>
+              <Text style={styles.muted}>
+                New tasks and the work queue are scoped to this grow workspace.
+              </Text>
+            </View>
+          ) : null}
           {!canWrite ? (
             <Text style={styles.muted}>{taskAccess.hiddenCreateReason}</Text>
           ) : (
@@ -390,6 +452,74 @@ export default function FacilityTasksRoute() {
                 placeholder="Notes"
                 multiline
               />
+
+              <Text style={styles.label}>Room</Text>
+              <View style={styles.chipRow}>
+                {rooms.map((room) => {
+                  const id = rowId(room);
+                  const label = rowName(room, "Room");
+                  if (!id) return null;
+                  return (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Set facility task room ${label}`}
+                      onPress={() => {
+                        setNewRoomId(id);
+                        if (
+                          newGrowId &&
+                          !grows.some(
+                            (grow) =>
+                              rowId(grow) === newGrowId &&
+                              String(
+                                grow?.roomId ?? grow?.room?._id ?? grow?.room?.id ?? ""
+                              ) === id
+                          )
+                        ) {
+                          setNewGrowId("");
+                        }
+                      }}
+                      style={[styles.chip, newRoomId === id && styles.chipSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          newRoomId === id && styles.chipTextSelected
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.label}>Grow (optional)</Text>
+              <View style={styles.chipRow}>
+                {availableGrows.map((grow) => {
+                  const id = rowId(grow);
+                  const label = rowName(grow, "Grow");
+                  if (!id) return null;
+                  return (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Set facility task grow ${label}`}
+                      onPress={() => setNewGrowId(id)}
+                      style={[styles.chip, newGrowId === id && styles.chipSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          newGrowId === id && styles.chipTextSelected
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
 
               <SchedulePicker
                 dueDate={newDueDate}
@@ -441,48 +571,60 @@ export default function FacilityTasksRoute() {
                 </Text>
               )}
 
-              <Text style={styles.label}>Source</Text>
-              <View style={styles.chipRow}>
-                {sourceTypes.map((sourceType) => (
-                  <Pressable
-                    key={sourceType}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Set facility task source ${sourceType}`}
-                    onPress={() => setNewSourceType(sourceType)}
-                    style={[
-                      styles.chip,
-                      newSourceType === sourceType && styles.chipSelected
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        newSourceType === sourceType && styles.chipTextSelected
-                      ]}
-                    >
-                      {sourceType.replace(/_/g, " ")}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Toggle advanced facility task linkage"
+                onPress={() => setShowAdvancedLinkage((current) => !current)}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>
+                  {showAdvancedLinkage
+                    ? "Hide advanced linkage"
+                    : "Advanced: link an SOP, alert, course, tool result, or forum post"}
+                </Text>
+              </Pressable>
 
-              <Text style={styles.label}>Linked source / room</Text>
-              <View style={styles.inlineInputs}>
-                <TextInput
-                  accessibilityLabel="Facility task source object"
-                  value={newSourceObjectId}
-                  onChangeText={setNewSourceObjectId}
-                  style={[styles.input, styles.inlineInput]}
-                  placeholder="source object id"
-                />
-                <TextInput
-                  accessibilityLabel="Facility task room"
-                  value={newRoomId}
-                  onChangeText={setNewRoomId}
-                  style={[styles.input, styles.inlineInput]}
-                  placeholder="room id"
-                />
-              </View>
+              {showAdvancedLinkage ? (
+                <View style={styles.advancedPanel}>
+                  <Text style={styles.label}>Source type</Text>
+                  <View style={styles.chipRow}>
+                    {sourceTypes.map((sourceType) => (
+                      <Pressable
+                        key={sourceType}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Set facility task source ${sourceType}`}
+                        onPress={() => setNewSourceType(sourceType)}
+                        style={[
+                          styles.chip,
+                          newSourceType === sourceType && styles.chipSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            newSourceType === sourceType && styles.chipTextSelected
+                          ]}
+                        >
+                          {sourceType.replace(/_/g, " ")}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  <Text style={styles.label}>Linked record identifier</Text>
+                  <Text style={styles.muted}>
+                    Usually filled automatically when this task starts from another
+                    workflow.
+                  </Text>
+                  <TextInput
+                    accessibilityLabel="Facility task source object"
+                    value={newSourceObjectId}
+                    onChangeText={setNewSourceObjectId}
+                    style={styles.input}
+                    placeholder="Optional linked record ID"
+                  />
+                </View>
+              ) : null}
 
               <View style={styles.chipRow}>
                 <Pressable
@@ -609,6 +751,16 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
+  contextBanner: {
+    backgroundColor: "#ecfdf5",
+    borderColor: "#86efac",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 4,
+    marginBottom: 8,
+    padding: 10
+  },
+  contextTitle: { color: "#166534", fontWeight: "900" },
   form: { gap: 8 },
   label: { fontSize: 12, opacity: 0.7 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -642,6 +794,20 @@ const styles = StyleSheet.create({
   },
   primaryBtnDisabled: { opacity: 0.6 },
   primaryBtnText: { color: "white", fontWeight: "800" },
+  secondaryBtn: {
+    alignItems: "center",
+    borderColor: "rgba(0,0,0,0.16)",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 10
+  },
+  secondaryText: { color: "#334155", fontSize: 12, fontWeight: "800" },
+  advancedPanel: {
+    backgroundColor: "#f8fafc",
+    borderRadius: radius.card,
+    gap: 8,
+    padding: 10
+  },
 
   loading: { paddingVertical: 18, alignItems: "center" },
 

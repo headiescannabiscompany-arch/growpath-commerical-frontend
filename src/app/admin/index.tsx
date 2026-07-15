@@ -25,6 +25,16 @@ type Overview = {
   byStatus: Record<string, number>;
 };
 
+type Usage = {
+  activeUsers: { last7Days: number; last30Days: number };
+  newUsers: { last7Days: number; last30Days: number };
+  activity: {
+    last24Hours: Record<string, number>;
+    last7Days: Record<string, number>;
+  };
+  note?: string;
+};
+
 type AdminUser = {
   _id: string;
   email: string;
@@ -75,6 +85,21 @@ type EvidenceRequest = {
   preservationHold: boolean;
 };
 
+type SupportRequest = {
+  _id: string;
+  name: string;
+  replyEmail: string;
+  accountEmail?: string;
+  topic: string;
+  subject: string;
+  message: string;
+  workspace?: string;
+  page?: string;
+  status: "open" | "in_progress" | "resolved" | "spam";
+  createdAt: string;
+  emailDelivery?: { sent?: boolean };
+};
+
 function Metric({
   label,
   value,
@@ -98,9 +123,11 @@ export default function PlatformAdminRoute() {
   const router = useRouter();
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [usage, setUsage] = useState<Usage | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
+  const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -115,20 +142,32 @@ export default function PlatformAdminRoute() {
     setError("");
     try {
       const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
-      const [overviewResponse, usersResponse, moderationResponse, evidenceResponse] =
-        await Promise.all([
-          apiRequest("/api/admin/overview"),
-          apiRequest(`/api/admin/users${suffix}`),
-          apiRequest("/api/admin/moderation-cases"),
-          apiRequest("/api/admin/evidence-requests")
-        ]);
+      const [
+        overviewResponse,
+        usageResponse,
+        usersResponse,
+        moderationResponse,
+        evidenceResponse,
+        supportResponse
+      ] = await Promise.all([
+        apiRequest("/api/admin/overview"),
+        apiRequest("/api/admin/usage"),
+        apiRequest(`/api/admin/users${suffix}`),
+        apiRequest("/api/admin/moderation-cases"),
+        apiRequest("/api/admin/evidence-requests"),
+        apiRequest("/api/admin/support-requests")
+      ]);
       setOverview(overviewResponse?.overview || null);
+      setUsage(usageResponse?.usage || null);
       setUsers(Array.isArray(usersResponse?.users) ? usersResponse.users : []);
       setModerationCases(
         Array.isArray(moderationResponse?.cases) ? moderationResponse.cases : []
       );
       setEvidenceRequests(
         Array.isArray(evidenceResponse?.requests) ? evidenceResponse.requests : []
+      );
+      setSupportRequests(
+        Array.isArray(supportResponse?.requests) ? supportResponse.requests : []
       );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
@@ -235,6 +274,24 @@ export default function PlatformAdminRoute() {
     }
   }
 
+  async function updateSupportStatus(
+    item: SupportRequest,
+    status: SupportRequest["status"]
+  ) {
+    setBusyId(item._id);
+    try {
+      await apiRequest(`/api/admin/support-requests/${item._id}`, {
+        method: "PATCH",
+        body: { status, reason: "Platform owner support review" }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Support request update failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
   if (!isAdmin) {
     return (
       <View accessibilityRole="alert" style={styles.denied}>
@@ -290,6 +347,38 @@ export default function PlatformAdminRoute() {
             helper={modeSummary || "All account types"}
           />
         </View>
+      ) : null}
+
+      {usage ? (
+        <AppCard
+          title="Actual product activity"
+          subtitle="Authenticated presence and records created or updated in GrowPathAI."
+        >
+          <View style={styles.metrics}>
+            <Metric
+              label="Active users · 7 days"
+              value={usage.activeUsers.last7Days}
+              helper={`${usage.activeUsers.last30Days} active in 30 days`}
+            />
+            <Metric
+              label="New accounts · 7 days"
+              value={usage.newUsers.last7Days}
+              helper={`${usage.newUsers.last30Days} new in 30 days`}
+            />
+          </View>
+          <View style={styles.activityGrid}>
+            {Object.entries(usage.activity.last24Hours).map(([key, value]) => (
+              <View key={key} style={styles.activityRow}>
+                <Text style={styles.activityLabel}>{key.replace(/([A-Z])/g, " $1")}</Text>
+                <Text style={styles.activityValue}>{Number(value || 0)}</Text>
+                <Text style={styles.meta}>
+                  24h · {Number(usage.activity.last7Days[key] || 0)} in 7d
+                </Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.meta}>{usage.note}</Text>
+        </AppCard>
       ) : null}
 
       <AppCard
@@ -370,6 +459,57 @@ export default function PlatformAdminRoute() {
           </AppCard>
         ))}
       </View>
+
+      <AppCard
+        title="Bug and support inbox"
+        subtitle="Stored in GrowPathAI even if email delivery fails. Newest requests appear first."
+      >
+        {supportRequests.length ? (
+          supportRequests.slice(0, 30).map((item) => (
+            <View key={item._id} style={styles.caseRow}>
+              <View style={styles.caseCopy}>
+                <Text style={styles.caseTitle}>
+                  {item.topic} · {item.status} · {item.subject}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.name} · {item.replyEmail} ·{" "}
+                  {new Date(item.createdAt).toLocaleString()}
+                </Text>
+                {item.workspace || item.page ? (
+                  <Text style={styles.meta}>
+                    {[item.workspace, item.page].filter(Boolean).join(" · ")}
+                  </Text>
+                ) : null}
+                <Text style={styles.evidencePreview}>{item.message}</Text>
+                <Text style={styles.meta}>
+                  Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
+                </Text>
+              </View>
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void updateSupportStatus(item, "in_progress")}
+                >
+                  <Text style={styles.secondaryText}>Mark in progress</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.primaryButton}
+                  onPress={() => void updateSupportStatus(item, "resolved")}
+                >
+                  <Text style={styles.primaryText}>Resolve</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.meta}>
+            No stored bug or support requests yet. Email-only history before this release
+            is not backfilled.
+          </Text>
+        )}
+      </AppCard>
 
       <AppCard
         title="Moderation cases"
@@ -496,6 +636,15 @@ export default function PlatformAdminRoute() {
 }
 
 const styles = StyleSheet.create({
+  activityGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  activityRow: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: radius.card,
+    minWidth: 150,
+    padding: 10
+  },
+  activityLabel: { color: "#475569", fontSize: 12, fontWeight: "800" },
+  activityValue: { color: "#0F172A", fontSize: 22, fontWeight: "900", marginTop: 3 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   body: { color: "#475569", lineHeight: 21, marginTop: 6 },
   caseCopy: { flex: 1, minWidth: 220 },

@@ -234,6 +234,7 @@ export function applyUniversalCapabilities(normalized: Record<string, boolean>) 
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
   normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
   normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
+  normalized[CAPABILITY_KEYS.PUBLISH_COURSES] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
   normalized[CAPABILITY_KEYS.FORUM_POST] = true;
 }
@@ -495,6 +496,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
           [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
           [CAPABILITY_KEYS.COURSES_CREATE]: true,
           [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
+          [CAPABILITY_KEYS.PUBLISH_COURSES]: true,
           [CAPABILITY_KEYS.FORUM_VIEW]: true,
           [CAPABILITY_KEYS.FORUM_POST]: true
         },

@@ -9,7 +9,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -18,6 +18,8 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
+import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 
@@ -70,13 +72,31 @@ function isActivePlant(x: AnyRec) {
 }
 
 function canCreatePlant(role: unknown) {
-  return role === "OWNER" || role === "MANAGER" || role === "STAFF";
+  return ["OWNER", "MANAGER", "STAFF"].includes(String(role || "").toUpperCase());
+}
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function contextRowId(row: AnyRec) {
+  return String(row?.id ?? row?._id ?? row?.growId ?? row?.roomId ?? "");
 }
 
 export default function FacilityPlantsTab() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    growId?: string | string[];
+    roomId?: string | string[];
+    contextName?: string | string[];
+  }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
+  const { rooms } = useFacilityRooms(facilityId);
+  const { grows } = useFacilityGrows(facilityId);
+  const contextGrowId = String(firstParam(params.growId) || "");
+  const contextRoomId = String(firstParam(params.roomId) || "");
+  const contextName = String(firstParam(params.contextName) || "");
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -111,7 +131,15 @@ export default function FacilityPlantsTab() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.plants(facilityId));
+        const query = [
+          contextGrowId ? `growId=${encodeURIComponent(contextGrowId)}` : "",
+          contextRoomId ? `roomId=${encodeURIComponent(contextRoomId)}` : ""
+        ]
+          .filter(Boolean)
+          .join("&");
+        const res = await apiRequest(
+          `${endpoints.plants(facilityId)}${query ? `?${query}` : ""}`
+        );
         setItems(asArray(res));
       } catch (e) {
         handleApiError(e);
@@ -120,7 +148,7 @@ export default function FacilityPlantsTab() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId, contextGrowId, contextRoomId, clearError, handleApiError]
   );
 
   async function addPlant() {
@@ -140,8 +168,8 @@ export default function FacilityPlantsTab() {
       setPlantName("");
       setPlantTag("");
       setPlantStrain("");
-      setRoomId("");
-      setGrowId("");
+      setRoomId(contextRoomId);
+      setGrowId(contextGrowId);
       setFeedback("Plant created.");
       await load({ refresh: true });
     } catch (e) {
@@ -159,6 +187,11 @@ export default function FacilityPlantsTab() {
     load();
   }, [facilityId, load, router]);
 
+  useEffect(() => {
+    if (contextRoomId) setRoomId(contextRoomId);
+    if (contextGrowId) setGrowId(contextGrowId);
+  }, [contextGrowId, contextRoomId]);
+
   const header = useMemo(() => {
     const n = items.length;
     return n === 1 ? "1 plant" : `${n} plants`;
@@ -167,15 +200,33 @@ export default function FacilityPlantsTab() {
   const activeCount = items.filter(isActivePlant).length;
   const missingRoomCount = items.filter((item) => !hasRoomLink(item)).length;
   const missingBatchCount = items.filter((item) => !hasBatchLink(item)).length;
+  const availableGrows = useMemo(
+    () =>
+      roomId
+        ? grows.filter(
+            (grow) =>
+              String(grow?.roomId ?? grow?.room?._id ?? grow?.room?.id ?? "") === roomId
+          )
+        : grows,
+    [grows, roomId]
+  );
 
   return (
-    <ScreenBoundary title="Plants">
+    <ScreenBoundary
+      title={contextName ? `${contextName} plants` : "Plants"}
+      showBack={Boolean(contextGrowId)}
+      backFallbackHref={
+        contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
+      }
+    >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Plants</Text>
+          <Text style={styles.h1}>
+            {contextName ? `${contextName} → Plants` : "Facility Plants"}
+          </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 
@@ -247,20 +298,72 @@ export default function FacilityPlantsTab() {
                   </Pressable>
                 ))}
               </View>
-              <TextInput
-                accessibilityLabel="Plant room id"
-                value={roomId}
-                onChangeText={setRoomId}
-                style={styles.input}
-                placeholder="Room ID, optional"
-              />
-              <TextInput
-                accessibilityLabel="Plant grow id"
-                value={growId}
-                onChangeText={setGrowId}
-                style={styles.input}
-                placeholder="Grow or batch link, optional"
-              />
+              <Text style={styles.label}>Room</Text>
+              <View style={styles.pillRow}>
+                {rooms.map((room) => {
+                  const id = contextRowId(room);
+                  const label = String(room?.name ?? room?.label ?? "Room");
+                  if (!id) return null;
+                  return (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Set plant room to ${label}`}
+                      onPress={() => {
+                        setRoomId(id);
+                        if (
+                          growId &&
+                          !grows.some(
+                            (grow) =>
+                              contextRowId(grow) === growId &&
+                              String(
+                                grow?.roomId ?? grow?.room?._id ?? grow?.room?.id ?? ""
+                              ) === id
+                          )
+                        ) {
+                          setGrowId("");
+                        }
+                      }}
+                      style={[styles.pill, roomId === id && styles.pillSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.pillText,
+                          roomId === id && styles.pillTextSelected
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Text style={styles.label}>Grow</Text>
+              <View style={styles.pillRow}>
+                {availableGrows.map((grow) => {
+                  const id = contextRowId(grow);
+                  const label = String(grow?.name ?? grow?.title ?? "Grow");
+                  if (!id) return null;
+                  return (
+                    <Pressable
+                      key={id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Set plant grow to ${label}`}
+                      onPress={() => setGrowId(id)}
+                      style={[styles.pill, growId === id && styles.pillSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.pillText,
+                          growId === id && styles.pillTextSelected
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Create facility plant"
@@ -401,6 +504,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "900" },
   form: { gap: 8 },
+  label: { color: "#475569", fontSize: 12, fontWeight: "800" },
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",

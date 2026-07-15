@@ -54,7 +54,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
     push: mockPush
-  })
+  }),
+  usePathname: () => "/profile"
 }));
 
 jest.mock("@/components/layout/AppPage", () => {

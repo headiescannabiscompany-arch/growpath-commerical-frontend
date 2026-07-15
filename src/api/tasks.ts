@@ -53,8 +53,29 @@ export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Ta
   return listPersonalTasks();
 }
 
-export function getFacilityTasks(facilityId: string): Promise<Task[]> {
-  return getTasks(facilityId);
+export type FacilityTaskFilters = {
+  growId?: string;
+  roomId?: string;
+  assignedToUserId?: string;
+  status?: string;
+};
+
+export async function getFacilityTasks(
+  facilityId: string,
+  filters: FacilityTaskFilters = {}
+): Promise<Task[]> {
+  const query = Object.entries(filters)
+    .filter(([, value]) => value != null && String(value).trim())
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(String(value).trim())}`
+    )
+    .join("&");
+  const listRes = await apiRequest(
+    `${endpoints.tasks(facilityId)}${query ? `?${query}` : ""}`,
+    { method: "GET" }
+  );
+  return normalizeTaskList(listRes);
 }
 
 export function createCustomTask(data: any): Promise<PersonalTask>;

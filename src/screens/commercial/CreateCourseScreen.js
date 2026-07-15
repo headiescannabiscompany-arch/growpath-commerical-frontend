@@ -267,7 +267,7 @@ export default function CreateCourseScreen({ navigation }) {
     if (pricingMode === "paid" && !access.canSellPaidCourses) {
       Alert.alert(
         "Paid courses unavailable",
-        "Paid course sales require COURSES_SELL_PAID."
+        "Paid course pricing should be available on every GrowPathAI plan. Refresh your account or contact support@growpathai.com if this continues."
       );
       return;
     }
@@ -318,7 +318,10 @@ export default function CreateCourseScreen({ navigation }) {
         documentPlan: documentPlan.trim(),
         mediaPlan: mediaPlan.trim(),
         liveSessionPlan: liveSessions
-          .map((session) => `${session.title} | ${session.scheduledStart} | ${session.meetingUrl}`)
+          .map(
+            (session) =>
+              `${session.title} | ${session.scheduledStart} | ${session.meetingUrl}`
+          )
           .join("\n"),
         lessons,
         documents,
@@ -500,7 +503,10 @@ export default function CreateCourseScreen({ navigation }) {
             defaultExpanded={false}
           />
           <Text style={styles.helpText} accessibilityLabel="Selected course crop types">
-            Crop type: {selectedCropTypes.length ? selectedCropTypes.join(", ") : "Select from What You Grow"}
+            Crop type:{" "}
+            {selectedCropTypes.length
+              ? selectedCropTypes.join(", ")
+              : "Select from What You Grow"}
           </Text>
         </View>
 
@@ -610,7 +616,8 @@ export default function CreateCourseScreen({ navigation }) {
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>4. Live sessions</Text>
           <Text style={styles.helpText}>
-            Schedule a real Twitch live. Learners can open the channel and create a dated reminder in My Tasks.
+            Schedule a real Twitch live. Learners can open the channel and create a dated
+            reminder in My Tasks.
           </Text>
           <Text style={styles.label}>Session title</Text>
           <TextInput
@@ -702,12 +709,16 @@ export default function CreateCourseScreen({ navigation }) {
           {liveSessions.map((session, index) => (
             <View key={session.id} style={styles.workflowCard}>
               <Text style={styles.workflowTitle}>{session.title}</Text>
-              <Text style={styles.helpText}>{session.scheduledStart} · {session.timezone}</Text>
+              <Text style={styles.helpText}>
+                {session.scheduledStart} · {session.timezone}
+              </Text>
               <Text style={styles.helpText}>{session.meetingUrl}</Text>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel={`Remove live session ${session.title}`}
-                onPress={() => setLiveSessions((current) => current.filter((_, row) => row !== index))}
+                onPress={() =>
+                  setLiveSessions((current) => current.filter((_, row) => row !== index))
+                }
               >
                 <Text style={styles.secondaryButtonText}>Remove</Text>
               </TouchableOpacity>
@@ -749,7 +760,10 @@ export default function CreateCourseScreen({ navigation }) {
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>6. Pricing / access</Text>
           {!access.canSellPaidCourses ? (
-            <Text style={styles.helpText}>Paid prices require COURSES_SELL_PAID.</Text>
+            <Text style={styles.helpText}>
+              Paid pricing should be available on every plan. Refresh the account or
+              contact support@growpathai.com if it remains unavailable.
+            </Text>
           ) : null}
           <View style={styles.pricingModeRow}>
             <TouchableOpacity

@@ -8,6 +8,9 @@ const mockGetFacilityTasks = jest.fn();
 const mockListTeamMembers = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockClearError = jest.fn();
+const mockHandleApiError = jest.fn();
+const mockRouter = { push: mockPush, replace: mockReplace };
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -16,7 +19,7 @@ function addDaysKey(days: number) {
 }
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
+  useRouter: () => mockRouter,
   useLocalSearchParams: () => ({})
 }));
 
@@ -51,13 +54,29 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => ({
     error: null,
-    clearError: jest.fn(),
-    handleApiError: jest.fn()
+    clearError: mockClearError,
+    handleApiError: mockHandleApiError
   })
 }));
 
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
+}));
+
+jest.mock("@/features/facility/useFacilityRooms", () => ({
+  useFacilityRooms: () => ({
+    rooms: [
+      { id: "clone-room", name: "Clone room" },
+      { id: "media-room", name: "Media room" },
+      { id: "training-room", name: "Training room" }
+    ],
+    loading: false,
+    error: null
+  })
+}));
+
+jest.mock("@/features/facility/useFacilityGrows", () => ({
+  useFacilityGrows: () => ({ grows: [], loading: false, error: null })
 }));
 
 describe("FacilityTasksRoute", () => {
@@ -139,9 +158,10 @@ describe("FacilityTasksRoute", () => {
     );
     fireEvent.press(screen.getByLabelText("Facility task recurrence preset weekly"));
     fireEvent.press(screen.getByLabelText("Assign facility task to Alex Grower"));
+    fireEvent.press(screen.getByLabelText("Set facility task room Clone room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source sop"));
     fireEvent.changeText(screen.getByLabelText("Facility task source object"), "sop-7");
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "clone-room");
     fireEvent.press(screen.getByLabelText("Toggle proof required"));
     fireEvent.press(screen.getByLabelText("Toggle approval required"));
     fireEvent.press(screen.getByLabelText("Create facility task"));
@@ -155,6 +175,7 @@ describe("FacilityTasksRoute", () => {
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "clone-room",
+        growId: undefined,
         allDay: true,
         calendarType: "sop_facility_task",
         sourceStage: "sop_work",
@@ -178,12 +199,13 @@ describe("FacilityTasksRoute", () => {
       screen.getByLabelText("Facility task title"),
       "Publish facility outreach"
     );
+    fireEvent.press(screen.getByLabelText("Set facility task room Media room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source feed_campaign"));
     fireEvent.changeText(
       screen.getByLabelText("Facility task source object"),
       "campaign-7"
     );
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "media-room");
     fireEvent.press(screen.getByLabelText("Create facility task"));
 
     await waitFor(() =>
@@ -213,12 +235,13 @@ describe("FacilityTasksRoute", () => {
       screen.getByLabelText("Facility task title"),
       "Review SOP assignment"
     );
+    fireEvent.press(screen.getByLabelText("Set facility task room Training room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source course_assignment"));
     fireEvent.changeText(
       screen.getByLabelText("Facility task source object"),
       "assignment-7"
     );
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "training-room");
     fireEvent.press(screen.getByLabelText("Create facility task"));
 
     await waitFor(() =>

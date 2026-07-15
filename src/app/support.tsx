@@ -58,6 +58,8 @@ export default function SupportPage() {
     accountEmail?: string | string[];
     subject?: string | string[];
     message?: string | string[];
+    workspace?: string | string[];
+    page?: string | string[];
   }>();
   const [topic, setTopic] = useState<SupportContactTopic>("account");
   const [name, setName] = useState("");
@@ -65,6 +67,8 @@ export default function SupportPage() {
   const [accountEmail, setAccountEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [workspace, setWorkspace] = useState("");
+  const [page, setPage] = useState("");
   const [company, setCompany] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -77,18 +81,24 @@ export default function SupportPage() {
     const nextAccountEmail = paramString(params.accountEmail);
     const nextSubject = paramString(params.subject);
     const nextMessage = paramString(params.message);
+    const nextWorkspace = paramString(params.workspace);
+    const nextPage = paramString(params.page);
     if (nextName) setName(nextName);
     if (nextEmail) setEmail(nextEmail);
     if (nextAccountEmail) setAccountEmail(nextAccountEmail);
     if (nextSubject) setSubject(nextSubject);
     if (nextMessage) setMessage(nextMessage);
+    if (nextWorkspace) setWorkspace(nextWorkspace);
+    if (nextPage) setPage(nextPage);
   }, [
     params.accountEmail,
     params.email,
     params.message,
     params.name,
     params.subject,
-    params.topic
+    params.topic,
+    params.workspace,
+    params.page
   ]);
 
   const canSubmit = useMemo(
@@ -116,17 +126,21 @@ export default function SupportPage() {
         accountEmail: accountEmail.trim().toLowerCase(),
         subject: subject.trim(),
         message: message.trim(),
+        workspace: workspace.trim(),
+        page: page.trim(),
         company: company.trim()
       });
       if (response.emailSent === false) {
         setFeedback(
-          `Support email delivery is not available right now. Email ${SUPPORT_CONTACTS.general} directly.`
+          response.requestId
+            ? `Support request received in GrowPathAI. Reference: ${response.requestId}. Email delivery is delayed.`
+            : `Support email delivery is not available right now. Email ${SUPPORT_CONTACTS.general} directly.`
         );
         return;
       }
       setFeedback(
-        response.providerMessageId
-          ? `Support request sent. Reference: ${response.providerMessageId}.`
+        response.requestId || response.providerMessageId
+          ? `Support request sent. Reference: ${response.requestId || response.providerMessageId}.`
           : "Support request sent. Check your email for any follow-up."
       );
       setSubject("");
