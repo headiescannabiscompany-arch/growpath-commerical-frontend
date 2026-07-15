@@ -31,9 +31,9 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
     expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText("Living Soil Labs: full-spectrum soil")).toBeTruthy();
-    expect(screen.getByText("Living Soil Labs: nutrient program")).toBeTruthy();
-    expect(screen.getByText("Living Soil Labs: terpene-minded inputs")).toBeTruthy();
+    expect(screen.getByText("Explore grower storefronts")).toBeTruthy();
+    expect(screen.getByText("Learn from grower courses")).toBeTruthy();
+    expect(screen.getByText("Plan the next grow")).toBeTruthy();
   });
 
   it("renders top and bottom placements for short free personal pages", () => {
