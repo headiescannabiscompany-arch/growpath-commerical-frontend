@@ -298,12 +298,12 @@ export default function CoursesScreen({ navigation } = {}) {
           <View style={styles.builderCard}>
             <Text style={styles.cardTitle}>Course Builder Workflow</Text>
             <Text style={styles.meta}>
-              Basics, curriculum, documents/media, optional live sessions, linked
-              products/grows/forum, pricing/access, preview, then publish.
+              Start with the basics, build lessons, add media or a live session, choose
+              who can access it, preview the learner experience, and publish when ready.
             </Text>
             <Text style={styles.meta}>
-              Limits should be enforced by course count, storage MB/GB, video storage,
-              document storage, live sessions per month, and live-session duration.
+              GrowPath keeps course media, live sessions, pricing, and linked grow or
+              forum resources together in this workflow.
             </Text>
           </View>
           <Text style={styles.meta}>
@@ -312,9 +312,8 @@ export default function CoursesScreen({ navigation } = {}) {
               ? "unlimited"
               : `${paidCourseCount}/${access.maxPaidCourses}`}
           </Text>
-          <Text style={styles.meta}>Storage used: 0 MB / plan limit</Text>
-          <Text style={styles.meta}>Live sessions this month: 0 / plan limit</Text>
-          <Text style={styles.meta}>Uploaded video storage: 0 GB / plan limit</Text>
+          <Text style={styles.meta}>Course media: ready for uploads</Text>
+          <Text style={styles.meta}>Live sessions this month: 0 scheduled</Text>
         </>
       ) : null}
 
@@ -363,8 +362,8 @@ export default function CoursesScreen({ navigation } = {}) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  content: { paddingBottom: 32 },
+  container: { flex: 1, padding: 14, backgroundColor: "#FFFFFF" },
+  content: { paddingBottom: 48, minHeight: "100%" },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },

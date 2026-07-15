@@ -133,7 +133,9 @@ export default function FacilitySopRunsIndexRoute() {
       refreshing={refreshing}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text style={styles.h1}>SOP Library & Runs</Text>
+          <Text accessibilityRole="header" style={styles.h1}>
+            SOP Library & Runs
+          </Text>
           <Text style={styles.summaryLabel}>
             Manage approved facility procedures here, then assign and perform them in a
             grow.
