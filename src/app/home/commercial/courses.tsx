@@ -170,12 +170,13 @@ export default function CommercialCoursesRoute() {
     setLoading(true);
     setError(null);
     try {
-      const [nextCourses, nextLines] = await Promise.all([
+      const [courseResult, lineResult] = await Promise.allSettled([
         fetchCommercialCourses(),
         fetchProductLines()
       ]);
-      setCourses(nextCourses);
-      setProductLines(nextLines);
+      if (courseResult.status === "rejected") throw courseResult.reason;
+      setCourses(courseResult.value);
+      setProductLines(lineResult.status === "fulfilled" ? lineResult.value : []);
     } catch (err) {
       setError(err);
     } finally {

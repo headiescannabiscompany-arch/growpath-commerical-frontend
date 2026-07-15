@@ -1223,6 +1223,22 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("keeps commercial courses usable when optional product-line suggestions fail", async () => {
+    const baseline = mockApiRequest.getMockImplementation();
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/product-lines" && !options) {
+        return Promise.reject(new Error("Product lines unavailable"));
+      }
+      return baseline?.(path, options);
+    });
+
+    const screen = render(<CommercialCoursesRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
+    expect(screen.queryByText("Choose Product Line")).toBeNull();
+    expect(screen.getByText("Create a course")).toBeTruthy();
+  });
+
   it("opens and updates commercial course detail with lessons and publish", async () => {
     const screen = render(<CommercialCourseDetailRoute />);
 
