@@ -59,6 +59,7 @@
     "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
     "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",
     "verify:web-seo": "node scripts/verify-web-seo.cjs",
+    "seo:submit:indexnow": "node scripts/submit-indexnow.cjs",
     "verify:live-urls": "node scripts/verify-live-urls.cjs",
     "verify:email-delivery-config": "node scripts/verify-email-delivery-config.cjs",
     "verify:email-delivery-config:strict": "node scripts/verify-email-delivery-config.cjs --strict",

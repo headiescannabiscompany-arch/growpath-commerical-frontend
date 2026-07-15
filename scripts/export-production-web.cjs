@@ -61,6 +61,17 @@ const fallbackRoutes = [
   "admin",
   "login",
   "register",
+  "features",
+  "pricing",
+  "personal-grower",
+  "commercial-cultivation",
+  "facility-management",
+  "nurseries-breeders",
+  "grow-stores",
+  "creators-educators",
+  "about",
+  "contact",
+  "ai-cultivation-disclaimer",
   "accept-facility-invite",
   "courses",
   "courses/create",
@@ -183,6 +194,7 @@ const fallbackRoutes = [
 const indexHtml = path.join(absoluteOutputDir, "index.html");
 const rawIndexHtml = fs.readFileSync(indexHtml, "utf8");
 const siteUrl = "https://growpathai.com";
+const indexNowKey = "growpathai-2026-indexnow-7f4b2a91c6d8e305";
 
 const defaultSeo = {
   title: "GrowPath",
@@ -197,8 +209,128 @@ const routeSeo = new Map(
       "",
       {
         title: "GrowPath | Grow planning, tracking, and facility tools",
+        heading: "One connected path from grow setup to harvest",
         description:
-          "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPath."
+          "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPath.",
+        topics: [
+          "Personal grow tracking",
+          "Commercial cultivation",
+          "Facility management"
+        ]
+      }
+    ],
+    [
+      "features",
+      {
+        title: "GrowPathAI Features | Connected cultivation workflows",
+        heading: "Tools appear where the work happens",
+        description:
+          "Explore connected planning, grow journals, plant diagnosis, scheduling, recipes, environment, courses, community, commercial, and facility workflows.",
+        topics: ["Plan and schedule", "Observe and diagnose", "Learn and share"]
+      }
+    ],
+    [
+      "pricing",
+      {
+        title: "GrowPathAI Pricing and Plans",
+        heading: "Start free and keep what you create",
+        description:
+          "Compare GrowPathAI Free, paid Creator, Commercial, and Facility access. Every plan can create and publish free or paid courses.",
+        topics: ["Free grow tools", "Creator plans", "Commercial and Facility workspaces"]
+      }
+    ],
+    [
+      "personal-grower",
+      {
+        title: "GrowPathAI for Personal Growers",
+        heading: "A grow journal that helps decide what comes next",
+        description:
+          "Plan indoor and outdoor grows, manage plants and tasks, keep a journal, analyze photos, and use contextual cultivation tools.",
+        topics: ["Grow planning", "Plant journals", "Context-aware AI assistance"]
+      }
+    ],
+    [
+      "commercial-cultivation",
+      {
+        title: "Commercial Cultivation Software | GrowPathAI",
+        heading: "Cultivation evidence with business context",
+        description:
+          "Connect commercial grows, trials, recipes, batches, product lines, eligible storefront items, courses, live sessions, and analytics.",
+        topics: ["Grow trials", "Product formulas", "Commercial education"]
+      }
+    ],
+    [
+      "facility-management",
+      {
+        title: "Cultivation Facility Management Software | GrowPathAI",
+        heading: "Facility to room to grow to plant",
+        description:
+          "Manage rooms, grows, plants, tasks, SOPs, inventory, environmental imports, reports, and role-based facility teams.",
+        topics: ["Facility roles", "Cultivation tasks and SOPs", "Environmental records"]
+      }
+    ],
+    [
+      "nurseries-breeders",
+      {
+        title: "Nursery and Breeding Software | GrowPathAI",
+        heading: "Track plants, propagation, and selection decisions",
+        description:
+          "Connect mother plants, clones, tissue culture, genetics notes, phenotype scores, stress tests, and harvest outcomes.",
+        topics: ["Propagation", "Pheno selection", "Genetics records"]
+      }
+    ],
+    [
+      "grow-stores",
+      {
+        title: "Grow Store Storefronts and Education | GrowPathAI",
+        heading: "Products, education, and community in one public presence",
+        description:
+          "Publish eligible grow products, product education, courses, live sessions, community content, and a public commercial profile.",
+        topics: ["Eligible products", "Product education", "Community publishing"]
+      }
+    ],
+    [
+      "creators-educators",
+      {
+        title: "Course Platform for Grow Creators | GrowPathAI",
+        heading: "Publish courses on every plan",
+        description:
+          "Create free or paid grow courses on any GrowPathAI plan and apply for a 30-day paid Creator-plan trial.",
+        topics: ["Course publishing", "Live sessions", "Creator storefronts"]
+      }
+    ],
+    [
+      "about",
+      {
+        title: "About GrowPathAI",
+        heading: "Software for clearer cultivation decisions",
+        description:
+          "Learn why GrowPathAI connects planning, observation, analysis, work, learning, and documentation in shared cultivation workflows.",
+        topics: ["Contextual tools", "Many grow types", "Human-reviewed decisions"]
+      }
+    ],
+    [
+      "contact",
+      {
+        title: "Contact GrowPathAI",
+        heading: "Reach the GrowPathAI team",
+        description:
+          "Contact GrowPathAI for account support, creator applications, billing, facility onboarding, partnerships, or bug reports.",
+        topics: ["support@growpathai.com", "Creator applications", "Facility onboarding"]
+      }
+    ],
+    [
+      "ai-cultivation-disclaimer",
+      {
+        title: "AI and Cultivation Disclaimer | GrowPathAI",
+        heading: "AI is decision support, not a guarantee",
+        description:
+          "Understand the limits of AI cultivation assistance, user review responsibilities, safety, compliance, and privacy expectations.",
+        topics: [
+          "Review AI output",
+          "Follow labels and laws",
+          "Protect sensitive information"
+        ]
       }
     ],
     [
@@ -254,8 +386,7 @@ const routeSeo = new Map(
       "communities",
       {
         title: "GrowPath Forum Directory",
-        description:
-          "Browse GrowPath Forum/Q&A groups by crop, category, and workflow."
+        description: "Browse GrowPath Forum/Q&A groups by crop, category, and workflow."
       }
     ],
     [
@@ -295,6 +426,17 @@ const routeSeo = new Map(
 
 const sitemapRoutes = [
   { route: "", priority: "1.0", changefreq: "weekly" },
+  { route: "features", priority: "0.9", changefreq: "monthly" },
+  { route: "pricing", priority: "0.9", changefreq: "monthly" },
+  { route: "personal-grower", priority: "0.8", changefreq: "monthly" },
+  { route: "commercial-cultivation", priority: "0.8", changefreq: "monthly" },
+  { route: "facility-management", priority: "0.8", changefreq: "monthly" },
+  { route: "nurseries-breeders", priority: "0.7", changefreq: "monthly" },
+  { route: "grow-stores", priority: "0.7", changefreq: "monthly" },
+  { route: "creators-educators", priority: "0.8", changefreq: "monthly" },
+  { route: "about", priority: "0.5", changefreq: "monthly" },
+  { route: "contact", priority: "0.5", changefreq: "monthly" },
+  { route: "ai-cultivation-disclaimer", priority: "0.4", changefreq: "monthly" },
   { route: "register", priority: "0.8", changefreq: "monthly" },
   { route: "store", priority: "0.8", changefreq: "daily" },
   { route: "courses", priority: "0.8", changefreq: "weekly" },
@@ -320,19 +462,12 @@ function escapeXml(value) {
 
 function seoForRoute(route) {
   if (routeSeo.has(route)) return routeSeo.get(route);
-  if (
-    route.startsWith("home/") ||
-    route.startsWith("reset-password") ||
-    route === "verify-email"
-  ) {
-    return {
-      ...defaultSeo,
-      title: "GrowPath App",
-      description: defaultSeo.description,
-      index: false
-    };
-  }
-  return defaultSeo;
+  return {
+    ...defaultSeo,
+    title: "GrowPath App",
+    description: defaultSeo.description,
+    index: false
+  };
 }
 
 function canonicalUrl(route) {
@@ -344,6 +479,90 @@ function staticIntroForRoute(route, seo) {
     return `${seo.title}. ${seo.description} Create an account or log in to use the app.`;
   }
   return `${seo.title}. ${seo.description}`;
+}
+
+function structuredDataForRoute(route, seo, canonical) {
+  const graph = [
+    {
+      "@type": "WebPage",
+      "@id": `${canonical}#webpage`,
+      url: canonical,
+      name: seo.title,
+      description: seo.description,
+      isPartOf: { "@id": `${siteUrl}#website` }
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "GrowPathAI", item: siteUrl },
+        ...(route
+          ? [
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: seo.heading || seo.title,
+                item: canonical
+              }
+            ]
+          : [])
+      ]
+    }
+  ];
+  if (route === "") {
+    graph.push(
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}#organization`,
+        name: "GrowPathAI",
+        url: siteUrl,
+        email: "support@growpathai.com"
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "GrowPathAI",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        url: siteUrl,
+        description: seo.description,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
+      }
+    );
+  }
+  return JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(
+    /</g,
+    "\\u003c"
+  );
+}
+
+function staticPublicMarkup(route, seo) {
+  if (!seo.index) return "";
+  const topics = Array.isArray(seo.topics) ? seo.topics : [];
+  const links = [
+    ["Features", "/features"],
+    ["Pricing", "/pricing"],
+    ["Personal Grower", "/personal-grower"],
+    ["Commercial", "/commercial-cultivation"],
+    ["Facility", "/facility-management"],
+    ["Creators", "/creators-educators"],
+    ["Courses", "/courses"],
+    ["Forum", "/forum"],
+    ["Support", "/support"]
+  ];
+  return [
+    '<main id="seo-content">',
+    `<nav aria-label="GrowPathAI public pages">${links
+      .map(([label, href]) => `<a href="${href}">${escapeHtml(label)}</a>`)
+      .join(" ")}</nav>`,
+    `<h1>${escapeHtml(seo.heading || seo.title)}</h1>`,
+    `<p>${escapeHtml(seo.description)}</p>`,
+    topics.length
+      ? `<section aria-label="Page topics">${topics
+          .map((topic) => `<h2>${escapeHtml(topic)}</h2>`)
+          .join("")}</section>`
+      : "",
+    '<p><a href="/register">Create a free account</a> or <a href="/login">sign in</a>.</p>',
+    "</main>"
+  ].join("");
 }
 
 function applySeo(html, route) {
@@ -370,16 +589,22 @@ function applySeo(html, route) {
     `<meta name="twitter:description" content="${description}" />`
   ].join("\n    ");
   const staticIntro = escapeHtml(staticIntroForRoute(route, seo));
+  const structuredData = structuredDataForRoute(route, seo, canonical);
+  const staticMarkup = staticPublicMarkup(route, seo);
 
   return html
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
-    .replace("</head>", `    ${tags}\n  </head>`)
+    .replace(
+      "</head>",
+      `    ${tags}\n    <script type="application/ld+json">${structuredData}</script>\n  </head>`
+    )
     .replace(
       /<noscript>[\s\S]*?<\/noscript>/i,
       `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
         routePath
       )}.</noscript>`
-    );
+    )
+    .replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`);
 }
 
 fs.writeFileSync(indexHtml, applySeo(rawIndexHtml, ""));
@@ -394,6 +619,14 @@ const robotsTxt = [
   "User-agent: *",
   "Allow: /",
   "Disallow: /home/",
+  "Disallow: /admin",
+  "Disallow: /profile",
+  "Disallow: /facilities",
+  "Disallow: /onboarding/",
+  "Disallow: /courses/create",
+  "Disallow: /courses/add-lesson",
+  "Disallow: /accept-facility-invite",
+  "Disallow: /forgot-password",
   "Disallow: /reset-password",
   "Disallow: /verify-email",
   "Disallow: /account/delete",
@@ -418,6 +651,7 @@ const sitemapXml = [
   ""
 ].join("\n");
 fs.writeFileSync(path.join(absoluteOutputDir, "sitemap.xml"), sitemapXml);
+fs.writeFileSync(path.join(absoluteOutputDir, `${indexNowKey}.txt`), indexNowKey);
 
 fs.writeFileSync(
   path.join(absoluteOutputDir, "site.webmanifest"),

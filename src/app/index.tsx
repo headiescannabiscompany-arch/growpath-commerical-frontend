@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
 import { radius } from "@/theme/theme";
+import PublicLandingPage from "@/components/marketing/PublicLandingPage";
 
 function Center({ label }: { label: string }) {
   return (
@@ -128,8 +129,11 @@ export default function Index() {
 
     // After entitlements are ready, decide login vs app
     if (!auth.token) {
-      console.log("[INDEX] No token after settle -> route to /login");
-      return { kind: "nav" as const, href: "/login" };
+      console.log("[INDEX] No token after settle -> public homepage");
+      return {
+        kind: "render" as const,
+        node: <PublicLandingPage page="home" />
+      };
     }
 
     if (String(auth.user?.role || "").toLowerCase() === "admin") {
