@@ -47,6 +47,7 @@ async function fillSignupForm(page, { email, password }) {
   await page.getByPlaceholder("Name").fill("Playwright User");
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
+  await page.getByPlaceholder("Date of birth (YYYY-MM-DD)").fill("1990-01-01");
   const signupButton = page.getByText("Create account").last();
   await expect(signupButton).toBeVisible();
   await signupButton.click();
@@ -54,15 +55,18 @@ async function fillSignupForm(page, { email, password }) {
 
 test.describe("Auth flows", () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(({ flag }) => {
-      if (window.name !== flag) {
-        window.localStorage.clear();
-        window.name = flag;
-      }
-      window.localStorage.setItem("seenOnboardingCarousel", "true");
-      window.localStorage.setItem("seenAppIntro", "true");
-      window.global = window;
-    }, { flag: STORAGE_RESET_FLAG });
+    await page.addInitScript(
+      ({ flag }) => {
+        if (window.name !== flag) {
+          window.localStorage.clear();
+          window.name = flag;
+        }
+        window.localStorage.setItem("seenOnboardingCarousel", "true");
+        window.localStorage.setItem("seenAppIntro", "true");
+        window.global = window;
+      },
+      { flag: STORAGE_RESET_FLAG }
+    );
 
     await page.route("**/api/**", (route) => {
       const req = route.request();
@@ -154,7 +158,8 @@ test.describe("Auth flows", () => {
 
     const loginResponsePromise = page.waitForResponse((response) => {
       return (
-        response.url().includes("/api/auth/login") && response.request().method() === "POST"
+        response.url().includes("/api/auth/login") &&
+        response.request().method() === "POST"
       );
     });
 
@@ -165,9 +170,7 @@ test.describe("Auth flows", () => {
       return window.localStorage.getItem("auth_token_v1") !== null;
     });
 
-    const storedToken = await page.evaluate(() =>
-      localStorage.getItem("auth_token_v1")
-    );
+    const storedToken = await page.evaluate(() => localStorage.getItem("auth_token_v1"));
 
     expect(storedToken).toBe(TEST_TOKEN);
   });
@@ -179,7 +182,8 @@ test.describe("Auth flows", () => {
 
     const loginResponsePromise = page.waitForResponse((response) => {
       return (
-        response.url().includes("/api/auth/login") && response.request().method() === "POST"
+        response.url().includes("/api/auth/login") &&
+        response.request().method() === "POST"
       );
     });
 

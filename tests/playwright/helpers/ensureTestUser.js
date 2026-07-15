@@ -1,5 +1,9 @@
 async function ensureTestUser(request, apiBaseUrl, user) {
-  const login = async () => request.post(`${apiBaseUrl}/api/auth/login`, { data: user });
+  const login = async () =>
+    request.post(`${apiBaseUrl}/api/auth/login`, {
+      data: { email: user.email, password: user.password }
+    });
+  const signupData = { dateOfBirth: "1990-01-01", ...user };
 
   // Try login first
   let res = await login();
@@ -17,7 +21,7 @@ async function ensureTestUser(request, apiBaseUrl, user) {
 
   let regRes = null;
   for (const path of signupCandidates) {
-    regRes = await request.post(`${apiBaseUrl}${path}`, { data: user });
+    regRes = await request.post(`${apiBaseUrl}${path}`, { data: signupData });
     if (regRes.ok()) break;
     if ([409, 422].includes(regRes.status())) break;
   }
