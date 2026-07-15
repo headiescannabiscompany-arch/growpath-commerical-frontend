@@ -53,4 +53,25 @@ describe("TokenBalanceWidget", () => {
     await waitFor(() => expect(screen.getByText("0 / -")).toBeTruthy());
     expect(screen.queryByText("100 / 100")).toBeNull();
   });
+
+  it("renders the authenticated paid balance returned by the server", async () => {
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 100,
+      maxTokens: 100,
+      refreshInterval: "weekly",
+      refillDescription: "Your configured AI allowance refreshes every Monday (UTC)."
+    });
+
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() => expect(screen.getByText("100 / 100")).toBeTruthy());
+    expect(
+      screen.getByText("Your configured AI allowance refreshes every Monday (UTC).")
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        "Live balance is unavailable. No estimated balance is being shown."
+      )
+    ).toBeNull();
+  });
 });
