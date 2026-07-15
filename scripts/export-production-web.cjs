@@ -85,6 +85,7 @@ const fallbackRoutes = [
   "terms",
   "support",
   "account/delete",
+  "ai/how-it-works",
   "facilities",
   "onboarding",
   "onboarding/assign-plants",

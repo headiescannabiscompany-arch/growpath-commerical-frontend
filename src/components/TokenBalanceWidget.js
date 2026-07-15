@@ -1,48 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 import { getTokenBalance } from "../api/tokens";
-import { useEntitlements } from "../entitlements";
 import { radius } from "../theme/theme";
-import { localPaidPreviewPlan } from "../utils/localPaidPreview";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-function fallbackBalanceForPlan(plan) {
-  const normalized = String(plan || "free").toLowerCase();
-  if (normalized === "commercial" || normalized === "facility") {
-    return {
-      aiTokens: 1000,
-      maxTokens: 1000,
-      refillDescription:
-        "Commercial and facility token limits reset from account billing.",
-      estimated: true
-    };
-  }
-  if (normalized === "pro" || normalized === "personal" || normalized === "premium") {
-    return {
-      aiTokens: 100,
-      maxTokens: 100,
-      refillDescription: "Pro token limits reset from account billing.",
-      estimated: true
-    };
-  }
-  return {
-    aiTokens: 10,
-    maxTokens: 10,
-    refillDescription:
-      "Free accounts get limited AI tokens for Ask AI and Plant Diagnose.",
-    estimated: true
-  };
-}
-
 export default function TokenBalanceWidget({ onPress = undefined, interactive = true }) {
-  const navigation = useNavigation();
-  const entitlements = useEntitlements();
-  const displayPlan = localPaidPreviewPlan(entitlements.plan);
+  const router = useRouter();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -53,7 +22,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
         if (alive) setBalance(res?.data ?? res);
       } catch (err) {
         console.error("Failed to load token balance:", err);
-        if (alive) setBalance(fallbackBalanceForPlan(displayPlan));
+        if (alive) setLoadFailed(true);
       } finally {
         if (alive) setLoading(false);
       }
@@ -63,28 +32,14 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     return () => {
       alive = false;
     };
-  }, [displayPlan]);
-
-  const effectiveBalance = useMemo(() => {
-    const planFallback = fallbackBalanceForPlan(displayPlan);
-    const rawMax = Number(balance?.maxTokens);
-    if (
-      !balance ||
-      !Number.isFinite(rawMax) ||
-      rawMax <= 0 ||
-      rawMax < planFallback.maxTokens
-    ) {
-      return planFallback;
-    }
-    return balance;
-  }, [balance, displayPlan]);
+  }, []);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
-    const rawMax = Number(effectiveBalance?.maxTokens);
+    const rawMax = Number(balance?.maxTokens);
     const hasValidMax = Number.isFinite(rawMax) && rawMax > 0;
     const resolvedMax = hasValidMax ? rawMax : null;
 
-    const rawCurrent = Number(effectiveBalance?.aiTokens);
+    const rawCurrent = Number(balance?.aiTokens);
     const resolvedCurrent =
       Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
 
@@ -100,7 +55,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
       isLow: resolvedMax ? pct < 30 : false,
       missingMax: !hasValidMax
     };
-  }, [effectiveBalance]);
+  }, [balance]);
 
   useEffect(() => {
     if (balance && missingMax) {
@@ -108,10 +63,9 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     }
   }, [balance, missingMax]);
 
-  const refillCopy = effectiveBalance?.estimated
-    ? `${effectiveBalance.refillDescription} Live balance is not available yet.`
-    : effectiveBalance?.refillDescription ||
-      "Token refills are managed by your account limits.";
+  const refillCopy = loadFailed
+    ? "Live balance is unavailable. No estimated balance is being shown."
+    : balance?.refillDescription || "Your configured allowance refreshes weekly.";
   const usageCopy =
     "Use tokens for Ask AI, Plant Diagnose, recipe review, and environment analysis.";
 
@@ -121,7 +75,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     <Container
       style={[styles.container, isLow && styles.containerLow]}
       {...(interactive
-        ? { onPress: onPress || (() => navigation.navigate("TokenInfo")) }
+        ? { onPress: onPress || (() => router.push("/ai/how-it-works")) }
         : {})}
     >
       <View style={styles.headerRow}>
