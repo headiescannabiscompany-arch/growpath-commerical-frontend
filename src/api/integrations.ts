@@ -62,6 +62,11 @@ export async function testIntegrationConnection(
   return dataOf(response).connection;
 }
 
+export async function listIntegrationDevices(id: string): Promise<any[]> {
+  const response = await apiRequest(`/api/integrations/connections/${id}/devices`);
+  return dataOf(response)?.devices ?? [];
+}
+
 export async function createIntegrationAccessRequest(provider: string) {
   const response = await apiRequest("/api/integrations/access-requests", {
     method: "POST",

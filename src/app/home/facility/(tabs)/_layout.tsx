@@ -123,6 +123,10 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen name="tools/pulse" options={{ href: null, title: "Connect Pulse" }} />
       <Tabs.Screen
+        name="tools/history-import"
+        options={{ href: null, title: "Import Grow History" }}
+      />
+      <Tabs.Screen
         name="tools/recipe-builder"
         options={{ href: null, title: "Recipe Builder" }}
       />

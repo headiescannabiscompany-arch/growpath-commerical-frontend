@@ -166,6 +166,7 @@ export default function FacilityGrowDetail() {
                   ["Inventory usage", "/home/facility/inventory"],
                   ["Assigned SOPs", "/home/facility/sop-runs"],
                   ["Environment & devices", "/home/facility/integrations"],
+                  ["Import grow history", "/home/facility/tools/history-import"],
                   ["Ask GrowPath AI", "/home/facility/ai-ask"]
                 ].map(([label, pathname]) => (
                   <Pressable

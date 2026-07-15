@@ -274,7 +274,11 @@ function buildRoomImportPreview(rawText: string) {
 
 export default function FacilityRoomsTab() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ roomId?: string }>();
+  const params = useLocalSearchParams<{
+    roomId?: string;
+    importDevices?: string;
+    importProvider?: string;
+  }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
   const routeRoomId = String(params.roomId || "");
@@ -352,6 +356,17 @@ export default function FacilityRoomsTab() {
     () => buildRoomImportPreview(importDeviceText),
     [importDeviceText]
   );
+
+  useEffect(() => {
+    const deviceNames = Array.isArray(params.importDevices)
+      ? params.importDevices[0]
+      : params.importDevices;
+    const provider = Array.isArray(params.importProvider)
+      ? params.importProvider[0]
+      : params.importProvider;
+    if (deviceNames) setImportDeviceText(String(deviceNames));
+    if (provider) setImportProvider(String(provider));
+  }, [params.importDevices, params.importProvider]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {

@@ -29,6 +29,15 @@ const PLANNED = [
   "Monnit"
 ];
 
+const HISTORY_IMPORTS = [
+  "AC Infinity",
+  "Spider Farmer",
+  "Mars Hydro",
+  "VIVOSUN",
+  "Grand Master LED",
+  "Medic Grow"
+];
+
 export default function FacilityIntegrationsRoute() {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -165,6 +174,36 @@ export default function FacilityIntegrationsRoute() {
         ) : null}
 
         <View style={styles.card}>
+          <Text style={styles.cardTitle}>Import controller and grow history</Text>
+          <Text style={styles.body}>
+            Upload an exported CSV, map its timestamp, temperature, and humidity columns,
+            then save the readings to the selected grow. This works without sharing a
+            manufacturer password and preserves older grow records for environment
+            analysis.
+          </Text>
+          <Pressable
+            style={styles.primaryAction}
+            onPress={() => router.push("/home/facility/tools/history-import" as any)}
+          >
+            <Text style={styles.primaryActionText}>Import grow history</Text>
+          </Pressable>
+          <Text style={styles.body}>Supported export workflows:</Text>
+          <View style={styles.providerGrid}>
+            {HISTORY_IMPORTS.map((provider) => (
+              <View key={provider} style={styles.importProvider}>
+                <Text style={styles.importProviderText}>{provider}</Text>
+                <Text style={styles.importStatus}>CSV mapping</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.body}>
+            PDF reports can be retained as source documents after GrowPath&apos;s reviewed
+            PDF extraction workflow is enabled. CSV is the verified data-import path
+            today.
+          </Text>
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.cardTitle}>More providers</Text>
           <Text style={styles.body}>
             These connectors are visible for planning but disabled until their production
@@ -269,6 +308,16 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   disabledProviderText: { color: "#475569", fontWeight: "800" },
+  importProvider: {
+    backgroundColor: "#ecfdf5",
+    borderColor: "#bbf7d0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  importProviderText: { color: "#14532d", fontWeight: "800" },
+  importStatus: { color: "#166534", fontSize: 10, marginTop: 2 },
   comingSoon: { color: "#64748b", fontSize: 10, marginTop: 2 },
   disabled: { opacity: 0.5 }
 });
