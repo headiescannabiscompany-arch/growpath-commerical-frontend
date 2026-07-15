@@ -4,27 +4,18 @@ import { render, waitFor } from "@testing-library/react-native";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 
 const mockGetTokenBalance = jest.fn();
-let mockPlan = "free";
-
-jest.mock("@react-navigation/native", () => ({
-  useNavigation: () => ({ navigate: jest.fn() })
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: jest.fn() })
 }));
 
 jest.mock("@/api/tokens", () => ({
   getTokenBalance: () => mockGetTokenBalance()
 }));
 
-jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({
-    plan: mockPlan
-  })
-}));
-
 describe("TokenBalanceWidget", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    mockPlan = "free";
     mockGetTokenBalance.mockReset();
     mockGetTokenBalance.mockRejectedValue(new Error("offline"));
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
@@ -38,13 +29,20 @@ describe("TokenBalanceWidget", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("shows free fallback token limits for free accounts", async () => {
+  it("does not invent a fallback balance when the API is unavailable", async () => {
     const screen = render(<TokenBalanceWidget />);
 
-    await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Live balance is unavailable. No estimated balance is being shown."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.getByText("0 / -")).toBeTruthy();
   });
 
-  it("shows paid fallback token limits with the local paid preview flag", async () => {
+  it("does not invent a paid balance from the local preview flag", async () => {
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { hostname: "localhost", search: "?paid=1" }
@@ -52,6 +50,7 @@ describe("TokenBalanceWidget", () => {
 
     const screen = render(<TokenBalanceWidget />);
 
-    await waitFor(() => expect(screen.getByText("100 / 100")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("0 / -")).toBeTruthy());
+    expect(screen.queryByText("100 / 100")).toBeNull();
   });
 });
