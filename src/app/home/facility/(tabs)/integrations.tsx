@@ -6,19 +6,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import {
-  createIntegrationConnection,
-  listIntegrationConnections,
-  testIntegrationConnection,
-  type IntegrationConnection
-} from "@/api/integrations";
+import { listIntegrationConnections, type IntegrationConnection } from "@/api/integrations";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 import { useEntitlements } from "@/entitlements";
 
@@ -33,22 +26,12 @@ const PLANNED = [
   "Monnit"
 ];
 
-function errorMessage(error: any) {
-  return String(error?.message || error?.error?.message || "Connection failed");
-}
-
 export default function FacilityIntegrationsRoute() {
   const router = useRouter();
   const entitlements = useEntitlements();
-  const { selectedId: facilityId } = useFacility();
   const role = String(entitlements.facilityRole || "VIEWER").toUpperCase();
   const canConfigure = role === "OWNER" || role === "MANAGER";
   const [selected, setSelected] = useState<"pulse" | "trolmaster">("pulse");
-  const [label, setLabel] = useState("TrolMaster facility controller");
-  const [apiKey, setApiKey] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("");
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
 
   useEffect(() => {
@@ -56,37 +39,6 @@ export default function FacilityIntegrationsRoute() {
       .then((rows) => setConnections(rows || []))
       .catch(() => setConnections([]));
   }, []);
-
-  async function connectTrolMaster() {
-    if (!canConfigure) return;
-    if (!apiKey.trim()) {
-      setStatus("Enter the API key supplied for the TrolMaster account.");
-      return;
-    }
-    setBusy(true);
-    setStatus("");
-    try {
-      const created = await createIntegrationConnection({
-        provider: "trolmaster",
-        label: label.trim() || "TrolMaster facility controller",
-        credentials: { apiKey: apiKey.trim() },
-        config: {
-          facilityId: String(facilityId || ""),
-          ...(baseUrl.trim() ? { baseUrl: baseUrl.trim() } : {})
-        }
-      });
-      const tested = await testIntegrationConnection(created.id);
-      setConnections((rows) => [tested, ...rows.filter((row) => row.id !== tested.id)]);
-      setApiKey("");
-      setStatus(
-        "TrolMaster connected. Continue to Rooms to review imported room and sensor mappings."
-      );
-    } catch (error) {
-      setStatus(errorMessage(error));
-    } finally {
-      setBusy(false);
-    }
-  }
 
   function requestProvider(provider: string) {
     Alert.alert(
@@ -137,7 +89,9 @@ export default function FacilityIntegrationsRoute() {
               <Text style={styles.providerChoiceTitle}>
                 {provider === "pulse" ? "Pulse" : "TrolMaster"}
               </Text>
-              <Text style={styles.providerChoiceText}>Available</Text>
+              <Text style={styles.providerChoiceText}>
+                {provider === "pulse" ? "Available" : "Developer access required"}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -165,57 +119,23 @@ export default function FacilityIntegrationsRoute() {
           </View>
         ) : (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>TrolMaster controller connection</Text>
+            <Text style={styles.cardTitle}>TrolMaster developer access</Text>
             <Text style={styles.body}>
-              Use API credentials supplied for the facility. GrowPath tests the connection
-              before room import.
+              TrolMaster publishes an official developer portal for API subscriptions,
+              credentials, usage, documentation, and live API testing. GrowPath will enable
+              this connection after its read-only adapter is implemented and verified.
             </Text>
-            <TextInput
-              editable={canConfigure}
-              accessibilityLabel="TrolMaster connection label"
-              value={label}
-              onChangeText={setLabel}
-              style={styles.input}
-              placeholder="Connection name"
-            />
-            <TextInput
-              editable={canConfigure}
-              accessibilityLabel="TrolMaster API key"
-              value={apiKey}
-              onChangeText={setApiKey}
-              style={styles.input}
-              placeholder="API key"
-              autoCapitalize="none"
-              secureTextEntry
-            />
-            <TextInput
-              editable={canConfigure}
-              accessibilityLabel="TrolMaster API URL"
-              value={baseUrl}
-              onChangeText={setBaseUrl}
-              style={styles.input}
-              placeholder="API URL (optional)"
-              autoCapitalize="none"
-            />
             <Pressable
-              disabled={busy || !canConfigure}
-              style={[styles.primaryAction, (busy || !canConfigure) && styles.disabled]}
-              onPress={connectTrolMaster}
+              style={styles.primaryAction}
+              onPress={() => Linking.openURL("https://developer.trolmaster.com/")}
             >
-              <Text style={styles.primaryActionText}>
-                {busy ? "Testing..." : "Connect and test"}
-              </Text>
+              <Text style={styles.primaryActionText}>Open developer portal</Text>
             </Pressable>
-            {!canConfigure ? (
-              <Text style={styles.body}>
-                Owners and managers can add connections. Your role can view connected
-                facility data.
-              </Text>
-            ) : null}
+            <Pressable style={styles.secondaryAction} onPress={() => requestProvider("TrolMaster")}>
+              <Text style={styles.secondaryActionText}>Ask GrowPath to enable it</Text>
+            </Pressable>
           </View>
         )}
-
-        {status ? <Text style={styles.status}>{status}</Text> : null}
 
         {connections.length ? (
           <View style={styles.card}>

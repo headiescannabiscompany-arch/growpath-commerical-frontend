@@ -1,8 +1,11 @@
 import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
-export function getTokenBalance(token) {
-  return apiRequest(routes.TOKENS.BALANCE, { auth: token ? true : false });
+export function getTokenBalance(token, options = {}) {
+  return apiRequest(routes.TOKENS.BALANCE, {
+    ...options,
+    auth: token ? true : options.auth !== false
+  });
 }
 
 export function consumeTokens(data, token) {

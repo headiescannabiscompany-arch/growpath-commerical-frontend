@@ -49,7 +49,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
 
     async function load() {
       try {
-        const res = await getTokenBalance();
+        const res = await getTokenBalance(undefined, { timeoutMs: 8000 });
         if (alive) setBalance(res?.data ?? res);
       } catch (err) {
         console.error("Failed to load token balance:", err);
@@ -115,8 +115,6 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
   const usageCopy =
     "Use tokens for Ask AI, Plant Diagnose, recipe review, and environment analysis.";
 
-  if (loading) return null;
-
   const Container = interactive ? TouchableOpacity : View;
 
   return (
@@ -145,6 +143,9 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
 
       <View style={styles.details}>
         <Text style={styles.description}>{usageCopy}</Text>
+        {loading ? (
+          <Text style={styles.description}>Checking live token balance...</Text>
+        ) : null}
         <Text style={styles.description}>{refillCopy}</Text>
       </View>
 

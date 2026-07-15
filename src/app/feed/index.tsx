@@ -570,7 +570,7 @@ export default function CommercialFeedRoute() {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title}>
           {isFacility
             ? "Facility Outreach"
             : isCommercial

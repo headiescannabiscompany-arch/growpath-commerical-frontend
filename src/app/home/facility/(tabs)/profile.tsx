@@ -28,7 +28,14 @@ function asArray(res: any): AnyRec[] {
   if (Array.isArray(res?.items)) return res.items;
   if (Array.isArray(res?.data)) return res.data;
   if (Array.isArray(res?.facilities)) return res.facilities;
+  if (Array.isArray(res?.data?.facilities)) return res.data.facilities;
+  if (Array.isArray(res?.data?.items)) return res.data.items;
   return [];
+}
+
+function unwrapRecord(res: any): AnyRec | null {
+  const value = res?.data?.user ?? res?.user ?? res?.data ?? res;
+  return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
 function renderKV(obj: AnyRec | null, key: string) {
@@ -105,18 +112,29 @@ export default function FacilityProfileRoute() {
       try {
         clearError();
 
-        const [meRes, facilitiesRes] = await Promise.all([
-          apiRequest(endpoints.me, { method: "GET" }),
-          apiRequest(endpoints.facilities, { method: "GET" })
+        const [meResult, facilitiesResult] = await Promise.allSettled([
+          apiRequest(endpoints.me, { method: "GET", timeoutMs: 10000 }),
+          apiRequest(endpoints.facilities, { method: "GET", timeoutMs: 10000 })
         ]);
 
-        setMe(meRes ?? null);
+        setMe(
+          meResult.status === "fulfilled" ? unwrapRecord(meResult.value) : auth.user ?? null
+        );
 
-        const facilities = asArray(facilitiesRes);
+        const facilities =
+          facilitiesResult.status === "fulfilled" ? asArray(facilitiesResult.value) : [];
         const found =
-          facilities.find((f) => String(f?.id ?? f?._id) === String(facilityId)) ?? null;
+          facilities.find(
+            (f) =>
+              String(f?.id ?? f?._id ?? f?.facilityId) === String(facilityId) ||
+              String(f?.facilityId ?? "") === String(facilityId)
+          ) ?? null;
 
         setFacility(found);
+
+        if (meResult.status === "rejected" && facilitiesResult.status === "rejected") {
+          handleApiError(meResult.reason);
+        }
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -124,7 +142,7 @@ export default function FacilityProfileRoute() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [auth.user, facilityId, clearError, handleApiError]
   );
 
   useEffect(() => {
