@@ -14,6 +14,11 @@ const ACTION_COSTS = [
     note: "VPD, DLI, nutrient math, risk rules, and fallback answers do not call the model."
   },
   {
+    action: "Text symptom analysis",
+    credits: "0 tokens",
+    note: "Uses GrowPath's diagnostic rules without calling an AI provider."
+  },
+  {
     action: "Ask AI",
     credits: "1 token",
     note: "One completed provider-backed answer costs one token."
@@ -115,16 +120,9 @@ export default function TokenInfoScreen() {
               <Text style={styles.estimateNote}>{estimate.note}</Text>
             </View>
           ))}
-          <View style={styles.balanceExample}>
-            <Text style={styles.balanceExampleTitle}>What 10 tokens buys</Text>
-            <Text style={styles.balanceExampleText}>
-              10 Ask AI answers, or 3 Plant Diagnoses plus 1 Ask AI answer, or 2 Plant
-              Diagnoses plus 4 Ask AI answers.
-            </Text>
-          </View>
           <Text style={styles.estimateFootnote}>
-            Failed provider calls are refunded. Free rule-based results do not reduce the
-            balance.
+            These are fixed per completed action, not estimates. Failed provider calls
+            are refunded. Free rule-based results do not reduce the balance.
           </Text>
         </View>
 
@@ -227,16 +225,6 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   estimateNote: { color: "#6b7280", fontSize: 13, lineHeight: 19, marginTop: 5 },
-  balanceExample: {
-    backgroundColor: "#eff6ff",
-    borderColor: "#93c5fd",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 10
-  },
-  balanceExampleTitle: { color: "#1e3a8a", fontSize: 14, fontWeight: "700" },
-  balanceExampleText: { color: "#1e40af", fontSize: 13, lineHeight: 19, marginTop: 5 },
   estimateFootnote: { color: "#6b7280", fontSize: 12, lineHeight: 18, marginTop: 2 },
   section: { marginBottom: 20 },
   sectionTitle: { color: "#1f2937", fontSize: 18, fontWeight: "700", marginBottom: 7 },

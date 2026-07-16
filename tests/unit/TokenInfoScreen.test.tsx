@@ -26,18 +26,19 @@ describe("TokenInfoScreen action costs", () => {
     });
   });
 
-  it("shows exact customer token costs and a ten-token example", async () => {
+  it("shows the exact customer token cost for each action", async () => {
     const screen = render(<TokenInfoScreen />);
 
     expect(screen.getByText("What actions cost")).toBeTruthy();
     expect(screen.getByText("Rule-based calculators and fallbacks")).toBeTruthy();
+    expect(screen.getByText("Text symptom analysis")).toBeTruthy();
     expect(screen.getByText("Ask AI")).toBeTruthy();
     expect(screen.getByText("Facility form help")).toBeTruthy();
     expect(screen.getByText("Plant Diagnose")).toBeTruthy();
-    expect(screen.getByText("0 tokens")).toBeTruthy();
+    expect(screen.getAllByText("0 tokens")).toHaveLength(2);
     expect(screen.getAllByText("1 token")).toHaveLength(2);
     expect(screen.getByText("3 tokens")).toBeTruthy();
-    expect(screen.getByText("What 10 tokens buys")).toBeTruthy();
+    expect(screen.queryByText("What 10 tokens buys")).toBeNull();
 
     await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
   });
