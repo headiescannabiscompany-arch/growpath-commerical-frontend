@@ -7,30 +7,26 @@ import { radius } from "../theme/theme";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-const ACTION_ESTIMATES = [
+const ACTION_COSTS = [
   {
     action: "Rule-based calculators and fallbacks",
-    credits: "Free",
-    providerUsage: "0 provider tokens",
+    credits: "0 tokens",
     note: "VPD, DLI, nutrient math, risk rules, and fallback answers do not call the model."
   },
   {
     action: "Ask AI",
-    credits: "1 AI credit",
-    providerUsage: "Usually 500–4,000 input + up to 700 output tokens",
-    note: "Usage grows with the selected grow records, logs, tasks, and measurements."
+    credits: "1 token",
+    note: "One completed provider-backed answer costs one token."
   },
   {
     action: "Facility form help",
-    credits: "1 AI credit",
-    providerUsage: "Usually 500–3,000 input + up to 500 output tokens",
-    note: "The rule-based draft is free; a completed provider review uses the credit."
+    credits: "1 token",
+    note: "The rule-based draft is free; a completed provider review uses the token."
   },
   {
     action: "Plant Diagnose",
-    credits: "3 AI credits",
-    providerUsage: "Roughly 3,000–50,000 input + up to 1,800 output tokens",
-    note: "Most input usage comes from the photo and varies with image size and detail."
+    credits: "3 tokens",
+    note: "One completed photo diagnosis costs three tokens."
   }
 ];
 
@@ -106,26 +102,29 @@ export default function TokenInfoScreen() {
         </View>
 
         <View style={styles.estimatesSection}>
-          <Text style={styles.sectionTitle}>Action estimates</Text>
+          <Text style={styles.sectionTitle}>What actions cost</Text>
           <Text style={styles.estimateIntro}>
-            AI credits are the simple balance you spend in GrowPathAI. Provider tokens are
-            the underlying model usage we measure for cost and quality. They are not
-            interchangeable one-for-one.
+            These are the exact amounts deducted from the AI token balance shown above.
           </Text>
-          {ACTION_ESTIMATES.map((estimate) => (
+          {ACTION_COSTS.map((estimate) => (
             <View key={estimate.action} style={styles.estimateCard}>
               <View style={styles.estimateHeader}>
                 <Text style={styles.estimateAction}>{estimate.action}</Text>
                 <Text style={styles.creditBadge}>{estimate.credits}</Text>
               </View>
-              <Text style={styles.providerUsage}>{estimate.providerUsage}</Text>
               <Text style={styles.estimateNote}>{estimate.note}</Text>
             </View>
           ))}
+          <View style={styles.balanceExample}>
+            <Text style={styles.balanceExampleTitle}>What 10 tokens buys</Text>
+            <Text style={styles.balanceExampleText}>
+              10 Ask AI answers, or 3 Plant Diagnoses plus 1 Ask AI answer, or 2 Plant
+              Diagnoses plus 4 Ask AI answers.
+            </Text>
+          </View>
           <Text style={styles.estimateFootnote}>
-            These are planning ranges, not charges. GrowPathAI records actual input,
-            cached-input, output, reasoning, model, and latency data after completed model
-            work so the estimates can improve over time.
+            Failed provider calls are refunded. Free rule-based results do not reduce the
+            balance.
           </Text>
         </View>
 
@@ -227,8 +226,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     overflow: "hidden"
   },
-  providerUsage: { color: "#1f2937", fontSize: 13, fontWeight: "600", marginTop: 9 },
   estimateNote: { color: "#6b7280", fontSize: 13, lineHeight: 19, marginTop: 5 },
+  balanceExample: {
+    backgroundColor: "#eff6ff",
+    borderColor: "#93c5fd",
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: 14,
+    marginBottom: 10
+  },
+  balanceExampleTitle: { color: "#1e3a8a", fontSize: 14, fontWeight: "700" },
+  balanceExampleText: { color: "#1e40af", fontSize: 13, lineHeight: 19, marginTop: 5 },
   estimateFootnote: { color: "#6b7280", fontSize: 12, lineHeight: 18, marginTop: 2 },
   section: { marginBottom: 20 },
   sectionTitle: { color: "#1f2937", fontSize: 18, fontWeight: "700", marginBottom: 7 },

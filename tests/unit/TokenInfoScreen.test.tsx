@@ -17,7 +17,7 @@ jest.mock("@/components/ScreenContainer", () => {
   };
 });
 
-describe("TokenInfoScreen action estimates", () => {
+describe("TokenInfoScreen action costs", () => {
   beforeEach(() => {
     mockGetTokenBalance.mockResolvedValue({
       aiTokens: 10,
@@ -26,18 +26,18 @@ describe("TokenInfoScreen action estimates", () => {
     });
   });
 
-  it("separates AI credits from estimated provider-token usage", async () => {
+  it("shows exact customer token costs and a ten-token example", async () => {
     const screen = render(<TokenInfoScreen />);
 
-    expect(screen.getByText("Action estimates")).toBeTruthy();
+    expect(screen.getByText("What actions cost")).toBeTruthy();
     expect(screen.getByText("Rule-based calculators and fallbacks")).toBeTruthy();
     expect(screen.getByText("Ask AI")).toBeTruthy();
     expect(screen.getByText("Facility form help")).toBeTruthy();
     expect(screen.getByText("Plant Diagnose")).toBeTruthy();
-    expect(screen.getByText("0 provider tokens")).toBeTruthy();
-    expect(
-      screen.getByText("Roughly 3,000–50,000 input + up to 1,800 output tokens")
-    ).toBeTruthy();
+    expect(screen.getByText("0 tokens")).toBeTruthy();
+    expect(screen.getAllByText("1 token")).toHaveLength(2);
+    expect(screen.getByText("3 tokens")).toBeTruthy();
+    expect(screen.getByText("What 10 tokens buys")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
   });
