@@ -13,7 +13,12 @@ function subscriptionState(status) {
 
 function isConfirmedPro(status) {
   const state = subscriptionState(status);
-  return Boolean(status?.isPro) || state === "active" || state === "trial";
+  return (
+    Boolean(status?.isPro) ||
+    state === "active" ||
+    state === "trial" ||
+    state === "trialing"
+  );
 }
 
 export default function SubscriptionStatusScreen({ navigation }) {
@@ -76,6 +81,10 @@ export default function SubscriptionStatusScreen({ navigation }) {
 
   const isPro = isConfirmedPro(status);
   const currentStatus = subscriptionState(status);
+  const planLabel = String(status?.plan || "pro")
+    .toLowerCase()
+    .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase());
+  const trialing = ["trial", "trialing"].includes(currentStatus);
   const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
   const trialUsed = status?.trialUsed;
 
@@ -88,18 +97,20 @@ export default function SubscriptionStatusScreen({ navigation }) {
           <View style={styles.statusRow}>
             <Text style={styles.label}>Status:</Text>
             <Text style={[styles.value, isPro && styles.proBadge]}>
-              {isPro ? "PRO confirmed" : "Free"}
+              {isPro
+                ? `${planLabel} ${trialing ? "trial" : "paid"} confirmed`
+                : "Free"}
             </Text>
           </View>
 
           <View style={styles.statusRow}>
             <Text style={styles.label}>Plan:</Text>
             <Text style={styles.value}>
-              {currentStatus === "trial" && "Free Trial"}
-              {currentStatus === "active" && "PRO Subscription"}
+              {trialing && `${planLabel} Free Trial`}
+              {currentStatus === "active" && `${planLabel} Subscription`}
               {currentStatus === "free" && "Free Plan"}
               {currentStatus === "expired" && "Expired"}
-              {!["trial", "active", "free", "expired"].includes(currentStatus) &&
+              {!["trial", "trialing", "active", "free", "expired"].includes(currentStatus) &&
                 currentStatus}
             </Text>
           </View>
