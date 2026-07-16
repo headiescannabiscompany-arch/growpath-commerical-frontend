@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 
-import { useAuth } from "@/auth/AuthContext";
-import { startSubscription } from "../api/subscribe";
 import { createCheckoutSession } from "../api/subscription";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
@@ -11,7 +9,6 @@ import { radius } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
-  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
 
   function goToStatus() {
@@ -21,10 +18,16 @@ export default function PaywallScreen({ navigation }) {
   const handleStartTrial = async () => {
     setLoading(true);
     try {
-      await startSubscription("trial", token);
+      const result = await createCheckoutSession({ plan: "pro", interval: "monthly" });
+      const url = result?.url || result?.checkoutUrl || result?.data?.url;
+      if (!url) {
+        Alert.alert("Error", "Could not create checkout session.");
+        return;
+      }
+      await openExternalUrl(url);
       Alert.alert(
-        "Trial request submitted",
-        "Access unlocks only after backend subscription status confirms the trial.",
+        "Complete Trial Setup",
+        "Confirm the trial terms and payment method in Stripe, then return and refresh status.",
         [{ text: "Check Status", onPress: goToStatus }]
       );
     } catch (error) {
@@ -90,7 +93,7 @@ export default function PaywallScreen({ navigation }) {
               style={[styles.button, styles.trialButton]}
               onPress={handleStartTrial}
             >
-              <Text style={styles.buttonText}>Start 30-Day Free Trial</Text>
+              <Text style={styles.buttonText}>Start Free Trial in Stripe</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

@@ -85,6 +85,8 @@ export default function Offers() {
   const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
+  const [trialEnabled, setTrialEnabled] = useState(true);
+  const [trialDays, setTrialDays] = useState(30);
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -99,6 +101,10 @@ export default function Offers() {
         const mode = String(status?.mode || "unknown").toLowerCase();
         if (mounted && ["live", "test", "unknown"].includes(mode)) {
           setCheckoutMode(mode as CheckoutMode);
+        }
+        if (mounted && status?.trial) {
+          setTrialEnabled(status.trial.enabled !== false);
+          setTrialDays(Number(status.trial.days) || 30);
         }
       })
       .catch(() => {
@@ -137,9 +143,9 @@ export default function Offers() {
           <Text style={styles.kicker}>Plans</Text>
           <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
           <Text style={styles.headerSubtitle}>
-            Eligible new subscribers receive 30 days free through Stripe checkout. A
-            payment method is required, and paid billing begins after the trial unless
-            canceled.
+            {trialEnabled
+              ? `Eligible new subscribers receive ${trialDays} days free through Stripe checkout. A payment method is required, and paid billing begins after the trial unless canceled.`
+              : "New trials have ended. Stripe checkout begins paid billing immediately."}
           </Text>
           <View style={styles.segment}>
             {(["monthly", "yearly"] as const).map((item) => {
@@ -235,9 +241,9 @@ export default function Offers() {
                     ? "Starting..."
                     : current
                       ? "Current plan"
-                      : auth.user?.trialUsed
+                      : auth.user?.trialUsed || !trialEnabled
                         ? "Start checkout"
-                        : "Start 30-day trial"}
+                        : `Start ${trialDays}-day trial`}
                 </Text>
               </Pressable>
             </AppCard>
