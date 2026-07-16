@@ -12,6 +12,7 @@ export type AuthUser = {
   role: "user" | "creator" | "admin";
   plan: string | null;
   subscriptionStatus: string | null;
+  trialUsed?: boolean;
   emailVerified?: boolean;
   growInterests?: Record<string, string[]>;
   ageBand?: "13_17" | "18_20" | "21_plus" | "unknown";

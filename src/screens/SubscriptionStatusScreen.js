@@ -113,7 +113,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
 
           {!trialUsed && !isPro ? (
             <View style={styles.trialNotice}>
-              <Text style={styles.trialText}>You have a 7-day free trial available.</Text>
+              <Text style={styles.trialText}>You have a 30-day free trial available.</Text>
             </View>
           ) : null}
 

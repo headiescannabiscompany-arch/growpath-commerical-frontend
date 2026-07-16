@@ -137,8 +137,9 @@ export default function Offers() {
           <Text style={styles.kicker}>Plans</Text>
           <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
           <Text style={styles.headerSubtitle}>
-            Start checkout for a paid plan. Live checkout charges real payment methods
-            after Stripe payment is submitted.
+            Eligible new subscribers receive 30 days free through Stripe checkout. A
+            payment method is required, and paid billing begins after the trial unless
+            canceled.
           </Text>
           <View style={styles.segment}>
             {(["monthly", "yearly"] as const).map((item) => {
@@ -230,7 +231,13 @@ export default function Offers() {
                 style={[styles.button, (loading || current) && styles.buttonDisabled]}
               >
                 <Text style={styles.buttonText}>
-                  {loading ? "Starting..." : current ? "Current plan" : "Start checkout"}
+                  {loading
+                    ? "Starting..."
+                    : current
+                      ? "Current plan"
+                      : auth.user?.trialUsed
+                        ? "Start checkout"
+                        : "Start 30-day trial"}
                 </Text>
               </Pressable>
             </AppCard>

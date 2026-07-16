@@ -90,7 +90,7 @@ export default function PaywallScreen({ navigation }) {
               style={[styles.button, styles.trialButton]}
               onPress={handleStartTrial}
             >
-              <Text style={styles.buttonText}>Start 7-Day Free Trial</Text>
+              <Text style={styles.buttonText}>Start 30-Day Free Trial</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
