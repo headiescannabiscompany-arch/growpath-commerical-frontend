@@ -8,7 +8,7 @@ describe("personal navigation release surface", () => {
   );
 
   test("keeps core personal destinations in the bottom tabs", () => {
-    for (const name of ["index", "grows", "tools", "community", "courses", "profile"]) {
+    for (const name of ["index", "grows", "tools", "community", "profile"]) {
       expect(layout).toMatch(new RegExp(`name="${name}"`));
       expect(layout).not.toMatch(
         new RegExp(`name="${name}"\\s+options=\\{\\{[^}]*href:\\s*null`)
@@ -17,7 +17,7 @@ describe("personal navigation release surface", () => {
   });
 
   test("keeps contextual destinations out of primary bottom navigation", () => {
-    for (const name of ["ai", "forum", "diagnose"]) {
+    for (const name of ["courses", "ai", "forum", "diagnose"]) {
       expect(layout).toMatch(new RegExp(`name="${name}"`));
       expect(layout).toMatch(
         new RegExp(`name="${name}"\\s+options=\\{\\{[^}]*href:\\s*null`)

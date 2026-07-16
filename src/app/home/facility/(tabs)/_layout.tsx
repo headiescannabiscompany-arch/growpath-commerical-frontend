@@ -80,7 +80,8 @@ export default function FacilityTabsLayout() {
         name="compliance"
         options={{
           title: "Compliance",
-          tabBarLabel: compactTabs ? "Comp" : "Compliance"
+          tabBarLabel: compactTabs ? "Comp" : "Compliance",
+          href: compactTabs ? null : undefined
         }}
       />
       <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
@@ -93,16 +94,12 @@ export default function FacilityTabsLayout() {
         name="integrations"
         options={{ title: "Integrations", href: compactTabs ? null : undefined }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarLabel: "Profile",
-          href: compactTabs ? null : undefined
-        }}
-      />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
       <Tabs.Screen name="ai-ask" options={{ title: "AI", tabBarLabel: "AI" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", tabBarLabel: "Profile" }}
+      />
       <Tabs.Screen
         name="ai-diagnosis-photo"
         options={{ title: "Trichome Analysis", tabBarButton: () => null }}

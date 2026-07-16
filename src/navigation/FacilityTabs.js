@@ -17,24 +17,14 @@ export default function FacilityTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: true }}>
       <Tab.Screen
-        name="FacilityProfile"
-        component={FacilityProfileRoute}
-        options={{ title: "Setup" }}
+        name="FacilityDashboard"
+        component={FacilityDashboardRoute}
+        options={{ title: "Dashboard" }}
       />
       <Tab.Screen
         name="FacilityRooms"
         component={FacilityRoomsRoute}
         options={{ title: "Rooms" }}
-      />
-      <Tab.Screen
-        name="FacilityGrows"
-        component={FacilityGrowsRoute}
-        options={{ title: "Grows" }}
-      />
-      <Tab.Screen
-        name="FacilityInventory"
-        component={FacilityInventoryRoute}
-        options={{ title: "Inventory" }}
       />
       <Tab.Screen
         name="FacilityTasks"
@@ -47,19 +37,29 @@ export default function FacilityTabs() {
         options={{ title: "Compliance" }}
       />
       <Tab.Screen
+        name="FacilityProfile"
+        component={FacilityProfileRoute}
+        options={{ title: "Profile" }}
+      />
+      <Tab.Screen
+        name="FacilityGrows"
+        component={FacilityGrowsRoute}
+        options={{ title: "Grows", tabBarButton: () => null }}
+      />
+      <Tab.Screen
+        name="FacilityInventory"
+        component={FacilityInventoryRoute}
+        options={{ title: "Inventory", tabBarButton: () => null }}
+      />
+      <Tab.Screen
         name="FacilityTeam"
         component={FacilityTeamRoute}
-        options={{ title: "Team" }}
+        options={{ title: "Team", tabBarButton: () => null }}
       />
       <Tab.Screen
         name="FacilityReports"
         component={FacilityReportsRoute}
-        options={{ title: "Reports" }}
-      />
-      <Tab.Screen
-        name="FacilityDashboard"
-        component={FacilityDashboardRoute}
-        options={{ title: "Dashboard" }}
+        options={{ title: "Reports", tabBarButton: () => null }}
       />
     </Tab.Navigator>
   );
