@@ -35,7 +35,7 @@ jest.mock("@/components/feed/FeedBanner", () => {
 jest.mock("@/components/TokenBalanceWidget", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "AI Tokens 10 / 10");
+  return () => React.createElement(Text, null, "AI Credits 10 / 10");
 });
 
 jest.mock("@/entitlements", () => ({
@@ -93,8 +93,8 @@ describe("personal tools hub", () => {
 
     const screen = render(<ToolsHubScreen />);
 
-    expect(screen.getByText(/limited AI tokens/)).toBeTruthy();
-    expect(screen.getByText("AI Tokens 10 / 10")).toBeTruthy();
+    expect(screen.getByText(/limited weekly AI-credit allowance/)).toBeTruthy();
+    expect(screen.getByText("AI Credits 10 / 10")).toBeTruthy();
     expect(screen.getAllByText("Ask AI").length).toBeGreaterThan(0);
     expect(screen.getByText("Plant Issue Diagnosis")).toBeTruthy();
     expect(screen.getByText("Tissue Culture")).toBeTruthy();
@@ -113,7 +113,7 @@ describe("personal tools hub", () => {
 
     const screen = render(<ToolsHubScreen />);
 
-    expect(screen.getByText(/AI token balance and usage/)).toBeTruthy();
+    expect(screen.getByText(/AI-credit balance and usage/)).toBeTruthy();
     expect(screen.getByText("Tissue Culture")).toBeTruthy();
     expect(screen.queryAllByText("Upgrade to unlock")).toHaveLength(0);
   });

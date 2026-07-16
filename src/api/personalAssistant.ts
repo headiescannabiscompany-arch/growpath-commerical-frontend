@@ -20,6 +20,10 @@ export type PersonalAssistantResponse = {
   contextSummary?: Record<string, any>;
   referencedData?: AssistantReference[];
   proposedWrites?: AssistantProposedWrite[];
+  provider?: string;
+  aiCreditsUsed?: number;
+  aiTokensRemaining?: number;
+  creditNotice?: string;
 };
 
 export async function askPersonalAssistant(payload: {

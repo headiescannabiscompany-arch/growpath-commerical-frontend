@@ -270,9 +270,9 @@ export default function PersonalHomeTab() {
           </View>
           {!canCreateLog || !canCreateTask ? (
             <Text style={styles.upgradeNote}>
-              Free plan includes basic grow tracking, logs, tasks, and limited AI/tool
-              tokens. Upgrade for more grows, more storage, advanced tools, exports, and
-              higher AI limits.
+              Free plan includes basic grow tracking, logs, tasks, and limited AI credits.
+              Upgrade for more grows, more storage, advanced tools, exports, and higher AI
+              limits.
             </Text>
           ) : null}
         </View>

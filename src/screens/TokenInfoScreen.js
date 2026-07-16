@@ -55,7 +55,7 @@ export default function TokenInfoScreen() {
         </Text>
 
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Your live AI token balance</Text>
+          <Text style={styles.balanceLabel}>Your live AI-credit balance</Text>
           <Text style={styles.balanceValue}>
             {loading
               ? "Checking..."
@@ -85,9 +85,11 @@ export default function TokenInfoScreen() {
         </Section>
         <Section title="2. GrowPathAI analyzes it">
           Ask AI and contextual tools turn that information into an explanation,
-          recommendations, warnings, and suggested next steps. AI runs can use tokens;
-          GrowPathAI shows the real balance supplied by the server and does not invent a
-          plan balance when it cannot connect.
+          recommendations, warnings, and suggested next steps. Credits are charged only
+          when GrowPathAI completes real provider-backed model work. Rule-based
+          calculators and fallbacks are free. Plant Diagnose uses 3 credits;
+          provider-backed text assistance uses 1. GrowPathAI shows the real server balance
+          and does not invent a plan balance when it cannot connect.
         </Section>
         <Section title="3. Higher-risk answers can be checked">
           Where a verification workflow is enabled, such as supported IPM analysis, the

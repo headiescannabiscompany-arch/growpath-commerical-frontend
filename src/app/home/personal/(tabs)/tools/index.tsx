@@ -256,8 +256,8 @@ export default function ToolsHubScreen() {
         <View style={styles.context}>
           <Text style={styles.contextText}>
             {isFreePlan
-              ? "Free plan: Ask AI and Plant Diagnose are available with limited AI tokens."
-              : "AI token balance and usage are managed from Profile."}
+              ? "Free plan: Ask AI and Plant Diagnose include a limited weekly AI-credit allowance."
+              : "AI-credit balance and usage are managed from Profile."}
           </Text>
         </View>
         {growId ? (

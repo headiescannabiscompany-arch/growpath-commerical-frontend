@@ -81,7 +81,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     ? "Live balance is unavailable. No estimated balance is being shown."
     : balance?.refillDescription || "Your configured allowance refreshes weekly.";
   const usageCopy =
-    "Use tokens for Ask AI, Plant Diagnose, recipe review, and environment analysis.";
+    "AI credits pay for real model work. Rule-based calculators and fallbacks are free; Plant Diagnose uses 3 credits and provider-backed text help uses 1.";
 
   const Container = interactive ? TouchableOpacity : View;
 
@@ -97,7 +97,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
           <Text style={styles.icon}>AI</Text>
         </View>
         <View style={styles.headerContent}>
-          <Text style={styles.label}>AI Tokens</Text>
+          <Text style={styles.label}>AI Credits</Text>
           <Text style={styles.balance}>
             {aiTokens} / {maxTokens ?? "-"}
           </Text>
@@ -112,14 +112,14 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
       <View style={styles.details}>
         <Text style={styles.description}>{usageCopy}</Text>
         {loading ? (
-          <Text style={styles.description}>Checking live token balance...</Text>
+          <Text style={styles.description}>Checking live AI-credit balance...</Text>
         ) : null}
         <Text style={styles.description}>{refillCopy}</Text>
       </View>
 
       {interactive ? (
         <View style={styles.ctaRow}>
-          <Text style={styles.ctaText}>See how tokens work</Text>
+          <Text style={styles.ctaText}>See how AI credits work</Text>
         </View>
       ) : null}
     </Container>

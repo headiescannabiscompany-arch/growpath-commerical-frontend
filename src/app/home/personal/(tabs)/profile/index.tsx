@@ -419,9 +419,9 @@ export default function ProfileScreen() {
         <Text style={styles.rowLabel}>Plan</Text>
         <Text style={styles.rowValue}>{plan}</Text>
         <Text style={styles.mutedText}>
-          Free includes basic grow tracking, logs, tasks, and limited AI/tool tokens.
-          Upgrade for more grows, storage, advanced tools, exports, integrations, and
-          higher AI limits.
+          Free includes basic grow tracking, logs, tasks, and limited AI credits. Upgrade
+          for more grows, storage, advanced tools, exports, integrations, and higher AI
+          limits.
         </Text>
         <View style={styles.actionGrid}>
           {[
@@ -447,7 +447,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.rowLabel}>AI token balance</Text>
+        <Text style={styles.rowLabel}>AI-credit balance</Text>
         <TokenBalanceWidget
           onPress={() => router.push("/home/personal/profile/billing" as any)}
         />
