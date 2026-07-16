@@ -157,12 +157,13 @@ Legend:
 - [x] Gmail-connected verification found live GrowPath reset and verification emails in the connected mailbox.
 - [blocked] Transactional email delivery cannot be marked complete from this workspace because production email env is absent locally: `REQUIRE_EMAIL_VERIFICATION`, `EMAIL_PROVIDER`, and `RESEND_API_KEY` were reported missing by `npm run verify:email-delivery-config`.
 - [blocked] Live verification/reset email delivery requires the live API backend environment plus Resend verified domain/send logs.
-- [blocked] Support/contact receiving remains open: connected Gmail search found no support ticket routed to `support@growpathai.com` or `johnc@growpathai.com` yet, so alias/root MX receiving still needs proof.
+- [x] Support/contact receiving verified live: Resend reports configured delivery and connected Gmail contains delivered GrowPath Support mail, including two real Facility Report Bug submissions from the owner account. Independent outside-user feedback is still zero and remains a field-validation requirement.
 - [blocked] Live paid course/subscription checkout settlement requires Stripe configuration, checkout session creation in the live backend, and webhook-confirmed enrollment/subscription status.
 - [blocked] Final all-page/button/workflow acceptance requires the generated browser checklist at `tmp/deferred-user-verification-checklist.md`; automated tests cover representative workflows, not every possible manual click path.
 
 ## App-Wide Tighten / Polish Audit
 
+- [~] Run the two-track user-type verification in `docs/qa/USER_TYPE_LOOP_CLOSURE_MATRIX_2026-07-16.md`: close every persisted/downstream/permission/delivery loop while separately reviewing product polish, Free-plan invitation, and outside-user validation.
 - [x] Remove orphaned fake advertising API shim so Feed/Campaigns cannot silently rely on empty stub ad data.
 - [x] Remove developer route-template notation from user-facing commercial profile/product copy.
 - [x] Consolidate JS/TS twin modules where practical: `src/api/auth`, `client`, `growlog`, `grows`, `links`, `plants`, `reports`, `subscription`, `tasks`, `team`, plus shared UI/helper twins now report as 0 true duplicate implementations and 15 intentional compatibility wrappers.
