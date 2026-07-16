@@ -47,35 +47,35 @@ An action passes only when all applicable stages pass:
 
 ## User and role coverage
 
-| Session | Primary proof |
-| --- | --- |
-| Public / signed out | Discovery, registration, verification, login, public content, checkout entry, Support |
-| Personal Free | First grow/plant, logs, tasks, calculators, weekly AI allowance, limit and upgrade recovery |
-| Personal Pro | Paid limits, analytics, uploads, diagnosis, AI usage, billing and cancellation state |
-| Commercial | Brand identity, products, courses, campaigns, trials, inventory, orders, analytics, storefront handoff |
-| Facility Owner | Setup, subscription, team, roles, rooms, grows, inventory, compliance, audit, full oversight |
-| Facility Manager | Operational creation, assignment, approvals, team behavior, restricted owner actions |
-| Facility Staff | Assigned work, logs, task status/proof, permitted operational writes, blocked administration |
-| Facility Viewer | Accurate read-only state, navigation, source links, hidden/disabled mutations, backend 403 proof |
+| Session             | Primary proof                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| Public / signed out | Discovery, registration, verification, login, public content, checkout entry, Support                  |
+| Personal Free       | First grow/plant, logs, tasks, calculators, weekly AI allowance, limit and upgrade recovery            |
+| Personal Pro        | Paid limits, analytics, uploads, diagnosis, AI usage, billing and cancellation state                   |
+| Commercial          | Brand identity, products, courses, campaigns, trials, inventory, orders, analytics, storefront handoff |
+| Facility Owner      | Setup, subscription, team, roles, rooms, grows, inventory, compliance, audit, full oversight           |
+| Facility Manager    | Operational creation, assignment, approvals, team behavior, restricted owner actions                   |
+| Facility Staff      | Assigned work, logs, task status/proof, permitted operational writes, blocked administration           |
+| Facility Viewer     | Accurate read-only state, navigation, source links, hidden/disabled mutations, backend 403 proof       |
 
 Viewer and Staff do not require the Owner's depth of configuration UI. Their smaller
 surface must still be clear, internally consistent, and complete.
 
 ## Connected workflow matrix
 
-| Workflow | Sessions | Closure evidence |
-| --- | --- | --- |
-| Account lifecycle | Public, all signed-in types | Register -> verify -> login -> profile -> reset password -> sign out/in |
-| Subscription and trial | Free, Pro, Commercial, Facility Owner | Select plan -> checkout/trial -> webhook state -> entitlement -> billing -> cancel/expiry |
-| AI credits | Free, Pro, Commercial, Facility | Cost shown -> action -> exact deduction/refund -> refresh -> weekly allowance truth |
-| Personal cultivation | Free, Pro | Grow -> plant -> log/photo -> task -> tool/diagnosis -> timeline -> source reopen |
-| Shared schedule and alerts | All signed-in types | Source event -> schedule/alert -> exact source link -> update/complete -> reflected state |
-| Community | Public, Free, paid types | Discover -> join/post/comment -> moderation -> notification -> exact thread reopen |
-| Commercial proof-to-storefront | Commercial, Public | Product/course/trial/evidence -> publish -> public view -> inquiry/purchase -> analytics/order |
-| Facility operating chain | Owner, Manager, Staff, Viewer | Configure -> assign -> execute/prove -> approve -> observe -> history/audit |
-| Facility permissions | Owner, Manager, Staff, Viewer | Correct visible controls plus forced backend authorization result for restricted actions |
-| Support and bugs | Public, all signed-in types, Admin | Report entry -> prefilled form -> submit -> stored inbox -> email -> status -> resolution |
-| Privacy and account closure | All signed-in types | Export/request -> delivered artifact/state -> deletion/cancellation -> access removed |
+| Workflow                       | Sessions                              | Closure evidence                                                                               |
+| ------------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Account lifecycle              | Public, all signed-in types           | Register -> verify -> login -> profile -> reset password -> sign out/in                        |
+| Subscription and trial         | Free, Pro, Commercial, Facility Owner | Select plan -> checkout/trial -> webhook state -> entitlement -> billing -> cancel/expiry      |
+| AI credits                     | Free, Pro, Commercial, Facility       | Cost shown -> action -> exact deduction/refund -> refresh -> weekly allowance truth            |
+| Personal cultivation           | Free, Pro                             | Grow -> plant -> log/photo -> task -> tool/diagnosis -> timeline -> source reopen              |
+| Shared schedule and alerts     | All signed-in types                   | Source event -> schedule/alert -> exact source link -> update/complete -> reflected state      |
+| Community                      | Public, Free, paid types              | Discover -> join/post/comment -> moderation -> notification -> exact thread reopen             |
+| Commercial proof-to-storefront | Commercial, Public                    | Product/course/trial/evidence -> publish -> public view -> inquiry/purchase -> analytics/order |
+| Facility operating chain       | Owner, Manager, Staff, Viewer         | Configure -> assign -> execute/prove -> approve -> observe -> history/audit                    |
+| Facility permissions           | Owner, Manager, Staff, Viewer         | Correct visible controls plus forced backend authorization result for restricted actions       |
+| Support and bugs               | Public, all signed-in types, Admin    | Report entry -> prefilled form -> submit -> stored inbox -> email -> status -> resolution      |
+| Privacy and account closure    | All signed-in types                   | Export/request -> delivered artifact/state -> deletion/cancellation -> access removed          |
 
 ## Facility chain session
 
@@ -92,6 +92,24 @@ control, or can bypass its backend authorization boundary.
 
 ## Working status
 
+### Personal Free backbone audit
+
+- Environment Review now uses the mounted ToolRun API, clearly identifies its
+  rule-based provider, costs 0 AI credits, uses generic stage references instead of
+  presenting the current reading as a target, and can reuse its saved run when creating
+  a log or task.
+- Feeding Schedule Planner now uses the mounted ToolRun API, costs 0 AI credits, does
+  not convert blank optional EC/pH readings to zero, and can reuse its saved run when
+  creating a log or task.
+- The launch Free allowance remains 10 credits per week: 10 completed Ask AI answers,
+  or 3 completed photo diagnoses plus 1 Ask AI answer. This is a conversion hypothesis,
+  not yet a validated optimum.
+- During live testing, record weekly credit exhaustion, action mix, failed/refunded
+  calls, upgrade-view rate after demonstrated value, and upgrade conversion. Do not
+  tune the allowance from anecdote alone.
+- Static and automated closure checks are complete for these two repaired tools. The
+  Personal Free session remains open until the deployed build is recorded end to end.
+
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed.
@@ -103,4 +121,3 @@ control, or can bypass its backend authorization boundary.
 - [ ] Cross-role Facility chain completed on one shared record.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
-

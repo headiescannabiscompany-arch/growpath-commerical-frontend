@@ -208,15 +208,14 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.environment_analysis",
-    title: "AI Environment Analysis",
+    title: "Environment Review",
     description:
-      "Send temperature, humidity, VPD, PPFD, DLI, and CO2 context to the environment analysis endpoint.",
+      "Review temperature, humidity, VPD, PPFD, DLI, and CO2 context with free GrowPath rules.",
     area: "environment",
     status: "release",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
-    internalNote:
-      "Endpoint-backed analysis when AI is enabled; local heuristic fallback keeps the tool useful for every account."
+    internalNote: "Rule-based ToolRun review is available without spending AI credits."
   },
   {
     key: "tools.feeding_schedule",

@@ -25,6 +25,12 @@ function coerceParam(value?: string | string[]) {
   return "";
 }
 
+function optionalNumeric(value: string) {
+  if (!value.trim()) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function rowsFromSchedule(result: any): any[] {
   const schedule =
     result?.data?.schedule?.schedule ??
@@ -43,6 +49,10 @@ function notesFromSchedule(result: any) {
       result?.schedule?.notes ||
       ""
   );
+}
+
+function resultToolRunId(result: any) {
+  return String(result?.data?.toolRun?.id || result?.data?.toolRun?._id || "").trim();
 }
 
 function dueTomorrow() {
@@ -130,10 +140,10 @@ export default function FeedingScheduleToolScreen() {
         experience: experience.trim(),
         weeks: Number(weeks),
         stage: currentStage.trim(),
-        inputEC: Number(inputEC),
-        runoffEC: Number(runoffEC),
-        inputPH: Number(inputPH),
-        runoffPH: Number(runoffPH),
+        inputEC: optionalNumeric(inputEC),
+        runoffEC: optionalNumeric(runoffEC),
+        inputPH: optionalNumeric(inputPH),
+        runoffPH: optionalNumeric(runoffPH),
         waterSource: waterSource.trim()
       });
       setResult(response);
@@ -156,16 +166,17 @@ export default function FeedingScheduleToolScreen() {
       experience: experience.trim(),
       weeks: Number(weeks),
       stage: currentStage.trim(),
-      inputEC: Number(inputEC),
-      runoffEC: Number(runoffEC),
-      inputPH: Number(inputPH),
-      runoffPH: Number(runoffPH),
+      inputEC: optionalNumeric(inputEC),
+      runoffEC: optionalNumeric(runoffEC),
+      inputPH: optionalNumeric(inputPH),
+      runoffPH: optionalNumeric(runoffPH),
       waterSource: waterSource.trim()
     };
     const created = await saveToolRunAndCreateLog({
       growId,
       ...plantContext.toolRunContext,
       toolKey: "feeding-schedule",
+      toolRunId: resultToolRunId(result),
       input,
       output: result,
       type: "feed",
@@ -199,14 +210,15 @@ export default function FeedingScheduleToolScreen() {
 
   return (
     <ScreenBoundary
-      title="AI Feeding Schedule"
+      title="Feeding Schedule Planner"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>AI Feeding Schedule</Text>
+        <Text style={styles.title}>Feeding Schedule Planner</Text>
         <Text style={styles.subtitle}>
-          Generate a feeding plan from nutrient, medium, strain, and schedule context.
+          Build a conservative schedule and review EC, pH, runoff, medium, and crop-stage
+          risks without using AI credits.
         </Text>
         <PersonalFeedPlacement
           placement="top"
@@ -307,7 +319,7 @@ export default function FeedingScheduleToolScreen() {
 
         {!enabled ? (
           <LockedToolCard
-            title="AI Feeding Schedule"
+            title="Feeding Schedule Planner"
             capability={CAPABILITY_KEYS.FEEDING_SCHEDULE}
             description="Generate stage-aware feeding plans after this capability is enabled for the account."
           />
@@ -332,7 +344,7 @@ export default function FeedingScheduleToolScreen() {
 
         <ToolResultSurface
           title="Feeding schedule"
-          status={result ? "AI ENDPOINT" : "READY"}
+          status={result ? "RULE REVIEW" : "READY"}
           summary={notes || "Run the endpoint to generate a schedule."}
           metrics={[
             { key: "weeks", label: "Requested weeks", value: weeks || "0" },
@@ -359,7 +371,7 @@ export default function FeedingScheduleToolScreen() {
             ) : undefined
           }
           assumptions={[
-            "Backend schedule output is authoritative for entitlement and endpoint behavior.",
+            "GrowPath's rule engine reviews the schedule without using AI credits.",
             ...review.warnings,
             ...review.recommendations,
             "Confirm product label rates, local regulations, runoff, EC, and plant response before applying."
@@ -383,6 +395,7 @@ export default function FeedingScheduleToolScreen() {
                         growId,
                         ...plantContext.toolRunContext,
                         toolKey: "feeding-schedule",
+                        toolRunId: resultToolRunId(result),
                         input: {
                           nutrientData: { productName: productName.trim() },
                           growMedium: medium.trim(),
@@ -390,10 +403,10 @@ export default function FeedingScheduleToolScreen() {
                           experience: experience.trim(),
                           weeks: Number(weeks),
                           stage: currentStage.trim(),
-                          inputEC: Number(inputEC),
-                          runoffEC: Number(runoffEC),
-                          inputPH: Number(inputPH),
-                          runoffPH: Number(runoffPH),
+                          inputEC: optionalNumeric(inputEC),
+                          runoffEC: optionalNumeric(runoffEC),
+                          inputPH: optionalNumeric(inputPH),
+                          runoffPH: optionalNumeric(runoffPH),
                           waterSource: waterSource.trim()
                         },
                         output: result,

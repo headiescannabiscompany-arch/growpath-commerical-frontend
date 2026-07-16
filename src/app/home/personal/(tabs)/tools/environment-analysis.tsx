@@ -70,6 +70,10 @@ function targetValue(result: any, key: string) {
   return value === undefined || value === null || value === "" ? "n/a" : String(value);
 }
 
+function resultToolRunId(result: any) {
+  return String(result?.toolRun?.id || result?.toolRun?._id || "").trim();
+}
+
 function dueTomorrow() {
   return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
@@ -163,6 +167,7 @@ export default function EnvironmentAnalysisToolScreen() {
       growId,
       ...plantContext.toolRunContext,
       toolKey: "environment-analysis",
+      toolRunId: resultToolRunId(result),
       input: {
         stage,
         tempDayC: numeric(tempDayC),
@@ -208,15 +213,15 @@ export default function EnvironmentAnalysisToolScreen() {
 
   return (
     <ScreenBoundary
-      title="AI Environment Analysis"
+      title="Environment Review"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>AI Environment Analysis</Text>
+        <Text style={styles.title}>Environment Review</Text>
         <Text style={styles.subtitle}>
-          Send grow-room readings to the environment analysis endpoint for target ranges,
-          risk flags, and adjustment recommendations.
+          Review grow-room readings with GrowPath rules, then save the result or create a
+          linked follow-up task. This review uses no AI credits.
         </Text>
         <PersonalFeedPlacement
           placement="top"
@@ -345,7 +350,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <ToolResultSurface
           title="Environment analysis"
           status={
-            result ? String(assessment.status || "AI ENDPOINT").toUpperCase() : "READY"
+            result ? String(assessment.status || "RULE REVIEW").toUpperCase() : "READY"
           }
           summary={
             result?.data?.notes ||
@@ -402,7 +407,7 @@ export default function EnvironmentAnalysisToolScreen() {
           ]}
           recommendations={recommendations}
           assumptions={[
-            "The backend environment endpoint supplies the targets and recommendations.",
+            "GrowPath's rule engine supplies the review and recommendations without using AI credits.",
             ...environmentReview.recommendations,
             buildEnvironmentContextAssumption(plantContext.selectedPlantContext),
             "Confirm sensor calibration, canopy position, and plant response before changing controls."
@@ -428,6 +433,7 @@ export default function EnvironmentAnalysisToolScreen() {
                         growId,
                         ...plantContext.toolRunContext,
                         toolKey: "environment-analysis",
+                        toolRunId: resultToolRunId(result),
                         input: {
                           stage,
                           tempDayC: numeric(tempDayC),

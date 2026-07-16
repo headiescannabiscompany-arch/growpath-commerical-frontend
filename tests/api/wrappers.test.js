@@ -56,6 +56,16 @@ describe("API Wrappers Unit Tests", () => {
     fetchCalls = [];
   });
 
+  it("Environment API: uses the mounted rule-review endpoint", async () => {
+    await environmentApi.analyzeEnvironment({
+      stage: "veg",
+      tempDayC: 25,
+      humidity: 60
+    });
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith("/api/tools/environment-analysis")).toBe(true);
+  });
+
   it("Users API: followUser uses POST and correct path", async () => {
     await usersApi.followUser("u1");
     expect(fetchCalls[0].options.method).toBe("POST");

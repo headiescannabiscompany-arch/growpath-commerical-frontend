@@ -9,10 +9,17 @@ function buildAuthHeaders(token) {
 }
 
 export function analyzeEnvironment(data, token) {
-  return apiRequest(apiRoutes.ENVIRONMENT.ANALYZE, {
+  return apiRequest("/api/tools/environment-analysis", {
     method: "POST",
     headers: buildAuthHeaders(token),
     body: data
+  }).then((response) => {
+    const body = response?.data ?? response ?? {};
+    return {
+      ...body,
+      data: body.outputs || body.data || {},
+      aiCreditsUsed: 0
+    };
   });
 }
 

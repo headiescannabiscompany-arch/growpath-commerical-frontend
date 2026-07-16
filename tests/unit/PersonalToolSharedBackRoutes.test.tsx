@@ -127,11 +127,11 @@ describe("legacy personal tool shared back routes", () => {
     expect(screen.getByText("Harvest Estimator")).toBeTruthy();
   });
 
-  it("uses shared back behavior on AI Feeding Schedule", () => {
+  it("uses shared back behavior on Feeding Schedule Planner", () => {
     const screen = render(<FeedingScheduleToolScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    expect(screen.getByText("AI Feeding Schedule")).toBeTruthy();
+    expect(screen.getByText("Feeding Schedule Planner")).toBeTruthy();
   });
 
   it("uses shared back behavior on Watering Planner", () => {
@@ -155,11 +155,11 @@ describe("legacy personal tool shared back routes", () => {
     expect(screen.getByText("Timeline Planner")).toBeTruthy();
   });
 
-  it("uses shared back behavior on AI Environment Analysis", () => {
+  it("uses shared back behavior on Environment Review", () => {
     const screen = render(<EnvironmentAnalysisToolScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    expect(screen.getByText("AI Environment Analysis")).toBeTruthy();
+    expect(screen.getByText("Environment Review")).toBeTruthy();
   });
 
   it("uses shared back behavior on PDF / Export", () => {

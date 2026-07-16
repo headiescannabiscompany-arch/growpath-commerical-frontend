@@ -136,7 +136,11 @@ describe("FeedingScheduleToolScreen", () => {
         expect.objectContaining({
           growId: "grow-1",
           growMedium: "Soil",
-          stage: "veg"
+          stage: "veg",
+          inputEC: undefined,
+          runoffEC: undefined,
+          inputPH: undefined,
+          runoffPH: undefined
         })
       )
     );
