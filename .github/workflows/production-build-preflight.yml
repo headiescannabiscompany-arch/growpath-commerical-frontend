@@ -20,6 +20,7 @@ on:
       - "scripts/**"
       - "tests/**"
       - "src/**"
+      - "docs/contracts/**"
       - "assets/**"
       - "backend/**"
       - "e2e/**"
