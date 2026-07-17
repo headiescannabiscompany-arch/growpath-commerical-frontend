@@ -96,7 +96,7 @@ describe("ForumPostDetailRoute", () => {
     const screen = render(<ForumPostDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
-    expect(screen.getByLabelText("Shared back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByLabelText("Shared back /forum")).toBeTruthy();
     expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create forum follow-up task"));

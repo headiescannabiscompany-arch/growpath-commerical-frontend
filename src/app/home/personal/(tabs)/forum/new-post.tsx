@@ -167,10 +167,10 @@ export default function ForumNewPostRoute() {
       router.replace(
         createdId
           ? {
-              pathname: "/home/personal/forum/post/[id]",
+              pathname: "/forum/post/[id]",
               params: { id: createdId, ...(growId ? { growId } : {}) }
             }
-          : "/home/personal/forum"
+          : "/forum"
       );
     } catch (error: any) {
       setFeedback(error?.message || "Unable to create discussion.");
@@ -200,7 +200,7 @@ export default function ForumNewPostRoute() {
     <ScreenBoundary
       name="personal.forum.newPost"
       showBack
-      backFallbackHref="/home/personal/forum"
+      backFallbackHref="/forum"
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View>

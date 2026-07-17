@@ -386,7 +386,7 @@ export default function ForumPostDetailRoute() {
     <ScreenBoundary
       name="personal.forum.postDetail"
       showBack
-      backFallbackHref="/home/personal/forum"
+      backFallbackHref="/forum"
     >
       <ScrollView
         style={styles.container}

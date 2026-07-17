@@ -9,7 +9,7 @@ export default function ForumCodeRoute() {
     <ScreenBoundary
       name="personal.forum.code"
       showBack
-      backFallbackHref="/home/personal/forum"
+      backFallbackHref="/forum"
     >
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         <PersonalFeedPlacement
