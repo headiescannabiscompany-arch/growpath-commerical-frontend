@@ -20,7 +20,14 @@ import {
   type BatchCycle,
   type EquipmentItem
 } from "@/api/facilityWorkflows";
-import { createRoom, deleteRoom, fetchRooms, updateRoom, type Room } from "@/api/rooms";
+import {
+  createRoom,
+  deleteRoom,
+  fetchRooms,
+  reorderRooms,
+  updateRoom,
+  type Room
+} from "@/api/rooms";
 import { askFormAssistant, type FormAssistantResponse } from "@/api/formAssistant";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -492,6 +499,30 @@ export default function FacilityRoomsTab() {
     }
   }
 
+  async function moveRoom(roomIndex: number, direction: -1 | 1) {
+    if (!facilityId || !canEditRooms || saving) return;
+    const targetIndex = roomIndex + direction;
+    if (targetIndex < 0 || targetIndex >= rooms.length) return;
+    const previousRooms = rooms;
+    const nextRooms = [...rooms];
+    const [movedRoom] = nextRooms.splice(roomIndex, 1);
+    nextRooms.splice(targetIndex, 0, movedRoom);
+    setRooms(nextRooms);
+    setSaving(true);
+    setFeedback("");
+    clearError();
+    try {
+      const savedRooms = await reorderRooms(facilityId, nextRooms.map(rowId));
+      setRooms(savedRooms);
+      setFeedback(`Moved ${movedRoom.name || "room"}. Room order saved.`);
+    } catch (e) {
+      setRooms(previousRooms);
+      handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function getRoomFormHelp() {
     if (!facilityId || !roomDescription.trim()) return;
     setAssistantBusy(true);
@@ -744,7 +775,7 @@ export default function FacilityRoomsTab() {
   }
 
   return (
-    <ScreenBoundary title="Rooms">
+    <ScreenBoundary title="Facility rooms and workspaces">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -759,7 +790,7 @@ export default function FacilityRoomsTab() {
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Rooms</Text>
+            <Text style={styles.h1}>Facility rooms &amp; workspaces</Text>
             <Text style={styles.muted}>
               {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
             </Text>
@@ -776,12 +807,13 @@ export default function FacilityRoomsTab() {
         />
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Facility rooms</Text>
+          <Text style={styles.cardTitle}>Arrange room workspaces</Text>
           <Text style={styles.muted}>
-            Open a room to continue through its grows, plants, work, and environment.
+            Put rooms in the order your team uses them. The saved order is shared across
+            GrowPathAI modes. Open a room for its grows, plants, work, and environment.
           </Text>
           {rooms.length ? (
-            rooms.map((room) => {
+            rooms.map((room, roomIndex) => {
               const id = rowId(room);
               const linkedEquipment = equipment.filter(
                 (item) => String(item.roomId ?? "") === id
@@ -790,30 +822,59 @@ export default function FacilityRoomsTab() {
                 (item) => String(item.roomId ?? "") === id
               );
               return (
-                <Pressable
-                  key={id || room.name}
-                  onPress={() => {
-                    setActiveRoomId(id);
-                    router.push({
-                      pathname: "/home/facility/grows",
-                      params: { roomId: id, roomName: room.name || "Room" }
-                    });
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Open ${room.name || "room"}`}
-                  style={styles.row}
-                >
-                  <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
-                  <Text style={styles.rowMeta}>
-                    {[
-                      room.roomType || "room",
-                      room.stage || "no active stage",
-                      `${linkedCycles.length} grows`,
-                      `${linkedEquipment} connected devices`
-                    ].join(" | ")}
-                  </Text>
-                  <Text style={styles.rowMeta}>Open room workspace {">"}</Text>
-                </Pressable>
+                <View key={id || room.name} style={styles.row}>
+                  <Pressable
+                    onPress={() => {
+                      setActiveRoomId(id);
+                      router.push({
+                        pathname: "/home/facility/grows",
+                        params: { roomId: id, roomName: room.name || "Room" }
+                      });
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Open ${room.name || "room"}`}
+                    style={styles.roomWorkspace}
+                  >
+                    <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
+                    <Text style={styles.rowMeta}>
+                      {[
+                        room.roomType || "room",
+                        room.stage || "no active stage",
+                        `${linkedCycles.length} grows`,
+                        `${linkedEquipment} connected devices`
+                      ].join(" | ")}
+                    </Text>
+                    <Text style={styles.openWorkspace}>Open workspace {">"}</Text>
+                  </Pressable>
+                  {canEditRooms && rooms.length > 1 ? (
+                    <View style={styles.orderControls}>
+                      <Pressable
+                        onPress={() => moveRoom(roomIndex, -1)}
+                        disabled={saving || roomIndex === 0}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Move ${room.name || "room"} up`}
+                        style={[
+                          styles.orderButton,
+                          (saving || roomIndex === 0) && styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.orderButtonText}>Move up</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => moveRoom(roomIndex, 1)}
+                        disabled={saving || roomIndex === rooms.length - 1}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Move ${room.name || "room"} down`}
+                        style={[
+                          styles.orderButton,
+                          (saving || roomIndex === rooms.length - 1) && styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.orderButtonText}>Move down</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
+                </View>
               );
             })
           ) : (
@@ -1442,6 +1503,18 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     gap: 3
   },
+  roomWorkspace: { gap: 3 },
+  openWorkspace: { color: "#166534", fontWeight: "800", marginTop: 3 },
+  orderControls: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 7 },
+  orderButton: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#F8FAFC"
+  },
+  orderButtonText: { color: "#0F172A", fontWeight: "800" },
   rowTitle: { fontWeight: "900" },
   rowMeta: { opacity: 0.7 },
   summaryCard: {

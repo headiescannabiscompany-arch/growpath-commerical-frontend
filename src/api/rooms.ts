@@ -5,6 +5,7 @@ export type Room = {
   id: string;
   name: string;
   createdAt: string;
+  displayOrder?: number | null;
   roomType?: string;
   trackingMode?: string;
   zoneName?: string;
@@ -81,4 +82,15 @@ export async function deleteRoom(facilityId: string, id: string) {
     method: "DELETE"
   });
   return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
+}
+
+export async function reorderRooms(
+  facilityId: string,
+  roomIds: string[]
+): Promise<Room[]> {
+  const response = await apiRequest(`${endpoints.rooms(facilityId)}/order`, {
+    method: "PUT",
+    body: { roomIds }
+  });
+  return normalizeRoomsResponse(response);
 }
