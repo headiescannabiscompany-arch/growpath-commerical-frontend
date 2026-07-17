@@ -417,10 +417,17 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   cardText: { color: "#475569", lineHeight: 20 },
-  photoRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  photoRow: {
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+    width: "100%"
+  },
   photoThumb: {
     width: "100%",
-    aspectRatio: 16 / 9,
+    maxWidth: 680,
+    aspectRatio: 4 / 3,
+    alignSelf: "center",
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },

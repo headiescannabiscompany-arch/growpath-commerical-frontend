@@ -635,10 +635,12 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 36, gap: 12 },
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   body: { color: "#334155", lineHeight: 21, marginTop: 10 },
-  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
+  photoGrid: { alignItems: "center", gap: 10, marginTop: 8, width: "100%" },
   postPhoto: {
     width: "100%",
+    maxWidth: 720,
     aspectRatio: 4 / 3,
+    alignSelf: "center",
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
@@ -690,8 +692,10 @@ const styles = StyleSheet.create({
   },
   commentInput: { minHeight: 90, textAlignVertical: "top" },
   commentPhoto: {
-    width: 120,
-    height: 90,
+    width: "100%",
+    maxWidth: 560,
+    aspectRatio: 4 / 3,
+    alignSelf: "center",
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
