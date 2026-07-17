@@ -364,11 +364,11 @@ export function resolveWorkspaceMode(
 
 export function shouldApplyFacilityRoleCapabilities(
   mode: EntitlementsMode,
-  _plan: string | null = null
+  plan: string | null = null
 ) {
-  // Facility permissions come from membership role, not the billing plan.
-  // A free facility owner must still be able to administer their workspace.
-  return mode === "facility";
+  // Membership selects the role. Paid or trialing Facility entitlement unlocks
+  // the role's operational capabilities.
+  return mode === "facility" && String(plan || "").toLowerCase() === "facility";
 }
 
 export function resolveRequestedPlan(
