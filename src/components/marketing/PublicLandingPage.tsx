@@ -75,8 +75,8 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
         body: "Use core grow workflows, limited AI assistance, community features, and course publishing within Free-plan limits."
       },
       {
-        title: "Creator trial",
-        body: "Creators may email support@growpathai.com to apply for 30 days of paid Creator-plan access. Courses remain intact when the trial ends."
+        title: "Courses",
+        body: "All plans can create and publish courses within their plan limits. Paid plans add higher limits and advanced creator tools."
       },
       {
         title: "Commercial and Facility",
@@ -188,7 +188,7 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
     eyebrow: "For creators and educators",
     title: "Publish courses on every plan",
     intro:
-      "All users can create and publish free or paid courses. Creators can also apply for a 30-day paid Creator-plan trial to test advanced features.",
+      "All users can create and publish free or paid courses. Paid plans add higher limits and advanced creator tools.",
     sections: [
       {
         title: "Build from real work",
@@ -199,8 +199,8 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
         body: "Schedule live sessions, add stream links, notify learners, and place sessions on calendars."
       },
       {
-        title: "Apply for access",
-        body: "Email support@growpathai.com with your account email, channel and social links, requested account type, and planned tests."
+        title: "Grow an audience",
+        body: "Connect courses, live sessions, community answers, and public creator pages in one learning experience."
       }
     ]
   },

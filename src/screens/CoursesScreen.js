@@ -13,7 +13,6 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
-import CreatorAccessNotice from "@/components/courses/CreatorAccessNotice";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
 import {
@@ -296,7 +295,6 @@ export default function CoursesScreen({ navigation } = {}) {
 
       {access.canCreateCourses ? (
         <>
-          <CreatorAccessNotice accountEmail={auth.user?.email} />
           <View style={styles.builderCard}>
             <Text style={styles.cardTitle}>Course Builder Workflow</Text>
             <Text style={styles.meta}>

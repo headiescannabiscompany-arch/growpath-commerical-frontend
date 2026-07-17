@@ -14,14 +14,15 @@ describe("PublicLandingPage", () => {
     expect(JSON.stringify(screen.toJSON())).toContain("AI disclaimer");
   });
 
-  it("keeps the approved creator publishing policy on the pricing page", () => {
+  it("describes course publishing without a creator-support application", () => {
     const pricing = PUBLIC_PAGE_COPY.pricing;
 
     expect(pricing.intro).toContain(
       "All GrowPathAI users can create and publish free or paid courses"
     );
-    expect(pricing.sections.map((section) => section.body).join(" ")).toContain(
-      "support@growpathai.com"
-    );
+    const courseCopy = pricing.sections.map((section) => section.body).join(" ");
+    expect(courseCopy).toContain("All plans can create and publish courses");
+    expect(courseCopy).not.toContain("apply");
+    expect(courseCopy).not.toContain("support@growpathai.com");
   });
 });
