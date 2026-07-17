@@ -69,6 +69,16 @@ describe("TokenBalanceWidget", () => {
     mockGetTokenBalance.mockResolvedValue({
       aiTokens: 100,
       maxTokens: 100,
+      plan: "pro",
+      subscriptionStatus: "trialing",
+      allowanceSource: "plan",
+      usage: {
+        creditsUsed: 0,
+        creditsRefunded: 3,
+        billedRequests: 0,
+        ledgerDifference: 0,
+        reconciled: true
+      },
       refreshInterval: "weekly",
       refillDescription: "Your configured AI allowance refreshes every Monday (UTC)."
     });
@@ -80,10 +90,43 @@ describe("TokenBalanceWidget", () => {
       screen.getByText("Your configured AI allowance refreshes every Monday (UTC).")
     ).toBeTruthy();
     expect(
+      screen.getByText(/Server plan: PRO \(trialing\); 100 weekly credits/)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /Used this week: 0 credits across 0 billed requests; 3 credits refunded/
+      )
+    ).toBeTruthy();
+    expect(
       screen.queryByText(
         "Live balance is unavailable. No estimated balance is being shown."
       )
     ).toBeNull();
+  });
+
+  it("surfaces a balance-to-ledger mismatch instead of hiding it", async () => {
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 95,
+      maxTokens: 100,
+      plan: "pro",
+      subscriptionStatus: "active",
+      allowanceSource: "plan",
+      usage: {
+        creditsUsed: 2,
+        creditsRefunded: 0,
+        billedRequests: 2,
+        ledgerDifference: 3,
+        reconciled: false
+      }
+    });
+
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Balance and usage ledger differ by 3 credits/)
+      ).toBeTruthy()
+    );
   });
 
   it("refreshes a stale free balance after the account becomes paid", async () => {

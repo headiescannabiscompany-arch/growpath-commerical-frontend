@@ -105,6 +105,22 @@ export default function TokenInfoScreen() {
               Next refresh: {new Date(balance.nextRefresh).toLocaleString()}
             </Text>
           ) : null}
+          {balance?.plan ? (
+            <Text style={styles.helpText}>
+              Server plan: {String(balance.plan).toUpperCase()} (
+              {balance.subscriptionStatus || "unknown status"}); allowance source:{" "}
+              {balance.allowanceSource || "plan"}.
+            </Text>
+          ) : null}
+          {balance?.usage ? (
+            <Text style={styles.helpText}>
+              Used this week: {Number(balance.usage.creditsUsed || 0)} credits across{" "}
+              {Number(balance.usage.billedRequests || 0)} billed requests;{" "}
+              {Number(balance.usage.creditsRefunded || 0)} credits refunded. Ledger{" "}
+              {balance.usage.reconciled ? "matches" : "does not match"} the displayed
+              balance.
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.estimatesSection}>
