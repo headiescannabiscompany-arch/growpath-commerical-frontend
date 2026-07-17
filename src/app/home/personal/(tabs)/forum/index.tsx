@@ -193,7 +193,7 @@ export default function ForumRoute() {
       </View>
       {canPost ? (
         <View style={styles.composerGrid}>
-          <Link href="/home/personal/forum/new-post" asChild>
+          <Link href="/forum/new-post" asChild>
             <Pressable
               style={styles.composer}
               accessibilityRole="button"
@@ -205,7 +205,7 @@ export default function ForumRoute() {
           </Link>
           <Link
             href={{
-              pathname: "/home/personal/forum/new-post",
+              pathname: "/forum/new-post",
               params: {
                 purpose: "diagnosis",
                 title: "Diagnosis help: ",
@@ -227,7 +227,7 @@ export default function ForumRoute() {
           </Link>
           <Link
             href={{
-              pathname: "/home/personal/forum/new-post",
+              pathname: "/forum/new-post",
               params: { purpose: "grow_update", title: "Grow update: " }
             }}
             asChild
@@ -343,7 +343,7 @@ export default function ForumRoute() {
         return (
           <Link
             key={id || titleOf(post)}
-            href={`/home/personal/forum/post/${encodeURIComponent(id)}`}
+            href={`/forum/post/${encodeURIComponent(id)}`}
             asChild
           >
             <Pressable

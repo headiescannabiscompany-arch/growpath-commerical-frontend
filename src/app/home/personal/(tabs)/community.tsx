@@ -178,14 +178,14 @@ export default function CommunityTab() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Forum / Q&A Posts</Text>
-              <Link href="/home/personal/forum" asChild>
+              <Link href="/forum" asChild>
                 <Pressable>
                   <Text style={styles.cta}>Open Forum / Q&A</Text>
                 </Pressable>
               </Link>
             </View>
             {canPost ? (
-              <Link href="/home/personal/forum/new-post" asChild>
+              <Link href="/forum/new-post" asChild>
                 <Pressable testID="community-new-post" style={styles.primaryBtn}>
                   <Text style={styles.primaryText}>New Discussion</Text>
                 </Pressable>

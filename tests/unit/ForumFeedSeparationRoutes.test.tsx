@@ -138,7 +138,7 @@ describe("Forum and feed separation copy", () => {
   it("keeps the new forum post composer out of Feed / Campaigns", () => {
     const screen = render(<ForumNewPostRoute />);
 
-    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByText("Shared Back /forum")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Posting as User")).toBeTruthy();
     expect(screen.getByText("Workspace: personal")).toBeTruthy();
@@ -179,7 +179,7 @@ describe("Forum and feed separation copy", () => {
       })
     );
     expect(mockReplace).toHaveBeenCalledWith({
-      pathname: "/home/personal/forum/post/[id]",
+      pathname: "/forum/post/[id]",
       params: { id: "thread-new" }
     });
   });
@@ -187,7 +187,7 @@ describe("Forum and feed separation copy", () => {
   it("keeps forum guidelines as a nested forum page with shared back behavior", () => {
     const screen = render(<ForumCodeRoute />);
 
-    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByText("Shared Back /forum")).toBeTruthy();
     expect(screen.getByText("Forum Guidelines")).toBeTruthy();
   });
 
@@ -247,7 +247,7 @@ describe("Forum and feed separation copy", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByTestId("link-/home/personal/forum/post/thread-grow-help")
+        screen.getByTestId("link-/forum/post/thread-grow-help")
       ).toBeTruthy()
     );
     expect(screen.getByText("Cannabis")).toBeTruthy();
