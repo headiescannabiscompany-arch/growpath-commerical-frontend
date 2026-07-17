@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import FeedRail from "@/components/feed/FeedRail";
+import { FREE_POLICY } from "@/config/freePolicy";
 import { radius } from "@/theme/theme";
 import type { FeedBannerPlacement, FeedRailMode } from "@/utils/feedPolicy";
 
@@ -35,6 +36,12 @@ export default function FeedBanner({
       style={styles.banner}
     >
       <Text style={styles.label}>{LABELS[placement]}</Text>
+      {plan === "free" && placement === "top" ? (
+        <Text style={styles.upgradeCopy}>
+          Want to see fewer ads? Paid accounts get at least{" "}
+          {FREE_POLICY.paidAdReductionPercentMinimum}% fewer ads.
+        </Text>
+      ) : null}
       <FeedRail
         slots={slots}
         mode={mode}
@@ -60,5 +67,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase"
-  }
+  },
+  upgradeCopy: { color: "#4B5563", fontSize: 13, lineHeight: 19 }
 });

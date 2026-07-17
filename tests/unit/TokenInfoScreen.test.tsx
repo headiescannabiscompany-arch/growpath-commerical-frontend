@@ -20,8 +20,8 @@ jest.mock("@/components/ScreenContainer", () => {
 describe("TokenInfoScreen action costs", () => {
   beforeEach(() => {
     mockGetTokenBalance.mockResolvedValue({
-      aiTokens: 10,
-      maxTokens: 10,
+      aiTokens: 5,
+      maxTokens: 5,
       refillDescription: "Refreshes every Monday (UTC)."
     });
   });
@@ -40,6 +40,9 @@ describe("TokenInfoScreen action costs", () => {
     expect(screen.getByText("3 tokens")).toBeTruthy();
     expect(screen.queryByText("What 10 tokens buys")).toBeNull();
 
-    await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
+    expect(screen.getByText(/Free accounts receive 5 AI credits each week/)).toBeTruthy();
+    expect(screen.getAllByText(/\$0\.002 of metered usage value/)).toHaveLength(2);
+    expect(screen.getByText(/\$0\.02 of metered usage value/)).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("5 / 5")).toBeTruthy());
   });
 });

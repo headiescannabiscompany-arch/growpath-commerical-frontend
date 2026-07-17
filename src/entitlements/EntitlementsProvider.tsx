@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthContext";
 import { buildCan } from "./can";
 import { CAPABILITY_KEYS, KNOWN_CAPS } from "./capabilityKeys";
 import { normalizeCapabilityKey, normalizeFacilityRole } from "./normalize";
+import { FREE_POLICY } from "@/config/freePolicy";
 import {
   getPreferredMode as loadPreferredMode,
   setPreferredMode as persistPreferredMode,
@@ -249,25 +250,27 @@ export function applyDefaultCourseLimits(
     .toLowerCase();
 
   if (next.maxPaidCourses === undefined || next.maxPaidCourses === null) {
-    if (normalizedPlan === "free") next.maxPaidCourses = 1;
+    if (normalizedPlan === "free")
+      next.maxPaidCourses = FREE_POLICY.maxPublishedPaidCourses;
     else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
       next.maxPaidCourses = 5;
     }
   }
 
   if (next.maxLessonsPerCourse === undefined || next.maxLessonsPerCourse === null) {
-    if (normalizedPlan === "free") next.maxLessonsPerCourse = 7;
+    if (normalizedPlan === "free")
+      next.maxLessonsPerCourse = FREE_POLICY.maxLessonsPerCourse;
     else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
       next.maxLessonsPerCourse = 20;
     }
   }
 
   if (next.maxGrows === undefined || next.maxGrows === null) {
-    if (normalizedPlan === "free") next.maxGrows = 1;
+    if (normalizedPlan === "free") next.maxGrows = FREE_POLICY.maxTrackedGrows;
   }
 
   if (next.maxPlants === undefined || next.maxPlants === null) {
-    if (normalizedPlan === "free") next.maxPlants = 1;
+    if (normalizedPlan === "free") next.maxPlants = FREE_POLICY.maxTrackedPlants;
   }
 
   return next;

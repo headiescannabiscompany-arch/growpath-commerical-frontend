@@ -20,6 +20,7 @@ import {
 } from "@/constants/pricing";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { FREE_POLICY } from "@/config/freePolicy";
 
 type BillingInterval = "monthly" | "yearly";
 type PlanKey = "pro" | "commercial" | "facility";
@@ -195,6 +196,19 @@ export default function Offers() {
         </Text>
       </View>
 
+      <AppCard style={styles.freeCard}>
+        <Text style={styles.eyebrow}>Ad-supported Free</Text>
+        <Text style={styles.cardTitle}>Test the real GrowPath experience</Text>
+        <Text style={styles.cardDesc}>
+          Track {FREE_POLICY.maxTrackedGrows} grow and {FREE_POLICY.maxTrackedPlants}
+          {" plant"}; use rule-based tools for other plants without tracking them; receive
+          {` ${FREE_POLICY.aiCreditsPerWeek} AI credits weekly`}; join courses; publish
+          one paid course; and use Forum within daily anti-spam limits. Paid accounts
+          receive at least {FREE_POLICY.paidAdReductionPercentMinimum}% fewer ads and
+          higher limits.
+        </Text>
+      </AppCard>
+
       {feedback ? (
         <View style={styles.feedback}>
           <Text style={styles.feedbackText}>{feedback}</Text>
@@ -320,6 +334,7 @@ const styles = StyleSheet.create({
   planGrid: { gap: 12 },
   planGridWide: { flexDirection: "row" },
   planCard: { flex: 1, gap: 10 },
+  freeCard: { gap: 8 },
   current: { borderColor: "#166534" },
   eyebrow: {
     color: "#166534",

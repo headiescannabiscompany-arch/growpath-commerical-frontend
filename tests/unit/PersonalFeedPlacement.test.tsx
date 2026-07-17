@@ -34,6 +34,11 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByText("Explore grower storefronts")).toBeTruthy();
     expect(screen.getByText("Learn from grower courses")).toBeTruthy();
     expect(screen.getByText("Plan the next grow")).toBeTruthy();
+    expect(
+      screen.getAllByText(
+        "Want to see fewer ads? Paid accounts get at least 50% fewer ads."
+      ).length
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("renders top and bottom placements for short free personal pages", () => {
