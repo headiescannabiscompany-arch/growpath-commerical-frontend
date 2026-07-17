@@ -67,6 +67,7 @@
     "verify:live-test-packs:sources:planning": "node scripts/verify-live-test-pack-sources.cjs --allow-placeholders",
     "validate:id-policy": "node scripts/validate-id-policy.cjs",
     "verify:connected-workflows": "node scripts/verify-connected-workflows.cjs",
+    "verify:codex-workflow": "node scripts/verify-codex-workflow.cjs",
     "verify:data-rights:live": "node scripts/verify-data-rights-live.cjs",
     "release:builds:dry-run": "node scripts/run-production-builds.cjs",
     "release:builds": "node scripts/run-production-builds.cjs --execute",

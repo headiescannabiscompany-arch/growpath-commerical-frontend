@@ -21,6 +21,8 @@ on:
       - "tests/**"
       - "src/**"
       - "docs/contracts/**"
+      - "docs/codex-browser-evidence-runbook.md"
+      - "AGENTS.md"
       - "assets/**"
       - "backend/**"
       - "e2e/**"
