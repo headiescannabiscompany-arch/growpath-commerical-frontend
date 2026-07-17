@@ -110,6 +110,12 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     : balance?.refillDescription || "Your configured allowance refreshes weekly.";
   const usageCopy =
     "AI credits pay for real model work. Rule-based calculators and fallbacks are free; Plant Diagnose uses 3 credits and provider-backed text help uses 1.";
+  const verifiedPlanCopy = balance?.plan
+    ? `Server plan: ${String(balance.plan).toUpperCase()} (${balance.subscriptionStatus || "unknown status"}); ${maxTokens ?? "-"} weekly credits from ${balance.allowanceSource || "plan"}.`
+    : null;
+  const weeklyUsageCopy = balance?.usage
+    ? `Used this week: ${Number(balance.usage.creditsUsed || 0)} credits across ${Number(balance.usage.billedRequests || 0)} billed requests; ${Number(balance.usage.creditsRefunded || 0)} credits refunded.`
+    : null;
 
   const Container = interactive ? TouchableOpacity : View;
 
@@ -139,6 +145,12 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
 
       <View style={styles.details}>
         <Text style={styles.description}>{usageCopy}</Text>
+        {verifiedPlanCopy ? (
+          <Text style={styles.description}>{verifiedPlanCopy}</Text>
+        ) : null}
+        {weeklyUsageCopy ? (
+          <Text style={styles.description}>{weeklyUsageCopy}</Text>
+        ) : null}
         {loading ? (
           <Text style={styles.description}>Checking live AI-credit balance...</Text>
         ) : null}
@@ -147,6 +159,12 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
           <Text style={styles.syncWarning}>
             Your paid or trial plan is active, but the server is still reporting the free
             5-credit allowance. Refresh plan status before using AI credits.
+          </Text>
+        ) : null}
+        {balance?.usage && !balance.usage.reconciled ? (
+          <Text style={styles.syncWarning}>
+            Balance and usage ledger differ by {balance.usage.ledgerDifference} credits.
+            Report this account for reconciliation before using more AI credits.
           </Text>
         ) : null}
       </View>
