@@ -2,6 +2,7 @@ import React from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
+import { FREE_POLICY } from "@/config/freePolicy";
 
 const CREATOR_APPLICATION_EMAIL = "support@growpathai.com";
 
@@ -25,7 +26,9 @@ export default function CreatorAccessNotice({ accountEmail }: { accountEmail?: s
       <Text style={styles.body}>
         All GrowPathAI users can create and publish free or paid courses, including users
         on the Free plan. Plan limits may control course counts, lessons, storage, and
-        advanced creator features.
+        advanced creator features. Free creators can publish one paid course with up to
+        {` ${FREE_POLICY.maxLessonsPerCourse} lessons`} and use the shared
+        {` ${FREE_POLICY.uploadStorageBytes / 1024 / 1024} MB`} upload allowance.
       </Text>
       <Text style={styles.body}>
         Content creators may apply for 30 days of free access to the paid Creator plan to

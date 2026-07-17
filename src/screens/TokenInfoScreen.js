@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getTokenBalance } from "../api/tokens";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
+import { FREE_POLICY } from "../config/freePolicy";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -20,18 +21,18 @@ const ACTION_COSTS = [
   },
   {
     action: "Ask AI",
-    credits: "1 token",
-    note: "One completed provider-backed answer costs one token."
+    credits: `${FREE_POLICY.aiActions.assistant.credits} token`,
+    note: `One completed provider-backed answer costs one token (about $${FREE_POLICY.aiActions.assistant.estimatedUsd.toFixed(3)} of metered usage value).`
   },
   {
     action: "Facility form help",
-    credits: "1 token",
-    note: "The rule-based draft is free; a completed provider review uses the token."
+    credits: `${FREE_POLICY.aiActions.assistant.credits} token`,
+    note: `The rule-based draft is free; a completed provider review uses the token (about $${FREE_POLICY.aiActions.assistant.estimatedUsd.toFixed(3)} of metered usage value).`
   },
   {
     action: "Plant Diagnose",
-    credits: "3 tokens",
-    note: "One completed photo diagnosis costs three tokens."
+    credits: `${FREE_POLICY.aiActions.diagnosis.credits} tokens`,
+    note: `One completed photo diagnosis costs three tokens (about $${FREE_POLICY.aiActions.diagnosis.estimatedUsd.toFixed(2)} of metered usage value).`
   }
 ];
 
@@ -109,7 +110,9 @@ export default function TokenInfoScreen() {
         <View style={styles.estimatesSection}>
           <Text style={styles.sectionTitle}>What actions cost</Text>
           <Text style={styles.estimateIntro}>
-            These are the exact amounts deducted from the AI token balance shown above.
+            Free accounts receive {FREE_POLICY.aiCreditsPerWeek} AI credits each week.
+            These are the exact credits deducted; dollar figures are small usage-value
+            equivalents, not separate card charges.
           </Text>
           {ACTION_COSTS.map((estimate) => (
             <View key={estimate.action} style={styles.estimateCard}>
@@ -121,8 +124,8 @@ export default function TokenInfoScreen() {
             </View>
           ))}
           <Text style={styles.estimateFootnote}>
-            These are fixed per completed action, not estimates. Failed provider calls
-            are refunded. Free rule-based results do not reduce the balance.
+            These are fixed per completed action, not estimates. Failed provider calls are
+            refunded. Free rule-based results do not reduce the balance.
           </Text>
         </View>
 

@@ -49,7 +49,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
         let res = await getTokenBalance(undefined, { timeoutMs: 8000 });
         let nextBalance = res?.data ?? res;
         const hasStaleFreeAllowance =
-          hasPaidAccess && Number(nextBalance?.maxTokens) <= 10;
+          hasPaidAccess && Number(nextBalance?.maxTokens) <= 5;
 
         if (hasStaleFreeAllowance && stalePaidRetryTokenRef.current !== authToken) {
           stalePaidRetryTokenRef.current = authToken;
@@ -60,7 +60,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
 
         if (alive) {
           setBalance(nextBalance);
-          setAllowanceMismatch(hasPaidAccess && Number(nextBalance?.maxTokens) <= 10);
+          setAllowanceMismatch(hasPaidAccess && Number(nextBalance?.maxTokens) <= 5);
         }
       } catch (err) {
         console.error("Failed to load token balance:", err);
@@ -146,7 +146,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
         {allowanceMismatch ? (
           <Text style={styles.syncWarning}>
             Your paid or trial plan is active, but the server is still reporting the free
-            10-credit allowance. Refresh plan status before using AI credits.
+            5-credit allowance. Refresh plan status before using AI credits.
           </Text>
         ) : null}
       </View>

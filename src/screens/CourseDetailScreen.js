@@ -619,7 +619,9 @@ export default function CourseDetailScreen({ route, navigation }) {
               </Pressable>
             </>
           ) : (
-            <Text style={styles.meta}>Upgrade to sell this course for a fee.</Text>
+            <Text style={styles.meta}>
+              Paid course sales are available on Free. Refresh access or contact support.
+            </Text>
           )}
         </View>
       ) : !enrolled ? (
