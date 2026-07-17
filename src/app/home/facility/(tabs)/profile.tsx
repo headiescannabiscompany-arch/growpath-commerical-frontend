@@ -222,6 +222,11 @@ export default function FacilityProfileRoute() {
               accessibilityLabel="Open account profile"
               onPress={() => router.push("/profile" as any)}
             />
+            <ProfileAction
+              label="Plans & billing"
+              accessibilityLabel="Manage facility plan and billing"
+              onPress={() => router.push("/offers" as any)}
+            />
             <ReportBugButton location="Facility profile" />
           </View>
         </View>

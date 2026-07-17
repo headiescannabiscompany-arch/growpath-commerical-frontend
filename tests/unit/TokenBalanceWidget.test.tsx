@@ -26,7 +26,8 @@ describe("TokenBalanceWidget", () => {
     mockAuthState = {
       token: "authenticated-token",
       user: { plan: "free", subscriptionStatus: "free" },
-      ctx: { plan: "free", subscriptionStatus: "free" }
+      ctx: { plan: "free", subscriptionStatus: "free" },
+      retryMe: jest.fn()
     };
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     Object.defineProperty(window, "location", {
@@ -101,6 +102,26 @@ describe("TokenBalanceWidget", () => {
     screen.rerender(<TokenBalanceWidget />);
 
     await waitFor(() => expect(screen.getByText("100 / 100")).toBeTruthy());
+    expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
+  });
+
+  it("rechecks and flags a stale free allowance on an active paid trial", async () => {
+    mockAuthState = {
+      token: "paid-trial-token",
+      user: { plan: "facility", subscriptionStatus: "trialing" },
+      ctx: { plan: "facility", subscriptionStatus: "trialing" },
+      retryMe: jest.fn().mockResolvedValue(undefined)
+    };
+    mockGetTokenBalance.mockResolvedValue({ aiTokens: 10, maxTokens: 10 });
+
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/server is still reporting the free 10-credit allowance/)
+      ).toBeTruthy()
+    );
+    expect(mockAuthState.retryMe).toHaveBeenCalledTimes(1);
     expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
   });
 });

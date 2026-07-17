@@ -26,6 +26,7 @@ describe("photo upload persistence helpers", () => {
 
   it("resolves relative uploaded image URLs against the API host for rendering", () => {
     expect(resolveImageUri("/uploads/photo.jpg")).toBe(`${API_URL}/uploads/photo.jpg`);
+    expect(resolveImageUri("uploads/photo.jpg")).toBe(`${API_URL}/uploads/photo.jpg`);
     expect(resolveImageUri("https://example.test/photo.jpg")).toBe(
       "https://example.test/photo.jpg"
     );

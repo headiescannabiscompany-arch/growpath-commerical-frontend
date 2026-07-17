@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
   cardText: { color: "#475569", lineHeight: 20 },
   photoRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   photoThumb: {
-    width: 96,
-    height: 72,
+    width: "100%",
+    aspectRatio: 16 / 9,
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },

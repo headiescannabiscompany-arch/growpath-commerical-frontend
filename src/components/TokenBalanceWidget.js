@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -17,6 +17,8 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [allowanceMismatch, setAllowanceMismatch] = useState(false);
+  const stalePaidRetryTokenRef = useRef("");
   const accountStateKey = [
     auth?.token || "",
     auth?.user?.plan || "",
@@ -24,6 +26,17 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     auth?.ctx?.plan || "",
     auth?.ctx?.subscriptionStatus || ""
   ].join("|");
+  const authToken = String(auth?.token || "");
+  const retryMe = auth?.retryMe;
+  const subscriptionStatus = String(
+    auth?.user?.subscriptionStatus || auth?.ctx?.subscriptionStatus || ""
+  ).toLowerCase();
+  const requestedPlan = String(
+    auth?.ctx?.requestedPlan || auth?.ctx?.plan || auth?.user?.plan || "free"
+  ).toLowerCase();
+  const hasPaidAccess =
+    ["active", "trial", "trialing"].includes(subscriptionStatus) &&
+    requestedPlan !== "free";
 
   useEffect(() => {
     let alive = true;
@@ -31,9 +44,24 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     async function load() {
       setLoading(true);
       setLoadFailed(false);
+      setAllowanceMismatch(false);
       try {
-        const res = await getTokenBalance(undefined, { timeoutMs: 8000 });
-        if (alive) setBalance(res?.data ?? res);
+        let res = await getTokenBalance(undefined, { timeoutMs: 8000 });
+        let nextBalance = res?.data ?? res;
+        const hasStaleFreeAllowance =
+          hasPaidAccess && Number(nextBalance?.maxTokens) <= 10;
+
+        if (hasStaleFreeAllowance && stalePaidRetryTokenRef.current !== authToken) {
+          stalePaidRetryTokenRef.current = authToken;
+          await retryMe?.();
+          res = await getTokenBalance(undefined, { timeoutMs: 8000 });
+          nextBalance = res?.data ?? res;
+        }
+
+        if (alive) {
+          setBalance(nextBalance);
+          setAllowanceMismatch(hasPaidAccess && Number(nextBalance?.maxTokens) <= 10);
+        }
       } catch (err) {
         console.error("Failed to load token balance:", err);
         if (alive) setLoadFailed(true);
@@ -46,7 +74,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     return () => {
       alive = false;
     };
-  }, [accountStateKey]);
+  }, [accountStateKey, authToken, hasPaidAccess, retryMe]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);
@@ -115,6 +143,12 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
           <Text style={styles.description}>Checking live AI-credit balance...</Text>
         ) : null}
         <Text style={styles.description}>{refillCopy}</Text>
+        {allowanceMismatch ? (
+          <Text style={styles.syncWarning}>
+            Your paid or trial plan is active, but the server is still reporting the free
+            10-credit allowance. Refresh plan status before using AI credits.
+          </Text>
+        ) : null}
       </View>
 
       {interactive ? (
@@ -194,6 +228,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
     lineHeight: 20
+  },
+  syncWarning: {
+    color: "#991B1B",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 19,
+    marginTop: 8
   },
   ctaRow: {
     flexDirection: "row",

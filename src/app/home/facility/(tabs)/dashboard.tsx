@@ -341,16 +341,6 @@ export default function FacilityDashboardTab() {
         to: "/home/facility/integrations"
       },
       {
-        label: "Forum",
-        detail: "Ask operators and share facility knowledge",
-        to: "/forum"
-      },
-      {
-        label: "Courses",
-        detail: "Training and facility learning",
-        to: "/courses"
-      },
-      {
         label: "Facility feed",
         detail: "Updates, products, and public-facing activity",
         to: "/home/facility/feed"
@@ -364,6 +354,26 @@ export default function FacilityDashboardTab() {
         label: "Sales & transfers",
         detail: "Licensed recipients, manifests, shipments, and totals",
         to: "/home/facility/transfers"
+      }
+    ],
+    []
+  );
+
+  const learningRows = useMemo(
+    () => [
+      {
+        label: "Forum / Q&A",
+        detail: "Ask operators, compare approaches, and share facility knowledge.",
+        action: "Open forum",
+        to: "/forum",
+        tone: "blue" as Tone
+      },
+      {
+        label: "Courses",
+        detail: "Open team training, facility learning, and course resources.",
+        action: "Browse courses",
+        to: "/courses",
+        tone: "violet" as Tone
       }
     ],
     []
@@ -409,6 +419,35 @@ export default function FacilityDashboardTab() {
               <Text style={styles.pulseValue}>{String(counts.tasks)}</Text>
               <Text style={styles.pulseLabel}>Tasks</Text>
             </View>
+          </View>
+        </View>
+
+        <View style={styles.learningSection}>
+          <View style={styles.learningHeader}>
+            <Text style={styles.sectionTitle}>Learning &amp; community</Text>
+            <Text style={styles.learningHint}>Quick access for your facility team</Text>
+          </View>
+          <View style={styles.learningGrid}>
+            {learningRows.map((row) => (
+              <Pressable
+                key={row.label}
+                accessibilityRole="button"
+                accessibilityLabel={row.action}
+                onPress={() => router.push(row.to as any)}
+                style={({ pressed }) => [
+                  styles.learningCard,
+                  { width: isTablet ? "48.5%" : "100%" },
+                  tileToneStyle(row.tone),
+                  pressed && styles.pressed
+                ]}
+              >
+                <View style={styles.learningCopy}>
+                  <Text style={styles.learningTitle}>{row.label}</Text>
+                  <Text style={styles.learningDetail}>{row.detail}</Text>
+                </View>
+                <Text style={styles.learningAction}>{row.action} →</Text>
+              </Pressable>
+            ))}
           </View>
         </View>
 
@@ -550,6 +589,42 @@ const styles = StyleSheet.create({
   },
   pulseValue: { color: "white", fontSize: 20, fontWeight: "900" },
   pulseLabel: { color: "#a7f3d0", fontSize: 12, fontWeight: "800", marginTop: 3 },
+
+  learningSection: {
+    backgroundColor: "white",
+    borderColor: "#d7ddd2",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 14
+  },
+  learningHeader: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  learningHint: { color: "#64748b", fontSize: 12, fontWeight: "700" },
+  learningGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  learningCard: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    justifyContent: "space-between",
+    minHeight: 112,
+    padding: 14
+  },
+  learningCopy: { marginBottom: 14 },
+  learningTitle: { color: "#111827", fontSize: 17, fontWeight: "900" },
+  learningDetail: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 5
+  },
+  learningAction: { color: "#1d4ed8", fontSize: 13, fontWeight: "900" },
 
   loading: { paddingVertical: 18, alignItems: "center" },
   contentGrid: { gap: 14 },

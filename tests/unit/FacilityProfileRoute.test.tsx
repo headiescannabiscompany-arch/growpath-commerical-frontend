@@ -87,10 +87,12 @@ describe("FacilityProfileRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));
+    fireEvent.press(screen.getByLabelText("Manage facility plan and billing"));
     fireEvent.press(screen.getByLabelText("Report bug"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
+    expect(mockPush).toHaveBeenCalledWith("/offers");
     expect(mockPush).toHaveBeenCalledWith(
       expect.objectContaining({
         pathname: "/support",

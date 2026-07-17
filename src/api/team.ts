@@ -16,10 +16,23 @@ function normalizeMembers(res: any): TeamMember[] {
     ? res
     : (res?.members ?? res?.team ?? res?.items ?? res?.data?.members ?? res?.data ?? []);
   return Array.isArray(rows)
-    ? rows.map((m: any) => ({
-        ...m,
-        id: String(m.id ?? m.userId ?? m._id ?? "")
-      }))
+    ? rows.map((m: any) => {
+        const user = m?.user && typeof m.user === "object" ? m.user : null;
+        const rawUserId =
+          (typeof m?.userId === "object" ? (m.userId?._id ?? m.userId?.id) : m?.userId) ??
+          user?._id ??
+          user?.id ??
+          m?.accountId ??
+          m?.memberUserId;
+        const userId = String(rawUserId ?? "");
+        return {
+          ...m,
+          id: String(m?.id ?? m?._id ?? userId),
+          userId,
+          email: m?.email ?? user?.email,
+          name: m?.name ?? m?.displayName ?? user?.displayName ?? user?.name
+        };
+      })
     : [];
 }
 

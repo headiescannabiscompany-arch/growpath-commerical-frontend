@@ -8,8 +8,24 @@ export function isPersistedImageUri(uri: string) {
 export function resolveImageUri(uri: string | null | undefined) {
   const value = String(uri || "").trim();
   if (!value) return "";
-  if (/^(https?:|file:|data:|blob:)/i.test(value)) return value;
+  if (/^(file:|data:|blob:)/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      const api = API_URL ? new URL(API_URL) : null;
+      const pointsAtLocalApi = ["localhost", "127.0.0.1", "0.0.0.0"].includes(
+        parsed.hostname
+      );
+      if (api && pointsAtLocalApi && !["localhost", "127.0.0.1"].includes(api.hostname)) {
+        return `${api.origin}${parsed.pathname}${parsed.search}`;
+      }
+    } catch {
+      return value;
+    }
+    return value;
+  }
   if (value.startsWith("/uploads/")) return `${API_URL}${value}`;
+  if (value.startsWith("uploads/")) return `${API_URL}/${value}`;
   return value;
 }
 

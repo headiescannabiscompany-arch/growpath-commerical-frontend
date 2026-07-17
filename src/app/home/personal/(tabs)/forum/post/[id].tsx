@@ -637,8 +637,8 @@ const styles = StyleSheet.create({
   body: { color: "#334155", lineHeight: 21, marginTop: 10 },
   photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
   postPhoto: {
-    width: 160,
-    height: 120,
+    width: "100%",
+    aspectRatio: 4 / 3,
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
