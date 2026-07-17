@@ -320,9 +320,7 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
         FORUM_VIEW: true,
         FORUM_POST: true
       },
-      limits: isProPreview
-        ? { ...PLAN_LIMITS.pro }
-        : { ...PLAN_LIMITS.free }
+      limits: isProPreview ? { ...PLAN_LIMITS.pro } : { ...PLAN_LIMITS.free }
     }
   };
 }
