@@ -20,6 +20,7 @@ import {
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
 import { apiRequest, setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
+import { PLAN_LIMITS } from "../config/planLimits";
 
 const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
 const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
@@ -139,7 +140,7 @@ export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLoca
         FORUM_VIEW: true,
         FORUM_POST: true
       },
-      limits: {}
+      limits: { ...PLAN_LIMITS.commercial }
     }
   };
 }
@@ -219,7 +220,7 @@ export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocati
         FORUM_VIEW: true,
         FORUM_POST: true
       },
-      limits: {}
+      limits: { ...PLAN_LIMITS.facility }
     }
   };
 }
@@ -320,8 +321,8 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
         FORUM_POST: true
       },
       limits: isProPreview
-        ? { maxGrows: 999, maxPlants: 999, maxPaidCourses: 5, maxLessonsPerCourse: 20 }
-        : { maxGrows: 1, maxPlants: 1, maxPaidCourses: 1, maxLessonsPerCourse: 7 }
+        ? { ...PLAN_LIMITS.pro }
+        : { ...PLAN_LIMITS.free }
     }
   };
 }

@@ -163,7 +163,7 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.plan).toBe("pro");
     expect(preview?.ctx.capabilities.TOOL_NPK).toBe(true);
     expect(preview?.ctx.capabilities.DIAGNOSE_ADVANCED).toBe(true);
-    expect(preview?.ctx.limits.maxGrows).toBe(999);
+    expect(preview?.ctx.limits.maxGrows).toBe(10);
   });
 
   it("lets personal routes win over stale commercial and facility preview params", () => {
