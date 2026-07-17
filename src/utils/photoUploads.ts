@@ -6,7 +6,9 @@ export function isPersistedImageUri(uri: string) {
 }
 
 export function resolveImageUri(uri: string | null | undefined) {
-  const value = String(uri || "").trim();
+  const value = String(uri || "")
+    .trim()
+    .replace(/\\/g, "/");
   if (!value) return "";
   if (/^(file:|data:|blob:)/i.test(value)) return value;
   if (/^https?:\/\//i.test(value)) {
@@ -24,8 +26,9 @@ export function resolveImageUri(uri: string | null | undefined) {
     }
     return value;
   }
-  if (value.startsWith("/uploads/")) return `${API_URL}${value}`;
-  if (value.startsWith("uploads/")) return `${API_URL}/${value}`;
+  const apiOrigin = String(API_URL || "").replace(/\/+$/, "");
+  if (value.startsWith("/uploads/")) return `${apiOrigin}${value}`;
+  if (value.startsWith("uploads/")) return `${apiOrigin}/${value}`;
   return value;
 }
 
