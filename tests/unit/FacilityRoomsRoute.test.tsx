@@ -8,6 +8,7 @@ const mockPush = jest.fn();
 const mockCreateRoom = jest.fn();
 const mockDeleteRoom = jest.fn();
 const mockFetchRooms = jest.fn();
+const mockReorderRooms = jest.fn();
 const mockUpdateRoom = jest.fn();
 const mockCreateBatchCycle = jest.fn();
 const mockCreateEquipment = jest.fn();
@@ -39,6 +40,7 @@ jest.mock("@/api/rooms", () => ({
   createRoom: (...args: any[]) => mockCreateRoom(...args),
   deleteRoom: (...args: any[]) => mockDeleteRoom(...args),
   fetchRooms: (...args: any[]) => mockFetchRooms(...args),
+  reorderRooms: (...args: any[]) => mockReorderRooms(...args),
   updateRoom: (...args: any[]) => mockUpdateRoom(...args)
 }));
 
@@ -79,6 +81,38 @@ describe("FacilityRoomsTab", () => {
       ...input
     }));
     mockCreateEquipment.mockResolvedValue({ id: "eq-new" });
+    mockReorderRooms.mockImplementation((_facilityId, roomIds) =>
+      Promise.resolve(
+        roomIds.map((id: string) =>
+          [
+            { id: "room-existing", name: "Existing Dry Room" },
+            { id: "room-veg", name: "Veg Room" }
+          ].find((room) => room.id === id)
+        )
+      )
+    );
+  });
+
+  it("clearly labels room workspaces and saves a reordered list", async () => {
+    mockFetchRooms.mockResolvedValueOnce([
+      { id: "room-existing", name: "Existing Dry Room", createdAt: "2026-07-07" },
+      { id: "room-veg", name: "Veg Room", createdAt: "2026-07-07" }
+    ]);
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Facility rooms & workspaces")).toBeTruthy()
+    );
+    expect(screen.getByText("Arrange room workspaces")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Move Veg Room up"));
+
+    await waitFor(() =>
+      expect(mockReorderRooms).toHaveBeenCalledWith("facility-1", [
+        "room-veg",
+        "room-existing"
+      ])
+    );
+    expect(screen.getByText("Moved Veg Room. Room order saved.")).toBeTruthy();
   });
 
   it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {

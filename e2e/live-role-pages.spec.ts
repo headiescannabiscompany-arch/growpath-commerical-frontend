@@ -128,7 +128,11 @@ test("Facility owner production page crawl", async ({ page }, testInfo) => {
   await login(page, process.env.E2E_FACILITY_EMAIL || "facility@growpathai.com");
   await inspectPages(page, testInfo, [
     { path: "/home/facility", heading: /^Dashboard$/i, key: "facility-dashboard" },
-    { path: "/home/facility/rooms", heading: /^Rooms$/i, key: "facility-rooms" },
+    {
+      path: "/home/facility/rooms",
+      heading: /^Facility rooms & workspaces$/i,
+      key: "facility-rooms"
+    },
     { path: "/home/facility/grows", heading: /Grows/i, key: "facility-grows" },
     {
       path: "/home/facility/inventory",
