@@ -88,11 +88,11 @@ describe("TokenBalanceWidget", () => {
 
   it("refreshes a stale free balance after the account becomes paid", async () => {
     mockGetTokenBalance
-      .mockResolvedValueOnce({ aiTokens: 10, maxTokens: 10 })
+      .mockResolvedValueOnce({ aiTokens: 5, maxTokens: 5 })
       .mockResolvedValueOnce({ aiTokens: 100, maxTokens: 100 });
 
     const screen = render(<TokenBalanceWidget />);
-    await waitFor(() => expect(screen.getByText("10 / 10")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("5 / 5")).toBeTruthy());
 
     mockAuthState = {
       ...mockAuthState,
@@ -112,13 +112,13 @@ describe("TokenBalanceWidget", () => {
       ctx: { plan: "facility", subscriptionStatus: "trialing" },
       retryMe: jest.fn().mockResolvedValue(undefined)
     };
-    mockGetTokenBalance.mockResolvedValue({ aiTokens: 10, maxTokens: 10 });
+    mockGetTokenBalance.mockResolvedValue({ aiTokens: 5, maxTokens: 5 });
 
     const screen = render(<TokenBalanceWidget />);
 
     await waitFor(() =>
       expect(
-        screen.getByText(/server is still reporting the free 10-credit allowance/)
+        screen.getByText(/server is still reporting the free 5-credit allowance/)
       ).toBeTruthy()
     );
     expect(mockAuthState.retryMe).toHaveBeenCalledTimes(1);
