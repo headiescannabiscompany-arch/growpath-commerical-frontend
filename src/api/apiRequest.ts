@@ -15,6 +15,7 @@ export type ApiRequestOptions = {
   invalidateOn401?: boolean;
   retries?: number;
   retryDelay?: number;
+  cache?: RequestCache;
 };
 
 const configuredApiUrl =
@@ -228,6 +229,7 @@ export async function apiRequest<T = any>(
         method: opts.method || "GET",
         headers,
         body,
+        cache: opts.cache,
         signal: signal || controller?.signal
       } as any);
 

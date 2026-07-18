@@ -81,6 +81,11 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
         retries: 1,
         retryDelay: 500,
         invalidateOn401: true,
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache"
+        },
         ...options
       });
       const typed = normalizeMeResponse(result);
