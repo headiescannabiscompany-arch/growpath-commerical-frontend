@@ -96,6 +96,10 @@ export async function listCommercialFeedCampaigns(
   } = {}
 ) {
   const res: any = await apiRequest("/api/commercial/feed", {
+    // Feed discovery is optional public/customer-facing content. A 401 here can
+    // mean the Feed route is unavailable for this workspace; it must not clear
+    // an otherwise valid app session. /api/me remains the authoritative token check.
+    invalidateOn401: false,
     params: {
       ...(params.type && params.type !== "all" ? { type: params.type } : {}),
       ...(params.tag ? { tag: params.tag } : {}),
