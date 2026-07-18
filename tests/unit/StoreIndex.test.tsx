@@ -7,6 +7,7 @@ const mockPush = jest.fn();
 const mockSearchPublicStorefronts = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockParams: Record<string, string> = {};
+let mockMode = "personal";
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -22,6 +23,10 @@ jest.mock("expo-router", () => {
 
 jest.mock("@/api/storefront", () => ({
   searchPublicStorefronts: (...args: any[]) => mockSearchPublicStorefronts(...args)
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ mode: mockMode })
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -51,6 +56,7 @@ describe("StoreIndex", () => {
       ]
     });
     mockParams = {};
+    mockMode = "personal";
   });
 
   it("opens public storefront first and keeps profile secondary from a slug", () => {
@@ -98,20 +104,20 @@ describe("StoreIndex", () => {
   });
 
   it("links commercial storefront management to the canonical commercial workspace", () => {
+    mockMode = "commercial";
     render(<StoreIndex />);
 
     expect(mockLinkHrefs).toContain("/home/commercial/storefront");
     expect(mockLinkHrefs).not.toContain("/storefront");
   });
 
-  it("routes public discovery offers through offers instead of marketplace", () => {
+  it("does not expose owner controls or GrowPath plan offers to personal users", () => {
     const screen = render(<StoreIndex />);
 
-    expect(screen.getByText("Storefront offers")).toBeTruthy();
-    expect(screen.getByText("View Offers")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/offers");
-    expect(mockLinkHrefs).not.toContain("/marketplace");
-    expect(screen.queryByText("Marketplace")).toBeNull();
-    expect(screen.queryByText("Open Marketplace")).toBeNull();
+    expect(screen.queryByText("Storefront offers")).toBeNull();
+    expect(screen.queryByText("View Offers")).toBeNull();
+    expect(screen.queryByText("Manage Storefront")).toBeNull();
+    expect(mockLinkHrefs).not.toContain("/offers");
+    expect(mockLinkHrefs).not.toContain("/home/commercial/storefront");
   });
 });
