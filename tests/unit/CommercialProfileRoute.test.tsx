@@ -98,20 +98,7 @@ describe("CommercialProfileRoute", () => {
     expect(screen.queryByText(/Public product alias:/)).toBeNull();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
-    expect(screen.getByText("Report Bug")).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Report bug"));
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.objectContaining({
-        pathname: "/support",
-        params: expect.objectContaining({
-          topic: "technical",
-          email: "brand@example.com",
-          accountEmail: "brand@example.com",
-          subject: "Bug report - commercial - Commercial profile",
-          message: expect.stringContaining("User ID: brand-user-1")
-        })
-      })
-    );
+    expect(screen.queryByText("Report Bug")).toBeNull();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();

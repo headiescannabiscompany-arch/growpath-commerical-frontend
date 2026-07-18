@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
-import ReportBugButton from "@/components/ReportBugButton";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -227,7 +226,6 @@ export default function FacilityProfileRoute() {
               accessibilityLabel="Manage facility plan and billing"
               onPress={() => router.push("/offers" as any)}
             />
-            <ReportBugButton location="Facility profile" />
           </View>
         </View>
 

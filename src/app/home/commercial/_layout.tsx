@@ -2,7 +2,6 @@ import React from "react";
 import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
-import ReportBugButton from "@/components/ReportBugButton";
 import { useEntitlements } from "@/entitlements";
 
 export default function CommercialTabsLayout() {
@@ -50,7 +49,6 @@ export default function CommercialTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        headerRight: () => <ReportBugButton workspace="commercial" />,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
         tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
