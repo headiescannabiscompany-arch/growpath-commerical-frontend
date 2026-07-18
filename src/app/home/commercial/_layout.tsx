@@ -141,6 +141,10 @@ export default function CommercialTabsLayout() {
         options={{ href: null, title: "Create Product" }}
       />
       <Tabs.Screen
+        name="products/import"
+        options={{ href: null, title: "Import Storefront Items" }}
+      />
+      <Tabs.Screen
         name="products/[productId]"
         options={{ href: null, title: "Product Detail" }}
       />

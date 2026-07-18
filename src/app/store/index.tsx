@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { searchPublicStorefronts } from "@/api/storefront";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 
 function asArray(payload: any) {
@@ -30,6 +31,7 @@ function rowSlug(row: any) {
 }
 
 export default function StoreIndex() {
+  const entitlements = useEntitlements();
   const router = useRouter();
   const params = useLocalSearchParams<{ similarTo?: string; q?: string }>();
   const similarTo = useMemo(
@@ -192,30 +194,19 @@ export default function StoreIndex() {
         })}
       </AppCard>
 
-      <AppCard>
-        <Text style={styles.cardTitle}>Commercial storefront</Text>
-        <Text style={styles.cardText}>
-          Storefront setup and product management are available to commercial accounts.
-        </Text>
-        <Link href="/home/commercial/storefront" asChild>
-          <Pressable style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Manage Storefront</Text>
-          </Pressable>
-        </Link>
-      </AppCard>
-
-      <AppCard>
-        <Text style={styles.cardTitle}>Storefront offers</Text>
-        <Text style={styles.cardText}>
-          Compare GrowPath plans and storefront-ready commercial or facility offers
-          without leaving the connected storefront workflow.
-        </Text>
-        <Link href="/offers" asChild>
-          <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>View Offers</Text>
-          </Pressable>
-        </Link>
-      </AppCard>
+      {entitlements.mode === "commercial" ? (
+        <AppCard>
+          <Text style={styles.cardTitle}>Commercial storefront</Text>
+          <Text style={styles.cardText}>
+            Manage your published storefront and products.
+          </Text>
+          <Link href="/home/commercial/storefront" asChild>
+            <Pressable style={styles.primaryButton}>
+              <Text style={styles.primaryButtonText}>Manage Storefront</Text>
+            </Pressable>
+          </Link>
+        </AppCard>
+      ) : null}
     </AppPage>
   );
 }

@@ -340,6 +340,10 @@ export default function CommercialProductsRoute({
             </Text>
           </View>
           <View style={styles.headerActions}>
+            <ActionLink
+              href="/home/commercial/products/import"
+              label="Import CSV / PDF"
+            />
             <ActionLink href="/home/commercial/product-lines" label="Product Lines" />
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
             <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
