@@ -1,0 +1,97 @@
+import { useRouter } from "expo-router";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
+
+const TOOLS = [
+  {
+    title: "Ask AI",
+    description: "Ask cultivation and commercial workflow questions.",
+    href: "/home/commercial/tools/ask-ai"
+  },
+  {
+    title: "Plant Diagnose",
+    description: "Review plant symptoms and evidence in context.",
+    href: "/home/commercial/tools/diagnose"
+  },
+  {
+    title: "Environment Review",
+    description: "Review temperature, humidity, VPD, and environmental conditions.",
+    href: "/home/commercial/tools/environment"
+  },
+  {
+    title: "Recipe Builder",
+    description: "Build and compare growing-media and amendment recipes.",
+    href: "/home/commercial/tools/recipe-builder"
+  },
+  {
+    title: "Harvest Readiness",
+    description: "Track harvest observations and readiness evidence.",
+    href: "/home/commercial/tools/harvest-readiness"
+  },
+  {
+    title: "Export Report",
+    description: "Create a portable report from commercial grow records.",
+    href: "/home/commercial/tools/report"
+  }
+] as const;
+
+export default function CommercialToolsIndex() {
+  const router = useRouter();
+
+  return (
+    <AppPage
+      routeKey="commercial-tools"
+      header={
+        <View>
+          <Text style={styles.title}>Commercial Tools</Text>
+          <Text style={styles.subtitle}>
+            Open cultivation tools directly or launch them from a product, trial, grow, or
+            batch to carry that record&apos;s context with you.
+          </Text>
+        </View>
+      }
+    >
+      <TokenBalanceWidget />
+      <View style={styles.grid}>
+        {TOOLS.map((tool) => (
+          <AppCard key={tool.href} style={styles.card}>
+            <Text style={styles.cardTitle}>{tool.title}</Text>
+            <Text style={styles.cardDescription}>{tool.description}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${tool.title}`}
+              onPress={() => router.push(tool.href)}
+              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            >
+              <Text style={styles.buttonText}>Open tool</Text>
+            </Pressable>
+          </AppCard>
+        ))}
+      </View>
+    </AppPage>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: { color: "#111827", fontSize: 26, fontWeight: "900" },
+  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 6, maxWidth: 760 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  card: { flexBasis: 280, flexGrow: 1, gap: 8, minWidth: 250 },
+  cardTitle: { color: "#111827", fontSize: 17, fontWeight: "900" },
+  cardDescription: { color: "#475569", flexGrow: 1, lineHeight: 19 },
+  button: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  buttonPressed: { opacity: 0.7 },
+  buttonText: { color: "#FFFFFF", fontWeight: "800" }
+});
