@@ -161,6 +161,30 @@ export default function CommunityTab() {
       <PersonalFeedPlacement placement="top" routeKey="personal_community" longContent />
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Discover growers, brands, and learning</Text>
+        <Text style={styles.cardText}>
+          Browse customer-facing commercial content without entering a commercial
+          management workspace. Feed remains chronological; storefronts contain public
+          products, offers, courses, lives, and product-trial information.
+        </Text>
+        <View style={styles.discoveryActions}>
+          {[
+            ["Browse Discovery Directory", "/discover"],
+            ["Chronological Feed", "/feed"],
+            ["Public Storefronts", "/store"],
+            ["Marketplace & Offers", "/marketplace"],
+            ["Courses", "/home/personal/courses"]
+          ].map(([label, href]) => (
+            <Link key={href} href={href as any} asChild>
+              <Pressable style={styles.secondaryBtn} accessibilityLabel={label}>
+                <Text style={styles.secondaryText}>{label}</Text>
+              </Pressable>
+            </Link>
+          ))}
+        </View>
+      </View>
+
       {!canView ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Forum unavailable</Text>
@@ -335,6 +359,7 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
   cta: { color: "#166534", fontWeight: "800" },
+  discoveryActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",

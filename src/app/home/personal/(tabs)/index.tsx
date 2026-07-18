@@ -409,6 +409,9 @@ export default function PersonalHomeTab() {
         <Text style={styles.sectionTitle}>Explore</Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
+          <ActionLink href="/store" label="Discover Storefronts" />
+          <ActionLink href="/feed" label="Commercial Feed" />
+          <ActionLink href="/discover" label="Discovery Directory" />
           <ActionLink href="/home/personal/profile" label="Profile" />
         </View>
       </View>
