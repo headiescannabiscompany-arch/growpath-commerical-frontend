@@ -8,6 +8,7 @@ import { SessionProvider } from "../session/SessionProvider";
 import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 import { FacilityProvider } from "../facility/FacilityProvider";
 import { GlobalApiStatusBanner } from "../components/GlobalApiStatusBanner";
+import GlobalReportBugButton from "../components/GlobalReportBugButton";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 
@@ -42,6 +43,7 @@ function RootLayout() {
                     <Slot />
                   </RouteAccessGuard>
                 </View>
+                <GlobalReportBugButton />
               </View>
             </FacilityProvider>
           </EntitlementsProvider>

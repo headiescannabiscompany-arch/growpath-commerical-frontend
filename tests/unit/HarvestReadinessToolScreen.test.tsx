@@ -8,6 +8,17 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
+const mockUploadImage = jest.fn();
+const mockAnalyzeTrichomePhotos = jest.fn();
+const mockRequestPhotoPermission = jest.fn();
+const mockLaunchPhotoLibrary = jest.fn();
+
+jest.mock("expo-image-picker", () => ({
+  MediaTypeOptions: { Images: "Images" },
+  requestMediaLibraryPermissionsAsync: (...args: any[]) =>
+    mockRequestPhotoPermission(...args),
+  launchImageLibraryAsync: (...args: any[]) => mockLaunchPhotoLibrary(...args)
+}));
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -67,6 +78,14 @@ jest.mock("@/api/harvestBatches", () => ({
   updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
 }));
 
+jest.mock("@/api/uploads", () => ({
+  uploadImage: (...args: any[]) => mockUploadImage(...args)
+}));
+
+jest.mock("@/api/harvestVision", () => ({
+  analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
+}));
+
 describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -111,6 +130,44 @@ describe("HarvestReadinessToolRoute", () => {
       linkedToolRunIds: ["toolrun-old"]
     });
     mockUpdateHarvestBatch.mockResolvedValue({ id: "harvest-1" });
+    mockRequestPhotoPermission.mockResolvedValue({ granted: true });
+    mockLaunchPhotoLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "file:///trichomes.jpg" }]
+    });
+    mockUploadImage.mockResolvedValue({ url: "/uploads/trichomes.jpg" });
+    mockAnalyzeTrichomePhotos.mockResolvedValue({
+      photoUsable: true,
+      clear: 0.12,
+      cloudy: 0.73,
+      amber: 0.15,
+      confidence: 0.81,
+      dominant: "cloudy",
+      evidence: ["Mostly opaque gland heads"],
+      recommendation: "Confirm across additional bud sites.",
+      limitations: [],
+      provider: "openai_vision",
+      imagesAnalyzed: 1
+    });
+  });
+
+  it("uploads and analyzes a photo before filling trichome percentages", async () => {
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
+    await waitFor(() =>
+      expect(mockUploadImage).toHaveBeenCalledWith("file:///trichomes.jpg")
+    );
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({ growId: "grow-1", images: ["/uploads/trichomes.jpg"] })
+      )
+    );
+    expect(screen.getByDisplayValue("73")).toBeTruthy();
+    expect(screen.getByDisplayValue("15")).toBeTruthy();
+    expect(screen.getByDisplayValue("12")).toBeTruthy();
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {

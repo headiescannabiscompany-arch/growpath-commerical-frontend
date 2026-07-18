@@ -2,14 +2,37 @@ import React from "react";
 import { Redirect, Stack, usePathname } from "expo-router";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
+import { useAuth } from "@/auth/AuthContext";
+import { normalizeInterestList } from "@/utils/growInterests";
+
+const CANNABIS_TOOL_PATHS = new Set([
+  "/home/personal/tools/crop-steering-project",
+  "/home/personal/tools/pheno-hunt",
+  "/home/personal/tools/pheno-matrix",
+  "/home/personal/tools/dry-cure-guard",
+  "/home/personal/tools/clone-rooting",
+  "/home/personal/tools/harvest-readiness",
+  "/home/personal/tools/harvest-estimator"
+]);
+
+export function canOpenCannabisTool(pathname: string, growInterests: any) {
+  if (!CANNABIS_TOOL_PATHS.has(pathname)) return true;
+  return normalizeInterestList(growInterests?.crops).some(
+    (crop) => crop.toLowerCase() === "cannabis"
+  );
+}
 
 export default function ToolsLayout() {
   const pathname = usePathname();
+  const auth = useAuth();
   const matchedTool = personalToolFeatures.find(
     (feature) => feature.href && pathname === feature.href
   );
 
   if (matchedTool && !isFeatureNavigable(matchedTool, { allowBetaSurfaces: true })) {
+    return <Redirect href="/home/personal/tools" />;
+  }
+  if (!canOpenCannabisTool(pathname, auth.user?.growInterests)) {
     return <Redirect href="/home/personal/tools" />;
   }
 
