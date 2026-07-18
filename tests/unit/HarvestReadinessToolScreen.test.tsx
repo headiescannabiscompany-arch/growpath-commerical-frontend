@@ -12,6 +12,8 @@ const mockUploadImage = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
 const mockRequestPhotoPermission = jest.fn();
 const mockLaunchPhotoLibrary = jest.fn();
+const mockListPersonalGrows = jest.fn();
+let mockRouteParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images" },
@@ -21,13 +23,17 @@ jest.mock("expo-image-picker", () => ({
 }));
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useLocalSearchParams: () => mockRouteParams,
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
     push: jest.fn(),
     replace: jest.fn()
   })
+}));
+
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -89,6 +95,8 @@ jest.mock("@/api/harvestVision", () => ({
 describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockRouteParams = { growId: "grow-1" };
+    mockListPersonalGrows.mockImplementation(() => new Promise(() => {}));
     mockRunCalculator.mockResolvedValue({
       outputs: {
         readinessStatus: "approaching_window",
@@ -149,6 +157,23 @@ describe("HarvestReadinessToolRoute", () => {
       provider: "openai_vision",
       imagesAnalyzed: 1
     });
+  });
+
+  it("lets a user select a grow before choosing trichome photos", async () => {
+    mockRouteParams = {};
+    mockListPersonalGrows.mockResolvedValue([
+      { id: "grow-1", name: "Flower Tent" },
+      { id: "grow-2", name: "Second Run" }
+    ]);
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    await waitFor(() => expect(screen.getByText("Flower Tent")).toBeTruthy());
+    expect(screen.getByText("Select a grow before analyzing a photo.")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Select grow Flower Tent"));
+    await waitFor(() =>
+      expect(screen.queryByText("Select a grow before analyzing a photo.")).toBeNull()
+    );
   });
 
   it("uploads and analyzes a photo before filling trichome percentages", async () => {

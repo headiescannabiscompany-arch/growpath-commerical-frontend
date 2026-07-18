@@ -8,6 +8,7 @@ import {
   createGrowpathModuleRecord,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
+import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
@@ -43,7 +44,7 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
-  formHeader?: React.ReactNode;
+  formHeader?: React.ReactNode | ((context: { growId: string }) => React.ReactNode);
   status?: string;
   fields: ToolField[];
   buildPayload: (
@@ -161,7 +162,9 @@ export default function BackendCalculatorToolScreen({
   }>();
   const params = routeParams as typeof routeParams &
     Record<string, string | string[] | undefined>;
-  const growId = coerceParam(params.growId);
+  const routeGrowId = coerceParam(params.growId);
+  const [availableGrows, setAvailableGrows] = useState<PersonalGrow[]>([]);
+  const [growId, setGrowId] = useState(routeGrowId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
   const entitlements = useEntitlements();
   const paidPreviewOverride = hasLocalPaidPreviewOverride();
@@ -201,6 +204,24 @@ export default function BackendCalculatorToolScreen({
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [assistantBriefText, setAssistantBriefText] = useState("");
+
+  React.useEffect(() => {
+    let active = true;
+    listPersonalGrows()
+      .then((grows) => {
+        if (!active) return;
+        setAvailableGrows(grows);
+        if (!routeGrowId && grows.length === 1) {
+          setGrowId(String(grows[0].id || (grows[0] as any)._id || ""));
+        }
+      })
+      .catch(() => {
+        if (active) setAvailableGrows([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [routeGrowId]);
 
   function updateValue(key: string, value: string) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -385,6 +406,37 @@ export default function BackendCalculatorToolScreen({
           />
         ) : null}
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        {availableGrows.length ? (
+          <View style={styles.growPicker}>
+            <Text style={styles.label}>Select grow</Text>
+            <View style={styles.growPickerRow}>
+              {availableGrows.map((grow, index) => {
+                const id = String(grow.id || (grow as any)._id || "");
+                if (!id) return null;
+                const selected = growId === id;
+                return (
+                  <Pressable
+                    key={id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select grow ${grow.name || index + 1}`}
+                    onPress={() => setGrowId(id)}
+                    style={[styles.growPill, selected && styles.growPillOn]}
+                  >
+                    <Text
+                      style={[styles.growPillText, selected && styles.growPillTextOn]}
+                    >
+                      {grow.name || `Grow ${index + 1}`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : !growId ? (
+          <Text style={styles.feedback}>
+            Create a grow first, then return here to run and save this tool.
+          </Text>
+        ) : null}
         <ToolPlantContextPicker
           plants={plantContext.plants}
           plantId={plantContext.plantId}
@@ -392,7 +444,7 @@ export default function BackendCalculatorToolScreen({
           onSelect={plantContext.setPlantId}
         />
 
-        {formHeader}
+        {typeof formHeader === "function" ? formHeader({ growId }) : formHeader}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>
@@ -509,6 +561,18 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700", color: "#0F172A" },
   subtitle: { fontSize: 13, color: "#64748B" },
   context: { color: "#166534", fontWeight: "700" },
+  growPicker: { gap: 7 },
+  growPickerRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  growPill: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  growPillOn: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
+  growPillText: { color: "#334155", fontWeight: "700" },
+  growPillTextOn: { color: "#166534" },
   guidanceCard: {
     borderWidth: 1,
     borderColor: "#BBF7D0",
