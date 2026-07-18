@@ -231,19 +231,6 @@ export const personalToolFeatures = [
       "Uses the backend feeding schedule endpoint when available and local stage-aware planning otherwise."
   },
   {
-    key: "tools.harvest_estimator",
-    title: "Harvest / Maturity Check",
-    description:
-      "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
-    area: "plant_health",
-    status: "release",
-    href: "/home/personal/tools/harvest-estimator",
-    acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR,
-    internalNote:
-      "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
-  },
-  {
     key: "tools.timeline_planner",
     title: "Timeline Planner",
     description:

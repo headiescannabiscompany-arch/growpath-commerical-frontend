@@ -43,6 +43,7 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
+  formHeader?: React.ReactNode;
   status?: string;
   fields: ToolField[];
   buildPayload: (
@@ -143,6 +144,7 @@ export default function BackendCalculatorToolScreen({
   toolKey,
   title,
   subtitle,
+  formHeader,
   status = "CALCULATED",
   fields,
   buildPayload,
@@ -389,6 +391,8 @@ export default function BackendCalculatorToolScreen({
           selectedPlant={plantContext.selectedPlant}
           onSelect={plantContext.setPlantId}
         />
+
+        {formHeader}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>

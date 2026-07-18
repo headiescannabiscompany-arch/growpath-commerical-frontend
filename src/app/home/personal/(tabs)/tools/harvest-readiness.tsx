@@ -281,174 +281,191 @@ function harvestReviewRecord(
 export default function HarvestReadinessToolRoute() {
   const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
   return (
-    <View style={{ flex: 1 }}>
-      <HarvestPhotoAnalyzer onAnalysis={setVision} />
-      <BackendCalculatorToolScreen
-        key={vision ? `${vision.clear}-${vision.cloudy}-${vision.amber}` : "manual"}
-        tool="harvest-readiness"
-        toolKey="harvest-readiness"
-        title="Harvest Readiness AI"
-        subtitle="Estimate harvest readiness from flower day, breeder timing, trichome mix, aroma, and user goals."
-        fields={[
-          {
-            key: "flowerDay",
-            label: "Flower day",
-            defaultValue: "56",
-            keyboardType: "numeric"
-          },
-          {
-            key: "breederFlowerTime",
-            label: "Breeder flower time",
-            defaultValue: "63",
-            keyboardType: "numeric"
-          },
-          {
-            key: "cloudyPercent",
-            label: "Cloudy %",
-            defaultValue: vision ? String(Math.round(vision.cloudy * 100)) : "65",
-            keyboardType: "numeric"
-          },
-          {
-            key: "amberPercent",
-            label: "Amber %",
-            defaultValue: vision ? String(Math.round(vision.amber * 100)) : "8",
-            keyboardType: "numeric"
-          },
-          {
-            key: "clearPercent",
-            label: "Clear %",
-            defaultValue: vision ? String(Math.round(vision.clear * 100)) : "10",
-            keyboardType: "numeric"
-          },
-          { key: "pistilStatus", label: "Pistil / hair status", defaultValue: "mixed" },
-          {
-            key: "budSwellStatus",
-            label: "Bud / calyx swell",
-            defaultValue: "mostly_swollen"
-          },
-          {
-            key: "sampleLocation",
-            label: "Trichome sample location",
-            defaultValue: "mixed_bud_sites"
-          },
-          {
-            key: "harvestBatchId",
-            label: "Harvest batch ID (optional)",
-            defaultValue: ""
-          },
-          { key: "aromaIntensity", label: "Aroma intensity", defaultValue: "building" },
-          { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
-        ]}
-        buildPayload={(values, { growId, plantContext }) => ({
-          growId,
-          ...plantContext.toolRunContext,
-          ...values,
-          harvestBatchId: values.harvestBatchId.trim() || undefined
-        })}
-        buildMetrics={(outputs) => [
-          { key: "status", label: "Readiness", value: outputs.readinessStatus },
-          { key: "start", label: "Start day", value: outputs.estimatedWindow?.startDay },
-          {
-            key: "target",
-            label: "Target day",
-            value: outputs.estimatedWindow?.targetDay
-          },
-          { key: "end", label: "End day", value: outputs.estimatedWindow?.endDay },
-          {
-            key: "pistils",
-            label: "Pistils",
-            value: outputs.wholePlantMaturity?.pistilStatus
-          },
-          {
-            key: "swell",
-            label: "Bud swell",
-            value: outputs.wholePlantMaturity?.budSwellStatus
-          }
-        ]}
-        buildNotices={(outputs) =>
-          Array.isArray(outputs.warnings)
-            ? outputs.warnings.map((message: string, index: number) => ({
-                key: `warning-${index}`,
-                severity: "medium" as const,
-                message
-              }))
-            : []
+    <BackendCalculatorToolScreen
+      key={vision ? `${vision.clear}-${vision.cloudy}-${vision.amber}` : "manual"}
+      tool="harvest-readiness"
+      toolKey="harvest-readiness"
+      title="Harvest Readiness AI"
+      subtitle="AI can fill clear, cloudy, and amber from photos. Complete the breeder timeline, hairs, bud structure, aroma trend, and effect goal for a one-week-before through two-weeks-after harvest range."
+      formHeader={<HarvestPhotoAnalyzer onAnalysis={setVision} />}
+      fields={[
+        {
+          key: "flowerDay",
+          label: "Flower day",
+          defaultValue: "56",
+          keyboardType: "numeric"
+        },
+        {
+          key: "breederFlowerTime",
+          label: "Breeder timeline day (for example 65)",
+          defaultValue: "63",
+          keyboardType: "numeric"
+        },
+        {
+          key: "cloudyPercent",
+          label: "Cloudy %",
+          defaultValue: vision ? String(Math.round(vision.cloudy * 100)) : "65",
+          keyboardType: "numeric"
+        },
+        {
+          key: "amberPercent",
+          label: "Amber %",
+          defaultValue: vision ? String(Math.round(vision.amber * 100)) : "8",
+          keyboardType: "numeric"
+        },
+        {
+          key: "clearPercent",
+          label: "Clear %",
+          defaultValue: vision ? String(Math.round(vision.clear * 100)) : "10",
+          keyboardType: "numeric"
+        },
+        {
+          key: "pistilStatus",
+          label: "Hair / pistil status (fresh, dying, dark, receded)",
+          defaultValue: "mixed"
+        },
+        {
+          key: "budSwellStatus",
+          label: "Bud structure (still developing or fully finished)",
+          defaultValue: "mostly_swollen"
+        },
+        {
+          key: "sampleLocation",
+          label: "Trichome sample location",
+          defaultValue: "mixed_bud_sites"
+        },
+        {
+          key: "harvestBatchId",
+          label: "Harvest batch ID (optional)",
+          defaultValue: ""
+        },
+        {
+          key: "aromaIntensity",
+          label: "Aroma trend (building, peak, or dropping)",
+          defaultValue: "building"
+        },
+        { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
+      ]}
+      buildPayload={(values, { growId, plantContext }) => ({
+        growId,
+        ...plantContext.toolRunContext,
+        ...values,
+        harvestBatchId: values.harvestBatchId.trim() || undefined
+      })}
+      buildMetrics={(outputs) => [
+        { key: "status", label: "Readiness", value: outputs.readinessStatus },
+        { key: "start", label: "Start day", value: outputs.estimatedWindow?.startDay },
+        {
+          key: "target",
+          label: "Target day",
+          value: outputs.estimatedWindow?.targetDay
+        },
+        { key: "end", label: "End day", value: outputs.estimatedWindow?.endDay },
+        {
+          key: "pistils",
+          label: "Pistils",
+          value: outputs.wholePlantMaturity?.pistilStatus
+        },
+        {
+          key: "swell",
+          label: "Bud structure",
+          value: outputs.wholePlantMaturity?.budSwellStatus
+        },
+        {
+          key: "breeder-reference",
+          label: "Breeder timeline",
+          value: outputs.breederTimelineInterpretation
+        },
+        {
+          key: "trichome-advice",
+          label: "Trichome advice",
+          value: outputs.trichomeInterpretation
+        },
+        {
+          key: "aroma-advice",
+          label: "Smell / flavor",
+          value: outputs.aromaFlavorInterpretation
         }
-        defaultLogTitle={(outputs) =>
-          `Harvest readiness: ${outputs.readinessStatus || "check"}`
-        }
-        defaultTask={(outputs) => ({
-          title: outputs.harvestTask?.title || "Recheck harvest readiness",
-          priority: outputs.harvestTask?.priority || "medium",
-          dueDate: tomorrow(outputs.harvestTask?.dueInDays || 3),
-          ...harvestCalendarMetadata("harvest_readiness_recheck"),
-          description:
-            "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity."
-        })}
-        buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
-          {
-            key: "create-harvest-readiness-task-plan",
-            label: "Create Harvest Decision Tasks",
-            variant: "secondary",
-            pendingLabel: "Creating...",
-            disabled: !growId,
-            successMessage: "Created harvest decision tasks.",
-            onPress: async () => {
-              const result = await saveToolRunAndCreateTasks({
-                growId,
-                ...plantContext.toolRunContext,
-                toolKey: "harvest-readiness",
-                toolRunId: toolRun?.id || toolRun?._id,
-                input: payload,
-                output: outputs,
-                tasks: readinessTaskPlan(outputs, payload)
-              });
-              if (!result.ok) throw new Error(result.error);
-            }
-          },
-          {
-            key: "save-harvest-review",
-            label: "Save Harvest Review",
-            variant: "secondary",
-            pendingLabel: "Saving...",
-            disabled: !growId || !payload.harvestBatchId,
-            successMessage: "Saved harvest review to batch.",
-            onPress: async () => {
-              const harvestBatchId = String(payload.harvestBatchId || "").trim();
-              const linkedToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
-              if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
-              if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
-              const batch = await getHarvestBatch(harvestBatchId);
-              if (!batch) throw new Error("Harvest batch not found.");
-              const existingRecords = Array.isArray(batch.dryCureRecords)
-                ? batch.dryCureRecords
-                : [];
-              const existingRunIds = Array.isArray(batch.linkedToolRunIds)
-                ? batch.linkedToolRunIds
-                : [];
-              const updated = await updateHarvestBatch(harvestBatchId, {
-                dryCureRecords: [
-                  ...existingRecords,
-                  harvestReviewRecord(outputs, payload, linkedToolRunId)
-                ],
-                qualityNotes: harvestReviewNotes(outputs, payload),
-                linkedToolRunIds: Array.from(
-                  new Set([...existingRunIds, linkedToolRunId])
-                )
-              });
-              if (!updated) throw new Error("Unable to update harvest batch.");
-            }
+      ]}
+      buildNotices={(outputs) =>
+        Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []
+      }
+      defaultLogTitle={(outputs) =>
+        `Harvest readiness: ${outputs.readinessStatus || "check"}`
+      }
+      defaultTask={(outputs) => ({
+        title: outputs.harvestTask?.title || "Recheck harvest readiness",
+        priority: outputs.harvestTask?.priority || "medium",
+        dueDate: tomorrow(outputs.harvestTask?.dueInDays || 3),
+        ...harvestCalendarMetadata("harvest_readiness_recheck"),
+        description:
+          "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity."
+      })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-harvest-readiness-task-plan",
+          label: "Create Harvest Decision Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created harvest decision tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "harvest-readiness",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: readinessTaskPlan(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
           }
-        ]}
-      />
-    </View>
+        },
+        {
+          key: "save-harvest-review",
+          label: "Save Harvest Review",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          disabled: !growId || !payload.harvestBatchId,
+          successMessage: "Saved harvest review to batch.",
+          onPress: async () => {
+            const harvestBatchId = String(payload.harvestBatchId || "").trim();
+            const linkedToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
+            if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
+            if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
+            const batch = await getHarvestBatch(harvestBatchId);
+            if (!batch) throw new Error("Harvest batch not found.");
+            const existingRecords = Array.isArray(batch.dryCureRecords)
+              ? batch.dryCureRecords
+              : [];
+            const existingRunIds = Array.isArray(batch.linkedToolRunIds)
+              ? batch.linkedToolRunIds
+              : [];
+            const updated = await updateHarvestBatch(harvestBatchId, {
+              dryCureRecords: [
+                ...existingRecords,
+                harvestReviewRecord(outputs, payload, linkedToolRunId)
+              ],
+              qualityNotes: harvestReviewNotes(outputs, payload),
+              linkedToolRunIds: Array.from(new Set([...existingRunIds, linkedToolRunId]))
+            });
+            if (!updated) throw new Error("Unable to update harvest batch.");
+          }
+        }
+      ]}
+    />
   );
 }
 
 const photoStyles = StyleSheet.create({
   card: {
-    margin: 16,
-    marginBottom: 0,
     padding: 14,
     borderWidth: 1,
     borderColor: "#D1FAE5",

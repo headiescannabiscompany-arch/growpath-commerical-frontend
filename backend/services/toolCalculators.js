@@ -3758,6 +3758,13 @@ function calculateHarvestReadiness(input = {}) {
     input.userGoal || input.userEffectGoal || "balanced"
   ).toLowerCase();
   const remaining = breederFlowerTime - flowerDay;
+  const structurallyFinished = /fully|finished|done|complete/.test(budSwellStatus);
+  const structurallyDeveloping = /still|building|uneven|developing|not_done/.test(
+    budSwellStatus
+  );
+  const pistilsDying = /dying|dark|brown|orange|reced|mostly_dead/.test(pistilStatus);
+  const pistilsStillGrowing = /mostly_white|white|new_white|fresh/.test(pistilStatus);
+  const aromaDropping = /fading|fade|declining|dropping|weaker|falling/.test(aromaStatus);
   let readinessStatus = "early";
   const warnings = [
     "Harvest readiness is decision support, not a guarantee. Confirm with photos, cultivar behavior, desired effect, and whole-plant maturity.",
@@ -3767,13 +3774,13 @@ function calculateHarvestReadiness(input = {}) {
   if (remaining <= 3 && cloudyPercent >= 60 && amberPercent >= 5)
     readinessStatus = "ready_soon";
   if (clearPercent > 25) readinessStatus = "not_ready";
-  if (/still|building|uneven/.test(budSwellStatus) && readinessStatus === "ready_soon") {
+  if (structurallyDeveloping && readinessStatus === "ready_soon") {
     readinessStatus = "checking_window";
     warnings.push(
       "Bud/calyx swell is not finished. Recheck before harvesting even if trichomes look close."
     );
   }
-  if (/mostly_white|white|new_white/.test(pistilStatus)) {
+  if (pistilsStillGrowing) {
     warnings.push(
       "Mostly white or continuing new pistils usually means the plant may still be building or responding to stress."
     );
@@ -3784,9 +3791,9 @@ function calculateHarvestReadiness(input = {}) {
       "Sugar leaf trichomes can mature differently than bud trichomes. Confirm on flower material."
     );
   }
-  if (/fading|fade|declining/.test(aromaStatus) && amberPercent >= 20) {
+  if (aromaDropping) {
     warnings.push(
-      "Aroma may be fading while amber is high; monitor late-window quality risk."
+      "Aroma is reported as dropping. Compare daily: waiting for more amber may trade away peak smell and flavor."
     );
   }
   const goalInterpretation = userGoal.includes("bright")
@@ -3816,14 +3823,18 @@ function calculateHarvestReadiness(input = {}) {
       observation: pistilStatus,
       interpretation: /mostly_white|white|new_white/.test(pistilStatus)
         ? "Pistil signal suggests more building or possible stress/reflowering."
-        : "Pistil signal does not block readiness from current input."
+        : pistilsDying
+          ? "Dying, darkening, or receding hairs support maturity, but do not decide harvest alone."
+          : "Pistil signal does not block readiness from current input."
     },
     {
       factor: "bud_swell",
       observation: budSwellStatus,
-      interpretation: /still|building|uneven/.test(budSwellStatus)
+      interpretation: structurallyDeveloping
         ? "Bud/calyx swell may not be finished."
-        : "Bud swell input does not block readiness from current input."
+        : structurallyFinished
+          ? "Bud structure is reported finished developing; confirm across top and lower sites."
+          : "Bud swell input does not establish whether structural development is finished."
     },
     {
       factor: "aroma",
@@ -3832,7 +3843,9 @@ function calculateHarvestReadiness(input = {}) {
         ? "Aroma may still be developing."
         : /strong|peak/.test(aromaStatus)
           ? "Aroma signal supports close monitoring."
-          : "Aroma signal is limited or unknown."
+          : aromaDropping
+            ? "Aroma may be past peak; watch closely for continued smell loss."
+            : "Aroma signal is limited or unknown."
     },
     { factor: "user_goal", observation: userGoal, interpretation: goalInterpretation }
   ];
@@ -3841,9 +3854,15 @@ function calculateHarvestReadiness(input = {}) {
     estimatedWindow: {
       startDay: Math.max(flowerDay, breederFlowerTime - 7),
       targetDay: breederFlowerTime,
-      endDay: breederFlowerTime + 7,
+      endDay: breederFlowerTime + 14,
       confidence: warnings.length > 2 ? "medium" : "planning"
     },
+    breederTimelineInterpretation: `Breeder day ${breederFlowerTime} is a reference, not a deadline. Begin close checks near day ${Math.max(
+      1,
+      breederFlowerTime - 7
+    )}, compare peak smell and flavor at day ${breederFlowerTime}, and treat day ${
+      breederFlowerTime + 14
+    } as the late edge rather than an automatic harvest date.`,
     evidence,
     trichomeInterpretation:
       clearPercent > 25
@@ -3854,7 +3873,9 @@ function calculateHarvestReadiness(input = {}) {
     budSwellInterpretation: evidence.find((row) => row.factor === "bud_swell")
       ?.interpretation,
     aromaFlavorInterpretation: input.aromaIntensity
-      ? `Aroma intensity: ${input.aromaIntensity}`
+      ? aromaDropping
+        ? `Aroma is ${input.aromaIntensity}; smell loss can mean the peak flavor window is passing even if amber continues increasing.`
+        : `Aroma is ${input.aromaIntensity}; record it daily so a drop from peak is visible.`
       : "Aroma data not entered.",
     userGoalInterpretation: goalInterpretation,
     trichomeObservation: {
@@ -3888,6 +3909,25 @@ function calculateHarvestReadiness(input = {}) {
         dueInDays: readinessStatus === "ready_soon" ? 1 : 5,
         priority: readinessStatus === "ready_soon" ? "high" : "medium"
       }
+    ],
+    recommendations: [
+      clearPercent > 25
+        ? "Clear trichomes are still prominent; wait and recheck the same bud sites."
+        : amberPercent >= 20
+          ? "Amber is substantial; decide whether a heavier result is worth further loss of bright aroma and flavor."
+          : "Cloudy-dominant trichomes indicate the main decision window; match timing to the desired effect.",
+      structurallyDeveloping
+        ? "Buds are still developing structurally. Wait for calyx swell to finish unless plant health forces an earlier harvest."
+        : structurallyFinished
+          ? "Buds are reported structurally finished; confirm lower sites before cutting the whole plant."
+          : "Record whether buds/calyxes are still swelling or structurally finished.",
+      pistilsDying
+        ? "Dying and receding hairs support maturity; confirm with bud trichomes and structure."
+        : "Watch whether fresh hairs stop appearing and existing hairs darken and recede.",
+      aromaDropping
+        ? "Smell is dropping: consider harvesting within the current window instead of waiting only for more amber."
+        : "Track aroma daily and note the first decline from peak smell and flavor.",
+      `Use breeder day ${breederFlowerTime} as the center reference; the displayed range runs from one week before it through two weeks after it.`
     ],
     recommendation:
       readinessStatus === "ready_soon"

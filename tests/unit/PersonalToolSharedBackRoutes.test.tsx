@@ -4,7 +4,6 @@ import { render } from "@testing-library/react-native";
 import BudRotRiskToolScreen from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
 import EnvironmentAnalysisToolScreen from "@/app/home/personal/(tabs)/tools/environment-analysis";
 import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
-import HarvestEstimatorScreen from "@/app/home/personal/(tabs)/tools/harvest-estimator";
 import NutrientChemistryToolScreen from "@/app/home/personal/(tabs)/tools/nutrient-chemistry";
 import PdfExportScreen from "@/app/home/personal/(tabs)/tools/pdf-export";
 import PpfdToolScreen from "@/app/home/personal/(tabs)/tools/ppfd";
@@ -118,13 +117,6 @@ describe("legacy personal tool shared back routes", () => {
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("Bud Rot Risk")).toBeTruthy();
-  });
-
-  it("uses shared back behavior on Harvest Estimator", () => {
-    const screen = render(<HarvestEstimatorScreen />);
-
-    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    expect(screen.getByText("Harvest Estimator")).toBeTruthy();
   });
 
   it("uses shared back behavior on Feeding Schedule Planner", () => {
