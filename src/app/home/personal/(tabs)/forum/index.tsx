@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
-import { discoverUsers } from "@/api/users";
 import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -122,7 +121,6 @@ export default function ForumRoute() {
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
 
   const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [people, setPeople] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -149,12 +147,8 @@ export default function ForumRoute() {
       else setLoading(true);
       setFeedback("");
       try {
-        const [postRows, peopleRows] = await Promise.all([
-          listForumPosts(),
-          discoverUsers("", 12).catch(() => [])
-        ]);
+        const postRows = await listForumPosts();
         setPosts(postRows);
-        setPeople(peopleRows);
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load forum posts.");
         setPosts([]);
@@ -243,30 +237,6 @@ export default function ForumRoute() {
               </Text>
             </Pressable>
           </Link>
-        </View>
-      ) : null}
-
-      {people.length ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>GrowPathAI community</Text>
-          <Text style={styles.cardText}>
-            Real member accounts outside your own workspace. Profiles never expose email
-            addresses here.
-          </Text>
-          <View style={styles.peopleGrid}>
-            {people.map((person) => (
-              <View key={String(person.id)} style={styles.personCard}>
-                <Text style={styles.personName}>
-                  {String(person.displayName || "GrowPathAI member")}
-                </Text>
-                {person.bio ? (
-                  <Text style={styles.cardText} numberOfLines={2}>
-                    {String(person.bio)}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-          </View>
         </View>
       ) : null}
 
@@ -510,15 +480,5 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: "#FEF2F2",
     gap: 8
-  },
-  peopleGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  personCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    padding: 10
-  },
-  personName: { color: "#0F172A", fontWeight: "900" }
+  }
 });

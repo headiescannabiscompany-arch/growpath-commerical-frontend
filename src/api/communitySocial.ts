@@ -2,6 +2,12 @@ import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 import { persistImageUris } from "@/utils/photoUploads";
 
+// A feature-level authorization failure must stay inside the community UI. The auth
+// provider owns session validation; logging the user out because one forum, guild, or
+// notification endpoint returned 401 makes every forum link appear to redirect home.
+const communityRequest = (path: string, options: any = {}) =>
+  apiRequest(path, { ...options, invalidateOn401: false });
+
 export type SocialPost = {
   id?: string;
   _id?: string;
@@ -65,7 +71,7 @@ export function postId(row: any) {
 }
 
 export async function listForumPosts(page = 1): Promise<SocialPost[]> {
-  const response = await apiRequest(apiRoutes.FORUM.LATEST, {
+  const response = await communityRequest(apiRoutes.FORUM.LATEST, {
     method: "GET",
     params: { page }
   });
@@ -97,7 +103,7 @@ export async function createForumPost(data: {
     : data.tags?.length
       ? data.tags
       : undefined;
-  const response = await apiRequest(apiRoutes.FORUM.CREATE, {
+  const response = await communityRequest(apiRoutes.FORUM.CREATE, {
     method: "POST",
     body: {
       title: data.title,
@@ -122,34 +128,36 @@ export async function createForumPost(data: {
 }
 
 export async function getForumPost(id: string): Promise<SocialPost | null> {
-  const response = await apiRequest(apiRoutes.FORUM.DETAIL(id), { method: "GET" });
+  const response = await communityRequest(apiRoutes.FORUM.DETAIL(id), { method: "GET" });
   return response?.post ?? response?.data?.post ?? response;
 }
 
 export async function likeForumPost(id: string) {
-  return apiRequest(apiRoutes.FORUM.LIKE(id), { method: "POST" });
+  return communityRequest(apiRoutes.FORUM.LIKE(id), { method: "POST" });
 }
 
 export async function unlikeForumPost(id: string) {
-  return apiRequest(apiRoutes.FORUM.UNLIKE(id), { method: "POST" });
+  return communityRequest(apiRoutes.FORUM.UNLIKE(id), { method: "POST" });
 }
 
 export async function listForumComments(id: string) {
-  const response = await apiRequest(apiRoutes.FORUM.COMMENTS(id), { method: "GET" });
+  const response = await communityRequest(apiRoutes.FORUM.COMMENTS(id), {
+    method: "GET"
+  });
   return rows<any>(response, ["comments", "items"]);
 }
 
 export async function addForumComment(id: string, text: string, photos: string[] = []) {
   const persistedPhotos = await persistImageUris(photos);
   const storedText = [text.trim(), ...persistedPhotos].filter(Boolean).join("\n");
-  return apiRequest(apiRoutes.FORUM.COMMENT(id), {
+  return communityRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
     body: { text: storedText, photos: persistedPhotos }
   });
 }
 
 export async function saveForumPostToGrowLog(id: string, growId?: string) {
-  return apiRequest(apiRoutes.FORUM.TO_GROWLOG(id), {
+  return communityRequest(apiRoutes.FORUM.TO_GROWLOG(id), {
     method: "POST",
     body: growId ? { growId } : {}
   });
@@ -159,7 +167,7 @@ export async function reportForumPost(
   id: string,
   data: { reason?: string; details?: string } = {}
 ) {
-  return apiRequest(apiRoutes.FORUM.REPORT(id), {
+  return communityRequest(apiRoutes.FORUM.REPORT(id), {
     method: "POST",
     body: {
       reason: data.reason || "other",
@@ -169,29 +177,29 @@ export async function reportForumPost(
 }
 
 export async function listGuilds(): Promise<Guild[]> {
-  const response = await apiRequest(apiRoutes.GUILDS.LIST, { method: "GET" });
+  const response = await communityRequest(apiRoutes.GUILDS.LIST, { method: "GET" });
   return rows<Guild>(response, ["guilds", "items"]);
 }
 
 export async function joinGuild(id: string) {
-  return apiRequest(apiRoutes.GUILDS.JOIN(id), { method: "POST" });
+  return communityRequest(apiRoutes.GUILDS.JOIN(id), { method: "POST" });
 }
 
 export async function leaveGuild(id: string) {
-  return apiRequest(apiRoutes.GUILDS.LEAVE(id), { method: "POST" });
+  return communityRequest(apiRoutes.GUILDS.LEAVE(id), { method: "POST" });
 }
 
 export async function listNotifications(): Promise<SocialNotification[]> {
-  const response = await apiRequest("/api/notifications", { method: "GET" });
+  const response = await communityRequest("/api/notifications", { method: "GET" });
   return rows<SocialNotification>(response, ["notifications", "items"]);
 }
 
 export async function markNotificationRead(id: string) {
-  return apiRequest(`/api/notifications/read/${encodeURIComponent(id)}`, {
+  return communityRequest(`/api/notifications/read/${encodeURIComponent(id)}`, {
     method: "POST"
   });
 }
 
 export async function markAllNotificationsRead() {
-  return apiRequest("/api/notifications/read-all", { method: "POST" });
+  return communityRequest("/api/notifications/read-all", { method: "POST" });
 }

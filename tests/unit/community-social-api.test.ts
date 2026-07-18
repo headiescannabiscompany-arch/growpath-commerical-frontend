@@ -44,6 +44,7 @@ describe("community social API", () => {
     ]);
     expect(mockApiRequest).toHaveBeenCalledWith("/api/forum/create", {
       method: "POST",
+      invalidateOn401: false,
       body: {
         title: "Show roots",
         body: "Attached photos",
@@ -54,5 +55,18 @@ describe("community social API", () => {
       }
     });
     expect(result.photos).toEqual(["/uploads/forum-a.jpg", "/uploads/forum-b.jpg"]);
+  });
+
+  it("keeps forum authorization failures inside the forum instead of ending the session", async () => {
+    const { listForumPosts } = require("@/api/communitySocial");
+    mockApiRequest.mockResolvedValueOnce({ posts: [] });
+
+    await listForumPosts();
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/forum/feed/latest", {
+      method: "GET",
+      params: { page: 1 },
+      invalidateOn401: false
+    });
   });
 });
