@@ -70,10 +70,13 @@ export function postId(row: any) {
   return String(row?._id || row?.id || "");
 }
 
-export async function listForumPosts(page = 1): Promise<SocialPost[]> {
+export async function listForumPosts(
+  page = 1,
+  tier1: string[] = []
+): Promise<SocialPost[]> {
   const response = await communityRequest(apiRoutes.FORUM.LATEST, {
     method: "GET",
-    params: { page }
+    params: { page, tier1: tier1.length ? tier1.join(",") : undefined }
   });
   return rows<SocialPost>(response, ["posts", "items"]);
 }

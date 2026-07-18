@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -28,6 +27,7 @@ import { createPersonalTask } from "@/api/tasks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
@@ -156,26 +156,7 @@ function tagsOf(post: SocialPost | null) {
 }
 
 function ForumImage({ uri, style, label }: { uri: string; style: any; label: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <View
-        style={[style, styles.imageFallback]}
-        accessibilityLabel={`${label} unavailable`}
-      >
-        <Text style={styles.imageFallbackText}>Photo unavailable</Text>
-      </View>
-    );
-  }
-  return (
-    <Image
-      source={{ uri }}
-      style={style}
-      resizeMode="cover"
-      accessibilityLabel={label}
-      onError={() => setFailed(true)}
-    />
-  );
+  return <ExpandableForumImage uri={uri} style={style} label={label} />;
 }
 
 export default function ForumPostDetailRoute() {

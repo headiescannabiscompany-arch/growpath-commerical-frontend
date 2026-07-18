@@ -179,8 +179,8 @@ describe("Forum and feed separation copy", () => {
         authorId: "user-1",
         workspaceContext: "personal",
         photos: [],
-        tags: ["Cannabis", "Indoor"],
-        growInterests: ["Cannabis", "Indoor"]
+        tags: ["Cannabis"],
+        growInterests: ["Cannabis"]
       })
     );
     expect(mockReplace).toHaveBeenCalledWith({
@@ -251,13 +251,14 @@ describe("Forum and feed separation copy", () => {
     const screen = render(<ForumRoute />);
 
     await waitFor(() =>
-      expect(
-        screen.getByTestId("link-/forum/post?id=thread-grow-help")
-      ).toBeTruthy()
+      expect(screen.getByTestId("link-/forum/post?id=thread-grow-help")).toBeTruthy()
     );
     expect(screen.getByText("Cannabis")).toBeTruthy();
     expect(screen.getByText("Indoor")).toBeTruthy();
-    expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
+    const photo = screen.getByLabelText("Expand forum post photo 1");
+    expect(photo).toBeTruthy();
+    fireEvent.press(photo);
+    expect(screen.getByLabelText("Close expanded forum photo")).toBeTruthy();
   });
 
   it("defaults to matching grow interests while keeping an all-discussions escape hatch", async () => {

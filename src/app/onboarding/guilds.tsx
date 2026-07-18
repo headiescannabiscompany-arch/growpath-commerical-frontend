@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { joinGuild, listGuilds, type Guild } from "@/api/communitySocial";
 import { updateGrowInterests } from "@/api/users";
+import { useAuth } from "@/auth/AuthContext";
 import { INTEREST_TIERS } from "@/config/interests";
 import { radius } from "@/theme/theme";
 
@@ -35,6 +36,7 @@ function toggle(map: InterestMap, tier: string, option: string): InterestMap {
 }
 
 export default function GuildOnboardingScreen() {
+  const auth = useAuth();
   const router = useRouter();
   const params = useLocalSearchParams<{
     next?: string | string[];
@@ -47,7 +49,9 @@ export default function GuildOnboardingScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
 
-  const [interests, setInterests] = useState<InterestMap>({});
+  const [interests, setInterests] = useState<InterestMap>(
+    (auth.user?.growInterests as InterestMap) || {}
+  );
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [selectedGuildIds, setSelectedGuildIds] = useState<string[]>([]);
   const [loadingGuilds, setLoadingGuilds] = useState(true);
@@ -102,6 +106,7 @@ export default function GuildOnboardingScreen() {
     setError("");
     try {
       await updateGrowInterests(interests);
+      await auth.retryMe();
       for (const id of selectedGuildIds) {
         await joinGuild(id);
       }
