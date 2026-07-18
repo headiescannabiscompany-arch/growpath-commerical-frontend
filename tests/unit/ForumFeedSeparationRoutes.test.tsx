@@ -147,9 +147,8 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Posting as User")).toBeTruthy();
     expect(screen.getByText("Workspace: personal")).toBeTruthy();
-    expect(screen.getByText("Grow interests")).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Toggle Grow interests"));
-    expect(screen.getByText(/What You Grow/)).toBeTruthy();
+    expect(screen.getByText("Post audience — Grow Interests")).toBeTruthy();
+    expect(screen.getByText(/Tier 1: What You Grow/)).toBeTruthy();
     expect(screen.getByText(/Environment/)).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
@@ -166,7 +165,6 @@ describe("Forum and feed separation copy", () => {
       screen.getByLabelText("Forum post body"),
       "What changed before this issue?"
     );
-    fireEvent.press(screen.getByLabelText("Toggle Grow interests"));
     expect(screen.getByLabelText("Toggle grow interest Cannabis")).toBeTruthy();
     expect(screen.getByLabelText("Toggle grow interest Indoor")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Publish forum post"));
