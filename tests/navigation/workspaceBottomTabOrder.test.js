@@ -15,12 +15,10 @@ function expectOrder(contents, names) {
 }
 
 describe("workspace bottom-tab order", () => {
-  it("keeps the five Personal primary destinations in task-first order", () => {
+  it("keeps Personal learning visible in task-first order", () => {
     const contents = source("src/app/home/personal/(tabs)/_layout.tsx");
-    expectOrder(contents, ["index", "grows", "tools", "community", "profile"]);
-    expect(contents).toContain(
-      'name="courses" options={{ title: "Courses", href: null }}'
-    );
+    expectOrder(contents, ["index", "grows", "tools", "community", "courses", "profile"]);
+    expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
   });
 
   it("keeps the five Commercial compact destinations in task-first order", () => {
