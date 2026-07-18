@@ -34,6 +34,16 @@ describe("apiMe contract normalization", () => {
     expect(me.user.id).toBe("u1");
     expect(me.user.emailVerified).toBe(true);
     expect(me.ctx.mode).toBe("personal");
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        cache: "no-store",
+        invalidateOn401: true,
+        headers: expect.objectContaining({
+          "Cache-Control": expect.stringContaining("no-store")
+        })
+      })
+    );
   });
 
   it("accepts enveloped shape { success, data: { user, ctx } }", async () => {
