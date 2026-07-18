@@ -104,7 +104,7 @@ export default function ForumNewPostRoute() {
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [photos, setPhotos] = useState<SelectedPhoto[]>(
-    sharedPhotos.map((uri) => ({ uri }))
+    sharedPhotos.slice(0, 10).map((uri) => ({ uri }))
   );
   const [interestSelections, setInterestSelections] =
     useState<Record<string, string[]>>(initialInterests);
@@ -120,23 +120,26 @@ export default function ForumNewPostRoute() {
     const picked = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
+      selectionLimit: Math.max(10 - photos.length, 1),
       allowsEditing: false,
       quality: 0.85
     });
     if (picked.canceled) return;
-    setPhotos((current) => [
-      ...current,
-      ...picked.assets
-        .filter((asset) => asset.uri)
-        .map((asset) => ({
-          uri: asset.uri,
-          width: asset.width ?? null,
-          height: asset.height ?? null,
-          mimeType: asset.mimeType ?? null
-        }))
-    ]);
-    setFeedback("");
-  }, []);
+    setPhotos((current) =>
+      [
+        ...current,
+        ...picked.assets
+          .filter((asset) => asset.uri)
+          .map((asset) => ({
+            uri: asset.uri,
+            width: asset.width ?? null,
+            height: asset.height ?? null,
+            mimeType: asset.mimeType ?? null
+          }))
+      ].slice(0, 10)
+    );
+    setFeedback(photos.length + picked.assets.length > 10 ? "Maximum 10 photos." : "");
+  }, [photos.length]);
 
   const submit = useCallback(async () => {
     if (!canPost) return;

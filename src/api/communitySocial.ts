@@ -95,7 +95,7 @@ export async function createForumPost(data: {
   diagnosisId?: string;
   toolRunId?: string;
 }): Promise<SocialPost> {
-  const photos = await persistImageUris(data.photos || []);
+  const photos = await persistImageUris((data.photos || []).slice(0, 10));
   const tags = data.tags?.length
     ? data.tags
     : data.growInterests?.length
@@ -151,7 +151,7 @@ export async function listForumComments(id: string) {
 }
 
 export async function addForumComment(id: string, text: string, photos: string[] = []) {
-  const persistedPhotos = await persistImageUris(photos);
+  const persistedPhotos = await persistImageUris(photos.slice(0, 10));
   const storedText = [text.trim(), ...persistedPhotos].filter(Boolean).join("\n");
   return communityRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
