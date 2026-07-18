@@ -40,7 +40,7 @@ describe("apiRequest authentication contract", () => {
     ).resolves.toEqual({ authorization: "Custom token" });
   });
 
-  it("invalidates the session on 401 and preserves the backend error", async () => {
+  it("preserves a feature 401 without invalidating the session", async () => {
     const onUnauthorized = jest.fn(async () => {});
     setOnUnauthorized(onUnauthorized);
     global.fetch = jest.fn(async () => ({
@@ -54,6 +54,25 @@ describe("apiRequest authentication contract", () => {
     await expect(apiRequest("/api/test")).rejects.toMatchObject({
       code: "TOKEN_EXPIRED",
       message: "Session expired.",
+      requestId: "request-401",
+      status: 401
+    });
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it("invalidates the session when the canonical session check opts in", async () => {
+    const onUnauthorized = jest.fn(async () => {});
+    setOnUnauthorized(onUnauthorized);
+    global.fetch = jest.fn(async () => ({
+      ok: false,
+      status: 401,
+      headers: { get: () => "request-401" },
+      text: async () =>
+        JSON.stringify({ code: "TOKEN_EXPIRED", message: "Session expired." })
+    })) as any;
+
+    await expect(apiRequest("/api/me", { invalidateOn401: true })).rejects.toMatchObject({
+      code: "TOKEN_EXPIRED",
       requestId: "request-401",
       status: 401
     });
