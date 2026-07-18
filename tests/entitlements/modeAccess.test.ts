@@ -277,7 +277,7 @@ describe("entitlement mode access", () => {
   it("keeps free personal users in the grow OS without commercial inventory", () => {
     const normalized: Record<string, boolean> = {};
 
-    applyUniversalCapabilities(normalized);
+    applyUniversalCapabilities(normalized, "free");
     applyPlanCapabilities(normalized, "free", "personal");
 
     expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW]).toBe(true);
@@ -296,15 +296,17 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FORUM_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FORUM_POST]).toBe(false);
   });
 
   it("lets every personal plan create free or paid courses with plan limits", () => {
     const freeCaps: Record<string, boolean> = {};
     const proCaps: Record<string, boolean> = {};
 
-    applyUniversalCapabilities(freeCaps);
+    applyUniversalCapabilities(freeCaps, "free");
     applyPlanCapabilities(freeCaps, "free", "personal");
-    applyUniversalCapabilities(proCaps);
+    applyUniversalCapabilities(proCaps, "pro");
     applyPlanCapabilities(proCaps, "pro", "personal");
 
     for (const caps of [freeCaps, proCaps]) {
@@ -329,7 +331,7 @@ describe("entitlement mode access", () => {
   it("upgrades pro personal users without exposing commercial/facility workspaces", () => {
     const normalized: Record<string, boolean> = {};
 
-    applyUniversalCapabilities(normalized);
+    applyUniversalCapabilities(normalized, "pro");
     applyPlanCapabilities(normalized, "pro", "personal");
 
     expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE]).toBe(true);
@@ -338,6 +340,7 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.AI_ASSISTANT]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.TOOL_NPK]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.TASK_REMINDERS]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FORUM_POST]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.FACILITY_ACCESS]).not.toBe(true);

@@ -318,7 +318,7 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
         COURSES_VIEW: true,
         COURSES_CREATE: true,
         FORUM_VIEW: true,
-        FORUM_POST: true
+        FORUM_POST: isProPreview
       },
       limits: isProPreview ? { ...PLAN_LIMITS.pro } : { ...PLAN_LIMITS.free }
     }

@@ -4,8 +4,8 @@ export const FREE_POLICY = Object.freeze({
   maxTrackedPlants: 1,
   maxPublishedPaidCourses: 1,
   maxLessonsPerCourse: 7,
-  forumPostsPerDay: 3,
-  forumCommentsPerDay: 15,
+  forumPostsPerDay: 0,
+  forumCommentsPerDay: 0,
   uploadStorageBytes: 500 * 1024 * 1024,
   paidAdReductionPercentMinimum: 50,
   aiActions: Object.freeze({
