@@ -67,14 +67,17 @@ export default function CommunityTab() {
       else setLoading(true);
       setFeedback("");
       try {
-        const [postRows, guildRows, notificationRows] = await Promise.all([
+        const [postResult, guildResult, notificationResult] = await Promise.allSettled([
           listForumPosts(),
           listGuilds(),
           listNotifications()
         ]);
-        setPosts(postRows);
-        setGuilds(guildRows);
-        setNotifications(notificationRows);
+        if (postResult.status === "rejected") throw postResult.reason;
+        setPosts(postResult.value);
+        setGuilds(guildResult.status === "fulfilled" ? guildResult.value : []);
+        setNotifications(
+          notificationResult.status === "fulfilled" ? notificationResult.value : []
+        );
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load Forum/Q&A data.");
       } finally {
