@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -16,17 +15,13 @@ import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestV
 import { uploadImage } from "@/api/uploads";
 import { radius } from "@/theme/theme";
 
-function routeValue(value?: string | string[]) {
-  return Array.isArray(value) ? value[0] || "" : value || "";
-}
-
 function HarvestPhotoAnalyzer({
+  growId,
   onAnalysis
 }: {
+  growId: string;
   onAnalysis: (result: TrichomeVisionResult) => void;
 }) {
-  const params = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = routeValue(params.growId);
   const [previews, setPreviews] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -287,7 +282,9 @@ export default function HarvestReadinessToolRoute() {
       toolKey="harvest-readiness"
       title="Harvest Readiness AI"
       subtitle="AI can fill clear, cloudy, and amber from photos. Complete the breeder timeline, hairs, bud structure, aroma trend, and effect goal for a one-week-before through two-weeks-after harvest range."
-      formHeader={<HarvestPhotoAnalyzer onAnalysis={setVision} />}
+      formHeader={({ growId }) => (
+        <HarvestPhotoAnalyzer growId={growId} onAnalysis={setVision} />
+      )}
       fields={[
         {
           key: "flowerDay",
