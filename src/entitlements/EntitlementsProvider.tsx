@@ -183,6 +183,13 @@ export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
   return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
 }
 
+export function shouldBlockEntitlementBootstrap(
+  meStatus: "idle" | "loading" | "ready" | "error",
+  hasResolvedEntitlements: boolean
+) {
+  return (meStatus === "idle" || meStatus === "loading") && !hasResolvedEntitlements;
+}
+
 export function applyFacilityRoleCapabilities(
   normalized: Record<string, boolean>,
   facilityRole: string | null
@@ -465,9 +472,6 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
 
-  // Guard: prevent refetching /api/me for the same token
-  const lastFetchedTokenRef = useRef<string | null>(null);
-
   // Stabilize logout reference to prevent effect re-runs from logout identity changes
   const logoutRef = useRef(logout);
   useEffect(() => {
@@ -504,34 +508,34 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       });
       setPreferredModeState(null);
       lastAppliedRef.current = "NO_TOKEN";
-      lastFetchedTokenRef.current = null;
       return () => {};
     }
 
     // Token exists but /api/me is not yet confirmed: keep bootstrap blocked.
     if (meStatus === "loading" || meStatus === "idle") {
-      setState((s) => ({
-        ...s,
-        ready: false,
-        bootstrapError: null
-      }));
+      // A background /api/me refresh must not erase already-resolved access.
+      // Doing so previously left Profile and Tools permanently loading because
+      // a same-token guard skipped the successful refresh result.
+      setState((s) =>
+        shouldBlockEntitlementBootstrap(meStatus, s.ready)
+          ? { ...s, ready: false, bootstrapError: null }
+          : s
+      );
       return () => {};
     }
 
     if (meStatus === "error") {
-      setState((s) => ({
-        ...s,
-        ready: false,
-        bootstrapError: meError || "Failed to load /api/me."
-      }));
+      setState((s) =>
+        s.ready
+          ? s
+          : {
+              ...s,
+              ready: false,
+              bootstrapError: meError || "Failed to load /api/me."
+            }
+      );
       return () => {};
     }
-
-    // Only apply if we haven't already applied for this token
-    if (lastFetchedTokenRef.current === token) {
-      return () => {};
-    }
-    lastFetchedTokenRef.current = token;
 
     // Read ctx and user from AuthContext (no duplicate fetch)
     const ctx = auth.ctx ?? null;
