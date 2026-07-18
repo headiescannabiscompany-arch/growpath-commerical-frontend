@@ -3,7 +3,7 @@ import { Redirect, Stack, usePathname } from "expo-router";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
 import { useAuth } from "@/auth/AuthContext";
-import { normalizeInterestList } from "@/utils/growInterests";
+import { flattenGrowInterests } from "@/utils/growInterests";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -15,10 +15,15 @@ const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/harvest-estimator"
 ]);
 
-export function canOpenCannabisTool(pathname: string, growInterests: any) {
+export function canOpenCannabisTool(
+  pathname: string,
+  growInterests: any,
+  cannabisVisibility?: string
+) {
   if (!CANNABIS_TOOL_PATHS.has(pathname)) return true;
-  return normalizeInterestList(growInterests?.crops).some(
-    (crop) => crop.toLowerCase() === "cannabis"
+  if (String(cannabisVisibility || "").toLowerCase() === "show") return true;
+  return flattenGrowInterests(growInterests).some(
+    (interest) => String(interest).toLowerCase() === "cannabis"
   );
 }
 
@@ -32,7 +37,13 @@ export default function ToolsLayout() {
   if (matchedTool && !isFeatureNavigable(matchedTool, { allowBetaSurfaces: true })) {
     return <Redirect href="/home/personal/tools" />;
   }
-  if (!canOpenCannabisTool(pathname, auth.user?.growInterests)) {
+  if (
+    !canOpenCannabisTool(
+      pathname,
+      auth.user?.growInterests,
+      auth.user?.contentControls?.cannabisVisibility
+    )
+  ) {
     return <Redirect href="/home/personal/tools" />;
   }
 
