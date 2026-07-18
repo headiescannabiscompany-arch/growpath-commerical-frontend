@@ -121,6 +121,33 @@ export function filterPostsByInterests(
   });
 }
 
+export function matchesTieredGrowInterests(entityTags = [], viewerInterests = {}) {
+  const tags = new Set(
+    normalizeInterestList(entityTags).map(canonicalGrowInterestTag).filter(Boolean)
+  );
+  const tier1 = getTier1Metadata();
+  const selectedTier1 = new Set(
+    normalizeInterestList(viewerInterests?.[tier1.id])
+      .map(canonicalGrowInterestTag)
+      .filter(Boolean)
+  );
+  const entityTier1 = tier1.options.filter((option) => tags.has(option));
+  if (!selectedTier1.size || !entityTier1.some((option) => selectedTier1.has(option))) {
+    return false;
+  }
+
+  return INTEREST_TIERS.filter((tier) => tier.tier > 1).every((tier) => {
+    const entityValues = tier.options.filter((option) => tags.has(option));
+    if (!entityValues.length) return true;
+    const viewerValues = new Set(
+      normalizeInterestList(viewerInterests?.[tier.id])
+        .map(canonicalGrowInterestTag)
+        .filter(Boolean)
+    );
+    return entityValues.some((option) => viewerValues.has(option));
+  });
+}
+
 export function buildEmptyTierSelection() {
   const map = {};
   INTEREST_TIERS.forEach((tier) => {

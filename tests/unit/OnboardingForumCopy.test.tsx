@@ -22,6 +22,10 @@ jest.mock("@/api/users", () => ({
   updateGrowInterests: jest.fn()
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { growInterests: {} }, retryMe: jest.fn() })
+}));
+
 describe("onboarding Forum/Q&A copy", () => {
   beforeEach(() => {
     jest.resetAllMocks();

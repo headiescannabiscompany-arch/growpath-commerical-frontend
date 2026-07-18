@@ -65,7 +65,20 @@ describe("community social API", () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/forum/feed/latest", {
       method: "GET",
-      params: { page: 1 },
+      params: { page: 1, tier1: undefined },
+      invalidateOn401: false
+    });
+  });
+
+  it("sends Tier 1 crops to the server as the forum audience boundary", async () => {
+    const { listForumPosts } = require("@/api/communitySocial");
+    mockApiRequest.mockResolvedValueOnce({ posts: [] });
+
+    await listForumPosts(2, ["Cannabis", "Vegetables"]);
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/forum/feed/latest", {
+      method: "GET",
+      params: { page: 2, tier1: "Cannabis,Vegetables" },
       invalidateOn401: false
     });
   });

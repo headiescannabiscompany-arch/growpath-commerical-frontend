@@ -79,9 +79,14 @@ export default function ForumNewPostRoute() {
   const diagnosisId = valueOf(params.diagnosisId);
   const toolRunId = valueOf(params.toolRunId);
   const purpose = valueOf(params.purpose) || "discussion";
+  const profileInterests =
+    auth.user?.growInterests || (buildEmptyTierSelection() as Record<string, string[]>);
   const initialInterests: Record<string, string[]> = sharedTags.length
     ? (groupTagsByTier(sharedTags) as Record<string, string[]>)
-    : auth.user?.growInterests || (buildEmptyTierSelection() as Record<string, string[]>);
+    : {
+        ...(buildEmptyTierSelection() as Record<string, string[]>),
+        crops: [...(profileInterests.crops || [])]
+      };
   const interestOptionsOverride = Object.fromEntries(
     INTEREST_TIERS.map((tier) => [
       tier.id,
@@ -138,6 +143,12 @@ export default function ForumNewPostRoute() {
     const nextTitle = title.trim();
     const nextBody = body.trim();
     if (!nextTitle || !nextBody) return;
+    if (!interestSelections.crops?.length) {
+      setFeedback(
+        "Select at least one Tier 1 crop. Add missing choices under Profile → Grow Interests."
+      );
+      return;
+    }
 
     setSubmitting(true);
     setFeedback("");
@@ -189,6 +200,7 @@ export default function ForumNewPostRoute() {
     title,
     workspaceContext,
     growId,
+    interestSelections.crops?.length,
     plantId,
     diagnosisId,
     toolRunId

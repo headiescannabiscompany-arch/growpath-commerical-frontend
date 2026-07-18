@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,10 +13,15 @@ import {
 import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
-import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
+import {
+  flattenGrowInterests,
+  matchesTieredGrowInterests,
+  normalizeInterestList
+} from "@/utils/growInterests";
 
 function titleOf(post: SocialPost) {
   return String(post.title || post.text || post.content || post.body || "Forum post");
@@ -54,13 +58,6 @@ function tagsOf(post: SocialPost) {
   ).slice(0, 6);
 }
 
-function matchesInterests(post: SocialPost, interests: string[]) {
-  const tags = tagsOf(post);
-  if (!tags.length || !interests.length) return true;
-  const selected = new Set(interests.map((item) => item.toLowerCase()));
-  return tags.some((tag) => selected.has(String(tag).toLowerCase()));
-}
-
 function photoUri(value: any) {
   if (typeof value === "string") return value;
   if (!value || typeof value !== "object") return "";
@@ -93,23 +90,11 @@ function photosOf(post: SocialPost): string[] {
 }
 
 function ForumPostImage({ photo, index }: { photo: string; index: number }) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return (
-      <View style={[styles.photoThumb, styles.photoFallback]}>
-        <Text style={styles.emptyImageText}>Image failed to load</Text>
-      </View>
-    );
-  }
-
   return (
-    <Image
-      source={{ uri: photo }}
+    <ExpandableForumImage
+      uri={photo}
       style={styles.photoThumb}
-      resizeMode="cover"
-      accessibilityLabel={`Forum post photo ${index + 1}`}
-      onError={() => setFailed(true)}
+      label={`forum post photo ${index + 1}`}
     />
   );
 }
@@ -125,16 +110,14 @@ export default function ForumRoute() {
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [feedScope, setFeedScope] = useState<"for-you" | "all">("for-you");
-  const userInterests = useMemo(
-    () => flattenGrowInterests(auth.user?.growInterests || {}),
-    [auth.user?.growInterests]
-  );
   const visiblePosts = useMemo(
     () =>
       feedScope === "all"
         ? posts
-        : posts.filter((post) => matchesInterests(post, userInterests)),
-    [feedScope, posts, userInterests]
+        : posts.filter((post) =>
+            matchesTieredGrowInterests(tagsOf(post), auth.user?.growInterests || {})
+          ),
+    [auth.user?.growInterests, feedScope, posts]
   );
 
   const load = useCallback(
@@ -147,7 +130,10 @@ export default function ForumRoute() {
       else setLoading(true);
       setFeedback("");
       try {
-        const postRows = await listForumPosts();
+        const postRows = await listForumPosts(
+          1,
+          normalizeInterestList(auth.user?.growInterests?.crops)
+        );
         setPosts(postRows);
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load forum posts.");
@@ -157,7 +143,7 @@ export default function ForumRoute() {
         setRefreshing(false);
       }
     },
-    [canView]
+    [auth.user?.growInterests?.crops, canView]
   );
 
   useEffect(() => {

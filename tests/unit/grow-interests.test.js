@@ -4,6 +4,7 @@ import {
   ensureTier1Selection,
   flattenGrowInterests,
   filterPostsByInterests,
+  matchesTieredGrowInterests,
   normalizePendingInterests
 } from "../../src/utils/growInterests.js";
 
@@ -58,5 +59,19 @@ describe("growInterests utils", () => {
 
     const noFilters = filterPostsByInterests(posts, new Set(), new Set());
     expect(noFilters.length).toBe(posts.length);
+  });
+
+  it("requires Tier 1 and respects method-specific public content", () => {
+    const viewer = {
+      crops: ["Cannabis"],
+      methods: ["Living Soil / No-Till"]
+    };
+
+    expect(matchesTieredGrowInterests(["Cannabis"], viewer)).toBe(true);
+    expect(
+      matchesTieredGrowInterests(["Cannabis", "Living Soil / No-Till"], viewer)
+    ).toBe(true);
+    expect(matchesTieredGrowInterests(["Cannabis", "Hydroponics"], viewer)).toBe(false);
+    expect(matchesTieredGrowInterests(["Vegetables"], viewer)).toBe(false);
   });
 });
