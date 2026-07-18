@@ -198,7 +198,7 @@ export default function CommunityTab() {
               return (
                 <Link
                   key={id || postTitle(post)}
-                  href={`/forum/post/${encodeURIComponent(id)}`}
+                  href={{ pathname: "/forum/post", params: { id } }}
                   asChild
                 >
                   <Pressable style={styles.row}>

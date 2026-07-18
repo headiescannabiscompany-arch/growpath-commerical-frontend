@@ -546,7 +546,7 @@ describe("sourceObjectHref", () => {
         linkedForumThreadId: "thread-linked-1",
         workspaceType: "personal"
       })
-    ).toBe("/forum/post/thread-linked-1");
+    ).toBe("/forum/post?id=thread-linked-1");
   });
 
   it("infers source type from linked fields when sourceType is missing", () => {
@@ -612,7 +612,7 @@ describe("sourceObjectHref", () => {
         linkedForumThreadId: "thread-1",
         workspaceType: "personal"
       })
-    ).toBe("/forum/post/thread-1");
+    ).toBe("/forum/post?id=thread-1");
 
     expect(
       sourceObjectHref({

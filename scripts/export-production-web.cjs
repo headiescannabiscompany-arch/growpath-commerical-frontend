@@ -87,6 +87,8 @@ const fallbackRoutes = [
   "offers",
   "feed",
   "forum",
+  "forum/new-post",
+  "forum/post",
   "communities",
   "profile",
   "verify-email",
@@ -295,7 +297,7 @@ const routeSeo = new Map(
         title: "Course Platform for Grow Creators | GrowPathAI",
         heading: "Publish courses on every plan",
         description:
-          "Create free or paid grow courses on any GrowPathAI plan and apply for a 30-day paid Creator-plan trial.",
+          "Create free or paid grow courses on any GrowPathAI plan with higher limits and advanced tools on paid plans.",
         topics: ["Course publishing", "Live sessions", "Creator storefronts"]
       }
     ],
@@ -315,8 +317,8 @@ const routeSeo = new Map(
         title: "Contact GrowPathAI",
         heading: "Reach the GrowPathAI team",
         description:
-          "Contact GrowPathAI for account support, creator applications, billing, facility onboarding, partnerships, or bug reports.",
-        topics: ["support@growpathai.com", "Creator applications", "Facility onboarding"]
+          "Contact GrowPathAI for account support, billing, facility onboarding, partnerships, or bug reports.",
+        topics: ["support@growpathai.com", "Account support", "Facility onboarding"]
       }
     ],
     [

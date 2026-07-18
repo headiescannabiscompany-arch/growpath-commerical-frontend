@@ -343,7 +343,7 @@ export default function ForumRoute() {
         return (
           <Link
             key={id || titleOf(post)}
-            href={`/forum/post/${encodeURIComponent(id)}`}
+            href={{ pathname: "/forum/post", params: { id } }}
             asChild
           >
             <Pressable

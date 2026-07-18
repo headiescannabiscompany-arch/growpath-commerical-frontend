@@ -457,7 +457,7 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Open Forum Q&A for NPK recipe workshop Q&A"));
 
-    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
+    expect(mockPush).toHaveBeenCalledWith("/forum/post?id=thread-qna");
   });
 
   it("routes product and course campaigns through storefront slug aliases when present", async () => {

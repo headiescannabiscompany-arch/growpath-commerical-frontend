@@ -269,7 +269,7 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /forum/post/thread-product")
+      screen.getByLabelText("Notification link /forum/post?id=thread-product")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/grows/run-1")

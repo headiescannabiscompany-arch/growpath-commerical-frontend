@@ -167,7 +167,7 @@ export default function ForumNewPostRoute() {
       router.replace(
         createdId
           ? {
-              pathname: "/forum/post/[id]",
+              pathname: "/forum/post",
               params: { id: createdId, ...(growId ? { growId } : {}) }
             }
           : "/forum"

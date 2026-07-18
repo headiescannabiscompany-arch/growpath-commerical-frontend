@@ -117,7 +117,7 @@ function publicProductUrl(slug: string, product: any) {
 
 function forumThreadHref(thread: any) {
   const id = String(thread?.id || thread?._id || thread?.threadId || "");
-  return id ? `/forum/post/${encodeURIComponent(id)}` : "/forum";
+  return id ? `/forum/post?id=${encodeURIComponent(id)}` : "/forum";
 }
 
 function publicLinks(storefront: any) {

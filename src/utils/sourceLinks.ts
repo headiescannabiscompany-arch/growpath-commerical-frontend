@@ -416,7 +416,7 @@ export function sourceObjectHref(source: SourceLike) {
       toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
     }`;
   }
-  if (sourceType === "forum") return forumId ? `/forum/post/${forumId}` : "/forum";
+  if (sourceType === "forum") return forumId ? `/forum/post?id=${forumId}` : "/forum";
 
   return "";
 }

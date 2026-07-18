@@ -107,7 +107,7 @@ export default function LiveSessionScreen({ route }) {
         ? `/courses?courseId=${encodeURIComponent(String(relatedCourseId))}`
         : "";
   const forumHref = forumThreadId
-    ? `/forum/post/${encodeURIComponent(String(forumThreadId))}`
+    ? `/forum/post?id=${encodeURIComponent(String(forumThreadId))}`
     : "";
   const campaignBaseHref =
     campaignWorkspace === "commercial"
