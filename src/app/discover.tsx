@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -65,6 +65,7 @@ function courseRows(payload: any) {
 }
 
 export default function DiscoverDirectory() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -277,7 +278,17 @@ export default function DiscoverDirectory() {
                 <Text style={styles.sectionTitle}>{section.title}</Text>
                 <Text style={styles.ranking}>{section.ranking}</Text>
               </View>
-              <Link href={section.browseHref as any}>View all {section.title}</Link>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`View all ${section.title}`}
+                onPress={() => router.push(section.browseHref as any)}
+                style={({ pressed }) => [
+                  styles.browseButton,
+                  pressed && styles.buttonPressed
+                ]}
+              >
+                <Text style={styles.browseButtonText}>View all {section.title}</Text>
+              </Pressable>
             </View>
             {section.results.length ? (
               <ScrollView
@@ -286,25 +297,25 @@ export default function DiscoverDirectory() {
                 contentContainerStyle={styles.rail}
               >
                 {section.results.slice(0, 12).map((result) => (
-                  <Link
+                  <Pressable
                     key={`${section.key}-${result.id}`}
-                    href={result.href as any}
-                    asChild
+                    accessibilityRole="button"
+                    accessibilityLabel={`Open ${result.title}`}
+                    onPress={() => router.push(result.href as any)}
+                    style={({ pressed }) => [
+                      styles.resultCard,
+                      pressed && styles.buttonPressed
+                    ]}
                   >
-                    <Pressable
-                      accessibilityLabel={`Open ${result.title}`}
-                      style={styles.resultCard}
-                    >
-                      <Text style={styles.resultTitle} numberOfLines={2}>
-                        {result.title}
+                    <Text style={styles.resultTitle} numberOfLines={2}>
+                      {result.title}
+                    </Text>
+                    {result.summary ? (
+                      <Text style={styles.resultSummary} numberOfLines={3}>
+                        {result.summary}
                       </Text>
-                      {result.summary ? (
-                        <Text style={styles.resultSummary} numberOfLines={3}>
-                          {result.summary}
-                        </Text>
-                      ) : null}
-                    </Pressable>
-                  </Link>
+                    ) : null}
+                  </Pressable>
                 ))}
               </ScrollView>
             ) : (
@@ -353,6 +364,17 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
   ranking: { color: "#64748B", fontSize: 12, marginTop: 2 },
+  browseButton: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#15803D",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginLeft: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  browseButtonText: { color: "#166534", fontSize: 13, fontWeight: "800" },
+  buttonPressed: { opacity: 0.7 },
   rail: { gap: 12, paddingBottom: 6, paddingRight: 16 },
   resultCard: {
     backgroundColor: "#FFFFFF",
