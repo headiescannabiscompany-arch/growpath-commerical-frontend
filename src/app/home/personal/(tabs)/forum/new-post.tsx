@@ -284,13 +284,15 @@ export default function ForumNewPostRoute() {
 
         <View style={styles.interestCard}>
           <GrowInterestPicker
-            title="Grow interests"
-            helperText="The composer starts from this grow or your profile interests, so unrelated crop categories stay out of the post."
+            title="Post audience — Grow Interests"
+            helperText="Tier 1 is required. Choose from the interests saved in your profile; lower tiers such as Hydroponics or Living Soil narrow who sees this post."
             value={interestSelections}
             onChange={setInterestSelections}
             enabledTierIds={INTEREST_TIERS.map((tier) => tier.id)}
             tierOptionsOverride={interestOptionsOverride}
-            defaultExpanded={false}
+            collapsible={false}
+            showEmptyTiers
+            emptyTierText="No choices saved. Add this tier under Profile > Grow Interests, then return to your post."
           />
           {selectedInterests.length ? (
             <Text style={styles.photoCount}>
