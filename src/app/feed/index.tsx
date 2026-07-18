@@ -247,7 +247,7 @@ function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedForumThreadId) {
     return {
       label: "Open Forum Q&A",
-      href: `/forum/post/${encodeURIComponent(String(post.linkedForumThreadId))}`
+      href: `/forum/post?id=${encodeURIComponent(String(post.linkedForumThreadId))}`
     };
   }
   const externalLink = post.externalLinks?.find((link) => String(link?.url || "").trim());

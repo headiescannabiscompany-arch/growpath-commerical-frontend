@@ -181,7 +181,7 @@ describe("FacilityTaskDetail", () => {
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-facility");
+    expect(mockPush).toHaveBeenCalledWith("/forum/post?id=thread-facility");
   });
 
   it("opens course-assignment-backed facility task sources in the SOP workflow", async () => {

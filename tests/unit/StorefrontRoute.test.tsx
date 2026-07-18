@@ -281,10 +281,10 @@ describe("Storefront route", () => {
     ).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("link-/forum/post/thread-course")).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-course")).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
     expect(screen.getByText("Open Live")).toBeTruthy();
-    expect(screen.getAllByTestId("link-/forum/post/thread-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("link-/forum/post?id=thread-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();

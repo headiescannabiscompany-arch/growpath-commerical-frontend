@@ -18,12 +18,17 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
-    Link: ({ children, href }: { children: React.ReactNode; href: string }) =>
-      React.createElement(
+    Link: ({ children, href }: { children: React.ReactNode; href: any }) => {
+      const value =
+        typeof href === "string"
+          ? href
+          : `${href.pathname}?${new URLSearchParams(href.params || {}).toString()}`;
+      return React.createElement(
         Text,
-        { testID: `link-${href}`, accessibilityLabel: `link-${href}` },
+        { testID: `link-${value}`, accessibilityLabel: `link-${value}` },
         children
-      ),
+      );
+    },
     useRouter: () => ({
       back: jest.fn(),
       replace: mockReplace
@@ -179,7 +184,7 @@ describe("Forum and feed separation copy", () => {
       })
     );
     expect(mockReplace).toHaveBeenCalledWith({
-      pathname: "/forum/post/[id]",
+      pathname: "/forum/post",
       params: { id: "thread-new" }
     });
   });
@@ -247,7 +252,7 @@ describe("Forum and feed separation copy", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByTestId("link-/forum/post/thread-grow-help")
+        screen.getByTestId("link-/forum/post?id=thread-grow-help")
       ).toBeTruthy()
     );
     expect(screen.getByText("Cannabis")).toBeTruthy();
@@ -282,7 +287,7 @@ describe("Forum and feed separation copy", () => {
     const screen = render(<CommunityTab />);
 
     await waitFor(() =>
-      expect(screen.getByTestId("link-/forum/post/thread-community-help")).toBeTruthy()
+      expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy()
     );
   });
 

@@ -951,7 +951,7 @@ export default function Storefront({
                     />
                     {course.forumThreadId ? (
                       <ObjectActionLink
-                        href={`/forum/post/${encodeURIComponent(String(course.forumThreadId))}`}
+                        href={`/forum/post?id=${encodeURIComponent(String(course.forumThreadId))}`}
                         label="Open Q&A"
                       />
                     ) : null}
@@ -1218,7 +1218,7 @@ export default function Storefront({
                     />
                     {live.forumThreadId ? (
                       <ObjectActionLink
-                        href={`/forum/post/${encodeURIComponent(String(live.forumThreadId))}`}
+                        href={`/forum/post?id=${encodeURIComponent(String(live.forumThreadId))}`}
                         label="Open Q&A"
                       />
                     ) : null}
@@ -1291,7 +1291,7 @@ export default function Storefront({
                         ) : null}
                         {campaign.linkedForumThreadId ? (
                           <ObjectActionLink
-                            href={`/forum/post/${encodeURIComponent(String(campaign.linkedForumThreadId))}`}
+                            href={`/forum/post?id=${encodeURIComponent(String(campaign.linkedForumThreadId))}`}
                             label="Open Q&A"
                           />
                         ) : null}

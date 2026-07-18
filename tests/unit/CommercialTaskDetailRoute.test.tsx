@@ -206,7 +206,7 @@ describe("CommercialTaskDetailRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-product");
+    expect(mockPush).toHaveBeenCalledWith("/forum/post?id=thread-product");
   });
 
   it("opens lesson-backed task sources in the commercial course workflow", async () => {

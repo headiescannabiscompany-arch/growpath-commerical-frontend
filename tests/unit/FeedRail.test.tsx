@@ -92,7 +92,7 @@ describe("FeedRail", () => {
       expect.objectContaining({
         eventType: "ad_click",
         objectType: "feed_ad",
-        targetUrl: "/forum/post/thread-qna",
+        targetUrl: "/forum/post?id=thread-qna",
         source: "feed_banner",
         metadata: expect.objectContaining({
           title: "NPK workshop Q&A",

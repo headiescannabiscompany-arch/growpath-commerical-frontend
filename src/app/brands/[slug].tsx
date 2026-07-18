@@ -380,7 +380,7 @@ export default function PublicBrandProfileRoute() {
               {forumThreads.slice(0, 3).map((thread) => {
                 const threadId = publicItemId(thread);
                 const threadHref = threadId
-                  ? `/forum/post/${encodeURIComponent(threadId)}`
+                  ? `/forum/post?id=${encodeURIComponent(threadId)}`
                   : "/forum";
                 return (
                   <View

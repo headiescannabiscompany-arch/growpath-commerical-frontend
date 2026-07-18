@@ -557,7 +557,7 @@ export default function PublicStorefrontCourseRoute() {
                     <Link
                       href={
                         threadId
-                          ? (`/forum/post/${encodeURIComponent(threadId)}` as any)
+                          ? (`/forum/post?id=${encodeURIComponent(threadId)}` as any)
                           : ("/forum" as any)
                       }
                       asChild

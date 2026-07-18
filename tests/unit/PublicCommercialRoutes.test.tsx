@@ -218,7 +218,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/feed");
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/community");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     expect(screen.getByText("Website")).toBeTruthy();
@@ -296,7 +296,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     await waitFor(() =>
       expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
@@ -388,7 +388,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
@@ -493,7 +493,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Course Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Course Directory")).toBeTruthy();
