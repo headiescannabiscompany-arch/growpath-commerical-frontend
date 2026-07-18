@@ -38,12 +38,10 @@ describe("apiMe contract normalization", () => {
       expect.any(String),
       expect.objectContaining({
         cache: "no-store",
-        invalidateOn401: true,
-        headers: expect.objectContaining({
-          "Cache-Control": expect.stringContaining("no-store")
-        })
+        invalidateOn401: true
       })
     );
+    expect(mockApiRequest.mock.calls[0]?.[1]).not.toHaveProperty("headers");
   });
 
   it("accepts enveloped shape { success, data: { user, ctx } }", async () => {
