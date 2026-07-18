@@ -137,6 +137,7 @@ describe("commercial feed API", () => {
     });
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
+      invalidateOn401: false,
       params: { q: "soil", limit: 3 }
     });
     expect(result.nextCursor).toBe("cursor-2");
