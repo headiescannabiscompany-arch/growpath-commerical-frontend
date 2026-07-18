@@ -154,7 +154,7 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ai_diagnosis"].capabilityKey).toBe("DIAGNOSE_AI");
     expect(byKey["tools.ai_assistant"].capabilityKey).toBe("AI_ASSISTANT");
     expect(byKey["tools.feeding_schedule"].capabilityKey).toBe("FEEDING_SCHEDULE");
-    expect(byKey["tools.harvest_estimator"].capabilityKey).toBe("TOOL_HARVEST_ESTIMATOR");
+    expect(byKey["tools.harvest_estimator"]).toBeUndefined();
     expect(byKey["tools.timeline_planner"].capabilityKey).toBe("TOOL_TIMELINE_PLANNER");
     expect(byKey["tools.pdf_export"].capabilityKey).toBe("TOOL_PDF_EXPORT");
     expect(byKey["tools.pheno_matrix"].capabilityKey).toBe("TOOL_PHENO_MATRIX");

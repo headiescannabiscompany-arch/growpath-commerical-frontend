@@ -1431,9 +1431,20 @@ describe("Tools Router (tools.js)", () => {
       ])
     );
     expect(harvest.body.outputs.estimatedWindow).toMatchObject({
+      startDay: 61,
       targetDay: 63,
+      endDay: 77,
       confidence: expect.any(String)
     });
+    expect(harvest.body.outputs.breederTimelineInterpretation).toMatch(/day 77/);
+    expect(harvest.body.outputs.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/Cloudy-dominant/),
+        expect.stringMatching(/structurally finished/),
+        expect.stringMatching(/Dying and receding hairs/),
+        expect.stringMatching(/breeder day 63/i)
+      ])
+    );
   });
 
   test("runs inventory, crop steering project, and pheno hunt tools", async () => {

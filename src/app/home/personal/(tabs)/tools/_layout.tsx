@@ -11,8 +11,7 @@ const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/pheno-matrix",
   "/home/personal/tools/dry-cure-guard",
   "/home/personal/tools/clone-rooting",
-  "/home/personal/tools/harvest-readiness",
-  "/home/personal/tools/harvest-estimator"
+  "/home/personal/tools/harvest-readiness"
 ]);
 
 export function canOpenCannabisTool(
@@ -74,7 +73,10 @@ export default function ToolsLayout() {
         name="feeding-schedule"
         options={{ title: "Feeding Schedule Planner" }}
       />
-      <Stack.Screen name="harvest-estimator" options={{ title: "Harvest Estimator" }} />
+      <Stack.Screen
+        name="harvest-estimator"
+        options={{ title: "Harvest Readiness AI" }}
+      />
       <Stack.Screen name="timeline-planner" options={{ title: "Timeline Planner" }} />
       <Stack.Screen name="pdf-export" options={{ title: "PDF / Export" }} />
       <Stack.Screen name="saved-runs" options={{ title: "Saved Tool Runs" }} />

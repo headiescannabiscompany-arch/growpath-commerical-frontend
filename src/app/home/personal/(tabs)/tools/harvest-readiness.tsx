@@ -281,14 +281,13 @@ function harvestReviewRecord(
 export default function HarvestReadinessToolRoute() {
   const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
   return (
-    <View style={{ flex: 1 }}>
-      <HarvestPhotoAnalyzer onAnalysis={setVision} />
-      <BackendCalculatorToolScreen
+    <BackendCalculatorToolScreen
         key={vision ? `${vision.clear}-${vision.cloudy}-${vision.amber}` : "manual"}
         tool="harvest-readiness"
         toolKey="harvest-readiness"
         title="Harvest Readiness AI"
-        subtitle="Estimate harvest readiness from flower day, breeder timing, trichome mix, aroma, and user goals."
+        subtitle="AI can fill clear, cloudy, and amber from photos. Complete the breeder timeline, hairs, bud structure, aroma trend, and effect goal for a one-week-before through two-weeks-after harvest range."
+        formHeader={<HarvestPhotoAnalyzer onAnalysis={setVision} />}
         fields={[
           {
             key: "flowerDay",
@@ -298,7 +297,7 @@ export default function HarvestReadinessToolRoute() {
           },
           {
             key: "breederFlowerTime",
-            label: "Breeder flower time",
+            label: "Breeder timeline day (for example 65)",
             defaultValue: "63",
             keyboardType: "numeric"
           },
@@ -320,10 +319,14 @@ export default function HarvestReadinessToolRoute() {
             defaultValue: vision ? String(Math.round(vision.clear * 100)) : "10",
             keyboardType: "numeric"
           },
-          { key: "pistilStatus", label: "Pistil / hair status", defaultValue: "mixed" },
+          {
+            key: "pistilStatus",
+            label: "Hair / pistil status (fresh, dying, dark, receded)",
+            defaultValue: "mixed"
+          },
           {
             key: "budSwellStatus",
-            label: "Bud / calyx swell",
+            label: "Bud structure (still developing or fully finished)",
             defaultValue: "mostly_swollen"
           },
           {
@@ -336,7 +339,11 @@ export default function HarvestReadinessToolRoute() {
             label: "Harvest batch ID (optional)",
             defaultValue: ""
           },
-          { key: "aromaIntensity", label: "Aroma intensity", defaultValue: "building" },
+          {
+            key: "aromaIntensity",
+            label: "Aroma trend (building, peak, or dropping)",
+            defaultValue: "building"
+          },
           { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
         ]}
         buildPayload={(values, { growId, plantContext }) => ({
@@ -361,8 +368,23 @@ export default function HarvestReadinessToolRoute() {
           },
           {
             key: "swell",
-            label: "Bud swell",
+            label: "Bud structure",
             value: outputs.wholePlantMaturity?.budSwellStatus
+          },
+          {
+            key: "breeder-reference",
+            label: "Breeder timeline",
+            value: outputs.breederTimelineInterpretation
+          },
+          {
+            key: "trichome-advice",
+            label: "Trichome advice",
+            value: outputs.trichomeInterpretation
+          },
+          {
+            key: "aroma-advice",
+            label: "Smell / flavor",
+            value: outputs.aromaFlavorInterpretation
           }
         ]}
         buildNotices={(outputs) =>
@@ -441,14 +463,11 @@ export default function HarvestReadinessToolRoute() {
           }
         ]}
       />
-    </View>
   );
 }
 
 const photoStyles = StyleSheet.create({
   card: {
-    margin: 16,
-    marginBottom: 0,
     padding: 14,
     borderWidth: 1,
     borderColor: "#D1FAE5",
