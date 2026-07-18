@@ -230,14 +230,18 @@ export function applyFacilityRoleCapabilities(
   }
 }
 
-export function applyUniversalCapabilities(normalized: Record<string, boolean>) {
+export function applyUniversalCapabilities(
+  normalized: Record<string, boolean>,
+  plan: string | null = null
+) {
   normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
   normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
   normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
   normalized[CAPABILITY_KEYS.PUBLISH_COURSES] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
-  normalized[CAPABILITY_KEYS.FORUM_POST] = true;
+  normalized[CAPABILITY_KEYS.FORUM_POST] =
+    String(plan || "free").toLowerCase() !== "free";
 }
 
 export function applyDefaultCourseLimits(
@@ -427,7 +431,7 @@ function applyServerCtx(
     }
   }
   warnUnknownCapsOnce(unknownKeys);
-  applyUniversalCapabilities(normalized);
+  applyUniversalCapabilities(normalized, plan);
   applyPlanCapabilities(normalized, plan, mode);
   if (shouldApplyFacilityRoleCapabilities(mode, plan)) {
     applyFacilityRoleCapabilities(normalized, facilityRole);
@@ -494,7 +498,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
           [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
           [CAPABILITY_KEYS.PUBLISH_COURSES]: true,
           [CAPABILITY_KEYS.FORUM_VIEW]: true,
-          [CAPABILITY_KEYS.FORUM_POST]: true
+          [CAPABILITY_KEYS.FORUM_POST]: false
         },
         limits: applyDefaultCourseLimits({}, "free")
       });
