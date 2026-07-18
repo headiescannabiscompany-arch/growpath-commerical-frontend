@@ -290,6 +290,10 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() =>
       expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy()
     );
+    expect(screen.getByLabelText("Public Storefronts")).toBeTruthy();
+    expect(screen.getByLabelText("Chronological Feed")).toBeTruthy();
+    expect(screen.getByLabelText("Marketplace & Offers")).toBeTruthy();
+    expect(screen.getByLabelText("Browse Discovery Directory")).toBeTruthy();
   });
 
   it("uses forum group wording for personal membership fallbacks", async () => {

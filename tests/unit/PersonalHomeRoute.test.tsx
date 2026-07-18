@@ -163,6 +163,9 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Run Tool")).toBeTruthy();
     expect(screen.getByText("Diagnose")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Discover Storefronts")).toBeTruthy();
+    expect(screen.getByText("Commercial Feed")).toBeTruthy();
+    expect(screen.getByText("Discovery Directory")).toBeTruthy();
     expect(screen.queryByText("Community")).toBeNull();
   });
 });
