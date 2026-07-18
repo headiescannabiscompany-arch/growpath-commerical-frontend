@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import ReportBugButton from "@/components/ReportBugButton";
 
 export default function ExpandableForumImage({
   uri,
@@ -52,6 +53,9 @@ export default function ExpandableForumImage({
             <Text style={styles.closeText}>Close</Text>
           </Pressable>
           <Image source={{ uri }} style={styles.fullImage} resizeMode="contain" />
+          <View style={styles.reportBug}>
+            <ReportBugButton location={`Expanded forum image: ${label}`} />
+          </View>
         </View>
       </Modal>
     </>
@@ -75,6 +79,7 @@ const styles = StyleSheet.create({
     zIndex: 2
   },
   closeText: { color: "#0F172A", fontWeight: "900" },
+  reportBug: { position: "absolute", right: 16, bottom: 24, zIndex: 3 },
   fallback: { alignItems: "center", justifyContent: "center", padding: 12 },
   fallbackText: { color: "#64748B", fontWeight: "700" }
 });

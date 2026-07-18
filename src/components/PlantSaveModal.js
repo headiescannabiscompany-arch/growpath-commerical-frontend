@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { colors, spacing, radius } from "../theme/theme";
+import ReportBugButton from "./ReportBugButton";
 
 export default function PlantSaveModal({ visible, plantName = "Plant", onConfirm }) {
   return (
@@ -20,6 +21,7 @@ export default function PlantSaveModal({ visible, plantName = "Plant", onConfirm
           <TouchableOpacity style={styles.button} onPress={onConfirm}>
             <Text style={styles.buttonText}>Back to grow</Text>
           </TouchableOpacity>
+          <ReportBugButton location="Plant saved popup" />
         </View>
       </View>
     </Modal>

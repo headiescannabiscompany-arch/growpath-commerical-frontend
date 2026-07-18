@@ -17,6 +17,7 @@ import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import { useAuth } from "@/auth/AuthContext";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ReportBugButton from "@/components/ReportBugButton";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { INTEREST_TIERS } from "@/config/interests";
 import { LockedScreen } from "@/entitlements/LockedScreen";
@@ -1061,6 +1062,7 @@ export default function NewGrowScreen() {
                   </Text>
                 </Pressable>
               ))}
+              <ReportBugButton location="Grow created next-step popup" />
             </View>
           </View>
         </Modal>

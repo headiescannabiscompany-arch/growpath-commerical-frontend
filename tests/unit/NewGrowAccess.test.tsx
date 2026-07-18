@@ -18,6 +18,7 @@ jest.mock("expo-router", () => ({
     push: mockPush
   }),
   useLocalSearchParams: () => ({}),
+  usePathname: () => "/home/personal/grows/new",
   Link: ({ children }: any) => children
 }));
 
