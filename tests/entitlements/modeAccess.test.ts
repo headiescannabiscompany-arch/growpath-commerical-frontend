@@ -16,10 +16,18 @@ import {
   resolveEntitlementsMode,
   resolveRequestedPlan,
   resolveWorkspaceMode,
+  shouldBlockEntitlementBootstrap,
   shouldApplyFacilityRoleCapabilities
 } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
+  it("keeps resolved entitlements available during same-session refreshes", () => {
+    expect(shouldBlockEntitlementBootstrap("loading", false)).toBe(true);
+    expect(shouldBlockEntitlementBootstrap("loading", true)).toBe(false);
+    expect(shouldBlockEntitlementBootstrap("idle", true)).toBe(false);
+    expect(shouldBlockEntitlementBootstrap("ready", false)).toBe(false);
+  });
+
   it("treats inactive paid signup intent as free effective access", () => {
     expect(getEffectivePlan("pro", "inactive")).toBe("free");
     expect(getEffectivePlan("commercial", "inactive")).toBe("free");
