@@ -16,7 +16,6 @@ import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification, updateContentControls } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
-import ReportBugButton from "@/components/ReportBugButton";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
 
@@ -410,9 +409,6 @@ export default function ProfileScreen() {
           Personal is for your grow records and Forum/Q&A. Commercial and Facility
           workspaces keep storefront outreach and operational rooms separate.
         </Text>
-        <View style={styles.actionGrid}>
-          <ReportBugButton location="Personal profile" />
-        </View>
       </View>
 
       <View style={styles.card}>

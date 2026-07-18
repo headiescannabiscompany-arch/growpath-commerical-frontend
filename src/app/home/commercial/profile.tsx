@@ -7,7 +7,6 @@ import { useAuth } from "@/auth/AuthContext";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import ReportBugButton from "@/components/ReportBugButton";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
@@ -344,7 +343,6 @@ export default function CommercialProfileRoute() {
         <View style={styles.actions}>
           <ActionLink href="/account/mode" label="Switch Workspace" />
           <ActionLink href="/profile" label="Open Account Profile" />
-          <ReportBugButton location="Commercial profile" />
         </View>
       </AppCard>
 
