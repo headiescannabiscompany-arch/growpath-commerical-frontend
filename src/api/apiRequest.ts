@@ -236,7 +236,10 @@ export async function apiRequest<T = any>(
       if (!res.ok) {
         const data = await parseResponse(res, opts.responseType ?? "auto");
         const requestId = res.headers?.get?.("x-request-id") || null;
-        if (res.status === 401 && opts.invalidateOn401 !== false) {
+        // A feature endpoint can return 401 because that feature is unavailable or
+        // its route is misconfigured. Only callers performing a canonical session
+        // check may invalidate the entire login.
+        if (res.status === 401 && opts.invalidateOn401 === true) {
           try {
             if (unauthorizedHandler) await unauthorizedHandler();
           } catch {

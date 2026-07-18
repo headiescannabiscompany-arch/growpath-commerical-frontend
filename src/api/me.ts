@@ -80,6 +80,7 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
         timeoutMs: 10000,
         retries: 1,
         retryDelay: 500,
+        invalidateOn401: true,
         ...options
       });
       const typed = normalizeMeResponse(result);

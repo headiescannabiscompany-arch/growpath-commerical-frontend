@@ -424,7 +424,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Wire global 401 invalidation: any 401 from any endpoint (except login/signup) triggers hardLogout
+  // Wire canonical session invalidation. apiMe opts in; feature endpoints do not
+  // get to erase authentication when their own authorization contract fails.
   useEffect(() => {
     setOnUnauthorized(() => {
       void hardLogout();
