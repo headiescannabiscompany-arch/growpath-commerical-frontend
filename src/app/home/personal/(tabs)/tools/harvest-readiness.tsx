@@ -27,8 +27,8 @@ function HarvestPhotoAnalyzer({
 }) {
   const params = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = routeValue(params.growId);
-  const [preview, setPreview] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -42,18 +42,27 @@ function HarvestPhotoAnalyzer({
     }
     const picked = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
       allowsEditing: false,
       quality: 0.9
     });
-    if (picked.canceled || !picked.assets?.[0]?.uri) return;
-    const uri = picked.assets[0].uri;
-    setPreview(uri);
+    const uris = picked.assets
+      ?.map((asset) => asset.uri)
+      .filter(Boolean)
+      .slice(0, 10);
+    if (picked.canceled || !uris?.length) return;
+    setPreviews(uris);
     setBusy(true);
     try {
-      const uploaded = await uploadImage(uri);
-      if (!uploaded?.url) throw new Error("Photo upload returned no URL.");
-      setImageUrl(uploaded.url);
-      setFeedback("Photo uploaded. Run photo analysis next.");
+      const uploaded = await Promise.all(uris.map((uri) => uploadImage(uri)));
+      const urls = uploaded.map((item) => item?.url).filter(Boolean);
+      if (urls.length !== uris.length)
+        throw new Error("One or more uploads returned no URL.");
+      setImageUrls(urls);
+      setFeedback(
+        `${urls.length} photo${urls.length === 1 ? "" : "s"} uploaded. Run photo analysis next.`
+      );
     } catch (error: any) {
       setFeedback(error?.message || "Unable to upload photo.");
     } finally {
@@ -62,13 +71,13 @@ function HarvestPhotoAnalyzer({
   }
 
   async function analyze() {
-    if (!growId || !imageUrl || busy) return;
+    if (!growId || !imageUrls.length || busy) return;
     setBusy(true);
     setFeedback("");
     try {
       const result = await analyzeTrichomePhotos({
         growId,
-        images: [imageUrl],
+        images: imageUrls,
         sampleLocation: "mixed_bud_sites",
         notes: notes.trim() || undefined
       });
@@ -99,10 +108,29 @@ function HarvestPhotoAnalyzer({
         style={[photoStyles.button, (busy || !growId) && photoStyles.disabled]}
       >
         <Text style={photoStyles.buttonText}>
-          {imageUrl ? "Change Photo" : "Choose Photo"}
+          {imageUrls.length ? "Change Photos" : "Choose Photos (up to 10)"}
         </Text>
       </Pressable>
-      {preview ? <Image source={{ uri: preview }} style={photoStyles.preview} /> : null}
+      {previews.length ? (
+        <View style={photoStyles.previewGrid}>
+          {previews.map((uri, index) => (
+            <View key={`${uri}-${index}`} style={photoStyles.previewWrap}>
+              <Image source={{ uri }} style={photoStyles.preview} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove trichome photo ${index + 1}`}
+                onPress={() => {
+                  setPreviews((current) => current.filter((_, item) => item !== index));
+                  setImageUrls((current) => current.filter((_, item) => item !== index));
+                }}
+                style={photoStyles.removeButton}
+              >
+                <Text style={photoStyles.removeText}>Remove</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : null}
       <TextInput
         accessibilityLabel="Harvest photo notes"
         value={notes}
@@ -113,10 +141,10 @@ function HarvestPhotoAnalyzer({
       <Pressable
         accessibilityLabel="Analyze harvest trichome photo"
         onPress={analyze}
-        disabled={busy || !growId || !imageUrl}
+        disabled={busy || !growId || !imageUrls.length}
         style={[
           photoStyles.button,
-          (busy || !growId || !imageUrl) && photoStyles.disabled
+          (busy || !growId || !imageUrls.length) && photoStyles.disabled
         ]}
       >
         <Text style={photoStyles.buttonText}>
@@ -430,12 +458,23 @@ const photoStyles = StyleSheet.create({
   },
   title: { fontSize: 17, fontWeight: "800", color: "#14532D" },
   help: { color: "#475569", lineHeight: 19 },
+  previewGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  previewWrap: { flexBasis: 150, flexGrow: 1, maxWidth: 240, minWidth: 130 },
   preview: {
     width: "100%",
-    height: 220,
+    height: 150,
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
+  removeButton: {
+    alignItems: "center",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 5,
+    paddingVertical: 7
+  },
+  removeText: { color: "#991B1B", fontSize: 12, fontWeight: "800" },
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",

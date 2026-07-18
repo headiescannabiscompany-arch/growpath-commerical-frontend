@@ -277,14 +277,20 @@ export default function ForumPostDetailRoute() {
     const picked = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
+      selectionLimit: Math.max(10 - commentPhotoUris.length, 1),
       allowsEditing: false,
       quality: 0.8
     });
     if (picked.canceled) return;
-    setCommentPhotoUris((current) => [
-      ...current,
-      ...picked.assets.map((asset) => asset.uri).filter(Boolean)
-    ]);
+    setCommentPhotoUris((current) =>
+      [...current, ...picked.assets.map((asset) => asset.uri).filter(Boolean)].slice(
+        0,
+        10
+      )
+    );
+    if (commentPhotoUris.length + picked.assets.length > 10) {
+      setFeedback("Maximum 10 comment photos.");
+    }
   }
 
   async function saveToGrowLog() {
