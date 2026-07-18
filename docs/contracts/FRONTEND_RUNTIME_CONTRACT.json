@@ -2,13 +2,22 @@
   "version": "2026-07-16",
   "personal": {
     "tabsLayoutFile": "src/app/home/personal/(tabs)/_layout.tsx",
-    "visibleTabs": ["index", "grows", "tools", "community", "courses", "profile"],
+    "visibleTabs": [
+      "index",
+      "grows",
+      "tools",
+      "community",
+      "discover",
+      "courses",
+      "profile"
+    ],
     "hiddenTabs": ["ai", "forum", "diagnose", "logs", "tasks"],
     "requiredRoutes": [
       "/home/personal",
       "/home/personal/grows",
       "/home/personal/tools",
       "/home/personal/community",
+      "/home/personal/discover",
       "/home/personal/profile",
       "/home/personal/ai",
       "/home/personal/forum",

@@ -165,7 +165,8 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Discover Storefronts")).toBeTruthy();
     expect(screen.getByText("Commercial Feed")).toBeTruthy();
-    expect(screen.getByText("Discovery Directory")).toBeTruthy();
+    expect(screen.getByText("Discover")).toBeTruthy();
+    expect(screen.getByText("Grow Analytics")).toBeTruthy();
     expect(screen.queryByText("Community")).toBeNull();
   });
 });

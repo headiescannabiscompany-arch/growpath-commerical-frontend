@@ -405,6 +405,14 @@ export default function ProfileScreen() {
         >
           <Text style={styles.accountActionText}>Switch workspace</Text>
         </Pressable>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/home/personal/more/links" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Manage profile links"
+        >
+          <Text style={styles.accountActionText}>Profile links</Text>
+        </Pressable>
         <Text style={styles.mutedText}>
           Personal is for your grow records and Forum/Q&A. Commercial and Facility
           workspaces keep storefront outreach and operational rooms separate.
