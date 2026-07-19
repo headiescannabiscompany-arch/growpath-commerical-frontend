@@ -99,6 +99,11 @@ export default function PhenoHuntToolRoute() {
       toolKey="pheno-hunt"
       title="Pheno Hunting"
       subtitle="Score pheno plants, compare keeper candidates, retest decisions, and breeding notes."
+      aiPrefill={{
+        buttonLabel: "Fill pheno hunt from grow",
+        buildMessage: () =>
+          `Prefill the Pheno Hunting workflow from the selected grow's saved plants, logs, photos, clone results, diagnoses, stress/recovery records, and harvest notes. Return JSON only with exactly these keys: {"projectName":"string","plants":[{"id":"string","label":"string","vigor":0,"aroma":0,"resin":0,"stressResistance":0,"yieldScore":0,"sexWeek":0,"cloneRootingDays":0,"recoveryHours":0,"notes":"string"}],"additionalInformation":"string"}. Use only supported evidence; leave unknown values blank instead of inventing them. Scores use 0-10. Put uncertainties and useful optional context in additionalInformation.`
+      }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "Pheno hunt" },
         {
@@ -108,12 +113,19 @@ export default function PhenoHuntToolRoute() {
           defaultValue:
             "Plant 1, 8, 8, 8, 7, 7, 4, 9, 8, balanced\nPlant 2, 6, 9, 8, 6, 6, 6, 18, 30, sensory lean",
           multiline: true
+        },
+        {
+          key: "additionalInformation",
+          label: "Additional information (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId }) => ({
         growId,
         projectName: values.projectName,
-        plants: parsePlants(values.plants)
+        plants: parsePlants(values.plants),
+        additionalInformation: values.additionalInformation || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "project", label: "Project", value: outputs.projectName },

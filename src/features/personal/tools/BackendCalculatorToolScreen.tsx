@@ -9,6 +9,7 @@ import {
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
@@ -88,6 +89,10 @@ type BackendCalculatorToolScreenProps = {
       plantContext: ReturnType<typeof useToolPlantContext>;
     }) => string;
   };
+  aiPrefill?: {
+    buttonLabel?: string;
+    buildMessage: (context: { growId: string; plantId: string }) => string;
+  };
 };
 
 function coerceParam(value?: string | string[]) {
@@ -154,7 +159,8 @@ export default function BackendCalculatorToolScreen({
   defaultLogTitle,
   defaultTask,
   buildActions,
-  assistantBrief
+  assistantBrief,
+  aiPrefill
 }: BackendCalculatorToolScreenProps) {
   const routeParams = useLocalSearchParams<{
     growId?: string | string[];
@@ -204,6 +210,7 @@ export default function BackendCalculatorToolScreen({
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [assistantBriefText, setAssistantBriefText] = useState("");
+  const [prefilling, setPrefilling] = useState(false);
 
   React.useEffect(() => {
     let active = true;
@@ -230,6 +237,48 @@ export default function BackendCalculatorToolScreen({
     setOutputs(null);
     setFeedback("");
     setAssistantBriefText("");
+  }
+
+  async function prefillWithAI() {
+    if (!aiPrefill || !growId || prefilling) return;
+    setPrefilling(true);
+    setFeedback("");
+    try {
+      const response = await askPersonalAssistant({
+        growId,
+        plantId: plantContext.plantId || undefined,
+        context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
+        message: aiPrefill.buildMessage({
+          growId,
+          plantId: plantContext.plantId || ""
+        })
+      });
+      const raw = String(response.reply || "");
+      const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(match?.[1] || raw.slice(raw.indexOf("{")));
+      const next = Object.fromEntries(
+        fields
+          .filter((field) => parsed[field.key] != null)
+          .map((field) => [
+            field.key,
+            typeof parsed[field.key] === "string"
+              ? parsed[field.key]
+              : JSON.stringify(parsed[field.key], null, 2)
+          ])
+      );
+      setValues((current) => ({ ...current, ...next }));
+      setFeedback(
+        `AI filled ${Object.keys(next).length} field(s) from grow records. Review before calculating.${
+          response.missingInformation?.length
+            ? ` Optional missing details: ${response.missingInformation.join(", ")}.`
+            : ""
+        }`
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "AI could not prefill this workflow.");
+    } finally {
+      setPrefilling(false);
+    }
   }
 
   const payload = useMemo(
@@ -443,6 +492,28 @@ export default function BackendCalculatorToolScreen({
           selectedPlant={plantContext.selectedPlant}
           onSelect={plantContext.setPlantId}
         />
+
+        {aiPrefill ? (
+          <View style={styles.guidanceCard}>
+            <Text style={styles.resultTitle}>AI grow-context prefill</Text>
+            <Text style={styles.guidanceText}>
+              AI will use saved grow and plant evidence to fill every supported field. You
+              can add or correct anything before running the tool.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!growId || prefilling}
+              style={styles.secondaryButton}
+              onPress={prefillWithAI}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {prefilling
+                  ? "Reviewing grow..."
+                  : aiPrefill.buttonLabel || "Fill with AI"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {typeof formHeader === "function" ? formHeader({ growId }) : formHeader}
 
