@@ -265,6 +265,11 @@ export default function SoilBuilderToolScreen() {
       toolKey="soil-builder"
       title="Soil Builder"
       subtitle="Build full soil recipes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      aiPrefill={{
+        buttonLabel: "Fill soil recipe from grow records",
+        buildMessage: () =>
+          `Prefill the operational fields of this Soil/Media Builder from the selected grow/plant's saved soil recipe, ingredient catalog and verified analyses, container/batch volume, crop stage and purpose, water profile/alkalinity, irrigation performance, prior soil batches, lab results, and nutrient response. Preserve the locked recipe/science reference text already in the form. Return JSON only using these exact string keys when supported: mixName, goal, targetNpk, targetReleaseCurve, intendedUse, stage, totalVolume, volumeUnit, baseMedia, basePercent, compostPercent, aerationPercent, biocharPercent, compostUncertainty, amendmentName, amendmentDose, amendmentUnit, amendmentAnalysis, amendmentRelease, amendmentNameB, amendmentDoseB, amendmentUnitB, amendmentAnalysisB, amendmentReleaseB, mineralSupport, biologySupport, restCookDays, safetyNotes, waterProfileNotes. Ingredient analyses, doses, percentages, lab values, and volume must come from saved records or verified labels; do not invent them. Model peat/perlite, coco, 1:1:1 Coots-style, living-soil, and no-till mixes according to their actual water holding, drainage, aeration durability, buffering, CEC, carbon/nitrogen behavior, and reuse strategy. In safetyNotes and waterProfileNotes explain uncertainty, compost variability, mineralization timing, K/Ca/Mg antagonism, water alkalinity, and how the recipe changes irrigation assumptions.`
+      }}
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
         { key: "goal", label: "Goal", defaultValue: "medium veg soil" },
@@ -389,6 +394,12 @@ export default function SoilBuilderToolScreen() {
           multiline: true
         },
         {
+          key: "waterProfileNotes",
+          label: "Water profile and irrigation behavior (optional)",
+          defaultValue: "",
+          multiline: true
+        },
+        {
           key: "universalSoilScience",
           label: "Universal soil science",
           defaultValue: UNIVERSAL_SOIL_SCIENCE,
@@ -454,6 +465,7 @@ export default function SoilBuilderToolScreen() {
         biologySupport: values.biologySupport,
         restCookDays: n(values.restCookDays, 21),
         safetyNotes: values.safetyNotes,
+        waterProfileNotes: values.waterProfileNotes || undefined,
         universalSoilScience: values.universalSoilScience,
         soilRecipeReference: values.soilRecipeReference,
         scientificNotes: values.scientificNotes,
