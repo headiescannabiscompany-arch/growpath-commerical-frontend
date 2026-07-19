@@ -193,17 +193,51 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByDisplayValue("73")).toBeTruthy();
     expect(screen.getByDisplayValue("15")).toBeTruthy();
     expect(screen.getByDisplayValue("12")).toBeTruthy();
+    expect(screen.getByText("Photo quality: usable")).toBeTruthy();
+    expect(screen.getByText("Confirm across additional bud sites.")).toBeTruthy();
+    expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
+  });
+
+  it("explains when better photos are needed without filling readiness fields", async () => {
+    mockAnalyzeTrichomePhotos.mockResolvedValue({
+      photoUsable: false,
+      clear: 0,
+      cloudy: 0,
+      amber: 0,
+      confidence: 0.24,
+      dominant: "uncertain",
+      evidence: [],
+      recommendation: "Move closer and stabilize the camera.",
+      limitations: ["Trichome heads are out of focus."],
+      provider: "openai_vision",
+      imagesAnalyzed: 1
+    });
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
+    await waitFor(() => expect(mockUploadImage).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() => expect(screen.getByText("Better photos needed")).toBeTruthy());
+    expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
+    expect(screen.getByText("• Trichome heads are out of focus.")).toBeTruthy();
+    expect(screen.getByDisplayValue("65")).toBeTruthy();
+    expect(screen.getByDisplayValue("8")).toBeTruthy();
+    expect(screen.getByDisplayValue("10")).toBeTruthy();
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {
     const screen = render(<HarvestReadinessToolRoute />);
 
-    fireEvent.changeText(screen.getByLabelText("Harvest Readiness AI Flower day"), "56");
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Trichome sample location"),
+      screen.getByLabelText("Harvest Readiness Estimate Flower day"),
+      "56"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Trichome sample location"),
       "top and lower buds"
     );
-    fireEvent.press(screen.getByLabelText("Run Harvest Readiness AI"));
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -211,12 +245,15 @@ describe("HarvestReadinessToolRoute", () => {
         expect.objectContaining({
           growId: "grow-1",
           flowerDay: "56",
-          sampleLocation: "top and lower buds"
+          sampleLocation: "top and lower buds",
+          budSwell: "mostly_swollen",
+          smellNotes: "building",
+          trichomeSource: "manual_entry"
         })
       )
     );
     await waitFor(() =>
-      expect(screen.getByText("Harvest Readiness AI result")).toBeTruthy()
+      expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
 
     fireEvent.press(screen.getByText("Create Harvest Decision Tasks"));
@@ -270,19 +307,22 @@ describe("HarvestReadinessToolRoute", () => {
   it("saves harvest readiness review to a harvest batch record", async () => {
     const screen = render(<HarvestReadinessToolRoute />);
 
-    fireEvent.changeText(screen.getByLabelText("Harvest Readiness AI Flower day"), "56");
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Trichome sample location"),
+      screen.getByLabelText("Harvest Readiness Estimate Flower day"),
+      "56"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Trichome sample location"),
       "top and lower buds"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Harvest batch ID (optional)"),
+      screen.getByLabelText("Harvest Readiness Estimate Harvest batch ID (optional)"),
       "harvest-1"
     );
-    fireEvent.press(screen.getByLabelText("Run Harvest Readiness AI"));
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
 
     await waitFor(() =>
-      expect(screen.getByText("Harvest Readiness AI result")).toBeTruthy()
+      expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
 
     fireEvent.press(screen.getByText("Save Harvest Review"));

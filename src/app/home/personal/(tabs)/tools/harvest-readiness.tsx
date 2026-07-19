@@ -17,9 +17,11 @@ import { radius } from "@/theme/theme";
 
 function HarvestPhotoAnalyzer({
   growId,
+  initialAnalysis,
   onAnalysis
 }: {
   growId: string;
+  initialAnalysis: TrichomeVisionResult | null;
   onAnalysis: (result: TrichomeVisionResult) => void;
 }) {
   const [previews, setPreviews] = useState<string[]>([]);
@@ -27,9 +29,11 @@ function HarvestPhotoAnalyzer({
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
 
   async function pickPhoto() {
     setFeedback("");
+    setAnalysis(null);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       setFeedback("Photo-library permission is required.");
@@ -76,11 +80,19 @@ function HarvestPhotoAnalyzer({
         sampleLocation: "mixed_bud_sites",
         notes: notes.trim() || undefined
       });
+      setAnalysis(result);
       onAnalysis(result);
       setFeedback(
         result.photoUsable
-          ? `Photo analyzed with ${Math.round(result.confidence * 100)}% confidence.`
-          : "The photo is not clear enough for trichome analysis. Retake a sharp macro photo of bud calyxes."
+          ? `Photo analyzed with ${Math.round(result.confidence * 100)}% confidence. The clear, cloudy, and amber fields below are filled. Review the other maturity signals, then run the rule-based readiness estimate.`
+          : [
+              "These photos are not reliable enough to fill the readiness fields.",
+              result.recommendation,
+              ...(result.limitations || []),
+              "Retake sharp macro photos of trichome heads on bud calyxes in neutral light. Include top and lower bud sites."
+            ]
+              .filter(Boolean)
+              .join(" ")
       );
     } catch (error: any) {
       setFeedback(error?.message || "Unable to analyze the trichome photo.");
@@ -91,10 +103,11 @@ function HarvestPhotoAnalyzer({
 
   return (
     <View style={photoStyles.card}>
-      <Text style={photoStyles.title}>AI trichome photo detector</Text>
+      <Text style={photoStyles.title}>AI trichome photo estimate (optional)</Text>
       <Text style={photoStyles.help}>
-        Start with a sharp macro photo of trichome heads on a bud calyx. The AI result
-        fills the readiness percentages below; confirm across several bud sites.
+        If photo analysis succeeds, it estimates the three trichome percentages below. It
+        does not make the harvest decision by itself. Use sharp macro photos of gland
+        heads on bud calyxes and confirm across several bud sites.
       </Text>
       <Pressable
         accessibilityLabel="Choose harvest trichome photo"
@@ -150,6 +163,45 @@ function HarvestPhotoAnalyzer({
         <Text style={photoStyles.warning}>Select a grow before analyzing a photo.</Text>
       ) : null}
       {feedback ? <Text style={photoStyles.feedback}>{feedback}</Text> : null}
+      {analysis ? (
+        <View
+          accessibilityLabel="Harvest photo analysis result"
+          style={photoStyles.analysis}
+        >
+          <Text style={photoStyles.analysisTitle}>
+            {analysis.photoUsable ? "Photo quality: usable" : "Better photos needed"}
+          </Text>
+          <Text style={photoStyles.feedback}>
+            Confidence: {Math.round(analysis.confidence * 100)}%
+          </Text>
+          {analysis.photoUsable ? (
+            <Text style={photoStyles.feedback}>
+              AI estimate: {Math.round(analysis.cloudy * 100)}% cloudy,{" "}
+              {Math.round(analysis.amber * 100)}% amber,{" "}
+              {Math.round(analysis.clear * 100)}% clear.
+            </Text>
+          ) : null}
+          {analysis.recommendation ? (
+            <Text style={photoStyles.recommendation}>{analysis.recommendation}</Text>
+          ) : null}
+          {analysis.photoUsable ? (
+            <Text style={photoStyles.recommendation}>
+              The fields below are filled. Review the remaining maturity signals, then run
+              the rule-based readiness estimate.
+            </Text>
+          ) : null}
+          {(analysis.evidence || []).map((item, index) => (
+            <Text key={`evidence-${index}`} style={photoStyles.feedback}>
+              • {item}
+            </Text>
+          ))}
+          {(analysis.limitations || []).map((item, index) => (
+            <Text key={`limitation-${index}`} style={photoStyles.warning}>
+              • {item}
+            </Text>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -277,13 +329,21 @@ export default function HarvestReadinessToolRoute() {
   const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
   return (
     <BackendCalculatorToolScreen
-      key={vision ? `${vision.clear}-${vision.cloudy}-${vision.amber}` : "manual"}
+      key={
+        vision?.photoUsable
+          ? `${vision.clear}-${vision.cloudy}-${vision.amber}`
+          : "manual"
+      }
       tool="harvest-readiness"
       toolKey="harvest-readiness"
-      title="Harvest Readiness AI"
-      subtitle="AI can fill clear, cloudy, and amber from photos. Complete the breeder timeline, hairs, bud structure, aroma trend, and effect goal for a one-week-before through two-weeks-after harvest range."
+      title="Harvest Readiness Estimate"
+      subtitle="Rule-based estimate from the values below. Successful photo analysis can fill trichome percentages; failed photo analysis does not affect the estimate. Confirm the decision across multiple bud sites and whole-plant maturity signals."
       formHeader={({ growId }) => (
-        <HarvestPhotoAnalyzer growId={growId} onAnalysis={setVision} />
+        <HarvestPhotoAnalyzer
+          growId={growId}
+          initialAnalysis={vision}
+          onAnalysis={setVision}
+        />
       )}
       fields={[
         {
@@ -301,19 +361,25 @@ export default function HarvestReadinessToolRoute() {
         {
           key: "cloudyPercent",
           label: "Cloudy %",
-          defaultValue: vision ? String(Math.round(vision.cloudy * 100)) : "65",
+          defaultValue: vision?.photoUsable
+            ? String(Math.round(vision.cloudy * 100))
+            : "65",
           keyboardType: "numeric"
         },
         {
           key: "amberPercent",
           label: "Amber %",
-          defaultValue: vision ? String(Math.round(vision.amber * 100)) : "8",
+          defaultValue: vision?.photoUsable
+            ? String(Math.round(vision.amber * 100))
+            : "8",
           keyboardType: "numeric"
         },
         {
           key: "clearPercent",
           label: "Clear %",
-          defaultValue: vision ? String(Math.round(vision.clear * 100)) : "10",
+          defaultValue: vision?.photoUsable
+            ? String(Math.round(vision.clear * 100))
+            : "10",
           keyboardType: "numeric"
         },
         {
@@ -341,16 +407,32 @@ export default function HarvestReadinessToolRoute() {
           label: "Aroma trend (building, peak, or dropping)",
           defaultValue: "building"
         },
-        { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
+        {
+          key: "userGoal",
+          label: "Effect goal (saved as context; not scored yet)",
+          defaultValue: "balanced"
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
         ...values,
+        budSwell: values.budSwellStatus,
+        smellNotes: values.aromaIntensity,
+        trichomeSource: vision?.photoUsable ? "ai_photo_estimate" : "manual_entry",
+        photoAnalysisConfidence: vision?.photoUsable ? vision.confidence : undefined,
         harvestBatchId: values.harvestBatchId.trim() || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "status", label: "Readiness", value: outputs.readinessStatus },
+        {
+          key: "window",
+          label: "Estimated window",
+          value:
+            typeof outputs.estimatedWindow === "string"
+              ? outputs.estimatedWindow.replaceAll("_", " ")
+              : undefined
+        },
         { key: "start", label: "Start day", value: outputs.estimatedWindow?.startDay },
         {
           key: "target",
@@ -377,6 +459,13 @@ export default function HarvestReadinessToolRoute() {
           key: "trichome-advice",
           label: "Trichome advice",
           value: outputs.trichomeInterpretation
+        },
+        {
+          key: "trichome-source",
+          label: "Trichome values source",
+          value: vision?.photoUsable
+            ? `AI photo estimate (${Math.round(vision.confidence * 100)}% confidence)`
+            : "Manual form entry; photos were not used"
         },
         {
           key: "aroma-advice",
@@ -505,5 +594,13 @@ const photoStyles = StyleSheet.create({
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   disabled: { opacity: 0.45 },
   warning: { color: "#B45309", fontWeight: "700" },
-  feedback: { color: "#334155" }
+  feedback: { color: "#334155" },
+  analysis: {
+    borderTopColor: "#BBF7D0",
+    borderTopWidth: 1,
+    gap: 6,
+    paddingTop: 10
+  },
+  analysisTitle: { color: "#14532D", fontSize: 15, fontWeight: "800" },
+  recommendation: { color: "#1E293B", fontWeight: "700", lineHeight: 19 }
 });
