@@ -82,9 +82,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Commercial and facility educators use the shared course capability; facility-only visibility remains available for private training.
 
 8. Facility room creation
-   - Facility users must be able to add rooms/greenhouses.
-   - Facility onboarding should guide facility name, type, rooms/zones, crops/batches, staff/tasks, inventory/settings, dashboard walkthrough.
-   - Stock risk should not appear before useful inventory/crop data exists.
+   - [x] Facility owners/managers can add rooms, greenhouses, outdoor beds, seedling rooms or veg racks, clone/tissue-culture/cold-storage spaces, and optional zones.
+   - [x] Facility onboarding captures facility name/type and creates typed starter rooms before continuing into crops/batches; the walkthrough guides staff/tasks, inventory/settings, and dashboard review.
+   - [x] Stock-risk metrics and AI review do not appear before useful inventory data exists.
 
 9. Password reset/login reliability
    - Password reset flow: email -> link -> valid reset screen -> save password -> login works.
