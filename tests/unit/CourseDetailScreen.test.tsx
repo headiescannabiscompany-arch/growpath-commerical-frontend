@@ -45,29 +45,34 @@ jest.mock("@/api/courses", () => ({
   approveCourse: jest.fn(),
   completeLesson: (...args: any[]) => mockCompleteLesson(...args),
   enrollInCourse: jest.fn(),
-  getCourse: () => Promise.resolve({
-    id: "course-1",
-    title: "Living Soil Course",
-    price: 0,
-    lessons: [{ id: "lesson-1", title: "Build the mix", content: "Mix it." }],
-    documents: [{ title: "Worksheet", storageUrl: "https://example.com/work.pdf" }],
-    mediaAssets: [],
-    forumThreadId: "thread-1",
-    linkedProductIds: ["product-1"]
-  }),
-  getCourseLearnerNotes: () => Promise.resolve({
-    notes: [{ lessonId: "lesson-1", note: "Existing note" }]
-  }),
-  getEnrollmentStatus: () => Promise.resolve({
-    enrolled: true,
-    progress: { completedLessonIds: ["lesson-1"], completedLessons: 1, totalLessons: 1 }
-  }),
+  getCourse: () =>
+    Promise.resolve({
+      id: "course-1",
+      title: "Living Soil Course",
+      price: 0,
+      lessons: [{ id: "lesson-1", title: "Build the mix", content: "Mix it." }],
+      documents: [{ title: "Worksheet", storageUrl: "https://example.com/work.pdf" }],
+      mediaAssets: [],
+      forumThreadId: "thread-1",
+      linkedProductIds: ["product-1"]
+    }),
+  getCourseLearnerNotes: () =>
+    Promise.resolve({
+      notes: [{ lessonId: "lesson-1", note: "Existing note" }]
+    }),
+  getEnrollmentStatus: () =>
+    Promise.resolve({
+      enrolled: true,
+      progress: { completedLessonIds: ["lesson-1"], completedLessons: 1, totalLessons: 1 }
+    }),
   getReviews: () => Promise.resolve([]),
   rejectCourse: jest.fn(),
   saveCourseLearnerNote: (...args: any[]) => mockSaveNote(...args),
   sendWatchTime: () => Promise.resolve(),
   submitForReview: jest.fn(),
   trackDropoff: () => Promise.resolve(),
+  trackCourseProductClick: () => Promise.resolve(),
+  trackCourseView: () => Promise.resolve(),
   trackLessonView: () => Promise.resolve(),
   updateCourse: jest.fn()
 }));

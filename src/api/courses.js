@@ -33,6 +33,20 @@ export function getCourse(id) {
   return apiRequest(apiRoutes.COURSES.DETAIL(id));
 }
 
+export function trackCourseView(id) {
+  return apiRequest(apiRoutes.COURSES.TRACK_COURSE_VIEW(id), {
+    method: "POST",
+    body: {}
+  });
+}
+
+export function trackCourseProductClick(courseId, productId) {
+  return apiRequest(apiRoutes.COURSES.TRACK_PRODUCT_CLICK(courseId, productId), {
+    method: "POST",
+    body: {}
+  });
+}
+
 export function addLesson(courseId, payload) {
   return apiRequest(apiRoutes.COURSES.LESSON(courseId), {
     method: "POST",

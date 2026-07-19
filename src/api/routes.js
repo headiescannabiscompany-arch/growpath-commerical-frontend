@@ -99,6 +99,9 @@ export const ROUTES = {
     MINE: `${PREFIX}/courses/mine`,
     CREATE: `${PREFIX}/courses/create`,
     DETAIL: (id) => `${PREFIX}/courses/${id}`,
+    TRACK_COURSE_VIEW: (id) => `${PREFIX}/courses/${id}/view`,
+    TRACK_PRODUCT_CLICK: (courseId, productId) =>
+      `${PREFIX}/courses/${courseId}/products/${productId}/click`,
     LESSON: (id) => `${PREFIX}/courses/${id}/lesson`,
     LESSON_DETAIL: (id) => `${PREFIX}/courses/lesson/${id}`,
     PUBLISH: (id) => `${PREFIX}/courses/${id}/publish`,

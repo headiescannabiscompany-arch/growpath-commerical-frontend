@@ -25,6 +25,8 @@ import {
   saveCourseLearnerNote,
   submitForReview,
   trackDropoff,
+  trackCourseProductClick,
+  trackCourseView,
   trackLessonView,
   updateCourse
 } from "../api/courses";
@@ -214,6 +216,10 @@ export default function CourseDetailScreen({ route, navigation }) {
   }, [load]);
 
   useEffect(() => {
+    if (loadedCourseId) trackCourseView(loadedCourseId).catch(() => null);
+  }, [loadedCourseId]);
+
+  useEffect(() => {
     if (!loadedCourseId) return;
     let alive = true;
     apiRequest(`/api/courses/${encodeURIComponent(loadedCourseId)}/live-rsvps`)
@@ -376,6 +382,13 @@ export default function CourseDetailScreen({ route, navigation }) {
           ? `/home/commercial/tools/ask-ai?${query}`
           : `/home/personal/ai?${query}`;
     router.push(path);
+  }
+
+  async function openRelatedProduct(productId) {
+    if (loadedCourseId) {
+      await trackCourseProductClick(loadedCourseId, productId).catch(() => null);
+    }
+    router.push(`/home/commercial/products/${encodeURIComponent(String(productId))}`);
   }
 
   async function createLessonTask() {
@@ -893,11 +906,7 @@ export default function CourseDetailScreen({ route, navigation }) {
           {course.linkedProductIds.map((productId) => (
             <Pressable
               key={String(productId)}
-              onPress={() =>
-                router.push(
-                  `/home/commercial/products/${encodeURIComponent(String(productId))}`
-                )
-              }
+              onPress={() => openRelatedProduct(productId)}
               style={styles.secondaryBtn}
             >
               <Text style={styles.secondaryText}>View Product {String(productId)}</Text>
