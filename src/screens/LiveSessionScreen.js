@@ -84,6 +84,7 @@ export default function LiveSessionScreen({ route }) {
   const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
+  const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
   const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
   const relatedProductId = session?.relatedProductId || session?.productId || "";
   const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
@@ -240,11 +241,12 @@ export default function LiveSessionScreen({ route }) {
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
 
-          {twitchChannel ? (
+          {twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
               <LiveSessionTwitchEmbed
-                twitchChannel={twitchChannel}
-                chatEnabled={Boolean(session.chatEnabled)}
+                twitchChannel={twitchVodId || twitchChannel}
+                embedType={twitchVodId ? "vod" : "live"}
+                chatEnabled={!twitchVodId && Boolean(session.chatEnabled)}
               />
             </View>
           ) : (

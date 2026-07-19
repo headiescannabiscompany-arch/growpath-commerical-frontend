@@ -194,10 +194,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
 
 31. Twitch
-   - OAuth connection.
-   - Twitch Embed for video/chat where supported.
-   - EventSub for stream online/status.
-   - Replay link/manual VOD first if automatic VOD import is not ready.
+   - [x] OAuth connection.
+   - [x] Twitch Embed for video/chat where supported.
+   - [x] EventSub for stream online/status.
+   - [x] Replay link/manual VOD first if automatic VOD import is not ready.
 
 ## P4 - Feed Campaign Engine
 
@@ -917,6 +917,7 @@ Completed and pushed:
 626. The shared Course Player now shows learner-specific lesson progress, durable private lesson notes, documents and media, course and lesson discussion, course-scoped Ask AI actions, assignment-to-task creation, related products, and scheduled lives; the shared Course API now preserves builder resources and link metadata and stores completion plus notes on each learner enrollment instead of the course itself.
 627. Course Analytics now aggregates the live Course, Enrollment, Earning, Task, question, and CourseEngagementEvent records instead of the disconnected legacy Lesson collection, reporting course/lesson views, unique viewers, enrollments, completion and average progress, sales/earnings, drop-off, assignment-task completion, live RSVPs, related-product clicks, and unanswered questions through a reachable shared owner analytics route.
 628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
+629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
 
 ## Working Rule For Codex
 

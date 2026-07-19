@@ -1,7 +1,15 @@
 import { Link, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
 import {
@@ -15,6 +23,13 @@ import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import {
+  beginTwitchConnection,
+  disconnectTwitch,
+  getTwitchConnection,
+  TwitchConnectionStatus,
+  validateTwitchConnection
+} from "@/api/twitch";
 
 type LiveForm = {
   title: string;
@@ -148,6 +163,10 @@ export default function CommercialLivesRoute() {
   const [creatingTaskForLiveId, setCreatingTaskForLiveId] = useState("");
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [twitchConnection, setTwitchConnection] = useState<TwitchConnectionStatus | null>(
+    null
+  );
+  const [connectingTwitch, setConnectingTwitch] = useState(false);
 
   const counts = useMemo(() => splitStatus(lives), [lives]);
   const formWarnings = liveSetupWarnings({ ...form, notificationPlan });
@@ -167,7 +186,76 @@ export default function CommercialLivesRoute() {
 
   useEffect(() => {
     void loadLives();
+    void loadTwitchConnection();
   }, []);
+
+  async function loadTwitchConnection() {
+    try {
+      const status = (await getTwitchConnection()) || { configured: false };
+      setTwitchConnection(status);
+      if (status.connection?.status === "connected") {
+        setForm((current) => ({
+          ...current,
+          twitchChannelName:
+            current.twitchChannelName || status.connection?.broadcasterLogin || "",
+          twitchChannelId:
+            current.twitchChannelId || status.connection?.broadcasterId || "",
+          eventSubStatus: status.connection?.eventSubStatus || "not_connected"
+        }));
+      }
+    } catch (err) {
+      setError(err);
+    }
+  }
+
+  async function connectTwitch() {
+    setConnectingTwitch(true);
+    setError(null);
+    try {
+      const result = await beginTwitchConnection();
+      if (!result.configured || !result.authorizationUrl) {
+        setMessage(result.message || "Twitch OAuth is not configured.");
+        return;
+      }
+      await Linking.openURL(result.authorizationUrl);
+      setMessage(
+        "Finish authorization in Twitch, then return and refresh connection status."
+      );
+    } catch (err) {
+      setError(err);
+    } finally {
+      setConnectingTwitch(false);
+    }
+  }
+
+  async function removeTwitchConnection() {
+    setConnectingTwitch(true);
+    try {
+      await disconnectTwitch();
+      setMessage("Twitch disconnected.");
+      await loadTwitchConnection();
+    } catch (err) {
+      setError(err);
+    } finally {
+      setConnectingTwitch(false);
+    }
+  }
+
+  async function refreshTwitchConnection() {
+    setConnectingTwitch(true);
+    try {
+      if (twitchConnection?.connection?.status === "connected") {
+        await validateTwitchConnection();
+      }
+      await loadTwitchConnection();
+      setMessage("Twitch connection status refreshed.");
+    } catch (err) {
+      setError(err);
+      await loadTwitchConnection();
+    } finally {
+      setConnectingTwitch(false);
+    }
+  }
 
   async function scheduleLive() {
     if (!form.title.trim()) return;
@@ -315,6 +403,61 @@ export default function CommercialLivesRoute() {
         </View>
       }
     >
+      <AppCard>
+        <Text style={styles.cardTitle}>Twitch connection</Text>
+        <Text style={styles.body}>
+          OAuth connects the broadcaster identity securely. EventSub then updates
+          scheduled sessions when Twitch reports the stream online or offline.
+        </Text>
+        <Text style={styles.liveMeta}>
+          {!twitchConnection?.configured
+            ? "Twitch OAuth is not configured on this deployment."
+            : twitchConnection.connection?.status === "connected"
+              ? `${twitchConnection.connection.broadcasterName || twitchConnection.connection.broadcasterLogin} | EventSub ${twitchConnection.connection.eventSubStatus || "not_connected"}`
+              : `Twitch ${twitchConnection.connection?.status || "not connected"}`}
+        </Text>
+        {twitchConnection?.connection?.lastError ? (
+          <Text style={styles.warningText}>{twitchConnection.connection.lastError}</Text>
+        ) : null}
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Connect Twitch with OAuth"
+            disabled={connectingTwitch || twitchConnection?.configured === false}
+            onPress={connectTwitch}
+            style={[styles.action, connectingTwitch && styles.disabled]}
+          >
+            <Text style={styles.actionText}>
+              {connectingTwitch
+                ? "Connecting..."
+                : twitchConnection?.connection?.status === "connected"
+                  ? "Reconnect Twitch"
+                  : "Connect Twitch"}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh Twitch connection"
+            disabled={connectingTwitch}
+            onPress={refreshTwitchConnection}
+            style={styles.action}
+          >
+            <Text style={styles.actionText}>Refresh Status</Text>
+          </Pressable>
+          {twitchConnection?.connection?.status === "connected" ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Disconnect Twitch"
+              disabled={connectingTwitch}
+              onPress={removeTwitchConnection}
+              style={styles.action}
+            >
+              <Text style={styles.actionText}>Disconnect</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </AppCard>
+
       <AppCard>
         <Text style={styles.cardTitle}>Live session readiness</Text>
         <Text style={styles.body}>
