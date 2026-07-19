@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
@@ -580,6 +580,7 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
 }
 
 export default function NpkToolScreen() {
+  const router = useRouter();
   const { growId, plantId } = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -617,7 +618,6 @@ export default function NpkToolScreen() {
   const [result, setResult] = useState<any>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [aiRecipeBrief, setAiRecipeBrief] = useState("");
   const [running, setRunning] = useState(false);
 
   useEffect(() => {
@@ -723,7 +723,6 @@ export default function NpkToolScreen() {
     );
     setResult(null);
     setToolRun(null);
-    setAiRecipeBrief("");
     setFeedback(
       `${preset.label} loaded. Actual target from source recipe: ${preset.actual}. Amounts use locked cups-per-pound densities and are converted to grams for calculator math. Dry mix size is 2 lb; batch volume remains the application/dilution context.`
     );
@@ -911,18 +910,23 @@ export default function NpkToolScreen() {
             accessibilityRole="button"
             accessibilityLabel="Ask AI to build NPK recipe"
             style={styles.secondaryButton}
-            onPress={() => setAiRecipeBrief(buildAiRecipeBrief(recipePayload()))}
+            onPress={() => {
+              const prompt = [
+                buildAiRecipeBrief(recipePayload()),
+                "Help me complete the missing recipe inputs conversationally.",
+                "Use GrowPath's registered nutrients.computeDeliveredNPK deterministic calculator for final math once the required labels, amounts, units, density, and batch volume are known. Do not invent missing label values or claim a calculation ran when it did not."
+              ].join("\n\n");
+              const query = [
+                `prompt=${encodeURIComponent(prompt)}`,
+                growContext ? `growId=${encodeURIComponent(growContext)}` : ""
+              ]
+                .filter(Boolean)
+                .join("&");
+              router.push(`/home/personal/ai?${query}` as any);
+            }}
           >
             <Text style={styles.secondaryButtonText}>Ask AI to Build Recipe</Text>
           </Pressable>
-          {aiRecipeBrief ? (
-            <View style={styles.aiBriefBox}>
-              <Text style={styles.resultTitle}>AI recipe brief</Text>
-              <Text selectable style={styles.aiBriefText}>
-                {aiRecipeBrief}
-              </Text>
-            </View>
-          ) : null}
         </View>
         <PersonalFeedPlacement
           placement="top"
@@ -1483,6 +1487,25 @@ export default function NpkToolScreen() {
               ].filter(Boolean)}
               details={
                 <>
+                  {result.calculationBasis ? (
+                    <>
+                      <Text style={styles.resultTitle}>Calculation basis</Text>
+                      <Text style={styles.recommendation}>
+                        {result.calculationBasis.interpretation}
+                      </Text>
+                    </>
+                  ) : null}
+                  {result.targetProfile ? (
+                    <>
+                      <Text style={styles.resultTitle}>Target profile comparison</Text>
+                      <Text style={styles.recommendation}>
+                        Status: {String(result.targetProfile.status).replaceAll("_", " ")}
+                        . Delivered label-equivalent ratio N-P2O5-K2O {result.labelEquivalentRatio?.N ?? 0}-
+                        {result.labelEquivalentRatio?.P ?? 0}-
+                        {result.labelEquivalentRatio?.K ?? 0}.
+                      </Text>
+                    </>
+                  ) : null}
                   {result.sourceConfidence ? (
                     <>
                       <Text style={styles.resultTitle}>Source confidence</Text>

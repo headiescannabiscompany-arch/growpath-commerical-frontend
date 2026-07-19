@@ -114,12 +114,12 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] User-entered label data overrides generic assumptions.
 
 14. NPK / Feed Recipe Builder
-   - Multi-input builder with 18-20 rows.
-   - Guaranteed analysis fields.
-   - P2O5/K2O conversions and elemental values.
-   - Dry/liquid calculations, density handling, ppm when appropriate.
-   - Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
-   - AI can collect inputs and call deterministic math engine.
+   - [x] Multi-input builder with 18-20 rows.
+   - [x] Guaranteed analysis fields.
+   - [x] P2O5/K2O conversions and elemental values.
+   - [x] Dry/liquid calculations, density handling, ppm when appropriate.
+   - [x] Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
+   - [x] AI can collect inputs and call deterministic math engine.
 
 15. Soil Builder
    - Full base mix + amendments + biology/activation + rest/cook timeline.

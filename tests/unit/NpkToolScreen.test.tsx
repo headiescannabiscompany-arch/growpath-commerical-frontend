@@ -7,13 +7,14 @@ const mockRunCalculator = jest.fn();
 const mockListNutrientRecipes = jest.fn();
 const mockCreateProduct = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockRouterPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
-    push: jest.fn(),
+    push: (...args: any[]) => mockRouterPush(...args),
     replace: jest.fn()
   })
 }));
@@ -214,7 +215,7 @@ describe("NpkToolScreen", () => {
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
   });
 
-  it("builds an AI recipe brief from current labels without replacing calculator math", async () => {
+  it("opens grow-aware Ask AI with current labels and deterministic calculator instructions", async () => {
     const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
@@ -226,13 +227,15 @@ describe("NpkToolScreen", () => {
 
     fireEvent.press(screen.getByLabelText("Ask AI to build NPK recipe"));
 
-    expect(screen.getByText("AI recipe brief")).toBeTruthy();
-    expect(
-      screen.getByText(/Final nutrient totals, elemental P\/K conversion/)
-    ).toBeTruthy();
-    expect(screen.getByText(/Recipe: Kelp veg feed/)).toBeTruthy();
-    expect(screen.getByText(/1\. Kelp meal \| 100g \| label 3-1-2/)).toBeTruthy();
-    expect(screen.getByText(/Ask me for label density/)).toBeTruthy();
+    expect(mockRouterPush).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/home\/personal\/ai\?prompt=/)
+    );
+    const href = String(mockRouterPush.mock.calls[0][0]);
+    const prompt = decodeURIComponent(href.split("prompt=")[1].split("&growId=")[0]);
+    expect(prompt).toContain("Recipe: Kelp veg feed");
+    expect(prompt).toContain("1. Kelp meal | 100g | label 3-1-2");
+    expect(prompt).toContain("nutrients.computeDeliveredNPK");
+    expect(href).toContain("growId=grow-1");
   });
 
   it("loads GrowPath locked amendment presets with exact densities and label values", async () => {
