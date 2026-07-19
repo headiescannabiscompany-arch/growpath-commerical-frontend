@@ -153,7 +153,7 @@ export const personalToolFeatures = [
       "Build feed, soil, and dry-amendment recipes from ingredients, guaranteed analysis, max amounts, release timing, and target ratios.",
     area: "water_nutrients",
     status: "release",
-    href: "/home/personal/tools/npk",
+    href: "/home/personal/tools/recipe-builder",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:

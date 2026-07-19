@@ -82,6 +82,7 @@ export default function ToolsLayout() {
       <Stack.Screen name="saved-runs" options={{ title: "Saved Tool Runs" }} />
       <Stack.Screen name="pheno-matrix" options={{ title: "Pheno Matrix" }} />
       <Stack.Screen name="soil-builder" options={{ title: "Soil Builder" }} />
+      <Stack.Screen name="recipe-builder" options={{ title: "Recipe Builder" }} />
       <Stack.Screen
         name="dry-amendment-mix"
         options={{ title: "Dry Amendment Mix Builder" }}

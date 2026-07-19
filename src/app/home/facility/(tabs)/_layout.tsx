@@ -125,6 +125,14 @@ export default function FacilityTabsLayout() {
         name="tools/recipe-builder"
         options={{ href: null, title: "Recipe Builder" }}
       />
+      <Tabs.Screen
+        name="tools/dry-amendment-mix"
+        options={{ href: null, title: "Dry Amendment Mix" }}
+      />
+      <Tabs.Screen
+        name="tools/ingredient-library"
+        options={{ href: null, title: "Ingredients" }}
+      />
       <Tabs.Screen name="tools/npk" options={{ href: null, title: "NPK Recipe" }} />
       <Tabs.Screen
         name="tools/soil-builder"

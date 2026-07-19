@@ -165,7 +165,7 @@ describe("personal feature status manifest", () => {
       "tools.vpd": "/home/personal/tools/vpd",
       "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.npk_recipe": "/home/personal/tools/npk",
+      "tools.npk_recipe": "/home/personal/tools/recipe-builder",
       "tools.ai_diagnosis": "/home/personal/diagnose",
       "tools.ai_assistant": "/home/personal/ai",
       "tools.integrations": "/home/personal/tools/integrations"

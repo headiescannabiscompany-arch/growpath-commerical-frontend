@@ -291,7 +291,7 @@ export default function ToolsHubScreen() {
               <Text style={styles.utilityText}>Saved Runs</Text>
             </Pressable>
           </Link>
-          <Link href={"/home/personal/tools/npk" as Href} asChild>
+          <Link href={"/home/personal/tools/recipe-builder" as Href} asChild>
             <Pressable style={styles.utilityButton}>
               <Text style={styles.utilityText}>Recipes</Text>
             </Pressable>
