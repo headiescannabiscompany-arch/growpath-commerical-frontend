@@ -168,8 +168,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
 
 24. Schedule / Agenda page
-   - Agenda/day/week/month.
-   - Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
+   - [x] Agenda/day/week/month.
+   - [x] Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
 
 25. Alert Center
    - Alerts can resolve, snooze, create task, assign, ask AI, view source.
@@ -910,6 +910,7 @@ Completed and pushed:
 619. UI route inventory now fails on underscored non-layout files under `src/app`, preventing helper/private route pollution from reintroducing hidden `/home/_*` paths while still allowing Expo `_layout` files.
 620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
 621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
+622. Schedule / Agenda now provides Agenda, Day, Week, and Month windows with editable anchor-date and period navigation, retrieves persisted commercial campaign launches in addition to tasks, lives, course events, course releases, and Feed schedules, and deduplicates overlapping campaign records while retaining task-backed course assignments, grow milestones, soil-ready dates, and Facility SOP work.
 
 ## Working Rule For Codex
 

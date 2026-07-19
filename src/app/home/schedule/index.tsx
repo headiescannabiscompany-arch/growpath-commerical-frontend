@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import { Link } from "expo-router";
@@ -35,6 +36,7 @@ type CalendarItem = {
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
 type WorkspaceFilter = "all" | "personal" | "commercial" | "facility";
+type CalendarView = "agenda" | "day" | "week" | "month";
 type SourceFilter =
   | "all"
   | "task"
@@ -332,7 +334,11 @@ function campaignToItem(campaign: any): CalendarItem {
     itemType: "feed_campaign",
     title: String(campaign?.title || campaign?.headline || campaign?.name || "Campaign"),
     startAt: String(
-      campaign?.scheduledAt || campaign?.startsAt || campaign?.publishedAt || ""
+      campaign?.launchDate ||
+        campaign?.scheduledAt ||
+        campaign?.startsAt ||
+        campaign?.publishedAt ||
+        ""
     ),
     endAt: String(campaign?.endsAt || ""),
     status: String(campaign?.status || "draft"),
@@ -350,19 +356,83 @@ function campaignToItem(campaign: any): CalendarItem {
   };
 }
 
+function marketingCampaignToItem(campaign: any): CalendarItem {
+  const item = campaignToItem(campaign);
+  const productLinked = Boolean(
+    campaign?.linkedProductId || campaign?.linkedProductLineId
+  );
+  return {
+    ...item,
+    itemType: productLinked ? "product_launch" : "feed_campaign",
+    sourceType: productLinked ? "product" : "feed_campaign",
+    href: `/home/commercial/marketing?campaignId=${encodeURIComponent(item.id)}`
+  };
+}
+
+function dedupeScheduleItems(rows: CalendarItem[]) {
+  const byKey = new Map<string, CalendarItem>();
+  rows.forEach((item) => {
+    const category = ["feed_campaign", "product_launch"].includes(item.itemType)
+      ? "campaign"
+      : item.itemType;
+    const key = `${item.workspaceType || "personal"}:${category}:${item.sourceId || item.id}`;
+    const current = byKey.get(key);
+    if (!current || item.itemType === "product_launch") byKey.set(key, item);
+  });
+  return Array.from(byKey.values());
+}
+
+function viewDateRange(view: CalendarView, anchorKey: string) {
+  if (view === "agenda") return null;
+  const match = anchorKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const anchor = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  if (view === "day") return { start: anchorKey, end: anchorKey };
+  if (view === "month") {
+    const start = `${match[1]}-${match[2]}-01`;
+    const endDate = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+    return { start, end: localDateKey(endDate) };
+  }
+  const startDate = new Date(anchor);
+  startDate.setDate(anchor.getDate() - anchor.getDay());
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+  return { start: localDateKey(startDate), end: localDateKey(endDate) };
+}
+
+function localDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
+  const match = anchorKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const anchor = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date();
+  if (view === "month") anchor.setMonth(anchor.getMonth() + direction);
+  else anchor.setDate(anchor.getDate() + direction * (view === "week" ? 7 : 1));
+  return localDateKey(anchor);
+}
+
 export default function HomeScheduleRoute() {
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
   const [workspaceFilter, setWorkspaceFilter] = useState<WorkspaceFilter>("all");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [calendarView, setCalendarView] = useState<CalendarView>("agenda");
+  const [anchorDate, setAnchorDate] = useState(todayKey());
 
   async function loadSchedule() {
     setLoading(true);
     setFeedback("");
     try {
-      const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes] = await Promise.all(
-        [
+      const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes, campaignsRes] =
+        await Promise.all([
           apiRequest(endpoints.tasksGlobal, { method: "GET" }),
           apiRequest("/api/commercial/lives", { method: "GET" }).catch(() => ({
             lives: []
@@ -375,16 +445,21 @@ export default function HomeScheduleRoute() {
           })),
           apiRequest("/api/commercial/feed", { method: "GET" }).catch(() => ({
             items: []
+          })),
+          apiRequest("/api/commercial/campaigns", { method: "GET" }).catch(() => ({
+            campaigns: []
           }))
-        ]
+        ]);
+      setItems(
+        dedupeScheduleItems([
+          ...asArray(tasksRes, "tasks").map(taskToItem),
+          ...asArray(livesRes, "lives").map(liveToItem),
+          ...asArray(courseLivesRes, "liveEvents").map(courseLiveToItem),
+          ...asArray(coursesRes, "courses").map(courseToItem),
+          ...asArray(feedRes, "items").map(campaignToItem),
+          ...asArray(campaignsRes, "campaigns").map(marketingCampaignToItem)
+        ])
       );
-      setItems([
-        ...asArray(tasksRes, "tasks").map(taskToItem),
-        ...asArray(livesRes, "lives").map(liveToItem),
-        ...asArray(courseLivesRes, "liveEvents").map(courseLiveToItem),
-        ...asArray(coursesRes, "courses").map(courseToItem),
-        ...asArray(feedRes, "items").map(campaignToItem)
-      ]);
     } catch {
       setItems([]);
       setFeedback("Unable to load schedule.");
@@ -397,16 +472,18 @@ export default function HomeScheduleRoute() {
     void loadSchedule();
   }, []);
 
-  const filteredItems = useMemo(
-    () =>
-      items.filter((item) => {
-        const workspaceMatches =
-          workspaceFilter === "all" || item.workspaceType === workspaceFilter;
-        const sourceMatches = sourceMatchesFilter(item, sourceFilter);
-        return workspaceMatches && sourceMatches;
-      }),
-    [items, sourceFilter, workspaceFilter]
-  );
+  const filteredItems = useMemo(() => {
+    const range = viewDateRange(calendarView, anchorDate);
+    return items.filter((item) => {
+      const workspaceMatches =
+        workspaceFilter === "all" || item.workspaceType === workspaceFilter;
+      const sourceMatches = sourceMatchesFilter(item, sourceFilter);
+      const key = dateKey(item.startAt);
+      const dateMatches =
+        !range || Boolean(key && key >= range.start && key <= range.end);
+      return workspaceMatches && sourceMatches && dateMatches;
+    });
+  }, [anchorDate, calendarView, items, sourceFilter, workspaceFilter]);
 
   const sections = useMemo(() => {
     const grouped: Record<SectionKey, CalendarItem[]> = {
@@ -514,6 +591,69 @@ export default function HomeScheduleRoute() {
       </View>
 
       <View style={styles.filterPanel}>
+        <Text style={styles.filterLabel}>View</Text>
+        <View style={styles.filterRow}>
+          {(["agenda", "day", "week", "month"] as CalendarView[]).map((item) => (
+            <Pressable
+              key={`view-${item}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Schedule view ${item}`}
+              style={[
+                styles.filterChip,
+                calendarView === item && styles.filterChipActive
+              ]}
+              onPress={() => setCalendarView(item)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  calendarView === item && styles.filterTextActive
+                ]}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {calendarView !== "agenda" ? (
+          <View style={styles.dateNavigator}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Schedule previous period"
+              style={styles.filterChip}
+              onPress={() =>
+                setAnchorDate((current) => moveAnchor(current, calendarView, -1))
+              }
+            >
+              <Text style={styles.filterText}>Previous</Text>
+            </Pressable>
+            <TextInput
+              accessibilityLabel="Schedule anchor date"
+              value={anchorDate}
+              onChangeText={setAnchorDate}
+              placeholder="YYYY-MM-DD"
+              style={styles.dateInput}
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Schedule next period"
+              style={styles.filterChip}
+              onPress={() =>
+                setAnchorDate((current) => moveAnchor(current, calendarView, 1))
+              }
+            >
+              <Text style={styles.filterText}>Next</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Schedule jump to today"
+              style={styles.filterChip}
+              onPress={() => setAnchorDate(todayKey())}
+            >
+              <Text style={styles.filterText}>Today</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <Text style={styles.filterLabel}>Workspace</Text>
         <View style={styles.filterRow}>
           {(["all", "personal", "commercial", "facility"] as WorkspaceFilter[]).map(
@@ -651,6 +791,20 @@ const styles = StyleSheet.create({
   },
   filterLabel: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  dateNavigator: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  dateInput: {
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    minWidth: 130,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
   filterChip: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
