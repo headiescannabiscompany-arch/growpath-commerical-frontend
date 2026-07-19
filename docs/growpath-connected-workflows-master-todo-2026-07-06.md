@@ -105,9 +105,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Tool outputs can create tasks/logs/timeline events.
 
 12. Recipe model
-   - Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
-   - Recipe can duplicate/version/compare.
-   - Recipe can convert to commercial product draft or facility production batch.
+   - [x] Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
+   - [x] Recipe can duplicate/version/compare.
+   - [x] Recipe can convert to commercial product draft or facility production batch.
 
 13. Ingredient library
    - Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
