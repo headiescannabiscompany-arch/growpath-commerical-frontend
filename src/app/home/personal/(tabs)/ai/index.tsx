@@ -8,6 +8,10 @@ import { listPersonalPlants } from "@/api/plants";
 import { createPersonalTask, listPersonalTasks } from "@/api/tasks";
 import { getDiagnosisHistory } from "@/api/diagnose";
 import { listToolRuns } from "@/api/toolRuns";
+import { listNutrientRecipes } from "@/api/nutrientRecipes";
+import { getTelemetryPoints, listTelemetrySources } from "@/api/telemetry";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import type { EvidenceAsset } from "@/types/evidence";
 import {
   askPersonalAssistant,
   type AssistantProposedWrite,
@@ -115,6 +119,8 @@ interface ContextData {
   toolRuns: any[];
   diagnoses: any[];
   photosMetadata: any[];
+  recipes: any[];
+  environmentHistory: any[];
 }
 
 function parseVpdCommand(
@@ -344,6 +350,9 @@ export default function AiScreen() {
   const [selectedGrowId, setSelectedGrowId] = useState(initialGrowId);
   const [sending, setSending] = useState(false);
   const [writeFeedback, setWriteFeedback] = useState("");
+  const [conversationId, setConversationId] = useState("");
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const [providerLabel, setProviderLabel] = useState("");
 
   const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
 
@@ -351,14 +360,16 @@ export default function AiScreen() {
   useEffect(() => {
     async function loadContext() {
       try {
-        const [grows, plants, logs, tasks, toolRuns, diagnoses] = await Promise.all([
-          listPersonalGrows(),
-          listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
-          listPersonalLogs(),
-          listPersonalTasks(),
-          listToolRuns(),
-          getDiagnosisHistory()
-        ]);
+        const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes] =
+          await Promise.all([
+            listPersonalGrows(),
+            listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
+            listPersonalLogs(),
+            listPersonalTasks(),
+            listToolRuns(),
+            getDiagnosisHistory(),
+            listNutrientRecipes(selectedGrowId || undefined)
+          ]);
         const activeGrowId =
           selectedGrowId ||
           String(
@@ -367,6 +378,31 @@ export default function AiScreen() {
         const photosMetadata = logs.flatMap((log: any) =>
           Array.isArray(log.photoMetadata) ? log.photoMetadata : []
         );
+        let environmentHistory: any[] = [];
+        if (activeGrowId) {
+          try {
+            const sources = await listTelemetrySources(activeGrowId);
+            const endIso = new Date().toISOString();
+            const startIso = new Date(
+              Date.now() - 14 * 24 * 60 * 60 * 1000
+            ).toISOString();
+            const windows = await Promise.all(
+              sources
+                .slice(0, 5)
+                .map((source) =>
+                  getTelemetryPoints({
+                    sourceId: source.id,
+                    startIso,
+                    endIso,
+                    limit: 100
+                  })
+                )
+            );
+            environmentHistory = windows.flatMap((window) => window.points).slice(-200);
+          } catch (error) {
+            console.warn("[AI] Telemetry context unavailable:", error);
+          }
+        }
 
         setContext({
           growCount: grows.length,
@@ -379,7 +415,9 @@ export default function AiScreen() {
           tasks,
           toolRuns,
           diagnoses,
-          photosMetadata
+          photosMetadata,
+          recipes,
+          environmentHistory
         });
         if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
       } catch (err) {
@@ -395,7 +433,9 @@ export default function AiScreen() {
           tasks: [],
           toolRuns: [],
           diagnoses: [],
-          photosMetadata: []
+          photosMetadata: [],
+          recipes: [],
+          environmentHistory: []
         });
       }
     }
@@ -422,8 +462,8 @@ export default function AiScreen() {
       toolRuns: scoped(context?.toolRuns || []).slice(0, 12),
       diagnoses: scoped(context?.diagnoses || []).slice(0, 12),
       photosMetadata: scoped(context?.photosMetadata || []).slice(0, 20),
-      environmentHistory: [],
-      recipes: [],
+      environmentHistory: (context?.environmentHistory || []).slice(-100),
+      recipes: scoped(context?.recipes || []).slice(0, 20),
       phenoScores: []
     };
   }
@@ -431,6 +471,11 @@ export default function AiScreen() {
   async function askBackend(text: string) {
     const res = await askPersonalAssistant({
       message: text,
+      growId: selectedGrowId || undefined,
+      conversationId: conversationId || undefined,
+      evidenceAssetIds: evidenceAssets
+        .filter((asset) => asset.uploadStatus === "uploaded" && asset.id)
+        .map((asset) => asset.id),
       context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 
@@ -441,6 +486,9 @@ export default function AiScreen() {
     setActions(Array.isArray(res.actions) ? res.actions : []);
     setReferences(Array.isArray(res.referencedData) ? res.referencedData : []);
     setProposedWrites(Array.isArray(res.proposedWrites) ? res.proposedWrites : []);
+    setConversationId(res.conversationId || conversationId);
+    setProviderLabel(res.providerLabel || "Limited context answer");
+    setEvidenceAssets([]);
     return res.reply;
   }
 
@@ -518,6 +566,7 @@ export default function AiScreen() {
       setProposedWrites([]);
       const reply = await askBackend(text);
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      setProviderLabel("Limited context answer — API unavailable");
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
@@ -609,6 +658,7 @@ export default function AiScreen() {
             <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
+        {providerLabel ? <Text style={styles.hint}>{providerLabel}</Text> : null}
         <PersonalFeedPlacement placement="middle" routeKey="personal_ai" longContent />
         {actions.length ? (
           <View style={styles.actionCard}>
@@ -670,6 +720,15 @@ export default function AiScreen() {
       </ScrollView>
 
       <View style={styles.composer}>
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="other"
+          sourceContext={{ growId: selectedGrowId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
         <TextInput
           style={styles.input}
           value={draft}

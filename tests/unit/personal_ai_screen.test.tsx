@@ -11,6 +11,17 @@ const mockListToolRuns = jest.fn();
 const mockGetDiagnosisHistory = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockListNutrientRecipes = jest.fn();
+const mockListTelemetrySources = jest.fn();
+const mockGetTelemetryPoints = jest.fn();
+
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockMediaEvidencePicker() {
+    return <Text>Attach grow evidence</Text>;
+  };
+});
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
@@ -40,6 +51,15 @@ jest.mock("@/api/toolRuns", () => ({
 
 jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
+jest.mock("@/api/nutrientRecipes", () => ({
+  listNutrientRecipes: (...args: any[]) => mockListNutrientRecipes(...args)
+}));
+
+jest.mock("@/api/telemetry", () => ({
+  listTelemetrySources: (...args: any[]) => mockListTelemetrySources(...args),
+  getTelemetryPoints: (...args: any[]) => mockGetTelemetryPoints(...args)
 }));
 
 describe("personal AI screen", () => {
@@ -75,6 +95,9 @@ describe("personal AI screen", () => {
     mockListPersonalPlants.mockResolvedValue([]);
     mockListToolRuns.mockResolvedValue([]);
     mockGetDiagnosisHistory.mockResolvedValue([]);
+    mockListNutrientRecipes.mockResolvedValue([]);
+    mockListTelemetrySources.mockResolvedValue([]);
+    mockGetTelemetryPoints.mockResolvedValue({ points: [] });
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
     mockCreatePersonalTask.mockResolvedValue({ id: "ai-task-1" });
   });
@@ -114,7 +137,9 @@ describe("personal AI screen", () => {
         }
       ],
       actions: [],
-      referencedData: []
+      referencedData: [],
+      conversationId: "conversation-1",
+      providerLabel: "GPT-assisted grow review"
     });
 
     const screen = render(<AiScreen />);
@@ -129,6 +154,14 @@ describe("personal AI screen", () => {
 
     await waitFor(() =>
       expect(screen.getByText("Drafted actions require confirmation")).toBeTruthy()
+    );
+    expect(screen.getByText("GPT-assisted grow review")).toBeTruthy();
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        conversationId: undefined,
+        evidenceAssetIds: []
+      })
     );
     expect(mockCreatePersonalTask).not.toHaveBeenCalled();
 

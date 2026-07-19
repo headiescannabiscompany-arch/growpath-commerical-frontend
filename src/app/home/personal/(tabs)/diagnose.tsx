@@ -1,19 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   analyzeDiagnosis,
-  diagnoseImage,
+  diagnoseEvidence,
   getDiagnosisProviderStatus,
   submitDiagnosisFeedback
 } from "@/api/diagnose";
@@ -21,6 +12,7 @@ import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
@@ -31,6 +23,8 @@ import {
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import type { EvidenceAsset } from "@/types/evidence";
+import { providerEvidencePayload } from "@/api/evidence";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -158,7 +152,7 @@ export default function DiagnoseRoute() {
   const [feedPH, setFeedPH] = useState("");
   const [runoffPH, setRunoffPH] = useState("");
   const [notes, setNotes] = useState("");
-  const [photoUri, setPhotoUri] = useState("");
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [result, setResult] = useState<NormalizedDiagnosis | null>(null);
   const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
   const [followUpAnswer, setFollowUpAnswer] = useState("");
@@ -231,22 +225,9 @@ export default function DiagnoseRoute() {
     };
   }
 
-  async function choosePhoto() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setFeedback("Photo-library permission is required to select an image.");
-      return;
-    }
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 0.8
-    });
-    if (!picked.canceled && picked.assets[0]?.uri) setPhotoUri(picked.assets[0].uri);
-  }
-
   async function runDiagnosis() {
-    if (!enabled || running || (!notes.trim() && !photoUri)) return;
+    const evidence = providerEvidencePayload(evidenceAssets);
+    if (!enabled || running || (!notes.trim() && !evidence.images.length)) return;
     setRunning(true);
     setFeedback("");
     try {
@@ -286,8 +267,14 @@ export default function DiagnoseRoute() {
         environment,
         numbers
       };
-      const response = photoUri
-        ? await diagnoseImage(photoUri, { growId, plantId, context })
+      const response = evidence.images.length
+        ? await diagnoseEvidence({
+            growId,
+            plantId,
+            context,
+            photoUrls: evidence.images,
+            evidenceAssetIds: evidence.evidenceAssetIds
+          })
         : await analyzeDiagnosis({ growId, plantId, ...context });
       const normalized = normalizeDiagnosisResponse(response);
       setResult(normalized);
@@ -725,35 +712,19 @@ export default function DiagnoseRoute() {
           </View>
         </View>
 
-        <View style={styles.row}>
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={choosePhoto}
-            accessibilityRole="button"
-            accessibilityLabel={
-              photoUri ? "Change diagnosis photo" : "Add diagnosis photo"
-            }
-          >
-            <Text style={styles.secondaryButtonText}>
-              {photoUri ? "Change Photo" : "Add Photo"}
-            </Text>
-          </Pressable>
-          {photoUri ? (
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => setPhotoUri("")}
-              accessibilityRole="button"
-              accessibilityLabel="Remove diagnosis photo"
-            >
-              <Text style={styles.secondaryButtonText}>Remove Photo</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="diagnosis"
+          sourceContext={{ growId, plantId }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
         <Text style={styles.photoPolicy}>
           Photos are used for this diagnosis request. They are not used to train GrowPath
           AI models unless you explicitly opt in.
         </Text>
-        {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
 
         {!enabled ? (
           <Text style={styles.locked}>
@@ -788,10 +759,18 @@ export default function DiagnoseRoute() {
           </View>
         ) : null}
         <Pressable
-          disabled={!enabled || running || (!notes.trim() && !photoUri)}
+          disabled={
+            !enabled ||
+            running ||
+            (!notes.trim() && !providerEvidencePayload(evidenceAssets).images.length)
+          }
           style={[
             styles.primaryButton,
-            (!enabled || running || (!notes.trim() && !photoUri)) && styles.disabled
+            (!enabled ||
+              running ||
+              (!notes.trim() &&
+                !providerEvidencePayload(evidenceAssets).images.length)) &&
+              styles.disabled
           ]}
           onPress={runDiagnosis}
           accessibilityRole="button"
