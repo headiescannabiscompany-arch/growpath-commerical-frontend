@@ -143,12 +143,13 @@ describe("commercial feed API", () => {
     const result = await listCommercialFeedCampaigns({
       type: "all",
       q: "soil",
-      limit: 3
+      limit: 3,
+      placement: "tool"
     });
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
       invalidateOn401: false,
-      params: { q: "soil", limit: 3 }
+      params: { q: "soil", limit: 3, placement: "tool" }
     });
     expect(result.nextCursor).toBe("cursor-2");
     expect(result.items).toEqual([

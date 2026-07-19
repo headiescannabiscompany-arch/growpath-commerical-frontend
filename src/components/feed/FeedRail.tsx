@@ -13,7 +13,24 @@ type FeedRailProps = {
   plan?: string | null;
   railMode?: "standard" | "education-only" | "promo-only";
   placement?: "top" | "middle" | "bottom";
+  routeKey?: string;
+  growInterests?: string[];
 };
+
+export type FeedSlotKey =
+  | "home_hero"
+  | "home_top"
+  | "home_middle"
+  | "home_bottom"
+  | "page_top"
+  | "page_middle"
+  | "page_bottom"
+  | "course"
+  | "tool"
+  | "forum"
+  | "product"
+  | "facility"
+  | "commercial";
 
 type AdItem = {
   title: string;
@@ -27,7 +44,60 @@ type AdItem = {
   promotionCount: number;
   relevanceScore?: number;
   imageUrl: string;
+  placements?: string[];
+  growInterests?: string[];
 };
+
+const CONTEXT_SLOT_PATTERNS: Array<[RegExp, FeedSlotKey]> = [
+  [/facility/i, "facility"],
+  [/commercial/i, "commercial"],
+  [/course|lesson/i, "course"],
+  [/tool|diagnos|recipe|nutrient|environment|harvest|pheno|clone|tissue/i, "tool"],
+  [/forum|community|question/i, "forum"],
+  [/product|storefront|store/i, "product"]
+];
+
+export function resolveFeedSlotKey(
+  routeKey = "page",
+  placement?: FeedRailProps["placement"]
+): FeedSlotKey {
+  const normalized = String(routeKey || "page");
+  const contextSlot = CONTEXT_SLOT_PATTERNS.find(([pattern]) => pattern.test(normalized));
+  if (contextSlot) return contextSlot[1];
+  if (/^(home|personal_home)$/i.test(normalized)) {
+    return placement ? (`home_${placement}` as FeedSlotKey) : "home_hero";
+  }
+  return `page_${placement || "top"}` as FeedSlotKey;
+}
+
+function normalizedValues(values: string[] = []) {
+  return new Set(
+    values.map((value) => String(value).trim().toLowerCase()).filter(Boolean)
+  );
+}
+
+export function campaignMatchesPlacement(
+  campaign: Pick<CommercialFeedCampaign, "placements">,
+  slotKey: FeedSlotKey
+) {
+  const placements = normalizedValues(campaign.placements || []);
+  if (!placements.size || placements.has("feed")) return true;
+  return placements.has(slotKey);
+}
+
+export function campaignInterestScore(
+  campaignInterests: string[] = [],
+  viewerInterests: string[] = []
+) {
+  const campaign = normalizedValues(campaignInterests);
+  const viewer = normalizedValues(viewerInterests);
+  if (!campaign.size || !viewer.size) return 0;
+  let matches = 0;
+  campaign.forEach((interest) => {
+    if (viewer.has(interest)) matches += 1;
+  });
+  return matches * 25;
+}
 
 function campaignStorefrontSlug(post: CommercialFeedCampaign) {
   return String(
@@ -124,7 +194,9 @@ function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
     clickCount: Number((post as any).clickCount || 0),
     promotionCount: Number((post as any).promotionCount || 0),
     relevanceScore: Number((post as any).relevanceScore || 0),
-    imageUrl: campaignImage(post)
+    imageUrl: campaignImage(post),
+    placements: post.placements,
+    growInterests: post.growInterests
   };
 }
 
@@ -288,23 +360,39 @@ export default function FeedRail({
   slots,
   mode,
   railMode = "standard",
-  placement = "top"
+  placement = "top",
+  routeKey = "page",
+  growInterests = []
 }: FeedRailProps) {
   const [campaignAds, setCampaignAds] = useState<AdItem[]>([]);
+  const slotKey = resolveFeedSlotKey(routeKey, placement);
 
   useEffect(() => {
     let cancelled = false;
-    listCommercialFeedCampaigns({ limit: Math.max(slots * 3, 6), sort: "new" })
+    listCommercialFeedCampaigns({
+      limit: Math.max(slots * 10, 20),
+      sort: "new",
+      placement: slotKey
+    })
       .then((res) => {
         if (cancelled) return;
-        const nextAds = res.items.map(mapCampaignToAd).filter((item) => item.title);
+        const nextAds = res.items
+          .filter((campaign) => campaignMatchesPlacement(campaign, slotKey))
+          .map(mapCampaignToAd)
+          .map((item) => ({
+            ...item,
+            relevanceScore:
+              Number(item.relevanceScore || 0) +
+              campaignInterestScore(item.growInterests, growInterests)
+          }))
+          .filter((item) => item.title);
         if (nextAds.length) setCampaignAds(nextAds);
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [slots]);
+  }, [growInterests.join("|"), slotKey, slots]);
 
   if (!slots || slots <= 0) return null;
 

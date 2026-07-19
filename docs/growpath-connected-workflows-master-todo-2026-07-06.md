@@ -207,9 +207,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
 
 33. Feed placement engine
-   - Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
-   - Plan-aware placement rules.
-   - Context-aware targeting.
+   - [x] Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
+   - [x] Plan-aware placement rules.
+   - [x] Context-aware targeting.
 
 34. Feed campaign builder
    - Campaign type, destination, creative, placement, audience, schedule, review.
@@ -919,6 +919,7 @@ Completed and pushed:
 628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
 629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
 630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
+631. Feed placements now resolve through canonical home hero/top/middle/bottom, page top/middle/bottom, course, tool, Forum, product, Facility, and Commercial slot keys; the API filters campaigns by eligible slot while preserving legacy `feed` campaigns, existing plan policy controls placement density, and viewer grow-interest overlap contributes only evidence-backed relevance weight before the established freshness/engagement/exposure rotation.
 
 ## Working Rule For Codex
 

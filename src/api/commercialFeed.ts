@@ -43,7 +43,7 @@ export type CommercialFeedCampaign = {
   reminderPreference?: string;
   recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
-  placements?: Array<"feed" | "storefront" | "course" | "live" | "facility">;
+  placements?: FeedCampaignPlacement[];
   destination?: { type?: string; id?: string; url?: string; label?: string };
   cta?: { label?: string; kind?: string };
   engagementCount?: number;
@@ -65,6 +65,22 @@ export type CommercialFeedCampaign = {
  * CommercialFeedCampaign so Feed remains outreach/campaign language.
  */
 export type CommercialFeedPost = CommercialFeedCampaign;
+
+export type FeedCampaignPlacement =
+  | "feed"
+  | "home_hero"
+  | "home_top"
+  | "home_middle"
+  | "home_bottom"
+  | "page_top"
+  | "page_middle"
+  | "page_bottom"
+  | "course"
+  | "tool"
+  | "forum"
+  | "product"
+  | "facility"
+  | "commercial";
 
 function normalizeCampaign(row: any): CommercialFeedCampaign {
   return {
@@ -103,6 +119,7 @@ export async function listCommercialFeedCampaigns(
     sort?: "new" | "top";
     cursor?: string | null;
     limit?: number;
+    placement?: FeedCampaignPlacement;
   } = {}
 ) {
   const res: any = await apiRequest("/api/commercial/feed", {
@@ -116,7 +133,8 @@ export async function listCommercialFeedCampaigns(
       ...(params.q ? { q: params.q } : {}),
       ...(params.sort ? { sort: params.sort } : {}),
       ...(params.cursor ? { cursor: params.cursor } : {}),
-      ...(params.limit ? { limit: params.limit } : {})
+      ...(params.limit ? { limit: params.limit } : {}),
+      ...(params.placement ? { placement: params.placement } : {})
     }
   });
   const items = Array.isArray(res?.items) ? res.items.map(normalizeCampaign) : [];
@@ -154,7 +172,7 @@ export async function createCommercialFeedCampaign(input: {
   reminderPreference?: string;
   recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
-  placements?: Array<"feed" | "storefront" | "course" | "live" | "facility">;
+  placements?: FeedCampaignPlacement[];
   cta?: { label?: string; kind?: string };
 }) {
   const imageUrl = await persistImageUri(input.imageUrl);

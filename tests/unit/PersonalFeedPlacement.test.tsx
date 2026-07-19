@@ -12,6 +12,10 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockEntitlements
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { growInterests: { methods: ["Living Soil"] } } })
+}));
+
 describe("PersonalFeedPlacement", () => {
   beforeEach(() => {
     mockEntitlements.mode = "personal";
