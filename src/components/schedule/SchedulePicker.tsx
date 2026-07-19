@@ -1,5 +1,5 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { radius } from "@/theme/theme";
 
@@ -28,6 +28,31 @@ function dateKey(daysFromToday = 0) {
   const date = new Date();
   date.setDate(date.getDate() + daysFromToday);
   return date.toISOString().slice(0, 10);
+}
+
+function localDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function initialCalendarMonth(value: string) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, 1);
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function calendarDays(month: Date) {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+  return Array.from({ length: 42 }, (_, index) => {
+    const value = new Date(start);
+    value.setDate(start.getDate() + index);
+    return value;
+  });
 }
 
 function eveningKey() {
@@ -73,6 +98,8 @@ export default function SchedulePicker({
   reminderPlaceholder = "Reminder, e.g. 24 hours before",
   recurrencePlaceholder = "Recurrence, e.g. every 7 days"
 }: SchedulePickerProps) {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => initialCalendarMonth(dueDate));
   const resolvedTimezone =
     timezone || Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "local time";
   const quickDates = [
@@ -112,6 +139,23 @@ export default function SchedulePicker({
     recurrence ? `Repeats: ${recurrence}` : "Does not repeat",
     `Timezone: ${resolvedTimezone}`
   ].join(" | ");
+  const monthDays = useMemo(() => calendarDays(calendarMonth), [calendarMonth]);
+  const monthLabel = calendarMonth.toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric"
+  });
+  const selectedDateKey = String(dueDate || "").slice(0, 10);
+
+  function openCalendar() {
+    setCalendarMonth(initialCalendarMonth(dueDate));
+    setCalendarOpen(true);
+  }
+
+  function moveMonth(offset: number) {
+    setCalendarMonth(
+      (current) => new Date(current.getFullYear(), current.getMonth() + offset, 1)
+    );
+  }
 
   function clearSchedule() {
     onDueDateChange("");
@@ -144,6 +188,14 @@ export default function SchedulePicker({
           }
           autoCapitalize="none"
         />
+        <Pressable
+          style={styles.calendarButton}
+          accessibilityRole="button"
+          accessibilityLabel={`${accessibilityPrefix} open calendar`}
+          onPress={openCalendar}
+        >
+          <Text style={styles.calendarButtonText}>Choose date</Text>
+        </Pressable>
         <TextInput
           style={styles.flexInput}
           placeholder={reminderPlaceholder}
@@ -154,6 +206,96 @@ export default function SchedulePicker({
           }
         />
       </View>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={calendarOpen}
+        onRequestClose={() => setCalendarOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View
+            style={styles.calendarPanel}
+            accessibilityLabel={`${accessibilityPrefix} calendar`}
+          >
+            <View style={styles.calendarHeader}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${accessibilityPrefix} previous month`}
+                style={styles.monthButton}
+                onPress={() => moveMonth(-1)}
+              >
+                <Text style={styles.monthButtonText}>{"<"}</Text>
+              </Pressable>
+              <Text style={styles.monthTitle}>{monthLabel}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${accessibilityPrefix} next month`}
+                style={styles.monthButton}
+                onPress={() => moveMonth(1)}
+              >
+                <Text style={styles.monthButtonText}>{">"}</Text>
+              </Pressable>
+            </View>
+            <View style={styles.weekRow}>
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <Text key={day} style={styles.weekDay}>
+                  {day}
+                </Text>
+              ))}
+            </View>
+            <View style={styles.calendarGrid}>
+              {monthDays.map((day) => {
+                const value = localDateKey(day);
+                const inMonth = day.getMonth() === calendarMonth.getMonth();
+                const selected = value === selectedDateKey;
+                return (
+                  <Pressable
+                    key={value}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${accessibilityPrefix} calendar date ${value}`}
+                    onPress={() => {
+                      onDueDateChange(value);
+                      setCalendarOpen(false);
+                    }}
+                    style={[styles.dayButton, selected && styles.dayButtonSelected]}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        !inMonth && styles.dayTextOutside,
+                        selected && styles.dayTextSelected
+                      ]}
+                    >
+                      {day.getDate()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={styles.calendarFooter}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${accessibilityPrefix} calendar today`}
+                style={styles.clearButton}
+                onPress={() => {
+                  onDueDateChange(localDateKey(new Date()));
+                  setCalendarOpen(false);
+                }}
+              >
+                <Text style={styles.clearText}>Today</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${accessibilityPrefix} close calendar`}
+                style={styles.clearButton}
+                onPress={() => setCalendarOpen(false)}
+              >
+                <Text style={styles.clearText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
       {onAllDayChange ? (
         <View style={styles.chipRow}>
           <Pressable
@@ -275,6 +417,65 @@ const styles = StyleSheet.create({
     minWidth: 180,
     paddingHorizontal: 12,
     paddingVertical: 10
+  },
+  calendarButton: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  calendarButtonText: { color: "#334155", fontSize: 12, fontWeight: "900" },
+  modalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(15, 23, 42, 0.55)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 20
+  },
+  calendarPanel: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: radius.card,
+    maxWidth: 420,
+    padding: 16,
+    width: "100%"
+  },
+  calendarHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  monthButton: { paddingHorizontal: 14, paddingVertical: 8 },
+  monthButtonText: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  monthTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
+  weekRow: { flexDirection: "row" },
+  weekDay: {
+    color: "#64748B",
+    flexBasis: "14.2857%",
+    fontSize: 10,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  calendarGrid: { flexDirection: "row", flexWrap: "wrap", marginTop: 6 },
+  dayButton: {
+    alignItems: "center",
+    aspectRatio: 1,
+    flexBasis: "14.2857%",
+    justifyContent: "center"
+  },
+  dayButtonSelected: { backgroundColor: "#16A34A", borderRadius: 999 },
+  dayText: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  dayTextOutside: { color: "#CBD5E1" },
+  dayTextSelected: { color: "#FFFFFF" },
+  calendarFooter: {
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "flex-end",
+    marginTop: 12
   },
   label: { color: "#334155", fontSize: 13, fontWeight: "900" },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

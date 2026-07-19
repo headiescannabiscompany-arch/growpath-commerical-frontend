@@ -1499,6 +1499,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Marketing plan launch date"),
       "2026-08-01"
     );
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan reminder preset 1 hour before")
+    );
+    fireEvent.press(screen.getByLabelText("Marketing plan recurrence preset weekly"));
     fireEvent.changeText(screen.getByLabelText("Marketing plan budget"), "150");
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan linked product"),
@@ -1539,6 +1543,8 @@ describe("commercial workflow pages", () => {
             platform: "multi",
             status: "scheduled",
             launchDate: "2026-08-01",
+            reminderPreference: "1 hour before",
+            recurrenceRule: "weekly",
             linkedProductId: "product-2",
             linkedProductLineId: "line-1",
             linkedCourseId: "course-2",

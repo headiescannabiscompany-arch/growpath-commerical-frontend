@@ -68,4 +68,27 @@ describe("SchedulePicker", () => {
     expect(onRecurrenceChange).toHaveBeenLastCalledWith("");
     expect(onAllDayChange).toHaveBeenLastCalledWith(false);
   });
+
+  it("opens a shared calendar modal and selects an exact date", () => {
+    const onDueDateChange = jest.fn();
+    const screen = render(
+      <SchedulePicker
+        dueDate="2026-07-19"
+        reminder=""
+        recurrence=""
+        onDueDateChange={onDueDateChange}
+        onReminderChange={jest.fn()}
+        onRecurrenceChange={jest.fn()}
+        accessibilityPrefix="Recipe timeline"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Recipe timeline open calendar"));
+    expect(screen.getByLabelText("Recipe timeline calendar")).toBeTruthy();
+    expect(screen.getByText("July 2026")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Recipe timeline calendar date 2026-07-23"));
+    expect(onDueDateChange).toHaveBeenCalledWith("2026-07-23");
+    expect(screen.queryByLabelText("Recipe timeline calendar")).toBeNull();
+  });
 });

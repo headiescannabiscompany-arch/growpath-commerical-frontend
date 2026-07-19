@@ -165,7 +165,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Personal tasks: grow/course/tool/live reminders.
 
 23. SchedulePicker
-   - Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
+   - [x] Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
 
 24. Schedule / Agenda page
    - Agenda/day/week/month.
@@ -909,6 +909,7 @@ Completed and pushed:
 618. Stale underscored `/home/_personal` and `/home/_facility` route files were removed from `src/app`, dropping route inventory from 207 to 205 and keeping Personal/Facility entry through the canonical `/home/personal`, `/home/facility/select`, and `/home/facility` route family.
 619. UI route inventory now fails on underscored non-layout files under `src/app`, preventing helper/private route pollution from reintroducing hidden `/home/_*` paths while still allowing Expo `_layout` files.
 620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
+621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
 
 ## Working Rule For Codex
 

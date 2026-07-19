@@ -8,6 +8,7 @@ import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import { radius } from "@/theme/theme";
 
@@ -18,6 +19,8 @@ type CampaignForm = {
   platform: Campaign["platform"];
   status: Campaign["status"];
   launchDate: string;
+  launchReminder: string;
+  launchRecurrence: string;
   totalBudget: string;
   linkedProductId: string;
   linkedProductLineId: string;
@@ -36,6 +39,8 @@ const EMPTY_FORM: CampaignForm = {
   platform: "multi",
   status: "draft",
   launchDate: "",
+  launchReminder: "24 hours before",
+  launchRecurrence: "",
   totalBudget: "",
   linkedProductId: "",
   linkedProductLineId: "",
@@ -179,6 +184,8 @@ export default function CommercialMarketingRoute() {
         platform: form.platform,
         status: form.status,
         launchDate: form.launchDate.trim() || undefined,
+        reminderPreference: form.launchReminder.trim() || undefined,
+        recurrenceRule: form.launchRecurrence.trim() || undefined,
         targetUrl: form.targetUrl.trim() || undefined,
         externalUrl: form.targetUrl.trim() || undefined,
         imageUrl: imageUrl || undefined,
@@ -332,12 +339,22 @@ export default function CommercialMarketingRoute() {
             placeholder="draft, scheduled, active"
             style={styles.input}
           />
-          <TextInput
-            value={form.launchDate}
-            onChangeText={(launchDate) => setForm((prev) => ({ ...prev, launchDate }))}
-            accessibilityLabel="Marketing plan launch date"
-            placeholder="Launch date"
-            style={styles.input}
+          <SchedulePicker
+            dueDate={form.launchDate}
+            reminder={form.launchReminder}
+            recurrence={form.launchRecurrence}
+            onDueDateChange={(launchDate) => setForm((prev) => ({ ...prev, launchDate }))}
+            onReminderChange={(launchReminder) =>
+              setForm((prev) => ({ ...prev, launchReminder }))
+            }
+            onRecurrenceChange={(launchRecurrence) =>
+              setForm((prev) => ({ ...prev, launchRecurrence }))
+            }
+            accessibilityPrefix="Marketing plan"
+            dueDateAccessibilityLabel="Marketing plan launch date"
+            reminderAccessibilityLabel="Marketing plan launch reminder"
+            recurrenceAccessibilityLabel="Marketing plan launch recurrence"
+            dueDatePlaceholder="Launch date/time"
           />
           <TextInput
             value={form.totalBudget}
