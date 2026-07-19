@@ -92,17 +92,17 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Failed credentials, expired reset links, email-delivery outages, and server/network disconnects show distinct actionable recovery paths.
 
 10. Pricing display
-   - Pro: $10/month, $100/year.
-   - Commercial: $50/month, $500/year.
-   - Facility: $100/month, $1,000/year.
-   - Stripe annual monthly-equivalent copy should be clear and not look contradictory.
+   - [x] Pro: $10/month, $100/year.
+   - [x] Commercial: $50/month, $500/year.
+   - [x] Facility: $100/month, $1,000/year.
+   - [x] Stripe annual monthly-equivalent copy is clear and does not look contradictory.
 
 ## P1 - Connected Workflow Foundation
 
 11. ToolRun foundation
-   - Confirm all serious tools persist ToolRun records.
-   - ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
-   - Tool outputs can create tasks/logs/timeline events.
+   - [x] Confirm all serious tools persist ToolRun records.
+   - [x] ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
+   - [x] Tool outputs can create tasks/logs/timeline events.
 
 12. Recipe model
    - Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.

@@ -8,6 +8,11 @@ type SaveAndOpenArgs = {
   router: { push: (href: string) => void };
   growId?: string;
   plantId?: string;
+  facilityId?: string;
+  roomId?: string;
+  productId?: string;
+  batchId?: string;
+  courseId?: string;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -81,6 +86,11 @@ async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
       toolType,
       growId,
       plantId: args.plantId,
+      facilityId: args.facilityId,
+      roomId: args.roomId,
+      productId: args.productId,
+      batchId: args.batchId,
+      courseId: args.courseId,
       cropProfileId: args.cropProfileId,
       cropIdentity: args.cropIdentity,
       selectedPlantContext: args.selectedPlantContext,

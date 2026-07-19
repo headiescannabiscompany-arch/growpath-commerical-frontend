@@ -5,6 +5,11 @@ export interface ToolRun {
   _id?: string;
   growId?: string;
   plantId?: string | null;
+  facilityId?: string | null;
+  roomId?: string | null;
+  productId?: string | null;
+  batchId?: string | null;
+  courseId?: string | null;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -34,6 +39,7 @@ export interface ToolRun {
   disagreements?: Array<Record<string, any>>;
   limitations?: string[];
   linkedLogId?: string | null;
+  linkedTimelineEventId?: string | null;
   linkedTaskIds?: string[];
   linkedTaskId?: string | null;
   linkedDiagnosisId?: string | null;
@@ -145,6 +151,11 @@ export function normalizeToolRun(row: any): ToolRun {
           toolType: normalized.toolType,
           growId: row?.growId || null,
           plantId: normalized.plantId || null,
+          facilityId: row?.facilityId || null,
+          roomId: row?.roomId || null,
+          productId: row?.productId || null,
+          batchId: row?.batchId || null,
+          courseId: row?.courseId || null,
           cropProfileId: normalized.cropProfileId || null,
           cropIdentity: normalized.cropIdentity || null,
           selectedPlantContext: normalized.selectedPlantContext || null,
@@ -317,6 +328,11 @@ export async function createToolRun(payload: {
   toolType: string;
   growId?: string;
   plantId?: string;
+  facilityId?: string;
+  roomId?: string;
+  productId?: string;
+  batchId?: string;
+  courseId?: string;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -340,6 +356,11 @@ export async function createToolRun(payload: {
       sourceType: payload.sourceType || "manual_tool_run",
       sourceObjectId: payload.sourceObjectId || null,
       plantId: payload.plantId || payload.selectedPlantContext?.id || undefined,
+      facilityId: payload.facilityId || undefined,
+      roomId: payload.roomId || undefined,
+      productId: payload.productId || undefined,
+      batchId: payload.batchId || undefined,
+      courseId: payload.courseId || undefined,
       cropProfileId:
         payload.cropProfileId ||
         payload.selectedPlantContext?.cropProfileId ||
