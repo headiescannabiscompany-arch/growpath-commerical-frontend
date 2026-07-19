@@ -159,10 +159,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
 
 22. Task Center
-   - Today, overdue, upcoming, completed, assigned, source filters.
-   - Commercial tasks: storefront/product/course/live/order setup.
-   - Facility tasks: room/SOP/team/proof/approval.
-   - Personal tasks: grow/course/tool/live reminders.
+   - [x] Today, overdue, upcoming, completed, assigned, source filters.
+   - [x] Commercial tasks: storefront/product/course/live/order setup.
+   - [x] Facility tasks: room/SOP/team/proof/approval.
+   - [x] Personal tasks: grow/course/tool/live reminders.
 
 23. SchedulePicker
    - Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
@@ -908,6 +908,7 @@ Completed and pushed:
 617. Live URL verification now falls back to PowerShell web requests on Windows when Node fetch hits local TLS/CA failures, so `npm run verify:live-urls` can pass against production without repeatedly requiring a manual `NODE_OPTIONS=--use-system-ca` workaround.
 618. Stale underscored `/home/_personal` and `/home/_facility` route files were removed from `src/app`, dropping route inventory from 207 to 205 and keeping Personal/Facility entry through the canonical `/home/personal`, `/home/facility/select`, and `/home/facility` route family.
 619. UI route inventory now fails on underscored non-layout files under `src/app`, preventing helper/private route pollution from reintroducing hidden `/home/_*` paths while still allowing Expo `_layout` files.
+620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
 
 ## Working Rule For Codex
 

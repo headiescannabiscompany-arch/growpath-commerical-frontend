@@ -62,6 +62,7 @@ describe("PersonalTaskCenterRoute", () => {
         priority: "high",
         sourceType: "sensor_alert",
         sourceObjectId: "alert-1",
+        assignedToUserId: "user-1",
         createdAt: "2026-07-07T00:00:00Z"
       },
       {
@@ -186,6 +187,25 @@ describe("PersonalTaskCenterRoute", () => {
       completed: false
     });
     mockUpdatePersonalTask.mockResolvedValue({ id: "task-overdue", completed: true });
+  });
+
+  it("filters the personal queue by status and source", async () => {
+    const screen = render(<PersonalTaskCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Inspect IPM issue")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Personal task queue filter assigned"));
+    expect(screen.getByText("Inspect IPM issue")).toBeTruthy();
+    expect(screen.queryByText(/Mixed soil/)).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Personal task queue filter completed"));
+    expect(screen.getByText(/Mixed soil/)).toBeTruthy();
+    expect(screen.queryByText("Inspect IPM issue")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Personal task queue filter all"));
+    fireEvent.press(screen.getByLabelText("Personal task source filter ai_diagnosis"));
+    expect(screen.getByText("Review AI diagnosis")).toBeTruthy();
+    expect(screen.queryByText(/Mixed soil/)).toBeNull();
   });
 
   it("groups existing tasks and creates source-linked schedule tasks", async () => {
