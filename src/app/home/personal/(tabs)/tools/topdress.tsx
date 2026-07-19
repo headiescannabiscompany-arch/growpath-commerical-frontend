@@ -124,6 +124,12 @@ export default function TopdressToolScreen() {
       toolKey="topdress-plan"
       title="Topdress Planner"
       subtitle="Plan amendment amount by soil volume, stage, and plant count, then create the grow task."
+      aiPrefill={{
+        buttonLabel: "Fill topdress plan from grow",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this topdress application from the selected grow and plant count, actual soil/media recipe and volume, current stage, saved ingredient/product analysis, prior feeds/topdresses, water profile, pH/EC checks, diagnoses, nutrient release timeline, K/Ca/Mg antagonism warnings, and harvest estimate. Return JSON only with exactly these string keys: productName, plantCount, soilVolumePerPlant, soilVolumeUnit, stage, doseRate, doseUnit, releaseClass, daysUntilHarvest, plannedApplyDate, decisionNotes. Product, guaranteed-analysis-derived rate, release class, pot volume, dates, and counts must come from saved records or explicit user input. Never choose a dose from symptoms or photos alone. Leave unknowns blank. In decisionNotes explain whether application is supported, too late/fast/slow for the stage, water-in considerations for this medium and water profile, antagonism or stacking risks, uncertainty, and what the user must verify before creating tasks.`
+      }}
       fields={[
         {
           key: "productName",
@@ -162,6 +168,12 @@ export default function TopdressToolScreen() {
           key: "plannedApplyDate",
           label: "Planned apply date",
           defaultValue: tomorrow(1)
+        },
+        {
+          key: "decisionNotes",
+          label: "Application decision notes (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -177,7 +189,8 @@ export default function TopdressToolScreen() {
         releaseClass: values.releaseClass,
         daysUntilHarvest: n(values.daysUntilHarvest),
         plannedApplyDate: values.plannedApplyDate,
-        waterInAfterApply: true
+        waterInAfterApply: true,
+        decisionNotes: values.decisionNotes || undefined
       })}
       buildMetrics={(outputs) => [
         {

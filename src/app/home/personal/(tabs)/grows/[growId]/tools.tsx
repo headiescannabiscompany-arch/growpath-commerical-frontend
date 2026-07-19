@@ -76,9 +76,9 @@ const GROW_WORKSPACE_GROUPS = [
   {
     title: "Water, feed & environment",
     items: [
-      ["Watering", "/home/personal/tools/watering"],
-      ["Feeding", "/home/personal/tools/feeding-schedule"],
-      ["Recipe Builder", "/home/personal/tools/recipe-builder"],
+      ["Watering plan", "/home/personal/tools/watering"],
+      ["Feeding schedule", "/home/personal/tools/feeding-schedule"],
+      ["Feed / topdress recipes", "/home/personal/tools/recipe-builder"],
       ["Environment review", "/home/personal/tools/environment-analysis"],
       ["pH / EC", "/home/personal/tools/ph-ec"],
       ["Crop steering", "/home/personal/tools/crop-steering-project"],
