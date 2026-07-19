@@ -439,6 +439,7 @@ describe("commercial workflow pages", () => {
               linkedLiveIds: ["live-1"],
               modules: [{ title: "Start here" }],
               lessons: [{ title: "Application rate" }],
+              quizzes: [{ title: "Label check" }],
               tasks: [{ title: "Watch lesson" }],
               status: "draft"
             },
@@ -1058,6 +1059,14 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 quizzes/)).toBeTruthy();
+    expect(screen.getAllByText("Learner Preview").length).toBeGreaterThan(0);
+    expect(screen.getByText("Course Discussion")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/home/commercial/courses/course-1?preview=1"
+      })
+    ).toBeTruthy();
 
     fireEvent.press(
       screen.getByLabelText("Create setup task for Bloom Topdress Workshop")
@@ -1148,12 +1157,20 @@ describe("commercial workflow pages", () => {
       "https://example.com/label.pdf"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course Forum Q&A thread"),
+      "thread-bloom-course"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course module outline"),
       "How the product works\nApplication timing"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson outline"),
       "Read the label\nApply and water in"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course quiz outline"),
+      "When should you water in? | Immediately | One week later"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course task checklist"),
@@ -1196,6 +1213,7 @@ describe("commercial workflow pages", () => {
               "https://example.com/video-2"
             ],
             documentUrls: ["https://example.com/label.pdf"],
+            forumThreadId: "thread-bloom-course",
             modules: [
               expect.objectContaining({ title: "How the product works", sortOrder: 1 }),
               expect.objectContaining({ title: "Application timing", sortOrder: 2 })
@@ -1210,6 +1228,15 @@ describe("commercial workflow pages", () => {
                 title: "Apply and water in",
                 sortOrder: 2,
                 lessonType: "article"
+              })
+            ],
+            quizzes: [
+              expect.objectContaining({
+                title: "When should you water in?",
+                question: "When should you water in?",
+                options: ["Immediately", "One week later"],
+                sortOrder: 1,
+                status: "draft"
               })
             ],
             tasks: [
@@ -1451,6 +1478,19 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+  });
+
+  it("renders the commercial owner learner preview for draft courses", async () => {
+    const screen = render(
+      <CommercialCourseDetailRoute route={{ params: { preview: "1" } }} />
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Living Soil Product Use").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Learner preview")).toBeTruthy();
+    expect(screen.getByLabelText("Course learner preview banner")).toBeTruthy();
+    expect(screen.getByText(/lessons available in this course outline/)).toBeTruthy();
   });
 
   it("creates marketing plans with linked products and click tracking", async () => {

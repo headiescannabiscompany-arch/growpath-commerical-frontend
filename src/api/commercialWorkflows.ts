@@ -141,6 +141,7 @@ export type CommercialCourse = {
   forumThreadId?: string;
   modules?: Array<Record<string, any>>;
   lessons?: Array<Record<string, any>>;
+  quizzes?: Array<Record<string, any>>;
   tasks?: Array<Record<string, any>>;
   status?: "draft" | "published" | "archived";
   createdAt?: string;

@@ -94,7 +94,8 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialCourseDetailRoute({ route }: { route?: any } = {}) {
-  const params = useLocalSearchParams<{ courseId?: string }>();
+  const params = useLocalSearchParams<{ courseId?: string; preview?: string }>();
+  const learnerPreview = cleanId(params.preview || route?.params?.preview) === "1";
   const courseId = useMemo(
     () => cleanId(params.courseId || route?.params?.courseId || route?.params?.id),
     [params.courseId, route?.params?.courseId, route?.params?.id]
@@ -344,6 +345,27 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       {loading ? <Text style={styles.muted}>Loading commercial course...</Text> : null}
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
+
+      {learnerPreview && course ? (
+        <AppCard>
+          <Text style={styles.kicker}>Learner preview</Text>
+          <Text style={styles.title}>{course.title || "Untitled course"}</Text>
+          {course.bannerUrl ? (
+            <Image
+              accessibilityLabel="Course learner preview banner"
+              source={{ uri: resolveImageUri(course.bannerUrl) }}
+              style={styles.bannerPreview}
+              resizeMode="cover"
+            />
+          ) : null}
+          <Text style={styles.body}>{course.description || "No description yet."}</Text>
+          <Text style={styles.muted}>
+            {lessons.length
+              ? `${lessons.length} lessons available in this course outline.`
+              : "No learner lessons are available yet."}
+          </Text>
+        </AppCard>
+      ) : null}
 
       <AppCard>
         <Text style={styles.cardTitle}>Course Record</Text>
