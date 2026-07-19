@@ -8,6 +8,7 @@ const mockLogin = jest.fn();
 const mockRequestEmailVerification = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+let mockParams: Record<string, string> = {};
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
@@ -20,6 +21,7 @@ jest.mock("@/api/auth", () => ({
 }));
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockParams,
   useRouter: () => ({
     replace: mockReplace,
     push: mockPush
@@ -32,6 +34,7 @@ describe("LoginScreen email verification", () => {
     mockRequestEmailVerification.mockReset();
     mockReplace.mockReset();
     mockPush.mockReset();
+    mockParams = {};
     mockRequestEmailVerification.mockResolvedValue({ ok: true, emailSent: true });
   });
 
@@ -42,6 +45,17 @@ describe("LoginScreen email verification", () => {
       screen.getByText(
         "A gardener-built hub for grows, soil, tools, courses, and community."
       )
+    ).toBeTruthy();
+  });
+
+  it("shows the reset-success handoff and prefills the account email", () => {
+    mockParams = { email: "grower@example.com", reset: "success" };
+
+    const screen = render(<LoginScreen />);
+
+    expect(screen.getByDisplayValue("grower@example.com")).toBeTruthy();
+    expect(
+      screen.getByText("Password updated. Sign in with your new password.")
     ).toBeTruthy();
   });
 

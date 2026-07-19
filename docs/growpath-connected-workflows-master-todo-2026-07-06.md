@@ -87,9 +87,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Stock-risk metrics and AI review do not appear before useful inventory data exists.
 
 9. Password reset/login reliability
-   - Password reset flow: email -> link -> valid reset screen -> save password -> login works.
-   - Commercial/facility/pro/free login should not get stuck in loops.
-   - Failed login/server disconnect states should show actionable errors.
+   - [x] Password reset flow works from email -> one-hour link -> valid reset screen -> hashed password save -> email-prefilled sign-in.
+   - [x] Commercial/facility/pro/free login returns through the shared root router without account-tier redirect loops; facility accounts without a selection land on facility selection.
+   - [x] Failed credentials, expired reset links, email-delivery outages, and server/network disconnects show distinct actionable recovery paths.
 
 10. Pricing display
    - Pro: $10/month, $100/year.

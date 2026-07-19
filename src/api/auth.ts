@@ -69,6 +69,7 @@ export type ForgotPasswordResponse = {
 
 export type ResetPasswordResponse = {
   ok: true;
+  email?: string;
 };
 
 function currentOrigin() {
