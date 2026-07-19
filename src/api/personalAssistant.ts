@@ -25,6 +25,9 @@ export type PersonalAssistantResponse = {
   conversationId?: string;
   evidenceUsed?: string[];
   missingInformation?: string[];
+  limitations?: string[];
+  methodIds?: string[];
+  sourceIds?: string[];
   aiCreditsUsed?: number;
   aiTokensRemaining?: number;
   creditNotice?: string;

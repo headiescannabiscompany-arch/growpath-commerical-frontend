@@ -29,7 +29,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Require Codex/developers to read relevant methods before tool work.
    - [ ] Collect the owner’s named websites, domains, preferred authors/channels, reliability tiers, trusted uses, exclusions, and review dates.
    - [ ] Add an admin/editor workflow for reviewing and versioning source entries and internal methods.
-   - [ ] Add runtime retrieval of relevant method snippets and source rules to Ask AI, diagnosis, and GPT verification prompts.
+   - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
+   - [ ] Extend the same runtime method/source envelope to every diagnosis-specific and GPT-verification endpoint.
    - [ ] Persist method IDs, source IDs, citations, disagreements, and limitations with AI answers/ToolRuns.
    - [ ] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions.
    - [ ] Add outcome-based method review so repeated grow results can propose—but never silently rewrite—GrowPath methods.
