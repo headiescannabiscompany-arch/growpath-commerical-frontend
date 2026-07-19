@@ -63,10 +63,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Rank and rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
 
 5. Back arrows
-   - Every nested page gets a back arrow.
-   - Root pages do not need a back arrow.
-   - Use shared page/header behavior, not one-off custom buttons.
-   - Confirm commercial product/detail/edit/new, course builder/detail, storefront edit/preview, task/detail, grow/plant/detail, facility room/run/detail have back behavior.
+   - [x] Every audited nested page gets a back arrow.
+   - [x] Root pages do not get forced back arrows.
+   - [x] Use shared `AppPage` / `ScreenBoundary` header behavior, not one-off custom buttons.
+   - [x] Confirm commercial product create/detail, course detail, storefront edit/preview, task detail, personal grow/plant workspace, facility room-context detail, and facility SOP-run detail have back behavior with safe fallbacks.
 
 6. Commercial product card and product detail basics
    - Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.

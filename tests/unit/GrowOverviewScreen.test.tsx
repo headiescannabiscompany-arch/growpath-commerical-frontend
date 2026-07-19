@@ -31,6 +31,11 @@ jest.mock("expo-router", () => {
   const { Text } = require("react-native");
   return {
     useLocalSearchParams: () => ({ growId: "grow-1" }),
+    useRouter: () => ({
+      back: jest.fn(),
+      replace: jest.fn(),
+      canGoBack: () => false
+    }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,

@@ -20,10 +20,11 @@ import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 
-export default function GrowPlantsScreen() {
+function GrowPlantsContent() {
   const entitlements = useEntitlements();
   const hasPlantWriteCapability = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
   const maxPlants = Number(entitlements.limits?.maxPlants ?? 0);
@@ -506,6 +507,26 @@ export default function GrowPlantsScreen() {
         longContent
       />
     </ScrollView>
+  );
+}
+
+export default function GrowPlantsScreen() {
+  const { growId: rawGrowId } = useLocalSearchParams<{
+    growId?: string | string[];
+  }>();
+  const growId = coerceParam(rawGrowId);
+  return (
+    <ScreenBoundary
+      title="Grow plants"
+      showBack
+      backFallbackHref={
+        growId
+          ? `/home/personal/grows/${encodeURIComponent(growId)}`
+          : "/home/personal/grows"
+      }
+    >
+      <GrowPlantsContent />
+    </ScreenBoundary>
   );
 }
 
