@@ -164,6 +164,20 @@ function tissueCultureTaskPlan(
         "Confirm vessel IDs, parent lineage, rack/shelf location, technician action, and status before the next transfer or storage move."
       ].join("\n")
     },
+    {
+      title: `Review TC quality controls: ${batchNumber}`,
+      priority:
+        payload.pathogenTestStatus === "clear" ? ("medium" as const) : ("high" as const),
+      dueDate: tomorrow(2),
+      ...calendarMetadata,
+      sourceStage: "tc_quality_control",
+      description: [
+        `Pathogen/indexing status: ${payload.pathogenTestStatus || "not recorded"}.`,
+        `Genetic stability/off-type review: ${payload.geneticStabilityStatus || "not recorded"}.`,
+        `Contamination disposition: ${payload.contaminationDisposition || "not recorded"}.`,
+        "Confirm linked lab reports, isolate/cull actions, off-type observations, and whether the line is eligible for production, storage, retest, or retirement."
+      ].join("\n")
+    },
     ...(transferCycle >= Math.max(1, maxProductionTransfers - 2)
       ? [
           {
@@ -333,6 +347,50 @@ export default function TissueCultureToolRoute() {
           multiline: true
         },
         {
+          key: "pathogenTestStatus",
+          label: "Pathogen / indexing status",
+          defaultValue: ""
+        },
+        {
+          key: "pathogenReportId",
+          label: "Linked pathogen lab report ID",
+          defaultValue: ""
+        },
+        {
+          key: "geneticStabilityStatus",
+          label: "Genetic stability / off-type status",
+          defaultValue: ""
+        },
+        {
+          key: "offTypeObservations",
+          label: "Off-type or mutation observations",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "contaminationDisposition",
+          label: "Contamination isolation / cull / disposal outcome",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "acclimationCohortId",
+          label: "Acclimation cohort ID",
+          defaultValue: ""
+        },
+        {
+          key: "acclimationSurvived",
+          label: "Acclimation survivors",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "protocolOutcomeNotes",
+          label: "Protocol survival, regrowth, and comparison notes",
+          defaultValue: "",
+          multiline: true
+        },
+        {
           key: "transfersDueDays",
           label: "Next transfer due in days",
           defaultValue: "14",
@@ -402,6 +460,14 @@ export default function TissueCultureToolRoute() {
         vesselSupplyCost: values.vesselSupplyCost,
         laborCost: values.laborCost,
         symptoms: values.symptoms,
+        pathogenTestStatus: values.pathogenTestStatus || undefined,
+        pathogenReportId: values.pathogenReportId || undefined,
+        geneticStabilityStatus: values.geneticStabilityStatus || undefined,
+        offTypeObservations: values.offTypeObservations || undefined,
+        contaminationDisposition: values.contaminationDisposition || undefined,
+        acclimationCohortId: values.acclimationCohortId || undefined,
+        acclimationSurvived: values.acclimationSurvived || undefined,
+        protocolOutcomeNotes: values.protocolOutcomeNotes || undefined,
         transfersDueDays: values.transfersDueDays,
         preservationMode: values.preservationMode,
         coldStorageRoomId: values.coldStorageRoomId || undefined,
