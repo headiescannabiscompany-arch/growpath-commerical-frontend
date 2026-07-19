@@ -173,6 +173,7 @@ export type CommercialLiveEvent = {
   growInterests?: string[];
   visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
   status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
+  isPublished?: boolean;
   replayUrl?: string;
   notificationPlan?: string[];
   createdAt?: string;

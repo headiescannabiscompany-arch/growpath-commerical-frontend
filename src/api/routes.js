@@ -207,6 +207,7 @@ export const ROUTES = {
   LIVES: {
     LIST: `${PREFIX}/lives`,
     DETAIL: (id) => `${PREFIX}/lives/${id}`,
+    RSVP: (id) => `${PREFIX}/lives/${id}/rsvp`,
     CREATE: `${PREFIX}/lives`,
     UPDATE: (id) => `${PREFIX}/lives/${id}`,
     DELETE: (id) => `${PREFIX}/lives/${id}`

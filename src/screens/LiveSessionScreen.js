@@ -35,6 +35,8 @@ export default function LiveSessionScreen({ route }) {
   const [err, setErr] = useState("");
   const [savingReminder, setSavingReminder] = useState(false);
   const [reminderCreated, setReminderCreated] = useState(false);
+  const [rsvped, setRsvped] = useState(false);
+  const [savingRsvp, setSavingRsvp] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -61,6 +63,18 @@ export default function LiveSessionScreen({ route }) {
     }
 
     load();
+    return () => {
+      alive = false;
+    };
+  }, [sessionId]);
+
+  useEffect(() => {
+    let alive = true;
+    apiRequest(`/api/lives/${encodeURIComponent(sessionId)}/rsvp`, { method: "GET" })
+      .then((result) => {
+        if (alive) setRsvped(Boolean(result?.rsvped));
+      })
+      .catch(() => null);
     return () => {
       alive = false;
     };
@@ -164,6 +178,22 @@ export default function LiveSessionScreen({ route }) {
       );
     } finally {
       setSavingReminder(false);
+    }
+  }
+
+  async function toggleRsvp() {
+    if (savingRsvp) return;
+    setSavingRsvp(true);
+    try {
+      const result = await apiRequest(
+        `/api/lives/${encodeURIComponent(sessionId)}/rsvp`,
+        { method: rsvped ? "DELETE" : "POST", body: rsvped ? undefined : {} }
+      );
+      setRsvped(Boolean(result?.rsvped));
+    } catch (error) {
+      Alert.alert("RSVP not saved", String(error?.message || error || "Try again."));
+    } finally {
+      setSavingRsvp(false);
     }
   }
 
@@ -282,6 +312,22 @@ export default function LiveSessionScreen({ route }) {
               <Text style={styles.btnText}>Watch on Twitch</Text>
             </Pressable>
           ) : null}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={rsvped ? "Cancel live RSVP" : "RSVP to live"}
+            disabled={savingRsvp}
+            style={rsvped ? styles.secondaryBtn : styles.btn}
+            onPress={toggleRsvp}
+          >
+            <Text style={rsvped ? styles.secondaryBtnText : styles.btnText}>
+              {savingRsvp
+                ? "Saving RSVP..."
+                : rsvped
+                  ? "Going · Cancel RSVP"
+                  : "RSVP / Remind Me"}
+            </Text>
+          </Pressable>
 
           {startsAt ? (
             <Pressable

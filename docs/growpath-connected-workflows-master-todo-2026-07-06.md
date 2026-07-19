@@ -191,7 +191,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
 
 30. Lives
-   - Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
+   - [x] Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
 
 31. Twitch
    - OAuth connection.
@@ -916,6 +916,7 @@ Completed and pushed:
 625. Commercial Course Builder now persists structured quiz outlines and course-level Forum/Q&A discussion links alongside its existing course basics, thumbnail/banner uploads, modules, lessons, media/video/document resources, lesson assignments/tasks, products, lives, Stripe access, and draft/publish controls; owners also get a protected learner-preview view that works before public publication.
 626. The shared Course Player now shows learner-specific lesson progress, durable private lesson notes, documents and media, course and lesson discussion, course-scoped Ask AI actions, assignment-to-task creation, related products, and scheduled lives; the shared Course API now preserves builder resources and link metadata and stores completion plus notes on each learner enrollment instead of the course itself.
 627. Course Analytics now aggregates the live Course, Enrollment, Earning, Task, question, and CourseEngagementEvent records instead of the disconnected legacy Lesson collection, reporting course/lesson views, unique viewers, enrollments, completion and average progress, sales/earnings, drop-off, assignment-task completion, live RSVPs, related-product clicks, and unanswered questions through a reachable shared owner analytics route.
+628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
 
 ## Working Rule For Codex
 

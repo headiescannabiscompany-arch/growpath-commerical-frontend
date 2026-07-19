@@ -306,6 +306,7 @@ export default function CommercialLivesRoute() {
             </Text>
           </View>
           <View style={styles.headerActions}>
+            <ActionLink href="/lives" label="Public Lives" />
             <ActionLink href="/home/commercial/courses" label="Courses" />
             <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
@@ -666,6 +667,21 @@ export default function CommercialLivesRoute() {
                         </Pressable>
                       </View>
                     ) : null}
+                    <View style={styles.actions}>
+                      {(live.isPublished || live.status !== "draft") &&
+                      ["public", "unlisted"].includes(live.visibility || "public") ? (
+                        <ActionLink
+                          href={`/live-session?sessionId=${encodeURIComponent(id)}`}
+                          label={live.replayUrl ? "Open Live / Replay" : "Open Live"}
+                        />
+                      ) : null}
+                      {live.forumThreadId ? (
+                        <ActionLink
+                          href={`/forum/post?id=${encodeURIComponent(String(live.forumThreadId))}`}
+                          label="Live Q&A"
+                        />
+                      ) : null}
+                    </View>
                   </View>
                 );
               })()
