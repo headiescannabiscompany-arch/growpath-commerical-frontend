@@ -69,8 +69,7 @@ const GROW_WORKSPACE_GROUPS = [
   {
     title: "Plan & schedule",
     items: [
-      ["Grow lifecycle plan", "/home/personal/tools/timeline-planner"],
-      ["Auto calendar", "/home/personal/tools/auto-grow-calendar"],
+      ["Grow lifecycle plan", "/home/personal/tools/auto-grow-calendar"],
       ["Tasks", "tasks"]
     ]
   },
