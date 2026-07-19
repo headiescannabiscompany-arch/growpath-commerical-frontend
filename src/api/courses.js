@@ -87,6 +87,17 @@ export function getEnrollmentStatus(courseId) {
   return apiRequest(apiRoutes.COURSES.STATUS(courseId));
 }
 
+export function getCourseLearnerNotes(courseId) {
+  return apiRequest(apiRoutes.COURSES.LEARNER_NOTES(courseId));
+}
+
+export function saveCourseLearnerNote(courseId, lessonId, note) {
+  return apiRequest(apiRoutes.COURSES.LEARNER_NOTE(courseId, lessonId), {
+    method: "PUT",
+    body: { note }
+  });
+}
+
 export function completeLesson(lessonId, courseId) {
   return apiRequest(apiRoutes.COURSES.COMPLETE_LESSON(lessonId), {
     method: "POST",

@@ -185,7 +185,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
 
 28. Course player
-   - Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
+   - [x] Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
 
 29. Course analytics
    - Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
@@ -914,6 +914,7 @@ Completed and pushed:
 623. Alert Center now assigns alerts directly in addition to assigning generated follow-up tasks, routes setup alerts back to their workspace, and covers setup, sensor, course/live, storefront/product, and Facility training sources; the backend now exposes owned alert listing and mutation through normalized Notification records with persisted severity, status, workspace/source identity, snooze, resolution, and assignment state.
 624. NotificationIntent and Notification now support task reminders, live reminders, course due/overdue, critical/digest alerts, replay availability, milestones, and system events; the shared scheduler always creates in-app delivery first, optionally adds push/email channels, and the worker records delivered, skipped, or failed outcomes while normalizing linked source context for Notification Center routing and task creation.
 625. Commercial Course Builder now persists structured quiz outlines and course-level Forum/Q&A discussion links alongside its existing course basics, thumbnail/banner uploads, modules, lessons, media/video/document resources, lesson assignments/tasks, products, lives, Stripe access, and draft/publish controls; owners also get a protected learner-preview view that works before public publication.
+626. The shared Course Player now shows learner-specific lesson progress, durable private lesson notes, documents and media, course and lesson discussion, course-scoped Ask AI actions, assignment-to-task creation, related products, and scheduled lives; the shared Course API now preserves builder resources and link metadata and stores completion plus notes on each learner enrollment instead of the course itself.
 
 ## Working Rule For Codex
 

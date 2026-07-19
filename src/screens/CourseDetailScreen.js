@@ -17,10 +17,12 @@ import {
   completeLesson,
   enrollInCourse,
   getCourse,
+  getCourseLearnerNotes,
   getEnrollmentStatus,
   getReviews,
   rejectCourse,
   sendWatchTime,
+  saveCourseLearnerNote,
   submitForReview,
   trackDropoff,
   trackLessonView,
@@ -113,6 +115,8 @@ export default function CourseDetailScreen({ route, navigation }) {
   });
   const [liveReminderIds, setLiveReminderIds] = useState([]);
   const [liveRsvpIds, setLiveRsvpIds] = useState([]);
+  const [learnerNotes, setLearnerNotes] = useState({});
+  const [lessonNote, setLessonNote] = useState("");
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
@@ -120,6 +124,27 @@ export default function CourseDetailScreen({ route, navigation }) {
     () => normalizeList(course?.liveSessions, "liveSessions"),
     [course]
   );
+  const documents = useMemo(
+    () => normalizeList(course?.documents, "documents"),
+    [course]
+  );
+  const mediaAssets = useMemo(
+    () => normalizeList(course?.mediaAssets, "mediaAssets"),
+    [course]
+  );
+  const completedLessonIds = useMemo(
+    () =>
+      new Set(
+        normalizeList(
+          enrollment?.progress?.completedLessonIds ||
+            enrollment?.completedLessonIds ||
+            enrollment?.enrollment?.completedLessonIds,
+          "completedLessonIds"
+        ).map(String)
+      ),
+    [enrollment]
+  );
+  const completedLessonCount = completedLessonIds.size;
   const enrolled = Boolean(
     enrollment?.enrolled ||
     enrollment?.isEnrolled ||
@@ -163,14 +188,20 @@ export default function CourseDetailScreen({ route, navigation }) {
     setFeedback("");
     try {
       const id = courseId || rowId(initialCourse);
-      const [courseResponse, statusResponse, reviewsResponse] = await Promise.all([
-        id ? getCourse(id) : Promise.resolve(initialCourse),
-        id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
-        id ? getReviews(id).catch(() => []) : Promise.resolve([])
-      ]);
+      const [courseResponse, statusResponse, reviewsResponse, notesResponse] =
+        await Promise.all([
+          id ? getCourse(id) : Promise.resolve(initialCourse),
+          id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
+          id ? getReviews(id).catch(() => []) : Promise.resolve([]),
+          id ? getCourseLearnerNotes(id).catch(() => null) : Promise.resolve(null)
+        ]);
       setCourse(normalizeCourse(courseResponse, initialCourse));
       setEnrollment(statusResponse?.data || statusResponse || null);
       setReviews(normalizeList(reviewsResponse, "reviews"));
+      const noteRows = normalizeList(notesResponse, "notes");
+      setLearnerNotes(
+        Object.fromEntries(noteRows.map((item) => [String(item.lessonId), item.note]))
+      );
     } catch (error) {
       setFeedback(error?.message || "Unable to load course.");
     } finally {
@@ -310,6 +341,75 @@ export default function CourseDetailScreen({ route, navigation }) {
       return;
     }
     setActiveLesson(lesson);
+    setLessonNote(learnerNotes[id] || "");
+  }
+
+  async function saveLessonNote() {
+    const lessonId = rowId(activeLesson);
+    if (!loadedCourseId || !lessonId) return;
+    setSaving(true);
+    try {
+      await saveCourseLearnerNote(loadedCourseId, lessonId, lessonNote);
+      setLearnerNotes((current) => ({ ...current, [lessonId]: lessonNote.trim() }));
+      setFeedback(
+        lessonNote.trim() ? "Private lesson note saved." : "Lesson note removed."
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to save the lesson note.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function askAIAboutCourse() {
+    const lessonId = rowId(activeLesson);
+    const query = new URLSearchParams({
+      preset: "course",
+      courseId: loadedCourseId,
+      ...(lessonId ? { lessonId } : {}),
+      prompt: `Help me understand ${activeLesson?.title || course?.title || "this course"}`
+    }).toString();
+    const path =
+      entitlements.mode === "facility"
+        ? `/home/facility/ai-ask?${query}`
+        : entitlements.mode === "commercial"
+          ? `/home/commercial/tools/ask-ai?${query}`
+          : `/home/personal/ai?${query}`;
+    router.push(path);
+  }
+
+  async function createLessonTask() {
+    if (!activeLesson || !loadedCourseId) return;
+    setSaving(true);
+    try {
+      const grows = await listPersonalGrows();
+      const grow = grows.find((item) => item?.status === "active") || grows[0];
+      const growId = rowId(grow);
+      if (!growId) {
+        setFeedback("Create or select a grow before adding this lesson task.");
+        return;
+      }
+      await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedCourseId: loadedCourseId,
+        linkedCourseAssignmentId: rowId(activeLesson),
+        linkedLessonId: rowId(activeLesson),
+        title: activeLesson?.taskTemplate?.title || `Course: ${activeLesson.title}`,
+        description:
+          activeLesson?.taskTemplate?.description ||
+          activeLesson?.assignmentPrompt ||
+          "Complete this course lesson assignment.",
+        priority: activeLesson?.taskTemplate?.priority || "medium",
+        sourceType: "course_assignment",
+        sourceObjectId: rowId(activeLesson)
+      });
+      setFeedback("Lesson task added to your grow workspace.");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to create the lesson task.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function markLessonComplete(lesson) {
@@ -448,8 +548,9 @@ export default function CourseDetailScreen({ route, navigation }) {
     try {
       const grows = await listPersonalGrows();
       const grow =
-        grows.find((item) => String(item?.status || "active").toLowerCase() === "active") ||
-        grows[0];
+        grows.find(
+          (item) => String(item?.status || "active").toLowerCase() === "active"
+        ) || grows[0];
       const growId = String(grow?.id || grow?._id || "");
       if (!growId) {
         setFeedback("Create a grow first so the live reminder has a task workspace.");
@@ -458,9 +559,7 @@ export default function CourseDetailScreen({ route, navigation }) {
       const watchUrl = String(
         session?.watchUrl ||
           session?.meetingUrl ||
-          (session?.twitchChannel
-            ? `https://www.twitch.tv/${session.twitchChannel}`
-            : "")
+          (session?.twitchChannel ? `https://www.twitch.tv/${session.twitchChannel}` : "")
       );
       const task = await createPersonalTask({
         growId,
@@ -519,9 +618,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         }
       );
       setLiveRsvpIds((current) =>
-        isRsvped
-          ? current.filter((id) => id !== sessionKey)
-          : [...current, sessionKey]
+        isRsvped ? current.filter((id) => id !== sessionKey) : [...current, sessionKey]
       );
       setFeedback(
         isRsvped
@@ -660,6 +757,26 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : null}
 
       <View style={styles.card}>
+        <Text style={styles.cardTitle}>Your progress</Text>
+        <Text style={styles.meta} accessibilityLabel="Course lesson progress">
+          {completedLessonCount} of {lessons.length} lessons complete
+        </Text>
+        <View style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${lessons.length ? Math.round((completedLessonCount / lessons.length) * 100) : 0}%`
+              }
+            ]}
+          />
+        </View>
+        <Pressable onPress={askAIAboutCourse} style={styles.secondaryBtn}>
+          <Text style={styles.secondaryText}>Ask AI About This Course</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Lessons</Text>
           {access.canCreateCourses ? (
@@ -690,6 +807,9 @@ export default function CourseDetailScreen({ route, navigation }) {
         {lessons.map((lesson, index) => (
           <View key={rowId(lesson) || lessonTitle(lesson, index)} style={styles.row}>
             <Text style={styles.rowTitle}>{lessonTitle(lesson, index)}</Text>
+            {completedLessonIds.has(rowId(lesson)) ? (
+              <Text style={styles.badge}>Complete</Text>
+            ) : null}
             <Text style={styles.meta}>
               {lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""}{" "}
               {lesson.pdfUrl ? "PDF" : ""} {lesson.audioUrl ? "Audio" : ""}
@@ -716,9 +836,81 @@ export default function CourseDetailScreen({ route, navigation }) {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.cardTitle}>Course resources</Text>
+        {[...documents, ...mediaAssets].map((resource, index) => {
+          const url = String(
+            resource?.storageUrl || resource?.url || resource?.documentUrl || ""
+          );
+          return (
+            <View
+              key={rowId(resource) || `${resource?.title || "resource"}-${index}`}
+              style={styles.row}
+            >
+              <Text style={styles.rowTitle}>
+                {resource?.title || resource?.fileName || `Resource ${index + 1}`}
+              </Text>
+              {resource?.description ? (
+                <Text style={styles.body}>{resource.description}</Text>
+              ) : null}
+              {url ? (
+                <Pressable
+                  onPress={() => Linking.openURL(url)}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryText}>Open Resource</Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.meta}>Resource is planned but not uploaded yet.</Text>
+              )}
+            </View>
+          );
+        })}
+        {!documents.length && !mediaAssets.length ? (
+          <Text style={styles.meta}>No shared resources attached.</Text>
+        ) : null}
+      </View>
+
+      {course?.forumThreadId || course?.linkedForumThreadIds?.length ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Course discussion</Text>
+          <Text style={styles.meta}>Ask questions and continue the course Q&A.</Text>
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/forum/post/${encodeURIComponent(String(course.forumThreadId || course.linkedForumThreadIds[0]))}`
+              )
+            }
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Open Discussion</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {course?.linkedProductIds?.length ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Related products</Text>
+          {course.linkedProductIds.map((productId) => (
+            <Pressable
+              key={String(productId)}
+              onPress={() =>
+                router.push(
+                  `/home/commercial/products/${encodeURIComponent(String(productId))}`
+                )
+              }
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>View Product {String(productId)}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>Scheduled live sessions</Text>
         {liveSessions.map((session, index) => {
-          const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+          const sessionKey =
+            rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
           const watchUrl = String(
             session?.watchUrl ||
               session?.meetingUrl ||
@@ -821,6 +1013,46 @@ export default function CourseDetailScreen({ route, navigation }) {
           {activeLesson.content ? (
             <Text style={styles.body}>{activeLesson.content}</Text>
           ) : null}
+          {activeLesson.forumThreadId ? (
+            <Pressable
+              onPress={() =>
+                router.push(
+                  `/forum/post/${encodeURIComponent(String(activeLesson.forumThreadId))}`
+                )
+              }
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Discuss This Lesson</Text>
+            </Pressable>
+          ) : null}
+          <Text style={styles.cardTitle}>Private lesson notes</Text>
+          <TextInput
+            value={lessonNote}
+            onChangeText={setLessonNote}
+            placeholder="Write notes you want to keep with this lesson"
+            multiline
+            style={[styles.input, styles.noteInput]}
+            accessibilityLabel="Private lesson notes"
+          />
+          <View style={styles.actions}>
+            <Pressable
+              disabled={saving}
+              onPress={saveLessonNote}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Save Note</Text>
+            </Pressable>
+            <Pressable onPress={askAIAboutCourse} style={styles.secondaryBtn}>
+              <Text style={styles.secondaryText}>Ask AI About This Lesson</Text>
+            </Pressable>
+            <Pressable
+              disabled={saving}
+              onPress={createLessonTask}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Create Lesson Task</Text>
+            </Pressable>
+          </View>
           <Pressable
             disabled={saving}
             onPress={() => markLessonComplete(activeLesson)}
@@ -1027,5 +1259,13 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
   link: { color: "#166534", fontWeight: "800" },
+  noteInput: { minHeight: 96, textAlignVertical: "top" },
+  progressTrack: {
+    height: 10,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0"
+  },
+  progressFill: { height: "100%", backgroundColor: "#16A34A" },
   disabled: { opacity: 0.5 }
 });

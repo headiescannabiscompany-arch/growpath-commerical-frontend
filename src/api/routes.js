@@ -105,6 +105,9 @@ export const ROUTES = {
     ENROLL: (id) => `${PREFIX}/courses/${id}/enroll`,
     BUY: (id) => `${PREFIX}/courses/${id}/buy`,
     STATUS: (id) => `${PREFIX}/courses/${id}/enrollment-status`,
+    LEARNER_NOTES: (id) => `${PREFIX}/courses/${id}/learner-notes`,
+    LEARNER_NOTE: (courseId, lessonId) =>
+      `${PREFIX}/courses/${courseId}/lessons/${lessonId}/learner-note`,
     COMPLETE_LESSON: (id) => `${PREFIX}/courses/lesson/${id}/complete`,
     REVIEW: (id) => `${PREFIX}/courses/${id}/review`,
     REVIEWS: (id) => `${PREFIX}/courses/${id}/reviews`,
