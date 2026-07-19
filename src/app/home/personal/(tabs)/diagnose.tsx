@@ -307,7 +307,7 @@ export default function DiagnoseRoute({
   async function saveLog() {
     if (!growId || !result) throw new Error("Select a grow before saving a diagnosis.");
     const rejectedTags = rejectedDiagnosisTags(result, acceptedTags);
-    const created = await createPersonalLog({
+    const payload = {
       growId,
       plantId: plantId || undefined,
       diagnosisId: result.id || undefined,
@@ -341,7 +341,14 @@ export default function DiagnoseRoute({
         acceptedTags,
         rejectedTags
       }
-    });
+    };
+    const created =
+      workspaceType === "facility" && facilityId
+        ? await apiRequest(endpoints.growlogs(facilityId), {
+            method: "POST",
+            body: payload
+          })
+        : await createPersonalLog(payload);
     if (!created) throw new Error("Unable to save diagnosis to the grow journal.");
     setFeedback("Diagnosis saved to grow journal.");
   }
@@ -349,7 +356,7 @@ export default function DiagnoseRoute({
   async function createTask() {
     if (!growId || !result) throw new Error("Select a grow before creating a task.");
     const followUpDays = diagnosisFollowUpDays(result);
-    const created = await createPersonalTask({
+    const payload = {
       growId,
       plantId: plantId || undefined,
       linkedGrowId: growId,
@@ -361,7 +368,14 @@ export default function DiagnoseRoute({
       sourceObjectId: result.id || undefined,
       sourceDiagnosisId: result.id || undefined,
       ...diagnosisTaskMetadata(result)
-    });
+    };
+    const created =
+      workspaceType === "facility" && facilityId
+        ? await apiRequest(endpoints.tasks(facilityId), {
+            method: "POST",
+            body: payload
+          })
+        : await createPersonalTask(payload);
     if (!created) throw new Error("Unable to create follow-up task.");
     setFeedback("Follow-up task created.");
   }
@@ -888,6 +902,14 @@ export default function DiagnoseRoute({
               ]}
               details={
                 <View style={styles.providerPanel}>
+                  <Text style={styles.providerTitle}>ETGU and GPT verification</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.verification?.status || "Comparison unavailable"}
+                  </Text>
+                  <Text style={styles.providerLine}>
+                    {result.verification?.note ||
+                      "This result did not include a separate rule-versus-provider comparison."}
+                  </Text>
                   <Text style={styles.providerTitle}>Provider output</Text>
                   <Text style={styles.providerMeta}>
                     {result.providerName || result.source || "unverified provider"}
