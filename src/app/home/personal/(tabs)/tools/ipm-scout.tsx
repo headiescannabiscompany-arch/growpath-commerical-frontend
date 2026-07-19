@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function firstText(...values: unknown[]) {
   for (const value of values) {
@@ -120,12 +123,24 @@ function ipmTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function IpmScoutToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="ipm-scout"
       toolKey="ipm-scout"
       title="IPM Scout"
       subtitle="Record pest, disease, organism, trap, leaf damage, and inspection notes with follow-up tasks."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="ipm"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
       fields={[
         { key: "pestSeen", label: "Pest or organism seen", defaultValue: "none" },
         { key: "leafDamage", label: "Leaf damage pattern", defaultValue: "stippling" },
@@ -150,7 +165,9 @@ export default function IpmScoutToolRoute() {
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
-        ...values
+        ...values,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "issue", label: "Issue", value: outputs.suspectedIssue },
@@ -168,7 +185,7 @@ export default function IpmScoutToolRoute() {
           label: "GPT verification",
           value: verificationAnswer(outputs.gptVerification) || "pending",
           detail: outputs.gptVerification?.status
-            ? `Status: ${outputs.gptVerification.status}`
+            ? `${outputs.gptVerification.providerLabel || "Verification"}; status: ${outputs.gptVerification.status}`
             : "Separate verification result"
         },
         {

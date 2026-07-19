@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function numberOrFallback(value: unknown, fallback: number) {
   const number = Number(value);
@@ -79,12 +82,24 @@ function cloneRootingTaskPlan(
 }
 
 export default function CloneRootingToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="clone-rooting"
       toolKey="clone-rooting"
       title="Clone Rooting Troubleshooter"
       subtitle="Check clone rooting bottlenecks from humidity, temperature, light, stem condition, and timeline."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="clone"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
       fields={[
         {
           key: "daysSinceCut",
@@ -156,7 +171,9 @@ export default function CloneRootingToolRoute() {
         mediumStatus: values.mediumStatus,
         stemCondition: values.stemCondition,
         leafCondition: values.leafCondition,
-        rootingStatus: values.rootingStatus
+        rootingStatus: values.rootingStatus,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "risk", label: "Risk", value: outputs.riskLevel },
@@ -173,6 +190,15 @@ export default function CloneRootingToolRoute() {
           key: "rooted",
           label: "Rooted %",
           value: outputs.clonePerformanceSummary?.rootingPercent
+        },
+        {
+          key: "verification",
+          label: "GPT verification",
+          value:
+            outputs.gptVerification?.answer ||
+            outputs.gptVerification?.status ||
+            "pending",
+          detail: outputs.gptVerification?.providerLabel || "Separate media verification"
         }
       ]}
       buildNotices={(outputs) =>
