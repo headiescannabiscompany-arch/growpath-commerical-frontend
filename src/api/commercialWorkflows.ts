@@ -97,6 +97,9 @@ export type SoilNutrientBatch = {
   productLineId?: string;
   linkedTrialId?: string;
   trialGrowId?: string;
+  facilityId?: string;
+  linkedToolRunId?: string;
+  linkedRecipeId?: string;
   batchVolume?: number;
   batchVolumeUnit?: string;
   estimatedCost?: number;

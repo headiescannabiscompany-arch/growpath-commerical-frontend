@@ -50,7 +50,12 @@ type BackendCalculatorToolScreenProps = {
   fields: ToolField[];
   buildPayload: (
     values: Record<string, string>,
-    context: { growId: string; plantContext: ReturnType<typeof useToolPlantContext> }
+    context: {
+      growId: string;
+      facilityId: string;
+      commercialAccountId: string;
+      plantContext: ReturnType<typeof useToolPlantContext>;
+    }
   ) => Record<string, any>;
   buildMetrics?: (outputs: Record<string, any>) => ToolResultMetric[];
   buildNotices?: (outputs: Record<string, any>) => ToolResultNotice[];
@@ -74,6 +79,8 @@ type BackendCalculatorToolScreenProps = {
     payload: Record<string, any>;
     toolRun: ToolRun | null;
     growId: string;
+    facilityId: string;
+    commercialAccountId: string;
     plantContext: ReturnType<typeof useToolPlantContext>;
   }) => ToolResultAction[];
   assistantBrief?: {
@@ -167,10 +174,14 @@ export default function BackendCalculatorToolScreen({
   const routeParams = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
+    facilityId?: string | string[];
+    commercialAccountId?: string | string[];
   }>();
   const params = routeParams as typeof routeParams &
     Record<string, string | string[] | undefined>;
   const routeGrowId = coerceParam(params.growId);
+  const facilityId = coerceParam(params.facilityId);
+  const commercialAccountId = coerceParam(params.commercialAccountId);
   const [availableGrows, setAvailableGrows] = useState<PersonalGrow[]>([]);
   const [growId, setGrowId] = useState(routeGrowId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
@@ -292,8 +303,14 @@ export default function BackendCalculatorToolScreen({
   }
 
   const payload = useMemo(
-    () => buildPayload(values, { growId, plantContext }),
-    [buildPayload, growId, plantContext, values]
+    () =>
+      buildPayload(values, {
+        growId,
+        facilityId,
+        commercialAccountId,
+        plantContext
+      }),
+    [buildPayload, commercialAccountId, facilityId, growId, plantContext, values]
   );
 
   async function calculate() {
@@ -403,6 +420,8 @@ export default function BackendCalculatorToolScreen({
           payload,
           toolRun,
           growId,
+          facilityId,
+          commercialAccountId,
           plantContext
         })
       );

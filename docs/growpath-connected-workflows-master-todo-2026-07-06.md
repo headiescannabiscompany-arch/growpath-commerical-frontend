@@ -122,10 +122,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] AI can collect inputs and call deterministic math engine.
 
 15. Soil Builder
-   - Full base mix + amendments + biology/activation + rest/cook timeline.
-   - Fast/medium/slow release chart.
-   - Compost uncertainty warnings.
-   - Save to grow/product/facility batch.
+   - [x] Full base mix + amendments + biology/activation + rest/cook timeline.
+   - [x] Fast/medium/slow release chart.
+   - [x] Compost uncertainty warnings.
+   - [x] Save to grow/product/facility batch.
 
 16. Dry Amendment Mix Builder
    - Build concentrated dry blend.

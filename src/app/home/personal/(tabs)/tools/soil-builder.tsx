@@ -5,6 +5,7 @@ import BackendCalculatorToolScreen, {
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { createProduct } from "@/api/products";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { createSoilNutrientBatch } from "@/api/commercialWorkflows";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -430,8 +431,10 @@ export default function SoilBuilderToolScreen() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         mixName: values.mixName,
         goal: values.goal,
@@ -583,6 +586,46 @@ export default function SoilBuilderToolScreen() {
               tasks: soilTimelineTasks(outputs, payload)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "create-production-batch",
+          label: "Create Production Batch",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created soil production batch.",
+          onPress: async () => {
+            await createSoilNutrientBatch({
+              batchName: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              name: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              purpose: payload.intendedUse || payload.goal,
+              formulaVersion: String(toolRun?.calculatorVersion || "1"),
+              trialGrowId: payload.growId || undefined,
+              facilityId: payload.facilityId || undefined,
+              linkedToolRunId: toolRun?.id || toolRun?._id || undefined,
+              batchVolume: outputs.totalVolume || payload.totalVolume,
+              batchVolumeUnit: outputs.volumeUnit || payload.volumeUnit,
+              releaseTimelineNotes:
+                outputs.releaseCurve?.summary || payload.targetReleaseCurve,
+              guaranteedAnalysisNotes: outputs.estimatedAmendmentRatio
+                ? JSON.stringify(outputs.estimatedAmendmentRatio)
+                : "Compost and finished-soil analysis require representative lab testing.",
+              ingredientSummary: (payload.amendments || [])
+                .map((item: any) => item.name)
+                .filter(Boolean)
+                .join(", "),
+              mixingInstructions: (outputs.mixingInstructions || []).join(" "),
+              notes: [
+                payload.facilityId ? `Facility: ${payload.facilityId}` : "",
+                `ToolRun: ${toolRun?.id || toolRun?._id || ""}`,
+                payload.compostUncertainty
+                  ? `Compost uncertainty: ${payload.compostUncertainty}`
+                  : ""
+              ]
+                .filter(Boolean)
+                .join("\n"),
+              status: "planned"
+            });
           }
         },
         {
