@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function normalizePriority(value: unknown): "low" | "medium" | "high" {
   return value === "low" || value === "medium" || value === "high" ? value : "medium";
@@ -65,87 +68,112 @@ function cropSteeringTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function CropSteeringProjectToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="crop-steering-project"
       toolKey="crop-steering-project"
       title="Crop Steering Projects"
-      subtitle="Track vegetative/generative intent, root-zone behavior, dryback, light, VPD, EC, pH, recovery, and pheno impact."
+      subtitle="Review current conditions and optionally turn stage-appropriate steering techniques into grow tasks. Measurements and plant response remain the source of truth."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="grow_log"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Review steering options from grow",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill this optional Crop Steering review from the selected grow/plant stage, substrate/media, pot size, irrigation events, dryback or moisture telemetry, input/runoff EC and pH, DLI, VPD, recipe, nutrient antagonism warnings, stress history, and attached media. Return JSON only with exactly these string keys: steeringIntent, stage, phase, drybackPercent, irrigationTiming, dli, vpd, inputEC, runoffEC, inputPH, runoffPH, recipeUsed, kLevel, caMgResponse, rootZoneCondition, recoveryHours, plantResponse, lightChange, techniquesToConsider, notes. Measurements must come from saved records and include no invented targets. Describe techniquesToConsider as optional, conservative choices appropriate to the actual medium and stage, including prerequisites and stop conditions; do not prescribe aggressive dryback, EC stacking, or light increases when data is missing or stress is unresolved. Leave unknowns blank. In notes explain evidence, uncertainty, recent stress, and measurements needed before applying a technique.`
+      }}
       fields={[
-        { key: "steeringIntent", label: "Goal", defaultValue: "generative" },
-        { key: "stage", label: "Stage", defaultValue: "mid flower" },
-        { key: "phase", label: "Phase P0/P1/P2/P3", defaultValue: "P1" },
+        { key: "steeringIntent", label: "Goal", defaultValue: "" },
+        { key: "stage", label: "Stage", defaultValue: "" },
+        { key: "phase", label: "Phase P0/P1/P2/P3", defaultValue: "" },
         {
           key: "drybackPercent",
           label: "Dryback %",
-          defaultValue: "25",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "irrigationTiming",
           label: "Irrigation timing",
-          defaultValue: "controlled morning shot, runoff checked"
+          defaultValue: ""
         },
         {
           key: "dli",
           label: "DLI",
-          defaultValue: "38",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "vpd",
           label: "VPD",
-          defaultValue: "1.25",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "inputEC",
           label: "Input EC",
-          defaultValue: "1.4",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "runoffEC",
           label: "Runoff EC",
-          defaultValue: "1.7",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "inputPH",
           label: "Input pH",
-          defaultValue: "6.3",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "runoffPH",
           label: "Runoff pH",
-          defaultValue: "6.6",
+          defaultValue: "",
           keyboardType: "numeric"
         },
-        { key: "recipeUsed", label: "Recipe used", defaultValue: "balanced flower feed" },
-        { key: "kLevel", label: "K level / note", defaultValue: "moderate" },
-        { key: "caMgResponse", label: "Ca/Mg response", defaultValue: "stable" },
+        { key: "recipeUsed", label: "Recipe used", defaultValue: "" },
+        { key: "kLevel", label: "K level / note", defaultValue: "" },
+        { key: "caMgResponse", label: "Ca/Mg response", defaultValue: "" },
         {
           key: "rootZoneCondition",
           label: "Root-zone condition",
-          defaultValue: "even moisture"
+          defaultValue: ""
         },
         {
           key: "recoveryHours",
           label: "Recovery hours",
-          defaultValue: "12",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "plantResponse",
           label: "Plant response",
-          defaultValue: "turgor recovered by next light cycle",
+          defaultValue: "",
           multiline: true
         },
         {
           key: "lightChange",
           label: "Recent light change",
-          defaultValue: "stable"
+          defaultValue: ""
+        },
+        {
+          key: "techniquesToConsider",
+          label: "Optional techniques to consider",
+          defaultValue: "",
+          multiline: true
         },
         {
           key: "notes",
@@ -157,7 +185,9 @@ export default function CropSteeringProjectToolRoute() {
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
-        ...values
+        ...values,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "intent", label: "Intent", value: outputs.steeringIntent },
