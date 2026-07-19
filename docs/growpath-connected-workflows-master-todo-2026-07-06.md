@@ -146,8 +146,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Save to grow/facility timelines and create follow-up tasks.
 
 19. Pheno Hunting Matrix
-   - Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
-   - Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
+   - [x] Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
+   - [x] Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
 
 20. Tissue Culture Tracker
    - Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.

@@ -4,6 +4,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { createGrowpathModuleRecord } from "@/api/growpathModules";
 
 function parsePlants(value: string) {
   try {
@@ -23,6 +24,18 @@ function parsePlants(value: string) {
           sexWeek,
           cloneRootingDays,
           recoveryHours,
+          morphology,
+          pestResistance,
+          feedingResponse,
+          flowerStructure,
+          taste,
+          effect,
+          hashValue,
+          clonePerformance,
+          tissueCultureSuitability,
+          breedingValue,
+          finalProduct,
+          intersexSigns,
           notes
         ] = line.split(",").map((part) => part.trim());
         if (!label) return null;
@@ -37,6 +50,18 @@ function parsePlants(value: string) {
           sexWeek,
           cloneRootingDays,
           recoveryHours,
+          morphology,
+          pestResistance,
+          feedingResponse,
+          flowerStructure,
+          taste,
+          effect,
+          hashValue,
+          clonePerformance,
+          tissueCultureSuitability,
+          breedingValue,
+          finalProduct,
+          intersexSigns,
           notes
         };
       })
@@ -102,16 +127,15 @@ export default function PhenoHuntToolRoute() {
       aiPrefill={{
         buttonLabel: "Fill pheno hunt from grow",
         buildMessage: () =>
-          `Prefill the Pheno Hunting workflow from the selected grow's saved plants, logs, photos, clone results, diagnoses, stress/recovery records, and harvest notes. Return JSON only with exactly these keys: {"projectName":"string","plants":[{"id":"string","label":"string","vigor":0,"aroma":0,"resin":0,"stressResistance":0,"yieldScore":0,"sexWeek":0,"cloneRootingDays":0,"recoveryHours":0,"notes":"string"}],"additionalInformation":"string"}. Use only supported evidence; leave unknown values blank instead of inventing them. Scores use 0-10. Put uncertainties and useful optional context in additionalInformation.`
+          `Prefill the Pheno Hunting workflow from the selected grow's saved plants, logs, photos, clone results, diagnoses, stress/recovery records, harvest, dry/cure, aroma, taste, effect, yield, hash, and propagation notes. Return JSON only with exactly these keys: {"projectName":"string","plants":[{"id":"string","plantId":"string","label":"string","vigor":0,"morphology":0,"stressResistance":0,"pestResistance":0,"feedingResponse":0,"aroma":0,"taste":0,"resin":0,"flowerStructure":0,"effect":0,"yieldScore":0,"hashValue":0,"clonePerformance":0,"tissueCultureSuitability":0,"breedingValue":0,"finalProduct":0,"sexWeek":0,"cloneRootingDays":0,"recoveryHours":0,"intersexSigns":"string","notes":"string","evidenceAssetIds":["string"]}],"additionalInformation":"string"}. Use only supported evidence; leave unknown values blank instead of inventing them. Scores use 0-10 and must be supported by records. Record sex-expression timing and explicit intersex/herm observations separately so timing can be compared with the observed intersex rate; never infer a herm from timing alone. Keep early observations separate from final-product evidence. Put missing evidence, uncertainties, and optional context in additionalInformation.`
       }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "Pheno hunt" },
         {
           key: "plants",
           label:
-            "Plants as lines: label, vigor, aroma, resin, stress, yield, sex week, clone root days, recovery hours, notes",
-          defaultValue:
-            "Plant 1, 8, 8, 8, 7, 7, 4, 9, 8, balanced\nPlant 2, 6, 9, 8, 6, 6, 6, 18, 30, sensory lean",
+            "Plants as JSON or lines: label, vigor, aroma, resin, stress, yield, sex week, clone root days, recovery hours, morphology, pest resistance, feeding response, flower structure, taste, effect, hash value, clone performance, TC suitability, breeding value, final product, intersex signs, notes",
+          defaultValue: "",
           multiline: true
         },
         {
@@ -121,8 +145,10 @@ export default function PhenoHuntToolRoute() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId }) => ({
+      buildPayload={(values, { growId, facilityId, commercialAccountId }) => ({
         growId,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         projectName: values.projectName,
         plants: parsePlants(values.plants),
         additionalInformation: values.additionalInformation || undefined
@@ -145,6 +171,21 @@ export default function PhenoHuntToolRoute() {
           key: "retests",
           label: "Retests",
           value: outputs.retestRecommendations?.length || 0
+        },
+        {
+          key: "evidence-completeness",
+          label: "Top evidence completeness",
+          value: outputs.comparisonMatrix?.[0]?.completeness != null
+            ? `${outputs.comparisonMatrix[0].completeness}%`
+            : "-"
+        },
+        {
+          key: "intersex-rate",
+          label: "Observed intersex rate",
+          value: outputs.stabilitySummary?.observedIntersexRate != null
+            ? `${outputs.stabilitySummary.observedIntersexRate}%`
+            : "-",
+          detail: `${outputs.stabilitySummary?.intersexCount || 0} of ${outputs.stabilitySummary?.plantsObserved || 0} plants; sex timing recorded for ${outputs.stabilitySummary?.sexTimingRecorded || 0}.`
         }
       ]}
       buildNotices={(outputs) => [
@@ -170,6 +211,22 @@ export default function PhenoHuntToolRoute() {
                   "At least one pheno has a stability/intersex concern. Do not mark it as an automatic keeper from score alone."
               }
             ]
+          : []),
+        ...(Array.isArray(outputs.limitations)
+          ? outputs.limitations.map((message: string, index: number) => ({
+              key: `limitation-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(outputs.stabilitySummary?.interpretation
+          ? [
+              {
+                key: "sex-timing-stability",
+                severity: "info" as const,
+                message: outputs.stabilitySummary.interpretation
+              }
+            ]
           : [])
       ]}
       defaultLogTitle={(outputs) => `Pheno hunt: ${outputs.projectName || "project"}`}
@@ -192,6 +249,52 @@ export default function PhenoHuntToolRoute() {
               tasks: phenoHuntTaskPlan(outputs)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "create-keeper-records",
+          label: "Create Keeper Genetics Records",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId || !outputs.keeperRecommendations?.length,
+          successMessage: "Created linked keeper genetics records.",
+          onPress: async () => {
+            await Promise.all(
+              outputs.keeperRecommendations.map((keeper: any) =>
+                createGrowpathModuleRecord({
+                  recordType: "genetics_note",
+                  title: `Keeper candidate: ${phenoLabel(keeper, "pheno")}`,
+                  status: "candidate",
+                  growId,
+                  plantId: keeper.plantId || keeper.id || null,
+                  phenoPlantId: keeper.id || null,
+                  facilityId: payload.facilityId || null,
+                  linkedToolRunId: toolRun?.id || toolRun?._id || null,
+                  inputs: { sourceProject: payload.projectName },
+                  outputs: keeper,
+                  payload: {
+                    selectionLanes: keeper.decisionLanes || {},
+                    commercialCandidate: Boolean(keeper.decisionLanes?.commercialCandidate),
+                    cloneCandidate: Boolean(keeper.decisionLanes?.cloneKeeper),
+                    motherCandidate: Boolean(keeper.decisionLanes?.motherKeeper),
+                    tissueCultureCandidate: Boolean(
+                      outputs.comparisonMatrix?.find((row: any) => row.id === keeper.id)
+                        ?.traits?.tissueCultureSuitability >= 7
+                    )
+                  },
+                  recommendations: [
+                    "Preserve source material before final selection.",
+                    "Confirm final product, propagation, stability, and the intended keeper lane."
+                  ],
+                  tags: [
+                    "pheno_keeper_candidate",
+                    ...Object.entries(keeper.decisionLanes || {})
+                      .filter(([, selected]) => selected)
+                      .map(([lane]) => lane)
+                  ]
+                })
+              )
+            );
           }
         }
       ]}
