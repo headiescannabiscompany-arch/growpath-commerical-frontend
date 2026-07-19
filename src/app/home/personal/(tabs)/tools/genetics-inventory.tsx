@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function geneticsTaskPlan(outputs: Record<string, any>) {
   const cultivar = String(outputs.cultivar || "cultivar");
@@ -60,24 +63,43 @@ function geneticsTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function GeneticsInventoryToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="genetics-inventory"
       toolKey="genetics-inventory"
       title="Genetics Inventory"
       subtitle="Record cultivar, parentage, feeding response, stress notes, flower timing, and keeper signals."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="pheno"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Fill genetics record from grow",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill this Genetics Inventory record from the selected grow and plant, seed/package or source notes, clone history, pheno records, stress/recovery, feeding response, flower timeline, harvest reviews, and attached documentation media. Return JSON only with exactly these string keys: cultivar, breeder, parentage, seedType, materialType, feedingResponse, rootingBehavior, flowerTime, stressNotes, aromaFlavorNotes, provenanceNotes. Breeder, cultivar, parentage, seed type, and material type must come from explicit saved provenance or readable documentation; never infer them from plant appearance. Media can support visible phenotype documentation but not lineage. Leave unknowns blank. In provenanceNotes distinguish verified facts, user-entered claims, AI summaries, conflicts, and missing package/source documentation.`
+      }}
       fields={[
-        { key: "cultivar", label: "Cultivar", defaultValue: "Unnamed cultivar" },
+        { key: "cultivar", label: "Cultivar", defaultValue: "" },
         { key: "breeder", label: "Breeder / source", defaultValue: "" },
         { key: "parentage", label: "Parentage", defaultValue: "" },
-        { key: "seedType", label: "Seed type", defaultValue: "regular" },
-        { key: "materialType", label: "Material type", defaultValue: "seed" },
+        { key: "seedType", label: "Seed type", defaultValue: "" },
+        { key: "materialType", label: "Material type", defaultValue: "" },
         { key: "feedingResponse", label: "Feeding response", defaultValue: "unknown" },
         { key: "rootingBehavior", label: "Rooting behavior", defaultValue: "unknown" },
         {
           key: "flowerTime",
           label: "Flower time days",
-          defaultValue: "63",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
@@ -91,9 +113,21 @@ export default function GeneticsInventoryToolRoute() {
           label: "Aroma/flavor notes, comma-separated",
           defaultValue: "",
           multiline: true
+        },
+        {
+          key: "provenanceNotes",
+          label: "Provenance and verification notes (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
-      buildPayload={(values, { growId }) => ({ growId, ...values })}
+      buildPayload={(values, { growId, plantContext }) => ({
+        growId,
+        ...plantContext.toolRunContext,
+        ...values,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
+      })}
       buildMetrics={(outputs) => [
         { key: "cultivar", label: "Cultivar", value: outputs.cultivar },
         { key: "breeder", label: "Breeder", value: outputs.breeder },
