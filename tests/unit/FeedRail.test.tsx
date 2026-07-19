@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FeedRail from "@/components/feed/FeedRail";
+import FeedRail, { selectAds } from "@/components/feed/FeedRail";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 
 const mockListCommercialFeedCampaigns = jest.fn();
@@ -29,6 +29,59 @@ describe("FeedRail", () => {
   beforeEach(() => {
     mockListCommercialFeedCampaigns.mockReset();
     jest.mocked(recordCommercialAnalyticsEvent).mockReset().mockResolvedValue({});
+  });
+
+  it("selects distinct top, middle, and bottom campaigns with multi-factor rotation", () => {
+    const ads = [
+      {
+        title: "Newest",
+        body: "New campaign",
+        cta: "Open",
+        href: "/new",
+        createdAt: "2026-07-19T12:00:00Z",
+        engagementCount: 2,
+        clickCount: 8,
+        promotionCount: 5,
+        relevanceScore: 1,
+        imageUrl: ""
+      },
+      {
+        title: "Relevant",
+        body: "Relevant campaign",
+        cta: "Open",
+        href: "/relevant",
+        createdAt: "2026-07-18T12:00:00Z",
+        engagementCount: 8,
+        clickCount: 3,
+        promotionCount: 2,
+        relevanceScore: 10,
+        imageUrl: ""
+      },
+      {
+        title: "Underexposed",
+        body: "Underexposed campaign",
+        cta: "Open",
+        href: "/underexposed",
+        createdAt: "2026-07-17T12:00:00Z",
+        engagementCount: 4,
+        clickCount: 0,
+        promotionCount: 0,
+        relevanceScore: 4,
+        imageUrl: ""
+      }
+    ];
+    const selected = [
+      selectAds(ads, 1, "top")[0],
+      selectAds(ads, 1, "middle")[0],
+      selectAds(ads, 1, "bottom")[0]
+    ];
+
+    expect(new Set(selected.map((item) => item.title)).size).toBe(3);
+    expect(selected.map((item) => item.strategyLabel)).toEqual([
+      "New & relevant",
+      "Under-clicked",
+      "Fresh placement"
+    ]);
   });
 
   it("keeps fallback promotional cards on valid discovery routes", async () => {

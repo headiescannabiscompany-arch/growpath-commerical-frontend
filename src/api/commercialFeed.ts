@@ -42,6 +42,9 @@ export type CommercialFeedCampaign = {
   engagementCount?: number;
   likeCount?: number;
   commentCount?: number;
+  clickCount?: number;
+  promotionCount?: number;
+  relevanceScore?: number;
   createdAt?: string;
   author?: {
     displayName?: string;

@@ -57,10 +57,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Forum threads/comments remain the discussion surface.
 
 4. Free account feed placement rule
-   - Free account pages: top + bottom placement.
-   - Long pages with two or more scroll screens: top + middle + bottom.
-   - Do not repeat the same ad everywhere.
-   - Rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
+   - [x] Free account pages: top + bottom placement.
+   - [x] Long pages with two or more scroll screens: top + middle + bottom.
+   - [x] Do not repeat the same ad across top, middle, and bottom when at least three campaigns are available.
+   - [x] Rank and rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
 
 5. Back arrows
    - Every nested page gets a back arrow.
