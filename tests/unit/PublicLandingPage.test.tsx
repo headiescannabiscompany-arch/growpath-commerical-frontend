@@ -25,4 +25,13 @@ describe("PublicLandingPage", () => {
     expect(courseCopy).not.toContain("apply");
     expect(courseCopy).not.toContain("support@growpathai.com");
   });
+
+  it("publishes the exact monthly and yearly amounts for every paid plan", () => {
+    const pricingCopy = JSON.stringify(PUBLIC_PAGE_COPY.pricing);
+
+    expect(pricingCopy).toContain("Pro Grower — $10/month or $100/year");
+    expect(pricingCopy).toContain("Commercial — $50/month or $500/year");
+    expect(pricingCopy).toContain("Facility — $100/month or $1,000/year");
+    expect(pricingCopy).toContain("one $1,000 payment");
+  });
 });

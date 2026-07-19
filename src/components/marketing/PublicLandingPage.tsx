@@ -72,15 +72,19 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
     sections: [
       {
         title: "Free",
-        body: "Use core grow workflows, limited AI assistance, community features, and course publishing within Free-plan limits."
+        body: "Use core grow workflows, limited AI assistance, and community features. All plans can create and publish courses within their plan limits."
       },
       {
-        title: "Courses",
-        body: "All plans can create and publish courses within their plan limits. Paid plans add higher limits and advanced creator tools."
+        title: "Pro Grower — $10/month or $100/year",
+        body: "Advanced personal grow tools, higher AI limits, exports, and creator features. Annual billing is charged as one $100 payment."
       },
       {
-        title: "Commercial and Facility",
-        body: "Business and cultivation teams receive purpose-built workspaces, role controls, connected records, and operational reporting."
+        title: "Commercial — $50/month or $500/year",
+        body: "Brand, product, course, storefront, campaign, inventory, and trial workflows. Annual billing is charged as one $500 payment."
+      },
+      {
+        title: "Facility — $100/month or $1,000/year",
+        body: "Rooms, teams, SOPs, inventory, environmental context, audit history, and operational reporting. Annual billing is charged as one $1,000 payment."
       }
     ]
   },
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
     padding: 22,
     gap: 9
   },
-  cardTitle: { color: "#173f2a", fontSize: 20, fontWeight: "850" },
+  cardTitle: { color: "#173f2a", fontSize: 20, fontWeight: "800" },
   cardBody: { color: "#44564a", fontSize: 16, lineHeight: 24 },
   footer: {
     flexDirection: "row",
