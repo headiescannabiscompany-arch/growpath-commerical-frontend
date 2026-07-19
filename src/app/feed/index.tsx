@@ -1097,14 +1097,15 @@ export default function CommercialFeedRoute() {
           {analytics.placements.slice(0, 4).map((row) => (
             <Text key={`placement-${row.key}`} style={styles.linkBoxText}>
               {placementLabels[row.key as FeedCampaignPlacement] || row.key}:{" "}
-              {row.impressions} impressions Â· {row.clicks} clicks Â· {row.conversions}{" "}
-              conversions
+              {row.impressions} impressions {" · "}
+              {row.clicks} clicks {" · "}
+              {row.conversions} conversions
             </Text>
           ))}
           {analytics.growInterests.slice(0, 4).map((row) => (
             <Text key={`interest-${row.key}`} style={styles.linkBoxText}>
-              Grow interest {row.key}: {row.impressions} impressions Â· {row.clicks}{" "}
-              clicks
+              Grow interest {row.key}: {row.impressions} impressions {" · "}
+              {row.clicks} clicks
             </Text>
           ))}
         </View>
