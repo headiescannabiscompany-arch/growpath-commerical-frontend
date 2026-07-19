@@ -29,14 +29,15 @@ const TOOLS = [
     href: "/home/commercial/tools/recipe-builder"
   },
   {
-    title: "Harvest Readiness",
-    description: "Track harvest observations and readiness evidence.",
-    href: "/home/commercial/tools/harvest-readiness"
+    title: "Saved Runs / Reports",
+    description: "Review and export commercial grow records and completed analyses.",
+    href: "/home/commercial/tools/report"
   },
   {
-    title: "Export Report",
-    description: "Create a portable report from commercial grow records.",
-    href: "/home/commercial/tools/report"
+    title: "Tool Library",
+    description:
+      "Open reusable nutrient, media, ingredient, and environment calculators.",
+    href: "/home/commercial/tools/library"
   }
 ] as const;
 
@@ -50,8 +51,8 @@ export default function CommercialToolsIndex() {
         <View>
           <Text style={styles.title}>Commercial Tools</Text>
           <Text style={styles.subtitle}>
-            Open cultivation tools directly or launch them from a product, trial, grow, or
-            batch to carry that record&apos;s context with you.
+            Start with grow intelligence here. Harvest, scheduling, and lifecycle
+            workflows live inside the grow, trial, or batch they affect.
           </Text>
         </View>
       }

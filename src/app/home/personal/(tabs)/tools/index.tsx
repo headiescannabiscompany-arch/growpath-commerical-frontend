@@ -110,6 +110,7 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
+const CORE_TOOL_KEYS = new Set(["tools.npk_recipe", "tools.environment_analysis"]);
 const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
   "tools.crop_steering_projects",
   "tools.pheno_hunting",
@@ -161,25 +162,9 @@ function ToolCard({
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>
       {enabled ? (
-        <>
-          <Link href={href as Href} style={styles.link} asChild>
-            <Text>Open</Text>
-          </Link>
-          <Link
-            href={
-              hrefWithGrow(
-                `/home/personal/ai?prompt=${encodeURIComponent(
-                  `Help me use ${tool.title} as part of my grow workflow.`
-                )}`,
-                growId
-              ) as Href
-            }
-            style={styles.link}
-            asChild
-          >
-            <Text>Ask AI to guide this workflow</Text>
-          </Link>
-        </>
+        <Link href={href as Href} style={styles.link} asChild>
+          <Text>Open</Text>
+        </Link>
       ) : (
         <Text style={styles.lockedText}>Upgrade to unlock</Text>
       )}
@@ -238,6 +223,10 @@ export default function ToolsHubScreen() {
     toolMatchesInterests(tool, selectedInterests)
   );
   const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
+  const coreTools = tools.filter((tool) => CORE_TOOL_KEYS.has(tool.key));
+  const libraryTools = tools.filter(
+    (tool) => !PRIMARY_TOOL_KEYS.has(tool.key) && !CORE_TOOL_KEYS.has(tool.key)
+  );
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: "personal_tools_hub",
     plan,
@@ -248,7 +237,7 @@ export default function ToolsHubScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tools / AI</Text>
+        <Text style={styles.title}>Grow Intelligence</Text>
         <Text style={styles.subtitle}>
           Ask AI, diagnose plants, build recipes, analyze environment risk, and save
           outputs back to a grow.
@@ -273,35 +262,6 @@ export default function ToolsHubScreen() {
           </View>
         ) : null}
         <TokenBalanceWidget />
-        <View style={styles.utilityRow}>
-          <Link href={hrefWithGrow("/home/personal/ai", growId) as Href} asChild>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open personal Ask AI"
-              style={styles.utilityButton}
-            >
-              <Text style={styles.utilityText}>Ask AI</Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
-            asChild
-          >
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Saved Runs</Text>
-            </Pressable>
-          </Link>
-          <Link href={"/home/personal/tools/recipe-builder" as Href} asChild>
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Recipes</Text>
-            </Pressable>
-          </Link>
-          <Link href={"/home/personal/tools/ingredient-library" as Href} asChild>
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Ingredients</Text>
-            </Pressable>
-          </Link>
-        </View>
       </View>
 
       {bannerPolicy.top ? (
@@ -333,10 +293,51 @@ export default function ToolsHubScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Core Workflows</Text>
+        <View style={styles.grid}>
+          {coreTools.map((tool) => (
+            <ToolCard
+              key={tool.key}
+              tool={tool}
+              growId={growId}
+              enabled={
+                devPaidOverride ||
+                !tool.capabilityKey ||
+                entitlements.can(tool.capabilityKey)
+              }
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Saved Runs / Reports</Text>
+        <View style={styles.utilityRow}>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
+            asChild
+          >
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Saved Runs</Text>
+            </Pressable>
+          </Link>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/pdf-export", growId) as Href}
+            asChild
+          >
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Reports & Export</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Tool Library</Text>
+      </View>
       {AREA_ORDER.map((area, index) => {
-        const areaTools = tools.filter(
-          (tool) => tool.area === area && !PRIMARY_TOOL_KEYS.has(tool.key)
-        );
+        const areaTools = libraryTools.filter((tool) => tool.area === area);
         if (!areaTools.length) return null;
 
         return (
