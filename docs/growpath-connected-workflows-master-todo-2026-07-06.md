@@ -110,8 +110,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Recipe can convert to commercial product draft or facility production batch.
 
 13. Ingredient library
-   - Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
-   - User-entered label data overrides generic assumptions.
+   - [x] Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
+   - [x] User-entered label data overrides generic assumptions.
 
 14. NPK / Feed Recipe Builder
    - Multi-input builder with 18-20 rows.

@@ -7,6 +7,7 @@ const mockListProductIngredients = jest.fn();
 const mockCreateProductIngredient = jest.fn();
 const mockUpdateProductIngredient = jest.fn();
 const mockArchiveProductIngredient = jest.fn();
+const mockExtractIngredientLabel = jest.fn();
 
 jest.mock("@react-navigation/native", () => ({
   useFocusEffect: (callback: () => void) => {
@@ -37,11 +38,39 @@ jest.mock("@/components/ScreenBoundary", () => {
   };
 });
 
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  return ({ onChange }: any) =>
+    React.createElement(
+      Pressable,
+      {
+        accessibilityLabel: "Mock label upload",
+        onPress: () =>
+          onChange([
+            {
+              id: "evidence-label-1",
+              _id: "evidence-label-1",
+              assetType: "photo",
+              durableUrl: "https://example.com/durable-label.jpg",
+              uploadStatus: "uploaded",
+              purpose: "product",
+              source: "upload",
+              originalUri: "file://label.jpg",
+              qualityWarnings: []
+            }
+          ])
+      },
+      React.createElement(Text, null, "Mock label upload")
+    );
+});
+
 jest.mock("@/api/productIngredients", () => ({
   listProductIngredients: (...args: any[]) => mockListProductIngredients(...args),
   createProductIngredient: (...args: any[]) => mockCreateProductIngredient(...args),
   updateProductIngredient: (...args: any[]) => mockUpdateProductIngredient(...args),
-  archiveProductIngredient: (...args: any[]) => mockArchiveProductIngredient(...args)
+  archiveProductIngredient: (...args: any[]) => mockArchiveProductIngredient(...args),
+  extractIngredientLabel: (...args: any[]) => mockExtractIngredientLabel(...args)
 }));
 
 describe("IngredientLibraryRoute", () => {
@@ -74,6 +103,13 @@ describe("IngredientLibraryRoute", () => {
       Promise.resolve({ id: "ingredient-1", name: "Kelp meal", ...payload })
     );
     mockArchiveProductIngredient.mockResolvedValue(true);
+    mockExtractIngredientLabel.mockResolvedValue({
+      nutrientData: {
+        productName: "Extracted Bloom",
+        brand: "Label Brand",
+        labelNPK: { N: 2, P: 6, K: 4 }
+      }
+    });
   });
 
   it("saves reusable ingredient library fields for recipe math", async () => {
@@ -144,5 +180,23 @@ describe("IngredientLibraryRoute", () => {
         })
       )
     );
+  });
+
+  it("fills a draft from durable label evidence and requires verification", async () => {
+    const screen = render(<IngredientLibraryRoute />);
+    await waitFor(() => expect(screen.getByText("Kelp meal")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("New Ingredient"));
+    fireEvent.press(screen.getByLabelText("Mock label upload"));
+    fireEvent.press(screen.getByLabelText("Analyze ingredient label with AI"));
+
+    await waitFor(() =>
+      expect(mockExtractIngredientLabel).toHaveBeenCalledWith("evidence-label-1")
+    );
+    expect(screen.getByLabelText("Name").props.value).toBe("Extracted Bloom");
+    expect(screen.getByLabelText("N").props.value).toBe("2");
+    expect(screen.getByLabelText("P2O5").props.value).toBe("6");
+    expect(screen.getByLabelText("K2O").props.value).toBe("4");
+    expect(screen.getByLabelText("Confirm extracted label values")).toBeTruthy();
   });
 });
