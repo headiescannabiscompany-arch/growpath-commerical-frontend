@@ -13,6 +13,25 @@ function numberOrFallback(value: unknown, fallback: number) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function parseTraceabilityRows(value: string) {
+  if (!value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return value
+      .split("\n")
+      .map((line) => {
+        const [vesselId, rack, shelf, status, parentVesselId, notes] = line
+          .split(",")
+          .map((part) => part.trim());
+        if (!vesselId) return null;
+        return { vesselId, rack, shelf, status, parentVesselId, notes };
+      })
+      .filter(Boolean);
+  }
+}
+
 function tissueCultureCalendarMetadata(sourceStage: string) {
   return {
     allDay: true,
@@ -131,6 +150,20 @@ function tissueCultureTaskPlan(
         "Capture what changed, what worked, and what should be adjusted before the next batch."
       ].join("\n")
     },
+    {
+      title: `Audit TC traceability: ${batchNumber}`,
+      priority: "high" as const,
+      dueDate: tomorrow(1),
+      ...calendarMetadata,
+      sourceStage: "tc_traceability_audit",
+      description: [
+        `Mother bank: ${payload.motherBankId || "not linked"}.`,
+        `Source batch: ${payload.sourceBatchId || "not linked"}; parent transfer: ${payload.parentTransferId || "not linked"}.`,
+        `Media lot: ${payload.mediaLotId || "not linked"}; sterilization run: ${payload.sterilizationRunId || "not linked"}.`,
+        `Tracked vessels: ${Array.isArray(payload.vesselTraceability) ? payload.vesselTraceability.length : 0}.`,
+        "Confirm vessel IDs, parent lineage, rack/shelf location, technician action, and status before the next transfer or storage move."
+      ].join("\n")
+    },
     ...(transferCycle >= Math.max(1, maxProductionTransfers - 2)
       ? [
           {
@@ -173,12 +206,15 @@ export default function TissueCultureToolRoute() {
         clearUnfilled: true,
         evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         buildMessage: () =>
-          `Prefill this Tissue Culture batch review from the selected grow/plant genetics, TC batch records, transfers, SOP/media records, costs, tasks, cold-storage history, logs, and attached vessel photos/video. Return JSON only using these exact keys: projectName, batchNumber, geneticsId, stage, productionPhase, transferCycle, maxProductionTransfers, technicianOwner, motherBlockStartDate, productionEndDate, mediaRecipe, mediaType, vesselType, explantType, explantSize, vessels, contaminatedVessels, fungusVessels, browningVessels, stalledVessels, rootedVessels, acclimatedPlants, SOPVersion, mediaCost, vesselSupplyCost, laborCost, symptoms, transfersDueDays, preservationMode, coldStorageRoomId, coldStorageTempC, coldStorageStartDate, plannedRetrievalDate, recoveryCheckDays, storageNotes. Every value must be a string. Counts, dates, costs, SOP, recipe, temperature, and transfer timing must come from saved records, not visual estimates. Media may support visible contamination category, browning, callus/root visibility, and batch pattern, but do not identify a microbe species from appearance. Leave unknowns blank. In symptoms/storageNotes separate observations, hypotheses, batch distribution, uncertainty, cold-storage entry/retrieval conditions, and missing close-up/control-vessel evidence.`
+          `Prefill this Tissue Culture batch review from the selected grow/plant genetics, mother-bank and production-line records, TC batches/transfers, SOP/media lots, technician actions, costs, tasks, cold-storage history, logs, and attached vessel photos/video. Return JSON only using the fields requested by the form. Every value must be a string; vesselTraceability may be a JSON-array string with vesselId, rack, shelf, status, parentVesselId, and notes. Counts, identifiers, dates, costs, SOP, media lots, recipe, temperature, and transfer timing must come from saved records, not visual estimates. Never invent a vessel ID, parent lineage, lot, or technician action. Media may support visible contamination category, browning, callus/root visibility, and batch pattern, but do not identify a microbe species from appearance. Leave unknowns blank. In symptoms/storageNotes separate observations, hypotheses, batch distribution, uncertainty, cold-storage entry/retrieval conditions, and missing close-up/control-vessel evidence.`
       }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "TC Project" },
         { key: "batchNumber", label: "Batch number", defaultValue: "TC-001" },
         { key: "geneticsId", label: "Genetics ID", defaultValue: "" },
+        { key: "motherBankId", label: "Mother-bank line ID", defaultValue: "" },
+        { key: "sourceBatchId", label: "Source batch ID", defaultValue: "" },
+        { key: "parentTransferId", label: "Parent transfer ID", defaultValue: "" },
         { key: "stage", label: "Stage", defaultValue: "initiation" },
         {
           key: "productionPhase",
@@ -202,6 +238,9 @@ export default function TissueCultureToolRoute() {
           label: "Technician / owner",
           defaultValue: ""
         },
+        { key: "lastAction", label: "Last handling action", defaultValue: "" },
+        { key: "lastActionBy", label: "Last action by", defaultValue: "" },
+        { key: "lastActionAt", label: "Last action date/time", defaultValue: "" },
         {
           key: "motherBlockStartDate",
           label: "Mother block start date",
@@ -260,6 +299,15 @@ export default function TissueCultureToolRoute() {
           keyboardType: "numeric"
         },
         { key: "SOPVersion", label: "SOP version", defaultValue: "SOP-TC-1" },
+        { key: "mediaLotId", label: "Media preparation / lot ID", defaultValue: "" },
+        { key: "sterilizationRunId", label: "Sterilization run ID", defaultValue: "" },
+        {
+          key: "vesselTraceability",
+          label:
+            "Vessels as lines: vessel ID, rack, shelf, status, parent vessel ID, notes",
+          defaultValue: "",
+          multiline: true
+        },
         {
           key: "mediaCost",
           label: "Media cost",
@@ -332,6 +380,9 @@ export default function TissueCultureToolRoute() {
         transferCycle: values.transferCycle,
         maxProductionTransfers: values.maxProductionTransfers,
         technicianOwner: values.technicianOwner,
+        lastAction: values.lastAction || undefined,
+        lastActionBy: values.lastActionBy || undefined,
+        lastActionAt: values.lastActionAt || undefined,
         motherBlockStartDate: values.motherBlockStartDate,
         productionEndDate: values.productionEndDate,
         mediaRecipe: values.mediaRecipe,
@@ -359,6 +410,12 @@ export default function TissueCultureToolRoute() {
         plannedRetrievalDate: values.plannedRetrievalDate || undefined,
         recoveryCheckDays: values.recoveryCheckDays || undefined,
         storageNotes: values.storageNotes || undefined,
+        motherBankId: values.motherBankId || undefined,
+        sourceBatchId: values.sourceBatchId || undefined,
+        parentTransferId: values.parentTransferId || undefined,
+        mediaLotId: values.mediaLotId || undefined,
+        sterilizationRunId: values.sterilizationRunId || undefined,
+        vesselTraceability: parseTraceabilityRows(values.vesselTraceability),
         evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
