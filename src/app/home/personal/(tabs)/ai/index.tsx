@@ -10,6 +10,9 @@ import { getDiagnosisHistory } from "@/api/diagnose";
 import { listToolRuns } from "@/api/toolRuns";
 import { listNutrientRecipes } from "@/api/nutrientRecipes";
 import { getTelemetryPoints, listTelemetrySources } from "@/api/telemetry";
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
+import { getFacilityTasks } from "@/api/facilityTasks";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import type { EvidenceAsset } from "@/types/evidence";
 import {
@@ -328,14 +331,32 @@ function aiTaskMetadata(payload: Record<string, any>) {
   };
 }
 
-export default function AiScreen() {
+type AiScreenProps = {
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
+};
+
+function envelopeRows(value: any, keys: string[] = []) {
+  if (Array.isArray(value)) return value;
+  for (const key of [...keys, "items", "data", "results"]) {
+    if (Array.isArray(value?.[key])) return value[key];
+  }
+  return [];
+}
+
+export default function AiScreen({
+  workspaceType = "personal",
+  facilityId = ""
+}: AiScreenProps = {}) {
   const router = useRouter();
   const params = useLocalSearchParams<{
     prompt?: string | string[];
     growId?: string | string[];
+    facilityId?: string | string[];
   }>();
   const initialPrompt = firstQueryValue(params.prompt);
   const initialGrowId = firstQueryValue(params.growId);
+  const activeFacilityId = facilityId || firstQueryValue(params.facilityId);
   const [draft, setDraft] = useState(initialPrompt);
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -360,16 +381,41 @@ export default function AiScreen() {
   useEffect(() => {
     async function loadContext() {
       try {
+        const facilityScoped = workspaceType === "facility" && activeFacilityId;
         const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes] =
-          await Promise.all([
-            listPersonalGrows(),
-            listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
-            listPersonalLogs(),
-            listPersonalTasks(),
-            listToolRuns(),
-            getDiagnosisHistory(),
-            listNutrientRecipes(selectedGrowId || undefined)
-          ]);
+          await Promise.all(
+            facilityScoped
+              ? [
+                  apiRequest(endpoints.grows(activeFacilityId)).then((value) =>
+                    envelopeRows(value, ["grows"])
+                  ),
+                  apiRequest(
+                    `${endpoints.plants(activeFacilityId)}${
+                      selectedGrowId
+                        ? `?growId=${encodeURIComponent(selectedGrowId)}`
+                        : ""
+                    }`
+                  ).then((value) => envelopeRows(value, ["plants"])),
+                  apiRequest(endpoints.growlogs(activeFacilityId)).then((value) =>
+                    envelopeRows(value, ["logs", "growlogs"])
+                  ),
+                  getFacilityTasks(activeFacilityId),
+                  listToolRuns(),
+                  getDiagnosisHistory(),
+                  listNutrientRecipes(selectedGrowId || undefined)
+                ]
+              : [
+                  listPersonalGrows(),
+                  listPersonalPlants(
+                    selectedGrowId ? { growId: selectedGrowId } : undefined
+                  ),
+                  listPersonalLogs(),
+                  listPersonalTasks(),
+                  listToolRuns(),
+                  getDiagnosisHistory(),
+                  listNutrientRecipes(selectedGrowId || undefined)
+                ]
+          );
         const activeGrowId =
           selectedGrowId ||
           String(
@@ -387,16 +433,14 @@ export default function AiScreen() {
               Date.now() - 14 * 24 * 60 * 60 * 1000
             ).toISOString();
             const windows = await Promise.all(
-              sources
-                .slice(0, 5)
-                .map((source) =>
-                  getTelemetryPoints({
-                    sourceId: source.id,
-                    startIso,
-                    endIso,
-                    limit: 100
-                  })
-                )
+              sources.slice(0, 5).map((source) =>
+                getTelemetryPoints({
+                  sourceId: source.id,
+                  startIso,
+                  endIso,
+                  limit: 100
+                })
+              )
             );
             environmentHistory = windows.flatMap((window) => window.points).slice(-200);
           } catch (error) {
@@ -441,7 +485,7 @@ export default function AiScreen() {
     }
 
     loadContext();
-  }, [selectedGrowId]);
+  }, [activeFacilityId, selectedGrowId, workspaceType]);
 
   const selectedGrow = useMemo(
     () => context?.grows.find((grow) => String(grow.id || grow._id) === selectedGrowId),
@@ -472,6 +516,8 @@ export default function AiScreen() {
     const res = await askPersonalAssistant({
       message: text,
       growId: selectedGrowId || undefined,
+      facilityId: activeFacilityId || undefined,
+      workspaceType,
       conversationId: conversationId || undefined,
       evidenceAssetIds: evidenceAssets
         .filter((asset) => asset.uploadStatus === "uploaded" && asset.id)
@@ -566,10 +612,10 @@ export default function AiScreen() {
       setProposedWrites([]);
       const reply = await askBackend(text);
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
-      setProviderLabel("Limited context answer — API unavailable");
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      setProviderLabel("Limited context answer - API unavailable");
       setMessages((m) => [
         ...m,
         {
@@ -587,7 +633,9 @@ export default function AiScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
-        <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
+        {workspaceType !== "facility" ? (
+          <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
+        ) : null}
         {context && (
           <View style={styles.contextCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>

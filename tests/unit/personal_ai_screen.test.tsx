@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AiScreen from "@/app/home/personal/(tabs)/ai";
 
@@ -63,6 +63,7 @@ jest.mock("@/api/telemetry", () => ({
 }));
 
 describe("personal AI screen", () => {
+  afterEach(cleanup);
   beforeEach(() => {
     jest.resetAllMocks();
     mockListPersonalGrows.mockResolvedValue([
@@ -155,7 +156,9 @@ describe("personal AI screen", () => {
     await waitFor(() =>
       expect(screen.getByText("Drafted actions require confirmation")).toBeTruthy()
     );
-    expect(screen.getByText("GPT-assisted grow review")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("GPT-assisted grow review")).toBeTruthy()
+    );
     expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
       expect.objectContaining({
         growId: "grow-1",

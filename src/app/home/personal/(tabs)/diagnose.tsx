@@ -25,6 +25,8 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 import { providerEvidencePayload } from "@/api/evidence";
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -125,7 +127,13 @@ type DiagnosisProviderStatus = {
   mode?: string;
 };
 
-export default function DiagnoseRoute() {
+export default function DiagnoseRoute({
+  workspaceType = "personal",
+  facilityId = ""
+}: {
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
+} = {}) {
   const params = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -170,10 +178,18 @@ export default function DiagnoseRoute() {
       setPlants([]);
       return;
     }
-    listPersonalPlants({ growId })
-      .then(setPlants)
-      .catch(() => setPlants([]));
-  }, [growId]);
+    const request =
+      workspaceType === "facility" && facilityId
+        ? apiRequest(
+            `${endpoints.plants(facilityId)}?growId=${encodeURIComponent(growId)}`
+          ).then((response: any) => {
+            const rows =
+              response?.plants || response?.items || response?.data || response;
+            return Array.isArray(rows) ? rows : [];
+          })
+        : listPersonalPlants({ growId });
+    request.then(setPlants).catch(() => setPlants([]));
+  }, [facilityId, growId, workspaceType]);
 
   useEffect(() => {
     if (!enabled) {
@@ -265,7 +281,9 @@ export default function DiagnoseRoute() {
         pattern,
         rootZone,
         environment,
-        numbers
+        numbers,
+        workspaceType,
+        facilityId: facilityId || undefined
       };
       const response = evidence.images.length
         ? await diagnoseEvidence({
@@ -717,7 +735,7 @@ export default function DiagnoseRoute() {
           allowVideo
           maxVideoSeconds={30}
           purpose="diagnosis"
-          sourceContext={{ growId, plantId }}
+          sourceContext={{ growId, plantId, facilityId: facilityId || undefined }}
           value={evidenceAssets}
           onChange={setEvidenceAssets}
         />

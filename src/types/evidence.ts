@@ -17,6 +17,7 @@ export type EvidencePurpose =
 export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "external";
 
 export type EvidenceLinks = {
+  facilityId?: string;
   growId?: string;
   plantId?: string;
   phenoPlantId?: string;

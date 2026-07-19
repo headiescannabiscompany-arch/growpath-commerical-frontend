@@ -34,6 +34,8 @@ export async function askPersonalAssistant(payload: {
   message: string;
   context: Record<string, any>;
   growId?: string;
+  facilityId?: string;
+  workspaceType?: "personal" | "commercial" | "facility";
   plantId?: string;
   conversationId?: string;
   evidenceAssetIds?: string[];
