@@ -212,8 +212,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Context-aware targeting.
 
 34. Feed campaign builder
-   - Campaign type, destination, creative, placement, audience, schedule, review.
-   - Prevent publishing if destination is broken or missing setup.
+   - [x] Campaign type, destination, creative, placement, audience, schedule, review.
+   - [x] Prevent publishing if destination is broken or missing setup.
 
 35. Feed analytics
    - Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
@@ -920,6 +920,7 @@ Completed and pushed:
 629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
 630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
 631. Feed placements now resolve through canonical home hero/top/middle/bottom, page top/middle/bottom, course, tool, Forum, product, Facility, and Commercial slot keys; the API filters campaigns by eligible slot while preserving legacy `feed` campaigns, existing plan policy controls placement density, and viewer grow-interest overlap contributes only evidence-backed relevance weight before the established freshness/engagement/exposure rotation.
+632. The shared Commercial/Facility Feed campaign builder now combines campaign type, public destination, image creative, CTA, grow-interest audience, named placement slots, shared schedule controls, and a pre-publish review; both client and server block active/scheduled publication when destinations, creative, placement, external URL, campaign-type linkage, or schedule setup is missing or invalid, and Facility outreach can link education/live/Forum destinations without exposing direct-sales fields or bypassing readiness checks.
 
 ## Working Rule For Codex
 

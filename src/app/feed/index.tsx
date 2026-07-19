@@ -20,7 +20,8 @@ import {
   createCommercialFeedCampaign,
   listCommercialFeedCampaigns,
   type CommercialFeedCampaign,
-  type CommercialFeedCampaignType
+  type CommercialFeedCampaignType,
+  type FeedCampaignPlacement
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
@@ -64,6 +65,40 @@ const campaignKindLabels: Record<CampaignKind, string> = {
   general_campaign: "General campaign"
 };
 
+const PLACEMENT_OPTIONS: FeedCampaignPlacement[] = [
+  "feed",
+  "home_hero",
+  "home_top",
+  "home_middle",
+  "home_bottom",
+  "page_top",
+  "page_middle",
+  "page_bottom",
+  "course",
+  "tool",
+  "forum",
+  "product",
+  "facility",
+  "commercial"
+];
+
+const placementLabels: Record<FeedCampaignPlacement, string> = {
+  feed: "All Feed placements",
+  home_hero: "Home hero",
+  home_top: "Home top",
+  home_middle: "Home middle",
+  home_bottom: "Home bottom",
+  page_top: "Page top",
+  page_middle: "Page middle",
+  page_bottom: "Page bottom",
+  course: "Courses",
+  tool: "Tools",
+  forum: "Forum",
+  product: "Products",
+  facility: "Facility",
+  commercial: "Commercial"
+};
+
 function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedCampaignType {
   if (kind === "product_ad") return "listing";
   if (kind === "course_ad") return "education";
@@ -91,7 +126,10 @@ function campaignReadinessWarnings({
   storefrontSlug,
   linkedForumThreadId,
   externalLinkUrl,
-  imageUrl
+  imageUrl,
+  campaignStart,
+  campaignEnd,
+  placements
 }: {
   campaignKind: CampaignKind;
   linkedProductId: string;
@@ -102,6 +140,9 @@ function campaignReadinessWarnings({
   linkedForumThreadId: string;
   externalLinkUrl: string;
   imageUrl: string;
+  campaignStart: string;
+  campaignEnd: string;
+  placements: FeedCampaignPlacement[];
 }) {
   const warnings: string[] = [];
   const hasDestination =
@@ -132,7 +173,30 @@ function campaignReadinessWarnings({
     warnings.push("Add at least one destination before promoting broadly.");
   }
   if (!imageUrl.trim()) {
-    warnings.push("Add an image or creative before publishing a polished campaign.");
+    warnings.push("Add an image or creative before publishing.");
+  }
+  if (externalLinkUrl.trim() && !/^https?:\/\//i.test(externalLinkUrl.trim())) {
+    warnings.push("External destination must start with http:// or https://.");
+  }
+  const start = campaignStart.trim() ? new Date(campaignStart.trim()) : null;
+  const end = campaignEnd.trim() ? new Date(campaignEnd.trim()) : null;
+  if (start && Number.isNaN(start.getTime())) {
+    warnings.push("Campaign start date is invalid.");
+  }
+  if (end && Number.isNaN(end.getTime())) {
+    warnings.push("Campaign end date is invalid.");
+  }
+  if (
+    start &&
+    end &&
+    !Number.isNaN(start.getTime()) &&
+    !Number.isNaN(end.getTime()) &&
+    end <= start
+  ) {
+    warnings.push("Campaign end must be after its start.");
+  }
+  if (!placements.length) {
+    warnings.push("Select at least one campaign placement.");
   }
   return warnings;
 }
@@ -316,6 +380,10 @@ export default function CommercialFeedRoute() {
   const [campaignEnd, setCampaignEnd] = useState("");
   const [campaignReminder, setCampaignReminder] = useState("24 hours before");
   const [campaignRecurrence, setCampaignRecurrence] = useState("");
+  const [placements, setPlacements] = useState<FeedCampaignPlacement[]>(
+    isFacility ? ["facility"] : ["feed"]
+  );
+  const [ctaLabel, setCtaLabel] = useState("Open");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -344,11 +412,14 @@ export default function CommercialFeedRoute() {
     storefrontSlug,
     linkedForumThreadId,
     externalLinkUrl,
-    imageUrl
+    imageUrl,
+    campaignStart,
+    campaignEnd,
+    placements
   });
   const canCreate =
     canManageCampaigns && title.trim().length > 0 && body.trim().length > 0 && !creating;
-  const canPublishCampaign = canCreate && (isFacility || readinessWarnings.length === 0);
+  const canPublishCampaign = canCreate && readinessWarnings.length === 0;
 
   const helper = useMemo(
     () =>
@@ -438,8 +509,8 @@ export default function CommercialFeedRoute() {
         externalLinks: cleanExternalUrl
           ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
           : undefined,
-        placements: isFacility ? ["feed", "facility"] : ["feed"],
-        cta: { label: cleanExternalLabel || "Open", kind: "open" }
+        placements,
+        cta: { label: ctaLabel.trim() || cleanExternalLabel || "Open", kind: "open" }
       });
       setTitle("");
       setBody("");
@@ -460,6 +531,8 @@ export default function CommercialFeedRoute() {
       setCampaignEnd("");
       setCampaignReminder("24 hours before");
       setCampaignRecurrence("");
+      setPlacements(isFacility ? ["facility"] : ["feed"]);
+      setCtaLabel("Open");
       setFeedback(
         isFacility ? "Facility outreach campaign published." : "Feed campaign published."
       );
@@ -680,30 +753,34 @@ export default function CommercialFeedRoute() {
             placeholder="Location (optional)"
             accessibilityLabel="Feed campaign location"
           />
-          {!isFacility ? (
+          {canManageCampaigns ? (
             <View style={styles.linkBox}>
-              <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
+              <Text style={styles.linkBoxTitle}>Destination and creative</Text>
               <Text style={styles.linkBoxText}>
-                Attach product, course, live, evidence run, storefront, external purchase
-                context, or a Forum/Q&A thread so users can move from the ad into the
-                right public surface.
+                Link a real public destination and add campaign creative. Facility
+                outreach can link education, lives, or Forum/Q&A, but cannot publish
+                direct sales campaigns.
               </Text>
-              <TextInput
-                value={linkedProductId}
-                onChangeText={setLinkedProductId}
-                style={styles.input}
-                placeholder="Linked product ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked product"
-              />
-              <TextInput
-                value={linkedProductLineId}
-                onChangeText={setLinkedProductLineId}
-                style={styles.input}
-                placeholder="Linked product line ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked product line"
-              />
+              {!isFacility ? (
+                <>
+                  <TextInput
+                    value={linkedProductId}
+                    onChangeText={setLinkedProductId}
+                    style={styles.input}
+                    placeholder="Linked product ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked product"
+                  />
+                  <TextInput
+                    value={linkedProductLineId}
+                    onChangeText={setLinkedProductLineId}
+                    style={styles.input}
+                    placeholder="Linked product line ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked product line"
+                  />
+                </>
+              ) : null}
               <TextInput
                 value={linkedCourseId}
                 onChangeText={setLinkedCourseId}
@@ -720,14 +797,16 @@ export default function CommercialFeedRoute() {
                 autoCapitalize="none"
                 accessibilityLabel="Linked live"
               />
-              <TextInput
-                value={linkedGrowId}
-                onChangeText={setLinkedGrowId}
-                style={styles.input}
-                placeholder="Linked evidence run ID"
-                autoCapitalize="none"
-                accessibilityLabel="Linked evidence run"
-              />
+              {!isFacility ? (
+                <TextInput
+                  value={linkedGrowId}
+                  onChangeText={setLinkedGrowId}
+                  style={styles.input}
+                  placeholder="Linked evidence run ID"
+                  autoCapitalize="none"
+                  accessibilityLabel="Linked evidence run"
+                />
+              ) : null}
               <TextInput
                 value={linkedForumThreadId}
                 onChangeText={setLinkedForumThreadId}
@@ -736,27 +815,29 @@ export default function CommercialFeedRoute() {
                 autoCapitalize="none"
                 accessibilityLabel="Linked forum thread"
               />
-              <TextInput
-                value={storefrontSlug}
-                onChangeText={setStorefrontSlug}
-                style={styles.input}
-                placeholder="Storefront slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked storefront slug"
-              />
+              {!isFacility ? (
+                <TextInput
+                  value={storefrontSlug}
+                  onChangeText={setStorefrontSlug}
+                  style={styles.input}
+                  placeholder="Storefront slug"
+                  autoCapitalize="none"
+                  accessibilityLabel="Linked storefront slug"
+                />
+              ) : null}
               <TextInput
                 value={imageUrl}
                 onChangeText={setImageUrl}
                 style={styles.input}
                 placeholder="Campaign image URL or uploaded creative"
                 autoCapitalize="none"
-                accessibilityLabel="Commercial feed campaign image URL"
+                accessibilityLabel="Feed campaign image URL"
               />
               <View style={styles.imageTools}>
                 <Pressable
                   onPress={pickCampaignImage}
                   accessibilityRole="button"
-                  accessibilityLabel="Upload commercial feed campaign image"
+                  accessibilityLabel="Upload feed campaign image"
                   style={styles.secondaryButton}
                   disabled={creating}
                 >
@@ -766,7 +847,7 @@ export default function CommercialFeedRoute() {
                   <Pressable
                     onPress={() => setImageUrl("")}
                     accessibilityRole="button"
-                    accessibilityLabel="Clear commercial feed campaign image"
+                    accessibilityLabel="Clear feed campaign image"
                     style={styles.secondaryButton}
                     disabled={creating}
                   >
@@ -779,7 +860,7 @@ export default function CommercialFeedRoute() {
                   source={{ uri: resolveImageUri(imageUrl) }}
                   style={styles.postImagePreview}
                   resizeMode="cover"
-                  accessibilityLabel="Commercial feed campaign image preview"
+                  accessibilityLabel="Feed campaign image preview"
                 />
               ) : null}
               {readinessWarnings.length ? (
@@ -811,6 +892,13 @@ export default function CommercialFeedRoute() {
               )}
               <View style={styles.twoColumn}>
                 <TextInput
+                  value={ctaLabel}
+                  onChangeText={setCtaLabel}
+                  style={[styles.input, styles.columnInput]}
+                  placeholder="CTA label"
+                  accessibilityLabel="Campaign CTA label"
+                />
+                <TextInput
                   value={externalLinkLabel}
                   onChangeText={setExternalLinkLabel}
                   style={[styles.input, styles.columnInput]}
@@ -825,6 +913,40 @@ export default function CommercialFeedRoute() {
                   autoCapitalize="none"
                   accessibilityLabel="External link URL"
                 />
+              </View>
+              <View style={styles.linkBox}>
+                <Text style={styles.linkBoxTitle}>Audience and placements</Text>
+                <Text style={styles.linkBoxText}>
+                  Grow interests above tune relevance. Select where this campaign is
+                  eligible to appear; All Feed placements keeps it broadly eligible.
+                </Text>
+                <View style={styles.chipRow}>
+                  {PLACEMENT_OPTIONS.filter(
+                    (option) => !isFacility || option !== "commercial"
+                  ).map((option) => {
+                    const selected = placements.includes(option);
+                    return (
+                      <Pressable
+                        key={option}
+                        onPress={() =>
+                          setPlacements((current) =>
+                            selected
+                              ? current.filter((value) => value !== option)
+                              : [...current, option]
+                          )
+                        }
+                        accessibilityLabel={`${selected ? "Remove" : "Add"} ${placementLabels[option]} placement`}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                      >
+                        <Text
+                          style={[styles.chipText, selected && styles.chipTextSelected]}
+                        >
+                          {placementLabels[option]}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
               <View style={styles.linkBox}>
                 <Text style={styles.linkBoxTitle}>Campaign schedule</Text>
@@ -858,38 +980,27 @@ export default function CommercialFeedRoute() {
               </View>
             </View>
           ) : null}
-          {isFacility ? (
-            <View style={styles.linkBox}>
-              <Text style={styles.linkBoxTitle}>Outreach schedule</Text>
-              <Text style={styles.linkBoxText}>
-                Schedule facility outreach, reminders, and recurring professional
-                education using the shared GrowPath scheduler.
+          <View style={styles.reviewBox} accessibilityLabel="Campaign review">
+            <Text style={styles.linkBoxTitle}>Review before publishing</Text>
+            <Text style={styles.linkBoxText}>
+              {campaignKindLabels[campaignKind]} · {placements.length} placement
+              {placements.length === 1 ? "" : "s"} · {splitTags(growInterests).length}{" "}
+              grow interest{splitTags(growInterests).length === 1 ? "" : "s"}
+            </Text>
+            <Text style={styles.linkBoxText}>
+              CTA: {ctaLabel.trim() || externalLinkLabel.trim() || "Open"} · Status:{" "}
+              {campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+                ? "scheduled"
+                : "active"}
+            </Text>
+            {readinessWarnings.length ? (
+              <Text style={styles.warningText}>
+                Publishing blocked: {readinessWarnings.join(" ")}
               </Text>
-              <SchedulePicker
-                dueDate={campaignStart}
-                reminder={campaignReminder}
-                recurrence={campaignRecurrence}
-                onDueDateChange={setCampaignStart}
-                onReminderChange={setCampaignReminder}
-                onRecurrenceChange={setCampaignRecurrence}
-                accessibilityPrefix="Feed campaign schedule"
-                dueDateAccessibilityLabel="Feed campaign schedule start"
-                reminderAccessibilityLabel="Feed campaign reminder"
-                recurrenceAccessibilityLabel="Feed campaign recurrence"
-                dueDatePlaceholder="Campaign start date/time"
-                reminderPlaceholder="Campaign reminder"
-                recurrencePlaceholder="Campaign recurrence"
-              />
-              <TextInput
-                value={campaignEnd}
-                onChangeText={setCampaignEnd}
-                style={styles.input}
-                placeholder="Campaign end date/time"
-                autoCapitalize="none"
-                accessibilityLabel="Feed campaign schedule end"
-              />
-            </View>
-          ) : null}
+            ) : (
+              <Text style={styles.readyText}>Ready to publish.</Text>
+            )}
+          </View>
           <Pressable
             onPress={createCampaign}
             disabled={!canPublishCampaign}
@@ -1138,6 +1249,14 @@ const styles = StyleSheet.create({
   warningBox: { gap: 4 },
   warningText: { color: "#92400E", fontSize: 12, fontWeight: "800" },
   readyText: { color: "#166534", fontSize: 12, fontWeight: "900" },
+  reviewBox: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 6,
+    padding: 10
+  },
   twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   columnInput: { flex: 1, minWidth: 180 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
