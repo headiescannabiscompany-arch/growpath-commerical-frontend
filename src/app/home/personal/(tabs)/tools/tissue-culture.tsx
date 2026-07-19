@@ -227,13 +227,16 @@ export default function TissueCultureToolRoute() {
       toolKey="tissue-culture"
       title="Tissue Culture"
       subtitle="Track TC batch status, vessels, contamination, rooting, acclimation, SOP version, and next transfer tasks."
-      formHeader={({ growId }) => (
+      formHeader={({ growId, facilityId }) => (
         <MediaEvidencePicker
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}
-          purpose="other"
-          sourceContext={{ growId: growId || undefined }}
+          purpose="tissue_culture"
+          sourceContext={{
+            growId: growId || undefined,
+            facilityId: facilityId || undefined
+          }}
           value={evidenceAssets}
           onChange={setEvidenceAssets}
         />
@@ -338,6 +341,22 @@ export default function TissueCultureToolRoute() {
         { key: "SOPVersion", label: "SOP version", defaultValue: "SOP-TC-1" },
         { key: "mediaLotId", label: "Media preparation / lot ID", defaultValue: "" },
         { key: "sterilizationRunId", label: "Sterilization run ID", defaultValue: "" },
+        {
+          key: "sterilizationMethod",
+          label: "Sterilization method / protocol",
+          defaultValue: ""
+        },
+        {
+          key: "sterilizationOutcome",
+          label: "Sterilization outcome / control result",
+          defaultValue: ""
+        },
+        {
+          key: "multiplicationRate",
+          label: "Multiplication rate per transfer",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
         { key: "protocolId", label: "Protocol ID", defaultValue: "" },
         { key: "protocolVersion", label: "Protocol version", defaultValue: "" },
         { key: "incubationRoomId", label: "Incubation room ID", defaultValue: "" },
@@ -493,8 +512,10 @@ export default function TissueCultureToolRoute() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
         growId,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         projectName: values.projectName,
         batchNumber: values.batchNumber,
@@ -547,6 +568,9 @@ export default function TissueCultureToolRoute() {
         parentTransferId: values.parentTransferId || undefined,
         mediaLotId: values.mediaLotId || undefined,
         sterilizationRunId: values.sterilizationRunId || undefined,
+        sterilizationMethod: values.sterilizationMethod || undefined,
+        sterilizationOutcome: values.sterilizationOutcome || undefined,
+        multiplicationRate: values.multiplicationRate || undefined,
         protocolId: values.protocolId || undefined,
         protocolVersion: values.protocolVersion || undefined,
         incubationRoomId: values.incubationRoomId || undefined,

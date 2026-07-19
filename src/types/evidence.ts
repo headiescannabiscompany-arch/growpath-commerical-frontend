@@ -6,6 +6,7 @@ export type EvidencePurpose =
   | "diagnosis"
   | "ipm"
   | "clone"
+  | "tissue_culture"
   | "harvest"
   | "pheno"
   | "course"

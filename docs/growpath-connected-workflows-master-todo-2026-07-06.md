@@ -150,7 +150,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
 
 20. Tissue Culture Tracker
-   - Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
+   - [x] Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
 
 ## P2 - Task / Calendar / Alerts Engine
 
