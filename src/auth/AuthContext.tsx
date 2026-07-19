@@ -613,6 +613,10 @@ export function useAuth() {
   return ctx;
 }
 
+export function useOptionalAuth() {
+  return useContext(AuthContext);
+}
+
 // Optional helper to display best error message in UI
 export function getAuthErrorMessage(e: unknown) {
   if (e && typeof e === "object" && "message" in e) {

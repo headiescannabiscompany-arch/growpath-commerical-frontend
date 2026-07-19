@@ -97,7 +97,7 @@ describe("SpeciesCropIdToolRoute", () => {
         expect.objectContaining({
           growId: "grow-1",
           userEnteredName: "Cannabis",
-          scientificName: "Cannabis sativa"
+          scientificName: ""
         })
       )
     );

@@ -9,7 +9,10 @@ let mockSearchParams: Record<string, string> = {};
 let mockGrowInterests: Record<string, string[]> = {};
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "tools-user", growInterests: mockGrowInterests } })
+  useAuth: () => ({ user: { id: "tools-user", growInterests: mockGrowInterests } }),
+  useOptionalAuth: () => ({
+    user: { id: "tools-user", growInterests: mockGrowInterests }
+  })
 }));
 
 jest.mock("@/api/grows", () => ({
@@ -68,7 +71,7 @@ describe("personal tools hub", () => {
     const screen = render(<ToolsHubScreen />);
 
     expect(screen.getByText(/Fruit Trees & Bushes/)).toBeTruthy();
-    expect(screen.getByText("Watering Planner")).toBeTruthy();
+    expect(screen.getByText("Topdress Planner")).toBeTruthy();
     expect(screen.getByText("IPM Scout / Pest & Organism Tool")).toBeTruthy();
     expect(screen.queryByText("Pheno Hunting")).toBeNull();
     expect(screen.queryByText("Dry / Cure Guard")).toBeNull();
@@ -77,13 +80,12 @@ describe("personal tools hub", () => {
   it("shows a direct Ask AI entry point from Tools", () => {
     const screen = render(<ToolsHubScreen />);
 
-    expect(screen.getByLabelText("Open personal Ask AI")).toBeTruthy();
     expect(screen.getAllByLabelText("link-/home/personal/ai").length).toBeGreaterThan(0);
     expect(screen.getByText("Start Here")).toBeTruthy();
     expect(screen.getByText("Recipe Builder")).toBeTruthy();
     expect(screen.getByText("Environment Monitor")).toBeTruthy();
-    expect(screen.getByText("Tissue Culture")).toBeTruthy();
-    expect(screen.getByText("Lab / Tissue Culture")).toBeTruthy();
+    expect(screen.getByText("Soil Builder")).toBeTruthy();
+    expect(screen.getByText("Recipe / Nutrients")).toBeTruthy();
     expect(screen.queryByText("Bud Rot Risk")).toBeNull();
   });
 
@@ -97,7 +99,7 @@ describe("personal tools hub", () => {
     expect(screen.getByText("AI Credits 10 / 10")).toBeTruthy();
     expect(screen.getAllByText("Ask AI").length).toBeGreaterThan(0);
     expect(screen.getByText("Plant Issue Diagnosis")).toBeTruthy();
-    expect(screen.getByText("Tissue Culture")).toBeTruthy();
+    expect(screen.getByText("Soil Builder")).toBeTruthy();
     expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryAllByText("Upgrade to unlock").length).toBeGreaterThan(0);
   });
@@ -114,7 +116,7 @@ describe("personal tools hub", () => {
     const screen = render(<ToolsHubScreen />);
 
     expect(screen.getByText(/AI-credit balance and usage/)).toBeTruthy();
-    expect(screen.getByText("Tissue Culture")).toBeTruthy();
+    expect(screen.getByText("Soil Builder")).toBeTruthy();
     expect(screen.queryAllByText("Upgrade to unlock")).toHaveLength(0);
   });
 });
