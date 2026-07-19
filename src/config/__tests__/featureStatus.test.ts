@@ -189,7 +189,6 @@ describe("personal feature status manifest", () => {
       "tools.ph_ec_adjustment",
       "tools.ipm_scout",
       "tools.species_crop_identification",
-      "tools.run_comparison",
       "tools.soil_nutrient_batch_planner"
     ];
 
@@ -218,7 +217,8 @@ describe("personal feature status manifest", () => {
       "tools.dry_cure_guard",
       "tools.clone_rooting",
       "tools.harvest_readiness_ai",
-      "tools.auto_grow_calendar"
+      "tools.auto_grow_calendar",
+      "tools.run_comparison"
     ];
     const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
     for (const key of workspaceOnly) {

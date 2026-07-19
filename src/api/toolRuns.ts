@@ -64,6 +64,17 @@ export type CalculatorTool =
   | "crop-steering-project"
   | "pheno-hunt";
 
+export async function compareSavedGrows(growIds: string[]) {
+  const response: any = await apiRequest("/api/tools/run-comparison/from-grows", {
+    method: "POST",
+    body: { growIds, growId: growIds[0] }
+  });
+  return {
+    toolRun: normalizeToolRun(response?.toolRun || response?.data?.toolRun),
+    outputs: response?.outputs || response?.data?.outputs || {}
+  };
+}
+
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
 

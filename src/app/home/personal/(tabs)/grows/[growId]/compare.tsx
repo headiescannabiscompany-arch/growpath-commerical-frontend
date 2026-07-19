@@ -10,113 +10,97 @@ import {
   View
 } from "react-native";
 
-import { listToolRuns } from "@/api/toolRuns";
+import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { compareSavedGrows } from "@/api/toolRuns";
+import { createPersonalTask } from "@/api/tasks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { coerceParam } from "@/features/grows/routeUtils";
+import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { radius } from "@/theme/theme";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#64748B" },
-  card: {
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  heading: { fontWeight: "700" },
-  meta: { color: "#64748B", marginTop: 4, fontSize: 12 },
-  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
-  chipText: { fontWeight: "700", fontSize: 12, color: "#0F172A" },
-  chipTextOn: { color: "#FFFFFF" },
-  compareWrap: { marginTop: 12, gap: 10 },
-  compareTitle: { fontWeight: "700", fontSize: 14, color: "#0F172A" },
-  code: {
-    marginTop: 6,
-    padding: 8,
-    borderRadius: radius.card,
-    backgroundColor: "#F1F5F9",
-    color: "#334155",
-    fontSize: 12
-  }
-});
-
-function toTime(value: any) {
-  const t = new Date(value || 0).getTime();
-  return Number.isFinite(t) ? t : 0;
-}
-
-function clipJson(input: any) {
-  const raw = JSON.stringify(input ?? {}, null, 2) || "{}";
-  return raw.length > 600 ? `${raw.slice(0, 600)}...` : raw;
+function growIdOf(grow: PersonalGrow) {
+  return String(grow.id || (grow as any)._id || (grow as any).growId || "");
 }
 
 export default function GrowCompareScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
-  const [runs, setRuns] = useState<any[]>([]);
+  const [grows, setGrows] = useState<PersonalGrow[]>([]);
+  const [selected, setSelected] = useState<string[]>(growId ? [growId] : []);
+  const [result, setResult] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toolFilter, setToolFilter] = useState<string>("all");
-
-  const load = useCallback(async () => {
-    if (!growId) {
-      setRuns([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const rows = await listToolRuns({ growId });
-      setRuns(Array.isArray(rows) ? rows : []);
-    } catch {
-      setRuns([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [growId]);
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState("");
+  const [taskFeedback, setTaskFeedback] = useState("");
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      let active = true;
+      setLoading(true);
+      listPersonalGrows()
+        .then((rows) => active && setGrows(rows))
+        .catch(() => active && setError("Unable to load saved grows."))
+        .finally(() => active && setLoading(false));
+      return () => {
+        active = false;
+      };
+    }, [])
   );
 
-  const toolTypes = useMemo(() => {
-    const set = new Set<string>();
-    runs.forEach((r) => {
-      const key = String(r?.toolType || "unknown");
-      set.add(key);
-    });
-    return ["all", ...Array.from(set)];
-  }, [runs]);
+  function toggle(id: string) {
+    if (!id || id === growId) return;
+    setSelected((current) =>
+      current.includes(id)
+        ? current.filter((value) => value !== id)
+        : [...current, id].slice(0, 5)
+    );
+  }
 
-  const scopedRuns = useMemo(() => {
-    const rows = [...runs].sort((a, b) => toTime(b?.createdAt) - toTime(a?.createdAt));
-    if (toolFilter === "all") return rows;
-    return rows.filter((r) => String(r?.toolType || "unknown") === toolFilter);
-  }, [runs, toolFilter]);
+  async function runComparison() {
+    if (selected.length < 2 || running) return;
+    setRunning(true);
+    setError("");
+    try {
+      const response = await compareSavedGrows(selected);
+      setResult(response.outputs);
+    } catch (reason: any) {
+      setError(reason?.message || "Unable to compare saved grows.");
+    } finally {
+      setRunning(false);
+    }
+  }
 
-  const latest = scopedRuns[0];
-  const previous = scopedRuns[1];
+  async function createNextRunTasks() {
+    if (!result) return;
+    setTaskFeedback("");
+    const tasks = Array.isArray(result.nextRunTasks) ? result.nextRunTasks : [];
+    for (const task of tasks.slice(0, 8)) {
+      const due = new Date();
+      due.setDate(due.getDate() + Number(task.dueInDays || 1));
+      await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        title: String(task.title || "Run comparison follow-up"),
+        description: String(
+          task.description || "Apply the saved run comparison to next-run planning."
+        ),
+        priority: task.priority || "medium",
+        dueDate: due.toISOString(),
+        allDay: true,
+        calendarType: "run_comparison_followup",
+        sourceStage: "next_run_review"
+      });
+    }
+    setTaskFeedback(`Created ${tasks.slice(0, 8).length} next-run task(s).`);
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Compare</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Run Comparison</Text>
       <Text style={styles.subtitle}>
-        Compare the latest two tool runs for a selected tool type.
+        Select two to five saved grows. GrowPath compares their histories and clearly
+        marks missing evidence and limited confidence.
       </Text>
       <PersonalFeedPlacement
         placement="top"
@@ -125,58 +109,86 @@ export default function GrowCompareScreen() {
       />
       <GrowWorkspaceNav growId={growId} active="compare" />
 
-      <View style={styles.chipsRow}>
-        {toolTypes.map((type) => {
-          const active = toolFilter === type;
-          return (
-            <Pressable
-              key={type}
-              onPress={() => setToolFilter(type)}
-              style={[styles.chip, active && styles.chipOn]}
-            >
-              <Text style={[styles.chipText, active && styles.chipTextOn]}>{type}</Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.card}>
+        <Text style={styles.heading}>Saved grows</Text>
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          grows.map((grow) => {
+            const id = growIdOf(grow);
+            const active = selected.includes(id);
+            return (
+              <Pressable
+                key={id}
+                onPress={() => toggle(id)}
+                style={[styles.row, active && styles.rowOn]}
+              >
+                <Text style={[styles.rowText, active && styles.rowTextOn]}>
+                  {grow.name || id}
+                </Text>
+                <Text style={[styles.meta, active && styles.rowTextOn]}>
+                  {grow.cultivar || (grow as any).strain || "Cultivar not recorded"}
+                </Text>
+              </Pressable>
+            );
+          })
+        )}
+        <Pressable
+          disabled={selected.length < 2 || running}
+          onPress={runComparison}
+          style={[styles.button, (selected.length < 2 || running) && styles.disabled]}
+        >
+          <Text style={styles.buttonText}>
+            {running ? "Comparing histories..." : `Compare ${selected.length} grows`}
+          </Text>
+        </Pressable>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_grows_growid_compare"
-        longContent
-      />
-
-      {loading ? (
-        <View style={styles.card}>
-          <ActivityIndicator />
-        </View>
-      ) : scopedRuns.length === 0 ? (
-        <View style={styles.card}>
-          <Text style={styles.meta}>No matching tool runs for this filter.</Text>
-        </View>
-      ) : (
-        <View style={styles.compareWrap}>
-          <View style={styles.card}>
-            <Text style={styles.compareTitle}>Latest</Text>
-            <Text style={styles.heading}>{latest?.toolType || "Tool run"}</Text>
-            <Text style={styles.meta}>Saved: {fmtDate(latest?.createdAt)}</Text>
-            <Text style={styles.code}>{clipJson(latest?.output)}</Text>
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.compareTitle}>Previous</Text>
-            {previous ? (
-              <>
-                <Text style={styles.heading}>{previous?.toolType || "Tool run"}</Text>
-                <Text style={styles.meta}>Saved: {fmtDate(previous?.createdAt)}</Text>
-                <Text style={styles.code}>{clipJson(previous?.output)}</Text>
-              </>
-            ) : (
-              <Text style={styles.meta}>Only one run available for this tool.</Text>
-            )}
-          </View>
-        </View>
-      )}
-
+      {result ? (
+        <ToolResultSurface
+          title="Saved grow comparison"
+          status="completed"
+          summary={result.providerLabel || "Saved grow history comparison"}
+          metrics={[
+            {
+              key: "grows",
+              label: "Grows",
+              value: result.snapshots?.length || selected.length
+            },
+            {
+              key: "differences",
+              label: "Key differences",
+              value: result.keyDifferences?.length || 0
+            },
+            {
+              key: "missing",
+              label: "Missing data",
+              value: result.missingData?.length || 0
+            },
+            { key: "confidence", label: "Confidence", value: result.confidence || "low" }
+          ]}
+          outputs={result}
+          notices={(result.limitations || []).map((message: string, index: number) => ({
+            key: `limitation-${index}`,
+            severity: "medium",
+            message
+          }))}
+          recommendations={result.recommendations || []}
+          confidence={result.confidence || "low"}
+          actions={[
+            {
+              key: "next-run-tasks",
+              label: "Create Next-Run Tasks",
+              variant: "secondary",
+              onPress: createNextRunTasks,
+              successMessage: "Next-run tasks created."
+            }
+          ]}
+          feedback={taskFeedback}
+          copyPayload={result}
+        />
+      ) : null}
       <PersonalFeedPlacement
         placement="bottom"
         routeKey="personal_grows_growid_compare"
@@ -185,3 +197,41 @@ export default function GrowCompareScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 32 },
+  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
+  subtitle: { color: "#64748B", marginTop: 6, lineHeight: 20 },
+  card: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    padding: 12,
+    backgroundColor: "#F8FAFC"
+  },
+  heading: { fontWeight: "800", color: "#0F172A", marginBottom: 8 },
+  row: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    padding: 10,
+    marginTop: 7,
+    backgroundColor: "#FFFFFF"
+  },
+  rowOn: { backgroundColor: "#166534", borderColor: "#166534" },
+  rowText: { fontWeight: "800", color: "#0F172A" },
+  rowTextOn: { color: "#FFFFFF" },
+  meta: { color: "#64748B", fontSize: 12, marginTop: 3 },
+  button: {
+    marginTop: 12,
+    borderRadius: radius.card,
+    padding: 12,
+    alignItems: "center",
+    backgroundColor: "#16A34A"
+  },
+  disabled: { opacity: 0.45 },
+  buttonText: { color: "#FFFFFF", fontWeight: "800" },
+  error: { color: "#B91C1C", marginTop: 8 }
+});

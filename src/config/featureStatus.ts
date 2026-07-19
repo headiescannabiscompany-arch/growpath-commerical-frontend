@@ -490,6 +490,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/run-comparison",
+    hubVisible: false,
     internalNote:
       "Approved beta comparison workflow; keep visible unless the user later decides it is too large."
   },
