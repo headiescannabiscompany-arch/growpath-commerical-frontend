@@ -306,7 +306,7 @@ export default function GrowOverviewScreen() {
         </Link>
         <Link href={`/home/personal/grows/${growId}/tools`} asChild>
           <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Run Tool</Text>
+            <Text style={styles.actionText}>Grow Intelligence</Text>
           </Pressable>
         </Link>
         <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
