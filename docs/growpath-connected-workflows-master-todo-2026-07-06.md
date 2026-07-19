@@ -32,7 +32,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
    - [x] Extend the same runtime method/source envelope to Plant Diagnosis, IPM Scout, Clone Rooting, and Harvest Readiness GPT/vision verification endpoints, including fallback and test-mode results.
    - [x] Persist method IDs, source IDs, citations, disagreements, and limitations with Ask AI conversation answers, ToolRuns, immutable ToolRun snapshots, and durable module records.
-   - [ ] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions.
+   - [x] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions through review-due enforcement, visible overdue states, current-artifact requirements, and blocked claim types in AI context.
    - [ ] Add outcome-based method review so repeated grow results can propose—but never silently rewrite—GrowPath methods.
 
 1. Commercial navigation clarity

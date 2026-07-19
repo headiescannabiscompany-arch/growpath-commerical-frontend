@@ -111,7 +111,18 @@ type KnowledgeEntry = {
   guidance?: string;
   revision: number;
   reviewDueAt?: string;
+  reviewStatus?:
+    | "current"
+    | "review_overdue"
+    | "review_date_missing"
+    | "review_date_invalid";
 };
+
+function defaultKnowledgeReviewDate() {
+  const value = new Date();
+  value.setUTCDate(value.getUTCDate() + 180);
+  return value.toISOString().slice(0, 10);
+}
 
 function Metric({
   label,
@@ -149,6 +160,7 @@ export default function PlatformAdminRoute() {
     domain: "",
     reliabilityTier: "B",
     guidance: "",
+    reviewDueAt: defaultKnowledgeReviewDate(),
     changeNote: "Initial admin review"
   });
   const [query, setQuery] = useState("");
@@ -222,6 +234,7 @@ export default function PlatformAdminRoute() {
         title: "",
         domain: "",
         guidance: "",
+        reviewDueAt: defaultKnowledgeReviewDate(),
         changeNote: "Initial admin review"
       }));
       await load();
@@ -243,6 +256,7 @@ export default function PlatformAdminRoute() {
         method: "PATCH",
         body: {
           status,
+          reviewDueAt: entry.reviewDueAt || defaultKnowledgeReviewDate(),
           changeNote: `${status === "approved" ? "Approved" : "Status changed"} in platform knowledge review`
         }
       });
@@ -513,6 +527,14 @@ export default function PlatformAdminRoute() {
           placeholder="Required review/change note"
           style={styles.input}
         />
+        <TextInput
+          value={knowledgeDraft.reviewDueAt}
+          onChangeText={(reviewDueAt) =>
+            setKnowledgeDraft((value) => ({ ...value, reviewDueAt }))
+          }
+          placeholder="Next review date (YYYY-MM-DD)"
+          style={styles.input}
+        />
         <Pressable
           disabled={busyId === "knowledge-new"}
           style={styles.primaryButton}
@@ -530,6 +552,12 @@ export default function PlatformAdminRoute() {
                 {entry.entryId} · revision {entry.revision}
                 {entry.reliabilityTier ? ` · Tier ${entry.reliabilityTier}` : ""}
                 {entry.domain ? ` · ${entry.domain}` : ""}
+              </Text>
+              <Text style={styles.meta}>
+                Freshness: {entry.reviewStatus || "not evaluated"} · review due{" "}
+                {entry.reviewDueAt
+                  ? new Date(entry.reviewDueAt).toLocaleDateString()
+                  : "not set"}
               </Text>
               {entry.guidance ? (
                 <Text style={styles.evidencePreview}>{entry.guidance}</Text>
