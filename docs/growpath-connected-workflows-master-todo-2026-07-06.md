@@ -135,9 +135,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Bag sizes and application directions.
 
 17. Topdress / Re-Amend Planner
-   - Grow/plant/bed specific topdress plan.
-   - Expected release timeline.
-   - Follow-up tasks.
+   - [x] Grow/plant/bed specific topdress plan.
+   - [x] Expected release timeline.
+   - [x] Follow-up tasks.
 
 18. IPM Scout GPT verification
    - Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.

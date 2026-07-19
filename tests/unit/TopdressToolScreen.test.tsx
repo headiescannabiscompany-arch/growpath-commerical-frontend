@@ -108,6 +108,7 @@ describe("TopdressToolScreen", () => {
         expect.objectContaining({
           growId: "grow-1",
           productName: "Bloom topdress",
+          targetType: "plant",
           plantCount: 4,
           plannedApplyDate: "2026-07-10",
           waterInAfterApply: true

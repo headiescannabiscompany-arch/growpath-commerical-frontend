@@ -28,8 +28,8 @@ function topdressTasks(outputs: Record<string, any>, payload: Record<string, any
     outputs.plannedApplyDate || payload.plannedApplyDate || tomorrow(1)
   ).slice(0, 10);
   const amount =
-    outputs.amountPerPlant && outputs.amountUnit
-      ? `${outputs.amountPerPlant} ${outputs.amountUnit} per plant`
+    (outputs.amountPerTarget || outputs.amountPerPlant) && outputs.amountUnit
+      ? `${outputs.amountPerTarget || outputs.amountPerPlant} ${outputs.amountUnit} per ${payload.targetType || "plant"}`
       : payload.doseRate
         ? `${payload.doseRate} ${payload.doseUnit || "dose units"}`
         : "planned rate";
@@ -103,6 +103,7 @@ function buildTopdressAssistantBrief(payload: Record<string, any>) {
     "",
     "Role: help the user decide whether this topdress plan fits the current grow context, but call the Topdress Planner for final rate, total amount, release window, warnings, ToolRun saving, and follow-up task schedule.",
     `Product/recipe: ${payload.productName || "not set"}`,
+    `Application target: ${payload.targetType || "plant"}${payload.targetName ? ` (${payload.targetName})` : ""}`,
     `Stage: ${payload.stage || "not set"}`,
     `Plants: ${payload.plantCount || "-"} plants`,
     `Soil volume: ${payload.soilVolumePerPlant || "-"} ${
@@ -137,6 +138,16 @@ export default function TopdressToolScreen() {
           defaultValue: "Dry amendment blend"
         },
         {
+          key: "targetType",
+          label: "Application target type (plant, bed, container, zone)",
+          defaultValue: "plant"
+        },
+        {
+          key: "targetName",
+          label: "Bed, zone, or target name (optional)",
+          defaultValue: ""
+        },
+        {
           key: "plantCount",
           label: "Plant count",
           defaultValue: "4",
@@ -159,6 +170,12 @@ export default function TopdressToolScreen() {
         { key: "doseUnit", label: "Dose unit", defaultValue: "tbsp_per_gallon" },
         { key: "releaseClass", label: "Release class", defaultValue: "medium" },
         {
+          key: "lastApplicationDaysAgo",
+          label: "Days since last feed or topdress (optional)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
           key: "daysUntilHarvest",
           label: "Days until harvest",
           defaultValue: "42",
@@ -176,10 +193,14 @@ export default function TopdressToolScreen() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         productName: values.productName,
+        targetType: values.targetType,
+        targetName: values.targetName || undefined,
         plantCount: n(values.plantCount, 1),
         soilVolumePerPlant: n(values.soilVolumePerPlant, 0),
         soilVolumeUnit: values.soilVolumeUnit,
@@ -187,6 +208,9 @@ export default function TopdressToolScreen() {
         doseRate: n(values.doseRate, 0),
         doseUnit: values.doseUnit,
         releaseClass: values.releaseClass,
+        lastApplicationDaysAgo: values.lastApplicationDaysAgo.trim()
+          ? n(values.lastApplicationDaysAgo)
+          : undefined,
         daysUntilHarvest: n(values.daysUntilHarvest),
         plannedApplyDate: values.plannedApplyDate,
         waterInAfterApply: true,
@@ -195,15 +219,19 @@ export default function TopdressToolScreen() {
       buildMetrics={(outputs) => [
         {
           key: "per-plant",
-          label: "Per plant",
-          value: `${outputs.amountPerPlant} ${outputs.amountUnit}`
+          label: "Per target",
+          value: `${outputs.amountPerTarget ?? outputs.amountPerPlant} ${outputs.amountUnit}`
         },
         {
           key: "total",
           label: "Total",
           value: `${outputs.totalAmount} ${outputs.amountUnit}`
         },
-        { key: "plants", label: "Plants", value: String(outputs.plantCount ?? "-") },
+        {
+          key: "targets",
+          label: outputs.targetType ? `${outputs.targetType} count` : "Target count",
+          value: String(outputs.targetCount ?? outputs.plantCount ?? "-")
+        },
         {
           key: "release",
           label: "Release window",
