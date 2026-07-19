@@ -69,10 +69,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Confirm commercial product create/detail, course detail, storefront edit/preview, task detail, personal grow/plant workspace, facility room-context detail, and facility SOP-run detail have back behavior with safe fallbacks.
 
 6. Commercial product card and product detail basics
-   - Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
-   - Product appears as a storefront card when published.
-   - Product detail shows professional info and buy CTA if Stripe-ready.
-   - Soil/nutrient/amendment fields are available or planned visibly: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
+   - [x] Product appears as a storefront card when published.
+   - [x] Product detail shows professional info and buy CTA if Stripe-ready, while regulated cannabis stays catalog/verified-transfer only.
+   - [x] Soil/nutrient/amendment fields persist and display: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Commercial and facility inventory link to the same product record; do not create a duplicate facility storefront product model.
 
 7. Course workflow minimum
    - Create Course must look and behave like a real button/workflow.

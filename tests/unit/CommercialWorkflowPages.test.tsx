@@ -1670,6 +1670,10 @@ describe("commercial workflow pages", () => {
       "1 cup per cubic foot"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product batch or lot"),
+      "LOT-BLOOM-2026"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product external purchase URL"),
       "https://example.com/bloom"
     );
@@ -1692,6 +1696,10 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial product directions"),
       "Topdress and water in."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product document URLs"),
+      "https://example.com/bloom-label.pdf\nhttps://example.com/bloom-sds.pdf"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product short description"),
@@ -1721,6 +1729,11 @@ describe("commercial workflow pages", () => {
             stripeProductId: "prod_bloom_mix",
             stripePriceId: "price_bloom_mix",
             shortDescription: "Flower topdress blend",
+            documentUrls: [
+              "https://example.com/bloom-label.pdf",
+              "https://example.com/bloom-sds.pdf"
+            ],
+            batchLot: "LOT-BLOOM-2026",
             specs: expect.objectContaining({
               unitSize: "5 lb bag",
               npk: "3-1-1",
@@ -1728,7 +1741,12 @@ describe("commercial workflow pages", () => {
               guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
               ingredients: ["Alfalfa meal", "Fish bone meal"],
               directions: "Topdress and water in.",
-              applicationRate: "1 cup per cubic foot"
+              applicationRate: "1 cup per cubic foot",
+              documentUrls: [
+                "https://example.com/bloom-label.pdf",
+                "https://example.com/bloom-sds.pdf"
+              ],
+              batchLot: "LOT-BLOOM-2026"
             }),
             status: "published"
           })
@@ -1907,6 +1925,14 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product detail warnings"),
       "Compost values are estimates\nDo not overapply"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail document URLs"),
+      "https://example.com/base-label.pdf\nhttps://example.com/base-coa.pdf"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail batch or lot"),
+      "LOT-BASE-2026"
+    );
     fireEvent.press(screen.getByLabelText("Save commercial product detail"));
 
     await waitFor(() =>
@@ -1927,6 +1953,11 @@ describe("commercial workflow pages", () => {
             applicationRate: "2 cups per cubic foot",
             directions: "Mix evenly and rest before transplant.",
             warnings: ["Compost values are estimates", "Do not overapply"],
+            documentUrls: [
+              "https://example.com/base-label.pdf",
+              "https://example.com/base-coa.pdf"
+            ],
+            batchLot: "LOT-BASE-2026",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
             stripeProductId: "prod_product_updated",
@@ -1941,7 +1972,12 @@ describe("commercial workflow pages", () => {
               ingredients: ["Compost", "Kelp meal", "Fish bone meal"],
               directions: "Mix evenly and rest before transplant.",
               applicationRate: "2 cups per cubic foot",
-              warnings: ["Compost values are estimates", "Do not overapply"]
+              warnings: ["Compost values are estimates", "Do not overapply"],
+              documentUrls: [
+                "https://example.com/base-label.pdf",
+                "https://example.com/base-coa.pdf"
+              ],
+              batchLot: "LOT-BASE-2026"
             })
           })
         })

@@ -161,6 +161,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [applicationRate, setApplicationRate] = useState("");
   const [directions, setDirections] = useState("");
   const [warnings, setWarnings] = useState("");
+  const [documentUrls, setDocumentUrls] = useState("");
+  const [batchLot, setBatchLot] = useState("");
   const [growInterests, setGrowInterests] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
@@ -188,6 +190,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setApplicationRate((next as any)?.applicationRate || specs.applicationRate || "");
     setDirections((next as any)?.directions || specs.directions || "");
     setWarnings(formatDetailValue((next as any)?.warnings || specs.warnings));
+    setDocumentUrls(formatDetailValue((next as any)?.documentUrls || specs.documentUrls));
+    setBatchLot((next as any)?.batchLot || specs.batchLot || "");
     setGrowInterests(next?.growInterests?.join(", ") || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
@@ -238,6 +242,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       applicationRate: applicationRate.trim(),
       directions: directions.trim(),
       warnings: splitList(warnings),
+      documentUrls: splitList(documentUrls),
+      batchLot: batchLot.trim(),
       growInterests: splitList(growInterests),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
@@ -261,7 +267,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
         warnings: splitList(warnings).length
           ? splitList(warnings)
-          : product?.specs?.warnings
+          : product?.specs?.warnings,
+        documentUrls: splitList(documentUrls),
+        batchLot: batchLot.trim() || (product?.specs as any)?.batchLot
       }
     } as Product;
     const publishMissing = publicFieldMissingSetup(productMissingSetup(nextProduct));
@@ -291,6 +299,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         applicationRate: applicationRate.trim() || undefined,
         directions: directions.trim() || undefined,
         warnings: splitList(warnings),
+        documentUrls: splitList(documentUrls),
+        batchLot: batchLot.trim() || undefined,
         growInterests: splitList(growInterests),
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
@@ -314,7 +324,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
           warnings: splitList(warnings).length
             ? splitList(warnings)
-            : product?.specs?.warnings
+            : product?.specs?.warnings,
+          documentUrls: splitList(documentUrls),
+          batchLot: batchLot.trim() || (product?.specs as any)?.batchLot
         }
       } as Partial<Product>);
       hydrate(res?.product ?? res?.item ?? res);
@@ -443,6 +455,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow
             label="Release timing"
             value={specs.releaseCurve || specs.releaseTimeline}
+          />
+          <DetailRow
+            label="Documents"
+            value={(product as any)?.documentUrls || specs.documentUrls}
+          />
+          <DetailRow
+            label="Batch / lot"
+            value={(product as any)?.batchLot || specs.batchLot}
           />
           <DetailRow label="Warnings" value={specs.warnings} />
         </View>
@@ -776,6 +796,22 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           placeholder="Warnings, stage limits, legal notes, or safety notes"
           style={[styles.input, styles.textArea]}
           value={warnings}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail document URLs"
+          multiline
+          autoCapitalize="none"
+          onChangeText={setDocumentUrls}
+          placeholder="Label, SDS, COA, or instructions URLs (one per line)"
+          style={[styles.input, styles.textArea]}
+          value={documentUrls}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail batch or lot"
+          onChangeText={setBatchLot}
+          placeholder="Current batch / lot identifier"
+          style={styles.input}
+          value={batchLot}
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable

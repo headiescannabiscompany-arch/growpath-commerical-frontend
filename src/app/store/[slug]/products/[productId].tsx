@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -381,6 +382,14 @@ export default function PublicProductRoute() {
         <>
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
           <AppCard>
+            {product.imageUrl ? (
+              <Image
+                source={{ uri: product.imageUrl }}
+                style={styles.productImage}
+                resizeMode="cover"
+                accessibilityLabel={`${product.name || "Product"} image`}
+              />
+            ) : null}
             <Text style={styles.cardTitle}>{product.name || "Product"}</Text>
             {product.description ? (
               <Text style={styles.bodyText}>{product.description}</Text>
@@ -529,8 +538,25 @@ export default function PublicProductRoute() {
                 label="Release timing"
                 value={specs.releaseCurve || specs.releaseTimeline}
               />
+              <SpecRow label="Batch / lot" value={product?.batchLot || specs.batchLot} />
               <SpecRow label="Warnings" value={specs.warnings} />
             </View>
+            {asArray(product?.documentUrls || specs.documentUrls).length ? (
+              <View style={styles.actionRow}>
+                {asArray(product?.documentUrls || specs.documentUrls).map(
+                  (url: string, index: number) => (
+                    <Pressable
+                      key={`${url}-${index}`}
+                      accessibilityLabel={`Open product document ${index + 1}`}
+                      style={styles.secondaryButton}
+                      onPress={() => void openUrl(String(url))}
+                    >
+                      <Text style={styles.secondaryButtonText}>Document {index + 1}</Text>
+                    </Pressable>
+                  )
+                )}
+              </View>
+            ) : null}
           </AppCard>
 
           {relatedCourses.length ? (
@@ -776,6 +802,12 @@ const styles = StyleSheet.create({
     padding: 8
   },
   cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
+  productImage: {
+    borderRadius: radius.card,
+    height: 260,
+    marginBottom: 14,
+    width: "100%"
+  },
   bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
   meta: { color: "#64748B", lineHeight: 19 },
   interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
