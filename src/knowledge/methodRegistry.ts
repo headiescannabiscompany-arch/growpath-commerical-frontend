@@ -41,6 +41,26 @@ function method(
 
 export const methodRegistry: GrowPathMethod[] = [
   method(
+    "integration-workflow",
+    "Integration Workflow",
+    ["integration", "telemetry", "sensor", "controller"],
+    "integration-workflow-method.md",
+    ["connect", "test", "discover", "map", "confirm", "auto-build"],
+    ["provider credentials", "target workspace", "reviewed mappings"],
+    [
+      "spaces",
+      "devices",
+      "normalized streams",
+      "raw metric evidence",
+      "tool input context",
+      "field-use declarations",
+      "draft alerts",
+      "dashboard definitions"
+    ],
+    ["Read-only first; never invent metrics, units, mappings, or control access."],
+    ["data-integrations", "facility-integrations", "telemetry"]
+  ),
+  method(
     "plant-diagnosis-etgu",
     "Plant Diagnosis — ETGU",
     ["diagnosis", "ipm"],
@@ -135,9 +155,16 @@ export const methodRegistry: GrowPathMethod[] = [
     "commercial-workflow-method.md",
     ["formula", "batch", "trial", "outcome", "product"],
     ["commercial records", "verified claims"],
-    ["linked workflow", "limitations", "tasks"],
+    [
+      "linked workflow",
+      "limitations",
+      "tasks",
+      "forum alerts",
+      "moderation audit",
+      "owner-scoped event analytics"
+    ],
     ["Never cross workspace scope or invent product claims."],
-    ["commercial-batch-planner", "products", "trials"]
+    ["commercial-batch-planner", "products", "trials", "forum-qna"]
   ),
   method(
     "facility-workflow",
@@ -146,9 +173,17 @@ export const methodRegistry: GrowPathMethod[] = [
     "facility-workflow-method.md",
     ["facility", "room/zone", "assignment", "SOP/task", "audit"],
     ["facility scope", "roles", "rooms", "telemetry"],
-    ["scoped actions", "audit links"],
+    [
+      "scoped actions",
+      "audit links",
+      "forum tasks and alerts",
+      "moderation audit",
+      "read-only integration state",
+      "reviewed device mapping",
+      "record-backed facility analytics"
+    ],
     ["A selected facility and authorization are required."],
-    ["facility-rooms", "facility-grows", "facility-tasks"]
+    ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]
   )
 ];
 

@@ -702,7 +702,14 @@ describe("commercial workflow pages", () => {
             brandProfileViews: 33,
             productViews: 75,
             feedClicks: 12,
+            feedImpressions: 120,
+            feedConversions: 8,
             courseStarts: 6,
+            liveViews: 25,
+            liveRsvps: 7,
+            orderCount: 5,
+            orderRevenueCents: 8400,
+            orderRevenueByCurrency: { USD: 8400 },
             forumReplies: 4,
             activeTrials: 3,
             completedTrials: 2,
@@ -738,7 +745,11 @@ describe("commercial workflow pages", () => {
                   count: 9,
                   eventTypes: ["product_external_link_click"]
                 }
-              ]
+              ],
+              courses: [{ key: "course-1", label: "Living Soil 101", count: 6 }],
+              lives: [{ key: "live-1", label: "Soil Q&A", count: 7 }],
+              orders: [{ key: "product-1", label: "Paid product order", count: 5 }],
+              growInterests: [{ key: "living-soil", label: "living-soil", count: 9 }]
             }
           }
         });
@@ -2803,6 +2814,11 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Ad clicks")).toBeTruthy());
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
+    expect(screen.getByText("Feed impressions")).toBeTruthy();
+    expect(screen.getByText("Live views")).toBeTruthy();
+    expect(screen.getAllByText("Paid orders").length).toBeGreaterThan(0);
+    expect(screen.getByText("Living Soil 101")).toBeTruthy();
+    expect(screen.getByText("living-soil")).toBeTruthy();
     expect(screen.getByText("Marketing link clicks")).toBeTruthy();
     expect(screen.getByText("19")).toBeTruthy();
     expect(screen.getByText("Brand profile views")).toBeTruthy();

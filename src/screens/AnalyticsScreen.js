@@ -13,6 +13,7 @@ import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
+import { fetchPersonalAnalyticsOverview } from "@/api/personalAnalytics";
 import { useEntitlements } from "@/entitlements";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 import { radius } from "@/theme/theme";
@@ -51,6 +52,28 @@ function topEntries(counts, limit = 4) {
     .slice(0, limit);
 }
 
+function hasEnvironmentMetrics(log) {
+  const metrics = log?.metrics;
+  if (!metrics || typeof metrics !== "object" || Array.isArray(metrics)) return false;
+  const environmentKeys = new Set([
+    "temperature",
+    "temperatureC",
+    "temperatureF",
+    "humidity",
+    "relativeHumidity",
+    "vpd",
+    "dewPoint",
+    "co2",
+    "ppfd",
+    "dli",
+    "substrateEc",
+    "substrateMoisture"
+  ]);
+  return Object.entries(metrics).some(
+    ([key, value]) => environmentKeys.has(key) && Number.isFinite(Number(value))
+  );
+}
+
 function formatDate(value) {
   const ts = timestamp(value);
   if (!ts) return "No date";
@@ -72,6 +95,13 @@ function buildAnalytics({ grows, logs, plants, tasks, toolRuns }) {
     (log) => timestamp(log.date || log.createdAt) >= recentCutoff
   );
   const recentTools = toolRuns.filter((run) => timestamp(run.createdAt) >= recentCutoff);
+  const environmentLogs = logs.filter(hasEnvironmentMetrics);
+  const runComparisons = toolRuns.filter((run) =>
+    String(run.toolType || run.toolName || "")
+      .toLowerCase()
+      .replace(/[-\s]/g, "_")
+      .includes("run_comparison")
+  );
   const openTasks = tasks.filter((task) => !task.completed);
   const overdueTasks = openTasks.filter((task) => {
     const due = timestamp(task.dueDate);
@@ -89,11 +119,19 @@ function buildAnalytics({ grows, logs, plants, tasks, toolRuns }) {
     const latestLogTs = timestamp(latestLog?.date || latestLog?.createdAt);
     return !latestLogTs || latestLogTs < sinceDays(10);
   });
+  const recentlyLoggedGrowIds = new Set(
+    recentLogs.map((log) => String(log.growId || "")).filter(Boolean)
+  );
+  const consistentGrowCount = Array.from(activeGrowIds).filter((id) =>
+    recentlyLoggedGrowIds.has(id)
+  ).length;
 
   return {
     model,
     recentLogs,
     recentTools,
+    environmentLogs,
+    runComparisons,
     openTasks,
     overdueTasks,
     staleGrows,
@@ -109,6 +147,10 @@ function buildAnalytics({ grows, logs, plants, tasks, toolRuns }) {
     completionRate:
       tasks.length > 0
         ? Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100)
+        : 0,
+    consistencyRate:
+      activeGrowIds.size > 0
+        ? Math.round((consistentGrowCount / activeGrowIds.size) * 100)
         : 0
   };
 }
@@ -122,6 +164,7 @@ export default function AnalyticsScreen() {
     tasks: [],
     toolRuns: []
   });
+  const [overview, setOverview] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -129,14 +172,16 @@ export default function AnalyticsScreen() {
     setLoading(true);
     setError("");
     try {
-      const [grows, logs, plants, tasks, toolRuns] = await Promise.all([
+      const [grows, logs, plants, tasks, toolRuns, personalOverview] = await Promise.all([
         listPersonalGrows(),
         listPersonalLogs(),
         listPersonalPlants(),
         listPersonalTasks(),
-        listToolRuns()
+        listToolRuns(),
+        fetchPersonalAnalyticsOverview()
       ]);
       setRows({ grows, logs, plants, tasks, toolRuns });
+      setOverview(personalOverview || {});
     } catch (err) {
       setError(err?.message || "Unable to refresh analytics.");
     } finally {
@@ -175,6 +220,20 @@ export default function AnalyticsScreen() {
         <Metric label="Plants" value={rows.plants.length} />
         <Metric label="Journal entries" value={rows.logs.length} />
         <Metric label="Tool runs" value={rows.toolRuns.length} />
+        <Metric
+          label="Grow consistency"
+          value={`${overview.consistency?.rate ?? analytics.consistencyRate}%`}
+        />
+        <Metric
+          label="Environment records"
+          value={
+            overview.environmentHistory?.pointCount ?? analytics.environmentLogs.length
+          }
+        />
+        <Metric
+          label="Run comparisons"
+          value={overview.activity?.runComparisons ?? analytics.runComparisons.length}
+        />
         <Metric label="Open tasks" value={analytics.openTasks.length} />
         <Metric label="Task completion" value={`${analytics.completionRate}%`} />
       </View>
@@ -197,6 +256,27 @@ export default function AnalyticsScreen() {
             {analytics.overdueTasks.length}
           </Text>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Measured History</Text>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Logs with environment measurements</Text>
+          <Text style={styles.rowValue}>
+            {overview.environmentHistory?.pointCount ?? analytics.environmentLogs.length}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Saved run comparisons</Text>
+          <Text style={styles.rowValue}>
+            {overview.activity?.runComparisons ?? analytics.runComparisons.length}
+          </Text>
+        </View>
+        <Text style={styles.measurementNote}>
+          Environment history counts imported telemetry points or numeric measurements
+          saved with journal records. Consistency is the share of active grows logged in
+          the last 7 days.
+        </Text>
       </View>
 
       <View style={styles.section}>
@@ -391,5 +471,10 @@ const styles = StyleSheet.create({
     marginTop: 3,
     lineHeight: 19
   },
-  empty: { color: "#64748B", lineHeight: 20 }
+  empty: { color: "#64748B", lineHeight: 20 },
+  measurementNote: {
+    color: "#64748B",
+    lineHeight: 19,
+    marginTop: 10
+  }
 });

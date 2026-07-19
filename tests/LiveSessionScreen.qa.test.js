@@ -9,6 +9,7 @@ const mockUseEntitlements = jest.fn();
 const mockApiRequest = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreatePersonalTask = jest.fn();
+const mockRecordCommercialAnalyticsEvent = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
@@ -34,6 +35,11 @@ jest.mock("../src/api/grows", () => ({
 jest.mock("../src/api/tasks", () => ({
   __esModule: true,
   createPersonalTask: (...args) => mockCreatePersonalTask(...args)
+}));
+
+jest.mock("../src/api/commercialAnalytics", () => ({
+  __esModule: true,
+  recordCommercialAnalyticsEvent: (...args) => mockRecordCommercialAnalyticsEvent(...args)
 }));
 
 // Avoid rendering the real embed in tests
@@ -78,6 +84,8 @@ describe("LiveSessionScreen QA", () => {
     mockApiRequest.mockResolvedValue({ rsvped: false });
     mockListPersonalGrows.mockReset();
     mockCreatePersonalTask.mockReset();
+    mockRecordCommercialAnalyticsEvent.mockReset();
+    mockRecordCommercialAnalyticsEvent.mockResolvedValue({ recorded: true });
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
   });
 

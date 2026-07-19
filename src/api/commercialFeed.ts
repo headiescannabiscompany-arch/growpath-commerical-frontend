@@ -82,6 +82,27 @@ export type FeedCampaignPlacement =
   | "facility"
   | "commercial";
 
+export type FeedCampaignMetricCounts = {
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  hides: number;
+  reports: number;
+};
+
+export type FeedCampaignAnalytics = {
+  totals: FeedCampaignMetricCounts;
+  campaigns: Array<
+    FeedCampaignMetricCounts & {
+      key: string;
+      title: string;
+      campaignType: string;
+    }
+  >;
+  placements: Array<FeedCampaignMetricCounts & { key: string }>;
+  growInterests: Array<FeedCampaignMetricCounts & { key: string }>;
+};
+
 function normalizeCampaign(row: any): CommercialFeedCampaign {
   return {
     ...row,
@@ -185,6 +206,38 @@ export async function createCommercialFeedCampaign(input: {
     }
   });
   return normalizeCampaign(res?.item ?? res?.post ?? res);
+}
+
+export async function recordFeedCampaignEvent(
+  campaignId: string,
+  input: {
+    eventType: "impression" | "click" | "conversion" | "hide" | "report";
+    placement?: FeedCampaignPlacement;
+    growInterests?: string[];
+    targetUrl?: string;
+    conversionType?: string;
+    reportReason?: string;
+    sessionKey?: string;
+  }
+) {
+  return apiRequest(`/api/commercial/feed/${encodeURIComponent(campaignId)}/events`, {
+    method: "POST",
+    body: input,
+    auth: false,
+    silent: true
+  });
+}
+
+export async function fetchFeedCampaignAnalytics(): Promise<FeedCampaignAnalytics> {
+  const res: any = await apiRequest("/api/commercial/feed-analytics");
+  return (
+    res?.analytics ?? {
+      totals: { impressions: 0, clicks: 0, conversions: 0, hides: 0, reports: 0 },
+      campaigns: [],
+      placements: [],
+      growInterests: []
+    }
+  );
 }
 
 /** @deprecated Use listCommercialFeedCampaigns for new Feed/Campaigns code. */

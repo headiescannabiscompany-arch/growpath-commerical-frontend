@@ -88,6 +88,7 @@ export default function FacilityTabsLayout() {
         options={{ title: "Team", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen name="reports" options={{ title: "Reports", href: null }} />
+      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null }} />
       <Tabs.Screen
         name="integrations"
         options={{ title: "Integrations", href: compactTabs ? null : undefined }}

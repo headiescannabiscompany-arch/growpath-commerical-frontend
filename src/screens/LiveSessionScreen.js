@@ -16,6 +16,7 @@ import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 import { radius } from "../theme/theme";
+import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -134,6 +135,17 @@ export default function LiveSessionScreen({ route }) {
     ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
 
+  useEffect(() => {
+    if (!session || !storefrontSlug) return;
+    void recordCommercialAnalyticsEvent({
+      eventType: "live_view",
+      objectType: "live",
+      objectId: String(session?._id || session?.id || sessionId),
+      storefrontSlug: String(storefrontSlug),
+      metadata: { growInterests: session?.growInterests || [] }
+    });
+  }, [session, sessionId, storefrontSlug]);
+
   async function createAttendanceReminder() {
     if (!startsAt || savingReminder || reminderCreated) return;
     setSavingReminder(true);
@@ -191,6 +203,15 @@ export default function LiveSessionScreen({ route }) {
         { method: rsvped ? "DELETE" : "POST", body: rsvped ? undefined : {} }
       );
       setRsvped(Boolean(result?.rsvped));
+      if (!rsvped && storefrontSlug) {
+        void recordCommercialAnalyticsEvent({
+          eventType: "live_rsvp",
+          objectType: "live",
+          objectId: String(session?._id || session?.id || sessionId),
+          storefrontSlug: String(storefrontSlug),
+          metadata: { growInterests: session?.growInterests || [] }
+        });
+      }
     } catch (error) {
       Alert.alert("RSVP not saved", String(error?.message || error || "Try again."));
     } finally {
@@ -308,6 +329,14 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.btn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_watch_click",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(watchUrl).catch(() => {});
               }}
             >
@@ -353,6 +382,14 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.secondaryBtn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_replay_view",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(String(replayUrl)).catch(() => {});
               }}
             >

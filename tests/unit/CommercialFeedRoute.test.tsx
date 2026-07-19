@@ -119,6 +119,16 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed/campaign-1/events",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ eventType: "click", placement: "feed" })
+        })
+      )
+    );
+
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -507,6 +517,71 @@ describe("CommercialFeedRoute", () => {
     fireEvent.press(screen.getByLabelText("Register for Partner workshop"));
 
     expect(mockPush).toHaveBeenCalledWith("https://example.com/workshop");
+  });
+
+  it("shows campaign analytics and records hide/report actions", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-metrics",
+              type: "update",
+              title: "Analytics campaign",
+              body: "Measure this outreach campaign.",
+              tags: [],
+              growInterests: ["vegetables"]
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/feed-analytics") {
+        return Promise.resolve({
+          analytics: {
+            totals: { impressions: 12, clicks: 4, conversions: 2, hides: 1, reports: 1 },
+            campaigns: [],
+            placements: [
+              {
+                key: "feed",
+                impressions: 12,
+                clicks: 4,
+                conversions: 2,
+                hides: 1,
+                reports: 1
+              }
+            ],
+            growInterests: [
+              {
+                key: "vegetables",
+                impressions: 8,
+                clicks: 3,
+                conversions: 1,
+                hides: 0,
+                reports: 0
+              }
+            ]
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Feed campaign analytics")).toBeTruthy()
+    );
+    expect(screen.getByText(/Grow interest vegetables: 8 impressions/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Report Analytics campaign"));
+    expect(screen.queryByText("Analytics campaign")).toBeNull();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed/campaign-metrics/events",
+        expect.objectContaining({
+          body: expect.objectContaining({ eventType: "report" })
+        })
+      )
+    );
   });
 
   it("routes campaign Q&A CTAs through the shared forum route", async () => {

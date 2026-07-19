@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
@@ -18,9 +18,12 @@ import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
 import {
   createCommercialFeedCampaign,
+  fetchFeedCampaignAnalytics,
   listCommercialFeedCampaigns,
+  recordFeedCampaignEvent,
   type CommercialFeedCampaign,
   type CommercialFeedCampaignType,
+  type FeedCampaignAnalytics,
   type FeedCampaignPlacement
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
@@ -390,6 +393,9 @@ export default function CommercialFeedRoute() {
   const [creatingSetupTask, setCreatingSetupTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
+  const [analytics, setAnalytics] = useState<FeedCampaignAnalytics | null>(null);
+  const [hiddenCampaignIds, setHiddenCampaignIds] = useState<string[]>([]);
+  const recordedImpressions = useRef(new Set<string>());
 
   useEffect(() => {
     if (!allowedTypes.includes(type)) setType(allowedTypes[0]);
@@ -444,6 +450,14 @@ export default function CommercialFeedRoute() {
           limit: 30
         });
         setItems(res.items);
+        if (canManageCampaigns) {
+          try {
+            const campaignAnalytics = await fetchFeedCampaignAnalytics();
+            setAnalytics(campaignAnalytics);
+          } catch {
+            setAnalytics(null);
+          }
+        }
       } catch (e) {
         setError(e);
       } finally {
@@ -451,12 +465,28 @@ export default function CommercialFeedRoute() {
         setRefreshing(false);
       }
     },
-    [canAccess, filterType, q]
+    [canAccess, canManageCampaigns, filterType, q]
   );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    for (const campaign of items) {
+      if (
+        !campaign.id ||
+        hiddenCampaignIds.includes(campaign.id) ||
+        recordedImpressions.current.has(campaign.id)
+      )
+        continue;
+      recordedImpressions.current.add(campaign.id);
+      void recordFeedCampaignEvent(campaign.id, {
+        eventType: "impression",
+        placement: "feed"
+      }).catch(() => undefined);
+    }
+  }, [hiddenCampaignIds, items]);
 
   async function createCampaign() {
     if (!canPublishCampaign || !canManageCampaigns) return;
@@ -648,7 +678,31 @@ export default function CommercialFeedRoute() {
         endsAt: post.endsAt
       }
     }).catch(() => undefined);
+    void recordFeedCampaignEvent(post.id, {
+      eventType: "click",
+      placement: "feed",
+      targetUrl: destination.href,
+      growInterests: post.growInterests
+    }).catch(() => undefined);
     router.push(destination.href as any);
+  }
+
+  function hideCampaign(post: CommercialFeedCampaign) {
+    setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
+    void recordFeedCampaignEvent(post.id, {
+      eventType: "hide",
+      placement: "feed"
+    }).catch(() => undefined);
+  }
+
+  function reportCampaign(post: CommercialFeedCampaign) {
+    setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
+    setFeedback("Campaign reported and hidden from this view.");
+    void recordFeedCampaignEvent(post.id, {
+      eventType: "report",
+      placement: "feed",
+      reportReason: "viewer_report"
+    }).catch(() => undefined);
   }
 
   if (!ent.ready) return null;
@@ -1023,6 +1077,39 @@ export default function CommercialFeedRoute() {
 
       {error ? <InlineError error={error} /> : null}
 
+      {canManageCampaigns && analytics ? (
+        <View style={styles.card} accessibilityLabel="Feed campaign analytics">
+          <Text style={styles.cardTitle}>Campaign Analytics</Text>
+          <View style={styles.metricRow}>
+            {[
+              ["Impressions", analytics.totals.impressions],
+              ["Clicks", analytics.totals.clicks],
+              ["Conversions", analytics.totals.conversions],
+              ["Hidden", analytics.totals.hides],
+              ["Reports", analytics.totals.reports]
+            ].map(([label, value]) => (
+              <View key={String(label)} style={styles.metricCard}>
+                <Text style={styles.metricValue}>{String(value)}</Text>
+                <Text style={styles.metricLabel}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          {analytics.placements.slice(0, 4).map((row) => (
+            <Text key={`placement-${row.key}`} style={styles.linkBoxText}>
+              {placementLabels[row.key as FeedCampaignPlacement] || row.key}:{" "}
+              {row.impressions} impressions Â· {row.clicks} clicks Â· {row.conversions}{" "}
+              conversions
+            </Text>
+          ))}
+          {analytics.growInterests.slice(0, 4).map((row) => (
+            <Text key={`interest-${row.key}`} style={styles.linkBoxText}>
+              Grow interest {row.key}: {row.impressions} impressions Â· {row.clicks}{" "}
+              clicks
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.filters}>
         <Text style={styles.filterLabel}>Filter</Text>
         <View style={styles.chipRow}>
@@ -1070,120 +1157,140 @@ export default function CommercialFeedRoute() {
         </View>
       ) : null}
 
-      {items.map((post) => {
-        const destination = campaignDestination(post);
-        const isCampaignFocused = Boolean(
-          focusedCampaignId && focusedCampaignId === post.id
-        );
-        const isLiveFocused = Boolean(
-          focusedLiveId && focusedLiveId === String(post.linkedLiveId || "")
-        );
-        const isFocused = isCampaignFocused || isLiveFocused;
-        return (
-          <View
-            key={post.id}
-            accessibilityLabel={
-              isCampaignFocused
-                ? `Selected feed campaign ${post.id}`
-                : isLiveFocused
-                  ? `Selected feed live ${focusedLiveId}`
-                  : undefined
-            }
-            style={[styles.post, isFocused ? styles.postFocused : null]}
-          >
-            <View style={styles.postHeader}>
-              <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
-              <Text style={styles.engagements}>
-                {campaignEngagementCount(post)} campaign engagements
-              </Text>
-            </View>
-            <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
-            {campaignImage(post) ? (
-              <Image
-                source={{ uri: campaignImage(post) }}
-                style={styles.feedImage}
-                resizeMode="cover"
-                accessibilityLabel={`${post.title || "Feed campaign"} image`}
-              />
-            ) : null}
-            <Text style={styles.postBody}>{post.body}</Text>
-            {post.tags.length ? (
-              <Text style={styles.tags}>
-                {post.tags.map((tag) => `#${tag}`).join(" ")}
-              </Text>
-            ) : null}
-            {post.growInterests.length ? (
-              <Text style={styles.interests}>
-                Interests: {post.growInterests.join(", ")}
-              </Text>
-            ) : null}
-            {post.linkedProductId ||
-            post.linkedProductLineId ||
-            post.linkedCourseId ||
-            post.linkedLiveId ||
-            campaignEvidenceRunId(post) ||
-            post.linkedForumThreadId ||
-            campaignStorefrontSlug(post) ||
-            post.startsAt ||
-            post.endsAt ||
-            post.externalLinks?.length ? (
-              <View style={styles.linkMetaRow}>
-                {post.linkedProductId ? (
-                  <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
-                ) : null}
-                {post.linkedProductLineId ? (
-                  <Text style={styles.linkMeta}>
-                    Product line: {post.linkedProductLineId}
-                  </Text>
-                ) : null}
-                {post.linkedCourseId ? (
-                  <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
-                ) : null}
-                {post.linkedLiveId ? (
-                  <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
-                ) : null}
-                {campaignEvidenceRunId(post) ? (
-                  <Text style={styles.linkMeta}>
-                    Evidence run: {campaignEvidenceRunId(post)}
-                  </Text>
-                ) : null}
-                {post.linkedForumThreadId ? (
-                  <Text style={styles.linkMeta}>
-                    Forum/Q&A: {post.linkedForumThreadId}
-                  </Text>
-                ) : null}
-                {campaignStorefrontSlug(post) ? (
-                  <Text style={styles.linkMeta}>
-                    Store: {campaignStorefrontSlug(post)}
-                  </Text>
-                ) : null}
-                {post.startsAt ? (
-                  <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>
-                ) : null}
-                {post.endsAt ? (
-                  <Text style={styles.linkMeta}>Ends: {post.endsAt}</Text>
-                ) : null}
-                {post.externalLinks?.map((link) => (
-                  <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
-                    {link.label}: {link.url}
-                  </Text>
-                ))}
+      {items
+        .filter((post) => !hiddenCampaignIds.includes(post.id))
+        .map((post) => {
+          const destination = campaignDestination(post);
+          const isCampaignFocused = Boolean(
+            focusedCampaignId && focusedCampaignId === post.id
+          );
+          const isLiveFocused = Boolean(
+            focusedLiveId && focusedLiveId === String(post.linkedLiveId || "")
+          );
+          const isFocused = isCampaignFocused || isLiveFocused;
+          return (
+            <View
+              key={post.id}
+              accessibilityLabel={
+                isCampaignFocused
+                  ? `Selected feed campaign ${post.id}`
+                  : isLiveFocused
+                    ? `Selected feed live ${focusedLiveId}`
+                    : undefined
+              }
+              style={[styles.post, isFocused ? styles.postFocused : null]}
+            >
+              <View style={styles.postHeader}>
+                <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
+                <Text style={styles.engagements}>
+                  {campaignEngagementCount(post)} campaign engagements
+                </Text>
               </View>
-            ) : null}
-            {destination ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
-                onPress={() => openCampaignDestination(post, destination)}
-                style={styles.ctaButton}
-              >
-                <Text style={styles.ctaButtonText}>{destination.label}</Text>
-              </Pressable>
-            ) : null}
-            <Text style={styles.meta}>{campaignMeta(post)}</Text>
-          </View>
-        );
-      })}
+              <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
+              {campaignImage(post) ? (
+                <Image
+                  source={{ uri: campaignImage(post) }}
+                  style={styles.feedImage}
+                  resizeMode="cover"
+                  accessibilityLabel={`${post.title || "Feed campaign"} image`}
+                />
+              ) : null}
+              <Text style={styles.postBody}>{post.body}</Text>
+              {post.tags.length ? (
+                <Text style={styles.tags}>
+                  {post.tags.map((tag) => `#${tag}`).join(" ")}
+                </Text>
+              ) : null}
+              {post.growInterests.length ? (
+                <Text style={styles.interests}>
+                  Interests: {post.growInterests.join(", ")}
+                </Text>
+              ) : null}
+              {post.linkedProductId ||
+              post.linkedProductLineId ||
+              post.linkedCourseId ||
+              post.linkedLiveId ||
+              campaignEvidenceRunId(post) ||
+              post.linkedForumThreadId ||
+              campaignStorefrontSlug(post) ||
+              post.startsAt ||
+              post.endsAt ||
+              post.externalLinks?.length ? (
+                <View style={styles.linkMetaRow}>
+                  {post.linkedProductId ? (
+                    <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
+                  ) : null}
+                  {post.linkedProductLineId ? (
+                    <Text style={styles.linkMeta}>
+                      Product line: {post.linkedProductLineId}
+                    </Text>
+                  ) : null}
+                  {post.linkedCourseId ? (
+                    <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
+                  ) : null}
+                  {post.linkedLiveId ? (
+                    <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
+                  ) : null}
+                  {campaignEvidenceRunId(post) ? (
+                    <Text style={styles.linkMeta}>
+                      Evidence run: {campaignEvidenceRunId(post)}
+                    </Text>
+                  ) : null}
+                  {post.linkedForumThreadId ? (
+                    <Text style={styles.linkMeta}>
+                      Forum/Q&A: {post.linkedForumThreadId}
+                    </Text>
+                  ) : null}
+                  {campaignStorefrontSlug(post) ? (
+                    <Text style={styles.linkMeta}>
+                      Store: {campaignStorefrontSlug(post)}
+                    </Text>
+                  ) : null}
+                  {post.startsAt ? (
+                    <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>
+                  ) : null}
+                  {post.endsAt ? (
+                    <Text style={styles.linkMeta}>Ends: {post.endsAt}</Text>
+                  ) : null}
+                  {post.externalLinks?.map((link) => (
+                    <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
+                      {link.label}: {link.url}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              {destination ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
+                  onPress={() => openCampaignDestination(post, destination)}
+                  style={styles.ctaButton}
+                >
+                  <Text style={styles.ctaButtonText}>{destination.label}</Text>
+                </Pressable>
+              ) : null}
+              <View style={styles.imageTools}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Hide ${post.title || "campaign"}`}
+                  onPress={() => hideCampaign(post)}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Hide</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Report ${post.title || "campaign"}`}
+                  onPress={() => reportCampaign(post)}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Report</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.meta}>{campaignMeta(post)}</Text>
+            </View>
+          );
+        })}
     </ScrollView>
   );
 }
@@ -1207,6 +1314,15 @@ const styles = StyleSheet.create({
     padding: 14
   },
   cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
+  metricRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  metricCard: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: radius.card,
+    minWidth: 105,
+    padding: 10
+  },
+  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  metricLabel: { color: "#64748B", fontSize: 11, fontWeight: "800" },
   input: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",

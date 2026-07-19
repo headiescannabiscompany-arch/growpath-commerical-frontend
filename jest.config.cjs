@@ -20,8 +20,17 @@ module.exports = {
     "<rootDir>/tests/playwright/",
     "<rootDir>/e2e/",
     "<rootDir>/backend/",
+    "<rootDir>/backend-media-storage/",
     "<rootDir>/tmp/",
     "<rootDir>/tests/growLogs.spec.js"
+  ],
+
+  // Embedded backend worktrees and temporary checkouts have their own Jest
+  // configs and mocks. Exclude them from the frontend haste map as well as
+  // frontend test discovery.
+  modulePathIgnorePatterns: [
+    "<rootDir>/backend-media-storage/",
+    "<rootDir>/tmp/"
   ],
 
   setupFiles: [

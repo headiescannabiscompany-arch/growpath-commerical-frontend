@@ -216,60 +216,60 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Prevent publishing if destination is broken or missing setup.
 
 35. Feed analytics
-   - Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
+   - [x] Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
 
 ## P5 - Forum / Discussion Engine
 
 36. One discussion engine
-   - Threads/posts/comments/categories/tags/grow interests/media/documents.
-   - Author identity: user, commercial, facility, moderator.
-   - Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
+   - [x] Threads/posts/comments/categories/tags/grow interests/media/documents.
+   - [x] Author identity: user, commercial, facility, moderator.
+   - [x] Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
 
 37. Forum home/categories/thread detail/create thread
-   - Discussion/Q&A, not ads.
-   - Product Q&A, course discussion, live Q&A, facility internal threads.
+   - [x] Discussion/Q&A, not ads.
+   - [x] Product Q&A, course discussion, live Q&A, facility internal threads.
 
 38. Forum tasks/alerts/AI
-   - Create task from thread/comment.
-   - Alerts for replies, mentions, unanswered product/course/facility questions.
-   - AI helps title/category/tags/summarize/extract tasks.
+   - [x] Create task from thread/comment.
+   - [x] Alerts for replies, mentions, unanswered product/course/facility questions.
+   - [x] AI helps title/category/tags/summarize/extract tasks.
 
 39. Moderation
-   - Report, hide/remove/lock/pin/move, moderation queue, audit trail.
+   - [x] Report, hide/remove/lock/pin/move, moderation queue, audit trail.
 
 ## P6 - Sensor / Controller Import
 
 40. Integration connector interface
-   - Provider connections with encrypted auth, status, capabilities, last sync, errors.
-   - Read-only first.
+   - [x] Provider connections with encrypted auth, status, capabilities, last sync, errors.
+   - [x] Read-only first.
 
 41. Import wizard
-   - Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
+   - [x] Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
 
 42. Auto-build spaces
-   - Personal: grow space/tent/room/devices/streams.
-   - Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
-   - Commercial: product trial spaces or demo/education spaces only when relevant.
+   - [x] Personal: grow space/tent/room/devices/streams.
+   - [x] Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
+   - [x] Commercial: product trial spaces or demo/education spaces only when relevant.
 
 43. Metric normalization
-   - air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
+   - [x] air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
 
 44. Imported data powers tools
-   - VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
+   - [x] VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
 
 ## P7 - Analytics and Data Use
 
 45. No dead fields
-   - Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
+   - [x] Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
 
 46. Commercial analytics
-   - Storefront/product/course/live/feed/order/grow-interest analytics from real events.
+   - [x] Storefront/product/course/live/feed/order/grow-interest analytics from real events.
 
 47. Personal analytics
-   - Grow consistency, tool use, environment history, task completion, run comparisons.
+   - [x] Grow consistency, tool use, environment history, task completion, run comparisons.
 
 48. Facility analytics
-   - Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
+   - [x] Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
 
 ## Immediate Execution Slice
 
@@ -921,6 +921,20 @@ Completed and pushed:
 630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
 631. Feed placements now resolve through canonical home hero/top/middle/bottom, page top/middle/bottom, course, tool, Forum, product, Facility, and Commercial slot keys; the API filters campaigns by eligible slot while preserving legacy `feed` campaigns, existing plan policy controls placement density, and viewer grow-interest overlap contributes only evidence-backed relevance weight before the established freshness/engagement/exposure rotation.
 632. The shared Commercial/Facility Feed campaign builder now combines campaign type, public destination, image creative, CTA, grow-interest audience, named placement slots, shared schedule controls, and a pre-publish review; both client and server block active/scheduled publication when destinations, creative, placement, external URL, campaign-type linkage, or schedule setup is missing or invalid, and Facility outreach can link education/live/Forum destinations without exposing direct-sales fields or bypassing readiness checks.
+633. Feed campaign analytics now record canonical campaign impressions, destination clicks, explicit conversions, hides, and reports with server-derived ownership, then aggregate owner-visible totals by campaign, placement, and matched grow interest; viewers can hide/report outreach from the shared Feed, while Commercial and Facility owners receive scoped performance summaries without viewer identity or inferred conversions.
+634. The shared Forum model now preserves canonical thread category/type, tags, grow interests, photos, documents, structured comments/replies, and workflow context for grows, plants, ToolRuns, recipes, products, courses, lessons, lives, storefronts, facilities, rooms, tasks, and alerts; post/comment identity supports user, brand, Facility, and moderator presentation only after server-side plan, membership, or role verification, and category counts plus filtered thread reads stay on the same Forum API.
+635. Forum home now browses server-backed discussion categories and filters latest, trending, and following views without mixing in Feed campaigns; create-thread entry preserves general, product Q&A, course, live Q&A, and Facility-internal context, thread detail exposes verified identity, documents, and linked workflow context, and Facility-internal reads/creation require the selected Facility plus active membership instead of leaking through public Forum feeds.
+636. Forum threads and comments now create exact source-linked Personal, Commercial, or Facility tasks; canonical in-app notifications cover replies and `@username` mentions, product/course/live/Facility questions receive a scheduled unanswered reminder that is skipped after the first reply, and the Forum assistant offers review-only title, category, tag, summary, and task suggestions through quota-accounted OpenAI when configured or an explicitly labeled deterministic fallback.
+637. Forum reports now create evidence-backed moderation cases in the shared admin queue; authorized moderators can hide, restore, soft-remove, lock, unlock, pin, unpin, or move Forum threads, locks block new comments, pins affect thread ordering, and every action is retained in both the case action history and immutable platform audit log.
+638. Integration providers and connections now expose one canonical read-only connector contract with encrypted credential state, provider authentication type, capability declarations, connection status, structured errors, and last-sync status/summary; adapters must implement connection testing, device discovery, and data pulling before registration, and no controller mutation capability is exposed.
+639. The Facility integration import wizard now continues from provider selection and encrypted connection through connection testing, provider structure discovery, editable device-to-room/zone/metric mapping, server-side preview counts, and explicit owner/manager confirmation; confirmation retains the reviewed read-only mapping on the connection without prematurely creating rooms or controller-write access.
+640. Confirmed integration mappings now auto-build idempotent read-only spaces, devices, streams, and dashboards for owned Personal grows; canonical rooms plus draft alert/dashboard definitions for owner/manager Facility builds; and spaces only for owned Commercial trials or explicitly identified demo/education grows, with irrelevant commercial records rejected and controller mutations still unavailable.
+641. Imported telemetry now uses one unit-aware normalization registry for air temperature, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, device-offline, and device-fault signals; observations preserve raw provider keys, values, and units alongside canonical values, explicit unit conversions occur only when supported, and unknown vendor metrics remain visible as unmapped evidence.
+642. A grow-scoped imported-telemetry context now supplies one deterministic evidence window to VPD, Dew Point, Bud Rot screening, Crop Steering, Watering Planner/dryback, AI summaries, review-only alert/task drafts, run comparisons, explicitly linked product trials, and reviewed/de-identified course examples; the VPD tool visibly prefills from this context, while missing data remains explicit and sensor evidence is never labeled a diagnosis.
+643. The canonical integration collection boundary now has an app-readable field-use registry covering every IntegrationConnection, IntegrationSpace, TelemetrySource, and TelemetryPoint schema path; each field declares at least one display, analytics, AI, search, recommendation, task, alert, or export consumer, and a schema-regression audit fails on missing, stale, or invalid declarations instead of allowing new dead import fields.
+644. Commercial Analytics now aggregates owner-scoped published-storefront events, Feed impressions/clicks/conversions, course engagement, live views/RSVPs, paid internal orders with currency-preserving revenue, and recorded grow-interest matches; the UI exposes event-backed overview cards and per-source breakdowns without inferring conversions or sales.
+645. Personal Analytics now combines owner-scoped grows, journal activity, saved ToolRuns, personal task outcomes, and imported telemetry counts; it reports seven-day grow consistency, tool mix, measured environment history, task completion, and saved run comparisons while keeping cannabis-specific presentation subject to grow/account context.
+646. Facility Analytics now requires selected-facility membership and reports explicit room stability signals with unknown coverage, task and SOP completion, recorded sensor alerts, BatchCycle history, and course-linked staff training assignments; the Facility dashboard links to the new analytics surface and never treats missing room evidence as stable.
 
 ## Working Rule For Codex
 

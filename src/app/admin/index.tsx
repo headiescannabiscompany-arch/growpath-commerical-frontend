@@ -58,6 +58,12 @@ type ModerationCase = {
   severity: string;
   status: string;
   action: string;
+  actionHistory?: Array<{
+    action: string;
+    reason?: string;
+    createdAt?: string;
+    metadata?: { previousCategory?: string; category?: string };
+  }>;
   evidenceSnapshot?: {
     automated?: boolean;
     classification?: {
@@ -182,6 +188,7 @@ export default function PlatformAdminRoute() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
+  const [moveCategory, setMoveCategory] = useState("general");
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
@@ -397,12 +404,15 @@ export default function PlatformAdminRoute() {
     }
   }
 
-  async function moderateContent(item: ModerationCase, action: "hide" | "restore") {
+  async function moderateContent(
+    item: ModerationCase,
+    action: "hide" | "restore" | "remove" | "lock" | "unlock" | "pin" | "unpin" | "move"
+  ) {
     setBusyId(item._id);
     try {
       await apiRequest(`/api/admin/moderation-cases/${item._id}/action`, {
         method: "POST",
-        body: { action }
+        body: { action, ...(action === "move" ? { category: moveCategory.trim() } : {}) }
       });
       await load();
     } catch (err: any) {
@@ -842,8 +852,14 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Moderation cases"
-        subtitle="Review evidence snapshots before hiding or restoring public content."
+        subtitle="Review reports and evidence before acting. Every action is retained in the case and platform audit trail."
       >
+        <TextInput
+          value={moveCategory}
+          onChangeText={setMoveCategory}
+          placeholder="Destination category"
+          style={styles.input}
+        />
         {moderationCases.length ? (
           moderationCases.slice(0, 20).map((item) => (
             <View key={item._id} style={styles.caseRow}>
@@ -869,6 +885,11 @@ export default function PlatformAdminRoute() {
                       : ""}
                   </Text>
                 ) : null}
+                {item.actionHistory?.length ? (
+                  <Text style={styles.meta}>
+                    Audit: {item.actionHistory.map((entry) => entry.action).join(" -> ")}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.actions}>
                 <Pressable
@@ -885,6 +906,52 @@ export default function PlatformAdminRoute() {
                 >
                   <Text style={styles.secondaryText}>Approve / restore</Text>
                 </Pressable>
+                {item.targetType === "forumPost" ? (
+                  <>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "lock")}
+                    >
+                      <Text style={styles.secondaryText}>Lock</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "unlock")}
+                    >
+                      <Text style={styles.secondaryText}>Unlock</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "pin")}
+                    >
+                      <Text style={styles.secondaryText}>Pin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "unpin")}
+                    >
+                      <Text style={styles.secondaryText}>Unpin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id || !moveCategory.trim()}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "move")}
+                    >
+                      <Text style={styles.secondaryText}>Move category</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.warningButton}
+                      onPress={() => void moderateContent(item, "remove")}
+                    >
+                      <Text style={styles.warningText}>Remove post</Text>
+                    </Pressable>
+                  </>
+                ) : null}
               </View>
             </View>
           ))

@@ -3,6 +3,9 @@
 node_modules
 .npm-cache/
 .expo/
+.artifacts/
+.tools/
+backend-media-storage/
 tmp/
 test-results/
 playwright-report/
