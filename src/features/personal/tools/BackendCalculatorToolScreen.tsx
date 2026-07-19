@@ -92,6 +92,7 @@ type BackendCalculatorToolScreenProps = {
   aiPrefill?: {
     buttonLabel?: string;
     clearUnfilled?: boolean;
+    evidenceAssetIds?: () => string[];
     buildMessage: (context: { growId: string; plantId: string }) => string;
   };
 };
@@ -248,6 +249,7 @@ export default function BackendCalculatorToolScreen({
       const response = await askPersonalAssistant({
         growId,
         plantId: plantContext.plantId || undefined,
+        evidenceAssetIds: aiPrefill.evidenceAssetIds?.(),
         context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
         message: aiPrefill.buildMessage({
           growId,

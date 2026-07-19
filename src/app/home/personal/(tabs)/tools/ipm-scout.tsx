@@ -130,6 +130,13 @@ export default function IpmScoutToolRoute() {
       toolKey="ipm-scout"
       title="IPM Scout"
       subtitle="Record pest, disease, organism, trap, leaf damage, and inspection notes with follow-up tasks."
+      aiPrefill={{
+        buttonLabel: "Fill IPM scout from grow and media",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill the IPM Scout from the selected grow and plant's crop identity, stage, environment, recent logs, prior IPM records, diagnoses, and attached photos/videos. Return JSON only with exactly these keys: {"pestSeen":"string","leafDamage":"string","undersideInspection":"string","stickyTrapCount":"string","evidence":"string","additionalInformation":"string"}. Separate direct observations from hypotheses. Do not claim an organism is seen unless it is visibly supported; otherwise say "not confirmed". Do not invent trap counts or an underside inspection. In evidence list concise observed facts. Leave unknown fields blank. In additionalInformation request the exact missing leaf-top, leaf-underside, macro, sticky-trap, whole-plant, or video evidence needed and note plausible alternatives.`
+      }}
       formHeader={({ growId }) => (
         <MediaEvidencePicker
           maxPhotos={10}
@@ -158,6 +165,12 @@ export default function IpmScoutToolRoute() {
         {
           key: "evidence",
           label: "Evidence / notes, comma-separated",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "additionalInformation",
+          label: "Additional IPM context or questions (optional)",
           defaultValue: "",
           multiline: true
         }
