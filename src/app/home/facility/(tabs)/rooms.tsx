@@ -53,6 +53,7 @@ const ROOM_TYPES = [
   { value: "veg", label: "Veg" },
   { value: "clone", label: "Clone" },
   { value: "tissue culture", label: "Tissue Culture" },
+  { value: "cold storage", label: "Cold Storage" },
   { value: "grow tent", label: "Grow Tent" },
   { value: "outdoor bed", label: "Outdoor / Raised Bed" },
   { value: "mother", label: "Mother" },
@@ -63,7 +64,9 @@ const ROOM_TYPES = [
 ] as const;
 const CYCLE_STAGES = [
   "tissue culture",
+  "cold storage",
   "clone",
+  "seedling",
   "veg",
   "flower",
   "dry",
@@ -92,6 +95,7 @@ function inferRoomType(name: string) {
   if (lower.includes("seed")) return "seedling";
   if (lower.includes("greenhouse")) return "greenhouse";
   if (lower.includes("tissue") || lower.includes("microprop")) return "tissue culture";
+  if (lower.includes("cold") || lower.includes("storage")) return "cold storage";
   if (lower.includes("tent")) return "grow tent";
   if (lower.includes("raised bed") || lower.includes("outdoor")) return "outdoor bed";
   return "other";
@@ -342,6 +346,10 @@ export default function FacilityRoomsTab() {
   const [roomStage, setRoomStage] = useState("");
   const [roomDescription, setRoomDescription] = useState("");
   const [roomLocation, setRoomLocation] = useState("");
+  const [seedlingPlacement, setSeedlingPlacement] = useState<
+    "dedicated_room" | "rack_in_veg"
+  >("dedicated_room");
+  const [seedlingHostRoomId, setSeedlingHostRoomId] = useState("");
   const [roomDimensions, setRoomDimensions] = useState<{
     length?: number;
     width?: number;
@@ -479,15 +487,31 @@ export default function FacilityRoomsTab() {
         stage: roomStage.trim() || undefined,
         dimensions: Object.keys(roomDimensions).length ? roomDimensions : undefined,
         location: roomLocation.trim() ? { city: roomLocation.trim() } : undefined,
-        roomProfile: roomDescription.trim()
-          ? { setupDescription: roomDescription.trim() }
-          : undefined
+        roomProfile:
+          roomDescription.trim() || roomType === "seedling"
+            ? {
+                ...(roomDescription.trim()
+                  ? { setupDescription: roomDescription.trim() }
+                  : {}),
+                ...(roomType === "seedling"
+                  ? {
+                      seedlingPlacement,
+                      hostVegRoomId:
+                        seedlingPlacement === "rack_in_veg"
+                          ? seedlingHostRoomId || undefined
+                          : undefined
+                    }
+                  : {})
+              }
+            : undefined
       });
       setRoomName("");
       setRoomZoneName("");
       setRoomStage("");
       setRoomDescription("");
       setRoomLocation("");
+      setSeedlingPlacement("dedicated_room");
+      setSeedlingHostRoomId("");
       setRoomDimensions({});
       setAssistantResult(null);
       setFeedback("Room created.");
@@ -1084,6 +1108,73 @@ export default function FacilityRoomsTab() {
                   </Pressable>
                 ))}
               </View>
+              {roomType === "seedling" ? (
+                <View style={styles.aiPanel}>
+                  <Text style={styles.sectionTitle}>Seedling placement</Text>
+                  <Text style={styles.rowMeta}>
+                    Use a dedicated seedling room, or track a seedling rack/zone inside a
+                    veg room. This is a layout choice; GrowPath does not force either one.
+                  </Text>
+                  <View style={styles.pillRow}>
+                    {[
+                      ["dedicated_room", "Dedicated seedling room"],
+                      ["rack_in_veg", "Rack / zone in veg room"]
+                    ].map(([value, label]) => (
+                      <Pressable
+                        key={value}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Set seedling placement to ${label}`}
+                        onPress={() =>
+                          setSeedlingPlacement(value as typeof seedlingPlacement)
+                        }
+                        style={[
+                          styles.pill,
+                          seedlingPlacement === value && styles.pillSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pillText,
+                            seedlingPlacement === value && styles.pillTextSelected
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  {seedlingPlacement === "rack_in_veg" ? (
+                    <View style={styles.pillRow}>
+                      {rooms
+                        .filter((room) =>
+                          /veg|vegetative/i.test(String(room.roomType || ""))
+                        )
+                        .map((room) => (
+                          <Pressable
+                            key={rowId(room)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Use ${room.name} as seedling host room`}
+                            onPress={() => setSeedlingHostRoomId(rowId(room))}
+                            style={[
+                              styles.pill,
+                              seedlingHostRoomId === rowId(room) && styles.pillSelected
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.pillText,
+                                seedlingHostRoomId === rowId(room) &&
+                                  styles.pillTextSelected
+                              ]}
+                            >
+                              {room.name}
+                            </Text>
+                          </Pressable>
+                        ))}
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
               <View style={styles.pillRow}>
                 {CYCLE_STAGES.filter((stage) => stage !== "complete").map((stage) => (
                   <Pressable
@@ -1495,6 +1586,14 @@ const styles = StyleSheet.create({
   pillSelected: { backgroundColor: "#166534", borderColor: "#166534" },
   pillText: { fontWeight: "800", color: "#0F172A" },
   pillTextSelected: { color: "white" },
+  aiPanel: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
   detailBlock: { gap: 8, marginTop: 4 },
   detailTitle: { fontSize: 17, fontWeight: "900" },
   row: {
