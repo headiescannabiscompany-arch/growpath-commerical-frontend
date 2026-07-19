@@ -50,11 +50,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Ensure public/storefront-style page can show products/courses/lives/campaigns with honest empty states when no published records exist.
 
 3. Feed vs Forum correction
-   - Replace wording that implies Feed is discussion.
-   - Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
-   - Forum means discussion/Q&A.
-   - Feed cards should look promotional and have CTAs.
-   - Forum threads/comments should remain discussion.
+   - [x] Replace wording that implies Feed is discussion.
+   - [x] Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
+   - [x] Forum means discussion/Q&A.
+   - [x] Feed cards look promotional and always expose a destination or outreach-detail CTA.
+   - [x] Forum threads/comments remain the discussion surface.
 
 4. Free account feed placement rule
    - Free account pages: top + bottom placement.

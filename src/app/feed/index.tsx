@@ -257,7 +257,10 @@ function campaignDestination(post: CommercialFeedCampaign) {
       href: String(externalLink.url)
     };
   }
-  return null;
+  return {
+    label: "View Outreach",
+    href: `/feed?campaignId=${encodeURIComponent(String(post.id))}`
+  };
 }
 
 export default function CommercialFeedRoute() {
@@ -632,7 +635,7 @@ export default function CommercialFeedRoute() {
             placeholder={
               isFacility
                 ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
-                : "What do you want to share?"
+                : "Campaign message, offer, announcement, or educational promotion"
             }
             multiline
             accessibilityLabel="Feed campaign body"
@@ -915,9 +918,9 @@ export default function CommercialFeedRoute() {
           value={q}
           onChangeText={setQ}
           style={styles.input}
-          placeholder="Search feed"
+          placeholder="Search campaigns"
           autoCapitalize="none"
-          accessibilityLabel="Search feed"
+          accessibilityLabel="Search campaigns"
         />
       </View>
 

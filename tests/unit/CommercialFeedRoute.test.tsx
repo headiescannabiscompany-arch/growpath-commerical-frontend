@@ -93,6 +93,12 @@ describe("CommercialFeedRoute", () => {
     await waitFor(() => expect(screen.getByText("Feed / Campaigns")).toBeTruthy());
 
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
+    expect(
+      screen.getByPlaceholderText(
+        "Campaign message, offer, announcement, or educational promotion"
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Search campaigns")).toBeTruthy();
     expect(screen.getAllByText("Live event ad").length).toBeGreaterThan(0);
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
@@ -363,6 +369,9 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByText(/Facility account/)).toBeTruthy();
     expect(screen.getByText(/Commercial account/)).toBeTruthy();
     expect(screen.queryByText(/GrowPath member/)).toBeNull();
+    expect(screen.getAllByText("View Outreach")).toHaveLength(2);
+    fireEvent.press(screen.getByLabelText("View Outreach for Facility IPM training"));
+    expect(mockPush).toHaveBeenCalledWith("/feed?campaignId=facility-outreach");
   });
 
   it("creates facility outreach campaigns with facility author identity", async () => {
