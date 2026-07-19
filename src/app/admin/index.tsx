@@ -118,6 +118,17 @@ type KnowledgeEntry = {
     | "review_date_invalid";
 };
 
+type MethodReviewProposal = {
+  _id: string;
+  methodId: string;
+  status: "pending_review" | "accepted_for_edit" | "rejected" | "superseded";
+  outcomeCount: number;
+  proposedReview: string;
+  limitations?: string[];
+  agreementCounts?: Record<string, number>;
+  decisionCounts?: Record<string, number>;
+};
+
 function defaultKnowledgeReviewDate() {
   const value = new Date();
   value.setUTCDate(value.getUTCDate() + 180);
@@ -153,6 +164,10 @@ export default function PlatformAdminRoute() {
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
   const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
+  const [methodReviewProposals, setMethodReviewProposals] = useState<
+    MethodReviewProposal[]
+  >([]);
+  const [reviewMethodId, setReviewMethodId] = useState("");
   const [knowledgeDraft, setKnowledgeDraft] = useState({
     entryId: "",
     entryType: "source" as "source" | "method",
@@ -184,7 +199,8 @@ export default function PlatformAdminRoute() {
         moderationResponse,
         evidenceResponse,
         supportResponse,
-        knowledgeResponse
+        knowledgeResponse,
+        methodReviewResponse
       ] = await Promise.all([
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
@@ -192,7 +208,8 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/moderation-cases"),
         apiRequest("/api/admin/evidence-requests"),
         apiRequest("/api/admin/support-requests"),
-        apiRequest("/api/admin/knowledge-registry")
+        apiRequest("/api/admin/knowledge-registry"),
+        apiRequest("/api/admin/method-review-proposals")
       ]);
       setOverview(overviewResponse?.overview || null);
       setUsage(usageResponse?.usage || null);
@@ -208,6 +225,11 @@ export default function PlatformAdminRoute() {
       );
       setKnowledgeEntries(
         Array.isArray(knowledgeResponse?.entries) ? knowledgeResponse.entries : []
+      );
+      setMethodReviewProposals(
+        Array.isArray(methodReviewResponse?.proposals)
+          ? methodReviewResponse.proposals
+          : []
       );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
@@ -263,6 +285,49 @@ export default function PlatformAdminRoute() {
       await load();
     } catch (err: any) {
       setError(err?.message || "Unable to revise knowledge entry.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function generateMethodReview() {
+    if (!reviewMethodId.trim()) return;
+    setBusyId("method-review-new");
+    setError("");
+    try {
+      await apiRequest("/api/admin/method-review-proposals/generate", {
+        method: "POST",
+        body: { methodId: reviewMethodId.trim() }
+      });
+      setReviewMethodId("");
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to generate method review proposal.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function reviewMethodProposal(
+    proposal: MethodReviewProposal,
+    status: "accepted_for_edit" | "rejected"
+  ) {
+    setBusyId(proposal._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/method-review-proposals/${proposal._id}`, {
+        method: "PATCH",
+        body: {
+          status,
+          reviewNote:
+            status === "accepted_for_edit"
+              ? "Accepted for separate editorial review; runtime method unchanged."
+              : "Outcome evidence did not justify an editorial review."
+        }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to review method proposal.");
     } finally {
       setBusyId("");
     }
@@ -583,6 +648,65 @@ export default function PlatformAdminRoute() {
         ))}
         {!knowledgeEntries.length ? (
           <Text style={styles.meta}>No reviewed runtime overrides yet.</Text>
+        ) : null}
+      </AppCard>
+
+      <AppCard
+        title="Outcome-based method review"
+        subtitle="Generate a human review proposal from at least three recorded outcomes. Proposals never edit runtime methods."
+      >
+        <View style={styles.searchRow}>
+          <TextInput
+            value={reviewMethodId}
+            onChangeText={setReviewMethodId}
+            placeholder="Method ID, for example plant-diagnosis-etgu"
+            style={styles.input}
+          />
+          <Pressable
+            disabled={busyId === "method-review-new"}
+            style={styles.primaryButton}
+            onPress={() => void generateMethodReview()}
+          >
+            <Text style={styles.primaryText}>Analyze recorded outcomes</Text>
+          </Pressable>
+        </View>
+        {methodReviewProposals.map((proposal) => (
+          <View key={proposal._id} style={styles.caseRow}>
+            <View style={styles.caseCopy}>
+              <Text style={styles.caseTitle}>
+                {proposal.methodId} · {proposal.status}
+              </Text>
+              <Text style={styles.meta}>
+                {proposal.outcomeCount} outcome records · runtime method unchanged
+              </Text>
+              <Text style={styles.evidencePreview}>{proposal.proposedReview}</Text>
+              <Text style={styles.meta}>
+                Agreement: {JSON.stringify(proposal.agreementCounts || {})} · decisions:{" "}
+                {JSON.stringify(proposal.decisionCounts || {})}
+              </Text>
+            </View>
+            {proposal.status === "pending_review" ? (
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={busyId === proposal._id}
+                  style={styles.primaryButton}
+                  onPress={() => void reviewMethodProposal(proposal, "accepted_for_edit")}
+                >
+                  <Text style={styles.primaryText}>Accept for editing</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === proposal._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void reviewMethodProposal(proposal, "rejected")}
+                >
+                  <Text style={styles.secondaryText}>Reject proposal</Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
+        ))}
+        {!methodReviewProposals.length ? (
+          <Text style={styles.meta}>No outcome-based method proposals yet.</Text>
         ) : null}
       </AppCard>
 
