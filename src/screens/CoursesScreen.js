@@ -116,11 +116,16 @@ export default function CoursesScreen({ navigation } = {}) {
       setErr("");
 
       try {
-        const [publicResult, ownedResult] = await Promise.allSettled([
+        const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
           apiRequest("/api/courses"),
-          access.canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([])
+          access.canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([]),
+          apiRequest("/api/commercial/courses/public")
         ]);
-        if (publicResult.status === "rejected" && ownedResult.status === "rejected") {
+        if (
+          publicResult.status === "rejected" &&
+          ownedResult.status === "rejected" &&
+          commercialResult.status === "rejected"
+        ) {
           throw publicResult.reason;
         }
         const list = mergeCourses(
@@ -130,11 +135,16 @@ export default function CoursesScreen({ navigation } = {}) {
                 ...course,
                 _viewerOwnsCourse: true
               }))
+            : [],
+          commercialResult.status === "fulfilled"
+            ? normalizeList(commercialResult.value)
             : []
         );
         const filtered = access.canSeePaidCourses
           ? list
-          : list.filter((c) => (c?.priceCents || 0) === 0);
+          : list.filter(
+              (c) => Number(c?.priceCents || 0) === 0 && Number(c?.price || 0) === 0
+            );
         if (alive) setCourses(filtered);
       } catch (e) {
         const msg = String(e?.message || e || "Failed to load courses");
@@ -189,6 +199,13 @@ export default function CoursesScreen({ navigation } = {}) {
   );
 
   function openCourse(course) {
+    if (course?.sourceType === "commercial_course" && course?.storefrontSlug) {
+      const id = String(course?._id || course?.id || "");
+      router.push(
+        `/store/${encodeURIComponent(course.storefrontSlug)}/courses/${encodeURIComponent(id)}`
+      );
+      return;
+    }
     if (navigation?.navigate) {
       navigation.navigate("CourseDetail", { course, id: course?._id || course?.id });
       return;

@@ -76,9 +76,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Commercial and facility inventory link to the same product record; do not create a duplicate facility storefront product model.
 
 7. Course workflow minimum
-   - Create Course must look and behave like a real button/workflow.
-   - Course create/edit must support thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks eventually.
-   - Courses should appear on storefront and course discovery when published.
+   - [x] Create Course looks and behaves like a real button/workflow.
+   - [x] Course create/edit supports thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks.
+   - [x] Published commercial courses appear on their published storefront and in course discovery, with discovery opening the canonical storefront course detail.
+   - [x] Commercial and facility educators use the shared course capability; facility-only visibility remains available for private training.
 
 8. Facility room creation
    - Facility users must be able to add rooms/greenhouses.
