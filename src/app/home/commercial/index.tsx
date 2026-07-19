@@ -82,10 +82,10 @@ async function loadCommercialDashboard() {
 }
 
 const QUICK_ACTIONS: Action[] = [
+  { label: "Storefront", href: "/home/commercial/storefront" },
   { label: "Brand Profile", href: "/home/commercial/profile" },
   { label: "Product Catalog", href: "/home/commercial/products" },
   { label: "Evidence & Trials", href: "/home/commercial/trials" },
-  { label: "Storefront", href: "/home/commercial/storefront" },
   { label: "Courses", href: "/home/commercial/courses" },
   { label: "Campaigns", href: "/home/commercial/feed" },
   { label: "Orders", href: "/home/commercial/orders" },
@@ -407,6 +407,20 @@ export default function CommercialHome() {
       storefrontConfigured: dashboard?.storefront?.slug ? 1 : 0
     };
   }, [dashboard]);
+  const storefrontPrimaryActions = useMemo<Action[]>(() => {
+    const slug = String(dashboard?.storefront?.slug || "").trim();
+    return [
+      { label: "Open Storefront", href: "/home/commercial/storefront" },
+      { label: "Edit Storefront", href: "/home/commercial/storefront/edit" },
+      {
+        label: slug ? "View as User" : "Preview Storefront",
+        href: slug
+          ? `/store/${encodeURIComponent(slug)}`
+          : "/home/commercial/storefront/preview"
+      },
+      { label: "Add Product", href: "/home/commercial/products/new" }
+    ];
+  }, [dashboard?.storefront?.slug]);
 
   async function createActionItemTask(
     item: NonNullable<DashboardModel["actionItems"]>[number],
@@ -533,6 +547,19 @@ export default function CommercialHome() {
           </View>
         </View>
         {dashboardError ? <InlineError error={dashboardError} /> : null}
+        <View style={styles.storefrontPrimaryActions}>
+          {storefrontPrimaryActions.map((action) => (
+            <Link key={`storefront-${action.label}`} href={action.href as any} asChild>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                style={styles.storefrontPrimaryAction}
+              >
+                <Text style={styles.storefrontPrimaryActionText}>{action.label}</Text>
+              </Pressable>
+            </Link>
+          ))}
+        </View>
         <View style={styles.actions}>
           {QUICK_ACTIONS.map((action) => (
             <ActionButton key={`quick-${action.label}-${action.href}`} action={action} />
@@ -709,6 +736,22 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginTop: 2,
     textTransform: "uppercase"
+  },
+  storefrontPrimaryActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 16
+  },
+  storefrontPrimaryAction: {
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    paddingHorizontal: 14,
+    paddingVertical: 11
+  },
+  storefrontPrimaryActionText: {
+    color: "#FFFFFF",
+    fontWeight: "900"
   },
   sectionGrid: {
     gap: 14

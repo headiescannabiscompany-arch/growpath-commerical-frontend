@@ -7,6 +7,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTask = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockCreateFacilityTask = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -61,6 +62,10 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+jest.mock("@/api/facilityTasks", () => ({
+  createFacilityTask: (...args: any[]) => mockCreateFacilityTask(...args)
+}));
+
 describe("IpmScoutToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -76,8 +81,15 @@ describe("IpmScoutToolRoute", () => {
         },
         gptVerification: {
           status: "completed",
+          agreementStatus: "agreement",
+          providerLabel: "GPT-assisted media verification",
           answer:
             "GPT verification agrees mites are plausible but says to verify eggs or moving pests first."
+        },
+        mediaAnalysis: {
+          photosAnalyzed: 2,
+          videosAnalyzed: 0,
+          videoStatus: "stored_for_follow_up; direct video interpretation is not enabled"
         },
         documentation: { savedAs: "ToolRun" }
       },
@@ -133,6 +145,9 @@ describe("IpmScoutToolRoute", () => {
         "GPT verification agrees mites are plausible but says to verify eggs or moving pests first."
       )
     ).toBeTruthy();
+    expect(screen.getByText("Agreement status")).toBeTruthy();
+    expect(screen.getByText("agreement")).toBeTruthy();
+    expect(screen.getByText("2 photos; 0 videos")).toBeTruthy();
     expect(
       screen.getByText(/Save this ToolRun so the GrowPath AI scout answer and GPT review/)
     ).toBeTruthy();

@@ -7,6 +7,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockCreateProduct = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockCreateSoilNutrientBatch = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -59,6 +60,10 @@ jest.mock("@/api/products", () => ({
   createProduct: (...args: any[]) => mockCreateProduct(...args)
 }));
 
+jest.mock("@/api/commercialWorkflows", () => ({
+  createSoilNutrientBatch: (...args: any[]) => mockCreateSoilNutrientBatch(...args)
+}));
+
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
   saveToolRunAndCreateTask: jest.fn(),
@@ -83,11 +88,31 @@ describe("SoilBuilderToolScreen", () => {
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
+    mockCreateSoilNutrientBatch.mockResolvedValue({ id: "batch-1", status: "planned" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4"]
     });
+  });
+
+  it("converts the calculated soil formula into a production batch", async () => {
+    const screen = render(<SoilBuilderToolScreen />);
+    fireEvent.press(screen.getByLabelText("Run Soil Builder"));
+    await waitFor(() => expect(screen.getByText("Soil Builder result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Production Batch"));
+
+    await waitFor(() =>
+      expect(mockCreateSoilNutrientBatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          batchName: "Living soil mix batch",
+          trialGrowId: "grow-1",
+          linkedToolRunId: "toolrun-1",
+          status: "planned"
+        })
+      )
+    );
   });
 
   it("sends target profile, release timing, and rest/cook assumptions to the soil calculator", async () => {

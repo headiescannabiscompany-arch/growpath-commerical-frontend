@@ -6,6 +6,7 @@ import BackendCalculatorToolScreen, {
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
+  if (!value.trim()) return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 }
@@ -89,35 +90,47 @@ export default function PhEcToolScreen() {
       toolKey="ph-ec-check"
       title="pH / EC Range Check"
       subtitle="Compare input and runoff pH/EC against medium and stage ranges without pretending to dose pH up/down."
+      aiPrefill={{
+        buttonLabel: "Fill pH / EC review from grow",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this pH/EC review from the selected grow/plant's actual medium or soil recipe, stage, water profile and alkalinity, nutrient recipe, calibrated meter records, recent input/runoff or reservoir readings, irrigation/feed events, drift history, and plant response. Return JSON only with exactly these string keys: medium, stage, inputPH, runoffPH, inputEC, runoffEC, ecUnit, waterSource, interpretationNotes. Every numeric reading and EC unit must come from a saved measurement; never estimate pH or EC from symptoms, images, product labels, or generic targets. Leave unknowns blank. In interpretationNotes separate measured drift from possible causes, include meter/calibration and sampling limitations, water alkalinity context, nutrient antagonism or salt-stacking considerations, and the next measurement needed. Do not recommend a pH-up/down dose.`
+      }}
       fields={[
-        { key: "medium", label: "Medium", defaultValue: "soil" },
-        { key: "stage", label: "Stage", defaultValue: "flower" },
+        { key: "medium", label: "Medium", defaultValue: "" },
+        { key: "stage", label: "Stage", defaultValue: "" },
         {
           key: "inputPH",
           label: "Input pH",
-          defaultValue: "6.3",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "runoffPH",
           label: "Runoff pH",
-          defaultValue: "6.6",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "inputEC",
           label: "Input EC",
-          defaultValue: "1.4",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "runoffEC",
           label: "Runoff EC",
-          defaultValue: "2.1",
+          defaultValue: "",
           keyboardType: "numeric"
         },
-        { key: "ecUnit", label: "EC unit", defaultValue: "mS/cm" },
-        { key: "waterSource", label: "Water source", defaultValue: "unknown" }
+        { key: "ecUnit", label: "EC unit", defaultValue: "" },
+        { key: "waterSource", label: "Water source", defaultValue: "" },
+        {
+          key: "interpretationNotes",
+          label: "Measurement context and questions (optional)",
+          defaultValue: "",
+          multiline: true
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
@@ -129,7 +142,8 @@ export default function PhEcToolScreen() {
         inputEC: n(values.inputEC),
         runoffEC: n(values.runoffEC),
         ecUnit: values.ecUnit,
-        waterSource: values.waterSource
+        waterSource: values.waterSource,
+        interpretationNotes: values.interpretationNotes || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "input-ph", label: "Input pH", value: outputs.phStatus || "-" },

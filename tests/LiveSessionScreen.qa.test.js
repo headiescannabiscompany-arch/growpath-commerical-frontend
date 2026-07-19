@@ -9,6 +9,7 @@ const mockUseEntitlements = jest.fn();
 const mockApiRequest = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreatePersonalTask = jest.fn();
+const mockRecordCommercialAnalyticsEvent = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
@@ -34,6 +35,11 @@ jest.mock("../src/api/grows", () => ({
 jest.mock("../src/api/tasks", () => ({
   __esModule: true,
   createPersonalTask: (...args) => mockCreatePersonalTask(...args)
+}));
+
+jest.mock("../src/api/commercialAnalytics", () => ({
+  __esModule: true,
+  recordCommercialAnalyticsEvent: (...args) => mockRecordCommercialAnalyticsEvent(...args)
 }));
 
 // Avoid rendering the real embed in tests
@@ -75,8 +81,11 @@ describe("LiveSessionScreen QA", () => {
     mockUseAuth.mockReset();
     mockUseEntitlements.mockReset();
     mockApiRequest.mockReset();
+    mockApiRequest.mockResolvedValue({ rsvped: false });
     mockListPersonalGrows.mockReset();
     mockCreatePersonalTask.mockReset();
+    mockRecordCommercialAnalyticsEvent.mockReset();
+    mockRecordCommercialAnalyticsEvent.mockResolvedValue({ recorded: true });
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
   });
 
@@ -165,6 +174,29 @@ describe("LiveSessionScreen QA", () => {
         })
       );
       expect(getByText("Reminder task created")).toBeTruthy();
+    });
+  });
+
+  it("persists an RSVP and exposes the reminder-backed going state", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest
+      .mockResolvedValueOnce({
+        _id: "live-rsvp",
+        title: "Living Soil Q&A",
+        scheduledStart: "2026-08-02T18:00:00Z"
+      })
+      .mockResolvedValueOnce({ rsvped: false })
+      .mockResolvedValueOnce({ rsvped: true, rsvpCount: 1 });
+
+    const { getByText } = renderWithNav({ sessionId: "live-rsvp" });
+    await waitFor(() => expect(getByText("RSVP / Remind Me")).toBeTruthy());
+    fireEvent.press(getByText("RSVP / Remind Me"));
+
+    await waitFor(() => expect(getByText("Going · Cancel RSVP")).toBeTruthy());
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/lives/live-rsvp/rsvp", {
+      method: "POST",
+      body: {}
     });
   });
 

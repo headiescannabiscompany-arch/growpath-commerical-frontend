@@ -51,6 +51,22 @@ function buildLessons(input) {
   }));
 }
 
+function buildQuizzes(input) {
+  return splitPlanLines(input).map((line, index) => {
+    const [question, ...options] = line
+      .split("|")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    return {
+      title: question,
+      question,
+      options,
+      sortOrder: index + 1,
+      status: "draft"
+    };
+  });
+}
+
 function buildDocuments(input) {
   return splitPlanLines(input).map((title) => ({
     title,
@@ -114,7 +130,9 @@ export default function CreateCourseScreen({ navigation }) {
   const backTarget =
     entitlements.mode === "commercial"
       ? "/home/commercial/courses"
-      : "/home/personal/courses";
+      : entitlements.mode === "facility"
+        ? "/courses"
+        : "/home/personal/courses";
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -129,6 +147,7 @@ export default function CreateCourseScreen({ navigation }) {
     [growInterestSelections.crops]
   );
   const [curriculumPlan, setCurriculumPlan] = useState("");
+  const [quizPlan, setQuizPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
   const [documentFiles, setDocumentFiles] = useState([]);
   const [mediaPlan, setMediaPlan] = useState("");
@@ -275,6 +294,7 @@ export default function CreateCourseScreen({ navigation }) {
     setSubmitting(true);
     try {
       const lessons = buildLessons(curriculumPlan);
+      const quizzes = buildQuizzes(quizPlan);
       const uploadedDocuments = await Promise.all(
         documentFiles.map(async (asset) =>
           uploadedDocumentRecord(asset, await uploadCourseMedia(asset))
@@ -324,6 +344,7 @@ export default function CreateCourseScreen({ navigation }) {
           )
           .join("\n"),
         lessons,
+        quizzes,
         documents,
         mediaAssets,
         uploadedImageUrls: mediaAssets
@@ -523,6 +544,19 @@ export default function CreateCourseScreen({ navigation }) {
             editable={access.canCreateCourses && !submitting}
             style={[styles.input, styles.multiline]}
             accessibilityLabel="Course curriculum lessons"
+          />
+          <Text style={styles.label}>Quiz outline</Text>
+          <Text style={styles.helpText}>
+            Put one question per line. Add answer choices after vertical bars.
+          </Text>
+          <TextInput
+            value={quizPlan}
+            onChangeText={setQuizPlan}
+            placeholder={"What controls nutrient availability? | pH | Pot color"}
+            multiline
+            editable={access.canCreateCourses && !submitting}
+            style={[styles.input, styles.multiline]}
+            accessibilityLabel="Course quiz outline"
           />
         </View>
 

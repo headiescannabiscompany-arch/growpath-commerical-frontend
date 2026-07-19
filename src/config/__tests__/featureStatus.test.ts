@@ -165,7 +165,7 @@ describe("personal feature status manifest", () => {
       "tools.vpd": "/home/personal/tools/vpd",
       "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.npk_recipe": "/home/personal/tools/npk",
+      "tools.npk_recipe": "/home/personal/tools/recipe-builder",
       "tools.ai_diagnosis": "/home/personal/diagnose",
       "tools.ai_assistant": "/home/personal/ai",
       "tools.integrations": "/home/personal/tools/integrations"
@@ -187,18 +187,8 @@ describe("personal feature status manifest", () => {
       "tools.dry_amendment_mix",
       "tools.topdress_planner",
       "tools.ph_ec_adjustment",
-      "tools.crop_steering_projects",
-      "tools.stress_testing",
-      "tools.pheno_hunting",
-      "tools.genetics_inventory",
-      "tools.tissue_culture",
-      "tools.dry_cure_guard",
-      "tools.clone_rooting",
       "tools.ipm_scout",
       "tools.species_crop_identification",
-      "tools.harvest_readiness_ai",
-      "tools.run_comparison",
-      "tools.auto_grow_calendar",
       "tools.soil_nutrient_batch_planner"
     ];
 
@@ -210,6 +200,32 @@ describe("personal feature status manifest", () => {
       expect(feature?.status).toBe("beta");
       expect(defaultNavigable).not.toContain(feature);
       expect(betaNavigable).toContain(feature);
+    }
+  });
+
+  test("keeps grow lifecycle workflows in grow workspaces instead of the generic hub", () => {
+    const workspaceOnly = [
+      "tools.watering",
+      "tools.feeding_schedule",
+      "tools.timeline_planner",
+      "tools.pheno_matrix",
+      "tools.crop_steering_projects",
+      "tools.stress_testing",
+      "tools.pheno_hunting",
+      "tools.genetics_inventory",
+      "tools.tissue_culture",
+      "tools.dry_cure_guard",
+      "tools.clone_rooting",
+      "tools.harvest_readiness_ai",
+      "tools.auto_grow_calendar",
+      "tools.run_comparison"
+    ];
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    for (const key of workspaceOnly) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature?.hubVisible).toBe(false);
+      expect(feature?.href).toBeTruthy();
+      expect(hub).not.toContain(feature);
     }
   });
 

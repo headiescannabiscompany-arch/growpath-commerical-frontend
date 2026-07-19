@@ -6,12 +6,19 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
 
 import {
+  autoBuildIntegrationSpaces,
+  confirmIntegrationMapping,
+  fetchIntegrationStructure,
   listIntegrationConnections,
+  previewIntegrationMapping,
+  testIntegrationConnection,
+  type IntegrationDeviceMapping,
   type IntegrationConnection
 } from "@/api/integrations";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -33,9 +40,17 @@ export default function FacilityIntegrationsRoute() {
   const router = useRouter();
   const entitlements = useEntitlements();
   const role = String(entitlements.facilityRole || "VIEWER").toUpperCase();
+  const facilityId = String(
+    entitlements.selectedFacilityId || entitlements.facilityId || ""
+  );
   const canConfigure = role === "OWNER" || role === "MANAGER";
   const [selected, setSelected] = useState<"pulse" | "trolmaster">("pulse");
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
+  const [wizardConnectionId, setWizardConnectionId] = useState("");
+  const [wizardStage, setWizardStage] = useState("");
+  const [wizardMappings, setWizardMappings] = useState<IntegrationDeviceMapping[]>([]);
+  const [wizardBusy, setWizardBusy] = useState(false);
+  const [mappingConfirmed, setMappingConfirmed] = useState(false);
 
   useEffect(() => {
     Promise.resolve(listIntegrationConnections())
@@ -58,6 +73,72 @@ export default function FacilityIntegrationsRoute() {
         }
       ]
     );
+  }
+
+  async function testAndFetch(connection: IntegrationConnection) {
+    setWizardBusy(true);
+    setWizardConnectionId(connection.id);
+    try {
+      await testIntegrationConnection(connection.id);
+      setWizardStage("Connection tested. Fetching provider structure...");
+      const structure = await fetchIntegrationStructure(connection.id);
+      setWizardMappings(structure.suggestedMappings);
+      setWizardStage(
+        "Review room, zone, device, and metric mappings before confirmation."
+      );
+    } catch (error: any) {
+      setWizardStage(error?.message || "Connection test or structure fetch failed.");
+    } finally {
+      setWizardBusy(false);
+    }
+  }
+
+  function updateMapping(index: number, field: "roomName" | "zoneName", value: string) {
+    setWizardMappings((rows) =>
+      rows.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: value } : row))
+    );
+  }
+
+  async function confirmMappings() {
+    if (!wizardConnectionId || !wizardMappings.length) return;
+    setWizardBusy(true);
+    try {
+      const preview = await previewIntegrationMapping(wizardConnectionId, wizardMappings);
+      const updated = await confirmIntegrationMapping(
+        wizardConnectionId,
+        preview.mappings
+      );
+      setConnections((rows) =>
+        rows.map((row) => (row.id === updated.id ? updated : row))
+      );
+      setWizardStage(
+        `Confirmed ${preview.deviceCount} devices across ${preview.roomCount} rooms. Auto-build remains a separate reviewed step.`
+      );
+      setMappingConfirmed(true);
+    } catch (error: any) {
+      setWizardStage(error?.message || "Mapping confirmation failed.");
+    } finally {
+      setWizardBusy(false);
+    }
+  }
+
+  async function buildFacilitySpaces() {
+    if (!wizardConnectionId || !facilityId) return;
+    setWizardBusy(true);
+    try {
+      const result = await autoBuildIntegrationSpaces(wizardConnectionId, {
+        mode: "facility",
+        targetRef: facilityId
+      });
+      setWizardStage(
+        `Built ${result.createdOrUpdated} read-only Facility spaces with devices, streams, draft alerts, and dashboard definitions.`
+      );
+      setMappingConfirmed(false);
+    } catch (error: any) {
+      setWizardStage(error?.message || "Facility auto-build failed.");
+    } finally {
+      setWizardBusy(false);
+    }
   }
 
   return (
@@ -151,10 +232,77 @@ export default function FacilityIntegrationsRoute() {
               <View key={connection.id} style={styles.connectionRow}>
                 <Text style={styles.connectionTitle}>{connection.label}</Text>
                 <Text style={styles.body}>
+                  Read only /{" "}
+                  {connection.capabilities.join(", ") || "No capabilities reported"}
+                </Text>
+                <Text style={styles.body}>
+                  Last sync: {connection.lastSync.at || "Never"} /{" "}
+                  {connection.lastSync.status}
+                </Text>
+                {connection.error ? (
+                  <Text style={styles.errorText}>
+                    {connection.error.code}: {connection.error.message}
+                  </Text>
+                ) : null}
+                {canConfigure ? (
+                  <Pressable
+                    disabled={wizardBusy}
+                    style={[styles.secondaryAction, wizardBusy && styles.disabled]}
+                    onPress={() => void testAndFetch(connection)}
+                  >
+                    <Text style={styles.secondaryActionText}>Test + fetch structure</Text>
+                  </Pressable>
+                ) : null}
+                <Text style={styles.body}>
                   {connection.provider} · {connection.status}
                 </Text>
               </View>
             ))}
+            {wizardConnectionId ? (
+              <View style={styles.wizardPanel}>
+                <Text style={styles.cardTitle}>Import mapping preview</Text>
+                <Text style={styles.body}>{wizardStage}</Text>
+                {wizardMappings.map((mapping, index) => (
+                  <View key={mapping.deviceId} style={styles.mappingRow}>
+                    <Text style={styles.connectionTitle}>{mapping.deviceName}</Text>
+                    <Text style={styles.body}>
+                      {mapping.metrics.join(", ") || "Metrics require manual mapping"}
+                    </Text>
+                    <TextInput
+                      value={mapping.roomName}
+                      onChangeText={(value) => updateMapping(index, "roomName", value)}
+                      placeholder="Room"
+                      style={styles.input}
+                    />
+                    <TextInput
+                      value={mapping.zoneName}
+                      onChangeText={(value) => updateMapping(index, "zoneName", value)}
+                      placeholder="Zone (optional)"
+                      style={styles.input}
+                    />
+                  </View>
+                ))}
+                {wizardMappings.length ? (
+                  <Pressable
+                    disabled={wizardBusy}
+                    style={[styles.primaryAction, wizardBusy && styles.disabled]}
+                    onPress={() => void confirmMappings()}
+                  >
+                    <Text style={styles.primaryActionText}>Confirm mapping</Text>
+                  </Pressable>
+                ) : null}
+                {mappingConfirmed && facilityId ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Build confirmed Facility integration spaces"
+                    style={[styles.primaryAction, wizardBusy && styles.disabled]}
+                    onPress={() => void buildFacilitySpaces()}
+                  >
+                    <Text style={styles.primaryActionText}>Build Facility spaces</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
             <Pressable
               style={styles.secondaryAction}
               onPress={() => router.push("/home/facility/rooms" as any)}
@@ -293,6 +441,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   connectionTitle: { color: "#172317", fontWeight: "900" },
+  errorText: { color: "#991b1b", fontSize: 13, marginTop: 4 },
+  wizardPanel: { borderTopColor: "#dde6d5", borderTopWidth: 1, gap: 10, paddingTop: 12 },
+  mappingRow: { gap: 6 },
   providerGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   disabledProvider: {
     backgroundColor: "#e5e7eb",

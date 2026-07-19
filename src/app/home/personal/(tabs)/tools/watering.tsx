@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import {
@@ -18,6 +18,7 @@ import {
 import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
@@ -76,6 +77,58 @@ export default function WateringToolScreen() {
   const [leafResponse, setLeafResponse] = useState("");
   const [savedRunId, setSavedRunId] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [prefilling, setPrefilling] = useState(false);
+
+  async function prefillFromGrow() {
+    if (!growId || prefilling) return;
+    setPrefilling(true);
+    setFeedback("");
+    try {
+      const response = await askPersonalAssistant({
+        growId,
+        plantId: plantContext.plantId || undefined,
+        context: {
+          workflow: "watering",
+          requestedFields: [
+            "potLiters",
+            "runoffPct",
+            "intervalDays",
+            "medium",
+            "stage",
+            "targetDrybackPercent",
+            "actualDrybackPercent",
+            "vpdKpa",
+            "recentRunoffPct",
+            "recoveryTimeHours",
+            "leafResponse"
+          ]
+        },
+        message: `Prefill this Watering Plan from the selected grow/plant's actual soil or media recipe, container volume, water profile, irrigation events, pot-weight or moisture dryback, runoff, pH/EC, VPD/environment, stage, root-zone notes, and plant recovery. Return JSON only with exactly these string keys: potLiters, runoffPct, intervalDays, medium, stage, targetDrybackPercent, actualDrybackPercent, vpdKpa, recentRunoffPct, recoveryTimeHours, leafResponse. Numeric values must come from saved measurements or explicit records. Do not treat a calendar interval as proof the plant needs water. Distinguish peat/perlite, coco, hydro, and living-soil water-holding, aeration, buffering, and runoff practices; a 50/50 peat-perlite mix must not receive the same assumptions as a 1:1:1 Coots-style mix. Leave unknowns blank. Put evidence, uncertainty, and the next physical root-zone check in leafResponse.`
+      });
+      const raw = String(response.reply || "");
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
+      setPotLiters(String(parsed.potLiters ?? ""));
+      setRunoffPct(String(parsed.runoffPct ?? ""));
+      setIntervalDays(String(parsed.intervalDays ?? ""));
+      setMedium(String(parsed.medium ?? ""));
+      setStage(String(parsed.stage ?? ""));
+      setTargetDrybackPercent(String(parsed.targetDrybackPercent ?? ""));
+      setActualDrybackPercent(String(parsed.actualDrybackPercent ?? ""));
+      setVpdKpa(String(parsed.vpdKpa ?? ""));
+      setRecentRunoffPct(String(parsed.recentRunoffPct ?? ""));
+      setRecoveryTimeHours(String(parsed.recoveryTimeHours ?? ""));
+      setLeafResponse(String(parsed.leafResponse ?? ""));
+      setSavedRunId("");
+      setFeedback(
+        `AI filled the watering plan from grow records. Review every value before creating a task.${response.missingInformation?.length ? ` Optional missing details: ${response.missingInformation.join(", ")}.` : ""}`
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "AI could not prefill the watering plan.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
 
   const model = useMemo(() => {
     const estimate = buildWateringEstimate({
@@ -213,6 +266,25 @@ export default function WateringToolScreen() {
           selectedPlant={plantContext.selectedPlant}
           onSelect={plantContext.setPlantId}
         />
+
+        <View style={styles.aiCard}>
+          <Text style={styles.aiTitle}>AI grow-context prefill</Text>
+          <Text style={styles.aiText}>
+            Fill recorded medium, container, water, dryback, environment, and recovery
+            fields. Unknown measurements are left blank.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Fill watering plan from grow"
+            disabled={!growId || prefilling}
+            onPress={prefillFromGrow}
+            style={[styles.aiButton, (!growId || prefilling) && styles.disabled]}
+          >
+            <Text style={styles.aiButtonText}>
+              {prefilling ? "Reviewing grow..." : "Fill watering plan from grow"}
+            </Text>
+          </Pressable>
+        </View>
 
         <Text style={styles.label}>Pot size (L)</Text>
         <TextInput
@@ -431,5 +503,24 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#FFFFFF"
-  }
+  },
+  aiCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  aiTitle: { color: "#14532D", fontWeight: "800" },
+  aiText: { color: "#475569", lineHeight: 19 },
+  aiButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  aiButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  disabled: { opacity: 0.45 }
 });

@@ -209,26 +209,28 @@ export default function FacilityInventoryTab() {
           <Text style={styles.ghostText}>Sales & licensed transfers</Text>
         </Pressable>
 
-        <View style={styles.summaryCard}>
-          <View>
-            <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
-              {outOfStock}
-            </Text>
-            <Text style={styles.summaryLabel}>out of stock</Text>
+        {sorted.length ? (
+          <View style={styles.summaryCard}>
+            <View>
+              <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
+                {outOfStock}
+              </Text>
+              <Text style={styles.summaryLabel}>out of stock</Text>
+            </View>
+            <View>
+              <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
+                {lowStock}
+              </Text>
+              <Text style={styles.summaryLabel}>low stock</Text>
+            </View>
+            <View>
+              <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
+                {missingSku}
+              </Text>
+              <Text style={styles.summaryLabel}>missing SKU</Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
-              {lowStock}
-            </Text>
-            <Text style={styles.summaryLabel}>low stock</Text>
-          </View>
-          <View>
-            <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
-              {missingSku}
-            </Text>
-            <Text style={styles.summaryLabel}>missing SKU</Text>
-          </View>
-        </View>
+        ) : null}
 
         {!canWriteInventory ? (
           <Text style={styles.lockedText}>

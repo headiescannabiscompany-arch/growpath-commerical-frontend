@@ -45,6 +45,7 @@ describe("CommercialTasksRoute", () => {
               status: "open",
               sourceType: "product",
               sourceId: "product-1",
+              assignedToUserId: "user-1",
               reminderPlan: { label: "24 hours before" },
               recurrence: { rule: "weekly" }
             },
@@ -146,6 +147,26 @@ describe("CommercialTasksRoute", () => {
     });
   });
 
+  it("filters the commercial queue by assignment, status, and source", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Commercial task queue filter assigned"));
+    expect(screen.getByText("Connect Stripe price")).toBeTruthy();
+    expect(screen.queryByText("Publish storefront")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Commercial task queue filter all"));
+    fireEvent.press(screen.getByLabelText("Commercial task source filter storefront"));
+    expect(screen.getByText("Publish storefront")).toBeTruthy();
+    expect(screen.getByText("Review public storefront alias")).toBeTruthy();
+    expect(screen.queryByText("Connect Stripe price")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Commercial task queue filter completed"));
+    expect(screen.getByText("Publish storefront")).toBeTruthy();
+    expect(screen.queryByText("Review public storefront alias")).toBeNull();
+  });
+
   it("loads, creates, and completes source-linked commercial tasks", async () => {
     const screen = render(<CommercialTasksRoute />);
 
@@ -224,7 +245,7 @@ describe("CommercialTasksRoute", () => {
       screen.getAllByLabelText("View commercial task linked object").length
     ).toBeGreaterThan(0);
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
-    expect(screen.getByText("feed campaign")).toBeTruthy();
+    expect(screen.getAllByText("feed campaign").length).toBeGreaterThan(0);
 
     fireEvent.changeText(screen.getByLabelText("Commercial task title"), "Launch live");
     fireEvent.changeText(

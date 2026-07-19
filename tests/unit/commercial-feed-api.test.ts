@@ -42,8 +42,11 @@ describe("commercial feed API", () => {
 
     const result = await createCommercialFeedCampaign({
       type: "update",
+      campaignKind: "product_ad",
+      campaignType: "product",
       authorType: "commercial",
       workspaceType: "commercial",
+      ownerType: "commercial",
       title: "Veg mix trial",
       body: "Trial update",
       tags: ["soil"],
@@ -59,7 +62,9 @@ describe("commercial feed API", () => {
       endsAt: "2026-07-24T21:00:00Z",
       reminderPreference: "24 hours before",
       recurrenceRule: "weekly",
-      externalLinks: [{ label: "Buy", url: "https://example.com" }]
+      externalLinks: [{ label: "Buy", url: "https://example.com" }],
+      placements: ["feed"],
+      cta: { label: "Buy", kind: "open" }
     });
 
     expect(mockPersistImageUri).toHaveBeenCalledWith("file:///tmp/feed-image.jpg");
@@ -67,8 +72,11 @@ describe("commercial feed API", () => {
       method: "POST",
       body: {
         type: "update",
+        campaignKind: "product_ad",
+        campaignType: "product",
         authorType: "commercial",
         workspaceType: "commercial",
+        ownerType: "commercial",
         title: "Veg mix trial",
         body: "Trial update",
         tags: ["soil"],
@@ -85,7 +93,9 @@ describe("commercial feed API", () => {
         endsAt: "2026-07-24T21:00:00Z",
         reminderPreference: "24 hours before",
         recurrenceRule: "weekly",
-        externalLinks: [{ label: "Buy", url: "https://example.com" }]
+        externalLinks: [{ label: "Buy", url: "https://example.com" }],
+        placements: ["feed"],
+        cta: { label: "Buy", kind: "open" }
       }
     });
     expect(result).toMatchObject({
@@ -133,12 +143,13 @@ describe("commercial feed API", () => {
     const result = await listCommercialFeedCampaigns({
       type: "all",
       q: "soil",
-      limit: 3
+      limit: 3,
+      placement: "tool"
     });
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/feed", {
       invalidateOn401: false,
-      params: { q: "soil", limit: 3 }
+      params: { q: "soil", limit: 3, placement: "tool" }
     });
     expect(result.nextCursor).toBe("cursor-2");
     expect(result.items).toEqual([

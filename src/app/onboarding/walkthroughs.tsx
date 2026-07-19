@@ -72,11 +72,30 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
         body: "Create rooms or zones first so grows, plants, staff, tasks, and inventory have a clear home."
       },
       {
+        title: "Start crops and batches",
+        body: "Connect the first crop or batch to its room so plant records, logs, and environmental context have a real operating home."
+      },
+      {
+        title: "Add staff and tasks",
+        body: "Invite the team, assign roles, and create the first room-linked work so ownership is clear."
+      },
+      {
+        title: "Add inventory and settings",
+        body: "Enter real inventory, reorder points, devices, and facility settings before stock or operations risk is calculated."
+      },
+      {
         title: "Walk the dashboard",
-        body: "Review crops, batches, staff, tasks, inventory, settings, and compliance after setup exists."
+        body: "Review rooms, crops, batches, staff, tasks, inventory, settings, and compliance after setup exists."
       }
     ],
-    preview: ["Facility name", "Rooms and zones", "Crops and batches", "Staff and tasks"]
+    preview: [
+      "Facility name and type",
+      "Rooms and zones",
+      "Crops and batches",
+      "Staff and tasks",
+      "Inventory and settings",
+      "Dashboard walkthrough"
+    ]
   }
 };
 

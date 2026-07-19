@@ -92,6 +92,17 @@ control, or can bypass its backend authorization boundary.
 
 ## Working status
 
+### Browser evidence attempts
+
+- 2026-07-19 12:45:56 EDT: the public/signed-out loop recording could not start because
+  this chat could not see an in-app Browser tab. No production URL was opened and no
+  screenshot or video was captured. The worktree baseline was
+  `2449b228cae32867939ab8764dee9a5ec8fc71d2` with uncommitted checklist implementation
+  changes, so the public loop remains pending. Follow
+  `docs/codex-browser-evidence-runbook.md`: fully restart Codex, confirm the Browser
+  plugin is enabled, start a new chat, open the in-app Browser with `Ctrl+Shift+B`, and
+  make the production tab visible before retrying.
+
 ### Personal Free backbone audit
 
 - Environment Review now uses the mounted ToolRun API, clearly identifies its

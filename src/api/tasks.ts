@@ -127,7 +127,16 @@ export type Task = {
   status?: string;
   assignedTo?: string | { id?: string; _id?: string };
   createdAt?: string;
-  // Add fields later as backend schema stabilizes
+  startAt?: string;
+  endAt?: string;
+  recurrence?: Record<string, any> | null;
+  reminderPlan?: Record<string, any> | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
+  history?: Array<Record<string, any>>;
+  [key: `linked${string}Id`]: string | null | undefined;
 };
 
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
@@ -195,6 +204,7 @@ export interface PersonalTask {
   description: string;
   dueDate: string;
   endAt?: string | null;
+  startAt?: string | null;
   allDay?: boolean;
   snoozeUntil?: string | null;
   completed: boolean;
@@ -234,6 +244,11 @@ export interface PersonalTask {
   linkedFacilityRunId?: string | null;
   linkedSopId?: string | null;
   linkedForumThreadId?: string | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
+  history?: Array<Record<string, any>>;
   createdAt: string;
 }
 
@@ -275,6 +290,7 @@ export async function createPersonalTask(data: {
   description?: string;
   dueDate?: string;
   endAt?: string | null;
+  startAt?: string | null;
   allDay?: boolean;
   priority?: "low" | "medium" | "high";
   calendarType?: string | null;
@@ -307,6 +323,10 @@ export async function createPersonalTask(data: {
   linkedFacilityRunId?: string | null;
   linkedSopId?: string | null;
   linkedForumThreadId?: string | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
 }): Promise<PersonalTask | null> {
   try {
     const res: any = await apiRequest("/api/personal/tasks", {

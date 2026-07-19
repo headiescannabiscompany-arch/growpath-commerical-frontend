@@ -14,8 +14,10 @@ const files = {
 
 const requirements = [
   ["AGENTS Browser policy", files.agents, /in-app Browser/i],
-  ["AGENTS restart policy", files.agents, /start a new chat/i],
-  ["AGENTS truthful evidence policy", files.agents, /do not substitute invented/i],
+  ["AGENTS scoped recovery policy", files.agents, /Only invoke the Browser recovery runbook/i],
+  ["AGENTS no generic restart policy", files.agents, /Do not prescribe Codex restarts/i],
+  ["AGENTS truthful evidence policy", files.agents, /substitute invented/i],
+  ["runbook explicit-request scope", files.runbook, /user explicitly requests browser automation/i],
   ["runbook keyboard shortcut", files.runbook, /Ctrl\+Shift\+B/],
   ["runbook Chrome distinction", files.runbook, /ordinary Chrome/i],
   ["runbook commit SHA", files.runbook, /exact commit SHA/i],

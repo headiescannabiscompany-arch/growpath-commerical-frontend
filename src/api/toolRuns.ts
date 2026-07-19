@@ -5,6 +5,11 @@ export interface ToolRun {
   _id?: string;
   growId?: string;
   plantId?: string | null;
+  facilityId?: string | null;
+  roomId?: string | null;
+  productId?: string | null;
+  batchId?: string | null;
+  courseId?: string | null;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -28,7 +33,13 @@ export interface ToolRun {
   recommendations?: string[];
   warnings?: string[];
   confidence?: string | null;
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  limitations?: string[];
   linkedLogId?: string | null;
+  linkedTimelineEventId?: string | null;
   linkedTaskIds?: string[];
   linkedTaskId?: string | null;
   linkedDiagnosisId?: string | null;
@@ -63,6 +74,17 @@ export type CalculatorTool =
   | "species-crop-id"
   | "crop-steering-project"
   | "pheno-hunt";
+
+export async function compareSavedGrows(growIds: string[]) {
+  const response: any = await apiRequest("/api/tools/run-comparison/from-grows", {
+    method: "POST",
+    body: { growIds, growId: growIds[0] }
+  });
+  return {
+    toolRun: normalizeToolRun(response?.toolRun || response?.data?.toolRun),
+    outputs: response?.outputs || response?.data?.outputs || {}
+  };
+}
 
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
@@ -129,6 +151,11 @@ export function normalizeToolRun(row: any): ToolRun {
           toolType: normalized.toolType,
           growId: row?.growId || null,
           plantId: normalized.plantId || null,
+          facilityId: row?.facilityId || null,
+          roomId: row?.roomId || null,
+          productId: row?.productId || null,
+          batchId: row?.batchId || null,
+          courseId: row?.courseId || null,
           cropProfileId: normalized.cropProfileId || null,
           cropIdentity: normalized.cropIdentity || null,
           selectedPlantContext: normalized.selectedPlantContext || null,
@@ -301,6 +328,11 @@ export async function createToolRun(payload: {
   toolType: string;
   growId?: string;
   plantId?: string;
+  facilityId?: string;
+  roomId?: string;
+  productId?: string;
+  batchId?: string;
+  courseId?: string;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -324,6 +356,11 @@ export async function createToolRun(payload: {
       sourceType: payload.sourceType || "manual_tool_run",
       sourceObjectId: payload.sourceObjectId || null,
       plantId: payload.plantId || payload.selectedPlantContext?.id || undefined,
+      facilityId: payload.facilityId || undefined,
+      roomId: payload.roomId || undefined,
+      productId: payload.productId || undefined,
+      batchId: payload.batchId || undefined,
+      courseId: payload.courseId || undefined,
       cropProfileId:
         payload.cropProfileId ||
         payload.selectedPlantContext?.cropProfileId ||

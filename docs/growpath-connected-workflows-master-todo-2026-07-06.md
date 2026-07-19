@@ -22,239 +22,254 @@ Facility currently has the strongest visual appeal and sense of operational poli
 
 ## P0 - Must Fix Before More Broad Manual QA
 
+0. Knowledge base, source reliability, and GrowPath methods
+   - [x] Create `docs/knowledge` with source, AI-decision, cannabis-visibility, and method policies.
+   - [x] Add diagnosis, pheno, stress, crop-steering, soil/nutrient, clone, TC, harvest/dry/cure, commercial, and facility method documents.
+   - [x] Add app-readable `src/knowledge` source, method, and decision registries.
+   - [x] Require Codex/developers to read relevant methods before tool work.
+   - [ ] Collect the owner’s named websites, domains, preferred authors/channels, reliability tiers, trusted uses, exclusions, and review dates.
+   - [x] Add an admin/editor workflow for reviewing and versioning source entries and internal methods, with admin-only draft/approve/retire actions, immutable revision snapshots, review notes, and platform audit events.
+   - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
+   - [x] Extend the same runtime method/source envelope to Plant Diagnosis, IPM Scout, Clone Rooting, and Harvest Readiness GPT/vision verification endpoints, including fallback and test-mode results.
+   - [x] Persist method IDs, source IDs, citations, disagreements, and limitations with Ask AI conversation answers, ToolRuns, immutable ToolRun snapshots, and durable module records.
+   - [x] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions through review-due enforcement, visible overdue states, current-artifact requirements, and blocked claim types in AI context.
+   - [x] Add outcome-based method review so at least three repeated grow outcomes can create an evidence-linked admin proposal, while acceptance only queues separate editorial work and never silently rewrites a GrowPath method.
+
 1. Commercial navigation clarity
-   - Make Storefront a first-class commercial destination.
-   - Put Storefront prominently on Commercial Dashboard.
-   - Ensure bottom tabs/routes open correct pages, not dashboard again.
-   - Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
-   - Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
+   - [x] Make Storefront a first-class commercial destination.
+   - [x] Put Storefront prominently on Commercial Dashboard with Open, Edit, View as User/Preview, and Add Product actions.
+   - [x] Ensure bottom tabs/routes open correct pages, not dashboard again.
+   - [x] Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
+   - [x] Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
 
 2. Storefront-first commercial slice
-   - Add Storefront owner home.
-   - Add View as User / public preview path.
-   - Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
-   - Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
-   - Ensure public/storefront-style page can show products/courses/lives/campaigns even if some data is mocked/empty.
+   - [x] Add Storefront owner home.
+   - [x] Add View as User / public preview path.
+   - [x] Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
+   - [x] Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
+   - [x] Ensure public/storefront-style page can show products/courses/lives/campaigns with honest empty states when no published records exist.
 
 3. Feed vs Forum correction
-   - Replace wording that implies Feed is discussion.
-   - Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
-   - Forum means discussion/Q&A.
-   - Feed cards should look promotional and have CTAs.
-   - Forum threads/comments should remain discussion.
+   - [x] Replace wording that implies Feed is discussion.
+   - [x] Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
+   - [x] Forum means discussion/Q&A.
+   - [x] Feed cards look promotional and always expose a destination or outreach-detail CTA.
+   - [x] Forum threads/comments remain the discussion surface.
 
 4. Free account feed placement rule
-   - Free account pages: top + bottom placement.
-   - Long pages with two or more scroll screens: top + middle + bottom.
-   - Do not repeat the same ad everywhere.
-   - Rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
+   - [x] Free account pages: top + bottom placement.
+   - [x] Long pages with two or more scroll screens: top + middle + bottom.
+   - [x] Do not repeat the same ad across top, middle, and bottom when at least three campaigns are available.
+   - [x] Rank and rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
 
 5. Back arrows
-   - Every nested page gets a back arrow.
-   - Root pages do not need a back arrow.
-   - Use shared page/header behavior, not one-off custom buttons.
-   - Confirm commercial product/detail/edit/new, course builder/detail, storefront edit/preview, task/detail, grow/plant/detail, facility room/run/detail have back behavior.
+   - [x] Every audited nested page gets a back arrow.
+   - [x] Root pages do not get forced back arrows.
+   - [x] Use shared `AppPage` / `ScreenBoundary` header behavior, not one-off custom buttons.
+   - [x] Confirm commercial product create/detail, course detail, storefront edit/preview, task detail, personal grow/plant workspace, facility room-context detail, and facility SOP-run detail have back behavior with safe fallbacks.
 
 6. Commercial product card and product detail basics
-   - Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
-   - Product appears as a storefront card when published.
-   - Product detail shows professional info and buy CTA if Stripe-ready.
-   - Soil/nutrient/amendment fields are available or planned visibly: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
+   - [x] Product appears as a storefront card when published.
+   - [x] Product detail shows professional info and buy CTA if Stripe-ready, while regulated cannabis stays catalog/verified-transfer only.
+   - [x] Soil/nutrient/amendment fields persist and display: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Commercial and facility inventory link to the same product record; do not create a duplicate facility storefront product model.
 
 7. Course workflow minimum
-   - Create Course must look and behave like a real button/workflow.
-   - Course create/edit must support thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks eventually.
-   - Courses should appear on storefront and course discovery when published.
+   - [x] Create Course looks and behaves like a real button/workflow.
+   - [x] Course create/edit supports thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks.
+   - [x] Published commercial courses appear on their published storefront and in course discovery, with discovery opening the canonical storefront course detail.
+   - [x] Commercial and facility educators use the shared course capability; facility-only visibility remains available for private training.
 
 8. Facility room creation
-   - Facility users must be able to add rooms/greenhouses.
-   - Facility onboarding should guide facility name, type, rooms/zones, crops/batches, staff/tasks, inventory/settings, dashboard walkthrough.
-   - Stock risk should not appear before useful inventory/crop data exists.
+   - [x] Facility owners/managers can add rooms, greenhouses, outdoor beds, seedling rooms or veg racks, clone/tissue-culture/cold-storage spaces, and optional zones.
+   - [x] Facility onboarding captures facility name/type and creates typed starter rooms before continuing into crops/batches; the walkthrough guides staff/tasks, inventory/settings, and dashboard review.
+   - [x] Stock-risk metrics and AI review do not appear before useful inventory data exists.
 
 9. Password reset/login reliability
-   - Password reset flow: email -> link -> valid reset screen -> save password -> login works.
-   - Commercial/facility/pro/free login should not get stuck in loops.
-   - Failed login/server disconnect states should show actionable errors.
+   - [x] Password reset flow works from email -> one-hour link -> valid reset screen -> hashed password save -> email-prefilled sign-in.
+   - [x] Commercial/facility/pro/free login returns through the shared root router without account-tier redirect loops; facility accounts without a selection land on facility selection.
+   - [x] Failed credentials, expired reset links, email-delivery outages, and server/network disconnects show distinct actionable recovery paths.
 
 10. Pricing display
-   - Pro: $10/month, $100/year.
-   - Commercial: $50/month, $500/year.
-   - Facility: $100/month, $1,000/year.
-   - Stripe annual monthly-equivalent copy should be clear and not look contradictory.
+   - [x] Pro: $10/month, $100/year.
+   - [x] Commercial: $50/month, $500/year.
+   - [x] Facility: $100/month, $1,000/year.
+   - [x] Stripe annual monthly-equivalent copy is clear and does not look contradictory.
 
 ## P1 - Connected Workflow Foundation
 
 11. ToolRun foundation
-   - Confirm all serious tools persist ToolRun records.
-   - ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
-   - Tool outputs can create tasks/logs/timeline events.
+   - [x] Confirm all serious tools persist ToolRun records.
+   - [x] ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
+   - [x] Tool outputs can create tasks/logs/timeline events.
 
 12. Recipe model
-   - Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
-   - Recipe can duplicate/version/compare.
-   - Recipe can convert to commercial product draft or facility production batch.
+   - [x] Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
+   - [x] Recipe can duplicate/version/compare.
+   - [x] Recipe can convert to commercial product draft or facility production batch.
 
 13. Ingredient library
-   - Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
-   - User-entered label data overrides generic assumptions.
+   - [x] Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
+   - [x] User-entered label data overrides generic assumptions.
 
 14. NPK / Feed Recipe Builder
-   - Multi-input builder with 18-20 rows.
-   - Guaranteed analysis fields.
-   - P2O5/K2O conversions and elemental values.
-   - Dry/liquid calculations, density handling, ppm when appropriate.
-   - Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
-   - AI can collect inputs and call deterministic math engine.
+   - [x] Multi-input builder with 18-20 rows.
+   - [x] Guaranteed analysis fields.
+   - [x] P2O5/K2O conversions and elemental values.
+   - [x] Dry/liquid calculations, density handling, ppm when appropriate.
+   - [x] Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
+   - [x] AI can collect inputs and call deterministic math engine.
 
 15. Soil Builder
-   - Full base mix + amendments + biology/activation + rest/cook timeline.
-   - Fast/medium/slow release chart.
-   - Compost uncertainty warnings.
-   - Save to grow/product/facility batch.
+   - [x] Full base mix + amendments + biology/activation + rest/cook timeline.
+   - [x] Fast/medium/slow release chart.
+   - [x] Compost uncertainty warnings.
+   - [x] Save to grow/product/facility batch.
 
 16. Dry Amendment Mix Builder
-   - Build concentrated dry blend.
-   - Estimated guaranteed analysis.
-   - Ingredient contribution chart.
-   - Product-ready label fields.
-   - Bag sizes and application directions.
+   - [x] Build concentrated dry blend.
+   - [x] Estimated guaranteed analysis.
+   - [x] Ingredient contribution chart.
+   - [x] Product-ready label fields.
+   - [x] Bag sizes and application directions.
 
 17. Topdress / Re-Amend Planner
-   - Grow/plant/bed specific topdress plan.
-   - Expected release timeline.
-   - Follow-up tasks.
+   - [x] Grow/plant/bed specific topdress plan.
+   - [x] Expected release timeline.
+   - [x] Follow-up tasks.
 
 18. IPM Scout GPT verification
-   - Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
-   - Store both answers.
-   - Show agreement/conflict.
-   - Save to grow/facility timelines and create follow-up tasks.
+   - [x] Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
+   - [x] Store both answers.
+   - [x] Show agreement/conflict.
+   - [x] Save to grow/facility timelines and create follow-up tasks.
 
 19. Pheno Hunting Matrix
-   - Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
-   - Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
+   - [x] Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
+   - [x] Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
 
 20. Tissue Culture Tracker
-   - Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
+   - [x] Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
 
 ## P2 - Task / Calendar / Alerts Engine
 
 21. One Task model
-   - Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
-   - Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
+   - [x] Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
+   - [x] Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
 
 22. Task Center
-   - Today, overdue, upcoming, completed, assigned, source filters.
-   - Commercial tasks: storefront/product/course/live/order setup.
-   - Facility tasks: room/SOP/team/proof/approval.
-   - Personal tasks: grow/course/tool/live reminders.
+   - [x] Today, overdue, upcoming, completed, assigned, source filters.
+   - [x] Commercial tasks: storefront/product/course/live/order setup.
+   - [x] Facility tasks: room/SOP/team/proof/approval.
+   - [x] Personal tasks: grow/course/tool/live reminders.
 
 23. SchedulePicker
-   - Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
+   - [x] Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
 
 24. Schedule / Agenda page
-   - Agenda/day/week/month.
-   - Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
+   - [x] Agenda/day/week/month.
+   - [x] Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
 
 25. Alert Center
-   - Alerts can resolve, snooze, create task, assign, ask AI, view source.
-   - Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
+   - [x] Alerts can resolve, snooze, create task, assign, ask AI, view source.
+   - [x] Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
 
 26. Notification engine
-   - In-app first; push/email when configured.
-   - Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
+   - [x] In-app first; push/email when configured.
+   - [x] Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
 
 ## P3 - Courses and Lives
 
 27. Course builder
-   - Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
+   - [x] Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
 
 28. Course player
-   - Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
+   - [x] Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
 
 29. Course analytics
-   - Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
+   - [x] Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
 
 30. Lives
-   - Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
+   - [x] Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
 
 31. Twitch
-   - OAuth connection.
-   - Twitch Embed for video/chat where supported.
-   - EventSub for stream online/status.
-   - Replay link/manual VOD first if automatic VOD import is not ready.
+   - [x] OAuth connection.
+   - [x] Twitch Embed for video/chat where supported.
+   - [x] EventSub for stream online/status.
+   - [x] Replay link/manual VOD first if automatic VOD import is not ready.
 
 ## P4 - Feed Campaign Engine
 
 32. FeedCampaign model
-   - Owner commercial/facility.
-   - Product/course/live/storefront/facility/general campaign.
-   - Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
+   - [x] Owner commercial/facility.
+   - [x] Product/course/live/storefront/facility/general campaign.
+   - [x] Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
 
 33. Feed placement engine
-   - Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
-   - Plan-aware placement rules.
-   - Context-aware targeting.
+   - [x] Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
+   - [x] Plan-aware placement rules.
+   - [x] Context-aware targeting.
 
 34. Feed campaign builder
-   - Campaign type, destination, creative, placement, audience, schedule, review.
-   - Prevent publishing if destination is broken or missing setup.
+   - [x] Campaign type, destination, creative, placement, audience, schedule, review.
+   - [x] Prevent publishing if destination is broken or missing setup.
 
 35. Feed analytics
-   - Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
+   - [x] Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
 
 ## P5 - Forum / Discussion Engine
 
 36. One discussion engine
-   - Threads/posts/comments/categories/tags/grow interests/media/documents.
-   - Author identity: user, commercial, facility, moderator.
-   - Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
+   - [x] Threads/posts/comments/categories/tags/grow interests/media/documents.
+   - [x] Author identity: user, commercial, facility, moderator.
+   - [x] Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
 
 37. Forum home/categories/thread detail/create thread
-   - Discussion/Q&A, not ads.
-   - Product Q&A, course discussion, live Q&A, facility internal threads.
+   - [x] Discussion/Q&A, not ads.
+   - [x] Product Q&A, course discussion, live Q&A, facility internal threads.
 
 38. Forum tasks/alerts/AI
-   - Create task from thread/comment.
-   - Alerts for replies, mentions, unanswered product/course/facility questions.
-   - AI helps title/category/tags/summarize/extract tasks.
+   - [x] Create task from thread/comment.
+   - [x] Alerts for replies, mentions, unanswered product/course/facility questions.
+   - [x] AI helps title/category/tags/summarize/extract tasks.
 
 39. Moderation
-   - Report, hide/remove/lock/pin/move, moderation queue, audit trail.
+   - [x] Report, hide/remove/lock/pin/move, moderation queue, audit trail.
 
 ## P6 - Sensor / Controller Import
 
 40. Integration connector interface
-   - Provider connections with encrypted auth, status, capabilities, last sync, errors.
-   - Read-only first.
+   - [x] Provider connections with encrypted auth, status, capabilities, last sync, errors.
+   - [x] Read-only first.
 
 41. Import wizard
-   - Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
+   - [x] Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
 
 42. Auto-build spaces
-   - Personal: grow space/tent/room/devices/streams.
-   - Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
-   - Commercial: product trial spaces or demo/education spaces only when relevant.
+   - [x] Personal: grow space/tent/room/devices/streams.
+   - [x] Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
+   - [x] Commercial: product trial spaces or demo/education spaces only when relevant.
 
 43. Metric normalization
-   - air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
+   - [x] air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
 
 44. Imported data powers tools
-   - VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
+   - [x] VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
 
 ## P7 - Analytics and Data Use
 
 45. No dead fields
-   - Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
+   - [x] Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
 
 46. Commercial analytics
-   - Storefront/product/course/live/feed/order/grow-interest analytics from real events.
+   - [x] Storefront/product/course/live/feed/order/grow-interest analytics from real events.
 
 47. Personal analytics
-   - Grow consistency, tool use, environment history, task completion, run comparisons.
+   - [x] Grow consistency, tool use, environment history, task completion, run comparisons.
 
 48. Facility analytics
-   - Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
+   - [x] Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
 
 ## Immediate Execution Slice
 
@@ -893,6 +908,33 @@ Completed and pushed:
 617. Live URL verification now falls back to PowerShell web requests on Windows when Node fetch hits local TLS/CA failures, so `npm run verify:live-urls` can pass against production without repeatedly requiring a manual `NODE_OPTIONS=--use-system-ca` workaround.
 618. Stale underscored `/home/_personal` and `/home/_facility` route files were removed from `src/app`, dropping route inventory from 207 to 205 and keeping Personal/Facility entry through the canonical `/home/personal`, `/home/facility/select`, and `/home/facility` route family.
 619. UI route inventory now fails on underscored non-layout files under `src/app`, preventing helper/private route pollution from reintroducing hidden `/home/_*` paths while still allowing Expo `_layout` files.
+620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
+621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
+622. Schedule / Agenda now provides Agenda, Day, Week, and Month windows with editable anchor-date and period navigation, retrieves persisted commercial campaign launches in addition to tasks, lives, course events, course releases, and Feed schedules, and deduplicates overlapping campaign records while retaining task-backed course assignments, grow milestones, soil-ready dates, and Facility SOP work.
+623. Alert Center now assigns alerts directly in addition to assigning generated follow-up tasks, routes setup alerts back to their workspace, and covers setup, sensor, course/live, storefront/product, and Facility training sources; the backend now exposes owned alert listing and mutation through normalized Notification records with persisted severity, status, workspace/source identity, snooze, resolution, and assignment state.
+624. NotificationIntent and Notification now support task reminders, live reminders, course due/overdue, critical/digest alerts, replay availability, milestones, and system events; the shared scheduler always creates in-app delivery first, optionally adds push/email channels, and the worker records delivered, skipped, or failed outcomes while normalizing linked source context for Notification Center routing and task creation.
+625. Commercial Course Builder now persists structured quiz outlines and course-level Forum/Q&A discussion links alongside its existing course basics, thumbnail/banner uploads, modules, lessons, media/video/document resources, lesson assignments/tasks, products, lives, Stripe access, and draft/publish controls; owners also get a protected learner-preview view that works before public publication.
+626. The shared Course Player now shows learner-specific lesson progress, durable private lesson notes, documents and media, course and lesson discussion, course-scoped Ask AI actions, assignment-to-task creation, related products, and scheduled lives; the shared Course API now preserves builder resources and link metadata and stores completion plus notes on each learner enrollment instead of the course itself.
+627. Course Analytics now aggregates the live Course, Enrollment, Earning, Task, question, and CourseEngagementEvent records instead of the disconnected legacy Lesson collection, reporting course/lesson views, unique viewers, enrollments, completion and average progress, sales/earnings, drop-off, assignment-task completion, live RSVPs, related-product clicks, and unanswered questions through a reachable shared owner analytics route.
+628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
+629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
+630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
+631. Feed placements now resolve through canonical home hero/top/middle/bottom, page top/middle/bottom, course, tool, Forum, product, Facility, and Commercial slot keys; the API filters campaigns by eligible slot while preserving legacy `feed` campaigns, existing plan policy controls placement density, and viewer grow-interest overlap contributes only evidence-backed relevance weight before the established freshness/engagement/exposure rotation.
+632. The shared Commercial/Facility Feed campaign builder now combines campaign type, public destination, image creative, CTA, grow-interest audience, named placement slots, shared schedule controls, and a pre-publish review; both client and server block active/scheduled publication when destinations, creative, placement, external URL, campaign-type linkage, or schedule setup is missing or invalid, and Facility outreach can link education/live/Forum destinations without exposing direct-sales fields or bypassing readiness checks.
+633. Feed campaign analytics now record canonical campaign impressions, destination clicks, explicit conversions, hides, and reports with server-derived ownership, then aggregate owner-visible totals by campaign, placement, and matched grow interest; viewers can hide/report outreach from the shared Feed, while Commercial and Facility owners receive scoped performance summaries without viewer identity or inferred conversions.
+634. The shared Forum model now preserves canonical thread category/type, tags, grow interests, photos, documents, structured comments/replies, and workflow context for grows, plants, ToolRuns, recipes, products, courses, lessons, lives, storefronts, facilities, rooms, tasks, and alerts; post/comment identity supports user, brand, Facility, and moderator presentation only after server-side plan, membership, or role verification, and category counts plus filtered thread reads stay on the same Forum API.
+635. Forum home now browses server-backed discussion categories and filters latest, trending, and following views without mixing in Feed campaigns; create-thread entry preserves general, product Q&A, course, live Q&A, and Facility-internal context, thread detail exposes verified identity, documents, and linked workflow context, and Facility-internal reads/creation require the selected Facility plus active membership instead of leaking through public Forum feeds.
+636. Forum threads and comments now create exact source-linked Personal, Commercial, or Facility tasks; canonical in-app notifications cover replies and `@username` mentions, product/course/live/Facility questions receive a scheduled unanswered reminder that is skipped after the first reply, and the Forum assistant offers review-only title, category, tag, summary, and task suggestions through quota-accounted OpenAI when configured or an explicitly labeled deterministic fallback.
+637. Forum reports now create evidence-backed moderation cases in the shared admin queue; authorized moderators can hide, restore, soft-remove, lock, unlock, pin, unpin, or move Forum threads, locks block new comments, pins affect thread ordering, and every action is retained in both the case action history and immutable platform audit log.
+638. Integration providers and connections now expose one canonical read-only connector contract with encrypted credential state, provider authentication type, capability declarations, connection status, structured errors, and last-sync status/summary; adapters must implement connection testing, device discovery, and data pulling before registration, and no controller mutation capability is exposed.
+639. The Facility integration import wizard now continues from provider selection and encrypted connection through connection testing, provider structure discovery, editable device-to-room/zone/metric mapping, server-side preview counts, and explicit owner/manager confirmation; confirmation retains the reviewed read-only mapping on the connection without prematurely creating rooms or controller-write access.
+640. Confirmed integration mappings now auto-build idempotent read-only spaces, devices, streams, and dashboards for owned Personal grows; canonical rooms plus draft alert/dashboard definitions for owner/manager Facility builds; and spaces only for owned Commercial trials or explicitly identified demo/education grows, with irrelevant commercial records rejected and controller mutations still unavailable.
+641. Imported telemetry now uses one unit-aware normalization registry for air temperature, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, device-offline, and device-fault signals; observations preserve raw provider keys, values, and units alongside canonical values, explicit unit conversions occur only when supported, and unknown vendor metrics remain visible as unmapped evidence.
+642. A grow-scoped imported-telemetry context now supplies one deterministic evidence window to VPD, Dew Point, Bud Rot screening, Crop Steering, Watering Planner/dryback, AI summaries, review-only alert/task drafts, run comparisons, explicitly linked product trials, and reviewed/de-identified course examples; the VPD tool visibly prefills from this context, while missing data remains explicit and sensor evidence is never labeled a diagnosis.
+643. The canonical integration collection boundary now has an app-readable field-use registry covering every IntegrationConnection, IntegrationSpace, TelemetrySource, and TelemetryPoint schema path; each field declares at least one display, analytics, AI, search, recommendation, task, alert, or export consumer, and a schema-regression audit fails on missing, stale, or invalid declarations instead of allowing new dead import fields.
+644. Commercial Analytics now aggregates owner-scoped published-storefront events, Feed impressions/clicks/conversions, course engagement, live views/RSVPs, paid internal orders with currency-preserving revenue, and recorded grow-interest matches; the UI exposes event-backed overview cards and per-source breakdowns without inferring conversions or sales.
+645. Personal Analytics now combines owner-scoped grows, journal activity, saved ToolRuns, personal task outcomes, and imported telemetry counts; it reports seven-day grow consistency, tool mix, measured environment history, task completion, and saved run comparisons while keeping cannabis-specific presentation subject to grow/account context.
+646. Facility Analytics now requires selected-facility membership and reports explicit room stability signals with unknown coverage, task and SOP completion, recorded sensor alerts, BatchCycle history, and course-linked staff training assignments; the Facility dashboard links to the new analytics surface and never treats missing room evidence as stable.
 
 ## Working Rule For Codex
 

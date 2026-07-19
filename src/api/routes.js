@@ -99,12 +99,18 @@ export const ROUTES = {
     MINE: `${PREFIX}/courses/mine`,
     CREATE: `${PREFIX}/courses/create`,
     DETAIL: (id) => `${PREFIX}/courses/${id}`,
+    TRACK_COURSE_VIEW: (id) => `${PREFIX}/courses/${id}/view`,
+    TRACK_PRODUCT_CLICK: (courseId, productId) =>
+      `${PREFIX}/courses/${courseId}/products/${productId}/click`,
     LESSON: (id) => `${PREFIX}/courses/${id}/lesson`,
     LESSON_DETAIL: (id) => `${PREFIX}/courses/lesson/${id}`,
     PUBLISH: (id) => `${PREFIX}/courses/${id}/publish`,
     ENROLL: (id) => `${PREFIX}/courses/${id}/enroll`,
     BUY: (id) => `${PREFIX}/courses/${id}/buy`,
     STATUS: (id) => `${PREFIX}/courses/${id}/enrollment-status`,
+    LEARNER_NOTES: (id) => `${PREFIX}/courses/${id}/learner-notes`,
+    LEARNER_NOTE: (courseId, lessonId) =>
+      `${PREFIX}/courses/${courseId}/lessons/${lessonId}/learner-note`,
     COMPLETE_LESSON: (id) => `${PREFIX}/courses/lesson/${id}/complete`,
     REVIEW: (id) => `${PREFIX}/courses/${id}/review`,
     REVIEWS: (id) => `${PREFIX}/courses/${id}/reviews`,
@@ -201,6 +207,7 @@ export const ROUTES = {
   LIVES: {
     LIST: `${PREFIX}/lives`,
     DETAIL: (id) => `${PREFIX}/lives/${id}`,
+    RSVP: (id) => `${PREFIX}/lives/${id}/rsvp`,
     CREATE: `${PREFIX}/lives`,
     UPDATE: (id) => `${PREFIX}/lives/${id}`,
     DELETE: (id) => `${PREFIX}/lives/${id}`

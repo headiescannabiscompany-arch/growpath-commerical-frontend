@@ -838,6 +838,28 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.cardTitle}>Storefront Launch Actions</Text>
+              <Text style={styles.helperText}>
+                Build, publish, promote, fulfill, and measure the storefront from one
+                place.
+              </Text>
+            </View>
+            <Text style={styles.statusPill}>Owner shortcuts</Text>
+          </View>
+          <View style={styles.objectActions}>
+            <ObjectActionLink href="/home/commercial/products/new" label="Add Product" />
+            <ObjectActionLink href="/home/commercial/courses" label="Create Course" />
+            <ObjectActionLink href="/home/commercial/lives" label="Schedule Live" />
+            <ObjectActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
+            <ObjectActionLink href="/home/commercial/orders" label="Orders" />
+            <ObjectActionLink href="/home/commercial/analytics" label="Analytics" />
+            <PublicPreviewLink href={publicStorePath} label="View as User" />
+          </View>
+        </AppCard>
+
+        <AppCard>
+          <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Product Lines</Text>
             <Text style={styles.statusPill}>Storefront section</Text>
           </View>

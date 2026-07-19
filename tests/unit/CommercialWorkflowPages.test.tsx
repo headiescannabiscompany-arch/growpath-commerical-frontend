@@ -439,6 +439,7 @@ describe("commercial workflow pages", () => {
               linkedLiveIds: ["live-1"],
               modules: [{ title: "Start here" }],
               lessons: [{ title: "Application rate" }],
+              quizzes: [{ title: "Label check" }],
               tasks: [{ title: "Watch lesson" }],
               status: "draft"
             },
@@ -701,7 +702,14 @@ describe("commercial workflow pages", () => {
             brandProfileViews: 33,
             productViews: 75,
             feedClicks: 12,
+            feedImpressions: 120,
+            feedConversions: 8,
             courseStarts: 6,
+            liveViews: 25,
+            liveRsvps: 7,
+            orderCount: 5,
+            orderRevenueCents: 8400,
+            orderRevenueByCurrency: { USD: 8400 },
             forumReplies: 4,
             activeTrials: 3,
             completedTrials: 2,
@@ -737,7 +745,11 @@ describe("commercial workflow pages", () => {
                   count: 9,
                   eventTypes: ["product_external_link_click"]
                 }
-              ]
+              ],
+              courses: [{ key: "course-1", label: "Living Soil 101", count: 6 }],
+              lives: [{ key: "live-1", label: "Soil Q&A", count: 7 }],
+              orders: [{ key: "product-1", label: "Paid product order", count: 5 }],
+              growInterests: [{ key: "living-soil", label: "living-soil", count: 9 }]
             }
           }
         });
@@ -759,6 +771,18 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Storefront: Living Soil Labs /living-soil-labs")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Open Storefront").props.href).toBe(
+      "/home/commercial/storefront"
+    );
+    expect(screen.getByLabelText("Edit Storefront").props.href).toBe(
+      "/home/commercial/storefront/edit"
+    );
+    expect(screen.getByLabelText("View as User").props.href).toBe(
+      "/store/living-soil-labs"
+    );
+    expect(screen.getByLabelText("Add Product").props.href).toBe(
+      "/home/commercial/products/new"
+    );
     expect(
       screen.getByText(
         "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path."
@@ -1046,6 +1070,14 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 quizzes/)).toBeTruthy();
+    expect(screen.getAllByText("Learner Preview").length).toBeGreaterThan(0);
+    expect(screen.getByText("Course Discussion")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/home/commercial/courses/course-1?preview=1"
+      })
+    ).toBeTruthy();
 
     fireEvent.press(
       screen.getByLabelText("Create setup task for Bloom Topdress Workshop")
@@ -1136,12 +1168,20 @@ describe("commercial workflow pages", () => {
       "https://example.com/label.pdf"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course Forum Q&A thread"),
+      "thread-bloom-course"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course module outline"),
       "How the product works\nApplication timing"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson outline"),
       "Read the label\nApply and water in"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course quiz outline"),
+      "When should you water in? | Immediately | One week later"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course task checklist"),
@@ -1184,6 +1224,7 @@ describe("commercial workflow pages", () => {
               "https://example.com/video-2"
             ],
             documentUrls: ["https://example.com/label.pdf"],
+            forumThreadId: "thread-bloom-course",
             modules: [
               expect.objectContaining({ title: "How the product works", sortOrder: 1 }),
               expect.objectContaining({ title: "Application timing", sortOrder: 2 })
@@ -1198,6 +1239,15 @@ describe("commercial workflow pages", () => {
                 title: "Apply and water in",
                 sortOrder: 2,
                 lessonType: "article"
+              })
+            ],
+            quizzes: [
+              expect.objectContaining({
+                title: "When should you water in?",
+                question: "When should you water in?",
+                options: ["Immediately", "One week later"],
+                sortOrder: 1,
+                status: "draft"
               })
             ],
             tasks: [
@@ -1441,6 +1491,19 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("renders the commercial owner learner preview for draft courses", async () => {
+    const screen = render(
+      <CommercialCourseDetailRoute route={{ params: { preview: "1" } }} />
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Living Soil Product Use").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Learner preview")).toBeTruthy();
+    expect(screen.getByLabelText("Course learner preview banner")).toBeTruthy();
+    expect(screen.getByText(/lessons available in this course outline/)).toBeTruthy();
+  });
+
   it("creates marketing plans with linked products and click tracking", async () => {
     const screen = render(<CommercialMarketingRoute />);
 
@@ -1487,6 +1550,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Marketing plan launch date"),
       "2026-08-01"
     );
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan reminder preset 1 hour before")
+    );
+    fireEvent.press(screen.getByLabelText("Marketing plan recurrence preset weekly"));
     fireEvent.changeText(screen.getByLabelText("Marketing plan budget"), "150");
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan linked product"),
@@ -1527,6 +1594,8 @@ describe("commercial workflow pages", () => {
             platform: "multi",
             status: "scheduled",
             launchDate: "2026-08-01",
+            reminderPreference: "1 hour before",
+            recurrenceRule: "weekly",
             linkedProductId: "product-2",
             linkedProductLineId: "line-1",
             linkedCourseId: "course-2",
@@ -1658,6 +1727,10 @@ describe("commercial workflow pages", () => {
       "1 cup per cubic foot"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product batch or lot"),
+      "LOT-BLOOM-2026"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product external purchase URL"),
       "https://example.com/bloom"
     );
@@ -1680,6 +1753,10 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial product directions"),
       "Topdress and water in."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product document URLs"),
+      "https://example.com/bloom-label.pdf\nhttps://example.com/bloom-sds.pdf"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product short description"),
@@ -1709,6 +1786,11 @@ describe("commercial workflow pages", () => {
             stripeProductId: "prod_bloom_mix",
             stripePriceId: "price_bloom_mix",
             shortDescription: "Flower topdress blend",
+            documentUrls: [
+              "https://example.com/bloom-label.pdf",
+              "https://example.com/bloom-sds.pdf"
+            ],
+            batchLot: "LOT-BLOOM-2026",
             specs: expect.objectContaining({
               unitSize: "5 lb bag",
               npk: "3-1-1",
@@ -1716,7 +1798,12 @@ describe("commercial workflow pages", () => {
               guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
               ingredients: ["Alfalfa meal", "Fish bone meal"],
               directions: "Topdress and water in.",
-              applicationRate: "1 cup per cubic foot"
+              applicationRate: "1 cup per cubic foot",
+              documentUrls: [
+                "https://example.com/bloom-label.pdf",
+                "https://example.com/bloom-sds.pdf"
+              ],
+              batchLot: "LOT-BLOOM-2026"
             }),
             status: "published"
           })
@@ -1895,6 +1982,14 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product detail warnings"),
       "Compost values are estimates\nDo not overapply"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail document URLs"),
+      "https://example.com/base-label.pdf\nhttps://example.com/base-coa.pdf"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail batch or lot"),
+      "LOT-BASE-2026"
+    );
     fireEvent.press(screen.getByLabelText("Save commercial product detail"));
 
     await waitFor(() =>
@@ -1915,6 +2010,11 @@ describe("commercial workflow pages", () => {
             applicationRate: "2 cups per cubic foot",
             directions: "Mix evenly and rest before transplant.",
             warnings: ["Compost values are estimates", "Do not overapply"],
+            documentUrls: [
+              "https://example.com/base-label.pdf",
+              "https://example.com/base-coa.pdf"
+            ],
+            batchLot: "LOT-BASE-2026",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
             stripeProductId: "prod_product_updated",
@@ -1929,7 +2029,12 @@ describe("commercial workflow pages", () => {
               ingredients: ["Compost", "Kelp meal", "Fish bone meal"],
               directions: "Mix evenly and rest before transplant.",
               applicationRate: "2 cups per cubic foot",
-              warnings: ["Compost values are estimates", "Do not overapply"]
+              warnings: ["Compost values are estimates", "Do not overapply"],
+              documentUrls: [
+                "https://example.com/base-label.pdf",
+                "https://example.com/base-coa.pdf"
+              ],
+              batchLot: "LOT-BASE-2026"
             })
           })
         })
@@ -2709,6 +2814,11 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Ad clicks")).toBeTruthy());
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
+    expect(screen.getByText("Feed impressions")).toBeTruthy();
+    expect(screen.getByText("Live views")).toBeTruthy();
+    expect(screen.getAllByText("Paid orders").length).toBeGreaterThan(0);
+    expect(screen.getByText("Living Soil 101")).toBeTruthy();
+    expect(screen.getByText("living-soil")).toBeTruthy();
     expect(screen.getByText("Marketing link clicks")).toBeTruthy();
     expect(screen.getByText("19")).toBeTruthy();
     expect(screen.getByText("Brand profile views")).toBeTruthy();

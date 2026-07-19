@@ -30,6 +30,11 @@ describe("toolRuns API", () => {
       toolType: "watering",
       growId: "grow-1",
       plantId: "plant-1",
+      facilityId: "facility-1",
+      roomId: "room-1",
+      productId: "product-1",
+      batchId: "batch-1",
+      courseId: "course-1",
       cropProfileId: "crop-olive-1",
       selectedPlantContext: {
         id: "plant-1",
@@ -52,6 +57,11 @@ describe("toolRuns API", () => {
         toolName: "watering",
         growId: "grow-1",
         plantId: "plant-1",
+        facilityId: "facility-1",
+        roomId: "room-1",
+        productId: "product-1",
+        batchId: "batch-1",
+        courseId: "course-1",
         cropProfileId: "crop-olive-1",
         selectedPlantContext: expect.objectContaining({
           scientificName: "Olea europaea"

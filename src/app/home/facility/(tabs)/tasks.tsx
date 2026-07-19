@@ -26,6 +26,7 @@ import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
+type QueueFilter = "all" | "assigned" | "overdue" | "today" | "upcoming" | "completed";
 
 const sourceTypes = [
   "manual",
@@ -85,6 +86,26 @@ function pickId(x: AnyRec): string {
 
 function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task");
+}
+
+function dateKey(value?: unknown) {
+  if (!value) return "";
+  const parsed = new Date(String(value));
+  if (Number.isNaN(parsed.getTime())) return String(value).slice(0, 10);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function isTaskComplete(task: AnyRec) {
+  const status = String(task?.status || task?.state || "").toLowerCase();
+  return Boolean(task?.completed) || ["complete", "completed", "done"].includes(status);
+}
+
+function taskQueue(task: AnyRec, today = new Date().toISOString().slice(0, 10)) {
+  if (isTaskComplete(task)) return "completed";
+  const due = dateKey(task?.dueAt ?? task?.dueDate ?? task?.due);
+  if (due && due < today) return "overdue";
+  if (due === today) return "today";
+  return "upcoming";
 }
 
 function sourceReference(x: AnyRec): string {
@@ -254,6 +275,8 @@ export default function FacilityTasksRoute() {
   const [newRequiresProof, setNewRequiresProof] = useState(false);
   const [newRequiresApproval, setNewRequiresApproval] = useState(false);
   const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   const taskAccess = getFacilityTaskAccess({
     can: ent?.can,
@@ -388,10 +411,35 @@ export default function FacilityTasksRoute() {
     load
   ]);
 
+  const availableSourceFilters = useMemo(
+    () => [
+      "all",
+      ...Array.from(new Set(items.map((task) => String(task.sourceType || "manual"))))
+    ],
+    [items]
+  );
+  const visibleItems = useMemo(
+    () =>
+      items.filter((task) => {
+        const assigned = Boolean(
+          task.assignedToUserId || task.assignedTo || task.assignee || task.assigneeName
+        );
+        const matchesQueue =
+          queueFilter === "all" ||
+          (queueFilter === "assigned" ? assigned : taskQueue(task) === queueFilter);
+        return (
+          matchesQueue &&
+          (sourceFilter === "all" || String(task.sourceType || "manual") === sourceFilter)
+        );
+      }),
+    [items, queueFilter, sourceFilter]
+  );
   const header = useMemo(() => {
-    const n = items.length;
-    return n === 1 ? "1 task" : `${n} tasks`;
-  }, [items.length]);
+    const visible = visibleItems.length;
+    const total = items.length;
+    if (visible === total) return total === 1 ? "1 task" : `${total} tasks`;
+    return `${visible} of ${total} tasks`;
+  }, [items.length, visibleItems.length]);
 
   return (
     <ScreenBoundary
@@ -679,8 +727,63 @@ export default function FacilityTasksRoute() {
             <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Task queue</Text>
+          <Text style={styles.muted}>{header}</Text>
+          <Text style={styles.label}>Status</Text>
+          <View style={styles.chipRow}>
+            {(
+              [
+                "all",
+                "assigned",
+                "overdue",
+                "today",
+                "upcoming",
+                "completed"
+              ] as QueueFilter[]
+            ).map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Facility task queue filter ${option}`}
+                onPress={() => setQueueFilter(option)}
+                style={[styles.chip, queueFilter === option && styles.chipSelected]}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    queueFilter === option && styles.chipTextSelected
+                  ]}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.label}>Source</Text>
+          <View style={styles.chipRow}>
+            {availableSourceFilters.map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Facility task source filter ${option}`}
+                onPress={() => setSourceFilter(option)}
+                style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    sourceFilter === option && styles.chipTextSelected
+                  ]}
+                >
+                  {option.replace(/_/g, " ")}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
         <FlatList
-          data={items}
+          data={visibleItems}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
             <RefreshControl

@@ -45,10 +45,12 @@ export default function ResetPasswordScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [accountEmail, setAccountEmail] = useState("");
+  const resetComplete = Boolean(message);
 
   const canSubmit = useMemo(() => {
-    return !submitting;
-  }, [submitting]);
+    return !submitting && !resetComplete;
+  }, [resetComplete, submitting]);
 
   async function onSubmit() {
     setMessage(null);
@@ -69,13 +71,20 @@ export default function ResetPasswordScreen() {
 
     setSubmitting(true);
     try {
-      await resetPassword(token, password);
+      const response = await resetPassword(token, password);
+      setAccountEmail(
+        String(response.email || "")
+          .trim()
+          .toLowerCase()
+      );
       setMessage("Your password has been updated. You can sign in now.");
     } catch (err: any) {
       if (err instanceof ApiError) {
-        setError(err.message || "Unable to reset password.");
+        setError(resetErrorMessage(err));
       } else {
-        setError(err?.message || "Unable to reset password.");
+        setError(
+          "Unable to reach GrowPath right now. Check your connection and try again."
+        );
       }
     } finally {
       setSubmitting(false);
@@ -115,6 +124,16 @@ export default function ResetPasswordScreen() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {message ? <Text style={styles.success}>{message}</Text> : null}
+        {error && (error.toLowerCase().includes("expired") || !token) ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Request another reset link"
+            onPress={() => router.replace("/forgot-password")}
+            style={styles.linkButton}
+          >
+            <Text style={styles.linkText}>Request another reset link</Text>
+          </Pressable>
+        ) : null}
 
         <Pressable
           accessibilityRole="button"
@@ -133,7 +152,13 @@ export default function ResetPasswordScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go to sign in"
-          onPress={() => router.replace("/login")}
+          onPress={() =>
+            router.replace(
+              accountEmail
+                ? (`/login?email=${encodeURIComponent(accountEmail)}&reset=success` as any)
+                : "/login"
+            )
+          }
           style={styles.linkButton}
         >
           <Text style={styles.linkText}>Go to sign in</Text>
@@ -170,6 +195,22 @@ function browserResetToken() {
     if (token) return token;
   }
   return "";
+}
+
+function resetErrorMessage(error: ApiError) {
+  if (error.code === "INVALID_RESET_TOKEN") {
+    return "This reset link is invalid or expired. Request a new reset email.";
+  }
+  if (
+    error.code === "NETWORK_ERROR" ||
+    error.code === "OFFLINE" ||
+    error.code === "TIMEOUT" ||
+    error.code === "API_URL_NOT_CONFIGURED" ||
+    (typeof error.status === "number" && error.status >= 500)
+  ) {
+    return "Unable to reach GrowPath right now. Check your connection and try again.";
+  }
+  return error.message || "Unable to reset password.";
 }
 
 const styles = StyleSheet.create({

@@ -148,6 +148,10 @@ describe("CreateCourseScreen", () => {
       "Basics\nAmendments"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Course quiz outline"),
+      "What controls nutrient availability? | pH | Pot color"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Course documents"),
       "Worksheet PDF\nSoil checklist"
     );
@@ -192,6 +196,14 @@ describe("CreateCourseScreen", () => {
         lessons: [
           expect.objectContaining({ title: "Basics", order: 1, status: "draft" }),
           expect.objectContaining({ title: "Amendments", order: 2, status: "draft" })
+        ],
+        quizzes: [
+          expect.objectContaining({
+            question: "What controls nutrient availability?",
+            options: ["pH", "Pot color"],
+            sortOrder: 1,
+            status: "draft"
+          })
         ],
         documents: [
           expect.objectContaining({ title: "Worksheet PDF", status: "planned" }),

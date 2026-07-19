@@ -58,6 +58,12 @@ type ModerationCase = {
   severity: string;
   status: string;
   action: string;
+  actionHistory?: Array<{
+    action: string;
+    reason?: string;
+    createdAt?: string;
+    metadata?: { previousCategory?: string; category?: string };
+  }>;
   evidenceSnapshot?: {
     automated?: boolean;
     classification?: {
@@ -100,6 +106,41 @@ type SupportRequest = {
   emailDelivery?: { sent?: boolean };
 };
 
+type KnowledgeEntry = {
+  _id: string;
+  entryId: string;
+  entryType: "source" | "method";
+  title: string;
+  domain?: string;
+  status: "draft" | "approved" | "retired";
+  reliabilityTier?: "A" | "B" | "C" | "D" | "";
+  guidance?: string;
+  revision: number;
+  reviewDueAt?: string;
+  reviewStatus?:
+    | "current"
+    | "review_overdue"
+    | "review_date_missing"
+    | "review_date_invalid";
+};
+
+type MethodReviewProposal = {
+  _id: string;
+  methodId: string;
+  status: "pending_review" | "accepted_for_edit" | "rejected" | "superseded";
+  outcomeCount: number;
+  proposedReview: string;
+  limitations?: string[];
+  agreementCounts?: Record<string, number>;
+  decisionCounts?: Record<string, number>;
+};
+
+function defaultKnowledgeReviewDate() {
+  const value = new Date();
+  value.setUTCDate(value.getUTCDate() + 180);
+  return value.toISOString().slice(0, 10);
+}
+
 function Metric({
   label,
   value,
@@ -128,10 +169,26 @@ export default function PlatformAdminRoute() {
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
+  const [methodReviewProposals, setMethodReviewProposals] = useState<
+    MethodReviewProposal[]
+  >([]);
+  const [reviewMethodId, setReviewMethodId] = useState("");
+  const [knowledgeDraft, setKnowledgeDraft] = useState({
+    entryId: "",
+    entryType: "source" as "source" | "method",
+    title: "",
+    domain: "",
+    reliabilityTier: "B",
+    guidance: "",
+    reviewDueAt: defaultKnowledgeReviewDate(),
+    changeNote: "Initial admin review"
+  });
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
+  const [moveCategory, setMoveCategory] = useState("general");
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
@@ -148,14 +205,18 @@ export default function PlatformAdminRoute() {
         usersResponse,
         moderationResponse,
         evidenceResponse,
-        supportResponse
+        supportResponse,
+        knowledgeResponse,
+        methodReviewResponse
       ] = await Promise.all([
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
         apiRequest(`/api/admin/users${suffix}`),
         apiRequest("/api/admin/moderation-cases"),
         apiRequest("/api/admin/evidence-requests"),
-        apiRequest("/api/admin/support-requests")
+        apiRequest("/api/admin/support-requests"),
+        apiRequest("/api/admin/knowledge-registry"),
+        apiRequest("/api/admin/method-review-proposals")
       ]);
       setOverview(overviewResponse?.overview || null);
       setUsage(usageResponse?.usage || null);
@@ -169,12 +230,115 @@ export default function PlatformAdminRoute() {
       setSupportRequests(
         Array.isArray(supportResponse?.requests) ? supportResponse.requests : []
       );
+      setKnowledgeEntries(
+        Array.isArray(knowledgeResponse?.entries) ? knowledgeResponse.entries : []
+      );
+      setMethodReviewProposals(
+        Array.isArray(methodReviewResponse?.proposals)
+          ? methodReviewResponse.proposals
+          : []
+      );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
     } finally {
       setLoading(false);
     }
   }, [isAdmin, query]);
+
+  async function createKnowledgeEntry() {
+    if (!knowledgeDraft.entryId.trim() || !knowledgeDraft.title.trim()) {
+      setError("Knowledge entry ID and title are required.");
+      return;
+    }
+    setBusyId("knowledge-new");
+    setError("");
+    try {
+      await apiRequest("/api/admin/knowledge-registry", {
+        method: "POST",
+        body: knowledgeDraft
+      });
+      setKnowledgeDraft((value) => ({
+        ...value,
+        entryId: "",
+        title: "",
+        domain: "",
+        guidance: "",
+        reviewDueAt: defaultKnowledgeReviewDate(),
+        changeNote: "Initial admin review"
+      }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to create knowledge entry.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function setKnowledgeStatus(
+    entry: KnowledgeEntry,
+    status: KnowledgeEntry["status"]
+  ) {
+    setBusyId(entry._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/knowledge-registry/${entry._id}`, {
+        method: "PATCH",
+        body: {
+          status,
+          reviewDueAt: entry.reviewDueAt || defaultKnowledgeReviewDate(),
+          changeNote: `${status === "approved" ? "Approved" : "Status changed"} in platform knowledge review`
+        }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to revise knowledge entry.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function generateMethodReview() {
+    if (!reviewMethodId.trim()) return;
+    setBusyId("method-review-new");
+    setError("");
+    try {
+      await apiRequest("/api/admin/method-review-proposals/generate", {
+        method: "POST",
+        body: { methodId: reviewMethodId.trim() }
+      });
+      setReviewMethodId("");
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to generate method review proposal.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function reviewMethodProposal(
+    proposal: MethodReviewProposal,
+    status: "accepted_for_edit" | "rejected"
+  ) {
+    setBusyId(proposal._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/method-review-proposals/${proposal._id}`, {
+        method: "PATCH",
+        body: {
+          status,
+          reviewNote:
+            status === "accepted_for_edit"
+              ? "Accepted for separate editorial review; runtime method unchanged."
+              : "Outcome evidence did not justify an editorial review."
+        }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to review method proposal.");
+    } finally {
+      setBusyId("");
+    }
+  }
 
   useEffect(() => {
     void load();
@@ -240,12 +404,15 @@ export default function PlatformAdminRoute() {
     }
   }
 
-  async function moderateContent(item: ModerationCase, action: "hide" | "restore") {
+  async function moderateContent(
+    item: ModerationCase,
+    action: "hide" | "restore" | "remove" | "lock" | "unlock" | "pin" | "unpin" | "move"
+  ) {
     setBusyId(item._id);
     try {
       await apiRequest(`/api/admin/moderation-cases/${item._id}/action`, {
         method: "POST",
-        body: { action }
+        body: { action, ...(action === "move" ? { category: moveCategory.trim() } : {}) }
       });
       await load();
     } catch (err: any) {
@@ -382,6 +549,178 @@ export default function PlatformAdminRoute() {
       ) : null}
 
       <AppCard
+        title="Knowledge registry review"
+        subtitle="Version source reliability and GrowPath methods. Drafts do not silently replace approved runtime guidance."
+      >
+        <View style={styles.searchRow}>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() =>
+              setKnowledgeDraft((value) => ({
+                ...value,
+                entryType: value.entryType === "source" ? "method" : "source"
+              }))
+            }
+          >
+            <Text style={styles.secondaryText}>{knowledgeDraft.entryType}</Text>
+          </Pressable>
+          <TextInput
+            value={knowledgeDraft.entryId}
+            onChangeText={(entryId) =>
+              setKnowledgeDraft((value) => ({ ...value, entryId }))
+            }
+            placeholder="Stable entry ID"
+            style={styles.input}
+          />
+          <TextInput
+            value={knowledgeDraft.title}
+            onChangeText={(title) => setKnowledgeDraft((value) => ({ ...value, title }))}
+            placeholder="Source or method title"
+            style={styles.input}
+          />
+        </View>
+        <TextInput
+          value={knowledgeDraft.domain}
+          onChangeText={(domain) => setKnowledgeDraft((value) => ({ ...value, domain }))}
+          placeholder="Domain (sources only)"
+          style={styles.input}
+        />
+        <TextInput
+          value={knowledgeDraft.guidance}
+          onChangeText={(guidance) =>
+            setKnowledgeDraft((value) => ({ ...value, guidance }))
+          }
+          placeholder="Trusted use, exclusions, or method guidance"
+          multiline
+          style={[styles.input, styles.messageInput]}
+        />
+        <TextInput
+          value={knowledgeDraft.changeNote}
+          onChangeText={(changeNote) =>
+            setKnowledgeDraft((value) => ({ ...value, changeNote }))
+          }
+          placeholder="Required review/change note"
+          style={styles.input}
+        />
+        <TextInput
+          value={knowledgeDraft.reviewDueAt}
+          onChangeText={(reviewDueAt) =>
+            setKnowledgeDraft((value) => ({ ...value, reviewDueAt }))
+          }
+          placeholder="Next review date (YYYY-MM-DD)"
+          style={styles.input}
+        />
+        <Pressable
+          disabled={busyId === "knowledge-new"}
+          style={styles.primaryButton}
+          onPress={() => void createKnowledgeEntry()}
+        >
+          <Text style={styles.primaryText}>Create draft revision 1</Text>
+        </Pressable>
+        {knowledgeEntries.map((entry) => (
+          <View key={entry._id} style={styles.caseRow}>
+            <View style={styles.caseCopy}>
+              <Text style={styles.caseTitle}>
+                {entry.title} · {entry.entryType} · {entry.status}
+              </Text>
+              <Text style={styles.meta}>
+                {entry.entryId} · revision {entry.revision}
+                {entry.reliabilityTier ? ` · Tier ${entry.reliabilityTier}` : ""}
+                {entry.domain ? ` · ${entry.domain}` : ""}
+              </Text>
+              <Text style={styles.meta}>
+                Freshness: {entry.reviewStatus || "not evaluated"} · review due{" "}
+                {entry.reviewDueAt
+                  ? new Date(entry.reviewDueAt).toLocaleDateString()
+                  : "not set"}
+              </Text>
+              {entry.guidance ? (
+                <Text style={styles.evidencePreview}>{entry.guidance}</Text>
+              ) : null}
+            </View>
+            <View style={styles.actions}>
+              <Pressable
+                disabled={busyId === entry._id || entry.status === "approved"}
+                style={styles.primaryButton}
+                onPress={() => void setKnowledgeStatus(entry, "approved")}
+              >
+                <Text style={styles.primaryText}>Approve new revision</Text>
+              </Pressable>
+              <Pressable
+                disabled={busyId === entry._id || entry.status === "retired"}
+                style={styles.secondaryButton}
+                onPress={() => void setKnowledgeStatus(entry, "retired")}
+              >
+                <Text style={styles.secondaryText}>Retire</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
+        {!knowledgeEntries.length ? (
+          <Text style={styles.meta}>No reviewed runtime overrides yet.</Text>
+        ) : null}
+      </AppCard>
+
+      <AppCard
+        title="Outcome-based method review"
+        subtitle="Generate a human review proposal from at least three recorded outcomes. Proposals never edit runtime methods."
+      >
+        <View style={styles.searchRow}>
+          <TextInput
+            value={reviewMethodId}
+            onChangeText={setReviewMethodId}
+            placeholder="Method ID, for example plant-diagnosis-etgu"
+            style={styles.input}
+          />
+          <Pressable
+            disabled={busyId === "method-review-new"}
+            style={styles.primaryButton}
+            onPress={() => void generateMethodReview()}
+          >
+            <Text style={styles.primaryText}>Analyze recorded outcomes</Text>
+          </Pressable>
+        </View>
+        {methodReviewProposals.map((proposal) => (
+          <View key={proposal._id} style={styles.caseRow}>
+            <View style={styles.caseCopy}>
+              <Text style={styles.caseTitle}>
+                {proposal.methodId} · {proposal.status}
+              </Text>
+              <Text style={styles.meta}>
+                {proposal.outcomeCount} outcome records · runtime method unchanged
+              </Text>
+              <Text style={styles.evidencePreview}>{proposal.proposedReview}</Text>
+              <Text style={styles.meta}>
+                Agreement: {JSON.stringify(proposal.agreementCounts || {})} · decisions:{" "}
+                {JSON.stringify(proposal.decisionCounts || {})}
+              </Text>
+            </View>
+            {proposal.status === "pending_review" ? (
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={busyId === proposal._id}
+                  style={styles.primaryButton}
+                  onPress={() => void reviewMethodProposal(proposal, "accepted_for_edit")}
+                >
+                  <Text style={styles.primaryText}>Accept for editing</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === proposal._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void reviewMethodProposal(proposal, "rejected")}
+                >
+                  <Text style={styles.secondaryText}>Reject proposal</Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
+        ))}
+        {!methodReviewProposals.length ? (
+          <Text style={styles.meta}>No outcome-based method proposals yet.</Text>
+        ) : null}
+      </AppCard>
+
+      <AppCard
         title="Find users"
         subtitle="Search every GrowPathAI account by email or name."
       >
@@ -513,8 +852,14 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Moderation cases"
-        subtitle="Review evidence snapshots before hiding or restoring public content."
+        subtitle="Review reports and evidence before acting. Every action is retained in the case and platform audit trail."
       >
+        <TextInput
+          value={moveCategory}
+          onChangeText={setMoveCategory}
+          placeholder="Destination category"
+          style={styles.input}
+        />
         {moderationCases.length ? (
           moderationCases.slice(0, 20).map((item) => (
             <View key={item._id} style={styles.caseRow}>
@@ -540,6 +885,11 @@ export default function PlatformAdminRoute() {
                       : ""}
                   </Text>
                 ) : null}
+                {item.actionHistory?.length ? (
+                  <Text style={styles.meta}>
+                    Audit: {item.actionHistory.map((entry) => entry.action).join(" -> ")}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.actions}>
                 <Pressable
@@ -556,6 +906,52 @@ export default function PlatformAdminRoute() {
                 >
                   <Text style={styles.secondaryText}>Approve / restore</Text>
                 </Pressable>
+                {item.targetType === "forumPost" ? (
+                  <>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "lock")}
+                    >
+                      <Text style={styles.secondaryText}>Lock</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "unlock")}
+                    >
+                      <Text style={styles.secondaryText}>Unlock</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "pin")}
+                    >
+                      <Text style={styles.secondaryText}>Pin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "unpin")}
+                    >
+                      <Text style={styles.secondaryText}>Unpin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id || !moveCategory.trim()}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "move")}
+                    >
+                      <Text style={styles.secondaryText}>Move category</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.warningButton}
+                      onPress={() => void moderateContent(item, "remove")}
+                    >
+                      <Text style={styles.warningText}>Remove post</Text>
+                    </Pressable>
+                  </>
+                ) : null}
               </View>
             </View>
           ))

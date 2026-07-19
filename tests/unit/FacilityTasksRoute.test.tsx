@@ -92,7 +92,8 @@ describe("FacilityTasksRoute", () => {
         sourceObjectId: "alert-1",
         roomId: "flower-1",
         requiresProof: true,
-        requiresApproval: true
+        requiresApproval: true,
+        assignedToUserId: "user-1"
       },
       {
         id: "task-linked-batch",
@@ -125,6 +126,24 @@ describe("FacilityTasksRoute", () => {
       { id: "member-1", userId: "user-1", name: "Alex Grower", role: "STAFF" }
     ]);
     mockCreateTask.mockResolvedValue({ id: "task-created" });
+  });
+
+  it("filters the facility queue by assignment, status, and source", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter assigned"));
+    expect(screen.getByText("Scout Flower Room")).toBeTruthy();
+    expect(screen.queryByText("Review production batch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter all"));
+    fireEvent.press(screen.getByLabelText("Facility task source filter product_batch"));
+    expect(screen.getByText("Review production batch")).toBeTruthy();
+    expect(screen.queryByText("Scout Flower Room")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter overdue"));
+    expect(screen.getByText("Review production batch")).toBeTruthy();
   });
 
   it("creates source-linked facility tasks with room, proof, and approval context", async () => {

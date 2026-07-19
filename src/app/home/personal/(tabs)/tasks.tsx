@@ -46,6 +46,7 @@ const sourceTypes = [
 ] as const;
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
+type QueueFilter = "all" | "assigned" | SectionKey;
 
 function storefrontAlias(task: PersonalTask) {
   return String(
@@ -377,6 +378,8 @@ export default function PersonalTaskCenterRoute() {
   const [toolRunId, setToolRunId] = useState("");
   const [reminderNote, setReminderNote] = useState("");
   const [recurrenceRule, setRecurrenceRule] = useState("");
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   async function load() {
     setLoading(true);
@@ -394,6 +397,27 @@ export default function PersonalTaskCenterRoute() {
     void load();
   }, []);
 
+  const visibleTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        const assigned = Boolean(task.assignedToUserId || task.assignedTo);
+        return (
+          (queueFilter === "all" ||
+            (queueFilter === "assigned"
+              ? assigned
+              : sectionForTask(task) === queueFilter)) &&
+          (sourceFilter === "all" || String(task.sourceType || "manual") === sourceFilter)
+        );
+      }),
+    [tasks, queueFilter, sourceFilter]
+  );
+  const availableSourceFilters = useMemo(
+    () => [
+      "all",
+      ...Array.from(new Set(tasks.map((task) => String(task.sourceType || "manual"))))
+    ],
+    [tasks]
+  );
   const sections = useMemo(() => {
     const grouped: Record<SectionKey, PersonalTask[]> = {
       overdue: [],
@@ -401,9 +425,9 @@ export default function PersonalTaskCenterRoute() {
       upcoming: [],
       completed: []
     };
-    tasks.forEach((task) => grouped[sectionForTask(task)].push(task));
+    visibleTasks.forEach((task) => grouped[sectionForTask(task)].push(task));
     return grouped;
-  }, [tasks]);
+  }, [visibleTasks]);
   const taskStats = useMemo(
     () => [
       { label: "Overdue", value: sections.overdue.length, tone: "red" as const },
@@ -583,6 +607,53 @@ export default function PersonalTaskCenterRoute() {
             <Text style={styles.metricLabel}>{item.label}</Text>
           </View>
         ))}
+      </View>
+      <View style={styles.form}>
+        <Text style={styles.formTitle}>Queue filters</Text>
+        <View style={styles.chipRow}>
+          {(
+            [
+              "all",
+              "assigned",
+              "overdue",
+              "today",
+              "upcoming",
+              "completed"
+            ] as QueueFilter[]
+          ).map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task queue filter ${option}`}
+              onPress={() => setQueueFilter(option)}
+              style={[styles.chip, queueFilter === option && styles.chipSelected]}
+            >
+              <Text
+                style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Source filter</Text>
+        <View style={styles.chipRow}>
+          {availableSourceFilters.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task source filter ${option}`}
+              onPress={() => setSourceFilter(option)}
+              style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+            >
+              <Text
+                style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+              >
+                {option.replace(/_/g, " ")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
       <ContextualWorkflowLinks
         title="Planning workflows"

@@ -28,8 +28,8 @@ function topdressTasks(outputs: Record<string, any>, payload: Record<string, any
     outputs.plannedApplyDate || payload.plannedApplyDate || tomorrow(1)
   ).slice(0, 10);
   const amount =
-    outputs.amountPerPlant && outputs.amountUnit
-      ? `${outputs.amountPerPlant} ${outputs.amountUnit} per plant`
+    (outputs.amountPerTarget || outputs.amountPerPlant) && outputs.amountUnit
+      ? `${outputs.amountPerTarget || outputs.amountPerPlant} ${outputs.amountUnit} per ${payload.targetType || "plant"}`
       : payload.doseRate
         ? `${payload.doseRate} ${payload.doseUnit || "dose units"}`
         : "planned rate";
@@ -103,6 +103,7 @@ function buildTopdressAssistantBrief(payload: Record<string, any>) {
     "",
     "Role: help the user decide whether this topdress plan fits the current grow context, but call the Topdress Planner for final rate, total amount, release window, warnings, ToolRun saving, and follow-up task schedule.",
     `Product/recipe: ${payload.productName || "not set"}`,
+    `Application target: ${payload.targetType || "plant"}${payload.targetName ? ` (${payload.targetName})` : ""}`,
     `Stage: ${payload.stage || "not set"}`,
     `Plants: ${payload.plantCount || "-"} plants`,
     `Soil volume: ${payload.soilVolumePerPlant || "-"} ${
@@ -124,11 +125,27 @@ export default function TopdressToolScreen() {
       toolKey="topdress-plan"
       title="Topdress Planner"
       subtitle="Plan amendment amount by soil volume, stage, and plant count, then create the grow task."
+      aiPrefill={{
+        buttonLabel: "Fill topdress plan from grow",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this topdress application from the selected grow and plant count, actual soil/media recipe and volume, current stage, saved ingredient/product analysis, prior feeds/topdresses, water profile, pH/EC checks, diagnoses, nutrient release timeline, K/Ca/Mg antagonism warnings, and harvest estimate. Return JSON only with exactly these string keys: productName, plantCount, soilVolumePerPlant, soilVolumeUnit, stage, doseRate, doseUnit, releaseClass, daysUntilHarvest, plannedApplyDate, decisionNotes. Product, guaranteed-analysis-derived rate, release class, pot volume, dates, and counts must come from saved records or explicit user input. Never choose a dose from symptoms or photos alone. Leave unknowns blank. In decisionNotes explain whether application is supported, too late/fast/slow for the stage, water-in considerations for this medium and water profile, antagonism or stacking risks, uncertainty, and what the user must verify before creating tasks.`
+      }}
       fields={[
         {
           key: "productName",
           label: "Product or recipe name",
           defaultValue: "Dry amendment blend"
+        },
+        {
+          key: "targetType",
+          label: "Application target type (plant, bed, container, zone)",
+          defaultValue: "plant"
+        },
+        {
+          key: "targetName",
+          label: "Bed, zone, or target name (optional)",
+          defaultValue: ""
         },
         {
           key: "plantCount",
@@ -153,6 +170,12 @@ export default function TopdressToolScreen() {
         { key: "doseUnit", label: "Dose unit", defaultValue: "tbsp_per_gallon" },
         { key: "releaseClass", label: "Release class", defaultValue: "medium" },
         {
+          key: "lastApplicationDaysAgo",
+          label: "Days since last feed or topdress (optional)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
           key: "daysUntilHarvest",
           label: "Days until harvest",
           defaultValue: "42",
@@ -162,12 +185,25 @@ export default function TopdressToolScreen() {
           key: "plannedApplyDate",
           label: "Planned apply date",
           defaultValue: tomorrow(1)
+        },
+        {
+          key: "decisionNotes",
+          label: "Application decision notes (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         productName: values.productName,
+        targetType: values.targetType,
+        targetName: values.targetName || undefined,
         plantCount: n(values.plantCount, 1),
         soilVolumePerPlant: n(values.soilVolumePerPlant, 0),
         soilVolumeUnit: values.soilVolumeUnit,
@@ -175,22 +211,30 @@ export default function TopdressToolScreen() {
         doseRate: n(values.doseRate, 0),
         doseUnit: values.doseUnit,
         releaseClass: values.releaseClass,
+        lastApplicationDaysAgo: values.lastApplicationDaysAgo.trim()
+          ? n(values.lastApplicationDaysAgo)
+          : undefined,
         daysUntilHarvest: n(values.daysUntilHarvest),
         plannedApplyDate: values.plannedApplyDate,
-        waterInAfterApply: true
+        waterInAfterApply: true,
+        decisionNotes: values.decisionNotes || undefined
       })}
       buildMetrics={(outputs) => [
         {
           key: "per-plant",
-          label: "Per plant",
-          value: `${outputs.amountPerPlant} ${outputs.amountUnit}`
+          label: "Per target",
+          value: `${outputs.amountPerTarget ?? outputs.amountPerPlant} ${outputs.amountUnit}`
         },
         {
           key: "total",
           label: "Total",
           value: `${outputs.totalAmount} ${outputs.amountUnit}`
         },
-        { key: "plants", label: "Plants", value: String(outputs.plantCount ?? "-") },
+        {
+          key: "targets",
+          label: outputs.targetType ? `${outputs.targetType} count` : "Target count",
+          value: String(outputs.targetCount ?? outputs.plantCount ?? "-")
+        },
         {
           key: "release",
           label: "Release window",

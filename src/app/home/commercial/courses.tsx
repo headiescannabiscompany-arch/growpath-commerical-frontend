@@ -35,8 +35,10 @@ type CourseForm = {
   linkedLiveIds: string;
   linkedVideoUrls: string;
   documentUrls: string;
+  forumThreadId: string;
   moduleOutline: string;
   lessonOutline: string;
+  quizOutline: string;
   taskChecklist: string;
 };
 
@@ -58,8 +60,10 @@ const EMPTY_FORM: CourseForm = {
   linkedLiveIds: "",
   linkedVideoUrls: "",
   documentUrls: "",
+  forumThreadId: "",
   moduleOutline: "",
   lessonOutline: "",
+  quizOutline: "",
   taskChecklist: ""
 };
 
@@ -102,6 +106,26 @@ function outlineItems(value: string, type: "module" | "lesson" | "task") {
       ? { sourceType: "course", priority: "normal", status: "open" }
       : null)
   }));
+}
+
+function quizItems(value: string) {
+  return value
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const [question, ...options] = line
+        .split("|")
+        .map((part) => part.trim())
+        .filter(Boolean);
+      return {
+        title: question,
+        question,
+        options,
+        sortOrder: index + 1,
+        status: "draft"
+      };
+    });
 }
 
 function courseSetupWarnings(course: Partial<CommercialCourse>) {
@@ -216,8 +240,10 @@ export default function CommercialCoursesRoute() {
         linkedLiveIds: splitIds(form.linkedLiveIds),
         linkedVideoUrls: splitList(form.linkedVideoUrls),
         documentUrls: splitList(form.documentUrls),
+        forumThreadId: form.forumThreadId.trim() || undefined,
         modules: outlineItems(form.moduleOutline, "module"),
         lessons: outlineItems(form.lessonOutline, "lesson"),
+        quizzes: quizItems(form.quizOutline),
         tasks: outlineItems(form.taskChecklist, "task"),
         status: "draft"
       });
@@ -535,6 +561,15 @@ export default function CommercialCoursesRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.forumThreadId}
+            onChangeText={(forumThreadId) =>
+              setForm((prev) => ({ ...prev, forumThreadId }))
+            }
+            accessibilityLabel="Commercial course Forum Q&A thread"
+            placeholder="Course discussion Forum/Q&A thread ID"
+            style={styles.input}
+          />
+          <TextInput
             value={form.price}
             onChangeText={(price) => setForm((prev) => ({ ...prev, price }))}
             accessibilityLabel="Commercial course price"
@@ -581,6 +616,14 @@ export default function CommercialCoursesRoute() {
           accessibilityLabel="Commercial course lesson outline"
           multiline
           placeholder="Lesson outline, one per line"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.quizOutline}
+          onChangeText={(quizOutline) => setForm((prev) => ({ ...prev, quizOutline }))}
+          accessibilityLabel="Commercial course quiz outline"
+          multiline
+          placeholder="Quiz question | option A | option B, one question per line"
           style={[styles.input, styles.textArea]}
         />
         <TextInput
@@ -683,6 +726,7 @@ export default function CommercialCoursesRoute() {
                     </Text>
                     {course.modules?.length ||
                     course.lessons?.length ||
+                    course.quizzes?.length ||
                     course.tasks?.length ? (
                       <Text style={styles.courseMeta}>
                         {[
@@ -691,6 +735,9 @@ export default function CommercialCoursesRoute() {
                             : null,
                           course.lessons?.length
                             ? `${course.lessons.length} lessons`
+                            : null,
+                          course.quizzes?.length
+                            ? `${course.quizzes.length} quizzes`
                             : null,
                           course.tasks?.length ? `${course.tasks.length} tasks` : null
                         ]
@@ -726,6 +773,16 @@ export default function CommercialCoursesRoute() {
                       </View>
                     ) : null}
                     <View style={styles.actions}>
+                      <ActionLink
+                        href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}?preview=1`}
+                        label="Learner Preview"
+                      />
+                      {course.forumThreadId ? (
+                        <ActionLink
+                          href={`/forum/post?id=${encodeURIComponent(course.forumThreadId)}`}
+                          label="Course Discussion"
+                        />
+                      ) : null}
                       <ActionLink
                         href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
                         label="Open Detail"
@@ -788,6 +845,7 @@ export default function CommercialCoursesRoute() {
           relevant
         </Text>
         <View style={styles.actions}>
+          <ActionLink href="/courses/analytics" label="Course Analytics" />
           <ActionLink href="/courses" label="Open Course Catalog" />
         </View>
       </AppCard>

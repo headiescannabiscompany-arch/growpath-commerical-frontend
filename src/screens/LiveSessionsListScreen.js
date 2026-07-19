@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { apiRequest } from "../api/apiRequest";
 import { radius } from "../theme/theme";
 
@@ -15,7 +15,7 @@ export default function LiveSessionsListScreen() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchSessions() {
@@ -43,7 +43,9 @@ export default function LiveSessionsListScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.sessionCard}
-            onPress={() => navigation.navigate("LiveSession", { sessionId: item._id })}
+            onPress={() =>
+              router.push(`/live-session?sessionId=${encodeURIComponent(item._id)}`)
+            }
           >
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.desc}>{item.description}</Text>
@@ -52,6 +54,8 @@ export default function LiveSessionsListScreen() {
               Start: {new Date(item.startsAt).toLocaleString()}
             </Text>
             <Text style={styles.meta}>Access: {item.accessLevel}</Text>
+            <Text style={styles.meta}>RSVPs: {Number(item.rsvpCount || 0)}</Text>
+            {item.replayUrl ? <Text style={styles.replay}>Replay available</Text> : null}
             {item.isPublished ? (
               <Text style={styles.published}>Published</Text>
             ) : (
@@ -89,5 +93,6 @@ const styles = StyleSheet.create({
   desc: { color: "#ccc", marginVertical: 4 },
   meta: { color: "#aaa", fontSize: 12 },
   published: { color: "#10B981", fontWeight: "bold", marginTop: 4 },
-  unpublished: { color: "#f59e42", fontWeight: "bold", marginTop: 4 }
+  unpublished: { color: "#f59e42", fontWeight: "bold", marginTop: 4 },
+  replay: { color: "#93C5FD", fontWeight: "bold", marginTop: 4 }
 });

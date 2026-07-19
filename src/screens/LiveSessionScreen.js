@@ -16,6 +16,7 @@ import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 import { radius } from "../theme/theme";
+import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -35,6 +36,8 @@ export default function LiveSessionScreen({ route }) {
   const [err, setErr] = useState("");
   const [savingReminder, setSavingReminder] = useState(false);
   const [reminderCreated, setReminderCreated] = useState(false);
+  const [rsvped, setRsvped] = useState(false);
+  const [savingRsvp, setSavingRsvp] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -66,10 +69,23 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
+  useEffect(() => {
+    let alive = true;
+    apiRequest(`/api/lives/${encodeURIComponent(sessionId)}/rsvp`, { method: "GET" })
+      .then((result) => {
+        if (alive) setRsvped(Boolean(result?.rsvped));
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [sessionId]);
+
   const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
   const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
+  const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
   const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
   const relatedProductId = session?.relatedProductId || session?.productId || "";
   const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
@@ -119,6 +135,17 @@ export default function LiveSessionScreen({ route }) {
     ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
 
+  useEffect(() => {
+    if (!session || !storefrontSlug) return;
+    void recordCommercialAnalyticsEvent({
+      eventType: "live_view",
+      objectType: "live",
+      objectId: String(session?._id || session?.id || sessionId),
+      storefrontSlug: String(storefrontSlug),
+      metadata: { growInterests: session?.growInterests || [] }
+    });
+  }, [session, sessionId, storefrontSlug]);
+
   async function createAttendanceReminder() {
     if (!startsAt || savingReminder || reminderCreated) return;
     setSavingReminder(true);
@@ -167,6 +194,31 @@ export default function LiveSessionScreen({ route }) {
     }
   }
 
+  async function toggleRsvp() {
+    if (savingRsvp) return;
+    setSavingRsvp(true);
+    try {
+      const result = await apiRequest(
+        `/api/lives/${encodeURIComponent(sessionId)}/rsvp`,
+        { method: rsvped ? "DELETE" : "POST", body: rsvped ? undefined : {} }
+      );
+      setRsvped(Boolean(result?.rsvped));
+      if (!rsvped && storefrontSlug) {
+        void recordCommercialAnalyticsEvent({
+          eventType: "live_rsvp",
+          objectType: "live",
+          objectId: String(session?._id || session?.id || sessionId),
+          storefrontSlug: String(storefrontSlug),
+          metadata: { growInterests: session?.growInterests || [] }
+        });
+      }
+    } catch (error) {
+      Alert.alert("RSVP not saved", String(error?.message || error || "Try again."));
+    } finally {
+      setSavingRsvp(false);
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.hero}>
@@ -210,11 +262,12 @@ export default function LiveSessionScreen({ route }) {
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
 
-          {twitchChannel ? (
+          {twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
               <LiveSessionTwitchEmbed
-                twitchChannel={twitchChannel}
-                chatEnabled={Boolean(session.chatEnabled)}
+                twitchChannel={twitchVodId || twitchChannel}
+                embedType={twitchVodId ? "vod" : "live"}
+                chatEnabled={!twitchVodId && Boolean(session.chatEnabled)}
               />
             </View>
           ) : (
@@ -276,12 +329,36 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.btn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_watch_click",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(watchUrl).catch(() => {});
               }}
             >
               <Text style={styles.btnText}>Watch on Twitch</Text>
             </Pressable>
           ) : null}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={rsvped ? "Cancel live RSVP" : "RSVP to live"}
+            disabled={savingRsvp}
+            style={rsvped ? styles.secondaryBtn : styles.btn}
+            onPress={toggleRsvp}
+          >
+            <Text style={rsvped ? styles.secondaryBtnText : styles.btnText}>
+              {savingRsvp
+                ? "Saving RSVP..."
+                : rsvped
+                  ? "Going · Cancel RSVP"
+                  : "RSVP / Remind Me"}
+            </Text>
+          </Pressable>
 
           {startsAt ? (
             <Pressable
@@ -305,6 +382,14 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.secondaryBtn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_replay_view",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(String(replayUrl)).catch(() => {});
               }}
             >

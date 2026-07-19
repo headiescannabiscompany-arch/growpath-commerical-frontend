@@ -48,7 +48,8 @@ export default function CreatorDashboardV2({ navigation }) {
         const firstCourseId = (c.data || c)[0].id;
         setSelectedCourseId(firstCourseId);
         const analyticsRes = await getCourseAnalytics(firstCourseId);
-        setLessonAnalytics(analyticsRes.data || analyticsRes);
+        const courseAnalytics = analyticsRes.data || analyticsRes;
+        setLessonAnalytics(courseAnalytics.lessons || courseAnalytics || []);
       }
 
       setLoading(false);
@@ -66,7 +67,8 @@ export default function CreatorDashboardV2({ navigation }) {
     try {
       setSelectedCourseId(courseId);
       const analyticsRes = await getCourseAnalytics(courseId);
-      setLessonAnalytics(analyticsRes.data || analyticsRes);
+      const courseAnalytics = analyticsRes.data || analyticsRes;
+      setLessonAnalytics(courseAnalytics.lessons || courseAnalytics || []);
     } catch (err) {
       console.log("Error loading course analytics:", err.message);
     }

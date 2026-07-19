@@ -28,6 +28,7 @@ export type FeatureDefinition = {
   area: FeatureArea;
   status: FeatureStatus;
   href?: string;
+  hubVisible?: boolean;
   acceptsGrowContext?: boolean;
   capabilityKey?: string;
   internalNote: string;
@@ -153,7 +154,7 @@ export const personalToolFeatures = [
       "Build feed, soil, and dry-amendment recipes from ingredients, guaranteed analysis, max amounts, release timing, and target ratios.",
     area: "water_nutrients",
     status: "release",
-    href: "/home/personal/tools/npk",
+    href: "/home/personal/tools/recipe-builder",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -203,6 +204,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/watering",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote: "Heuristic estimate; history and substrate measurements remain."
   },
@@ -225,6 +227,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/feeding-schedule",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.FEEDING_SCHEDULE,
     internalNote:
@@ -238,6 +241,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "release",
     href: "/home/personal/tools/timeline-planner",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER,
     internalNote:
@@ -263,6 +267,7 @@ export const personalToolFeatures = [
     area: "genetics",
     status: "beta",
     href: "/home/personal/tools/pheno-matrix",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_PHENO_MATRIX,
     internalNote:
@@ -360,6 +365,7 @@ export const personalToolFeatures = [
     area: "crop_management",
     status: "beta",
     href: "/home/personal/tools/crop-steering-project",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta crop steering project workflow wired to grow context, saved ToolRuns, log summaries, and follow-up tasks."
@@ -371,6 +377,7 @@ export const personalToolFeatures = [
     area: "crop_management",
     status: "beta",
     href: "/home/personal/tools/stress-test",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta stress-response record workflow wired to plant/grow context and pheno-scoring outputs."
@@ -383,6 +390,7 @@ export const personalToolFeatures = [
     area: "genetics",
     status: "beta",
     href: "/home/personal/tools/pheno-hunt",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta pheno selection workflow wired to plant/grow context and ToolRun persistence."
@@ -395,6 +403,7 @@ export const personalToolFeatures = [
     area: "genetics",
     status: "beta",
     href: "/home/personal/tools/genetics-inventory",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta genetics/material notes workflow. This is not generic personal inventory."
@@ -407,6 +416,7 @@ export const personalToolFeatures = [
     area: "lab_tc",
     status: "beta",
     href: "/home/personal/tools/tissue-culture",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta TC protocol/task workflow wired to saved ToolRuns, records, and follow-up reminders."
@@ -418,6 +428,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/dry-cure-guard",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta dry/cure workflow wired to harvest/grow context, ToolRuns, log summaries, and check tasks."
@@ -429,6 +440,7 @@ export const personalToolFeatures = [
     area: "plant_health",
     status: "beta",
     href: "/home/personal/tools/clone-rooting",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta clone-room workflow wired to grow context, saved ToolRuns, and follow-up tasks."
@@ -465,6 +477,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/harvest-readiness",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta harvest-readiness workflow using maturity signals, cultivar timing, user goals, ToolRuns, logs, and tasks."
@@ -477,6 +490,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/run-comparison",
+    hubVisible: false,
     internalNote:
       "Approved beta comparison workflow; keep visible unless the user later decides it is too large."
   },
@@ -488,6 +502,7 @@ export const personalToolFeatures = [
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/auto-grow-calendar",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
       "Approved beta grow calendar workflow wired to stage timelines, ToolRuns, logs, and task creation."
@@ -527,7 +542,7 @@ export function isFeatureNavigable(
 }
 
 export function getNavigablePersonalTools(options: { allowBetaSurfaces?: boolean } = {}) {
-  return personalToolFeatures.filter((feature) =>
-    isFeatureNavigable(feature, options)
+  return personalToolFeatures.filter(
+    (feature) => feature.hubVisible !== false && isFeatureNavigable(feature, options)
   ) as FeatureDefinition[];
 }

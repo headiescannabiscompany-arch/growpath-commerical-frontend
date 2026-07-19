@@ -5,6 +5,7 @@ import DiagnoseRoute from "@/app/home/personal/(tabs)/diagnose";
 
 const mockAnalyzeDiagnosis = jest.fn();
 const mockDiagnoseImage = jest.fn();
+const mockDiagnoseEvidence = jest.fn();
 const mockGetDiagnosisProviderStatus = jest.fn();
 const mockSubmitDiagnosisFeedback = jest.fn();
 const mockCreatePersonalLog = jest.fn();
@@ -14,9 +15,48 @@ const mockListPersonalPlants = jest.fn();
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
   diagnoseImage: (...args: any[]) => mockDiagnoseImage(...args),
+  diagnoseEvidence: (...args: any[]) => mockDiagnoseEvidence(...args),
   getDiagnosisProviderStatus: (...args: any[]) => mockGetDiagnosisProviderStatus(...args),
   submitDiagnosisFeedback: (...args: any[]) => mockSubmitDiagnosisFeedback(...args)
 }));
+
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  return ({ onChange }: any) =>
+    React.createElement(
+      Pressable,
+      {
+        accessibilityLabel: "Attach diagnosis evidence",
+        onPress: () =>
+          onChange([
+            {
+              id: "evidence-1",
+              _id: "evidence-1",
+              assetType: "photo",
+              originalUri: "file:///leaf-top.jpg",
+              durableUrl: "/uploads/leaf-top.jpg",
+              source: "library",
+              purpose: "diagnosis",
+              uploadStatus: "uploaded",
+              qualityWarnings: []
+            },
+            {
+              id: "evidence-2",
+              _id: "evidence-2",
+              assetType: "photo",
+              originalUri: "file:///leaf-bottom.jpg",
+              durableUrl: "/uploads/leaf-bottom.jpg",
+              source: "library",
+              purpose: "diagnosis",
+              uploadStatus: "uploaded",
+              qualityWarnings: []
+            }
+          ])
+      },
+      React.createElement(Text, null, "Attach evidence")
+    );
+});
 
 jest.mock("@/api/logs", () => ({
   createPersonalLog: (...args: any[]) => mockCreatePersonalLog(...args)
@@ -90,6 +130,36 @@ describe("DiagnoseRoute", () => {
         providerModel: "diagnosis-etgu-heuristic-1"
       }
     });
+    mockDiagnoseEvidence.mockResolvedValue({
+      id: "diagnosis-vision-1",
+      issueSummary: "Possible visual issue",
+      severity: 2,
+      details: {
+        likelyIssues: [],
+        recommendations: ["Compare both leaf surfaces."],
+        suggestedTags: [],
+        disclaimer: "Visual triage."
+      }
+    });
+  });
+
+  it("submits multiple durable evidence photos and their record ids", async () => {
+    const screen = render(<DiagnoseRoute />);
+    await waitFor(() => expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled());
+
+    fireEvent.press(screen.getByLabelText("Attach diagnosis evidence"));
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+
+    await waitFor(() =>
+      expect(mockDiagnoseEvidence).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          photoUrls: ["/uploads/leaf-top.jpg", "/uploads/leaf-bottom.jpg"],
+          evidenceAssetIds: ["evidence-1", "evidence-2"]
+        })
+      )
+    );
+    expect(mockAnalyzeDiagnosis).not.toHaveBeenCalled();
   });
 
   it("lets users accept or reject diagnosis tags before saving to the grow journal", async () => {

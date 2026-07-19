@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function normalizePriority(
   value: unknown,
@@ -73,29 +76,54 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function SpeciesCropIdToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="species-crop-id"
       toolKey="species-crop-id"
       title="Species / Crop Identification"
-      subtitle="Confirm crop identity for diagnosis, nutrient, environment, and IPM context without enabling invasive-species reporting."
+      subtitle="Use private grow context and media to suggest crop identity for diagnosis, nutrient, environment, and IPM context. AI suggestions always require user confirmation."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="other"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Suggest crop identity from grow and media",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Review the selected private grow/plant context and attached photos/video to suggest a crop identity. This may be cannabis. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","userConfirmed":"false","commonNames":"string","identificationNotes":"string"}. Never identify a cultivar/strain from appearance alone. Use "not confirmed" where species-level evidence is insufficient and leave scientificName blank when uncertain. userConfirmed must always be "false" because only the user can confirm. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`
+      }}
       fields={[
-        { key: "userEnteredName", label: "Plant or crop name", defaultValue: "Cannabis" },
+        { key: "userEnteredName", label: "Plant or crop name", defaultValue: "" },
         {
           key: "scientificName",
           label: "Scientific name, if known",
-          defaultValue: "Cannabis sativa"
+          defaultValue: ""
         },
         { key: "cultivar", label: "Cultivar / strain", defaultValue: "" },
         {
           key: "userConfirmed",
           label: "User confirmed species? true/false",
-          defaultValue: "true"
+          defaultValue: "false"
         },
         {
           key: "commonNames",
           label: "Common names, comma-separated",
-          defaultValue: "cannabis, hemp"
+          defaultValue: ""
+        },
+        {
+          key: "identificationNotes",
+          label: "Identification evidence or additional context (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -105,7 +133,10 @@ export default function SpeciesCropIdToolRoute() {
         scientificName: values.scientificName,
         cultivar: values.cultivar,
         userConfirmed: String(values.userConfirmed).toLowerCase() === "true",
-        commonNames: values.commonNames
+        commonNames: values.commonNames,
+        identificationNotes: values.identificationNotes || undefined,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "crop", label: "Likely crop", value: outputs.likelyCrop },

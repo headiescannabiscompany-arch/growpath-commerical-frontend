@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import CommercialLivesRoute from "@/app/home/commercial/lives";
 
@@ -65,6 +66,24 @@ describe("CommercialLivesRoute", () => {
           ]
         });
       }
+      if (path === "/api/twitch/status") {
+        return Promise.resolve({
+          configured: true,
+          connection: {
+            status: "connected",
+            broadcasterId: "12345",
+            broadcasterLogin: "growpath",
+            broadcasterName: "GrowPath",
+            eventSubStatus: "connected"
+          }
+        });
+      }
+      if (path === "/api/twitch/connect" && options?.method === "POST") {
+        return Promise.resolve({
+          configured: true,
+          authorizationUrl: "https://id.twitch.tv/oauth2/authorize?state=test"
+        });
+      }
       if (path === "/api/commercial/lives" && options?.method === "POST") {
         return Promise.resolve({ live: { id: "live-new", ...options.body } });
       }
@@ -73,12 +92,26 @@ describe("CommercialLivesRoute", () => {
       }
       return Promise.resolve({});
     });
+    jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("schedules lives with course, product, feed, forum, replay, and reminder links", async () => {
     const screen = render(<CommercialLivesRoute />);
 
     await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+
+    expect(screen.getByText("GrowPath | EventSub connected")).toBeTruthy();
+    expect(screen.getByLabelText("Disconnect Twitch")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Connect Twitch with OAuth"));
+    await waitFor(() =>
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        "https://id.twitch.tv/oauth2/authorize?state=test"
+      )
+    );
 
     expect(screen.getByText("Soil Mix Demo")).toBeTruthy();
     expect(screen.getByLabelText("Selected commercial live live-1")).toBeTruthy();
@@ -88,7 +121,7 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText(/Forum\/Q&A thread-1/)).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText(/Channel ID 12345/)).toBeTruthy();
-    expect(screen.getByText(/EventSub connected/)).toBeTruthy();
+    expect(screen.getAllByText(/EventSub connected/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Embed https:\/\/player.twitch.tv\/\?channel=growpath/)
     ).toBeTruthy();

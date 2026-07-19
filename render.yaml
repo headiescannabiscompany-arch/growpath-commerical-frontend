@@ -19,6 +19,8 @@ services:
         value: https://growpathai.com/support
       - key: EXPO_PUBLIC_DELETE_ACCOUNT_URL
         value: https://growpathai.com/account/delete
+      - key: EXPO_PUBLIC_TWITCH_PARENT_HOST
+        value: growpathai.com
     routes:
       - type: rewrite
         source: /*

@@ -4,6 +4,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { createProduct } from "@/api/products";
+import { createSoilNutrientBatch } from "@/api/commercialWorkflows";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
@@ -159,15 +160,57 @@ export default function DryAmendmentMixToolScreen() {
           defaultValue: "3-15-0"
         },
         { key: "releaseB", label: "Ingredient B release", defaultValue: "slow" },
+        { key: "ingredientC", label: "Ingredient C (optional)", defaultValue: "" },
+        {
+          key: "amountC",
+          label: "Ingredient C grams",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "analysisC",
+          label: "Ingredient C guaranteed analysis N-P2O5-K2O",
+          defaultValue: "0-0-0"
+        },
+        { key: "releaseC", label: "Ingredient C release", defaultValue: "medium" },
+        { key: "ingredientD", label: "Ingredient D (optional)", defaultValue: "" },
+        {
+          key: "amountD",
+          label: "Ingredient D grams",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "analysisD",
+          label: "Ingredient D guaranteed analysis N-P2O5-K2O",
+          defaultValue: "0-0-0"
+        },
+        { key: "releaseD", label: "Ingredient D release", defaultValue: "slow" },
         {
           key: "dosePerGallonSoil",
           label: "Dose per gallon soil (grams)",
           defaultValue: "10",
           keyboardType: "numeric"
+        },
+        {
+          key: "packageSizeGrams",
+          label: "Package / bag size (grams)",
+          defaultValue: "1000",
+          keyboardType: "numeric"
+        },
+        {
+          key: "applicationDirections",
+          label: "Application directions (optional)",
+          defaultValue: ""
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         recipeName: values.recipeName,
         desiredStage: values.desiredStage,
@@ -183,9 +226,23 @@ export default function DryAmendmentMixToolScreen() {
             values.amountB,
             values.analysisB,
             values.releaseB
+          ),
+          ingredient(
+            values.ingredientC,
+            values.amountC,
+            values.analysisC,
+            values.releaseC
+          ),
+          ingredient(
+            values.ingredientD,
+            values.amountD,
+            values.analysisD,
+            values.releaseD
           )
-        ],
-        dosePerGallonSoil: n(values.dosePerGallonSoil)
+        ].filter((row) => row.name.trim() && row.amount > 0),
+        dosePerGallonSoil: n(values.dosePerGallonSoil),
+        packageSizeGrams: n(values.packageSizeGrams),
+        applicationDirections: values.applicationDirections || undefined
       })}
       buildMetrics={(outputs) => [
         {
@@ -208,6 +265,11 @@ export default function DryAmendmentMixToolScreen() {
           key: "stageFit",
           label: "Stage fit",
           value: outputs.stageFit
+        },
+        {
+          key: "packages",
+          label: "Packages / bags",
+          value: outputs.packageCount ?? "-"
         }
       ]}
       buildNotices={(outputs) => [
@@ -281,6 +343,43 @@ export default function DryAmendmentMixToolScreen() {
           }
         },
         {
+          key: "create-production-batch",
+          label: "Create Production Batch",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created dry amendment production batch.",
+          onPress: async () => {
+            await createSoilNutrientBatch({
+              batchName:
+                outputs.recipeName || payload.recipeName || "Dry amendment batch",
+              purpose: payload.desiredStage || "general",
+              status: "planned",
+              facilityId: payload.facilityId || undefined,
+              linkedToolRunId: toolRun?.id || toolRun?._id || undefined,
+              batchVolume: outputs.batchWeight || undefined,
+              batchVolumeUnit: "grams",
+              ingredientSummary: (
+                outputs.ingredientContributions ||
+                payload.ingredients ||
+                []
+              )
+                .map((row: any) => `${row.name}: ${row.amount} ${row.amountUnit || "g"}`)
+                .join("; "),
+              guaranteedAnalysisNotes: JSON.stringify(
+                outputs.totalAnalysis || outputs.guaranteedAnalysis || {}
+              ),
+              mixingInstructions: outputs.applicationDirections || undefined,
+              releaseTimelineNotes: outputs.deliveryCurve?.explanation || undefined,
+              notes: [
+                outputs.analysisDisclaimer,
+                payload.growId ? `Source grow: ${payload.growId}` : ""
+              ]
+                .filter(Boolean)
+                .join("\n")
+            });
+          }
+        },
+        {
           key: "convert-product-draft",
           label: "Convert to Product Draft",
           variant: "secondary",
@@ -318,8 +417,13 @@ export default function DryAmendmentMixToolScreen() {
                 ingredients,
                 analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o",
                 guaranteedAnalysisEstimate: outputs.totalAnalysis || null,
+                analysisDisclaimer: outputs.analysisDisclaimer || null,
+                ingredientContributions: outputs.ingredientContributions || [],
                 achievedRatio: outputs.achievedRatio || null,
                 batchWeightGrams: outputs.batchWeight || null,
+                packageSizeGrams:
+                  outputs.packageSizeGrams || payload.packageSizeGrams || null,
+                packageCount: outputs.packageCount || null,
                 applicationRate: {
                   dosePerCubicFoot: outputs.dosePerCubicFoot || null,
                   dosePerGallonSoil: payload.dosePerGallonSoil || null
@@ -330,7 +434,8 @@ export default function DryAmendmentMixToolScreen() {
                   "Mix dry ingredients evenly, label the batch, and record batch/lot details before publishing.",
                   outputs.dosePerCubicFoot
                     ? `Apply around ${outputs.dosePerCubicFoot} g per cubic foot unless the final label directs otherwise.`
-                    : ""
+                    : "",
+                  outputs.applicationDirections || payload.applicationDirections || ""
                 ].filter(Boolean),
                 warnings: [
                   ...(Array.isArray(outputs.stageTimingWarnings)

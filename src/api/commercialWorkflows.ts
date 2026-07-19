@@ -97,6 +97,9 @@ export type SoilNutrientBatch = {
   productLineId?: string;
   linkedTrialId?: string;
   trialGrowId?: string;
+  facilityId?: string;
+  linkedToolRunId?: string;
+  linkedRecipeId?: string;
   batchVolume?: number;
   batchVolumeUnit?: string;
   estimatedCost?: number;
@@ -138,6 +141,7 @@ export type CommercialCourse = {
   forumThreadId?: string;
   modules?: Array<Record<string, any>>;
   lessons?: Array<Record<string, any>>;
+  quizzes?: Array<Record<string, any>>;
   tasks?: Array<Record<string, any>>;
   status?: "draft" | "published" | "archived";
   createdAt?: string;
@@ -169,6 +173,7 @@ export type CommercialLiveEvent = {
   growInterests?: string[];
   visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
   status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
+  isPublished?: boolean;
   replayUrl?: string;
   notificationPlan?: string[];
   createdAt?: string;

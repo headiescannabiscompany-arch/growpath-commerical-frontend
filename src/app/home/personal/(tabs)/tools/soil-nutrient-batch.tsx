@@ -46,7 +46,8 @@ function parseIngredients(value: string) {
           K2O,
           releaseClass,
           sourceConfidence,
-          category
+          category,
+          lotId
         ] = line.split(",").map((part) => part.trim());
         if (!name) return null;
         return {
@@ -60,7 +61,8 @@ function parseIngredients(value: string) {
           K2O: Number(K2O || 0),
           releaseClass: releaseClass || "unknown",
           sourceConfidence: sourceConfidence || "low",
-          category: category || undefined
+          category: category || undefined,
+          lotId: lotId || undefined
         };
       })
       .filter(Boolean);
@@ -177,6 +179,12 @@ export default function SoilNutrientBatchToolRoute() {
       toolKey="soil-nutrient-batch"
       title="Soil & Nutrient Batch Planner"
       subtitle="Scale a purpose-built soil, dry amendment, or nutrient batch while checking guaranteed analysis, release timing, stage fit, cost, warnings, and tasks."
+      aiPrefill={{
+        buttonLabel: "Fill batch from recipe and inventory",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this Soil & Nutrient Batch Plan from the selected grow's saved recipe, verified ingredient/product catalog, label analyses, inventory lots and costs, water profile, medium, stage/purpose, prior batch actuals, shrinkage, packaging, labor, QA outcomes, and commercial/facility production records available to this workspace. Return JSON only with exactly these string keys: purpose, stage, recipeId, batchVolume, bagSize, ingredients, laborCost, packagingCost, shrinkagePercent, targetMarginPercent, batchNotes. ingredients must be a JSON-array string or lines containing name, quantity, unit, cost, N, P2O5, K2O, releaseClass, sourceConfidence, category, lotId. Never invent analysis, lot, quantity, cost, margin, or inventory. Preserve label N-P2O5-K2O separately from elemental conversions. Leave unknowns blank. In batchNotes identify missing labels/COAs, compost uncertainty, release timing, K/Ca/Mg antagonism, water context, substitutions, production scope, and QA checks.`
+      }}
       fields={[
         { key: "purpose", label: "Purpose", defaultValue: "seedling" },
         { key: "stage", label: "Crop stage", defaultValue: "seedling" },
@@ -224,10 +232,17 @@ export default function SoilNutrientBatchToolRoute() {
           label: "Target margin %",
           defaultValue: "40",
           keyboardType: "numeric"
+        },
+        {
+          key: "batchNotes",
+          label: "Batch evidence, substitutions, and QA notes (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
-      buildPayload={(values, { growId }) => ({
+      buildPayload={(values, { growId, plantContext }) => ({
         growId,
+        ...plantContext.toolRunContext,
         purpose: values.purpose,
         stage: values.stage,
         recipeId: values.recipeId,
@@ -238,7 +253,8 @@ export default function SoilNutrientBatchToolRoute() {
         laborCost: values.laborCost,
         packagingCost: values.packagingCost,
         shrinkagePercent: values.shrinkagePercent,
-        targetMarginPercent: values.targetMarginPercent
+        targetMarginPercent: values.targetMarginPercent,
+        batchNotes: values.batchNotes || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "purpose", label: "Purpose", value: outputs.purpose },

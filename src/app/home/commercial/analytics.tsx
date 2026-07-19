@@ -131,7 +131,13 @@ export default function CommercialAnalyticsRoute() {
       courseStarts: valueOf(metrics, ["courseStarts"]),
       forumReplies: valueOf(metrics, ["forumReplies"]),
       activeTrials: valueOf(metrics, ["activeTrials"]),
-      completedTrials: valueOf(metrics, ["completedTrials"])
+      completedTrials: valueOf(metrics, ["completedTrials"]),
+      feedImpressions: valueOf(metrics, ["feedImpressions"]),
+      feedConversions: valueOf(metrics, ["feedConversions"]),
+      liveViews: valueOf(metrics, ["liveViews"]),
+      liveRsvps: valueOf(metrics, ["liveRsvps"]),
+      orderCount: valueOf(metrics, ["orderCount"]),
+      orderRevenueCents: valueOf(metrics, ["orderRevenueCents"])
     }),
     [metrics]
   );
@@ -210,6 +216,30 @@ export default function CommercialAnalyticsRoute() {
             value={normalized.activeTrials}
             helper={`${normalized.completedTrials.toLocaleString()} completed trials`}
           />
+          <MetricCard
+            label="Feed impressions"
+            value={normalized.feedImpressions}
+            helper={`${normalized.feedConversions.toLocaleString()} recorded conversions`}
+          />
+          <MetricCard
+            label="Live views"
+            value={normalized.liveViews}
+            helper={`${normalized.liveRsvps.toLocaleString()} current RSVPs`}
+          />
+          <MetricCard
+            label="Paid orders"
+            value={normalized.orderCount}
+            helper={`${Object.entries(
+              metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
+            )
+              .map(([currency, cents]) =>
+                (Number(cents || 0) / 100).toLocaleString(undefined, {
+                  style: "currency",
+                  currency
+                })
+              )
+              .join(" + ")} recorded revenue`}
+          />
         </View>
       </AppCard>
 
@@ -240,6 +270,26 @@ export default function CommercialAnalyticsRoute() {
             title="Top links"
             rows={rowsFor(metrics, "links")}
             emptyText="No outbound link clicks yet."
+          />
+          <BreakdownList
+            title="Courses"
+            rows={rowsFor(metrics, "courses")}
+            emptyText="No recorded course engagement yet."
+          />
+          <BreakdownList
+            title="Lives"
+            rows={rowsFor(metrics, "lives")}
+            emptyText="No recorded live engagement yet."
+          />
+          <BreakdownList
+            title="Paid orders"
+            rows={rowsFor(metrics, "orders")}
+            emptyText="No paid internal orders yet."
+          />
+          <BreakdownList
+            title="Grow interests"
+            rows={rowsFor(metrics, "growInterests")}
+            emptyText="No event-backed grow-interest matches yet."
           />
         </View>
       </AppCard>

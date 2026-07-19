@@ -88,6 +88,7 @@ export default function FacilityTabsLayout() {
         options={{ title: "Team", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen name="reports" options={{ title: "Reports", href: null }} />
+      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null }} />
       <Tabs.Screen
         name="integrations"
         options={{ title: "Integrations", href: compactTabs ? null : undefined }}
@@ -124,6 +125,14 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{ href: null, title: "Recipe Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/dry-amendment-mix"
+        options={{ href: null, title: "Dry Amendment Mix" }}
+      />
+      <Tabs.Screen
+        name="tools/ingredient-library"
+        options={{ href: null, title: "Ingredients" }}
       />
       <Tabs.Screen name="tools/npk" options={{ href: null, title: "NPK Recipe" }} />
       <Tabs.Screen

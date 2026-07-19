@@ -326,6 +326,11 @@ export default function FacilityDashboardTab() {
         to: "/home/facility/reports"
       },
       {
+        label: "Facility analytics",
+        detail: "Room stability, SOPs, alerts, batches, and training",
+        to: "/home/facility/analytics"
+      },
+      {
         label: "SOP operations",
         detail: "Run and compare procedures",
         to: "/home/facility/sop-runs"

@@ -6,6 +6,7 @@ import PhenoHuntToolRoute from "@/app/home/personal/(tabs)/tools/pheno-hunt";
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -50,6 +51,10 @@ jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args)
 }));
 
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
 jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
 }));
@@ -72,7 +77,8 @@ describe("PhenoHuntToolRoute", () => {
             label: "Plant 1",
             score: 86,
             keeperCategory: "keeper",
-            tags: ["high_vigor"]
+            tags: ["high_vigor"],
+            traits: { tissueCultureSuitability: 8 }
           },
           {
             id: "p2",
@@ -84,7 +90,14 @@ describe("PhenoHuntToolRoute", () => {
         keeperRecommendations: [
           {
             id: "p1",
+            plantId: "p1",
             label: "Plant 1",
+            decisionLanes: {
+              flowerKeeper: true,
+              cloneKeeper: true,
+              motherKeeper: true,
+              commercialCandidate: true
+            },
             reason: "Best vigor, resin, aroma, and recovery profile."
           }
         ],
@@ -99,6 +112,32 @@ describe("PhenoHuntToolRoute", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockAskPersonalAssistant.mockResolvedValue({
+      reply: JSON.stringify({
+        projectName: "Summer hunt",
+        plants: [
+          {
+            id: "p1",
+            plantId: "p1",
+            label: "Plant 1",
+            vigor: 9,
+            morphology: 8,
+            stressResistance: 9,
+            pestResistance: 8,
+            aroma: 9,
+            taste: 9,
+            resin: 9,
+            finalProduct: 9,
+            sexWeek: 4,
+            intersexSigns: "none",
+            hermObservationCount: 0,
+            sexObservationCount: 3
+          }
+        ],
+        additionalInformation: "Taste score came from the saved harvest review."
+      }),
+      missingInformation: ["clone performance"]
+    });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -158,6 +197,77 @@ describe("PhenoHuntToolRoute", () => {
           ]
         })
       )
+    );
+  });
+
+  it("creates linked genetics records for keeper lanes", async () => {
+    const screen = render(<PhenoHuntToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Run Pheno Hunting"));
+    await waitFor(() => expect(screen.getByText("Pheno Hunting result")).toBeTruthy());
+    fireEvent.press(screen.getByText("Create Keeper Genetics Records"));
+
+    await waitFor(() =>
+      expect(mockCreateGrowpathModuleRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recordType: "genetics_note",
+          title: "Keeper candidate: Plant 1",
+          growId: "grow-1",
+          plantId: "p1",
+          phenoPlantId: "p1",
+          linkedToolRunId: "toolrun-1",
+          payload: expect.objectContaining({
+            commercialCandidate: true,
+            cloneCandidate: true,
+            motherCandidate: true,
+            tissueCultureCandidate: true
+          }),
+          tags: expect.arrayContaining([
+            "pheno_keeper_candidate",
+            "flowerKeeper",
+            "commercialCandidate"
+          ])
+        })
+      )
+    );
+  });
+
+  it("fills the full pheno record from selected grow evidence before calculating", async () => {
+    const screen = render(<PhenoHuntToolRoute />);
+
+    fireEvent.press(screen.getByText("Fill pheno hunt from grow"));
+    await waitFor(() =>
+      expect(screen.getByText(/AI filled 3 field\(s\) from grow records/)).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Run Pheno Hunting"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "pheno-hunt",
+        expect.objectContaining({
+          projectName: "Summer hunt",
+          plants: [
+            expect.objectContaining({
+              plantId: "p1",
+              morphology: 8,
+              pestResistance: 8,
+              taste: 9,
+              finalProduct: 9,
+              sexWeek: 4,
+              intersexSigns: "none",
+              hermObservationCount: 0,
+              sexObservationCount: 3
+            })
+          ],
+          additionalInformation: "Taste score came from the saved harvest review."
+        })
+      )
+    );
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        context: expect.objectContaining({ workflow: "pheno-hunt" })
+      })
     );
   });
 });

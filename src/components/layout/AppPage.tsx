@@ -77,6 +77,7 @@ export default function AppPage({
           mode={ent.mode}
           plan={plan}
           railMode={policy.railMode}
+          routeKey={routeKey}
         />
       </View>
     ) : null;
@@ -103,6 +104,7 @@ export default function AppPage({
             mode={ent.mode}
             plan={plan}
             railMode={bannerPolicy.railMode}
+            routeKey={routeKey}
           />
         </View>
       ) : null}
@@ -116,6 +118,7 @@ export default function AppPage({
               mode={ent.mode}
               plan={plan}
               railMode={bannerPolicy.railMode}
+              routeKey={routeKey}
             />
           ) : null}
         </View>
@@ -133,6 +136,7 @@ export default function AppPage({
             mode={ent.mode}
             plan={plan}
             railMode={bannerPolicy.railMode}
+            routeKey={routeKey}
           />
         </View>
       ) : null}

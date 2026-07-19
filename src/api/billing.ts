@@ -13,12 +13,16 @@ function currentOrigin() {
   return typeof location?.origin === "string" ? location.origin : "";
 }
 
-export async function startFacilityCheckout(facilityId: string) {
+export async function startFacilityCheckout(
+  facilityId: string,
+  interval: "monthly" | "yearly" = "monthly"
+) {
   const origin = currentOrigin();
   const checkoutRes = await apiRequest(endpoints.facilityBillingCheckout, {
     method: "POST",
     body: {
       facilityId,
+      interval,
       ...(origin
         ? {
             successUrl: `${origin}/home/facility?facilityPlan=success`,

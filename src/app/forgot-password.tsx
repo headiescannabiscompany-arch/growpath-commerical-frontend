@@ -46,9 +46,11 @@ export default function ForgotPasswordScreen() {
       );
     } catch (err: any) {
       if (err instanceof ApiError) {
-        setError(err.message || "Unable to request password reset instructions.");
+        setError(forgotPasswordErrorMessage(err));
       } else {
-        setError(err?.message || "Unable to request password reset instructions.");
+        setError(
+          `Unable to reach GrowPath right now. Check your connection and try again. If it keeps happening, email ${SUPPORT_CONTACTS.general}.`
+        );
       }
     } finally {
       setSubmitting(false);
@@ -107,6 +109,19 @@ export default function ForgotPasswordScreen() {
       </View>
     </View>
   );
+}
+
+function forgotPasswordErrorMessage(error: ApiError) {
+  if (
+    error.code === "NETWORK_ERROR" ||
+    error.code === "OFFLINE" ||
+    error.code === "TIMEOUT" ||
+    error.code === "API_URL_NOT_CONFIGURED" ||
+    (typeof error.status === "number" && error.status >= 500)
+  ) {
+    return `Unable to reach GrowPath right now. Check your connection and try again. If it keeps happening, email ${SUPPORT_CONTACTS.general}.`;
+  }
+  return error.message || "Unable to request password reset instructions.";
 }
 
 const styles = StyleSheet.create({

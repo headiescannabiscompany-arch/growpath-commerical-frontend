@@ -9,7 +9,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { requestEmailVerification } from "@/api/auth";
@@ -20,9 +20,10 @@ import { radius } from "@/theme/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ email?: string; reset?: string }>();
   const auth = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(String(params.email || ""));
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
@@ -116,6 +117,11 @@ export default function LoginScreen() {
           </View>
 
           <Text style={styles.title}>Sign in</Text>
+          {params.reset === "success" ? (
+            <Text style={styles.successMessage}>
+              Password updated. Sign in with your new password.
+            </Text>
+          ) : null}
 
           <TextInput
             style={styles.input}
@@ -305,6 +311,12 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   error: { color: "#b91c1c", marginBottom: 12, fontWeight: "600" },
+  successMessage: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "800",
+    marginBottom: 12
+  },
   verificationBox: {
     borderWidth: 1,
     borderColor: "#bfdbfe",

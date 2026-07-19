@@ -33,6 +33,20 @@ export function getCourse(id) {
   return apiRequest(apiRoutes.COURSES.DETAIL(id));
 }
 
+export function trackCourseView(id) {
+  return apiRequest(apiRoutes.COURSES.TRACK_COURSE_VIEW(id), {
+    method: "POST",
+    body: {}
+  });
+}
+
+export function trackCourseProductClick(courseId, productId) {
+  return apiRequest(apiRoutes.COURSES.TRACK_PRODUCT_CLICK(courseId, productId), {
+    method: "POST",
+    body: {}
+  });
+}
+
 export function addLesson(courseId, payload) {
   return apiRequest(apiRoutes.COURSES.LESSON(courseId), {
     method: "POST",
@@ -85,6 +99,17 @@ export function buyCourseStripeCheckout(courseId) {
 
 export function getEnrollmentStatus(courseId) {
   return apiRequest(apiRoutes.COURSES.STATUS(courseId));
+}
+
+export function getCourseLearnerNotes(courseId) {
+  return apiRequest(apiRoutes.COURSES.LEARNER_NOTES(courseId));
+}
+
+export function saveCourseLearnerNote(courseId, lessonId, note) {
+  return apiRequest(apiRoutes.COURSES.LEARNER_NOTE(courseId, lessonId), {
+    method: "PUT",
+    body: { note }
+  });
 }
 
 export function completeLesson(lessonId, courseId) {

@@ -157,6 +157,28 @@ describe("HomeScheduleRoute", () => {
               linkedNotificationId: "notification-1",
               calendarType: "live_notification_followup",
               sourceStage: "live_notification_followup"
+            },
+            {
+              id: "task-15",
+              title: "Living soil batch ready",
+              dueAt: "2099-07-24T09:00:00Z",
+              status: "open",
+              workspaceType: "personal",
+              sourceType: "recipe",
+              linkedRecipeId: "recipe-ready-1",
+              calendarType: "soil_recipe_timeline",
+              sourceStage: "soil_ready"
+            },
+            {
+              id: "task-16",
+              title: "Complete sanitation SOP",
+              dueAt: "2099-07-25T09:00:00Z",
+              status: "open",
+              workspaceType: "facility",
+              sourceType: "sop",
+              linkedSopId: "sop-1",
+              linkedRoomId: "room-1",
+              calendarType: "sop_facility_task"
             }
           ]
         });
@@ -228,6 +250,21 @@ describe("HomeScheduleRoute", () => {
           ]
         });
       }
+      if (path === "/api/commercial/campaigns") {
+        return Promise.resolve({
+          campaigns: [
+            {
+              id: "launch-1",
+              name: "Bloom Mix Product Launch",
+              launchDate: "2099-07-23",
+              reminderPreference: "24 hours before",
+              recurrenceRule: "weekly",
+              linkedProductId: "product-bloom-1",
+              status: "scheduled"
+            }
+          ]
+        });
+      }
       return Promise.resolve({});
     });
   });
@@ -255,12 +292,16 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Review public storefront launch")).toBeTruthy();
     expect(screen.getByText("Flip to flower")).toBeTruthy();
     expect(screen.getByText("Follow up on notification")).toBeTruthy();
+    expect(screen.getByText("Living soil batch ready")).toBeTruthy();
+    expect(screen.getByText("Complete sanitation SOP")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText("Personal IPM Lesson")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("Facility IPM Training")).toBeTruthy();
+    expect(screen.getByText("Bloom Mix Product Launch")).toBeTruthy();
+    expect(screen.getByText("product launch")).toBeTruthy();
     expect(screen.getAllByText("feed campaign").length).toBeGreaterThan(0);
     expect(screen.getByText(/Ends 2099-07-17T21:00/)).toBeTruthy();
     expect(screen.getByText(/Ends 2099-07-26T12:00/)).toBeTruthy();
@@ -317,6 +358,9 @@ describe("HomeScheduleRoute", () => {
     expect(
       screen.getByTestId("link-/home/facility/feed?campaignId=facility-campaign-1")
     ).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/commercial/marketing?campaignId=launch-1")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Schedule workspace filter commercial"));
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
@@ -351,5 +395,24 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Facility IPM Training")).toBeTruthy();
     expect(screen.getByText("Investigate linked sensor alert")).toBeTruthy();
     expect(screen.queryByText("Review public storefront launch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule source filter all"));
+    fireEvent.press(screen.getByLabelText("Schedule view day"));
+    fireEvent.changeText(screen.getByLabelText("Schedule anchor date"), "2099-07-16");
+    expect(screen.getByText("Flip to flower")).toBeTruthy();
+    expect(screen.queryByText("Live Soil Demo")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule view week"));
+    expect(screen.getByText("Live Soil Demo")).toBeTruthy();
+    expect(screen.getByText("Living Soil Basics")).toBeTruthy();
+    expect(screen.queryByText("Bloom Mix Product Launch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule view month"));
+    expect(screen.getByText("Bloom Mix Product Launch")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Schedule previous period"));
+    expect(screen.queryByText("Bloom Mix Product Launch")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Schedule next period"));
+    expect(screen.getByText("Bloom Mix Product Launch")).toBeTruthy();
   });
 });

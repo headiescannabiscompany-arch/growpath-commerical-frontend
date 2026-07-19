@@ -5,6 +5,7 @@ import BackendCalculatorToolScreen, {
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { createProduct } from "@/api/products";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { createSoilNutrientBatch } from "@/api/commercialWorkflows";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -265,6 +266,11 @@ export default function SoilBuilderToolScreen() {
       toolKey="soil-builder"
       title="Soil Builder"
       subtitle="Build full soil recipes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      aiPrefill={{
+        buttonLabel: "Fill soil recipe from grow records",
+        buildMessage: () =>
+          `Prefill the operational fields of this Soil/Media Builder from the selected grow/plant's saved soil recipe, ingredient catalog and verified analyses, container/batch volume, crop stage and purpose, water profile/alkalinity, irrigation performance, prior soil batches, lab results, and nutrient response. Preserve the locked recipe/science reference text already in the form. Return JSON only using these exact string keys when supported: mixName, goal, targetNpk, targetReleaseCurve, intendedUse, stage, totalVolume, volumeUnit, baseMedia, basePercent, compostPercent, aerationPercent, biocharPercent, compostUncertainty, amendmentName, amendmentDose, amendmentUnit, amendmentAnalysis, amendmentRelease, amendmentNameB, amendmentDoseB, amendmentUnitB, amendmentAnalysisB, amendmentReleaseB, mineralSupport, biologySupport, restCookDays, safetyNotes, waterProfileNotes. Ingredient analyses, doses, percentages, lab values, and volume must come from saved records or verified labels; do not invent them. Model peat/perlite, coco, 1:1:1 Coots-style, living-soil, and no-till mixes according to their actual water holding, drainage, aeration durability, buffering, CEC, carbon/nitrogen behavior, and reuse strategy. In safetyNotes and waterProfileNotes explain uncertainty, compost variability, mineralization timing, K/Ca/Mg antagonism, water alkalinity, and how the recipe changes irrigation assumptions.`
+      }}
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
         { key: "goal", label: "Goal", defaultValue: "medium veg soil" },
@@ -389,6 +395,12 @@ export default function SoilBuilderToolScreen() {
           multiline: true
         },
         {
+          key: "waterProfileNotes",
+          label: "Water profile and irrigation behavior (optional)",
+          defaultValue: "",
+          multiline: true
+        },
+        {
           key: "universalSoilScience",
           label: "Universal soil science",
           defaultValue: UNIVERSAL_SOIL_SCIENCE,
@@ -419,8 +431,13 @@ export default function SoilBuilderToolScreen() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         mixName: values.mixName,
         goal: values.goal,
@@ -454,6 +471,7 @@ export default function SoilBuilderToolScreen() {
         biologySupport: values.biologySupport,
         restCookDays: n(values.restCookDays, 21),
         safetyNotes: values.safetyNotes,
+        waterProfileNotes: values.waterProfileNotes || undefined,
         universalSoilScience: values.universalSoilScience,
         soilRecipeReference: values.soilRecipeReference,
         scientificNotes: values.scientificNotes,
@@ -571,6 +589,46 @@ export default function SoilBuilderToolScreen() {
               tasks: soilTimelineTasks(outputs, payload)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "create-production-batch",
+          label: "Create Production Batch",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created soil production batch.",
+          onPress: async () => {
+            await createSoilNutrientBatch({
+              batchName: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              name: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              purpose: payload.intendedUse || payload.goal,
+              formulaVersion: String(toolRun?.calculatorVersion || "1"),
+              trialGrowId: payload.growId || undefined,
+              facilityId: payload.facilityId || undefined,
+              linkedToolRunId: toolRun?.id || toolRun?._id || undefined,
+              batchVolume: outputs.totalVolume || payload.totalVolume,
+              batchVolumeUnit: outputs.volumeUnit || payload.volumeUnit,
+              releaseTimelineNotes:
+                outputs.releaseCurve?.summary || payload.targetReleaseCurve,
+              guaranteedAnalysisNotes: outputs.estimatedAmendmentRatio
+                ? JSON.stringify(outputs.estimatedAmendmentRatio)
+                : "Compost and finished-soil analysis require representative lab testing.",
+              ingredientSummary: (payload.amendments || [])
+                .map((item: any) => item.name)
+                .filter(Boolean)
+                .join(", "),
+              mixingInstructions: (outputs.mixingInstructions || []).join(" "),
+              notes: [
+                payload.facilityId ? `Facility: ${payload.facilityId}` : "",
+                `ToolRun: ${toolRun?.id || toolRun?._id || ""}`,
+                payload.compostUncertainty
+                  ? `Compost uncertainty: ${payload.compostUncertainty}`
+                  : ""
+              ]
+                .filter(Boolean)
+                .join("\n"),
+              status: "planned"
+            });
           }
         },
         {

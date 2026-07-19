@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function numberOrFallback(value: unknown, fallback: number) {
   const number = Number(value);
@@ -79,12 +82,31 @@ function cloneRootingTaskPlan(
 }
 
 export default function CloneRootingToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="clone-rooting"
       toolKey="clone-rooting"
       title="Clone Rooting Troubleshooter"
       subtitle="Check clone rooting bottlenecks from humidity, temperature, light, stem condition, and timeline."
+      aiPrefill={{
+        buttonLabel: "Fill clone review from grow and media",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill the Clone Rooting Troubleshooter from the selected grow, plant/mother records, clone batch history, environment readings, logs, and attached photo/video evidence. Return JSON only with exactly these keys: {"daysSinceCut":"string","cloneCount":"string","rootedCount":"string","failedCount":"string","motherPlantHealth":"string","humidity":"string","temperature":"string","lightIntensity":"string","mediumStatus":"string","stemCondition":"string","leafCondition":"string","rootingStatus":"string","additionalInformation":"string"}. Use counts and environmental numbers only when supported by records or clearly supplied by the user. Use media for visible tray, leaf, stem, callus, or root condition, but do not claim hidden roots. Leave unknowns blank. In additionalInformation identify missing tray-wide/close-up/video evidence and any uncertainty.`
+      }}
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="clone"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
       fields={[
         {
           key: "daysSinceCut",
@@ -140,6 +162,12 @@ export default function CloneRootingToolRoute() {
           key: "rootingStatus",
           label: "Rooting status",
           defaultValue: "no visible roots yet"
+        },
+        {
+          key: "additionalInformation",
+          label: "Additional clone or batch information (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -156,7 +184,10 @@ export default function CloneRootingToolRoute() {
         mediumStatus: values.mediumStatus,
         stemCondition: values.stemCondition,
         leafCondition: values.leafCondition,
-        rootingStatus: values.rootingStatus
+        rootingStatus: values.rootingStatus,
+        additionalInformation: values.additionalInformation || undefined,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "risk", label: "Risk", value: outputs.riskLevel },
@@ -173,6 +204,15 @@ export default function CloneRootingToolRoute() {
           key: "rooted",
           label: "Rooted %",
           value: outputs.clonePerformanceSummary?.rootingPercent
+        },
+        {
+          key: "verification",
+          label: "GPT verification",
+          value:
+            outputs.gptVerification?.answer ||
+            outputs.gptVerification?.status ||
+            "pending",
+          detail: outputs.gptVerification?.providerLabel || "Separate media verification"
         }
       ]}
       buildNotices={(outputs) =>

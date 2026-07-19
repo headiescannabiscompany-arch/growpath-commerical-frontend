@@ -105,6 +105,8 @@ export default function CommercialTabsLayout() {
         options={{ title: "Product Lines", href: null }}
       />
       <Tabs.Screen name="trials" options={{ title: "Product Trials", href: null }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks", href: null }} />
+      <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
       <Tabs.Screen name="community" options={{ title: "Forum / Q&A", href: null }} />
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
       <Tabs.Screen
@@ -162,6 +164,19 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{ href: null, title: "Recipe Builder" }}
+      />
+      <Tabs.Screen name="tools/npk" options={{ href: null, title: "NPK Recipe" }} />
+      <Tabs.Screen
+        name="tools/soil-builder"
+        options={{ href: null, title: "Soil Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/dry-amendment-mix"
+        options={{ href: null, title: "Dry Amendment Mix" }}
+      />
+      <Tabs.Screen
+        name="tools/ingredient-library"
+        options={{ href: null, title: "Ingredients" }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"

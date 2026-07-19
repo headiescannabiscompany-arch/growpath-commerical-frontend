@@ -152,6 +152,14 @@ describe("TissueCultureToolRoute", () => {
       "30"
     );
     fireEvent.changeText(screen.getByLabelText("Tissue Culture Labor cost"), "50");
+    fireEvent.changeText(
+      screen.getByLabelText("Tissue Culture Sterilization method / protocol"),
+      "Validated surface protocol"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Tissue Culture Multiplication rate per transfer"),
+      "2.5"
+    );
     fireEvent.press(screen.getByLabelText("Run Tissue Culture"));
 
     await waitFor(() =>
@@ -167,7 +175,9 @@ describe("TissueCultureToolRoute", () => {
           contaminatedVessels: "3",
           mediaCost: "40",
           vesselSupplyCost: "30",
-          laborCost: "50"
+          laborCost: "50",
+          sterilizationMethod: "Validated surface protocol",
+          multiplicationRate: "2.5"
         })
       )
     );
@@ -231,7 +241,7 @@ describe("TissueCultureToolRoute", () => {
         })
       )
     );
-    expect(mockSaveToolRunAndCreateTasks.mock.calls[0][0].tasks).toHaveLength(7);
+    expect(mockSaveToolRunAndCreateTasks.mock.calls[0][0].tasks).toHaveLength(10);
   }, 15000);
 
   it("creates default tissue culture follow-up task with shared Schedule metadata", async () => {

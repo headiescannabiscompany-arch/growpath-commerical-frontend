@@ -31,6 +31,21 @@ export type TelemetryPoint = {
   ppfd?: number | null;
   airPressureHpa?: number | null;
   voc?: number | null;
+  substrateMoisturePct?: number | null;
+  substrateEcMsCm?: number | null;
+  substratePh?: number | null;
+  dliMolM2Day?: number | null;
+  observations?: TelemetryObservation[];
+};
+
+export type TelemetryObservation = {
+  providerMetricKey: string;
+  canonicalMetric: string | null;
+  value: unknown;
+  normalizedUnit: string | null;
+  rawValue: unknown;
+  rawUnit: string | null;
+  status: "normalized" | "unmapped";
 };
 
 export type CreateTelemetrySourceInput = {
@@ -49,8 +64,8 @@ export type BulkIngestTelemetryPointsInput = {
   mode?: BulkIngestMode;
   points: Array<{
     ts: string;
-    airTempC: number;
-    rh: number;
+    airTempC?: number | null;
+    rh?: number | null;
     leafTempC?: number | null;
     canopyTempC?: number | null;
     canopyRh?: number | null;
@@ -62,6 +77,14 @@ export type BulkIngestTelemetryPointsInput = {
     ppfd?: number | null;
     airPressureHpa?: number | null;
     voc?: number | null;
+    observations?: Array<{
+      providerMetricKey?: string;
+      metric?: string;
+      metricName?: string;
+      name?: string;
+      value: unknown;
+      unit?: string | null;
+    }>;
   }>;
 };
 

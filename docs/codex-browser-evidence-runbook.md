@@ -1,8 +1,8 @@
 # Codex Browser and production evidence runbook
 
-Use this runbook when Codex must verify a deployed change visually or record video evidence.
+Use this runbook only when the user explicitly requests browser automation or visual evidence and the current chat has no available in-app Browser tool. Do not use it for ordinary code diagnosis, terminal issues, or non-visual verification. Report the limitation once; do not repeat recovery instructions in the same troubleshooting loop.
 
-## After a Codex or Browser plugin update
+## Recovery after a verified Codex or Browser plugin update
 
 1. Fully quit the Codex desktop app; closing or reopening ordinary Chrome is not enough.
 2. Reopen Codex and confirm **Plugins > Browser** is installed and enabled.
@@ -10,6 +10,8 @@ Use this runbook when Codex must verify a deployed change visually or record vid
 4. Open the in-app Browser with `Ctrl+Shift+B` on Windows.
 5. Navigate the in-app Browser to the production URL and confirm the tab is visible to the current chat before promising screenshots or video.
 6. If the Browser is still unavailable, reinstall the Browser plugin, fully restart Codex, and start another new chat.
+
+These are user-operated recovery steps, not prerequisites for repository work. Starting Expo is separate and is only appropriate when a local app runtime is actually required by the requested check.
 
 The Codex in-app Browser and ordinary Chrome are separate surfaces. An open Chrome window does not establish a Browser bridge for the current Codex chat.
 

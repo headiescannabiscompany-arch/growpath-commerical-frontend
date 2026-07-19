@@ -7,6 +7,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockCreateProduct = jest.fn();
+const mockCreateSoilNutrientBatch = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -65,6 +66,10 @@ jest.mock("@/api/products", () => ({
   createProduct: (...args: any[]) => mockCreateProduct(...args)
 }));
 
+jest.mock("@/api/commercialWorkflows", () => ({
+  createSoilNutrientBatch: (...args: any[]) => mockCreateSoilNutrientBatch(...args)
+}));
+
 describe("DryAmendmentMixToolScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -84,6 +89,7 @@ describe("DryAmendmentMixToolScreen", () => {
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
+    mockCreateSoilNutrientBatch.mockResolvedValue({ id: "batch-1", status: "planned" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -224,6 +230,28 @@ describe("DryAmendmentMixToolScreen", () => {
               expect.stringContaining("Draft product requires image")
             ])
           })
+        })
+      )
+    );
+  });
+
+  it("converts dry amendment blends into production batches", async () => {
+    const screen = render(<DryAmendmentMixToolScreen />);
+
+    fireEvent.press(screen.getByLabelText("Run Dry Amendment Mix Builder"));
+    await waitFor(() =>
+      expect(screen.getByText("Dry Amendment Mix Builder result")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Create Production Batch"));
+
+    await waitFor(() =>
+      expect(mockCreateSoilNutrientBatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          batchName: "Veg topdress blend",
+          status: "planned",
+          linkedToolRunId: "toolrun-1",
+          batchVolume: 1000,
+          batchVolumeUnit: "grams"
         })
       )
     );

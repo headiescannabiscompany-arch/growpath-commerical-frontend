@@ -20,6 +20,7 @@ import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
@@ -145,7 +146,7 @@ function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
   return <View style={styles.timelineItem}>{content}</View>;
 }
 
-export default function GrowOverviewScreen() {
+function GrowOverviewContent() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -306,7 +307,7 @@ export default function GrowOverviewScreen() {
         </Link>
         <Link href={`/home/personal/grows/${growId}/tools`} asChild>
           <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Run Tool</Text>
+            <Text style={styles.actionText}>Grow Intelligence</Text>
           </Pressable>
         </Link>
         <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
@@ -328,5 +329,17 @@ export default function GrowOverviewScreen() {
         longContent
       />
     </ScrollView>
+  );
+}
+
+export default function GrowOverviewScreen() {
+  return (
+    <ScreenBoundary
+      title="Grow overview"
+      showBack
+      backFallbackHref="/home/personal/grows"
+    >
+      <GrowOverviewContent />
+    </ScreenBoundary>
   );
 }

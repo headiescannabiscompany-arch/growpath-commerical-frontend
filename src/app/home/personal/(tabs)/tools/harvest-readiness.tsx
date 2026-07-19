@@ -338,6 +338,12 @@ export default function HarvestReadinessToolRoute() {
       toolKey="harvest-readiness"
       title="Harvest Readiness Estimate"
       subtitle="Rule-based estimate from the values below. Successful photo analysis can fill trichome percentages; failed photo analysis does not affect the estimate. Confirm the decision across multiple bud sites and whole-plant maturity signals."
+      aiPrefill={{
+        buttonLabel: "Fill readiness review from grow",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","harvestBatchId":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
+      }}
       formHeader={({ growId }) => (
         <HarvestPhotoAnalyzer
           growId={growId}
@@ -411,6 +417,12 @@ export default function HarvestReadinessToolRoute() {
           key: "userGoal",
           label: "Effect goal (saved as context; not scored yet)",
           defaultValue: "balanced"
+        },
+        {
+          key: "additionalInformation",
+          label: "Additional observations or questions (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -421,7 +433,8 @@ export default function HarvestReadinessToolRoute() {
         smellNotes: values.aromaIntensity,
         trichomeSource: vision?.photoUsable ? "ai_photo_estimate" : "manual_entry",
         photoAnalysisConfidence: vision?.photoUsable ? vision.confidence : undefined,
-        harvestBatchId: values.harvestBatchId.trim() || undefined
+        harvestBatchId: values.harvestBatchId.trim() || undefined,
+        additionalInformation: values.additionalInformation.trim() || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "status", label: "Readiness", value: outputs.readinessStatus },

@@ -75,6 +75,10 @@ export type GrowpathModuleRecord = {
   recommendations?: string[];
   confidence?: string | null;
   limitations?: string[];
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
   tags?: string[];
   tasksToCreate?: GrowpathModuleTaskDraft[];
   linkedTaskIds?: string[];

@@ -12,6 +12,8 @@ type FeedBannerProps = {
   mode?: string | null;
   plan?: string | null;
   railMode?: FeedRailMode;
+  routeKey?: string;
+  growInterests?: string[];
 };
 
 const LABELS: Record<FeedBannerPlacement, string> = {
@@ -25,7 +27,9 @@ export default function FeedBanner({
   slots = 1,
   mode,
   plan,
-  railMode = "standard"
+  railMode = "standard",
+  routeKey,
+  growInterests
 }: FeedBannerProps) {
   if (!slots || slots <= 0) return null;
 
@@ -48,6 +52,8 @@ export default function FeedBanner({
         plan={plan}
         railMode={railMode}
         placement={placement}
+        routeKey={routeKey}
+        growInterests={growInterests}
       />
     </View>
   );

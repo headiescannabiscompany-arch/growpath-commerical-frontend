@@ -21,6 +21,16 @@ export type PersonalAssistantResponse = {
   referencedData?: AssistantReference[];
   proposedWrites?: AssistantProposedWrite[];
   provider?: string;
+  providerLabel?: string;
+  conversationId?: string;
+  evidenceUsed?: string[];
+  missingInformation?: string[];
+  limitations?: string[];
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  agreementStatus?: string;
   aiCreditsUsed?: number;
   aiTokensRemaining?: number;
   creditNotice?: string;
@@ -29,6 +39,12 @@ export type PersonalAssistantResponse = {
 export async function askPersonalAssistant(payload: {
   message: string;
   context: Record<string, any>;
+  growId?: string;
+  facilityId?: string;
+  workspaceType?: "personal" | "commercial" | "facility";
+  plantId?: string;
+  conversationId?: string;
+  evidenceAssetIds?: string[];
 }): Promise<PersonalAssistantResponse> {
   return apiRequest<PersonalAssistantResponse>("/api/ai/assistant/personal", {
     method: "POST",

@@ -75,7 +75,13 @@ export default function AutoGrowCalendarToolRoute() {
       tool="auto-grow-calendar"
       toolKey="auto-grow-calendar"
       title="Auto Grow Calendar"
-      subtitle="Generate deterministic stage anchors, task dates, and harvest planning windows."
+      subtitle="Build one editable grow lifecycle plan from saved dates, plant timing, veg, flower, harvest, dry, and cure context."
+      aiPrefill={{
+        buttonLabel: "Fill lifecycle plan from grow",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this grow lifecycle calendar from the selected grow's actual start date, plants, crop/cultivar records, current stage, stage-change logs, breeder timing, tasks, diagnoses, harvest reviews, and dry/cure plans. Return JSON only with exactly these string keys: plantCount, startDate, vegLengthWeeks, expectedFlowerDays, growStyle, medium, plants, planningNotes. plants must be a JSON array encoded as a string; each item may contain plantId, cultivar, expectedFlowerDaysMin, expectedFlowerDaysMax, and timingEvidence. Dates and elapsed durations must come from saved records. Breeder timing is a reference, not a guaranteed harvest date. Leave unknowns blank. In planningNotes identify conflicts, missing dates, cultivar/plant timing differences, uncertainty, and milestones that should remain user-editable proposals.`
+      }}
       fields={[
         {
           key: "plantCount",
@@ -103,17 +109,25 @@ export default function AutoGrowCalendarToolRoute() {
           label: "Optional plants: cultivar, flower min days, flower max days",
           defaultValue: "Sour Diesel, 63, 70\nHaze Hybrid, 70, 77",
           multiline: true
+        },
+        {
+          key: "planningNotes",
+          label: "Planning notes and timing uncertainty (optional)",
+          defaultValue: "",
+          multiline: true
         }
       ]}
-      buildPayload={(values, { growId }) => ({
+      buildPayload={(values, { growId, plantContext }) => ({
         growId,
+        ...plantContext.toolRunContext,
         plantCount: values.plantCount,
         startDate: values.startDate,
         vegLengthWeeks: values.vegLengthWeeks,
         expectedFlowerDays: values.expectedFlowerDays,
         growStyle: values.growStyle,
         medium: values.medium,
-        plants: parsePlants(values.plants)
+        plants: parsePlants(values.plants),
+        planningNotes: values.planningNotes || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "flip", label: "Flip date", value: outputs.stageTimeline?.flipDate },

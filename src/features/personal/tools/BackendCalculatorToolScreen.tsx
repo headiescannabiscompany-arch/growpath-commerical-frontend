@@ -9,6 +9,7 @@ import {
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
@@ -44,12 +45,23 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
-  formHeader?: React.ReactNode | ((context: { growId: string }) => React.ReactNode);
+  formHeader?:
+    | React.ReactNode
+    | ((context: {
+        growId: string;
+        facilityId: string;
+        commercialAccountId: string;
+      }) => React.ReactNode);
   status?: string;
   fields: ToolField[];
   buildPayload: (
     values: Record<string, string>,
-    context: { growId: string; plantContext: ReturnType<typeof useToolPlantContext> }
+    context: {
+      growId: string;
+      facilityId: string;
+      commercialAccountId: string;
+      plantContext: ReturnType<typeof useToolPlantContext>;
+    }
   ) => Record<string, any>;
   buildMetrics?: (outputs: Record<string, any>) => ToolResultMetric[];
   buildNotices?: (outputs: Record<string, any>) => ToolResultNotice[];
@@ -73,6 +85,8 @@ type BackendCalculatorToolScreenProps = {
     payload: Record<string, any>;
     toolRun: ToolRun | null;
     growId: string;
+    facilityId: string;
+    commercialAccountId: string;
     plantContext: ReturnType<typeof useToolPlantContext>;
   }) => ToolResultAction[];
   assistantBrief?: {
@@ -87,6 +101,12 @@ type BackendCalculatorToolScreenProps = {
       growId: string;
       plantContext: ReturnType<typeof useToolPlantContext>;
     }) => string;
+  };
+  aiPrefill?: {
+    buttonLabel?: string;
+    clearUnfilled?: boolean;
+    evidenceAssetIds?: () => string[];
+    buildMessage: (context: { growId: string; plantId: string }) => string;
   };
 };
 
@@ -154,15 +174,20 @@ export default function BackendCalculatorToolScreen({
   defaultLogTitle,
   defaultTask,
   buildActions,
-  assistantBrief
+  assistantBrief,
+  aiPrefill
 }: BackendCalculatorToolScreenProps) {
   const routeParams = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
+    facilityId?: string | string[];
+    commercialAccountId?: string | string[];
   }>();
   const params = routeParams as typeof routeParams &
     Record<string, string | string[] | undefined>;
   const routeGrowId = coerceParam(params.growId);
+  const facilityId = coerceParam(params.facilityId);
+  const commercialAccountId = coerceParam(params.commercialAccountId);
   const [availableGrows, setAvailableGrows] = useState<PersonalGrow[]>([]);
   const [growId, setGrowId] = useState(routeGrowId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
@@ -204,6 +229,7 @@ export default function BackendCalculatorToolScreen({
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [assistantBriefText, setAssistantBriefText] = useState("");
+  const [prefilling, setPrefilling] = useState(false);
 
   React.useEffect(() => {
     let active = true;
@@ -232,9 +258,65 @@ export default function BackendCalculatorToolScreen({
     setAssistantBriefText("");
   }
 
+  async function prefillWithAI() {
+    if (!aiPrefill || !growId || prefilling) return;
+    setPrefilling(true);
+    setFeedback("");
+    try {
+      const response = await askPersonalAssistant({
+        growId,
+        plantId: plantContext.plantId || undefined,
+        evidenceAssetIds: aiPrefill.evidenceAssetIds?.(),
+        context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
+        message: aiPrefill.buildMessage({
+          growId,
+          plantId: plantContext.plantId || ""
+        })
+      });
+      const raw = String(response.reply || "");
+      const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(match?.[1] || raw.slice(raw.indexOf("{")));
+      const next = Object.fromEntries(
+        fields
+          .filter((field) => parsed[field.key] != null)
+          .map((field) => [
+            field.key,
+            typeof parsed[field.key] === "string"
+              ? parsed[field.key]
+              : JSON.stringify(parsed[field.key], null, 2)
+          ])
+      );
+      setValues((current) =>
+        Object.fromEntries(
+          fields.map((field) => [
+            field.key,
+            next[field.key] ?? (aiPrefill.clearUnfilled ? "" : current[field.key] || "")
+          ])
+        )
+      );
+      setFeedback(
+        `AI filled ${Object.keys(next).length} field(s) from grow records. Review before calculating.${
+          response.missingInformation?.length
+            ? ` Optional missing details: ${response.missingInformation.join(", ")}.`
+            : ""
+        }`
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "AI could not prefill this workflow.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
+
   const payload = useMemo(
-    () => buildPayload(values, { growId, plantContext }),
-    [buildPayload, growId, plantContext, values]
+    () =>
+      buildPayload(values, {
+        growId,
+        facilityId,
+        commercialAccountId,
+        plantContext
+      }),
+    [buildPayload, commercialAccountId, facilityId, growId, plantContext, values]
   );
 
   async function calculate() {
@@ -344,6 +426,8 @@ export default function BackendCalculatorToolScreen({
           payload,
           toolRun,
           growId,
+          facilityId,
+          commercialAccountId,
           plantContext
         })
       );
@@ -444,7 +528,31 @@ export default function BackendCalculatorToolScreen({
           onSelect={plantContext.setPlantId}
         />
 
-        {typeof formHeader === "function" ? formHeader({ growId }) : formHeader}
+        {aiPrefill ? (
+          <View style={styles.guidanceCard}>
+            <Text style={styles.resultTitle}>AI grow-context prefill</Text>
+            <Text style={styles.guidanceText}>
+              AI will use saved grow and plant evidence to fill every supported field. You
+              can add or correct anything before running the tool.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!growId || prefilling}
+              style={styles.secondaryButton}
+              onPress={prefillWithAI}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {prefilling
+                  ? "Reviewing grow..."
+                  : aiPrefill.buttonLabel || "Fill with AI"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {typeof formHeader === "function"
+          ? formHeader({ growId, facilityId, commercialAccountId })
+          : formHeader}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>

@@ -5,6 +5,7 @@ import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-nativ
 
 import { apiRequest } from "@/api/apiRequest";
 import { createProduct, fetchProducts, Product } from "@/api/products";
+import { fetchStorefront } from "@/api/storefront";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -28,6 +29,8 @@ type ProductForm = {
   ingredients: string;
   directions: string;
   applicationRate: string;
+  documentUrls: string;
+  batchLot: string;
   externalPurchaseUrl: string;
   stripeProductId: string;
   stripePriceId: string;
@@ -50,6 +53,8 @@ const EMPTY_FORM: ProductForm = {
   ingredients: "",
   directions: "",
   applicationRate: "",
+  documentUrls: "",
+  batchLot: "",
   externalPurchaseUrl: "",
   stripeProductId: "",
   stripePriceId: "",
@@ -109,7 +114,9 @@ function hasProductSpecs(form: ProductForm) {
     form.guaranteedAnalysis,
     form.ingredients,
     form.directions,
-    form.applicationRate
+    form.applicationRate,
+    form.documentUrls,
+    form.batchLot
   ].some(hasText);
 }
 
@@ -169,6 +176,7 @@ export default function CommercialProductsRoute({
   const auth = useAuth();
   const ent = useEntitlements();
   const [products, setProducts] = useState<Product[]>([]);
+  const [storefrontSlug, setStorefrontSlug] = useState("");
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -197,7 +205,12 @@ export default function CommercialProductsRoute({
     setLoading(true);
     setError(null);
     try {
-      setProducts(await fetchProducts());
+      const [nextProducts, storefront] = await Promise.all([
+        fetchProducts(),
+        fetchStorefront().catch(() => null)
+      ]);
+      setProducts(nextProducts);
+      setStorefrontSlug(String(storefront?.slug || ""));
     } catch (err) {
       setError(err);
     } finally {
@@ -240,9 +253,13 @@ export default function CommercialProductsRoute({
               guaranteedAnalysis: form.guaranteedAnalysis.trim() || undefined,
               ingredients: splitList(form.ingredients),
               directions: form.directions.trim() || undefined,
-              applicationRate: form.applicationRate.trim() || undefined
+              applicationRate: form.applicationRate.trim() || undefined,
+              documentUrls: splitList(form.documentUrls),
+              batchLot: form.batchLot.trim() || undefined
             }
           : undefined,
+        documentUrls: splitList(form.documentUrls),
+        batchLot: form.batchLot.trim() || undefined,
         status: form.status
       } as Partial<Product>);
       setForm(EMPTY_FORM);
@@ -485,6 +502,13 @@ export default function CommercialProductsRoute({
             style={styles.input}
           />
           <TextInput
+            value={form.batchLot}
+            onChangeText={(batchLot) => setForm((prev) => ({ ...prev, batchLot }))}
+            accessibilityLabel="Commercial product batch or lot"
+            placeholder="Current batch / lot identifier"
+            style={styles.input}
+          />
+          <TextInput
             value={form.currency}
             onChangeText={(currency) => setForm((prev) => ({ ...prev, currency }))}
             accessibilityLabel="Commercial product currency"
@@ -549,6 +573,15 @@ export default function CommercialProductsRoute({
           accessibilityLabel="Commercial product directions"
           multiline
           placeholder="Directions for use, storage, and safety notes"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.documentUrls}
+          onChangeText={(documentUrls) => setForm((prev) => ({ ...prev, documentUrls }))}
+          accessibilityLabel="Commercial product document URLs"
+          multiline
+          autoCapitalize="none"
+          placeholder="Label, SDS, COA, or instructions URLs (one per line)"
           style={[styles.input, styles.textArea]}
         />
         <TextInput
@@ -702,10 +735,17 @@ export default function CommercialProductsRoute({
                       href={`/home/commercial/products/${encodeURIComponent(String(id))}`}
                       label="Open Detail"
                     />
-                    <ActionLink
-                      href={`/store/example-brand/products/${id}`}
-                      label="Public Detail"
-                    />
+                    {storefrontSlug ? (
+                      <ActionLink
+                        href={`/store/${encodeURIComponent(storefrontSlug)}/products/${encodeURIComponent(String(id))}`}
+                        label="Public Detail"
+                      />
+                    ) : (
+                      <ActionLink
+                        href="/home/commercial/storefront"
+                        label="Set Up Storefront"
+                      />
+                    )}
                     <ActionLink href="/home/commercial/feed" label="Create Campaign" />
                   </View>
                 </View>

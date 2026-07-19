@@ -9,6 +9,7 @@ const mockListPersonalPlants = jest.fn();
 const mockListPersonalTasks = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockUseEntitlements = jest.fn();
+const mockFetchPersonalAnalyticsOverview = jest.fn();
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args) => mockListPersonalGrows(...args)
@@ -30,6 +31,10 @@ jest.mock("@/api/toolRuns", () => ({
   listToolRuns: (...args) => mockListToolRuns(...args)
 }));
 
+jest.mock("@/api/personalAnalytics", () => ({
+  fetchPersonalAnalyticsOverview: (...args) => mockFetchPersonalAnalyticsOverview(...args)
+}));
+
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockUseEntitlements()
 }));
@@ -41,6 +46,12 @@ describe("AnalyticsScreen", () => {
       .spyOn(Date, "now")
       .mockReturnValue(new Date("2026-06-29T12:00:00.000Z").getTime());
     mockUseEntitlements.mockReturnValue({ mode: "personal", plan: "pro" });
+    mockFetchPersonalAnalyticsOverview.mockResolvedValue({
+      consistency: { rate: 50 },
+      environmentHistory: { sourceCount: 1, pointCount: 24 },
+      activity: { runComparisons: 1 },
+      taskCompletion: { total: 2, completed: 1, rate: 50 }
+    });
     mockListPersonalGrows.mockResolvedValue([
       {
         id: "grow-1",
@@ -61,7 +72,8 @@ describe("AnalyticsScreen", () => {
         growId: "grow-1",
         title: "Checked canopy",
         date: "2026-06-28T12:00:00.000Z",
-        createdAt: "2026-06-28T12:00:00.000Z"
+        createdAt: "2026-06-28T12:00:00.000Z",
+        metrics: { temperatureF: 78, humidity: 58 }
       }
     ]);
     mockListPersonalPlants.mockResolvedValue([
@@ -90,6 +102,12 @@ describe("AnalyticsScreen", () => {
         growId: "grow-1",
         toolType: "dew-point-guard",
         createdAt: "2026-06-29T10:00:00.000Z"
+      },
+      {
+        id: "run-2",
+        growId: "grow-1",
+        toolName: "run_comparison",
+        createdAt: "2026-06-29T11:00:00.000Z"
       }
     ]);
   });
@@ -106,6 +124,12 @@ describe("AnalyticsScreen", () => {
     expect(screen.getByText("personal mode | pro plan")).toBeTruthy();
     expect(screen.getByText("Last 7 Days")).toBeTruthy();
     expect(screen.getByText("Grow Activity")).toBeTruthy();
+    expect(screen.getByText("Grow consistency")).toBeTruthy();
+    expect(screen.getByText("Environment records")).toBeTruthy();
+    expect(screen.getByText("Run comparisons")).toBeTruthy();
+    expect(screen.getByText("Measured History")).toBeTruthy();
+    expect(screen.getAllByText("50%").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("24").length).toBeGreaterThan(0);
     expect(screen.getByText("1 logs")).toBeTruthy();
     expect(screen.getByText("dew point guard")).toBeTruthy();
     expect(screen.getByText("Water plant")).toBeTruthy();

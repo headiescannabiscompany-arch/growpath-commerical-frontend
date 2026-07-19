@@ -20,6 +20,18 @@ const WORKFLOWS = [
     title: "Feeding schedule",
     description: "Turn the selected recipe into real feed and recheck tasks.",
     href: "/home/facility/tools/feeding-schedule"
+  },
+  {
+    title: "Dry amendment / topdress",
+    description:
+      "Use the shared release and compatibility engine for amendments and scheduled applications.",
+    href: "/home/facility/tools/dry-amendment-mix"
+  },
+  {
+    title: "Ingredient catalog",
+    description:
+      "Reuse verified guaranteed analysis and nutrient forms across facility recipes.",
+    href: "/home/facility/tools/ingredient-library"
   }
 ];
 

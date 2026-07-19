@@ -245,6 +245,27 @@ describe("AlertCenterRoute", () => {
               sourceType: "storefront",
               linkedStorefrontSlug: "living-soil-labs",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-21",
+              title: "Finish account setup",
+              severity: "info",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "setup",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-22",
+              title: "Facility training assignment overdue",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "course_assignment",
+              sourceId: "training-assignment-1",
+              linkedCourseId: "training-course-1",
+              linkedLessonId: "training-lesson-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -327,6 +348,14 @@ describe("AlertCenterRoute", () => {
       )
     ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /store/living-soil-labs")).toBeTruthy();
+    expect(screen.getByText("Finish account setup")).toBeTruthy();
+    expect(screen.getByText("Facility training assignment overdue")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/personal")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/facility/sop-runs/training-course-1?lessonId=training-lesson-1&assignmentId=training-assignment-1"
+      )
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(
@@ -363,7 +392,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(19);
+    expect(createButtons).toHaveLength(21);
     fireEvent.press(createButtons[5]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -527,6 +556,20 @@ describe("AlertCenterRoute", () => {
             linkedStorefrontId: "living-soil-labs",
             storefrontSlug: "living-soil-labs",
             linkedStorefrontSlug: "living-soil-labs"
+          })
+        })
+      )
+    );
+
+    fireEvent.press(screen.getAllByLabelText("Assign alert")[0]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/alerts/alert-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            assignedToUserId: "owner-1",
+            assignedAt: expect.any(String)
           })
         })
       )

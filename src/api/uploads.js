@@ -99,3 +99,28 @@ export async function uploadCourseMedia(input) {
     body: formData
   });
 }
+
+export async function uploadEvidenceMedia(input) {
+  const file = normalizeUploadInput(input, "evidence-media");
+  if (!file.uri) throw new Error("uploadEvidenceMedia: uri is required");
+
+  const formData = new FormData();
+  const type = file.type || guessCourseMediaMime(file.name);
+  const field = type.startsWith("image/") ? "image" : "media";
+
+  if (Platform.OS === "web") {
+    const blob = await uriToBlob(file.uri);
+    formData.append(field, blob, file.name);
+  } else {
+    formData.append(field, {
+      uri: file.uri,
+      name: file.name,
+      type
+    });
+  }
+
+  return apiRequest(
+    field === "image" ? "/api/uploads/image" : "/api/uploads/evidence-media",
+    { method: "POST", body: formData }
+  );
+}

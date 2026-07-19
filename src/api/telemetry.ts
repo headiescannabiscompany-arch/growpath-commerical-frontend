@@ -23,6 +23,7 @@ export const TELEMETRY_ROUTES = {
   SOURCES: "/api/telemetry/sources",
   POINTS_BULK: "/api/telemetry/points:bulk",
   POINTS: "/api/telemetry/points",
+  TOOL_CONTEXT: "/api/telemetry/tool-context",
   PULSE_VERIFY: "/api/telemetry/pulse/verify",
   PULSE_DEVICES: "/api/telemetry/pulse/devices",
   PULSE_PULL: "/api/telemetry/pulse/pull",
@@ -35,6 +36,19 @@ export const TELEMETRY_ROUTES = {
   GROWLINK_CURRENT: "/api/telemetry/growlink/current",
   GROWLINK_PULL: "/api/telemetry/growlink/pull"
 } as const;
+
+export type ImportedTelemetryToolContext = {
+  source: "imported_telemetry";
+  sourceIds: string[];
+  growId: string;
+  window: { startAt: string | null; endAt: string | null; pointCount: number };
+  metrics: Record<string, number | null>;
+  toolInputs: Record<string, Record<string, unknown>>;
+  aiSummary: string;
+  alertDrafts: Array<Record<string, unknown>>;
+  taskDrafts: Array<Record<string, unknown>>;
+  limitations: string[];
+};
 
 function normId(x: any): string {
   const id = x?.id ?? x?._id ?? "";
@@ -147,8 +161,8 @@ function normalizePoint(raw: any): TelemetryPoint {
     id: id ? String(id) : undefined,
     sourceId,
     ts: String(raw?.ts ?? raw?.timestamp ?? raw?.time ?? ""),
-    airTempC: Number(raw?.airTempC ?? raw?.tempC ?? raw?.airTemp ?? raw?.temp),
-    rh: Number(raw?.rh ?? raw?.humidity ?? raw?.RH),
+    airTempC: raw?.airTempC ?? raw?.tempC ?? raw?.airTemp ?? raw?.temp ?? Number.NaN,
+    rh: raw?.rh ?? raw?.humidity ?? raw?.RH ?? Number.NaN,
     leafTempC: raw?.leafTempC ?? null,
     canopyTempC: raw?.canopyTempC ?? null,
     canopyRh: raw?.canopyRh ?? null,
@@ -160,7 +174,12 @@ function normalizePoint(raw: any): TelemetryPoint {
     lightUnit: raw?.lightUnit ?? null,
     ppfd: raw?.ppfd ?? null,
     airPressureHpa: raw?.airPressureHpa ?? null,
-    voc: raw?.voc ?? null
+    voc: raw?.voc ?? null,
+    substrateMoisturePct: raw?.substrateMoisturePct ?? null,
+    substrateEcMsCm: raw?.substrateEcMsCm ?? null,
+    substratePh: raw?.substratePh ?? null,
+    dliMolM2Day: raw?.dliMolM2Day ?? null,
+    observations: Array.isArray(raw?.observations) ? raw.observations : []
   };
 }
 
@@ -232,6 +251,22 @@ export async function getTelemetryPoints(
     endIso: String(data?.endIso ?? query.endIso),
     points
   };
+}
+
+export async function getImportedTelemetryToolContext(input: {
+  growId: string;
+  sourceId?: string;
+  startIso?: string;
+  endIso?: string;
+}): Promise<ImportedTelemetryToolContext> {
+  const path = `${TELEMETRY_ROUTES.TOOL_CONTEXT}${qs({
+    growId: input.growId,
+    sourceId: input.sourceId,
+    start: input.startIso,
+    end: input.endIso
+  })}`;
+  const response = await apiRequest(path, { method: "GET" });
+  return unwrapData(response)?.context;
 }
 
 export async function verifyPulseApiKey(apiKey: string): Promise<PulseVerifyResult> {
