@@ -25,5 +25,11 @@ export async function analyzeTrichomePhotos(input: {
     method: "POST",
     body: input
   });
-  return response?.result;
+  const result = response?.result ?? response?.data?.result ?? response?.data ?? response;
+  if (!result || typeof result.photoUsable !== "boolean") {
+    throw new Error(
+      "The photo analysis returned an incomplete result. Please try again."
+    );
+  }
+  return result as TrichomeVisionResult;
 }
