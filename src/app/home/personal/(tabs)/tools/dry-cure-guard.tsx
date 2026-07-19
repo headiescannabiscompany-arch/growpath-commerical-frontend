@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -9,6 +9,9 @@ import {
   updateHarvestBatch,
   type DryCureRecordInput
 } from "@/api/harvestBatches";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -110,7 +113,8 @@ function dryCureRecord(
     qualityNotes: [
       outputs.moldRisk ? `Mold risk: ${outputs.moldRisk}` : "",
       outputs.overdryRisk ? `Overdry risk: ${outputs.overdryRisk}` : "",
-      outputs.nextAction ? `Next action: ${outputs.nextAction}` : ""
+      outputs.nextAction ? `Next action: ${outputs.nextAction}` : "",
+      payload.observations ? `Observations: ${payload.observations}` : ""
     ]
       .filter(Boolean)
       .join("\n"),
@@ -119,12 +123,31 @@ function dryCureRecord(
 }
 
 export default function DryCureGuardToolScreen() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="dry-cure-guard"
       toolKey="dry-cure-guard"
       title="Dry / Cure Guard"
       subtitle="Check dry-room and jar moisture risk without pretending one target guarantees quality."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="harvest"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Fill dry/cure review from records",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill this Dry/Cure Guard review from the selected grow's harvest batch, dry/cure records, room or device telemetry, logged temperature/RH, jar readings, tasks, and attached photos/video. Return JSON only with exactly these keys: {"mode":"string","dryRoomTemp":"string","tempUnit":"string","dryRoomRH":"string","jarRH":"string","harvestBatchId":"string","airflow":"string","budDensity":"string","observations":"string"}. Numeric temperature, room RH, and jar RH must come from saved measurements; never estimate them from an image. Media may support visible density, drying structure, surface condition, or airflow setup, but cannot rule mold in or out by itself. Leave unknowns blank. In observations summarize aroma/texture notes, measurement timing, evidence limitations, and the exact sensor or close-up checks still needed.`
+      }}
       fields={[
         { key: "mode", label: "Mode", defaultValue: "drying" },
         {
@@ -152,7 +175,13 @@ export default function DryCureGuardToolScreen() {
           defaultValue: ""
         },
         { key: "airflow", label: "Airflow", defaultValue: "medium" },
-        { key: "budDensity", label: "Bud density", defaultValue: "medium" }
+        { key: "budDensity", label: "Bud density", defaultValue: "medium" },
+        {
+          key: "observations",
+          label: "Aroma, texture, or other observations (optional)",
+          defaultValue: "",
+          multiline: true
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
@@ -164,7 +193,10 @@ export default function DryCureGuardToolScreen() {
         jarRH: values.jarRH ? n(values.jarRH) : undefined,
         harvestBatchId: values.harvestBatchId.trim() || undefined,
         airflow: values.airflow,
-        budDensity: values.budDensity
+        budDensity: values.budDensity,
+        observations: values.observations || undefined,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "mold", label: "Mold risk", value: outputs.moldRisk || "-" },
