@@ -22,6 +22,18 @@ Facility currently has the strongest visual appeal and sense of operational poli
 
 ## P0 - Must Fix Before More Broad Manual QA
 
+0. Knowledge base, source reliability, and GrowPath methods
+   - [x] Create `docs/knowledge` with source, AI-decision, cannabis-visibility, and method policies.
+   - [x] Add diagnosis, pheno, stress, crop-steering, soil/nutrient, clone, TC, harvest/dry/cure, commercial, and facility method documents.
+   - [x] Add app-readable `src/knowledge` source, method, and decision registries.
+   - [x] Require Codex/developers to read relevant methods before tool work.
+   - [ ] Collect the owner’s named websites, domains, preferred authors/channels, reliability tiers, trusted uses, exclusions, and review dates.
+   - [ ] Add an admin/editor workflow for reviewing and versioning source entries and internal methods.
+   - [ ] Add runtime retrieval of relevant method snippets and source rules to Ask AI, diagnosis, and GPT verification prompts.
+   - [ ] Persist method IDs, source IDs, citations, disagreements, and limitations with AI answers/ToolRuns.
+   - [ ] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions.
+   - [ ] Add outcome-based method review so repeated grow results can propose—but never silently rewrite—GrowPath methods.
+
 1. Commercial navigation clarity
    - Make Storefront a first-class commercial destination.
    - Put Storefront prominently on Commercial Dashboard.

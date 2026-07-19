@@ -1,5 +1,11 @@
 # Codex operating guidance
 
+## GrowPathAI domain knowledge
+
+Before modifying a GrowPathAI tool or domain workflow, read `docs/knowledge/README.md`, `docs/knowledge/source-reliability-registry.md`, `docs/knowledge/ai-decision-policy.md`, and every method document routed for that work in the README.
+
+Do not leave domain rules only in chat history. Update the relevant method document and the app-readable registries in `src/knowledge` when behavior or evidence policy changes. Cannabis-facing changes must also follow `docs/knowledge/cannabis-visibility-policy.md`.
+
 ## Verification
 
 If npm registry access is blocked in the Codex execution environment (for example, `403` from `registry.npmjs.org`), Codex must not run package install/test commands in that environment.
