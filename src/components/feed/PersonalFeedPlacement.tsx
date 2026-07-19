@@ -2,7 +2,7 @@ import React from "react";
 
 import FeedBanner from "@/components/feed/FeedBanner";
 import { useEntitlements } from "@/entitlements";
-import { useOptionalAuth } from "@/auth/AuthContext";
+import * as AuthContext from "@/auth/AuthContext";
 import { flattenGrowInterests } from "@/utils/growInterests";
 import { FeedBannerPlacement, getFeedBannerPolicy } from "@/utils/feedPolicy";
 
@@ -12,13 +12,15 @@ type PersonalFeedPlacementProps = {
   longContent?: boolean;
 };
 
+const useFeedAuth = AuthContext.useOptionalAuth || AuthContext.useAuth;
+
 export default function PersonalFeedPlacement({
   placement,
   routeKey,
   longContent = false
 }: PersonalFeedPlacementProps) {
   const entitlements = useEntitlements();
-  const auth = useOptionalAuth();
+  const auth = useFeedAuth();
   const plan = entitlements.plan || "free";
   const policy = getFeedBannerPolicy({
     routeKey: routeKey || "personal",
