@@ -128,11 +128,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Save to grow/product/facility batch.
 
 16. Dry Amendment Mix Builder
-   - Build concentrated dry blend.
-   - Estimated guaranteed analysis.
-   - Ingredient contribution chart.
-   - Product-ready label fields.
-   - Bag sizes and application directions.
+   - [x] Build concentrated dry blend.
+   - [x] Estimated guaranteed analysis.
+   - [x] Ingredient contribution chart.
+   - [x] Product-ready label fields.
+   - [x] Bag sizes and application directions.
 
 17. Topdress / Re-Amend Planner
    - Grow/plant/bed specific topdress plan.
