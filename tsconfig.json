@@ -12,5 +12,12 @@
     },
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules", "backend", "src/screens/**", "src/api/_quarantine/**"]
+  "exclude": [
+    "node_modules",
+    "backend",
+    "backend-media-storage",
+    "tmp",
+    "src/screens/**",
+    "src/api/_quarantine/**"
+  ]
 }
