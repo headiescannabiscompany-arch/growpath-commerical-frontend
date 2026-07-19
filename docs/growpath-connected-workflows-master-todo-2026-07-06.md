@@ -202,9 +202,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
 ## P4 - Feed Campaign Engine
 
 32. FeedCampaign model
-   - Owner commercial/facility.
-   - Product/course/live/storefront/facility/general campaign.
-   - Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
+   - [x] Owner commercial/facility.
+   - [x] Product/course/live/storefront/facility/general campaign.
+   - [x] Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
 
 33. Feed placement engine
    - Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
@@ -918,6 +918,7 @@ Completed and pushed:
 627. Course Analytics now aggregates the live Course, Enrollment, Earning, Task, question, and CourseEngagementEvent records instead of the disconnected legacy Lesson collection, reporting course/lesson views, unique viewers, enrollments, completion and average progress, sales/earnings, drop-off, assignment-task completion, live RSVPs, related-product clicks, and unanswered questions through a reachable shared owner analytics route.
 628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
 629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
+630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
 
 ## Working Rule For Codex
 

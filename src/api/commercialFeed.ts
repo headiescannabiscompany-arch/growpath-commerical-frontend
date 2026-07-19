@@ -15,6 +15,10 @@ export type CommercialFeedCampaign = {
   campaignKind?: string;
   authorType?: string;
   workspaceType?: string;
+  ownerType?: "commercial" | "facility";
+  facilityId?: string;
+  campaignType?: "product" | "course" | "live" | "storefront" | "facility" | "general";
+  status?: "draft" | "scheduled" | "active" | "paused" | "ended" | "cancelled";
   title?: string;
   body: string;
   tags: string[];
@@ -39,6 +43,9 @@ export type CommercialFeedCampaign = {
   reminderPreference?: string;
   recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
+  placements?: Array<"feed" | "storefront" | "course" | "live" | "facility">;
+  destination?: { type?: string; id?: string; url?: string; label?: string };
+  cta?: { label?: string; kind?: string };
   engagementCount?: number;
   likeCount?: number;
   commentCount?: number;
@@ -124,6 +131,10 @@ export async function createCommercialFeedCampaign(input: {
   campaignKind?: string;
   authorType?: "commercial" | "facility";
   workspaceType?: "commercial" | "facility";
+  ownerType?: "commercial" | "facility";
+  facilityId?: string;
+  campaignType?: "product" | "course" | "live" | "storefront" | "facility" | "general";
+  status?: "draft" | "scheduled" | "active" | "paused" | "ended" | "cancelled";
   title?: string;
   body: string;
   tags?: string[];
@@ -143,6 +154,8 @@ export async function createCommercialFeedCampaign(input: {
   reminderPreference?: string;
   recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
+  placements?: Array<"feed" | "storefront" | "course" | "live" | "facility">;
+  cta?: { label?: string; kind?: string };
 }) {
   const imageUrl = await persistImageUri(input.imageUrl);
   const res: any = await apiRequest("/api/commercial/feed", {

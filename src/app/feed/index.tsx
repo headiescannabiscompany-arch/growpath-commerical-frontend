@@ -72,6 +72,16 @@ function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedCampaignT
   return "update";
 }
 
+function canonicalCampaignType(kind: CampaignKind) {
+  return kind.replace(/_ad$|_outreach$|_campaign$/g, "") as
+    | "product"
+    | "course"
+    | "live"
+    | "storefront"
+    | "facility"
+    | "general";
+}
+
 function campaignReadinessWarnings({
   campaignKind,
   linkedProductId,
@@ -400,6 +410,13 @@ export default function CommercialFeedRoute() {
         campaignKind,
         authorType: isFacility ? "facility" : "commercial",
         workspaceType: isFacility ? "facility" : "commercial",
+        ownerType: isFacility ? "facility" : "commercial",
+        facilityId: isFacility ? ent.facilityId || undefined : undefined,
+        campaignType: canonicalCampaignType(campaignKind),
+        status:
+          campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+            ? "scheduled"
+            : "active",
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
@@ -420,7 +437,9 @@ export default function CommercialFeedRoute() {
         recurrenceRule: campaignRecurrence.trim() || undefined,
         externalLinks: cleanExternalUrl
           ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
-          : undefined
+          : undefined,
+        placements: isFacility ? ["feed", "facility"] : ["feed"],
+        cta: { label: cleanExternalLabel || "Open", kind: "open" }
       });
       setTitle("");
       setBody("");
