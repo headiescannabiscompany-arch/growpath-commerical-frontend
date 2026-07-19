@@ -21,6 +21,7 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -29,6 +30,7 @@ function coerceParam(value?: string | string[]) {
 }
 
 function numeric(value: string) {
+  if (!value.trim()) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
 }
@@ -109,10 +111,58 @@ export default function EnvironmentAnalysisToolScreen() {
   const [ppfd, setPpfd] = useState("");
   const [dli, setDli] = useState("");
   const [co2, setCo2] = useState("");
-  const [lightHours, setLightHours] = useState("18");
+  const [lightHours, setLightHours] = useState("");
   const [result, setResult] = useState<any>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [prefilling, setPrefilling] = useState(false);
+
+  async function prefillFromGrow() {
+    if (!growId || prefilling) return;
+    setPrefilling(true);
+    setFeedback("");
+    try {
+      const response = await askPersonalAssistant({
+        growId,
+        plantId: plantContext.plantId || undefined,
+        context: {
+          workflow: "environment-analysis",
+          requestedFields: [
+            "stage",
+            "tempDayC",
+            "tempNightC",
+            "humidity",
+            "vpd",
+            "ppfd",
+            "dli",
+            "co2",
+            "lightHours"
+          ]
+        },
+        message: `Prefill this Environment Review from the selected grow/room's recent telemetry, device integrations, light schedule, stage history, environmental logs, alerts, and plant response. Return JSON only with exactly these string keys: stage, tempDayC, tempNightC, humidity, vpd, ppfd, dli, co2, lightHours. Every numeric field must come from a saved sensor reading or explicit measurement. Use a representative recent window and distinguish lights-on, lights-off, transitions, peaks, lows, and averages; do not mix readings from different rooms or time windows. Never estimate PPFD, DLI, CO2, temperature, or RH from photos. Leave unavailable or stale values blank. VPD and dew point will be recalculated by the deterministic environment engine.`
+      });
+      const raw = String(response.reply || "");
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
+      setStage(String(parsed.stage ?? ""));
+      setTempDayC(String(parsed.tempDayC ?? ""));
+      setTempNightC(String(parsed.tempNightC ?? ""));
+      setHumidity(String(parsed.humidity ?? ""));
+      setVpd(String(parsed.vpd ?? ""));
+      setPpfd(String(parsed.ppfd ?? ""));
+      setDli(String(parsed.dli ?? ""));
+      setCo2(String(parsed.co2 ?? ""));
+      setLightHours(String(parsed.lightHours ?? ""));
+      setResult(null);
+      setFeedback(
+        `AI filled recent recorded environment values. Review the time window before running the environment engine.${response.missingInformation?.length ? ` Missing or stale: ${response.missingInformation.join(", ")}.` : ""}`
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "AI could not prefill the environment review.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
 
   const assessment = result?.data?.currentAssessment ?? result?.currentAssessment ?? {};
   const recommendations = actionList(result);
@@ -235,6 +285,27 @@ export default function EnvironmentAnalysisToolScreen() {
           selectedPlant={plantContext.selectedPlant}
           onSelect={plantContext.setPlantId}
         />
+
+        <View style={styles.aiCard}>
+          <Text style={styles.aiTitle}>AI telemetry prefill</Text>
+          <Text style={styles.aiText}>
+            Fill recent measured values and identify missing or stale sensors. GrowPath
+            rules still calculate VPD, dew point, and risk.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Fill environment review from grow"
+            disabled={!growId || prefilling}
+            onPress={prefillFromGrow}
+            style={[styles.button, (!growId || prefilling) && styles.disabled]}
+          >
+            <Text style={styles.buttonText}>
+              {prefilling
+                ? "Reviewing telemetry..."
+                : "Fill environment review from grow"}
+            </Text>
+          </Pressable>
+        </View>
 
         <Text style={styles.label}>Stage</Text>
         <TextInput
@@ -517,6 +588,16 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   disabled: { opacity: 0.5 },
+  aiCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  aiTitle: { color: "#14532D", fontWeight: "800" },
+  aiText: { color: "#475569", lineHeight: 19 },
   locked: {
     color: "#991B1B",
     backgroundColor: "#FEE2E2",
