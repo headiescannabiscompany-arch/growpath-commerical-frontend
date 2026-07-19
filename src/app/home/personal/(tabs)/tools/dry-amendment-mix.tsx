@@ -161,12 +161,30 @@ export default function DryAmendmentMixToolScreen() {
         },
         { key: "releaseB", label: "Ingredient B release", defaultValue: "slow" },
         { key: "ingredientC", label: "Ingredient C (optional)", defaultValue: "" },
-        { key: "amountC", label: "Ingredient C grams", defaultValue: "0", keyboardType: "numeric" },
-        { key: "analysisC", label: "Ingredient C guaranteed analysis N-P2O5-K2O", defaultValue: "0-0-0" },
+        {
+          key: "amountC",
+          label: "Ingredient C grams",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "analysisC",
+          label: "Ingredient C guaranteed analysis N-P2O5-K2O",
+          defaultValue: "0-0-0"
+        },
         { key: "releaseC", label: "Ingredient C release", defaultValue: "medium" },
         { key: "ingredientD", label: "Ingredient D (optional)", defaultValue: "" },
-        { key: "amountD", label: "Ingredient D grams", defaultValue: "0", keyboardType: "numeric" },
-        { key: "analysisD", label: "Ingredient D guaranteed analysis N-P2O5-K2O", defaultValue: "0-0-0" },
+        {
+          key: "amountD",
+          label: "Ingredient D grams",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "analysisD",
+          label: "Ingredient D guaranteed analysis N-P2O5-K2O",
+          defaultValue: "0-0-0"
+        },
         { key: "releaseD", label: "Ingredient D release", defaultValue: "slow" },
         {
           key: "dosePerGallonSoil",
@@ -186,7 +204,10 @@ export default function DryAmendmentMixToolScreen() {
           defaultValue: ""
         }
       ]}
-      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId: growId || undefined,
         facilityId: facilityId || undefined,
         commercialAccountId: commercialAccountId || undefined,
@@ -206,8 +227,18 @@ export default function DryAmendmentMixToolScreen() {
             values.analysisB,
             values.releaseB
           ),
-          ingredient(values.ingredientC, values.amountC, values.analysisC, values.releaseC),
-          ingredient(values.ingredientD, values.amountD, values.analysisD, values.releaseD)
+          ingredient(
+            values.ingredientC,
+            values.amountC,
+            values.analysisC,
+            values.releaseC
+          ),
+          ingredient(
+            values.ingredientD,
+            values.amountD,
+            values.analysisD,
+            values.releaseD
+          )
         ].filter((row) => row.name.trim() && row.amount > 0),
         dosePerGallonSoil: n(values.dosePerGallonSoil),
         packageSizeGrams: n(values.packageSizeGrams),
@@ -319,14 +350,19 @@ export default function DryAmendmentMixToolScreen() {
           successMessage: "Created dry amendment production batch.",
           onPress: async () => {
             await createSoilNutrientBatch({
-              batchName: outputs.recipeName || payload.recipeName || "Dry amendment batch",
+              batchName:
+                outputs.recipeName || payload.recipeName || "Dry amendment batch",
               purpose: payload.desiredStage || "general",
               status: "planned",
               facilityId: payload.facilityId || undefined,
               linkedToolRunId: toolRun?.id || toolRun?._id || undefined,
               batchVolume: outputs.batchWeight || undefined,
               batchVolumeUnit: "grams",
-              ingredientSummary: (outputs.ingredientContributions || payload.ingredients || [])
+              ingredientSummary: (
+                outputs.ingredientContributions ||
+                payload.ingredients ||
+                []
+              )
                 .map((row: any) => `${row.name}: ${row.amount} ${row.amountUnit || "g"}`)
                 .join("; "),
               guaranteedAnalysisNotes: JSON.stringify(
@@ -337,7 +373,9 @@ export default function DryAmendmentMixToolScreen() {
               notes: [
                 outputs.analysisDisclaimer,
                 payload.growId ? `Source grow: ${payload.growId}` : ""
-              ].filter(Boolean).join("\n")
+              ]
+                .filter(Boolean)
+                .join("\n")
             });
           }
         },
@@ -383,7 +421,8 @@ export default function DryAmendmentMixToolScreen() {
                 ingredientContributions: outputs.ingredientContributions || [],
                 achievedRatio: outputs.achievedRatio || null,
                 batchWeightGrams: outputs.batchWeight || null,
-                packageSizeGrams: outputs.packageSizeGrams || payload.packageSizeGrams || null,
+                packageSizeGrams:
+                  outputs.packageSizeGrams || payload.packageSizeGrams || null,
                 packageCount: outputs.packageCount || null,
                 applicationRate: {
                   dosePerCubicFoot: outputs.dosePerCubicFoot || null,

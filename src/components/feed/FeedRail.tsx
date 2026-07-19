@@ -366,9 +366,11 @@ export default function FeedRail({
 }: FeedRailProps) {
   const [campaignAds, setCampaignAds] = useState<AdItem[]>([]);
   const slotKey = resolveFeedSlotKey(routeKey, placement);
+  const growInterestKey = growInterests.join("|");
 
   useEffect(() => {
     let cancelled = false;
+    const activeGrowInterests = growInterestKey.split("|").filter(Boolean);
     listCommercialFeedCampaigns({
       limit: Math.max(slots * 10, 20),
       sort: "new",
@@ -383,7 +385,7 @@ export default function FeedRail({
             ...item,
             relevanceScore:
               Number(item.relevanceScore || 0) +
-              campaignInterestScore(item.growInterests, growInterests)
+              campaignInterestScore(item.growInterests, activeGrowInterests)
           }))
           .filter((item) => item.title);
         if (nextAds.length) setCampaignAds(nextAds);
@@ -392,7 +394,7 @@ export default function FeedRail({
     return () => {
       cancelled = true;
     };
-  }, [growInterests.join("|"), slotKey, slots]);
+  }, [growInterestKey, slotKey, slots]);
 
   if (!slots || slots <= 0) return null;
 

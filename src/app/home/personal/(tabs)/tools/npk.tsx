@@ -1500,7 +1500,8 @@ export default function NpkToolScreen() {
                       <Text style={styles.resultTitle}>Target profile comparison</Text>
                       <Text style={styles.recommendation}>
                         Status: {String(result.targetProfile.status).replaceAll("_", " ")}
-                        . Delivered label-equivalent ratio N-P2O5-K2O {result.labelEquivalentRatio?.N ?? 0}-
+                        . Delivered label-equivalent ratio N-P2O5-K2O{" "}
+                        {result.labelEquivalentRatio?.N ?? 0}-
                         {result.labelEquivalentRatio?.P ?? 0}-
                         {result.labelEquivalentRatio?.K ?? 0}.
                       </Text>

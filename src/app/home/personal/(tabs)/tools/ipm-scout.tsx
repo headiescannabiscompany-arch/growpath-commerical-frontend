@@ -179,7 +179,10 @@ export default function IpmScoutToolRoute() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId,
         facilityId: facilityId || undefined,
         commercialAccountId: commercialAccountId || undefined,
@@ -322,7 +325,9 @@ export default function IpmScoutToolRoute() {
                     description: [
                       task.description,
                       `Source ToolRun: ${toolRun?.id || toolRun?._id || "pending"}`
-                    ].filter(Boolean).join("\n"),
+                    ]
+                      .filter(Boolean)
+                      .join("\n"),
                     priority: task.priority === "medium" ? "normal" : task.priority,
                     dueAt: task.dueDate
                       ? new Date(`${task.dueDate}T12:00:00.000Z`).toISOString()

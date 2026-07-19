@@ -149,7 +149,10 @@ export default function PhenoHuntToolRoute() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId,
         facilityId: facilityId || undefined,
         commercialAccountId: commercialAccountId || undefined,
@@ -182,16 +185,18 @@ export default function PhenoHuntToolRoute() {
         {
           key: "evidence-completeness",
           label: "Top evidence completeness",
-          value: outputs.comparisonMatrix?.[0]?.completeness != null
-            ? `${outputs.comparisonMatrix[0].completeness}%`
-            : "-"
+          value:
+            outputs.comparisonMatrix?.[0]?.completeness != null
+              ? `${outputs.comparisonMatrix[0].completeness}%`
+              : "-"
         },
         {
           key: "intersex-rate",
           label: "Observed intersex rate",
-          value: outputs.stabilitySummary?.observedIntersexRate != null
-            ? `${outputs.stabilitySummary.observedIntersexRate}%`
-            : "-",
+          value:
+            outputs.stabilitySummary?.observedIntersexRate != null
+              ? `${outputs.stabilitySummary.observedIntersexRate}%`
+              : "-",
           detail: `${outputs.stabilitySummary?.hermObservations || 0} herm/intersex observations across ${outputs.stabilitySummary?.stabilityObservations || 0} logged stability observations; sex timing recorded for ${outputs.stabilitySummary?.sexTimingRecorded || 0} plants.`
         }
       ]}
@@ -281,7 +286,9 @@ export default function PhenoHuntToolRoute() {
                   outputs: keeper,
                   payload: {
                     selectionLanes: keeper.decisionLanes || {},
-                    commercialCandidate: Boolean(keeper.decisionLanes?.commercialCandidate),
+                    commercialCandidate: Boolean(
+                      keeper.decisionLanes?.commercialCandidate
+                    ),
                     cloneCandidate: Boolean(keeper.decisionLanes?.cloneKeeper),
                     motherCandidate: Boolean(keeper.decisionLanes?.motherKeeper),
                     tissueCultureCandidate: Boolean(

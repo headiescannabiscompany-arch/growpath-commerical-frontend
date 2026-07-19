@@ -189,7 +189,9 @@ export default function IngredientLibraryRoute() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [labelEvidence, setLabelEvidence] = useState<EvidenceAsset[]>([]);
-  const [labelExtraction, setLabelExtraction] = useState<Record<string, any> | null>(null);
+  const [labelExtraction, setLabelExtraction] = useState<Record<string, any> | null>(
+    null
+  );
   const [labelVerifiedByUser, setLabelVerifiedByUser] = useState(false);
 
   const selected = useMemo(
@@ -283,9 +285,18 @@ export default function IngredientLibraryRoute() {
         ...current,
         name: String(data.productName || data.name || current.name),
         brand: String(data.brand || data.manufacturer || current.brand),
-        n: extractedNumber(data, ["labelNPK.N", "npk.N", "guaranteedAnalysis.nitrogen"]) || current.n,
-        p: extractedNumber(data, ["labelNPK.P", "npk.P", "guaranteedAnalysis.phosphate"]) || current.p,
-        k: extractedNumber(data, ["labelNPK.K", "npk.K", "guaranteedAnalysis.potash"]) || current.k,
+        n:
+          extractedNumber(data, ["labelNPK.N", "npk.N", "guaranteedAnalysis.nitrogen"]) ||
+          current.n,
+        p:
+          extractedNumber(data, [
+            "labelNPK.P",
+            "npk.P",
+            "guaranteedAnalysis.phosphate"
+          ]) || current.p,
+        k:
+          extractedNumber(data, ["labelNPK.K", "npk.K", "guaranteedAnalysis.potash"]) ||
+          current.k,
         photoUrl: asset?.durableUrl || current.photoUrl,
         sourceType: "manufacturer",
         confidence: "medium"
