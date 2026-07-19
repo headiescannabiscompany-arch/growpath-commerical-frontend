@@ -96,6 +96,7 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="tools/index" options={{ title: "Tools" }} />
+      <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"
         options={{ title: "Product Batches", href: null }}

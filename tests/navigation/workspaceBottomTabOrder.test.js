@@ -36,6 +36,10 @@ describe("workspace bottom-tab order", () => {
     expect(contents).toContain(
       'options={{ title: "Orders", href: compactTabs ? null : undefined }}'
     );
+    expect(contents).toContain(
+      'name="tools/library" options={{ href: null, title: "Tool Library" }}'
+    );
+    expect(contents).toContain('name="tasks" options={{ title: "Tasks", href: null }}');
   });
 
   it("keeps the five Facility compact destinations in task-first order", () => {
