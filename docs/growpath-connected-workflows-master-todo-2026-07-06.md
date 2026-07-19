@@ -140,10 +140,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Follow-up tasks.
 
 18. IPM Scout GPT verification
-   - Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
-   - Store both answers.
-   - Show agreement/conflict.
-   - Save to grow/facility timelines and create follow-up tasks.
+   - [x] Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
+   - [x] Store both answers.
+   - [x] Show agreement/conflict.
+   - [x] Save to grow/facility timelines and create follow-up tasks.
 
 19. Pheno Hunting Matrix
    - Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.

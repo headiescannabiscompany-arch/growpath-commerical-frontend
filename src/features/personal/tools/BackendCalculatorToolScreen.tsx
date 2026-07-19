@@ -45,7 +45,13 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
-  formHeader?: React.ReactNode | ((context: { growId: string }) => React.ReactNode);
+  formHeader?:
+    | React.ReactNode
+    | ((context: {
+        growId: string;
+        facilityId: string;
+        commercialAccountId: string;
+      }) => React.ReactNode);
   status?: string;
   fields: ToolField[];
   buildPayload: (
@@ -544,7 +550,9 @@ export default function BackendCalculatorToolScreen({
           </View>
         ) : null}
 
-        {typeof formHeader === "function" ? formHeader({ growId }) : formHeader}
+        {typeof formHeader === "function"
+          ? formHeader({ growId, facilityId, commercialAccountId })
+          : formHeader}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>
