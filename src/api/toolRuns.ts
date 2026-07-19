@@ -28,6 +28,11 @@ export interface ToolRun {
   recommendations?: string[];
   warnings?: string[];
   confidence?: string | null;
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  limitations?: string[];
   linkedLogId?: string | null;
   linkedTaskIds?: string[];
   linkedTaskId?: string | null;

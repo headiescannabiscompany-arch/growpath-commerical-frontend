@@ -28,6 +28,9 @@ export type PersonalAssistantResponse = {
   limitations?: string[];
   methodIds?: string[];
   sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  agreementStatus?: string;
   aiCreditsUsed?: number;
   aiTokensRemaining?: number;
   creditNotice?: string;

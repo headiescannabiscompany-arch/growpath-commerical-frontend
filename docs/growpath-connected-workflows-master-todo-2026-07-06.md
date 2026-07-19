@@ -31,7 +31,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Add an admin/editor workflow for reviewing and versioning source entries and internal methods, with admin-only draft/approve/retire actions, immutable revision snapshots, review notes, and platform audit events.
    - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
    - [x] Extend the same runtime method/source envelope to Plant Diagnosis, IPM Scout, Clone Rooting, and Harvest Readiness GPT/vision verification endpoints, including fallback and test-mode results.
-   - [ ] Persist method IDs, source IDs, citations, disagreements, and limitations with AI answers/ToolRuns.
+   - [x] Persist method IDs, source IDs, citations, disagreements, and limitations with Ask AI conversation answers, ToolRuns, immutable ToolRun snapshots, and durable module records.
    - [ ] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions.
    - [ ] Add outcome-based method review so repeated grow results can propose—but never silently rewrite—GrowPath methods.
 
