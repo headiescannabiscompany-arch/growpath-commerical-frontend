@@ -176,8 +176,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
 
 26. Notification engine
-   - In-app first; push/email when configured.
-   - Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
+   - [x] In-app first; push/email when configured.
+   - [x] Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
 
 ## P3 - Courses and Lives
 
@@ -912,6 +912,7 @@ Completed and pushed:
 621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
 622. Schedule / Agenda now provides Agenda, Day, Week, and Month windows with editable anchor-date and period navigation, retrieves persisted commercial campaign launches in addition to tasks, lives, course events, course releases, and Feed schedules, and deduplicates overlapping campaign records while retaining task-backed course assignments, grow milestones, soil-ready dates, and Facility SOP work.
 623. Alert Center now assigns alerts directly in addition to assigning generated follow-up tasks, routes setup alerts back to their workspace, and covers setup, sensor, course/live, storefront/product, and Facility training sources; the backend now exposes owned alert listing and mutation through normalized Notification records with persisted severity, status, workspace/source identity, snooze, resolution, and assignment state.
+624. NotificationIntent and Notification now support task reminders, live reminders, course due/overdue, critical/digest alerts, replay availability, milestones, and system events; the shared scheduler always creates in-app delivery first, optionally adds push/email channels, and the worker records delivered, skipped, or failed outcomes while normalizing linked source context for Notification Center routing and task creation.
 
 ## Working Rule For Codex
 

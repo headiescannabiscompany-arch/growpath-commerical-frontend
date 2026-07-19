@@ -228,7 +228,7 @@ describe("NotificationCenterRoute", () => {
         });
       }
       if (
-        path === "/api/notifications/read/notification-1" &&
+        path === "/api/notifications/notification-1/read" &&
         options?.method === "POST"
       ) {
         return Promise.resolve({ ok: true });
@@ -550,7 +550,7 @@ describe("NotificationCenterRoute", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/notifications/read/notification-1",
+        "/api/notifications/notification-1/read",
         { method: "POST" }
       )
     );

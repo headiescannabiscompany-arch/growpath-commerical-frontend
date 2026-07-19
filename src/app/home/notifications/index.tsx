@@ -299,7 +299,7 @@ export default function NotificationCenterRoute() {
         setFeedback("Live reminder marked read.");
         return;
       }
-      await apiRequest(`/api/notifications/read/${encodeURIComponent(id)}`, {
+      await apiRequest(`/api/notifications/${encodeURIComponent(id)}/read`, {
         method: "POST"
       });
       setNotifications((current) =>
