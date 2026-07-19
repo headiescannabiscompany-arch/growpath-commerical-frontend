@@ -13,6 +13,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 
 type BatchForm = {
   batchName: string;
@@ -79,6 +80,7 @@ export default function CommercialBatchPlannerRoute() {
   const [form, setForm] = useState<BatchForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<any>(null);
 
   const readyCount = useMemo(
@@ -146,6 +148,37 @@ export default function CommercialBatchPlannerRoute() {
     }
   }
 
+  async function prefillCommercialBatch() {
+    if (prefilling) return;
+    setPrefilling(true);
+    setError(null);
+    try {
+      const response = await askPersonalAssistant({
+        workspaceType: "commercial",
+        context: {
+          workflow: "soil-nutrient-batch",
+          productLines: productLines.slice(0, 20),
+          recentBatches: batches.slice(0, 10),
+          requestedFields: Object.keys(EMPTY_FORM)
+        },
+        message:
+          "Prefill a commercial soil/nutrient batch from saved product lines, recipes, verified analyses, inventory/lot records, trials, and prior batch actuals. Return JSON only with the requested string fields. Never invent batch codes, formula versions, product/trial links, guaranteed analysis, quantities, costs, or release claims. Leave unknowns blank. Put missing labels/COAs, substitutions, QA, release uncertainty, and production limitations in notes."
+      });
+      const raw = String(response.reply || "");
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
+      setForm(
+        Object.fromEntries(
+          Object.keys(EMPTY_FORM).map((key) => [key, String(parsed[key] ?? "")])
+        ) as BatchForm
+      );
+    } catch (err) {
+      setError(err);
+    } finally {
+      setPrefilling(false);
+    }
+  }
+
   return (
     <AppPage
       routeKey="commercial-batch-planner"
@@ -198,6 +231,17 @@ export default function CommercialBatchPlannerRoute() {
 
       <AppCard>
         <Text style={styles.cardTitle}>Create commercial batch</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Fill commercial batch from saved records"
+          disabled={prefilling}
+          onPress={prefillCommercialBatch}
+          style={[styles.action, prefilling && styles.disabled]}
+        >
+          <Text style={styles.actionText}>
+            {prefilling ? "Reviewing records..." : "Fill from saved records with AI"}
+          </Text>
+        </Pressable>
         <View style={styles.formGrid}>
           <TextInput
             value={form.batchName}
