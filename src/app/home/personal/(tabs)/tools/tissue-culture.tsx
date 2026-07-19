@@ -32,6 +32,16 @@ function parseTraceabilityRows(value: string) {
   }
 }
 
+function costPerSurvivingPlant(values: Record<string, string>) {
+  const survivors = Number(values.survivingProtocolUnits || values.acclimationSurvived);
+  if (!Number.isFinite(survivors) || survivors <= 0) return undefined;
+  const total = [values.mediaCost, values.vesselSupplyCost, values.laborCost].reduce(
+    (sum, value) => sum + (Number(value) || 0),
+    0
+  );
+  return Number((total / survivors).toFixed(2));
+}
+
 function tissueCultureCalendarMetadata(sourceStage: string) {
   return {
     allDay: true,
@@ -178,6 +188,19 @@ function tissueCultureTaskPlan(
         "Confirm linked lab reports, isolate/cull actions, off-type observations, and whether the line is eligible for production, storage, retest, or retirement."
       ].join("\n")
     },
+    {
+      title: `Review TC environment and protocol outcome: ${batchNumber}`,
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
+      ...calendarMetadata,
+      sourceStage: "tc_environment_protocol_review",
+      description: [
+        `Incubation room: ${payload.incubationRoomId || "not linked"}; telemetry: ${payload.telemetrySourceIds || "not linked"}.`,
+        `Protocol: ${payload.protocolId || "not linked"} ${payload.protocolVersion || ""}.`,
+        `Initial units: ${payload.initialProtocolUnits || "not recorded"}; surviving units: ${payload.survivingProtocolUnits || "not recorded"}.`,
+        "Compare measured incubation/storage conditions, survival, regrowth, contamination, labor, and cost per surviving plant against prior protocol cohorts."
+      ].join("\n")
+    },
     ...(transferCycle >= Math.max(1, maxProductionTransfers - 2)
       ? [
           {
@@ -315,6 +338,31 @@ export default function TissueCultureToolRoute() {
         { key: "SOPVersion", label: "SOP version", defaultValue: "SOP-TC-1" },
         { key: "mediaLotId", label: "Media preparation / lot ID", defaultValue: "" },
         { key: "sterilizationRunId", label: "Sterilization run ID", defaultValue: "" },
+        { key: "protocolId", label: "Protocol ID", defaultValue: "" },
+        { key: "protocolVersion", label: "Protocol version", defaultValue: "" },
+        { key: "incubationRoomId", label: "Incubation room ID", defaultValue: "" },
+        {
+          key: "telemetrySourceIds",
+          label: "Linked environment device/source IDs",
+          defaultValue: ""
+        },
+        {
+          key: "measuredIncubationTempC",
+          label: "Measured incubation temperature C",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "measuredPhotoperiodHours",
+          label: "Measured photoperiod hours",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "inventoryLocation",
+          label: "Inventory location / rack / shelf",
+          defaultValue: ""
+        },
         {
           key: "vesselTraceability",
           label:
@@ -389,6 +437,24 @@ export default function TissueCultureToolRoute() {
           label: "Protocol survival, regrowth, and comparison notes",
           defaultValue: "",
           multiline: true
+        },
+        {
+          key: "initialProtocolUnits",
+          label: "Initial protocol cohort units",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "survivingProtocolUnits",
+          label: "Surviving / viable cohort units",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "regrowingProtocolUnits",
+          label: "Regrowing cohort units",
+          defaultValue: "",
+          keyboardType: "numeric"
         },
         {
           key: "transfersDueDays",
@@ -481,7 +547,18 @@ export default function TissueCultureToolRoute() {
         parentTransferId: values.parentTransferId || undefined,
         mediaLotId: values.mediaLotId || undefined,
         sterilizationRunId: values.sterilizationRunId || undefined,
+        protocolId: values.protocolId || undefined,
+        protocolVersion: values.protocolVersion || undefined,
+        incubationRoomId: values.incubationRoomId || undefined,
+        telemetrySourceIds: values.telemetrySourceIds || undefined,
+        measuredIncubationTempC: values.measuredIncubationTempC || undefined,
+        measuredPhotoperiodHours: values.measuredPhotoperiodHours || undefined,
+        inventoryLocation: values.inventoryLocation || undefined,
         vesselTraceability: parseTraceabilityRows(values.vesselTraceability),
+        initialProtocolUnits: values.initialProtocolUnits || undefined,
+        survivingProtocolUnits: values.survivingProtocolUnits || undefined,
+        regrowingProtocolUnits: values.regrowingProtocolUnits || undefined,
+        costPerSurvivingPlant: costPerSurvivingPlant(values),
         evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
@@ -521,6 +598,16 @@ export default function TissueCultureToolRoute() {
           key: "cost",
           label: "Total cost",
           value: outputs.costTracking?.totalProjectCost
+        },
+        {
+          key: "cost-per-survivor",
+          label: "Cost / surviving plant",
+          value: outputs.costPerSurvivingPlant
+        },
+        {
+          key: "protocol-survival",
+          label: "Protocol survival",
+          value: outputs.protocolSurvivalRate
         }
       ]}
       buildNotices={(outputs) => [
