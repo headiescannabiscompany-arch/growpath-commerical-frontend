@@ -61,6 +61,29 @@ function tissueCultureTaskPlan(
           .join("\n")
       }))
     : [];
+  const coldStorageTasks =
+    String(payload.preservationMode || "").toLowerCase() === "cold_storage"
+      ? [
+          {
+            title: `Verify cold-storage entry: ${batchNumber}`,
+            priority: "high" as const,
+            dueDate: String(payload.coldStorageStartDate || tomorrow(1)),
+            ...calendarMetadata,
+            sourceStage: "tc_cold_storage_entry",
+            description:
+              "Verify vessel IDs, clean status, storage medium/SOP, measured temperature, location, entry date, and retrieval plan."
+          },
+          {
+            title: `Retrieve and recovery-check: ${batchNumber}`,
+            priority: "high" as const,
+            dueDate: String(payload.plannedRetrievalDate || tomorrow(30)),
+            ...calendarMetadata,
+            sourceStage: "tc_cold_storage_recovery",
+            description:
+              "Record retrieval conditions, survival, contamination, regrowth, phenotype stability, and whether the line returns to production or needs retest."
+          }
+        ]
+      : [];
 
   return [
     {
@@ -121,6 +144,7 @@ function tissueCultureTaskPlan(
           }
         ]
       : []),
+    ...coldStorageTasks,
     ...generatedCalendarTasks
   ];
 }
@@ -149,7 +173,7 @@ export default function TissueCultureToolRoute() {
         clearUnfilled: true,
         evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         buildMessage: () =>
-          `Prefill this Tissue Culture batch review from the selected grow/plant genetics, TC batch records, transfers, SOP/media records, costs, tasks, logs, and attached vessel photos/video. Return JSON only using these exact keys: projectName, batchNumber, geneticsId, stage, productionPhase, transferCycle, maxProductionTransfers, technicianOwner, motherBlockStartDate, productionEndDate, mediaRecipe, mediaType, vesselType, explantType, explantSize, vessels, contaminatedVessels, fungusVessels, browningVessels, stalledVessels, rootedVessels, acclimatedPlants, SOPVersion, mediaCost, vesselSupplyCost, laborCost, symptoms, transfersDueDays. Every value must be a string. Counts, dates, costs, SOP, recipe, and transfer timing must come from saved records, not visual estimates. Media may support visible contamination category, browning, callus/root visibility, and batch pattern, but do not identify a microbe species from appearance. Leave unknowns blank. In symptoms separate observations, hypotheses, batch distribution, uncertainty, and missing close-up/control-vessel evidence.`
+          `Prefill this Tissue Culture batch review from the selected grow/plant genetics, TC batch records, transfers, SOP/media records, costs, tasks, cold-storage history, logs, and attached vessel photos/video. Return JSON only using these exact keys: projectName, batchNumber, geneticsId, stage, productionPhase, transferCycle, maxProductionTransfers, technicianOwner, motherBlockStartDate, productionEndDate, mediaRecipe, mediaType, vesselType, explantType, explantSize, vessels, contaminatedVessels, fungusVessels, browningVessels, stalledVessels, rootedVessels, acclimatedPlants, SOPVersion, mediaCost, vesselSupplyCost, laborCost, symptoms, transfersDueDays, preservationMode, coldStorageRoomId, coldStorageTempC, coldStorageStartDate, plannedRetrievalDate, recoveryCheckDays, storageNotes. Every value must be a string. Counts, dates, costs, SOP, recipe, temperature, and transfer timing must come from saved records, not visual estimates. Media may support visible contamination category, browning, callus/root visibility, and batch pattern, but do not identify a microbe species from appearance. Leave unknowns blank. In symptoms/storageNotes separate observations, hypotheses, batch distribution, uncertainty, cold-storage entry/retrieval conditions, and missing close-up/control-vessel evidence.`
       }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "TC Project" },
@@ -265,6 +289,36 @@ export default function TissueCultureToolRoute() {
           label: "Next transfer due in days",
           defaultValue: "14",
           keyboardType: "numeric"
+        },
+        { key: "preservationMode", label: "Preservation mode", defaultValue: "active" },
+        { key: "coldStorageRoomId", label: "Cold-storage room ID", defaultValue: "" },
+        {
+          key: "coldStorageTempC",
+          label: "Measured cold-storage temperature C",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "coldStorageStartDate",
+          label: "Cold-storage entry date",
+          defaultValue: ""
+        },
+        {
+          key: "plannedRetrievalDate",
+          label: "Planned retrieval date",
+          defaultValue: ""
+        },
+        {
+          key: "recoveryCheckDays",
+          label: "Recovery check after retrieval (days)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "storageNotes",
+          label: "Cold-storage location, entry, retrieval, and recovery notes",
+          defaultValue: "",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
@@ -298,6 +352,13 @@ export default function TissueCultureToolRoute() {
         laborCost: values.laborCost,
         symptoms: values.symptoms,
         transfersDueDays: values.transfersDueDays,
+        preservationMode: values.preservationMode,
+        coldStorageRoomId: values.coldStorageRoomId || undefined,
+        coldStorageTempC: values.coldStorageTempC || undefined,
+        coldStorageStartDate: values.coldStorageStartDate || undefined,
+        plannedRetrievalDate: values.plannedRetrievalDate || undefined,
+        recoveryCheckDays: values.recoveryCheckDays || undefined,
+        storageNotes: values.storageNotes || undefined,
         evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
