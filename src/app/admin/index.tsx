@@ -100,6 +100,19 @@ type SupportRequest = {
   emailDelivery?: { sent?: boolean };
 };
 
+type KnowledgeEntry = {
+  _id: string;
+  entryId: string;
+  entryType: "source" | "method";
+  title: string;
+  domain?: string;
+  status: "draft" | "approved" | "retired";
+  reliabilityTier?: "A" | "B" | "C" | "D" | "";
+  guidance?: string;
+  revision: number;
+  reviewDueAt?: string;
+};
+
 function Metric({
   label,
   value,
@@ -128,6 +141,16 @@ export default function PlatformAdminRoute() {
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
+  const [knowledgeDraft, setKnowledgeDraft] = useState({
+    entryId: "",
+    entryType: "source" as "source" | "method",
+    title: "",
+    domain: "",
+    reliabilityTier: "B",
+    guidance: "",
+    changeNote: "Initial admin review"
+  });
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -148,14 +171,16 @@ export default function PlatformAdminRoute() {
         usersResponse,
         moderationResponse,
         evidenceResponse,
-        supportResponse
+        supportResponse,
+        knowledgeResponse
       ] = await Promise.all([
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
         apiRequest(`/api/admin/users${suffix}`),
         apiRequest("/api/admin/moderation-cases"),
         apiRequest("/api/admin/evidence-requests"),
-        apiRequest("/api/admin/support-requests")
+        apiRequest("/api/admin/support-requests"),
+        apiRequest("/api/admin/knowledge-registry")
       ]);
       setOverview(overviewResponse?.overview || null);
       setUsage(usageResponse?.usage || null);
@@ -169,12 +194,65 @@ export default function PlatformAdminRoute() {
       setSupportRequests(
         Array.isArray(supportResponse?.requests) ? supportResponse.requests : []
       );
+      setKnowledgeEntries(
+        Array.isArray(knowledgeResponse?.entries) ? knowledgeResponse.entries : []
+      );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
     } finally {
       setLoading(false);
     }
   }, [isAdmin, query]);
+
+  async function createKnowledgeEntry() {
+    if (!knowledgeDraft.entryId.trim() || !knowledgeDraft.title.trim()) {
+      setError("Knowledge entry ID and title are required.");
+      return;
+    }
+    setBusyId("knowledge-new");
+    setError("");
+    try {
+      await apiRequest("/api/admin/knowledge-registry", {
+        method: "POST",
+        body: knowledgeDraft
+      });
+      setKnowledgeDraft((value) => ({
+        ...value,
+        entryId: "",
+        title: "",
+        domain: "",
+        guidance: "",
+        changeNote: "Initial admin review"
+      }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to create knowledge entry.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function setKnowledgeStatus(
+    entry: KnowledgeEntry,
+    status: KnowledgeEntry["status"]
+  ) {
+    setBusyId(entry._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/knowledge-registry/${entry._id}`, {
+        method: "PATCH",
+        body: {
+          status,
+          changeNote: `${status === "approved" ? "Approved" : "Status changed"} in platform knowledge review`
+        }
+      });
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to revise knowledge entry.");
+    } finally {
+      setBusyId("");
+    }
+  }
 
   useEffect(() => {
     void load();
@@ -380,6 +458,105 @@ export default function PlatformAdminRoute() {
           <Text style={styles.meta}>{usage.note}</Text>
         </AppCard>
       ) : null}
+
+      <AppCard
+        title="Knowledge registry review"
+        subtitle="Version source reliability and GrowPath methods. Drafts do not silently replace approved runtime guidance."
+      >
+        <View style={styles.searchRow}>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() =>
+              setKnowledgeDraft((value) => ({
+                ...value,
+                entryType: value.entryType === "source" ? "method" : "source"
+              }))
+            }
+          >
+            <Text style={styles.secondaryText}>{knowledgeDraft.entryType}</Text>
+          </Pressable>
+          <TextInput
+            value={knowledgeDraft.entryId}
+            onChangeText={(entryId) =>
+              setKnowledgeDraft((value) => ({ ...value, entryId }))
+            }
+            placeholder="Stable entry ID"
+            style={styles.input}
+          />
+          <TextInput
+            value={knowledgeDraft.title}
+            onChangeText={(title) => setKnowledgeDraft((value) => ({ ...value, title }))}
+            placeholder="Source or method title"
+            style={styles.input}
+          />
+        </View>
+        <TextInput
+          value={knowledgeDraft.domain}
+          onChangeText={(domain) => setKnowledgeDraft((value) => ({ ...value, domain }))}
+          placeholder="Domain (sources only)"
+          style={styles.input}
+        />
+        <TextInput
+          value={knowledgeDraft.guidance}
+          onChangeText={(guidance) =>
+            setKnowledgeDraft((value) => ({ ...value, guidance }))
+          }
+          placeholder="Trusted use, exclusions, or method guidance"
+          multiline
+          style={[styles.input, styles.messageInput]}
+        />
+        <TextInput
+          value={knowledgeDraft.changeNote}
+          onChangeText={(changeNote) =>
+            setKnowledgeDraft((value) => ({ ...value, changeNote }))
+          }
+          placeholder="Required review/change note"
+          style={styles.input}
+        />
+        <Pressable
+          disabled={busyId === "knowledge-new"}
+          style={styles.primaryButton}
+          onPress={() => void createKnowledgeEntry()}
+        >
+          <Text style={styles.primaryText}>Create draft revision 1</Text>
+        </Pressable>
+        {knowledgeEntries.map((entry) => (
+          <View key={entry._id} style={styles.caseRow}>
+            <View style={styles.caseCopy}>
+              <Text style={styles.caseTitle}>
+                {entry.title} · {entry.entryType} · {entry.status}
+              </Text>
+              <Text style={styles.meta}>
+                {entry.entryId} · revision {entry.revision}
+                {entry.reliabilityTier ? ` · Tier ${entry.reliabilityTier}` : ""}
+                {entry.domain ? ` · ${entry.domain}` : ""}
+              </Text>
+              {entry.guidance ? (
+                <Text style={styles.evidencePreview}>{entry.guidance}</Text>
+              ) : null}
+            </View>
+            <View style={styles.actions}>
+              <Pressable
+                disabled={busyId === entry._id || entry.status === "approved"}
+                style={styles.primaryButton}
+                onPress={() => void setKnowledgeStatus(entry, "approved")}
+              >
+                <Text style={styles.primaryText}>Approve new revision</Text>
+              </Pressable>
+              <Pressable
+                disabled={busyId === entry._id || entry.status === "retired"}
+                style={styles.secondaryButton}
+                onPress={() => void setKnowledgeStatus(entry, "retired")}
+              >
+                <Text style={styles.secondaryText}>Retire</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
+        {!knowledgeEntries.length ? (
+          <Text style={styles.meta}>No reviewed runtime overrides yet.</Text>
+        ) : null}
+      </AppCard>
 
       <AppCard
         title="Find users"

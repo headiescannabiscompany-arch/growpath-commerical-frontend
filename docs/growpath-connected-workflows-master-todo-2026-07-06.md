@@ -28,7 +28,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Add app-readable `src/knowledge` source, method, and decision registries.
    - [x] Require Codex/developers to read relevant methods before tool work.
    - [ ] Collect the owner’s named websites, domains, preferred authors/channels, reliability tiers, trusted uses, exclusions, and review dates.
-   - [ ] Add an admin/editor workflow for reviewing and versioning source entries and internal methods.
+   - [x] Add an admin/editor workflow for reviewing and versioning source entries and internal methods, with admin-only draft/approve/retire actions, immutable revision snapshots, review notes, and platform audit events.
    - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
    - [x] Extend the same runtime method/source envelope to Plant Diagnosis, IPM Scout, Clone Rooting, and Harvest Readiness GPT/vision verification endpoints, including fallback and test-mode results.
    - [ ] Persist method IDs, source IDs, citations, disagreements, and limitations with AI answers/ToolRuns.
