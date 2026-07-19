@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function numberOrFallback(value: unknown, fallback: number) {
   const number = Number(value);
@@ -123,12 +126,31 @@ function tissueCultureTaskPlan(
 }
 
 export default function TissueCultureToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="tissue-culture"
       toolKey="tissue-culture"
       title="Tissue Culture"
       subtitle="Track TC batch status, vessels, contamination, rooting, acclimation, SOP version, and next transfer tasks."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="other"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Fill TC batch from records and media",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill this Tissue Culture batch review from the selected grow/plant genetics, TC batch records, transfers, SOP/media records, costs, tasks, logs, and attached vessel photos/video. Return JSON only using these exact keys: projectName, batchNumber, geneticsId, stage, productionPhase, transferCycle, maxProductionTransfers, technicianOwner, motherBlockStartDate, productionEndDate, mediaRecipe, mediaType, vesselType, explantType, explantSize, vessels, contaminatedVessels, fungusVessels, browningVessels, stalledVessels, rootedVessels, acclimatedPlants, SOPVersion, mediaCost, vesselSupplyCost, laborCost, symptoms, transfersDueDays. Every value must be a string. Counts, dates, costs, SOP, recipe, and transfer timing must come from saved records, not visual estimates. Media may support visible contamination category, browning, callus/root visibility, and batch pattern, but do not identify a microbe species from appearance. Leave unknowns blank. In symptoms separate observations, hypotheses, batch distribution, uncertainty, and missing close-up/control-vessel evidence.`
+      }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "TC Project" },
         { key: "batchNumber", label: "Batch number", defaultValue: "TC-001" },
@@ -275,7 +297,9 @@ export default function TissueCultureToolRoute() {
         vesselSupplyCost: values.vesselSupplyCost,
         laborCost: values.laborCost,
         symptoms: values.symptoms,
-        transfersDueDays: values.transfersDueDays
+        transfersDueDays: values.transfersDueDays,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "status", label: "Status", value: outputs.projectStatus },
