@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { providerEvidencePayload } from "@/api/evidence";
+import type { EvidenceAsset } from "@/types/evidence";
 
 function normalizePriority(
   value: unknown,
@@ -83,12 +86,31 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function StressTestToolRoute() {
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
       tool="stress-test"
       toolKey="stress-test"
       title="Stress Testing"
       subtitle="Record recovery from difficult conditions for pheno selection, keeper decisions, and crop-steering suitability."
+      formHeader={({ growId }) => (
+        <MediaEvidencePicker
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="pheno"
+          sourceContext={{ growId: growId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
+      )}
+      aiPrefill={{
+        buttonLabel: "Fill stress recovery from grow",
+        clearUnfilled: true,
+        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        buildMessage: () =>
+          `Prefill this Stress/Recovery record from the selected grow and plant's environment excursions, missed watering/feed events, alerts, logs, tasks, diagnoses, pheno history, and attached before/after photos or video. Return JSON only with exactly these keys: {"stressType":"string","stage":"string","severity":"string","recoveryDays":"string","hoursToRecover":"string","damageScore":"string","vigorScore":"string","stabilitySignals":"string","notes":"string"}. Scores are 0-10 and must be supported by saved observations; do not invent them. Distinguish the original stress from recovery evidence. Leave unknown fields blank. In notes summarize timing, evidence, uncertainty, and what follow-up media or readings would confirm resilience.`
+      }}
       fields={[
         { key: "stressType", label: "Stress type", defaultValue: "dryback" },
         { key: "stage", label: "Stage", defaultValue: "mid flower" },
@@ -147,7 +169,9 @@ export default function StressTestToolRoute() {
         damageScore: values.damageScore,
         vigorScore: values.vigorScore,
         stabilitySignals: values.stabilitySignals,
-        notes: values.notes
+        notes: values.notes,
+        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
         { key: "risk", label: "Risk", value: outputs.riskLevel },
