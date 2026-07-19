@@ -172,8 +172,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
 
 25. Alert Center
-   - Alerts can resolve, snooze, create task, assign, ask AI, view source.
-   - Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
+   - [x] Alerts can resolve, snooze, create task, assign, ask AI, view source.
+   - [x] Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
 
 26. Notification engine
    - In-app first; push/email when configured.
@@ -911,6 +911,7 @@ Completed and pushed:
 620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
 621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
 622. Schedule / Agenda now provides Agenda, Day, Week, and Month windows with editable anchor-date and period navigation, retrieves persisted commercial campaign launches in addition to tasks, lives, course events, course releases, and Feed schedules, and deduplicates overlapping campaign records while retaining task-backed course assignments, grow milestones, soil-ready dates, and Facility SOP work.
+623. Alert Center now assigns alerts directly in addition to assigning generated follow-up tasks, routes setup alerts back to their workspace, and covers setup, sensor, course/live, storefront/product, and Facility training sources; the backend now exposes owned alert listing and mutation through normalized Notification records with persisted severity, status, workspace/source identity, snooze, resolution, and assignment state.
 
 ## Working Rule For Codex
 

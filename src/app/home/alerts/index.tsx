@@ -51,6 +51,12 @@ function isToday(alert: AlertRow) {
 }
 
 function sourceHref(alert: AlertRow) {
+  if (String(alert.sourceType || "").toLowerCase() === "setup") {
+    const workspace = String(alert.workspaceType || "personal").toLowerCase();
+    if (workspace === "facility") return "/home/facility";
+    if (workspace === "commercial") return "/home/commercial";
+    return "/home/personal";
+  }
   return sourceObjectHref(alert);
 }
 
@@ -343,7 +349,30 @@ export default function AlertCenterRoute() {
             .filter(Boolean)
             .join(" | ")}
         </Text>
+        {alert.assignedToUserId || alert.assignedTo ? (
+          <Text style={styles.meta}>
+            Assigned to {String(alert.assignedToUserId || alert.assignedTo)}
+          </Text>
+        ) : null}
         <View style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Assign alert"
+            style={[styles.secondaryButton, !assignee.trim() && styles.disabledButton]}
+            disabled={!assignee.trim()}
+            onPress={() =>
+              void patchAlert(
+                alert,
+                {
+                  assignedToUserId: assignee.trim(),
+                  assignedAt: new Date().toISOString()
+                },
+                "Alert assigned."
+              )
+            }
+          >
+            <Text style={styles.secondaryText}>Assign</Text>
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Resolve alert"
@@ -582,6 +611,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   secondaryText: { color: "#FFFFFF", fontWeight: "900" },
+  disabledButton: { opacity: 0.45 },
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
