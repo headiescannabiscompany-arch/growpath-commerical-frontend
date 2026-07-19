@@ -155,8 +155,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
 ## P2 - Task / Calendar / Alerts Engine
 
 21. One Task model
-   - Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
-   - Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
+   - [x] Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
+   - [x] Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
 
 22. Task Center
    - Today, overdue, upcoming, completed, assigned, source filters.

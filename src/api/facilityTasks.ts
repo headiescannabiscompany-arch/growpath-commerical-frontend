@@ -9,6 +9,28 @@ export type FacilityTask = {
   priority?: "low" | "normal" | "high";
   assignedTo?: string; // userId
   dueAt?: string; // ISO date
+  startAt?: string;
+  endAt?: string;
+  recurrence?: Record<string, any> | null;
+  reminderPlan?: Record<string, any> | null;
+  sourceType?: string | null;
+  sourceObjectId?: string | null;
+  linkedToolRunId?: string | null;
+  linkedDiagnosisId?: string | null;
+  linkedRecipeId?: string | null;
+  linkedCourseId?: string | null;
+  linkedLessonId?: string | null;
+  linkedLiveId?: string | null;
+  linkedProductId?: string | null;
+  linkedProductBatchId?: string | null;
+  linkedRoomId?: string | null;
+  linkedSopId?: string | null;
+  linkedAlertId?: string | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
+  history?: Array<Record<string, any>>;
   createdAt: string;
 };
 
