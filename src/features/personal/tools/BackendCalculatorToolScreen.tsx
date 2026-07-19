@@ -91,6 +91,7 @@ type BackendCalculatorToolScreenProps = {
   };
   aiPrefill?: {
     buttonLabel?: string;
+    clearUnfilled?: boolean;
     buildMessage: (context: { growId: string; plantId: string }) => string;
   };
 };
@@ -266,7 +267,14 @@ export default function BackendCalculatorToolScreen({
               : JSON.stringify(parsed[field.key], null, 2)
           ])
       );
-      setValues((current) => ({ ...current, ...next }));
+      setValues((current) =>
+        Object.fromEntries(
+          fields.map((field) => [
+            field.key,
+            next[field.key] ?? (aiPrefill.clearUnfilled ? "" : current[field.key] || "")
+          ])
+        )
+      );
       setFeedback(
         `AI filled ${Object.keys(next).length} field(s) from grow records. Review before calculating.${
           response.missingInformation?.length
