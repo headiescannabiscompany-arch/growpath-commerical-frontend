@@ -129,7 +129,9 @@ describe("PhenoHuntToolRoute", () => {
             resin: 9,
             finalProduct: 9,
             sexWeek: 4,
-            intersexSigns: "none"
+            intersexSigns: "none",
+            hermObservationCount: 0,
+            sexObservationCount: 3
           }
         ],
         additionalInformation: "Taste score came from the saved harvest review."
@@ -252,7 +254,9 @@ describe("PhenoHuntToolRoute", () => {
               taste: 9,
               finalProduct: 9,
               sexWeek: 4,
-              intersexSigns: "none"
+              intersexSigns: "none",
+              hermObservationCount: 0,
+              sexObservationCount: 3
             })
           ],
           additionalInformation: "Taste score came from the saved harvest review."

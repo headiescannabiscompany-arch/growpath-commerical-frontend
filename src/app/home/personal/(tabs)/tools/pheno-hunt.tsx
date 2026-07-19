@@ -36,6 +36,8 @@ function parsePlants(value: string) {
           breedingValue,
           finalProduct,
           intersexSigns,
+          hermObservationCount,
+          sexObservationCount,
           notes
         ] = line.split(",").map((part) => part.trim());
         if (!label) return null;
@@ -62,6 +64,8 @@ function parsePlants(value: string) {
           breedingValue,
           finalProduct,
           intersexSigns,
+          hermObservationCount,
+          sexObservationCount,
           notes
         };
       })
@@ -127,14 +131,14 @@ export default function PhenoHuntToolRoute() {
       aiPrefill={{
         buttonLabel: "Fill pheno hunt from grow",
         buildMessage: () =>
-          `Prefill the Pheno Hunting workflow from the selected grow's saved plants, logs, photos, clone results, diagnoses, stress/recovery records, harvest, dry/cure, aroma, taste, effect, yield, hash, and propagation notes. Return JSON only with exactly these keys: {"projectName":"string","plants":[{"id":"string","plantId":"string","label":"string","vigor":0,"morphology":0,"stressResistance":0,"pestResistance":0,"feedingResponse":0,"aroma":0,"taste":0,"resin":0,"flowerStructure":0,"effect":0,"yieldScore":0,"hashValue":0,"clonePerformance":0,"tissueCultureSuitability":0,"breedingValue":0,"finalProduct":0,"sexWeek":0,"cloneRootingDays":0,"recoveryHours":0,"intersexSigns":"string","notes":"string","evidenceAssetIds":["string"]}],"additionalInformation":"string"}. Use only supported evidence; leave unknown values blank instead of inventing them. Scores use 0-10 and must be supported by records. Record sex-expression timing and explicit intersex/herm observations separately so timing can be compared with the observed intersex rate; never infer a herm from timing alone. Keep early observations separate from final-product evidence. Put missing evidence, uncertainties, and optional context in additionalInformation.`
+          `Prefill this cannabis Pheno Hunting workflow from the selected grow's saved plants, logs, photos, clone results, diagnoses, stress/recovery records, harvest, dry/cure, aroma, taste, effect, yield, hash, and propagation notes. Return JSON only with exactly these keys: {"projectName":"string","plants":[{"id":"string","plantId":"string","label":"string","vigor":0,"morphology":0,"stressResistance":0,"pestResistance":0,"feedingResponse":0,"aroma":0,"taste":0,"resin":0,"flowerStructure":0,"effect":0,"yieldScore":0,"hashValue":0,"clonePerformance":0,"tissueCultureSuitability":0,"breedingValue":0,"finalProduct":0,"sexWeek":0,"cloneRootingDays":0,"recoveryHours":0,"intersexSigns":"string","hermObservationCount":0,"sexObservationCount":0,"notes":"string","evidenceAssetIds":["string"]}],"additionalInformation":"string"}. Use only supported evidence; leave unknown values blank instead of inventing them. Scores use 0-10 and must be supported by records. For cannabis, count explicit herm/intersex outcomes and total stability observations from grow logs because the observed herm rate is a strong keeper-status indicator. Record sex-expression timing separately; never infer a herm from timing alone. Keep early observations separate from final-product evidence. Put missing evidence, uncertainties, and optional context in additionalInformation.`
       }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "Pheno hunt" },
         {
           key: "plants",
           label:
-            "Plants as JSON or lines: label, vigor, aroma, resin, stress, yield, sex week, clone root days, recovery hours, morphology, pest resistance, feeding response, flower structure, taste, effect, hash value, clone performance, TC suitability, breeding value, final product, intersex signs, notes",
+            "Cannabis plants as JSON or lines: label, vigor, aroma, resin, stress, yield, sex week, clone root days, recovery hours, morphology, pest resistance, feeding response, flower structure, taste, effect, hash value, clone performance, TC suitability, breeding value, final product, intersex signs, herm observations, total stability observations, notes",
           defaultValue: "",
           multiline: true
         },
@@ -145,10 +149,13 @@ export default function PhenoHuntToolRoute() {
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, facilityId, commercialAccountId }) => ({
+      buildPayload={(values, { growId, facilityId, commercialAccountId, plantContext }) => ({
         growId,
         facilityId: facilityId || undefined,
         commercialAccountId: commercialAccountId || undefined,
+        ...plantContext.toolRunContext,
+        cropType: "cannabis",
+        cannabisContext: true,
         projectName: values.projectName,
         plants: parsePlants(values.plants),
         additionalInformation: values.additionalInformation || undefined
@@ -185,7 +192,7 @@ export default function PhenoHuntToolRoute() {
           value: outputs.stabilitySummary?.observedIntersexRate != null
             ? `${outputs.stabilitySummary.observedIntersexRate}%`
             : "-",
-          detail: `${outputs.stabilitySummary?.intersexCount || 0} of ${outputs.stabilitySummary?.plantsObserved || 0} plants; sex timing recorded for ${outputs.stabilitySummary?.sexTimingRecorded || 0}.`
+          detail: `${outputs.stabilitySummary?.hermObservations || 0} herm/intersex observations across ${outputs.stabilitySummary?.stabilityObservations || 0} logged stability observations; sex timing recorded for ${outputs.stabilitySummary?.sexTimingRecorded || 0} plants.`
         }
       ]}
       buildNotices={(outputs) => [
