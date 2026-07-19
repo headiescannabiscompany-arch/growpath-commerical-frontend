@@ -36,11 +36,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Add outcome-based method review so at least three repeated grow outcomes can create an evidence-linked admin proposal, while acceptance only queues separate editorial work and never silently rewrites a GrowPath method.
 
 1. Commercial navigation clarity
-   - Make Storefront a first-class commercial destination.
-   - Put Storefront prominently on Commercial Dashboard.
-   - Ensure bottom tabs/routes open correct pages, not dashboard again.
-   - Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
-   - Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
+   - [x] Make Storefront a first-class commercial destination.
+   - [x] Put Storefront prominently on Commercial Dashboard with Open, Edit, View as User/Preview, and Add Product actions.
+   - [x] Ensure bottom tabs/routes open correct pages, not dashboard again.
+   - [x] Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
+   - [x] Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
 
 2. Storefront-first commercial slice
    - Add Storefront owner home.

@@ -759,6 +759,18 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Storefront: Living Soil Labs /living-soil-labs")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Open Storefront").props.href).toBe(
+      "/home/commercial/storefront"
+    );
+    expect(screen.getByLabelText("Edit Storefront").props.href).toBe(
+      "/home/commercial/storefront/edit"
+    );
+    expect(screen.getByLabelText("View as User").props.href).toBe(
+      "/store/living-soil-labs"
+    );
+    expect(screen.getByLabelText("Add Product").props.href).toBe(
+      "/home/commercial/products/new"
+    );
     expect(
       screen.getByText(
         "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path."
