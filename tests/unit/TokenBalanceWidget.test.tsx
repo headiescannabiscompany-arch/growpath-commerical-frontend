@@ -1,7 +1,8 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { act, render, waitFor } from "@testing-library/react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { publishTokenBalanceChange } from "@/utils/tokenBalanceEvents";
 
 const mockGetTokenBalance = jest.fn();
 let mockAuthState: any;
@@ -102,6 +103,30 @@ describe("TokenBalanceWidget", () => {
         "Live balance is unavailable. No estimated balance is being shown."
       )
     ).toBeNull();
+  });
+
+  it("refreshes a 100-credit trial balance after paid AI usage", async () => {
+    mockGetTokenBalance
+      .mockResolvedValueOnce({
+        aiTokens: 100,
+        maxTokens: 100,
+        plan: "pro",
+        subscriptionStatus: "trialing"
+      })
+      .mockResolvedValueOnce({
+        aiTokens: 99,
+        maxTokens: 100,
+        plan: "pro",
+        subscriptionStatus: "trialing"
+      });
+
+    const screen = render(<TokenBalanceWidget />);
+    await waitFor(() => expect(screen.getByText("100 / 100")).toBeTruthy());
+
+    act(() => publishTokenBalanceChange(99));
+
+    await waitFor(() => expect(screen.getByText("99 / 100")).toBeTruthy());
+    expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
   });
 
   it("surfaces a balance-to-ledger mismatch instead of hiding it", async () => {

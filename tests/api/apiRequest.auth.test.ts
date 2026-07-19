@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { getToken } from "../../src/auth/tokenStore";
 import { apiRequest, setOnUnauthorized } from "../../src/api/apiRequest";
+import { subscribeToTokenBalanceChange } from "../../src/utils/tokenBalanceEvents";
 
 jest.mock("../../src/auth/tokenStore", () => ({
   getToken: jest.fn()
@@ -27,6 +28,22 @@ describe("apiRequest authentication contract", () => {
     await expect(apiRequest("/api/test")).resolves.toEqual({
       authorization: "Bearer stored-token"
     });
+  });
+
+  it("publishes the remaining balance reported by a completed AI request", async () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeToTokenBalanceChange(listener);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => JSON.stringify({ aiTokensRemaining: 99 })
+    })) as any;
+
+    try {
+      await apiRequest("/api/ai/assistant/personal");
+      expect(listener).toHaveBeenCalledWith(99);
+    } finally {
+      unsubscribe();
+    }
   });
 
   it("does not replace an explicitly supplied lowercase authorization header", async () => {

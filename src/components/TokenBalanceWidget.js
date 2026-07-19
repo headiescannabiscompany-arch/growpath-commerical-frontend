@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { getTokenBalance } from "../api/tokens";
 import { useAuth } from "../auth/AuthContext";
 import { radius } from "../theme/theme";
+import { subscribeToTokenBalanceChange } from "../utils/tokenBalanceEvents";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -18,6 +19,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [allowanceMismatch, setAllowanceMismatch] = useState(false);
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const stalePaidRetryTokenRef = useRef("");
   const accountStateKey = [
     auth?.token || "",
@@ -37,6 +39,14 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
   const hasPaidAccess =
     ["active", "trial", "trialing"].includes(subscriptionStatus) &&
     requestedPlan !== "free";
+
+  useEffect(
+    () =>
+      subscribeToTokenBalanceChange(() => {
+        setRefreshVersion((version) => version + 1);
+      }),
+    []
+  );
 
   useEffect(() => {
     let alive = true;
@@ -74,7 +84,7 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     return () => {
       alive = false;
     };
-  }, [accountStateKey, authToken, hasPaidAccess, retryMe]);
+  }, [accountStateKey, authToken, hasPaidAccess, refreshVersion, retryMe]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);

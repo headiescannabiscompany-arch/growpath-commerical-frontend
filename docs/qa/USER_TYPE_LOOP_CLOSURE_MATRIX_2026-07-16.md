@@ -103,6 +103,23 @@ control, or can bypass its backend authorization boundary.
   plugin is enabled, start a new chat, open the in-app Browser with `Ctrl+Shift+B`, and
   make the production tab visible before retrying.
 
+- 2026-07-19 production follow-up: the in-app Browser connected successfully and
+  exercised the deployed public/signed-out, Personal Free, Personal Pro, Commercial,
+  and Facility Owner entry sessions at `https://growpathai.com`. The seeded Free
+  account reported Pro/trialing entitlement state, so it did not provide valid Free
+  evidence. The Facility account reported `OWNER`; no Manager, Staff, or Viewer
+  credentials were available for the required cross-role chain.
+- The Commercial session exposed raw `tasks`, `tasks/[id]`, and `tools/library` tab
+  entries. The routes were hidden, protected by focused navigation coverage, merged,
+  and deployed. At `2026-07-19T19:49:35.417Z`, merge SHA
+  `e025c2cd3a8e028ed9ce78e92f3768031d01704c` showed only Dashboard, Storefront,
+  Products, Feed / Campaigns, Courses, Lives, Orders, Analytics, Profile, and Tools;
+  no raw internal route tabs or browser console errors remained.
+- Final screenshot capture timed out in the Browser after the DOM retest. Earlier
+  session screenshots are chat evidence only; no final-SHA screenshot or video file
+  is claimed. Full release evidence and remaining blocks are recorded in
+  `docs/qa/RELEASE_EVIDENCE_2026-07-19.md`.
+
 ### Personal Free backbone audit
 
 - Environment Review now uses the mounted ToolRun API, clearly identifies its

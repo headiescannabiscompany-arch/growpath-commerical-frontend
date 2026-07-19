@@ -1,4 +1,5 @@
 import { getToken } from "../auth/tokenStore";
+import { publishTokenBalanceChange } from "../utils/tokenBalanceEvents";
 
 export type ApiRequestOptions = {
   method?: string;
@@ -256,6 +257,11 @@ export async function apiRequest<T = any>(
       }
 
       const result = (await parseResponse(res, opts.responseType ?? "auto")) as T;
+      const reportedBalance =
+        result && typeof result === "object"
+          ? ((result as any).aiTokensRemaining ?? (result as any).data?.aiTokensRemaining)
+          : undefined;
+      publishTokenBalanceChange(reportedBalance);
       emitTransportEvent({ type: "recovered" });
       return result;
     } catch (err: any) {
