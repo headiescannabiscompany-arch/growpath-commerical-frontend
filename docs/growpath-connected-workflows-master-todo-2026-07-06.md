@@ -43,11 +43,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
 
 2. Storefront-first commercial slice
-   - Add Storefront owner home.
-   - Add View as User / public preview path.
-   - Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
-   - Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
-   - Ensure public/storefront-style page can show products/courses/lives/campaigns even if some data is mocked/empty.
+   - [x] Add Storefront owner home.
+   - [x] Add View as User / public preview path.
+   - [x] Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
+   - [x] Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
+   - [x] Ensure public/storefront-style page can show products/courses/lives/campaigns with honest empty states when no published records exist.
 
 3. Feed vs Forum correction
    - Replace wording that implies Feed is discussion.

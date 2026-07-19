@@ -257,9 +257,16 @@ describe("Storefront route", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("Featured Courses")).toBeTruthy();
+    expect(screen.getByText("Storefront Launch Actions")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/products/new")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/courses")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
+    expect(screen.getAllByTestId("link-/home/commercial/feed").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("link-/home/commercial/orders")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/analytics")).toBeTruthy();
     expect(screen.getByText("View Public Store")).toBeTruthy();
     expect(screen.queryByText("Legacy brand profile")).toBeNull();
-    expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
+    expect(screen.getAllByTestId("link-/store/grow-shop").length).toBeGreaterThan(0);
     expect(screen.queryByTestId("link-/storefront/grow-shop")).toBeNull();
     expect(screen.queryByTestId("link-/brands/grow-shop")).toBeNull();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
@@ -284,7 +291,9 @@ describe("Storefront route", () => {
     expect(screen.getByTestId("link-/forum/post?id=thread-course")).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
     expect(screen.getByText("Open Live")).toBeTruthy();
-    expect(screen.getAllByTestId("link-/forum/post?id=thread-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("link-/forum/post?id=thread-1").length).toBeGreaterThan(
+      0
+    );
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
