@@ -191,7 +191,20 @@ const fallbackRoutes = [
   "home/commercial/inventory-item/item-1",
   "home/commercial/marketing",
   "home/commercial/analytics",
-  "home/commercial/profile"
+  "home/commercial/profile",
+  "home/commercial/tools",
+  "home/commercial/tools/ask-ai",
+  "home/commercial/tools/diagnose",
+  "home/commercial/tools/dry-amendment-mix",
+  "home/commercial/tools/environment",
+  "home/commercial/tools/harvest-readiness",
+  "home/commercial/tools/ingredient-library",
+  "home/commercial/tools/library",
+  "home/commercial/tools/npk",
+  "home/commercial/tools/recipe-builder",
+  "home/commercial/tools/report",
+  "home/commercial/tools/soil-builder",
+  "home/commercial/tools/soil-nutrient-batch"
 ];
 const indexHtml = path.join(absoluteOutputDir, "index.html");
 const rawIndexHtml = fs.readFileSync(indexHtml, "utf8");
