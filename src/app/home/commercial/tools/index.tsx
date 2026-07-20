@@ -29,6 +29,12 @@ const TOOLS = [
     href: "/home/commercial/tools/recipe-builder"
   },
   {
+    title: "Soil & Nutrient Batch Planner",
+    description:
+      "Estimate production batch costs, bag counts, pull sheets, labor, packaging, and margin.",
+    href: "/home/commercial/tools/soil-nutrient-batch"
+  },
+  {
     title: "Saved Runs / Reports",
     description: "Review and export commercial grow records and completed analyses.",
     href: "/home/commercial/tools/report"

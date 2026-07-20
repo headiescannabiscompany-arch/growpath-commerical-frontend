@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "expo-router";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -94,6 +95,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
 
   const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
   const hasWarnings = warnings.length > 0 || outputs.purposeFit === "poor";
+  const warningPriority: "medium" | "high" = hasWarnings ? "high" : "medium";
   const recipe = outputs.recipeId || "soil batch";
   const bagCount = outputs.bagCount ? ` Target bag count: ${outputs.bagCount}.` : "";
 
@@ -109,7 +111,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     },
     {
       title: `Mix and record ${recipe} actuals`,
-      priority: hasWarnings ? "high" : ("medium" as const),
+      priority: warningPriority,
       dueDate: tomorrow(2),
       ...calendarMetadata,
       sourceStage: "batch_mixing_actuals",
@@ -117,7 +119,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     },
     {
       title: "QA soil batch label and release notes",
-      priority: hasWarnings ? "high" : ("medium" as const),
+      priority: warningPriority,
       dueDate: tomorrow(3),
       ...calendarMetadata,
       sourceStage: "batch_qa_label_review",
@@ -172,13 +174,15 @@ function buildSoilBatchAssistantBrief(payload: Record<string, any>) {
   ].join("\n");
 }
 
-export default function SoilNutrientBatchToolRoute() {
+export function CommercialSoilNutrientBatchToolRoute() {
   return (
     <BackendCalculatorToolScreen
       tool="soil-nutrient-batch"
       toolKey="soil-nutrient-batch"
       title="Soil & Nutrient Batch Planner"
       subtitle="Scale a purpose-built soil, dry amendment, or nutrient batch while checking guaranteed analysis, release timing, stage fit, cost, warnings, and tasks."
+      backFallbackHref="/home/commercial/tools"
+      feedRouteKey="commercial_tool_soil_nutrient_batch"
       aiPrefill={{
         buttonLabel: "Fill batch from recipe and inventory",
         clearUnfilled: true,
@@ -321,4 +325,8 @@ export default function SoilNutrientBatchToolRoute() {
       ]}
     />
   );
+}
+
+export default function LegacyPersonalSoilNutrientBatchRoute() {
+  return <Redirect href="/home/commercial/tools/soil-nutrient-batch" />;
 }

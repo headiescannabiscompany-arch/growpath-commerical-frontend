@@ -1,13 +1,19 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import SoilNutrientBatchToolRoute from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
+import SoilNutrientBatchToolRoute from "@/app/home/commercial/tools/soil-nutrient-batch";
+import LegacyPersonalSoilNutrientBatchRoute from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
+  Redirect: ({ href }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(Text, null, `Redirect ${href}`);
+  },
   useLocalSearchParams: () => ({ growId: "grow-1" }),
   useRouter: () => ({
     back: jest.fn(),
@@ -19,8 +25,8 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
-    plan: "pro",
-    mode: "personal",
+    plan: "commercial",
+    mode: "commercial",
     can: () => true
   })
 }));
@@ -54,6 +60,10 @@ jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
 }));
 
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: () => new Promise(() => {})
+}));
+
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
   saveToolRunAndCreateTask: jest.fn(),
@@ -85,6 +95,14 @@ describe("SoilNutrientBatchToolRoute", () => {
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4"]
     });
+  });
+
+  it("redirects the retired Personal route to the Commercial tool", () => {
+    const screen = render(<LegacyPersonalSoilNutrientBatchRoute />);
+
+    expect(
+      screen.getByText("Redirect /home/commercial/tools/soil-nutrient-batch")
+    ).toBeTruthy();
   });
 
   it("creates production tasks from soil nutrient batch output", async () => {

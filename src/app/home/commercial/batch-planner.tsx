@@ -515,7 +515,7 @@ export default function CommercialBatchPlannerRoute() {
         </Text>
         <Text style={styles.bullet}>Do not label the module Living Soil Labs</Text>
         <Text style={styles.bullet}>
-          Support both personal one-grow batches and commercial production batches
+          Keep production batch planning and records inside the Commercial workspace
         </Text>
       </AppCard>
     </AppPage>

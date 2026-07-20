@@ -45,6 +45,8 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
+  backFallbackHref?: string;
+  feedRouteKey?: string;
   formHeader?:
     | React.ReactNode
     | ((context: {
@@ -165,6 +167,8 @@ export default function BackendCalculatorToolScreen({
   toolKey,
   title,
   subtitle,
+  backFallbackHref = "/home/personal/tools",
+  feedRouteKey,
   formHeader,
   status = "CALCULATED",
   fields,
@@ -206,7 +210,7 @@ export default function BackendCalculatorToolScreen({
     !entitlements.can(String(requiredCapability));
   const locked = betaLockedForFree || capabilityLocked;
   const bannerPolicy = getFeedBannerPolicy({
-    routeKey: `personal_tool_${toolKey}`,
+    routeKey: feedRouteKey || `personal_tool_${toolKey}`,
     plan,
     mode: entitlements.mode,
     longContent: true
@@ -444,7 +448,7 @@ export default function BackendCalculatorToolScreen({
 
   if (locked) {
     return (
-      <ScreenBoundary title={title} showBack backFallbackHref="/home/personal/tools">
+      <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
@@ -476,7 +480,7 @@ export default function BackendCalculatorToolScreen({
   }
 
   return (
-    <ScreenBoundary title={title} showBack backFallbackHref="/home/personal/tools">
+    <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>

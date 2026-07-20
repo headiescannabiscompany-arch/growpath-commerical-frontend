@@ -514,9 +514,10 @@ export const personalToolFeatures = [
       "Estimate soil/amendment batch costs, bag counts, pull sheets, labor, packaging, and margin.",
     area: "business_production",
     status: "beta",
-    href: "/home/personal/tools/soil-nutrient-batch",
+    href: "/home/commercial/tools/soil-nutrient-batch",
+    hubVisible: false,
     internalNote:
-      "Approved beta soil/nutrient batch planning workflow without brand wording."
+      "Commercial-only beta production workflow. Keep it out of the Personal tools hub and preserve workspace-scoped batch, cost, inventory, and product records."
   },
   {
     key: "tools.inventory",
@@ -542,7 +543,7 @@ export function isFeatureNavigable(
 }
 
 export function getNavigablePersonalTools(options: { allowBetaSurfaces?: boolean } = {}) {
-  return personalToolFeatures.filter(
+  return (personalToolFeatures as readonly FeatureDefinition[]).filter(
     (feature) => feature.hubVisible !== false && isFeatureNavigable(feature, options)
-  ) as FeatureDefinition[];
+  );
 }
