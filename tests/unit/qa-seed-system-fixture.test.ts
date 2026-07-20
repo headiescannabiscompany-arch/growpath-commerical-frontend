@@ -158,6 +158,13 @@ describe("GrowPath QA seed-system fixture", () => {
     );
 
     expect(pack.canonicalRoles).toEqual(["owner", "manager", "staff", "viewer"]);
+    expect(pack.status).toBe("seed_ready");
+    expect(pack.seedInputApproval).toMatchObject({
+      status: "approved",
+      scope: "private synthetic QA fixtures for test and staging only"
+    });
+    expect(pack.postSeedAcceptanceRequired).toBe(true);
+    expect(pack.telemetryMetrics).toHaveLength(15);
     expect(pack.personaAssignments).toEqual(
       expect.arrayContaining([
         { persona: "grower", role: "staff" },

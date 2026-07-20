@@ -75,6 +75,8 @@
     "verify:living-soil-labs-commerce-qa-catalog:planning": "node scripts/verify-living-soil-labs-commerce-qa-catalog.cjs --allow-planning",
     "verify:facility-simulator-qa-catalog": "node scripts/verify-facility-simulator-qa-catalog.cjs",
     "verify:facility-simulator-qa-catalog:planning": "node scripts/verify-facility-simulator-qa-catalog.cjs --allow-planning",
+    "verify:facility-simulator-qa-catalog:acceptance": "node scripts/verify-facility-simulator-qa-catalog.cjs --require-acceptance",
+    "build:facility-simulator-qa-fixture": "node scripts/build-facility-simulator-qa-fixture.cjs",
     "validate:id-policy": "node scripts/validate-id-policy.cjs",
     "verify:connected-workflows": "node scripts/verify-connected-workflows.cjs",
     "verify:codex-workflow": "node scripts/verify-codex-workflow.cjs",

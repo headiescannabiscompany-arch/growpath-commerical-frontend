@@ -255,9 +255,13 @@ export const methodRegistry: GrowPathMethod[] = [
       "moderation audit",
       "read-only integration state",
       "reviewed device mapping",
-      "record-backed facility analytics"
+      "record-backed facility analytics",
+      "separate seed-readiness and post-seed QA evidence"
     ],
-    ["A selected facility and authorization are required."],
+    [
+      "A selected facility and authorization are required.",
+      "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
+    ],
     ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]
   )
 ];

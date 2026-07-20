@@ -134,7 +134,10 @@
       "id": "plant-identification",
       "masterItem": 50,
       "status": "planned",
-      "targetRecordCount": { "minimum": 300, "maximum": 500 },
+      "targetRecordCount": {
+        "minimum": 300,
+        "maximum": 500
+      },
       "requiredRecordFields": [
         "caseId",
         "acceptedName",
@@ -215,7 +218,10 @@
       "id": "diagnosis-ipm",
       "masterItem": 51,
       "status": "planned",
-      "targetRecordCount": { "minimum": 90, "maximum": 180 },
+      "targetRecordCount": {
+        "minimum": 90,
+        "maximum": 180
+      },
       "requiredRecordFields": [
         "caseId",
         "caseGroup",
@@ -388,7 +394,7 @@
     {
       "id": "facility-simulator",
       "masterItem": 53,
-      "status": "planned",
+      "status": "seed_ready",
       "requiredRecordFields": [
         "facilityId",
         "qaSeedNamespace",
@@ -405,11 +411,26 @@
       ],
       "canonicalRoles": ["owner", "manager", "staff", "viewer"],
       "personaAssignments": [
-        { "persona": "owner", "role": "owner" },
-        { "persona": "manager", "role": "manager" },
-        { "persona": "grower", "role": "staff" },
-        { "persona": "scout", "role": "staff" },
-        { "persona": "restricted_employee", "role": "viewer" }
+        {
+          "persona": "owner",
+          "role": "owner"
+        },
+        {
+          "persona": "manager",
+          "role": "manager"
+        },
+        {
+          "persona": "grower",
+          "role": "staff"
+        },
+        {
+          "persona": "scout",
+          "role": "staff"
+        },
+        {
+          "persona": "restricted_employee",
+          "role": "viewer"
+        }
       ],
       "roomPurposes": [
         "mother",
@@ -429,9 +450,12 @@
         "vpd",
         "dew_point",
         "co2",
+        "ppfd",
+        "dli",
         "substrate_moisture",
         "substrate_ec",
-        "ppfd",
+        "substrate_ph",
+        "irrigation_event",
         "light_state",
         "alarm",
         "device_offline",
@@ -462,7 +486,21 @@
         "alerts",
         "persistence_and_reload",
         "tool_write_back_scope"
-      ]
+      ],
+      "seedInputApproval": {
+        "status": "approved",
+        "approvedAt": "2026-07-20",
+        "scope": "private synthetic QA fixtures for test and staging only",
+        "basis": "owner direction to execute master item 55",
+        "excludes": [
+          "production records or identifiers",
+          "publication or product claims",
+          "operational cultivation setpoints",
+          "external media or source-rights approval",
+          "Living Soil Labs formulas, labels, prices, or product approval"
+        ]
+      },
+      "postSeedAcceptanceRequired": true
     }
   ]
 }
