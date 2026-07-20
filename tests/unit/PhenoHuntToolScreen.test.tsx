@@ -113,6 +113,7 @@ describe("PhenoHuntToolRoute", () => {
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
       reply: JSON.stringify({
         projectName: "Summer hunt",
         plants: [
@@ -237,7 +238,9 @@ describe("PhenoHuntToolRoute", () => {
 
     fireEvent.press(screen.getByText("Fill pheno hunt from grow"));
     await waitFor(() =>
-      expect(screen.getByText(/AI filled 3 field\(s\) from grow records/)).toBeTruthy()
+      expect(
+        screen.getByText(/AI filled 3 field\(s\) from available evidence/)
+      ).toBeTruthy()
     );
     fireEvent.press(screen.getByLabelText("Run Pheno Hunting"));
 

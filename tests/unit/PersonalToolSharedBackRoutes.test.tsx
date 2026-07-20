@@ -157,8 +157,8 @@ describe("legacy personal tool shared back routes", () => {
   it("uses shared back behavior on PDF / Export", () => {
     const screen = render(<PdfExportScreen />);
 
-    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    expect(screen.getByText("PDF / Export")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/profile")).toBeTruthy();
+    expect(screen.getByText("Grow Reports & Export")).toBeTruthy();
   });
 
   it("uses shared back behavior on VPD Calculator", () => {

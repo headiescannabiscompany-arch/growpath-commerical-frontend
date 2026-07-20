@@ -342,7 +342,11 @@ export default function BackendCalculatorToolScreen({
         })
       });
       if (!response?.success || !response.reply) {
-        throw new Error("AI did not return an identification result.");
+        throw new Error(
+          tool === "species-crop-id"
+            ? "AI did not return an identification result."
+            : "AI did not return usable prefill data for this tool."
+        );
       }
       const raw = String(response.reply || "");
       const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
