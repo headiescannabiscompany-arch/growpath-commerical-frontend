@@ -1,0 +1,595 @@
+{
+  "schemaVersion": "growpath-plant-identification-qa-v1",
+  "status": "planning",
+  "masterItem": 50,
+  "targetRecordCount": 320,
+  "purpose": "QA inference and acceptance testing only; never model training.",
+  "rightsPolicy": {
+    "useForModelTraining": false,
+    "allowedCopiedMediaLicenses": [
+      "CC0-1.0",
+      "CC-BY-4.0",
+      "OWNER_PERMISSION",
+      "GROWPATH_OWNED"
+    ],
+    "blockedCopiedMediaLicenses": [
+      "ALL-RIGHTS-RESERVED",
+      "CC-BY-NC",
+      "CC-BY-NC-SA",
+      "CC-BY-NC-ND",
+      "UNKNOWN"
+    ],
+    "imageLevelReviewRequired": true,
+    "commercialQaUseApprovalRequired": true,
+    "creatorAndAttributionRequired": true,
+    "licenseRecheckBeforeExecution": true
+  },
+  "requiredMediaRecordFields": [
+    "recordId",
+    "caseId",
+    "acceptedName",
+    "scientificName",
+    "plantCategory",
+    "lifeStage",
+    "expectedAlternatives",
+    "distinguishingFeatures",
+    "expectedConfidenceRange",
+    "expectedResult",
+    "sourceId",
+    "sourceUrl",
+    "mediaUrl",
+    "creator",
+    "licenseId",
+    "attributionText",
+    "retrievedAt",
+    "rightsReviewedAt",
+    "intendedUseApproved",
+    "handling"
+  ],
+  "sourcePlan": [
+    {
+      "sourceId": "inaturalist",
+      "status": "candidate_metadata_only",
+      "allowedLicenseFilter": ["CC0", "CC-BY"],
+      "requirements": [
+        "use the image license, not only the observation license",
+        "retain observation and photo URLs plus creator attribution",
+        "do not use for model training",
+        "do not copy CC-BY-NC or all-rights-reserved images"
+      ]
+    },
+    {
+      "sourceId": "growpath_owner_media",
+      "status": "preferred_pending_assets",
+      "allowedLicenseFilter": ["OWNER_PERMISSION", "GROWPATH_OWNED"],
+      "requirements": [
+        "record ownership or written permission",
+        "record creator and attribution preference",
+        "separate crop identity from cultivar provenance"
+      ]
+    },
+    {
+      "sourceId": "commissioned_failure_cases",
+      "status": "preferred_pending_capture",
+      "allowedLicenseFilter": ["GROWPATH_OWNED"],
+      "requirements": [
+        "capture blur, partial, mixed, artificial, dead-leaf, and no-plant cases",
+        "strip private metadata before fixture use"
+      ]
+    }
+  ],
+  "groupTargets": {
+    "cannabisHemp": 70,
+    "foodCrops": 64,
+    "ornamentals": 48,
+    "weeds": 54,
+    "lookalikes": 48,
+    "failureCases": 36
+  },
+  "caseGroups": {
+    "cannabisHemp": [
+      {
+        "caseId": "cannabis_seedling",
+        "acceptedName": "Cannabis or hemp seedling",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "seedling",
+        "quota": 10,
+        "expectedAlternatives": ["kenaf seedling", "Japanese maple seedling"],
+        "distinguishingFocus": [
+          "cotyledons",
+          "first true leaves",
+          "serration development"
+        ]
+      },
+      {
+        "caseId": "cannabis_vegetative",
+        "acceptedName": "Cannabis or hemp plant",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "vegetative",
+        "quota": 10,
+        "expectedAlternatives": ["kenaf", "Japanese maple"],
+        "distinguishingFocus": [
+          "palmate compound leaf",
+          "serrated leaflets",
+          "opposite-to-alternate node pattern"
+        ]
+      },
+      {
+        "caseId": "cannabis_flowering",
+        "acceptedName": "Flowering cannabis or hemp plant",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "flowering",
+        "quota": 10,
+        "expectedAlternatives": ["kenaf flower", "hops"],
+        "distinguishingFocus": [
+          "inflorescence structure",
+          "bracts",
+          "pistils",
+          "resinous sugar leaves"
+        ]
+      },
+      {
+        "caseId": "cannabis_male_morphology",
+        "acceptedName": "Cannabis or hemp plant with male floral morphology",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "preflower_or_flower",
+        "quota": 10,
+        "expectedAlternatives": ["female preflower", "unresolved cannabis flower"],
+        "distinguishingFocus": [
+          "staminate clusters",
+          "pollen sacs",
+          "absence of cultivar inference"
+        ]
+      },
+      {
+        "caseId": "cannabis_female_morphology",
+        "acceptedName": "Cannabis or hemp plant with female floral morphology",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "preflower_or_flower",
+        "quota": 10,
+        "expectedAlternatives": ["male preflower", "unresolved cannabis flower"],
+        "distinguishingFocus": [
+          "pistillate flowers",
+          "bracts",
+          "absence of cultivar inference"
+        ]
+      },
+      {
+        "caseId": "cannabis_intersex_morphology",
+        "acceptedName": "Cannabis or hemp plant with possible intersex morphology",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "flowering",
+        "quota": 10,
+        "expectedAlternatives": [
+          "male flower",
+          "female flower",
+          "unresolved reproductive structure"
+        ],
+        "distinguishingFocus": [
+          "mixed reproductive structures",
+          "uncertainty",
+          "request for macro retake"
+        ]
+      },
+      {
+        "caseId": "cannabis_harvested_flower",
+        "acceptedName": "Harvested cannabis or hemp flower",
+        "scientificName": "Cannabis sativa",
+        "lifeStage": "harvested_flower",
+        "quota": 10,
+        "expectedAlternatives": ["hops", "dried herb material", "insufficient evidence"],
+        "distinguishingFocus": [
+          "bracts or calyces",
+          "pistils",
+          "trichome coverage",
+          "inflorescence structure",
+          "no cultivar inference"
+        ]
+      }
+    ],
+    "foodCrops": [
+      {
+        "caseId": "tomato",
+        "acceptedName": "Tomato",
+        "scientificName": "Solanum lycopersicum",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["black nightshade", "potato"],
+        "distinguishingFocus": [
+          "compound leaves",
+          "stem hairs",
+          "flower or fruit when present"
+        ]
+      },
+      {
+        "caseId": "pepper",
+        "acceptedName": "Pepper",
+        "scientificName": "Capsicum species",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["nightshade species"],
+        "distinguishingFocus": [
+          "simple leaves",
+          "branching",
+          "flower or fruit when present"
+        ]
+      },
+      {
+        "caseId": "cucumber",
+        "acceptedName": "Cucumber",
+        "scientificName": "Cucumis sativus",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["melon", "squash"],
+        "distinguishingFocus": ["vining habit", "tendrils", "leaf shape"]
+      },
+      {
+        "caseId": "lettuce",
+        "acceptedName": "Lettuce",
+        "scientificName": "Lactuca sativa",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["wild lettuce", "endive"],
+        "distinguishingFocus": ["rosette or head form", "leaf texture"]
+      },
+      {
+        "caseId": "basil",
+        "acceptedName": "Basil",
+        "scientificName": "Ocimum basilicum",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["mint family herb"],
+        "distinguishingFocus": [
+          "opposite leaves",
+          "square stem context",
+          "flower spike when present"
+        ]
+      },
+      {
+        "caseId": "strawberry",
+        "acceptedName": "Garden strawberry",
+        "scientificName": "Fragaria × ananassa",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+        "distinguishingFocus": [
+          "trifoliate leaves",
+          "stolons",
+          "flower or fruit when present"
+        ]
+      },
+      {
+        "caseId": "corn",
+        "acceptedName": "Corn or maize",
+        "scientificName": "Zea mays",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["sorghum", "grass seedling"],
+        "distinguishingFocus": [
+          "broad grass blade",
+          "midrib",
+          "sheath",
+          "tassel when present"
+        ]
+      },
+      {
+        "caseId": "common_bean",
+        "acceptedName": "Common bean",
+        "scientificName": "Phaseolus vulgaris",
+        "lifeStage": "mixed",
+        "quota": 8,
+        "expectedAlternatives": ["soybean", "cowpea"],
+        "distinguishingFocus": [
+          "trifoliate leaves",
+          "vine or bush habit",
+          "flowers or pods"
+        ]
+      }
+    ],
+    "ornamentals": [
+      {
+        "caseId": "rose",
+        "acceptedName": "Rose",
+        "scientificName": "Rosa species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["blackberry", "other Rosaceae shrub"],
+        "distinguishingFocus": [
+          "compound leaf",
+          "stipules",
+          "prickles",
+          "flower when present"
+        ]
+      },
+      {
+        "caseId": "pothos",
+        "acceptedName": "Pothos",
+        "scientificName": "Epipremnum aureum",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["heartleaf philodendron"],
+        "distinguishingFocus": ["petiole groove", "variegation", "leaf base"]
+      },
+      {
+        "caseId": "monstera",
+        "acceptedName": "Monstera",
+        "scientificName": "Monstera deliciosa",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["split-leaf philodendron"],
+        "distinguishingFocus": ["fenestrations", "growth habit", "petiole"]
+      },
+      {
+        "caseId": "peace_lily",
+        "acceptedName": "Peace lily",
+        "scientificName": "Spathiphyllum species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["Anthurium"],
+        "distinguishingFocus": ["basal leaves", "spathe and spadix when present"]
+      },
+      {
+        "caseId": "orchid",
+        "acceptedName": "Orchid",
+        "scientificName": "Orchidaceae",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["bromeliad", "lily"],
+        "distinguishingFocus": ["aerial roots", "leaf arrangement", "flower structure"]
+      },
+      {
+        "caseId": "marigold",
+        "acceptedName": "Marigold",
+        "scientificName": "Tagetes species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["calendula"],
+        "distinguishingFocus": ["pinnate leaves", "flower head", "leaflet serration"]
+      },
+      {
+        "caseId": "petunia",
+        "acceptedName": "Petunia",
+        "scientificName": "Petunia species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["calibrachoa"],
+        "distinguishingFocus": ["funnel flower", "sticky foliage", "leaf form"]
+      },
+      {
+        "caseId": "chrysanthemum",
+        "acceptedName": "Chrysanthemum",
+        "scientificName": "Chrysanthemum × morifolium",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["daisy family ornamental"],
+        "distinguishingFocus": ["lobed leaves", "composite flower"]
+      }
+    ],
+    "weeds": [
+      {
+        "caseId": "crabgrass",
+        "acceptedName": "Crabgrass",
+        "scientificName": "Digitaria species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["other lawn grass"],
+        "distinguishingFocus": ["prostrate habit", "nodes", "seed head"]
+      },
+      {
+        "caseId": "dandelion",
+        "acceptedName": "Common dandelion",
+        "scientificName": "Taraxacum officinale",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["catsear", "sow thistle"],
+        "distinguishingFocus": [
+          "basal rosette",
+          "hollow flower stalk",
+          "backward leaf lobes"
+        ]
+      },
+      {
+        "caseId": "plantain_weed",
+        "acceptedName": "Plantain weed",
+        "scientificName": "Plantago species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["dock", "young hosta"],
+        "distinguishingFocus": ["parallel leaf veins", "basal rosette", "seed spike"]
+      },
+      {
+        "caseId": "clover",
+        "acceptedName": "Clover",
+        "scientificName": "Trifolium species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["wood sorrel", "medic"],
+        "distinguishingFocus": ["trifoliate leaf", "stipules", "flower head"]
+      },
+      {
+        "caseId": "chickweed",
+        "acceptedName": "Common chickweed",
+        "scientificName": "Stellaria media",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["mouse-ear chickweed", "speedwell"],
+        "distinguishingFocus": [
+          "opposite leaves",
+          "single hair line",
+          "small split-looking petals"
+        ]
+      },
+      {
+        "caseId": "purslane",
+        "acceptedName": "Common purslane",
+        "scientificName": "Portulaca oleracea",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["spurge"],
+        "distinguishingFocus": ["succulent leaves", "fleshy stems", "milky sap absent"]
+      },
+      {
+        "caseId": "lambsquarters",
+        "acceptedName": "Common lambsquarters",
+        "scientificName": "Chenopodium album",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["orache", "young nightshade"],
+        "distinguishingFocus": [
+          "mealy leaf coating",
+          "goosefoot leaf shape",
+          "flower clusters"
+        ]
+      },
+      {
+        "caseId": "nutsedge",
+        "acceptedName": "Nutsedge",
+        "scientificName": "Cyperus species",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["grass", "rush"],
+        "distinguishingFocus": [
+          "triangular stem",
+          "three-ranked leaves",
+          "sedge seed head"
+        ]
+      },
+      {
+        "caseId": "poison_ivy",
+        "acceptedName": "Poison ivy",
+        "scientificName": "Toxicodendron radicans",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["Virginia creeper", "boxelder seedling"],
+        "distinguishingFocus": [
+          "three leaflets",
+          "variable margins",
+          "vine or shrub habit"
+        ]
+      }
+    ],
+    "lookalikes": [
+      {
+        "caseId": "tomato_vs_nightshade",
+        "acceptedName": "Tomato or nightshade comparison",
+        "scientificName": "Solanum species",
+        "lifeStage": "mixed",
+        "quota": 12,
+        "expectedAlternatives": ["tomato", "black nightshade", "insufficient evidence"],
+        "distinguishingFocus": [
+          "leaf arrangement",
+          "stem hairs",
+          "flowers or fruit",
+          "avoid confident leaf-only overreach"
+        ]
+      },
+      {
+        "caseId": "cannabis_vs_japanese_maple",
+        "acceptedName": "Cannabis or Japanese maple comparison",
+        "scientificName": "Cannabis sativa or Acer palmatum",
+        "lifeStage": "mixed",
+        "quota": 12,
+        "expectedAlternatives": [
+          "cannabis or hemp",
+          "Japanese maple",
+          "insufficient evidence"
+        ],
+        "distinguishingFocus": [
+          "compound leaflets versus lobed simple leaf",
+          "venation",
+          "stem attachment"
+        ]
+      },
+      {
+        "caseId": "cannabis_vs_kenaf",
+        "acceptedName": "Cannabis or kenaf comparison",
+        "scientificName": "Cannabis sativa or Hibiscus cannabinus",
+        "lifeStage": "mixed",
+        "quota": 12,
+        "expectedAlternatives": ["cannabis or hemp", "kenaf", "insufficient evidence"],
+        "distinguishingFocus": [
+          "compound versus lobed leaf",
+          "petiole and venation",
+          "flower context"
+        ]
+      },
+      {
+        "caseId": "grass_vs_nutsedge",
+        "acceptedName": "Grass or nutsedge comparison",
+        "scientificName": "Poaceae or Cyperus species",
+        "lifeStage": "mixed",
+        "quota": 12,
+        "expectedAlternatives": ["grass", "nutsedge", "rush", "insufficient evidence"],
+        "distinguishingFocus": [
+          "stem cross-section",
+          "leaf ranking",
+          "sheath",
+          "seed head"
+        ]
+      }
+    ],
+    "failureCases": [
+      {
+        "caseId": "blurry_plant_photo",
+        "acceptedName": "Insufficient evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 6,
+        "expectedAlternatives": ["retake required"],
+        "distinguishingFocus": ["blur detection", "specific retake guidance"]
+      },
+      {
+        "caseId": "partial_leaf_only",
+        "acceptedName": "Insufficient evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 6,
+        "expectedAlternatives": ["multiple plausible crops", "retake required"],
+        "distinguishingFocus": ["missing whole-plant context", "leaf attachment missing"]
+      },
+      {
+        "caseId": "mixed_plants",
+        "acceptedName": "Multiple plants present",
+        "scientificName": "",
+        "lifeStage": "mixed",
+        "quota": 6,
+        "expectedAlternatives": ["request subject selection"],
+        "distinguishingFocus": ["do not merge identities", "ask which plant to identify"]
+      },
+      {
+        "caseId": "dead_leaf_only",
+        "acceptedName": "Insufficient identity evidence",
+        "scientificName": "",
+        "lifeStage": "senesced_or_dead",
+        "quota": 6,
+        "expectedAlternatives": ["retake living plant"],
+        "distinguishingFocus": [
+          "lost morphology",
+          "separate health symptom from identity"
+        ]
+      },
+      {
+        "caseId": "artificial_plant",
+        "acceptedName": "Artificial plant or non-living replica",
+        "scientificName": "",
+        "lifeStage": "not_applicable",
+        "quota": 6,
+        "expectedAlternatives": ["decorative replica", "uncertain non-living subject"],
+        "distinguishingFocus": [
+          "manufacturing cues",
+          "do not assign scientific identity confidently"
+        ]
+      },
+      {
+        "caseId": "no_plant_scene",
+        "acceptedName": "No plant detected",
+        "scientificName": "",
+        "lifeStage": "not_applicable",
+        "quota": 6,
+        "expectedAlternatives": ["upload a plant photo"],
+        "distinguishingFocus": ["no false crop result", "actionable upload guidance"]
+      }
+    ]
+  },
+  "mediaRecords": []
+}

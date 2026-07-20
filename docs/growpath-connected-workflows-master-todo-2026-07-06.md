@@ -280,6 +280,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Add planning and strict validation commands so incomplete rights/source records remain visible and cannot be treated as seed-ready.
 
 50. Plant-identification QA pack
+   - [x] Define a 320-record allocation across 42 cannabis/hemp, food-crop, ornamental, weed, lookalike, and failure-case definitions.
+   - [x] Add planning and strict catalog validation that blocks model-training use, unreviewed media, noncommercial/all-rights-reserved copies, missing attribution, duplicate media, quota gaps, and cultivar inference.
    - [ ] Curate 300-500 reviewed images spanning cannabis/hemp stages, food crops, ornamentals, weeds, lookalikes, and failure/no-plant cases.
    - [ ] Record accepted/scientific name, category, life stage, acceptable alternatives, distinguishing features, expected confidence range, source, creator, license, and attribution for every image.
    - [ ] Keep crop identification available without a grow, allow clear cannabis/hemp morphology to produce a crop-level draft, and never infer cultivar from appearance.
