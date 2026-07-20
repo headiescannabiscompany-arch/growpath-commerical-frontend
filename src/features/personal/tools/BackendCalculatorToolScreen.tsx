@@ -41,6 +41,10 @@ type ToolField = {
   defaultValue: string;
   keyboardType?: "default" | "numeric";
   multiline?: boolean;
+  placeholder?: string;
+  helpText?: string;
+  section?: string;
+  required?: boolean;
 };
 
 type BackendCalculatorToolScreenProps = {
@@ -91,6 +95,7 @@ type BackendCalculatorToolScreenProps = {
     outputs: Record<string, any>;
     payload: Record<string, any>;
     toolRun: ToolRun | null;
+    moduleRecord: GrowpathModuleRecord | null;
     growId: string;
     facilityId: string;
     commercialAccountId: string;
@@ -252,6 +257,7 @@ export default function BackendCalculatorToolScreen({
     longContent: true
   });
   const aiPrefillReady = aiPrefill?.isReady?.() ?? true;
+  const isCropIdentification = tool === "species-crop-id";
   const experience = feature?.experience;
   const runLabel = RUN_LABELS[toolKey] || "Calculate Result";
   const experienceMode = experience
@@ -540,6 +546,7 @@ export default function BackendCalculatorToolScreen({
           outputs,
           payload,
           toolRun,
+          moduleRecord,
           growId,
           facilityId,
           commercialAccountId,
@@ -633,15 +640,16 @@ export default function BackendCalculatorToolScreen({
             </Text>
             {growOptional ? (
               <Text style={styles.guidanceText}>
-                Identification works without a grow. Attach one only to save the result,
-                create tasks, or use plant history.
+                {isCropIdentification
+                  ? "Identification works without a grow. Attach one only to save the result, create tasks, or use plant history."
+                  : "This workflow works without a grow. Attach one to use saved crop history and create linked logs, tasks, or plant records."}
               </Text>
             ) : null}
             <View style={styles.growPickerRow}>
               {growOptional ? (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Use crop identification without a grow"
+                  accessibilityLabel={`Use ${title} without a grow`}
                   onPress={() => setGrowId("")}
                   style={[styles.growPill, !growId && styles.growPillOn]}
                 >
@@ -674,8 +682,9 @@ export default function BackendCalculatorToolScreen({
           </View>
         ) : !growId && growOptional ? (
           <Text style={styles.feedback}>
-            No grow is required. Upload photos or enter what you know to identify the
-            crop.
+            {isCropIdentification
+              ? "No grow is required. Upload photos or enter what you know to identify the crop."
+              : "No grow is required. Enter direct observations or upload evidence; attach a grow later for linked history and tasks."}
           </Text>
         ) : !growId ? (
           <Text style={styles.feedback}>
@@ -698,12 +707,18 @@ export default function BackendCalculatorToolScreen({
         {aiPrefill ? (
           <View style={styles.guidanceCard}>
             <Text style={styles.resultTitle}>
-              {growOptional ? "AI photo identification" : "AI grow-context prefill"}
+              {isCropIdentification
+                ? "AI photo identification"
+                : growOptional
+                  ? "AI photo evidence prefill"
+                  : "AI grow-context prefill"}
             </Text>
             <Text style={styles.guidanceText}>
-              {growOptional
+              {isCropIdentification
                 ? "AI can inspect uploaded photos and use an attached grow or plant as optional context. Review and confirm every identification."
-                : "AI will use saved grow and plant evidence to fill every supported field. You can add or correct anything before running the tool."}
+                : growOptional
+                  ? "AI can inspect uploaded photos and use an attached grow or plant as optional context. Review every filled observation before running the structured workflow."
+                  : "AI will use saved grow and plant evidence to fill every supported field. You can add or correct anything before running the tool."}
             </Text>
             {!aiPrefillReady && aiPrefill.notReadyMessage ? (
               <Text style={styles.feedback}>{aiPrefill.notReadyMessage}</Text>
@@ -757,18 +772,32 @@ export default function BackendCalculatorToolScreen({
         ) : null}
 
         <View style={styles.form}>
-          {fields.map((field) => (
-            <View key={field.key} style={styles.field}>
-              <Text style={styles.label}>{field.label}</Text>
-              <TextInput
-                accessibilityLabel={`${title} ${field.label}`}
-                style={[styles.input, field.multiline && styles.textArea]}
-                value={values[field.key] ?? ""}
-                onChangeText={(value) => updateValue(field.key, value)}
-                keyboardType={field.keyboardType || "default"}
-                multiline={field.multiline}
-              />
-            </View>
+          {fields.map((field, index) => (
+            <React.Fragment key={field.key}>
+              {field.section &&
+              (index === 0 || fields[index - 1]?.section !== field.section) ? (
+                <Text style={styles.formSection}>{field.section}</Text>
+              ) : null}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {field.label}
+                  {field.required ? " *" : ""}
+                </Text>
+                {field.helpText ? (
+                  <Text style={styles.fieldHelp}>{field.helpText}</Text>
+                ) : null}
+                <TextInput
+                  accessibilityLabel={`${title} ${field.label}`}
+                  accessibilityHint={field.helpText}
+                  placeholder={field.placeholder}
+                  style={[styles.input, field.multiline && styles.textArea]}
+                  value={values[field.key] ?? ""}
+                  onChangeText={(value) => updateValue(field.key, value)}
+                  keyboardType={field.keyboardType || "default"}
+                  multiline={field.multiline}
+                />
+              </View>
+            </React.Fragment>
           ))}
         </View>
 
@@ -868,6 +897,13 @@ const styles = StyleSheet.create({
   resultTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
   guidanceText: { color: "#334155", lineHeight: 19 },
   guidanceStrong: { color: "#334155", fontWeight: "800" },
+  formSection: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "800",
+    marginTop: 8
+  },
+  fieldHelp: { color: "#64748B", fontSize: 12, lineHeight: 17 },
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#166534",

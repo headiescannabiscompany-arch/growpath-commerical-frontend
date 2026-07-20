@@ -19,7 +19,7 @@ export const CALCULATOR_VERSIONS: Record<string, string> = {
   "auto-grow-calendar": "auto-grow-calendar-2026.07",
   "tissue-culture": "tissue-culture-2026.07",
   "soil-nutrient-batch": "soil-nutrient-batch-2026.07",
-  "ipm-scout": "ipm-scout-2026.07",
+  "ipm-scout": "ipm-scout-2026.07.20",
   "genetics-inventory": "genetics-inventory-2026.07",
   "harvest-readiness": "harvest-readiness-2026.07",
   "species-crop-id": "species-crop-id-2026.07",

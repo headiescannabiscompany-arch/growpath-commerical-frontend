@@ -3498,65 +3498,558 @@ function calculateLivingSoilBatch(input = {}) {
 }
 
 function calculateIpmScout(input = {}) {
-  const stickyTrapCount = Math.max(
-    0,
-    number(input.stickyTrapCount ?? 0, "Sticky trap count")
+  const clean = (value) => String(value || "").trim();
+  const lower = (value) => clean(value).toLowerCase();
+  const optionalCount = (value, label) => {
+    if (value === undefined || value === null || clean(value) === "") return null;
+    const parsed = number(value, label);
+    if (parsed < 0 || !Number.isInteger(parsed)) {
+      throw new TypeError(`${label} must be a whole number of zero or greater`);
+    }
+    return parsed;
+  };
+  const unique = (values) => Array.from(new Set(values.filter(Boolean)));
+  const stringArray = (value) =>
+    Array.isArray(value)
+      ? value
+          .map(String)
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [];
+  const includes = (pattern, ...values) => pattern.test(values.map(lower).join(" "));
+
+  const stickyTrapCount = optionalCount(input.stickyTrapCount, "Sticky trap count");
+  const plantsChecked = optionalCount(input.plantsChecked, "Plants checked");
+  const plantsAffected = optionalCount(input.plantsAffected, "Plants affected");
+  if (
+    plantsChecked !== null &&
+    plantsAffected !== null &&
+    plantsAffected > plantsChecked
+  ) {
+    throw new TypeError("Plants affected cannot be greater than plants checked");
+  }
+
+  const cropContext = clean(
+    input.cropContext || input.crop || input.cropIdentity?.commonName
   );
-  const leafDamage = String(input.leafDamage || "").toLowerCase();
-  const pestSeen = String(input.pestSeen || "").toLowerCase();
-  const underside = String(input.undersideInspection || "").toLowerCase();
+  const scoutLocation = clean(input.scoutLocation || input.location);
+  const leafDamageText = clean(input.leafDamage || input.damagePattern);
+  const leafDamage = lower(leafDamageText);
+  const pestSeenText = clean(input.pestSeen);
+  const pestSeen = lower(pestSeenText);
+  const undersideText = clean(input.undersideInspection);
+  const underside = lower(undersideText);
+  const distribution = clean(input.distribution);
+  const progression = clean(input.progression);
+  const magnification = clean(input.magnification);
+  const trapContext = clean(input.trapContext);
+  const environmentConditions = clean(input.environmentConditions);
+  const recentActions = clean(input.recentActions);
+  const additionalInformation = clean(input.additionalInformation);
   const evidence = parseList(input.evidence || input.notes);
+  const suppliedImageAnalysis =
+    input.imageAnalysis && typeof input.imageAnalysis === "object"
+      ? input.imageAnalysis
+      : {};
+  const mediaEvidence = Array.isArray(input.mediaEvidence) ? input.mediaEvidence : [];
+  const imageEvidenceUsed = Array.isArray(suppliedImageAnalysis.evidenceUsed)
+    ? suppliedImageAnalysis.evidenceUsed.map(String).filter(Boolean)
+    : [];
+  const imageLimitations = Array.isArray(suppliedImageAnalysis.limitations)
+    ? suppliedImageAnalysis.limitations.map(String).filter(Boolean)
+    : [];
+  const photosAttachedFromMedia = mediaEvidence.filter((item) =>
+    /photo|image/i.test(String(item?.type || item?.mimeType || item?.kind || ""))
+  ).length;
+  const photosAttached = Number(
+    suppliedImageAnalysis.photoCount || photosAttachedFromMedia
+  );
+  const imageRequested = suppliedImageAnalysis.requested === true || photosAttached > 0;
+  const imagePerformed =
+    imageRequested === true &&
+    suppliedImageAnalysis.performed === true &&
+    Number(suppliedImageAnalysis.photosAnalyzed || 0) > 0;
+  const videosAttached = mediaEvidence.filter((item) =>
+    /video/i.test(String(item?.type || item?.mimeType || item?.kind || ""))
+  ).length;
+  const mediaAnalysis = {
+    requested: imageRequested,
+    performed: imagePerformed,
+    photosAttached,
+    photosAnalyzed: imagePerformed
+      ? Number(suppliedImageAnalysis.photosAnalyzed || photosAttached)
+      : 0,
+    videosAttached,
+    videosAnalyzed: 0,
+    provider: imagePerformed ? clean(suppliedImageAnalysis.provider) || null : null,
+    providerLabel: imagePerformed
+      ? clean(suppliedImageAnalysis.providerLabel) || "AI IPM photo review"
+      : null,
+    confidence: imagePerformed ? lower(suppliedImageAnalysis.confidence) || "low" : "low",
+    quality: imagePerformed
+      ? lower(suppliedImageAnalysis.quality) || "limited"
+      : "unreviewed",
+    evidenceUsed: imagePerformed ? imageEvidenceUsed : [],
+    limitations: unique([
+      ...imageLimitations,
+      ...(imageRequested && !imagePerformed
+        ? ["Attached photo pixels were not analyzed in this scout result."]
+        : []),
+      ...(videosAttached
+        ? [
+            "Attached video is stored as evidence; direct video interpretation is not enabled."
+          ]
+        : [])
+    ]),
+    status: imagePerformed
+      ? "photo_pixels_analyzed"
+      : imageRequested
+        ? "photos_attached_not_analyzed"
+        : "no_photos_submitted",
+    videoStatus: videosAttached
+      ? "stored_for_follow_up; direct video interpretation is not enabled"
+      : "No video attached"
+  };
+
+  if (!leafDamageText && !pestSeenText && !evidence.length && !imageEvidenceUsed.length) {
+    throw new TypeError(
+      "A direct observation is required: describe the damage, organism, or another observed sign before running IPM Scout"
+    );
+  }
+
+  const combined = [
+    pestSeenText,
+    leafDamageText,
+    undersideText,
+    distribution,
+    progression,
+    evidence.join(" "),
+    imageEvidenceUsed.join(" ")
+  ].join(" ");
+  const candidates = [
+    {
+      issue: "pest_pressure",
+      organism: "spider mites possible",
+      category: "sap-feeding pest",
+      score:
+        (includes(/\bmites?\b|two[- ]spotted/, pestSeenText) ? 4 : 0) +
+        (includes(/fine web|webbing|moving specks?|round eggs?/, undersideText, combined)
+          ? 2
+          : 0) +
+        (includes(/stippl|bronzing|speckl/, leafDamageText) ? 1 : 0),
+      evidence: unique([
+        includes(/\bmites?\b|two[- ]spotted/, pestSeenText)
+          ? `Direct observation entered: ${pestSeenText}.`
+          : "",
+        includes(/fine web|webbing|moving specks?|round eggs?/, undersideText, combined)
+          ? "Webbing, moving specks, or egg-like signs were recorded."
+          : "",
+        includes(/stippl|bronzing|speckl/, leafDamageText)
+          ? `Damage pattern includes ${leafDamageText}.`
+          : ""
+      ])
+    },
+    {
+      issue: "pest_pressure",
+      organism: "thrips possible",
+      category: "rasping-sucking pest",
+      score:
+        (includes(/\bthrips?\b/, pestSeenText) ? 4 : 0) +
+        (includes(
+          /silver|scrap|streak|black frass|black specks?/,
+          leafDamageText,
+          undersideText
+        )
+          ? 2
+          : 0) +
+        (includes(
+          /slender|cigar[- ]shaped|fast[- ]moving/,
+          pestSeenText,
+          evidence.join(" ")
+        )
+          ? 1
+          : 0),
+      evidence: unique([
+        includes(/\bthrips?\b/, pestSeenText)
+          ? `Direct observation entered: ${pestSeenText}.`
+          : "",
+        includes(
+          /silver|scrap|streak|black frass|black specks?/,
+          leafDamageText,
+          undersideText
+        )
+          ? "Silvering, scraping, streaking, or frass-like signs were recorded."
+          : ""
+      ])
+    },
+    {
+      issue: "pest_pressure",
+      organism: "fungus gnats possible",
+      category: "root-zone/flying pest",
+      score:
+        (includes(/fungus gnat|\bgnats?\b/, pestSeenText) ? 4 : 0) +
+        (includes(
+          /small black fl|tiny black fl|larvae|larva/,
+          pestSeenText,
+          evidence.join(" ")
+        )
+          ? 2
+          : 0) +
+        (includes(/wet media|saturated|overwater|algae/, environmentConditions) ? 1 : 0),
+      evidence: unique([
+        includes(/fungus gnat|\bgnats?\b/, pestSeenText)
+          ? `Direct observation entered: ${pestSeenText}.`
+          : "",
+        includes(/wet media|saturated|overwater|algae/, environmentConditions)
+          ? "Persistently wet root-zone conditions were recorded."
+          : ""
+      ])
+    },
+    {
+      issue: "pest_pressure",
+      organism: "aphids possible",
+      category: "sap-feeding pest",
+      score:
+        (includes(/\baphids?\b/, pestSeenText) ? 4 : 0) +
+        (includes(/honeydew|sticky residue|cast skins?|cluster/, combined) ? 2 : 0) +
+        (includes(/curl|distort|new growth/, leafDamageText, distribution) ? 1 : 0),
+      evidence: unique([
+        includes(/\baphids?\b/, pestSeenText)
+          ? `Direct observation entered: ${pestSeenText}.`
+          : "",
+        includes(/honeydew|sticky residue|cast skins?|cluster/, combined)
+          ? "Honeydew, cast skins, sticky residue, or clustered organisms were recorded."
+          : ""
+      ])
+    },
+    {
+      issue: "pest_pressure",
+      organism: "whiteflies possible",
+      category: "sap-feeding flying pest",
+      score:
+        (includes(/whitefl|white fl/, pestSeenText) ? 4 : 0) +
+        (includes(
+          /white insects? flew|flies? when disturbed|scale[- ]like nymph/,
+          combined
+        )
+          ? 2
+          : 0) +
+        (includes(/honeydew|sticky residue/, combined) ? 1 : 0),
+      evidence: unique([
+        includes(/whitefl|white fl/, pestSeenText)
+          ? `Direct observation entered: ${pestSeenText}.`
+          : "",
+        includes(
+          /white insects? flew|flies? when disturbed|scale[- ]like nymph/,
+          combined
+        )
+          ? "Flying white adults or underside nymph-like signs were recorded."
+          : ""
+      ])
+    },
+    {
+      issue: "disease_or_leaf_spot",
+      organism: "powdery mildew-like growth, not confirmed",
+      category: "fungal-like disease sign",
+      score:
+        (includes(/powdery mildew/, pestSeenText, leafDamageText) ? 4 : 0) +
+        (includes(/white powder|powdery patch|white patch|surface growth/, leafDamageText)
+          ? 2
+          : 0) +
+        (includes(
+          /humid|high rh|poor airflow|dense canopy|leaf wet/,
+          environmentConditions
+        )
+          ? 1
+          : 0),
+      evidence: unique([
+        includes(/white powder|powdery patch|white patch|surface growth/, leafDamageText)
+          ? "White powdery or surface-growth signs were recorded."
+          : "",
+        includes(
+          /humid|high rh|poor airflow|dense canopy|leaf wet/,
+          environmentConditions
+        )
+          ? "Humidity, leaf-wetness, or airflow conditions may favor disease pressure."
+          : ""
+      ])
+    },
+    {
+      issue: "disease_or_leaf_spot",
+      organism: "leaf spot or tissue disease possible",
+      category: "disease-like lesion",
+      score:
+        (includes(/leaf spot|lesion|halo|concentric|water[- ]soaked/, leafDamageText)
+          ? 3
+          : 0) +
+        (includes(/rapid|spreading|expanding/, progression) ? 1 : 0) +
+        (includes(/humid|leaf wet|splash|poor airflow/, environmentConditions) ? 1 : 0),
+      evidence: unique([
+        includes(/leaf spot|lesion|halo|concentric|water[- ]soaked/, leafDamageText)
+          ? `Lesion pattern recorded: ${leafDamageText}.`
+          : "",
+        includes(/rapid|spreading|expanding/, progression)
+          ? `Progression recorded as ${progression}.`
+          : ""
+      ])
+    },
+    {
+      issue: "pest_pressure",
+      organism: "chewing pest possible",
+      category: "chewing damage",
+      score:
+        (includes(/caterpillar|larva|beetle|weevil|slug|snail/, pestSeenText) ? 4 : 0) +
+        (includes(/holes?|chew|notch|skeleton|frass/, leafDamageText, evidence.join(" "))
+          ? 2
+          : 0),
+      evidence: unique([
+        includes(/holes?|chew|notch|skeleton|frass/, leafDamageText, evidence.join(" "))
+          ? "Chewing, holes, notching, skeletonizing, or frass was recorded."
+          : ""
+      ])
+    }
+  ]
+    .filter((candidate) => candidate.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const leading = candidates[0] || null;
+  const runnerUp = candidates[1] || null;
+  const suspectedIssue = leading?.issue || "monitoring_and_differential_needed";
+  const suspectedOrganism = leading?.organism || "not confirmed";
+  const affectedPercent =
+    plantsChecked && plantsAffected !== null
+      ? Number(((plantsAffected / plantsChecked) * 100).toFixed(1))
+      : null;
+  const rapidlySpreading = includes(/rapid|quick|overnight|doubl|worsen/, progression);
+  let severity = "low";
+  if (
+    rapidlySpreading ||
+    (affectedPercent !== null && affectedPercent >= 50) ||
+    (stickyTrapCount !== null && stickyTrapCount >= 21)
+  ) {
+    severity = "high";
+  } else if (
+    leading ||
+    (affectedPercent !== null && affectedPercent >= 10) ||
+    (stickyTrapCount !== null && stickyTrapCount >= 6)
+  ) {
+    severity = "medium";
+  }
+
+  const directOrganismClaim =
+    pestSeenText &&
+    !/^(none|not seen|not confirmed|unknown|unsure|n\/a)$/i.test(pestSeenText);
+  const evidenceChannels = [
+    Boolean(leafDamageText),
+    Boolean(distribution),
+    Boolean(progression),
+    Boolean(undersideText && !/not checked/i.test(undersideText)),
+    stickyTrapCount !== null && Boolean(trapContext),
+    Boolean(evidence.length),
+    imagePerformed
+  ].filter(Boolean).length;
+  const confidence =
+    leading?.score >= 6 && directOrganismClaim && evidenceChannels >= 4
+      ? "high"
+      : leading?.score >= 3 && evidenceChannels >= 2
+        ? "medium"
+        : "low";
+  const supportingEvidence = unique([
+    ...(leading?.evidence || []),
+    ...evidence.map((item) => `User observation: ${item}.`),
+    ...mediaAnalysis.evidenceUsed.map((item) => `Photo analysis: ${item}.`),
+    affectedPercent !== null
+      ? `${plantsAffected} of ${plantsChecked} checked plants were recorded as affected (${affectedPercent}%).`
+      : "",
+    stickyTrapCount !== null
+      ? `Sticky-trap count entered: ${stickyTrapCount}${trapContext ? ` (${trapContext})` : ""}.`
+      : ""
+  ]);
+  const counterEvidence = unique([
+    !directOrganismClaim ? "No organism identity was directly confirmed." : "",
+    includes(/clear|none seen|no pest|no eggs|no movement/, undersideText)
+      ? `Underside inspection did not record confirming organisms: ${undersideText}.`
+      : "",
+    includes(/stable|not spreading|improving/, progression)
+      ? `The pattern is not currently worsening: ${progression}.`
+      : "",
+    runnerUp
+      ? `Competing pattern: ${runnerUp.organism} also matched part of the entered evidence.`
+      : "",
+    !leading
+      ? "The entered pattern does not strongly match a supported local pest or disease rule."
+      : ""
+  ]);
+  const missingInformation = unique([
+    !cropContext ? "crop and growth stage" : "",
+    !scoutLocation ? "specific scout location or zone" : "",
+    plantsChecked === null || plantsAffected === null
+      ? "plants checked and plants affected counts"
+      : "",
+    !distribution ? "symptom distribution across and within plants" : "",
+    !progression ? "progression and time since the prior check" : "",
+    !undersideText || /not checked/i.test(undersideText) ? "leaf-underside findings" : "",
+    !magnification ? "magnification used and what it revealed" : "",
+    stickyTrapCount === null ? "dated sticky-trap count, when relevant" : "",
+    stickyTrapCount !== null && !trapContext
+      ? "trap location, exposure time, color, and comparison count"
+      : "",
+    !environmentConditions ? "measured environment and root-zone conditions" : "",
+    !imagePerformed
+      ? "sharp whole-plant, damage-pattern, leaf-top, leaf-underside, and macro photos"
+      : ""
+  ]);
+  const readinessStatus =
+    leafDamageText && distribution && progression && evidenceChannels >= 4
+      ? "ready_for_working_hypothesis"
+      : leafDamageText || directOrganismClaim || evidence.length || imagePerformed
+        ? "partial_evidence"
+        : "insufficient_evidence";
+  const readiness = {
+    status: readinessStatus,
+    completedEvidenceChannels: evidenceChannels,
+    missingCount: missingInformation.length,
+    summary:
+      readinessStatus === "ready_for_working_hypothesis"
+        ? "Enough independent scout fields are present to rank a working hypothesis; organism confirmation may still be missing."
+        : "The tool can triage the pattern, but the missing checks limit confidence and treatment decisions."
+  };
+  const contributingConditions = unique([
+    includes(/humid|high rh|leaf wet|condensation/, environmentConditions)
+      ? "Recorded moisture or humidity may favor foliar disease pressure."
+      : "",
+    includes(/poor airflow|stagnant|dense canopy|crowd/, environmentConditions)
+      ? "Recorded airflow or canopy density may increase pest/disease pressure."
+      : "",
+    includes(/hot|dry|low rh|water stress/, environmentConditions)
+      ? "Recorded hot/dry or water-stress conditions can intensify mite-like injury or abiotic lookalikes."
+      : "",
+    includes(/wet media|saturated|overwater|algae/, environmentConditions)
+      ? "Recorded wet root-zone conditions may support fungus gnats or root stress lookalikes."
+      : "",
+    recentActions ? `Recent action history must be considered: ${recentActions}.` : ""
+  ]);
+  const nextInspectionSteps = unique([
+    !undersideText || /not checked/i.test(undersideText)
+      ? "Inspect representative symptomatic and nearby healthy leaf undersides with 10–30x magnification."
+      : "Repeat the same underside inspection on symptomatic and nearby healthy plants for comparison.",
+    !imagePerformed
+      ? "Capture a whole-plant view, the distribution pattern, both leaf surfaces, and a sharp macro of any organism or sign."
+      : mediaAnalysis.quality !== "usable"
+        ? "Retake limited photos in neutral light with sharp focus and a size reference."
+        : "",
+    stickyTrapCount === null || !trapContext
+      ? "Record sticky-trap zone, color, exposure time, current count, and prior count."
+      : "Recount the same dated trap position to measure direction of change.",
+    plantsChecked === null || plantsAffected === null
+      ? "Count plants checked and affected by zone before and after any response."
+      : "Repeat the checked/affected count in the same zone after the selected interval.",
+    leading?.issue === "disease_or_leaf_spot"
+      ? "Compare lesions on new and old growth; consider extension or laboratory review when the pattern spreads or identity changes the response."
+      : "Confirm eggs, immature stages, adults, frass, webbing, honeydew, or another discriminating sign before choosing controls."
+  ]);
+  const treatmentCategories = unique([
+    "monitor",
+    severity === "high" || (affectedPercent !== null && affectedPercent > 0)
+      ? "isolate"
+      : "",
+    leading ? "sanitation" : "",
+    includes(/flying|gnat|whitefl/, leading?.category, suspectedOrganism)
+      ? "sticky traps"
+      : "",
+    directOrganismClaim ? "mechanical removal" : "",
+    includes(/disease|mildew|spot/, suspectedIssue, suspectedOrganism) ||
+    includes(/humid|leaf wet|poor airflow/, environmentConditions)
+      ? "improve airflow"
+      : "",
+    includes(/humid|leaf wet|condensation/, environmentConditions)
+      ? "reduce leaf wetness"
+      : "",
+    leading ? "consult label/extension" : "",
+    leading?.issue === "disease_or_leaf_spot" ||
+    (severity === "high" && confidence === "low")
+      ? "professional testing"
+      : ""
+  ]);
+  const recommendations = unique([
+    `Treat ${suspectedOrganism} as a working hypothesis, not a confirmed identification.`,
+    ...nextInspectionSteps.slice(0, 3),
+    "Choose only from the displayed IPM categories after identity, crop safety, site legality, label directions, and re-entry/harvest restrictions are checked.",
+    "Record the decision and repeat the same counts so the outcome can strengthen or reject this hypothesis."
+  ]);
+  const authorityCitations = [
+    {
+      sourceId: "uc-ipm",
+      title: "Monitoring with Sticky Traps",
+      organization: "UC Statewide Integrated Pest Management Program",
+      url: "https://ipm.ucanr.edu/agriculture/floriculture-and-ornamental-nurseries/monitoring-with-sticky-traps/",
+      supports:
+        "Use traps as repeatable trend evidence with location/date context and combine them with direct plant inspection."
+    },
+    {
+      sourceId: "extension-penn-state",
+      title: "High Tunnel Vegetable Crops: Designing a Scouting Plan",
+      organization: "Penn State Extension",
+      url: "https://extension.psu.edu/high-tunnel-vegetable-crops-designing-a-scouting-plan",
+      supports:
+        "Use a standardized scouting plan and inspect plants directly because sticky cards do not represent every pest or life stage."
+    }
+  ];
   const inputSnapshot = {
     growId: input.growId || null,
     plantId: input.plantId || null,
     stage: input.stage || null,
-    pestSeen: input.pestSeen || "",
-    leafDamage: input.leafDamage || "",
-    undersideInspection: input.undersideInspection || "",
+    cropContext,
+    scoutLocation,
+    plantsChecked,
+    plantsAffected,
+    distribution,
+    progression,
+    pestSeen: pestSeenText,
+    leafDamage: leafDamageText,
+    undersideInspection: undersideText,
+    magnification,
     stickyTrapCount,
+    trapContext,
+    environmentConditions,
+    recentActions,
     evidence,
-    notes: input.notes || ""
+    additionalInformation,
+    imageAnalysis: mediaAnalysis
   };
-  let suspectedIssue = "monitoring";
-  let suspectedOrganism = "unknown";
-  let severity = stickyTrapCount > 20 ? "high" : stickyTrapCount > 5 ? "medium" : "low";
-  if (/mite|web|stippling/.test(`${pestSeen} ${leafDamage} ${underside}`)) {
-    suspectedIssue = "pest_pressure";
-    suspectedOrganism = "mites possible";
-  } else if (/thrip|silver|scrape/.test(`${pestSeen} ${leafDamage}`)) {
-    suspectedIssue = "pest_pressure";
-    suspectedOrganism = "thrips possible";
-  } else if (/mold|mildew|spot|lesion/.test(leafDamage)) {
-    suspectedIssue = "disease_or_leaf_spot";
-  }
-  if (suspectedIssue !== "monitoring" && severity === "low") severity = "medium";
-  const confidence = evidence.length || stickyTrapCount ? "medium" : "low";
+  const primarySummary = leading
+    ? `${suspectedOrganism} is the leading ${confidence}-confidence working hypothesis from the structured scout. ${supportingEvidence[0] || "The pattern needs confirmation."} Confirm a discriminating sign before choosing a treatment.`
+    : "The structured scout does not support a strong local pest or disease match yet. Continue the listed inspections and compare symptomatic plants with nearby healthy plants.";
   const primaryAnswer = {
     source: "growpathai_ipm_scout",
     suspectedIssue,
     suspectedOrganism,
     confidence,
     severity,
-    evidence,
-    interpretation:
-      suspectedIssue === "monitoring"
-        ? "No strong pest or disease pattern was detected from the structured inputs. Continue scouting and document photos."
-        : "Structured scout inputs suggest possible pest or disease pressure. Confirm identity before treatment decisions."
+    answer: primarySummary,
+    interpretation: primarySummary,
+    supportingEvidence,
+    counterEvidence,
+    missingInformation,
+    nextInspectionSteps
   };
   const gptVerificationPrompt = [
     "You are GrowPathAI's IPM verification assistant.",
     "Review the same IPM scout inputs and provide a second opinion.",
-    "Do not recommend treatment until organism identity is verified with photos, magnification, trap counts, and inspection notes.",
-    "Return suspected issue, suspected organism, confidence, severity, supporting evidence, counter-evidence, next inspection steps, and whether the GrowPathAI result agrees with your review.",
+    "Treat attached image-analysis descriptions as structured evidence; this second pass does not inspect photo pixels.",
+    "Do not recommend pesticide products or rates. Organism identity must be verified with photos, magnification, trap counts, and inspection notes before treatment decisions.",
+    "Return suspected issue, suspected organism, confidence, severity, supporting evidence, counter-evidence, missing information, next inspection steps, safe treatment categories, and whether the GrowPathAI result agrees with your review.",
     `Scout input JSON: ${JSON.stringify(inputSnapshot)}`
   ].join("\n");
   const gptVerification = {
     provider: "gpt",
+    providerLabel: "GPT structured IPM second opinion",
     status: "pending_gpt_review",
     secondaryAnswer: null,
     prompt: gptVerificationPrompt,
     inputSnapshot,
     requiredForTreatmentDecision: true,
+    mediaAnalysisPerformed: false,
     documentationTarget: "ToolRun.outputs.gptVerification"
   };
   const verificationDisplay = [
@@ -3571,16 +4064,48 @@ function calculateIpmScout(input = {}) {
       answer: null
     }
   ];
-  const warnings = [
-    "Verify IPM findings with magnification/photos and GPT second review before treatment decisions."
-  ];
+  const warnings = unique([
+    "Verify IPM findings with magnification/photos and GPT second review before treatment decisions.",
+    "This is an IPM working hypothesis, not a guaranteed diagnosis or pesticide recommendation.",
+    severity === "high"
+      ? "Pressure or progression was scored high. Separate affected material when appropriate and obtain a confirming identification promptly."
+      : "",
+    imageRequested && !imagePerformed
+      ? "Photos are attached, but their pixels were not analyzed in this result."
+      : "",
+    stickyTrapCount !== null && !trapContext
+      ? "The sticky-trap count lacks location/exposure context and cannot be compared reliably."
+      : ""
+  ]);
   return {
     suspectedIssue,
     suspectedOrganism,
+    category: leading?.category || "unresolved pattern",
     confidence,
     severity,
     evidence,
+    supportingEvidence,
+    counterEvidence,
+    missingInformation,
+    contributingConditions,
+    readiness,
+    pressureSummary: {
+      plantsChecked,
+      plantsAffected,
+      affectedPercent,
+      stickyTrapCount,
+      trapContext: trapContext || null,
+      progression: progression || null
+    },
+    rankedCandidates: candidates.slice(0, 3).map((candidate) => ({
+      suspectedIssue: candidate.issue,
+      suspectedOrganism: candidate.organism,
+      category: candidate.category,
+      evidenceScore: candidate.score,
+      evidence: candidate.evidence
+    })),
     primaryAnswer,
+    growPathAi: primaryAnswer,
     gptVerification,
     aiVerification: gptVerification,
     verificationDisplay,
@@ -3591,24 +4116,61 @@ function calculateIpmScout(input = {}) {
       includeGptVerification: true,
       includeBothAnswers: true
     },
+    mediaAnalysis,
+    methodIds: unique(["plant-diagnosis-etgu", ...stringArray(input.assistantMethodIds)]),
+    sourceIds: unique([
+      "growpath-method",
+      "user-observation",
+      "uc-ipm",
+      "extension-penn-state",
+      ...stringArray(input.assistantSourceIds)
+    ]),
+    citations: [
+      ...authorityCitations,
+      ...(Array.isArray(input.assistantCitations) ? input.assistantCitations : [])
+    ],
+    sourceRecords: authorityCitations,
+    limitations: unique([
+      ...mediaAnalysis.limitations,
+      "Pattern matching cannot confirm organism identity, disease species, pesticide suitability, or legal use.",
+      "Sticky-trap counts are trend evidence only when trap location, exposure time, and counting method are comparable."
+    ]),
     warnings,
-    nextInspectionSteps: [
-      "Inspect leaf undersides and new growth with magnification.",
-      "Check sticky traps by zone and date.",
-      "Record photos before treatment decisions."
-    ],
-    nonChemicalRecommendations: [
-      "Improve scouting frequency and isolate heavily affected material when appropriate.",
-      "Confirm organism identity before choosing any treatment category."
-    ],
-    treatmentCategory: "inspection_and_cultural_controls_first",
+    nextInspectionSteps,
+    recommendations,
+    nonChemicalRecommendations: recommendations,
+    treatmentCategories,
+    treatmentCategory: treatmentCategories.join(", "),
     taskSuggestions: [
       {
         title: "Repeat IPM scout",
         dueInDays: severity === "high" ? 1 : 3,
-        priority: severity === "high" ? "high" : "medium"
+        priority: severity === "high" ? "high" : "medium",
+        sourceStage: "ipm_inspection",
+        description: nextInspectionSteps.slice(0, 3).join(" ")
+      },
+      {
+        title: "Document IPM evidence and treatment decision",
+        dueInDays: severity === "high" ? 1 : 4,
+        priority: severity === "high" ? "high" : "medium",
+        sourceStage: "ipm_treatment_decision",
+        description:
+          "Save comparable counts, photos, confirmed identity evidence, selected treatment category, label/safety checks, and the source ToolRun."
+      },
+      {
+        title: "Review IPM outcome",
+        dueInDays: severity === "high" ? 3 : 7,
+        priority: "medium",
+        sourceStage: "ipm_outcome_review",
+        description:
+          "Repeat the same scout method and record whether pressure improved, remained stable, or worsened."
       }
-    ]
+    ],
+    userDecision: {
+      value: "not_decided",
+      allowed: ["accepted", "uncertain", "rejected"],
+      note: "Accepted means likely working hypothesis, not confirmed organism identity."
+    }
   };
 }
 

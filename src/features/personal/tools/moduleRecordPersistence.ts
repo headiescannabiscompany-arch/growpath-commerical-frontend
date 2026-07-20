@@ -137,7 +137,16 @@ export function buildModuleRecordInput({
     warnings: compactStrings([outputs.warnings, outputs.stageTimingWarnings]),
     recommendations: compactStrings([outputs.recommendations, outputs.nextChecks]),
     confidence: firstString(outputs.confidence, outputs.sourceConfidence) || null,
-    limitations: compactStrings([outputs.limitations, outputs.missingData]),
+    limitations: compactStrings([
+      outputs.limitations,
+      outputs.missingData,
+      outputs.missingInformation
+    ]),
+    methodIds: compactStrings([outputs.methodIds]),
+    sourceIds: compactStrings([outputs.sourceIds]),
+    citations: Array.isArray(outputs.citations) ? outputs.citations : [],
+    disagreements: Array.isArray(outputs.disagreements) ? outputs.disagreements : [],
+    sourceRecords: Array.isArray(outputs.sourceRecords) ? outputs.sourceRecords : [],
     tags: compactStrings([
       tool,
       outputs.tags,

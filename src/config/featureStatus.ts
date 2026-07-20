@@ -565,7 +565,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     key: "tools.ipm_scout",
     title: "IPM Scout / Pest & Organism Tool",
     description:
-      "Record scouting observations, likely organisms, severity, and non-chemical next checks.",
+      "Rank cautious pest and disease hypotheses from repeatable scouting evidence, then track decisions and outcomes.",
     area: "plant_health",
     status: "beta",
     href: "/home/personal/tools/ipm-scout",
@@ -576,9 +576,9 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
       grow: "optional",
       audience: "general",
       inputSummary:
-        "Scouting observations, traps, damage pattern, severity, and clear photos.",
+        "Crop/zone, affected-plant counts, distribution, progression, underside and magnification findings, dated trap context, environment, and clear photos.",
       outputSummary:
-        "Likely organism groups, uncertainty, discriminating checks, and inspection tasks."
+        "Readiness, ranked working hypotheses, supporting/counter-evidence, safe IPM categories, GrowPath/GPT comparison, decisions, and repeat-scout tasks."
     },
     internalNote:
       "Approved beta IPM scouting workflow. It records cautious evidence and follow-up tasks without reckless pesticide dosing."
