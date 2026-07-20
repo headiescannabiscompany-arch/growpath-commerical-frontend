@@ -146,10 +146,20 @@ describe("FacilityTasksRoute", () => {
     expect(screen.getByText("Review production batch")).toBeTruthy();
   });
 
+  it("opens the selected task detail with a concrete web-safe route", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Open task Scout Flower Room"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/tasks/task-1");
+  });
+
   it("creates source-linked facility tasks with room, proof, and approval context", async () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
     expect(screen.getByText(/Source: sensor alert alert-1/)).toBeTruthy();
     expect(screen.getByText(/Room: flower-1/)).toBeTruthy();
     expect(screen.getByText("Review production batch")).toBeTruthy();
@@ -213,6 +223,7 @@ describe("FacilityTasksRoute", () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
 
     fireEvent.changeText(
       screen.getByLabelText("Facility task title"),
@@ -249,6 +260,7 @@ describe("FacilityTasksRoute", () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
 
     fireEvent.changeText(
       screen.getByLabelText("Facility task title"),
