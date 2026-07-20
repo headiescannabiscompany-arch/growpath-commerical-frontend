@@ -133,6 +133,7 @@ const fallbackRoutes = [
   "home/personal/tools/environment-analysis",
   "home/personal/tools/feeding-schedule",
   "home/personal/tools/harvest-estimator",
+  "home/personal/tools/harvest-readiness",
   "home/personal/tools/timeline-planner",
   "home/personal/tools/pdf-export",
   "home/personal/tools/pheno-matrix",

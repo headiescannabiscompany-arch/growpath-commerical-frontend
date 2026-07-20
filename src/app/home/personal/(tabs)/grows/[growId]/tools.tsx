@@ -10,8 +10,9 @@ import {
   saveToolRunToLog,
   type ToolRun
 } from "@/api/toolRuns";
+import { listPersonalGrows } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam } from "@/features/grows/routeUtils";
+import { coerceParam, findGrowById, isCannabisGrow } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
 import ToolResultSurface, {
   type ToolResultAction,
@@ -65,6 +66,17 @@ function withGrow(path: string, growId: string) {
   return `${path}?growId=${encodeURIComponent(growId)}`;
 }
 
+type GrowWorkspaceItem = readonly [
+  label: string,
+  path: string,
+  options?: { cannabisOnly?: boolean }
+];
+
+type GrowWorkspaceGroup = {
+  title: string;
+  items: readonly GrowWorkspaceItem[];
+};
+
 const GROW_WORKSPACE_GROUPS = [
   {
     title: "Plan & schedule",
@@ -106,12 +118,16 @@ const GROW_WORKSPACE_GROUPS = [
   {
     title: "Harvest & post-harvest",
     items: [
-      ["Harvest readiness", "/home/personal/tools/harvest-readiness"],
-      ["Dry / cure", "/home/personal/tools/dry-cure-guard"],
+      [
+        "Harvest readiness calculator",
+        "/home/personal/tools/harvest-readiness",
+        { cannabisOnly: true }
+      ],
+      ["Dry / cure", "/home/personal/tools/dry-cure-guard", { cannabisOnly: true }],
       ["Compare runs", "compare"]
     ]
   }
-] as const;
+] as const satisfies readonly GrowWorkspaceGroup[];
 
 function toolRunContextLabel(run: any) {
   const context = run?.selectedPlantContext || run?.cropIdentity || {};
@@ -166,14 +182,19 @@ export default function GrowToolsScreen() {
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [cannabisGrow, setCannabisGrow] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       let mounted = true;
       (async () => {
-        const rows = await listToolRuns({ growId });
+        const [rows, grows] = await Promise.all([
+          listToolRuns({ growId }),
+          listPersonalGrows()
+        ]);
         if (!mounted) return;
         setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
+        setCannabisGrow(isCannabisGrow(findGrowById(grows, growId)));
       })();
       return () => {
         mounted = false;
@@ -251,25 +272,31 @@ export default function GrowToolsScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Grow workflows</Text>
-        {GROW_WORKSPACE_GROUPS.map((group) => (
-          <View key={group.title} style={{ marginTop: 12 }}>
-            <Text style={styles.cardTitle}>{group.title}</Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-              {group.items.map(([label, path]) => {
-                const href = path.startsWith("/")
-                  ? withGrow(path, growId)
-                  : `/home/personal/grows/${encodeURIComponent(growId)}/${path}`;
-                return (
-                  <Link key={label} href={href as any} asChild>
-                    <Pressable style={styles.action}>
-                      <Text style={styles.actionText}>{label}</Text>
-                    </Pressable>
-                  </Link>
-                );
-              })}
+        {GROW_WORKSPACE_GROUPS.map((group) => {
+          const visibleItems = group.items.filter(
+            ([, , options]) => !options?.cannabisOnly || cannabisGrow
+          );
+          if (!visibleItems.length) return null;
+          return (
+            <View key={group.title} style={{ marginTop: 12 }}>
+              <Text style={styles.cardTitle}>{group.title}</Text>
+              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                {visibleItems.map(([label, path]) => {
+                  const href = path.startsWith("/")
+                    ? withGrow(path, growId)
+                    : `/home/personal/grows/${encodeURIComponent(growId)}/${path}`;
+                  return (
+                    <Link key={label} href={href as any} asChild>
+                      <Pressable style={styles.action}>
+                        <Text style={styles.actionText}>{label}</Text>
+                      </Pressable>
+                    </Link>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
         <Text style={styles.recentTitle}>Recent tool runs</Text>
         {recent.length === 0 ? (
           <Text style={styles.recentRow}>No saved runs yet.</Text>

@@ -89,6 +89,17 @@ describe("personal tools hub", () => {
     expect(screen.queryByText("Bud Rot Risk")).toBeNull();
   });
 
+  it("keeps the harvest calculator in Tools for cannabis growers", () => {
+    mockGrowInterests = { crops: ["Cannabis"] };
+
+    const screen = render(<ToolsHubScreen />);
+
+    expect(screen.getByText("Harvest Readiness Calculator")).toBeTruthy();
+    expect(
+      screen.getByLabelText("link-/home/personal/tools/harvest-readiness")
+    ).toBeTruthy();
+  });
+
   it("keeps Ask AI and Plant Diagnose open for free users with token limits", () => {
     mockPlan = "free";
     mockCan.mockReturnValue(false);
