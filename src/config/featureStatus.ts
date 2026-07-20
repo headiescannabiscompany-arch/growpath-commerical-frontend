@@ -172,6 +172,29 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
+    key: "tools.mix_builders",
+    title: "Soil & Nutrient Mix Builders",
+    description:
+      "Choose one science-based workflow: build a nutrient mix from verified labels and batch context, or build a soil mix from media structure, compost, minerals, and amendments.",
+    area: "water_nutrients",
+    status: "release",
+    href: "/home/personal/tools/recipe-builder",
+    acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "guided",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Choose nutrient or soil, then bring verified labels, batch details, water or media context, and your intended use.",
+      outputSummary:
+        "One focused builder with visible calculations, evidence quality, assumptions, release timing, and warnings."
+    },
+    internalNote:
+      "Single Personal Tools discovery entry for the two canonical builders. Supporting chemistry, source comparison, dry-amendment, label-library, and topdress workflows must not appear as competing builders."
+  },
+  {
     key: "tools.npk_recipe",
     title: "Nutrient Mix Builder",
     description:
@@ -179,6 +202,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/npk",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     experience: {
@@ -222,12 +246,13 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
   },
   {
     key: "tools.product_ingredient_library",
-    title: "Product / Ingredient Library",
+    title: "Products & Label Library",
     description:
       "Create and manage nutrient, amendment, soil, and input records for recipes and grow planning.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/ingredient-library",
+    hubVisible: false,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     experience: {
       mode: "library",
@@ -393,6 +418,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/soil-builder",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     experience: {

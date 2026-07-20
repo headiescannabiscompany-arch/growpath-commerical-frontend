@@ -123,11 +123,7 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
-const CORE_TOOL_KEYS = new Set([
-  "tools.npk_recipe",
-  "tools.soil_builder",
-  "tools.ppfd_dli"
-]);
+const CORE_TOOL_KEYS = new Set(["tools.mix_builders", "tools.ppfd_dli"]);
 const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
   "tools.crop_steering_projects",
   "tools.pheno_hunting",

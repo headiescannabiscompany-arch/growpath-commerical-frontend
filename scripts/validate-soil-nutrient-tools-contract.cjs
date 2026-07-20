@@ -210,22 +210,34 @@ requireText(
   "canonical soil mix builder science basis"
 );
 requireText(
-  "legacy mix chooser",
+  "mix chooser",
   mixChooser,
-  /Nutrient Mix Builder[\s\S]*Soil Mix Builder[\s\S]*two canonical mix tools/,
+  /Nutrient Mix Builder[\s\S]*Soil Mix Builder[\s\S]*only two primary mix builders/,
   "two canonical mix builder choices"
 );
 requireText(
   "personal tool manifest",
   featureStatus,
-  /key: "tools\.npk_recipe"[\s\S]*title: "Nutrient Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/npk"/,
+  /key: "tools\.mix_builders"[\s\S]*title: "Soil & Nutrient Mix Builders"[\s\S]*href: "\/home\/personal\/tools\/recipe-builder"/,
+  "single mix-builder hub entry"
+);
+requireText(
+  "personal tool manifest",
+  featureStatus,
+  /key: "tools\.npk_recipe"[\s\S]*title: "Nutrient Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/npk"[\s\S]*hubVisible: false/,
   "canonical nutrient mix builder catalog entry"
 );
 requireText(
   "personal tool manifest",
   featureStatus,
-  /key: "tools\.soil_builder"[\s\S]*title: "Soil Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/soil-builder"/,
+  /key: "tools\.soil_builder"[\s\S]*title: "Soil Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/soil-builder"[\s\S]*hubVisible: false/,
   "canonical soil mix builder catalog entry"
+);
+requireText(
+  "personal tool manifest",
+  featureStatus,
+  /key: "tools\.product_ingredient_library"[\s\S]*href: "\/home\/personal\/tools\/ingredient-library"[\s\S]*hubVisible: false/,
+  "supporting label library hidden from the primary hub"
 );
 requireText(
   "mix builder science basis",

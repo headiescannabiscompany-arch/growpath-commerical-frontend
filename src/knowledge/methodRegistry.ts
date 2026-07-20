@@ -132,7 +132,8 @@ export const methodRegistry: GrowPathMethod[] = [
     ["soil", "water", "nutrients"],
     "soil-and-nutrient-method.md",
     [
-      "select soil or nutrient mix builder",
+      "open the unified mix-builder chooser",
+      "select exactly one soil or nutrient builder",
       "verified inputs",
       "chemistry or structure",
       "release",

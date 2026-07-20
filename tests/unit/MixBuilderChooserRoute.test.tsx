@@ -33,13 +33,17 @@ describe("mix builder chooser", () => {
 
     expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
     expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
-    expect(screen.getByText(/two canonical mix tools/)).toBeTruthy();
+    expect(screen.getByText(/only two primary mix builders/)).toBeTruthy();
     expect(
       screen.getByLabelText("link-/home/personal/tools/npk?growId=grow-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("link-/home/personal/tools/soil-builder?growId=grow-1")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("link-/home/personal/tools/ingredient-library?growId=grow-1")
+    ).toBeTruthy();
+    expect(screen.getByText(/not a third mix builder/)).toBeTruthy();
     expect(screen.queryByText("Nutrient Chemistry")).toBeNull();
     expect(screen.queryByText("Dry Amendment / Topdress")).toBeNull();
     expect(screen.queryByText("Ingredient Catalog")).toBeNull();

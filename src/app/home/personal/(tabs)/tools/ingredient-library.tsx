@@ -375,13 +375,13 @@ export default function IngredientLibraryRoute() {
 
   return (
     <ScreenBoundary
-      title="Product / Ingredient Library"
+      title="Products & Label Library"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Product / Ingredient Library</Text>
+          <Text style={styles.title}>Products & Label Library</Text>
           <Text style={styles.subtitle}>
             Manage user-entered nutrients, amendments, soil inputs, and source confidence.
             Guaranteed analysis is stored as label N-P2O5-K2O; elemental conversions

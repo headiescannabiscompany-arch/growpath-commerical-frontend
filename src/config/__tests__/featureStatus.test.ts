@@ -163,7 +163,7 @@ describe("personal feature status manifest", () => {
   test("exposes only release-ready module routes without exposing fake redirects", () => {
     const releaseRoutes = {
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.npk_recipe": "/home/personal/tools/npk",
+      "tools.mix_builders": "/home/personal/tools/recipe-builder",
       "tools.ai_diagnosis": "/home/personal/diagnose",
       "tools.ai_assistant": "/home/personal/ai"
     };
@@ -179,11 +179,7 @@ describe("personal feature status manifest", () => {
   });
 
   test("exposes approved beta tools only when beta surfaces are enabled", () => {
-    const approvedBetaTools = [
-      "tools.soil_builder",
-      "tools.ipm_scout",
-      "tools.species_crop_identification"
-    ];
+    const approvedBetaTools = ["tools.ipm_scout", "tools.species_crop_identification"];
 
     const defaultNavigable = getNavigablePersonalTools();
     const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
@@ -220,8 +216,11 @@ describe("personal feature status manifest", () => {
     ).not.toBe(false);
   });
 
-  test("keeps supporting nutrient calculators available by route but out of the primary hub", () => {
+  test("keeps builder components and supporting nutrient tools behind one hub entry", () => {
     const supportingTools = [
+      "tools.npk_recipe",
+      "tools.soil_builder",
+      "tools.product_ingredient_library",
       "tools.nutrient_chemistry",
       "tools.nutrient_source_comparison",
       "tools.dry_amendment_mix",
@@ -320,19 +319,28 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ai_assistant"].status).toBe("release");
     expect(byKey["tools.ai_assistant"].href).toBe("/home/personal/ai");
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
+    expect(byKey["tools.mix_builders"].area).toBe("water_nutrients");
+    expect(byKey["tools.mix_builders"].title).toBe("Soil & Nutrient Mix Builders");
+    expect(byKey["tools.mix_builders"].href).toBe("/home/personal/tools/recipe-builder");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
     expect(byKey["tools.npk_recipe"].title).toBe("Nutrient Mix Builder");
     expect(byKey["tools.npk_recipe"].href).toBe("/home/personal/tools/npk");
+    expect(byKey["tools.npk_recipe"].hubVisible).toBe(false);
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");
     expect(byKey["tools.soil_builder"].title).toBe("Soil Mix Builder");
     expect(byKey["tools.soil_builder"].status).toBe("beta");
     expect(byKey["tools.soil_builder"].href).toBe("/home/personal/tools/soil-builder");
+    expect(byKey["tools.soil_builder"].hubVisible).toBe(false);
     expect(byKey["tools.dry_amendment_mix"].status).toBe("beta");
     expect(byKey["tools.topdress_planner"].status).toBe("beta");
     expect(byKey["tools.ph_ec_adjustment"].status).toBe("beta");
     expect(byKey["tools.dry_cure_guard"].status).toBe("beta");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
     expect(byKey["tools.product_ingredient_library"].status).toBe("release");
+    expect(byKey["tools.product_ingredient_library"].title).toBe(
+      "Products & Label Library"
+    );
+    expect(byKey["tools.product_ingredient_library"].hubVisible).toBe(false);
     expect(byKey["tools.product_ingredient_library"].href).toBe(
       "/home/personal/tools/ingredient-library"
     );

@@ -46,14 +46,14 @@ export default function UnifiedRecipeBuilderRoute({
     if (value) contextQuery.set(key, value);
   });
   const query = contextQuery.toString();
+  const libraryHref = `${basePath}/ingredient-library${query ? `?${query}` : ""}` as Href;
   return (
     <ScreenBoundary title="Soil & Nutrient Mix Builders" showBack>
       <View style={styles.body}>
-        <Text style={styles.heading}>Choose one builder</Text>
+        <Text style={styles.heading}>What are you building?</Text>
         <Text style={styles.intro}>
-          These are the two canonical mix tools. Both use deterministic calculations,
-          preserve source and assumption limits, and defer to verified labels, laboratory
-          results, and measured grow evidence.
+          Choose one focused workflow. These are the only two primary mix builders; they
+          use different inputs and produce different plans.
         </Text>
         {modes.map((mode) => {
           const href = `${basePath}/${mode.path}${query ? `?${query}` : ""}` as Href;
@@ -66,6 +66,19 @@ export default function UnifiedRecipeBuilderRoute({
             </Link>
           );
         })}
+        <View style={styles.supportSection}>
+          <Text style={styles.supportHeading}>Reusable products and labels</Text>
+          <Text style={styles.supportText}>
+            Save guaranteed analyses, nutrient forms, label evidence, density, release
+            timing, and costs once, then reuse them in either builder. This library stores
+            inputs; it is not a third mix builder.
+          </Text>
+          <Link href={libraryHref} asChild>
+            <Pressable style={styles.supportLink} accessibilityRole="button">
+              <Text style={styles.supportLinkText}>Open Products & Label Library</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
     </ScreenBoundary>
   );
@@ -83,5 +96,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC"
   },
   title: { color: "#0F172A", fontWeight: "800", marginBottom: 5 },
-  description: { color: "#475569", lineHeight: 19 }
+  description: { color: "#475569", lineHeight: 19 },
+  supportSection: {
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+    marginTop: 6,
+    paddingTop: 16,
+    gap: 7
+  },
+  supportHeading: { color: "#334155", fontSize: 15, fontWeight: "800" },
+  supportText: { color: "#64748B", lineHeight: 19 },
+  supportLink: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginTop: 3
+  },
+  supportLinkText: { color: "#166534", fontWeight: "800" }
 });
