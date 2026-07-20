@@ -1,1 +1,3 @@
-export { CommercialSoilNutrientBatchToolRoute as default } from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
+import { CommercialSoilNutrientBatchToolRoute } from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
+
+export default CommercialSoilNutrientBatchToolRoute;
