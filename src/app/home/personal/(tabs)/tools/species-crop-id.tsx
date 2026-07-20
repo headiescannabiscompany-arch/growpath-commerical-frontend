@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -86,17 +87,26 @@ export default function SpeciesCropIdToolRoute() {
       title="Species / Crop Identification"
       subtitle="Identify a crop from uploaded photos or entered traits. A grow is optional and only adds private history or a place to save the confirmed result."
       growOptional
-      noGrowContextMessage="Identification is complete. Attach a grow only if you want to save it, log it, or create follow-up tasks."
+      noGrowContextMessage="Identification is complete and remains in Saved Runs. Attach a grow only to add it to grow or plant history, save a grow log, or create follow-up tasks."
       formHeader={({ growId }) => (
-        <MediaEvidencePicker
-          maxPhotos={10}
-          allowVideo
-          maxVideoSeconds={30}
-          purpose="other"
-          sourceContext={{ growId: growId || undefined }}
-          value={evidenceAssets}
-          onChange={setEvidenceAssets}
-        />
+        <View style={styles.evidenceSection}>
+          <Text style={styles.evidenceTitle}>Add identification photos</Text>
+          <Text style={styles.evidenceGuidance}>
+            When available, start with the whole plant, then add sharp close-ups of
+            leaves, stems, flowers, fruit, or other identifying structures. A recognizable
+            flower or harvested bud can support a crop-level result; appearance cannot
+            prove a cultivar or strain.
+          </Text>
+          <MediaEvidencePicker
+            maxPhotos={10}
+            allowVideo
+            maxVideoSeconds={30}
+            purpose="other"
+            sourceContext={{ growId: growId || undefined }}
+            value={evidenceAssets}
+            onChange={setEvidenceAssets}
+          />
+        </View>
       )}
       aiPrefill={{
         buttonLabel: "Identify Crop from Photos",
@@ -106,7 +116,7 @@ export default function SpeciesCropIdToolRoute() {
         notReadyMessage: "Upload at least one photo before starting AI identification.",
         runAfterPrefill: true,
         buildMessage: () =>
-          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","userConfirmed":"false","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Use "not confirmed" only when crop-level evidence is insufficient, and leave scientificName blank when uncertain. userConfirmed must always be "false" because only the user can confirm. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
+          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Use "not confirmed" only when crop-level evidence is insufficient, and leave scientificName blank when uncertain. Every AI result is a draft because only the user can confirm it. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
             ? response.evidenceUsed
@@ -152,11 +162,6 @@ export default function SpeciesCropIdToolRoute() {
         },
         { key: "cultivar", label: "Cultivar / strain", defaultValue: "" },
         {
-          key: "userConfirmed",
-          label: "User confirmed species? true/false",
-          defaultValue: "false"
-        },
-        {
           key: "commonNames",
           label: "Common names, comma-separated",
           defaultValue: ""
@@ -174,7 +179,7 @@ export default function SpeciesCropIdToolRoute() {
         userEnteredName: values.userEnteredName,
         scientificName: values.scientificName,
         cultivar: values.cultivar,
-        userConfirmed: String(values.userConfirmed).toLowerCase() === "true",
+        userConfirmed: false,
         commonNames: values.commonNames,
         identificationNotes: values.identificationNotes || undefined,
         evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
@@ -295,3 +300,9 @@ export default function SpeciesCropIdToolRoute() {
     />
   );
 }
+
+const styles = StyleSheet.create({
+  evidenceSection: { gap: 8 },
+  evidenceTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800" },
+  evidenceGuidance: { color: "#475569", lineHeight: 19 }
+});

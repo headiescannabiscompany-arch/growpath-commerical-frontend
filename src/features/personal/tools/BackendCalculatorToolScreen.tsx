@@ -691,6 +691,10 @@ export default function BackendCalculatorToolScreen({
           />
         ) : null}
 
+        {typeof formHeader === "function"
+          ? formHeader({ growId, facilityId, commercialAccountId })
+          : formHeader}
+
         {aiPrefill ? (
           <View style={styles.guidanceCard}>
             <Text style={styles.resultTitle}>
@@ -724,10 +728,6 @@ export default function BackendCalculatorToolScreen({
             </Pressable>
           </View>
         ) : null}
-
-        {typeof formHeader === "function"
-          ? formHeader({ growId, facilityId, commercialAccountId })
-          : formHeader}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>

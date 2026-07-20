@@ -89,6 +89,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not declare a nutrient deficiency from appearance alone.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
+      "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
       "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
     ],
     ["plant-diagnosis", "ipm-scout", "ask-ai"]

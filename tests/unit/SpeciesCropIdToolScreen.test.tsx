@@ -131,7 +131,6 @@ describe("SpeciesCropIdToolRoute", () => {
         userEnteredName: "Cannabis",
         scientificName: "Cannabis sativa",
         cultivar: "",
-        userConfirmed: "false",
         commonNames: "Cannabis",
         identificationNotes:
           "Visible bracts, pistils, resinous sugar leaves, and dense flower structure.",
@@ -163,6 +162,15 @@ describe("SpeciesCropIdToolRoute", () => {
         screen.getByText(/No grow is required. Upload photos or enter what you know/)
       ).toBeTruthy()
     );
+    expect(screen.getByText("Add identification photos")).toBeTruthy();
+    expect(
+      screen.getByText(/appearance cannot prove a cultivar or strain/i)
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText(
+        "Species / Crop Identification User confirmed species? true/false"
+      )
+    ).toBeNull();
 
     fireEvent.press(screen.getByText("Identify Crop from Photos"));
 
@@ -181,6 +189,7 @@ describe("SpeciesCropIdToolRoute", () => {
           growId: "",
           userEnteredName: "Cannabis",
           scientificName: "Cannabis sativa",
+          userConfirmed: false,
           imageAnalysis: expect.objectContaining({
             requested: true,
             performed: true,
