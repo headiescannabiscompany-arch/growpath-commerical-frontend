@@ -1,0 +1,1041 @@
+{
+  "schemaVersion": "growpath-facility-simulator-qa-v1",
+  "masterItem": 53,
+  "status": "planning",
+  "environmentPolicy": {
+    "allowed": ["test", "staging"],
+    "productionAllowed": false,
+    "qaSeedNamespaceRequired": true,
+    "productionIdentifiersAllowed": false
+  },
+  "dataClassification": {
+    "classification": "synthetic_test_only",
+    "observedProductionData": false,
+    "maySupportProductClaims": false,
+    "mayBePublished": false,
+    "deidentificationRequiredBeforeEducationUse": true
+  },
+  "facilityTemplate": {
+    "facilityId": "qa-facility-simulator-primary",
+    "qaSeedNamespace": "growpath-qa-facility-simulator",
+    "name": "GrowPath QA Facility",
+    "status": "draft",
+    "seedRecordStatus": "planned",
+    "synthetic": true,
+    "accountPurpose": "cannabis_hemp_facility_qa",
+    "cannabisVisibilityEligible": true,
+    "publicVisibility": false,
+    "ownerApproved": false,
+    "address": null,
+    "licenseNumber": null,
+    "metrcLicenseNumber": null,
+    "regulatoryConfigurationStatus": "not_applicable_to_synthetic_fixture",
+    "defaultUnitSystem": "canonical_metric"
+  },
+  "rolePolicy": {
+    "canonicalRoles": ["OWNER", "MANAGER", "STAFF", "VIEWER"],
+    "legacyOrPersonaNamesMayBecomeRoles": false,
+    "mappingConfirmationRoles": ["OWNER", "MANAGER"],
+    "personaAssignments": [
+      {
+        "personaId": "qa-persona-owner",
+        "persona": "owner",
+        "role": "OWNER",
+        "accountBindingStatus": "pending_test_account"
+      },
+      {
+        "personaId": "qa-persona-manager",
+        "persona": "manager",
+        "role": "MANAGER",
+        "accountBindingStatus": "pending_test_account"
+      },
+      {
+        "personaId": "qa-persona-grower",
+        "persona": "grower",
+        "role": "STAFF",
+        "accountBindingStatus": "pending_test_account"
+      },
+      {
+        "personaId": "qa-persona-scout",
+        "persona": "scout",
+        "role": "STAFF",
+        "accountBindingStatus": "pending_test_account"
+      },
+      {
+        "personaId": "qa-persona-restricted-employee",
+        "persona": "restricted_employee",
+        "role": "VIEWER",
+        "accountBindingStatus": "pending_test_account"
+      }
+    ],
+    "permissionExpectations": {
+      "OWNER": {
+        "allowedWriteDomains": [
+          "team",
+          "tasks",
+          "grows",
+          "plants",
+          "grow_logs",
+          "inventory",
+          "compliance",
+          "sop_runs",
+          "facility_settings"
+        ],
+        "deniedWriteDomains": []
+      },
+      "MANAGER": {
+        "allowedWriteDomains": [
+          "tasks",
+          "grows",
+          "plants",
+          "grow_logs",
+          "inventory",
+          "compliance",
+          "sop_runs"
+        ],
+        "deniedWriteDomains": ["team", "facility_settings"]
+      },
+      "STAFF": {
+        "allowedWriteDomains": ["tasks", "grow_logs"],
+        "deniedWriteDomains": [
+          "team",
+          "grows",
+          "plants",
+          "inventory",
+          "compliance",
+          "sop_runs",
+          "facility_settings"
+        ]
+      },
+      "VIEWER": {
+        "allowedWriteDomains": [],
+        "deniedWriteDomains": [
+          "team",
+          "tasks",
+          "grows",
+          "plants",
+          "grow_logs",
+          "inventory",
+          "compliance",
+          "sop_runs",
+          "facility_settings"
+        ]
+      }
+    }
+  },
+  "integrationPolicy": {
+    "readOnlyByDefault": true,
+    "credentialsMustBeEncrypted": true,
+    "plaintextCredentialsAllowed": false,
+    "providerMetricKeyMustBePreserved": true,
+    "unknownMetricsRemainUnmapped": true,
+    "unitsMayBeInvented": false,
+    "roomMappingsRequireReview": true,
+    "mappingConfirmationRoles": ["OWNER", "MANAGER"],
+    "autoBuildRequiresSeparateConfirmation": true,
+    "autoBuildMustBeIdempotent": true,
+    "controllerWritesAllowed": false,
+    "generatedAlertsAndDashboardsStartAsDrafts": true
+  },
+  "recordGraph": {
+    "facilityId": "qa-facility-simulator-primary",
+    "zones": [
+      {
+        "zoneId": "qa-zone-propagation",
+        "name": "Propagation",
+        "zoneType": "clone",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "zoneId": "qa-zone-cultivation",
+        "name": "Cultivation",
+        "zoneType": "flower",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "zoneId": "qa-zone-postharvest",
+        "name": "Post-Harvest",
+        "zoneType": "dry_cure",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "zoneId": "qa-zone-lab",
+        "name": "Laboratory",
+        "zoneType": "processing",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "zoneId": "qa-zone-storage",
+        "name": "Storage",
+        "zoneType": "storage",
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "rooms": [
+      {
+        "roomId": "qa-room-mother",
+        "zoneId": "qa-zone-propagation",
+        "name": "Mother Room",
+        "purpose": "mother",
+        "roomType": "mother",
+        "trackingMode": "plant",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-clone",
+        "zoneId": "qa-zone-propagation",
+        "name": "Clone and Propagation Room",
+        "purpose": "clone_propagation",
+        "roomType": "clone",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-seedling",
+        "zoneId": "qa-zone-propagation",
+        "name": "Seedling Room",
+        "purpose": "seedling",
+        "roomType": "seedling",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-vegetative",
+        "zoneId": "qa-zone-cultivation",
+        "name": "Vegetative Room",
+        "purpose": "vegetative",
+        "roomType": "veg",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-flower",
+        "zoneId": "qa-zone-cultivation",
+        "name": "Flower Room",
+        "purpose": "flower",
+        "roomType": "flower",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-dry",
+        "zoneId": "qa-zone-postharvest",
+        "name": "Dry Room",
+        "purpose": "dry",
+        "roomType": "dry",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-cure",
+        "zoneId": "qa-zone-postharvest",
+        "name": "Cure Room",
+        "purpose": "cure",
+        "roomType": "cure",
+        "trackingMode": "batch",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-tissue-culture",
+        "zoneId": "qa-zone-lab",
+        "name": "Tissue Culture Lab",
+        "purpose": "tissue_culture",
+        "roomType": "tissue_culture",
+        "trackingMode": "lineage",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-cold-storage",
+        "zoneId": "qa-zone-storage",
+        "name": "Cold Storage",
+        "purpose": "cold_storage",
+        "roomType": "cold_storage",
+        "trackingMode": "inventory",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      },
+      {
+        "roomId": "qa-room-general-storage",
+        "zoneId": "qa-zone-storage",
+        "name": "General Storage",
+        "purpose": "general_storage",
+        "roomType": "storage",
+        "trackingMode": "inventory",
+        "baselineStatus": "pending_owner_configuration",
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "grows": [
+      {
+        "growId": "qa-grow-mother-stock",
+        "name": "QA Mother Stock",
+        "roomId": "qa-room-mother",
+        "purpose": "mother_stock",
+        "cropName": "Cannabis or hemp QA crop",
+        "cultivar": null,
+        "stage": "mother",
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "growId": "qa-grow-propagation",
+        "name": "QA Propagation Batch",
+        "roomId": "qa-room-clone",
+        "purpose": "propagation",
+        "cropName": "Cannabis or hemp QA crop",
+        "cultivar": null,
+        "stage": "clone",
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "growId": "qa-grow-seedling",
+        "name": "QA Seedling Batch",
+        "roomId": "qa-room-seedling",
+        "purpose": "seedling",
+        "cropName": "Cannabis or hemp QA crop",
+        "cultivar": null,
+        "stage": "seedling",
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "growId": "qa-grow-vegetative",
+        "name": "QA Vegetative Batch",
+        "roomId": "qa-room-vegetative",
+        "purpose": "vegetative",
+        "cropName": "Cannabis or hemp QA crop",
+        "cultivar": null,
+        "stage": "vegetative",
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "growId": "qa-grow-flower",
+        "name": "QA Flower Batch",
+        "roomId": "qa-room-flower",
+        "purpose": "flower",
+        "cropName": "Cannabis or hemp QA crop",
+        "cultivar": null,
+        "stage": "flower",
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "plants": [
+      {
+        "plantId": "qa-plant-mother-001",
+        "growId": "qa-grow-mother-stock",
+        "roomId": "qa-room-mother",
+        "label": "QA Mother 001",
+        "stage": "mother",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-mother-002",
+        "growId": "qa-grow-mother-stock",
+        "roomId": "qa-room-mother",
+        "label": "QA Mother 002",
+        "stage": "mother",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-clone-001",
+        "growId": "qa-grow-propagation",
+        "roomId": "qa-room-clone",
+        "label": "QA Clone 001",
+        "stage": "clone",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-clone-002",
+        "growId": "qa-grow-propagation",
+        "roomId": "qa-room-clone",
+        "label": "QA Clone 002",
+        "stage": "clone",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-seedling-001",
+        "growId": "qa-grow-seedling",
+        "roomId": "qa-room-seedling",
+        "label": "QA Seedling 001",
+        "stage": "seedling",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-seedling-002",
+        "growId": "qa-grow-seedling",
+        "roomId": "qa-room-seedling",
+        "label": "QA Seedling 002",
+        "stage": "seedling",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-veg-001",
+        "growId": "qa-grow-vegetative",
+        "roomId": "qa-room-vegetative",
+        "label": "QA Veg 001",
+        "stage": "vegetative",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-veg-002",
+        "growId": "qa-grow-vegetative",
+        "roomId": "qa-room-vegetative",
+        "label": "QA Veg 002",
+        "stage": "vegetative",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-veg-003",
+        "growId": "qa-grow-vegetative",
+        "roomId": "qa-room-vegetative",
+        "label": "QA Veg 003",
+        "stage": "vegetative",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-flower-001",
+        "growId": "qa-grow-flower",
+        "roomId": "qa-room-flower",
+        "label": "QA Flower 001",
+        "stage": "flower",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-flower-002",
+        "growId": "qa-grow-flower",
+        "roomId": "qa-room-flower",
+        "label": "QA Flower 002",
+        "stage": "flower",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "plantId": "qa-plant-flower-003",
+        "growId": "qa-grow-flower",
+        "roomId": "qa-room-flower",
+        "label": "QA Flower 003",
+        "stage": "flower",
+        "cultivar": null,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "equipment": [
+      {
+        "equipmentId": "qa-equipment-sensor-hub",
+        "name": "QA Environmental Sensor Hub",
+        "equipmentType": "sensor_hub",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "pending_test_adapter",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-hvac",
+        "name": "QA HVAC",
+        "equipmentType": "hvac",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "unconnected",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-dehumidifier",
+        "name": "QA Dehumidifier",
+        "equipmentType": "dehumidifier",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "unconnected",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-irrigation",
+        "name": "QA Irrigation Pump",
+        "equipmentType": "irrigation_pump",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "unconnected",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-lighting",
+        "name": "QA Lighting Circuit",
+        "equipmentType": "lighting",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "unconnected",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-exhaust",
+        "name": "QA Exhaust",
+        "equipmentType": "exhaust",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "unconnected",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-co2-monitor",
+        "name": "QA CO2 Monitor",
+        "equipmentType": "co2_monitor",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "pending_test_adapter",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "equipmentId": "qa-equipment-substrate-sensor",
+        "name": "QA Substrate Sensor",
+        "equipmentType": "substrate_sensor",
+        "roomId": "qa-room-flower",
+        "connectionStatus": "pending_test_adapter",
+        "readOnly": true,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "inventory": [
+      {
+        "inventoryId": "qa-inventory-substrate",
+        "name": "QA Substrate",
+        "category": "substrate",
+        "baselineQuantity": 50,
+        "unit": "cu_ft",
+        "reorderPoint": 10,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "inventoryId": "qa-inventory-dry-nutrients",
+        "name": "QA Dry Nutrients",
+        "category": "nutrient",
+        "baselineQuantity": 100,
+        "unit": "lb",
+        "reorderPoint": 20,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "inventoryId": "qa-inventory-ppe",
+        "name": "QA PPE",
+        "category": "ppe",
+        "baselineQuantity": 20,
+        "unit": "count",
+        "reorderPoint": 5,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "inventoryId": "qa-inventory-sanitizer",
+        "name": "QA Sanitizer",
+        "category": "sanitation",
+        "baselineQuantity": 10,
+        "unit": "L",
+        "reorderPoint": 2,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "inventoryId": "qa-inventory-sticky-cards",
+        "name": "QA Sticky Cards",
+        "category": "scouting",
+        "baselineQuantity": 100,
+        "unit": "count",
+        "reorderPoint": 25,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "inventoryId": "qa-inventory-packaging",
+        "name": "QA Packaging",
+        "category": "packaging",
+        "baselineQuantity": 200,
+        "unit": "count",
+        "reorderPoint": 40,
+        "synthetic": true,
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "sops": [
+      {
+        "sopId": "qa-sop-room-sanitation",
+        "title": "QA Room Sanitation",
+        "category": "sanitation",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "sopId": "qa-sop-ipm-scouting",
+        "title": "QA IPM Scouting",
+        "category": "scouting",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "sopId": "qa-sop-irrigation-response",
+        "title": "QA Irrigation Failure Response",
+        "category": "irrigation",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "sopId": "qa-sop-sensor-offline",
+        "title": "QA Sensor Offline Response",
+        "category": "integration",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "sopId": "qa-sop-room-excursion",
+        "title": "QA Room Excursion Response",
+        "category": "environment",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "sopId": "qa-sop-plant-quarantine",
+        "title": "QA Plant Quarantine",
+        "category": "ipm",
+        "status": "draft",
+        "ownerApproved": false,
+        "seedRecordStatus": "planned"
+      }
+    ],
+    "tasks": [
+      {
+        "taskId": "qa-task-daily-scout",
+        "title": "Daily room scout",
+        "roomId": "qa-room-flower",
+        "sopId": "qa-sop-ipm-scouting",
+        "assignedPersonaId": "qa-persona-scout",
+        "schedule": "daily",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-environment-review",
+        "title": "Review room environment",
+        "roomId": "qa-room-flower",
+        "sopId": "qa-sop-room-excursion",
+        "assignedPersonaId": "qa-persona-grower",
+        "schedule": "daily",
+        "status": "planned",
+        "verificationRequired": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-room-sanitation",
+        "title": "Sanitize room surfaces",
+        "roomId": "qa-room-clone",
+        "sopId": "qa-sop-room-sanitation",
+        "assignedPersonaId": "qa-persona-grower",
+        "schedule": "weekly",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-irrigation-inspection",
+        "title": "Inspect irrigation delivery",
+        "roomId": "qa-room-flower",
+        "sopId": "qa-sop-irrigation-response",
+        "assignedPersonaId": "qa-persona-grower",
+        "schedule": "daily",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-sensor-health",
+        "title": "Review sensor health",
+        "roomId": "qa-room-flower",
+        "sopId": "qa-sop-sensor-offline",
+        "assignedPersonaId": "qa-persona-manager",
+        "schedule": "daily",
+        "status": "planned",
+        "verificationRequired": false,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-inventory-count",
+        "title": "Cycle count operating supplies",
+        "roomId": "qa-room-general-storage",
+        "sopId": null,
+        "assignedPersonaId": "qa-persona-manager",
+        "schedule": "weekly",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-dry-review",
+        "title": "Review dry-room records",
+        "roomId": "qa-room-dry",
+        "sopId": "qa-sop-room-excursion",
+        "assignedPersonaId": "qa-persona-grower",
+        "schedule": "daily_when_active",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-cure-review",
+        "title": "Review cure-room records",
+        "roomId": "qa-room-cure",
+        "sopId": "qa-sop-room-excursion",
+        "assignedPersonaId": "qa-persona-grower",
+        "schedule": "daily_when_active",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-tc-sanitation",
+        "title": "Review tissue-culture sanitation",
+        "roomId": "qa-room-tissue-culture",
+        "sopId": "qa-sop-room-sanitation",
+        "assignedPersonaId": "qa-persona-manager",
+        "schedule": "per_session",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      },
+      {
+        "taskId": "qa-task-quarantine-followup",
+        "title": "Review quarantined plant",
+        "roomId": "qa-room-flower",
+        "sopId": "qa-sop-plant-quarantine",
+        "assignedPersonaId": "qa-persona-scout",
+        "schedule": "incident_driven",
+        "status": "planned",
+        "verificationRequired": true,
+        "seedRecordStatus": "planned"
+      }
+    ]
+  },
+  "telemetryContract": {
+    "targetMinimumTelemetryPoints": 240,
+    "telemetryRecords": [],
+    "requiredPointFields": [
+      "telemetryId",
+      "scenarioId",
+      "facilityId",
+      "roomId",
+      "deviceId",
+      "providerMetricKey",
+      "canonicalMetric",
+      "rawValue",
+      "rawUnit",
+      "normalizedValue",
+      "normalizedUnit",
+      "recordedAt",
+      "synthetic"
+    ],
+    "canonicalMetrics": [
+      {
+        "metric": "air_temperature",
+        "unit": "C",
+        "consumers": ["display", "analytics", "ai", "alerts", "exports"]
+      },
+      {
+        "metric": "relative_humidity",
+        "unit": "percent",
+        "consumers": ["display", "analytics", "ai", "alerts", "exports"]
+      },
+      {
+        "metric": "vpd",
+        "unit": "kPa",
+        "consumers": ["display", "analytics", "ai", "alerts", "exports"]
+      },
+      {
+        "metric": "dew_point",
+        "unit": "C",
+        "consumers": ["display", "analytics", "ai", "alerts", "exports"]
+      },
+      {
+        "metric": "co2",
+        "unit": "ppm",
+        "consumers": ["display", "analytics", "ai", "alerts", "exports"]
+      },
+      {
+        "metric": "ppfd",
+        "unit": "umol/m2/s",
+        "consumers": ["display", "analytics", "ai", "exports"]
+      },
+      {
+        "metric": "dli",
+        "unit": "mol/m2/day",
+        "consumers": ["display", "analytics", "ai", "exports"]
+      },
+      {
+        "metric": "substrate_moisture",
+        "unit": "percent",
+        "consumers": ["display", "analytics", "ai", "alerts", "tasks", "exports"]
+      },
+      {
+        "metric": "substrate_ec",
+        "unit": "mS/cm",
+        "consumers": ["display", "analytics", "ai", "alerts", "tasks", "exports"]
+      },
+      {
+        "metric": "substrate_ph",
+        "unit": "pH",
+        "consumers": ["display", "analytics", "ai", "alerts", "tasks", "exports"]
+      },
+      {
+        "metric": "irrigation_event",
+        "unit": "event",
+        "consumers": ["display", "analytics", "ai", "tasks", "alerts", "exports"]
+      },
+      {
+        "metric": "light_state",
+        "unit": "state",
+        "consumers": ["display", "analytics", "alerts", "exports"]
+      },
+      {
+        "metric": "alarm",
+        "unit": "event",
+        "consumers": ["display", "alerts", "tasks", "exports"]
+      },
+      {
+        "metric": "device_offline",
+        "unit": "event",
+        "consumers": ["display", "alerts", "tasks", "exports"]
+      },
+      {
+        "metric": "device_fault",
+        "unit": "event",
+        "consumers": ["display", "alerts", "tasks", "exports"]
+      }
+    ]
+  },
+  "scenarioDefinitions": [
+    {
+      "scenarioId": "normal_operations",
+      "category": "normal",
+      "targetRoomIds": ["qa-room-flower", "qa-room-vegetative"],
+      "syntheticPattern": "Reviewed in-range states with complete timestamps, units, and device health.",
+      "requiredDetections": [
+        "in_range state only when explicit range evidence exists",
+        "unknown when range evidence is missing"
+      ],
+      "expectedWriteBacks": ["room analytics"]
+    },
+    {
+      "scenarioId": "two_hour_humidity_spike_after_lights_off",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "Relative humidity remains above the reviewed room maximum for 120 minutes after light_state changes off.",
+      "requiredDetections": ["duration-aware excursion", "lights-off context"],
+      "expectedWriteBacks": ["alert draft", "task draft", "room event"]
+    },
+    {
+      "scenarioId": "dew_point_condensation_risk",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower", "qa-room-dry"],
+      "syntheticPattern": "Reviewed surface temperature reaches or falls below calculated dew point.",
+      "requiredDetections": ["dew-point risk", "calculation inputs and units"],
+      "expectedWriteBacks": ["alert draft", "room event"]
+    },
+    {
+      "scenarioId": "sensor_offline_and_stale_data",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "A device_offline event is followed by readings older than the reviewed stale-data interval.",
+      "requiredDetections": [
+        "offline state",
+        "stale-data disclosure",
+        "no fabricated replacement values"
+      ],
+      "expectedWriteBacks": ["alert draft", "sensor-health task draft"]
+    },
+    {
+      "scenarioId": "high_substrate_ec",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "Measured substrate_ec exceeds the reviewed room/crop threshold with sampling method retained.",
+      "requiredDetections": [
+        "high EC signal",
+        "sampling-method context",
+        "no photo-only nutrient diagnosis"
+      ],
+      "expectedWriteBacks": ["alert draft", "recheck task draft", "grow log"]
+    },
+    {
+      "scenarioId": "irrigation_failure",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "An expected irrigation_event is absent and substrate-moisture evidence is stale or declining.",
+      "requiredDetections": [
+        "missed event",
+        "evidence freshness",
+        "manual verification request"
+      ],
+      "expectedWriteBacks": ["urgent task draft", "alert draft", "grow log"]
+    },
+    {
+      "scenarioId": "unexpected_high_co2",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "Measured co2 exceeds the reviewed maximum without a matching approved injection schedule.",
+      "requiredDetections": [
+        "high CO2 excursion",
+        "schedule mismatch",
+        "safety-oriented escalation"
+      ],
+      "expectedWriteBacks": ["alert draft", "room event"]
+    },
+    {
+      "scenarioId": "light_or_exhaust_failure",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "Expected light_state or exhaust device state is unavailable or conflicts with the reviewed schedule.",
+      "requiredDetections": ["state mismatch", "device-health context"],
+      "expectedWriteBacks": ["alert draft", "equipment inspection task draft"]
+    },
+    {
+      "scenarioId": "room_excursion_acknowledgement_and_escalation",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "A reviewed room excursion is acknowledged by STAFF and escalated to MANAGER after the configured interval.",
+      "requiredDetections": [
+        "acknowledgement actor and timestamp",
+        "escalation actor and timestamp"
+      ],
+      "expectedWriteBacks": ["alert audit", "task audit", "room event"]
+    },
+    {
+      "scenarioId": "pest_found_and_plant_quarantined",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "A user-confirmed pest observation is linked to QA Flower 001 and quarantine is explicitly approved.",
+      "requiredDetections": [
+        "observation is not automatic diagnosis",
+        "plant-level quarantine scope",
+        "follow-up scout task"
+      ],
+      "expectedWriteBacks": ["plant", "grow log", "ToolRun", "task", "facility alert"]
+    },
+    {
+      "scenarioId": "inventory_shortage",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-general-storage"],
+      "syntheticPattern": "QA PPE falls below its synthetic reorder point after a recorded adjustment.",
+      "requiredDetections": [
+        "low-stock state",
+        "recorded adjustment",
+        "manager-visible task"
+      ],
+      "expectedWriteBacks": ["inventory event", "task draft", "alert draft"]
+    },
+    {
+      "scenarioId": "missed_task_and_overdue_sop",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-clone"],
+      "syntheticPattern": "A scheduled sanitation task passes dueAt while its linked SOP remains applicable.",
+      "requiredDetections": [
+        "overdue task",
+        "applicable SOP link",
+        "no assumed compliance"
+      ],
+      "expectedWriteBacks": ["task event", "compliance event", "manager alert"]
+    },
+    {
+      "scenarioId": "conflicting_permissions",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "STAFF attempts an inventory write and VIEWER attempts a task write while OWNER reads the same shared record.",
+      "requiredDetections": [
+        "STAFF inventory write denied",
+        "VIEWER task write denied",
+        "authorized reads preserved"
+      ],
+      "expectedWriteBacks": ["authorization audit"]
+    },
+    {
+      "scenarioId": "csv_api_duplicates_gaps_bad_timestamps_bad_units",
+      "category": "incident",
+      "targetRoomIds": ["qa-room-flower"],
+      "syntheticPattern": "Import contains duplicate source keys, missing intervals, invalid timestamps, convertible known units, and unsupported units.",
+      "requiredDetections": [
+        "deduplicate idempotently",
+        "retain gaps",
+        "reject invalid timestamps",
+        "convert only known supplied units",
+        "retain unsupported units as unmapped raw evidence"
+      ],
+      "expectedWriteBacks": ["import report", "mapping review", "no controller writes"]
+    }
+  ],
+  "scenarioRuns": [],
+  "writeBackContract": {
+    "facilityScopeRequired": true,
+    "userConfirmationRequired": true,
+    "crossFacilityWritesAllowed": false,
+    "targets": ["Plant", "Grow", "Log", "ToolRun", "Task", "room", "Facility"],
+    "alertsAndTasksStartAsDrafts": true,
+    "budRotScreeningMayBePresentedAsDiagnosis": false
+  },
+  "acceptanceChecks": [
+    "entitlement_loading",
+    "ai_credit_charge_and_refund",
+    "facility_owner_access",
+    "manager_mapping_confirmation",
+    "staff_task_and_log_write_limits",
+    "viewer_read_only_access",
+    "task_assignment",
+    "rights_reviewed_uploads",
+    "ask_ai_provider_and_fallback_labels",
+    "alerts_and_acknowledgements",
+    "persistence_and_reload",
+    "tool_write_back_scope",
+    "cross_role_shared_record"
+  ],
+  "acceptanceEvidence": []
+}

@@ -304,6 +304,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [ ] Keep the app module named Soil & Nutrient Batch Planner and keep Living Soil Labs as the seeded commercial brand/storefront.
 
 53. Facility simulation QA pack
+   - [x] Define a private synthetic Facility graph with 5 canonical-role personas, 5 zones, 10 workflow rooms, 5 grows, 12 plants, 8 equipment records, 6 inventory records, 6 draft SOPs, and 10 planned tasks.
+   - [x] Add planning and strict validation for integration safety, 15 governed telemetry metrics, normal operations plus 13 incidents, confirmation-gated write-backs, and the 13-check acceptance matrix.
    - [ ] Seed Facility -> rooms/zones -> grows -> plants with canonical Owner, Manager, Staff, and Viewer access; model grower, scout, and restricted-employee duties as assignments/permission constraints rather than inventing incompatible account roles.
    - [ ] Cover mother, clone/propagation, seedling, veg, flower, dry, cure, tissue culture, cold/storage, equipment, inventory, SOPs, recurring sanitation/scouting, and task assignment.
    - [ ] Generate normal telemetry plus humidity/dew-point, stale/offline sensor, high substrate EC, irrigation, CO2, light/exhaust, acknowledged excursion, pest quarantine, inventory shortage, missed SOP/task, permission conflict, and malformed import incidents.
