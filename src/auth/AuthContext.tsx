@@ -80,6 +80,10 @@ function isPersonalPreviewRoute(pathname: string) {
   return pathname === "/home/personal" || pathname.startsWith("/home/personal/");
 }
 
+function hasPreviewValue(params: URLSearchParams, names: string[]) {
+  return names.some((name) => String(params.get(name) || "").trim().length > 0);
+}
+
 export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLocation) {
   const { hostname, pathname, search } = location ?? localWindowLocation();
   if (!isLocalPreviewHost(hostname)) return null;
@@ -89,10 +93,10 @@ export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLoca
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
   const commercialParam = String(params.get("commercial") || "").toLowerCase();
   const wantsCommercial =
-    isCommercialPreviewRoute(pathname) ||
     devPlan === "commercial" ||
     commercialParam === "1" ||
-    commercialParam === "true";
+    commercialParam === "true" ||
+    hasPreviewValue(params, ["commercialEmail", "commercialName"]);
 
   if (!wantsCommercial) return null;
 
@@ -154,10 +158,15 @@ export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocati
   const devPlan = String(params.get("devPlan") || "").toLowerCase();
   const facilityParam = String(params.get("facility") || "").toLowerCase();
   const wantsFacility =
-    isFacilityPreviewRoute(pathname) ||
     devPlan === "facility" ||
     facilityParam === "1" ||
-    facilityParam === "true";
+    facilityParam === "true" ||
+    hasPreviewValue(params, [
+      "facilityEmail",
+      "facilityName",
+      "facilityId",
+      "facilityRole"
+    ]);
 
   if (!wantsFacility) return null;
 
@@ -241,14 +250,16 @@ export function resolveLocalPersonalPreviewSession(location?: LocalPreviewLocati
     paidParam === "1" ||
     paidParam === "true";
   const wantsPersonal =
-    isPersonalPreviewRoute(pathname) ||
     devPlan === "free" ||
     devPlan === "pro" ||
     devPlan === "personal" ||
     personalParam === "1" ||
     personalParam === "true" ||
     singleParam === "1" ||
-    singleParam === "true";
+    singleParam === "true" ||
+    paidParam === "1" ||
+    paidParam === "true" ||
+    hasPreviewValue(params, ["singleEmail", "personalEmail", "singleName"]);
 
   if (!wantsPersonal) return null;
 

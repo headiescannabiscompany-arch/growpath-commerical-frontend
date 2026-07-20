@@ -260,6 +260,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "A selected facility and authorization are required.",
+      "Local previews require explicit preview intent; bare routes preserve real authenticated Facility sessions.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
     ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]
