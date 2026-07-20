@@ -116,7 +116,7 @@ const tests = {
 });
 
 [
-  ["commercial soil batch route", /CommercialSoilNutrientBatchToolRoute as default/],
+  ["commercial soil batch route", /export default CommercialSoilNutrientBatchToolRoute/],
   ["commercial tools listing", /Soil & Nutrient Batch Planner[\s\S]*\/home\/commercial\/tools\/soil-nutrient-batch/]
 ].forEach(([description, pattern], index) => {
   requireText(
