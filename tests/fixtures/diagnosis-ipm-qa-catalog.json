@@ -1,0 +1,550 @@
+{
+  "schemaVersion": "growpath-diagnosis-ipm-qa-v1",
+  "masterItem": 51,
+  "status": "planning",
+  "targetRecordCount": 252,
+  "groupTargets": {
+    "diseases": 60,
+    "pestsAndBeneficialLookalikes": 84,
+    "abioticMimics": 108
+  },
+  "diagnosticSequence": [
+    "pattern",
+    "medium_root_zone",
+    "environment",
+    "measured_values",
+    "cause_ranking"
+  ],
+  "causeRankingClasses": [
+    "disease",
+    "pest",
+    "deficiency",
+    "excess",
+    "lockout",
+    "antagonism",
+    "organic_release_timing",
+    "other_abiotic",
+    "insufficient_evidence"
+  ],
+  "rightsPolicy": {
+    "useForModelTraining": false,
+    "imageLevelReviewRequired": true,
+    "commercialQaUseApprovalRequired": true,
+    "creatorAndAttributionRequired": true,
+    "licenseRecheckBeforeExecution": true,
+    "allowedCopiedMediaLicenses": [
+      "CC0-1.0",
+      "CC-BY-4.0",
+      "OWNER_PERMISSION",
+      "GROWPATH_OWNED"
+    ],
+    "blockedCopiedMediaLicenses": [
+      "ALL-RIGHTS-RESERVED",
+      "CC-BY-NC",
+      "CC-BY-NC-SA",
+      "CC-BY-NC-ND",
+      "UNKNOWN"
+    ]
+  },
+  "evidenceEnvelopeContract": {
+    "identicalEnvelopeForGrowPathAndGpt": true,
+    "photoBytesIncludedOnlyWhenPixelAnalysisIsSupported": true,
+    "textOnlySecondOpinionMustDiscloseNoPixelInspection": true,
+    "requiredSections": [
+      "pattern",
+      "plant_and_stage",
+      "distribution_and_progression",
+      "medium_and_root_zone",
+      "environment",
+      "measured_values",
+      "diagnostic_signs",
+      "plausible_alternatives",
+      "confirmation_method",
+      "urgency",
+      "quarantine_guidance",
+      "scouting_steps",
+      "ipm_response"
+    ],
+    "persistBothAnswers": true,
+    "persistDisagreements": true,
+    "linkedRecordTypesWhenContextExists": [
+      "Plant",
+      "Grow",
+      "Log",
+      "ToolRun",
+      "Task",
+      "Facility"
+    ],
+    "pesticideRule": "No invented pesticide product, rate, interval, compatibility, or legal-use claim. Require current label, extension, and jurisdiction review."
+  },
+  "requiredMediaRecordFields": [
+    "recordId",
+    "caseId",
+    "imageSet",
+    "plant",
+    "cultivar",
+    "lifeStage",
+    "affectedLocation",
+    "distribution",
+    "progression",
+    "mediumRootZone",
+    "environment",
+    "measuredValues",
+    "diagnosticSigns",
+    "plausibleAlternatives",
+    "confirmationMethod",
+    "expectedCauseRanking",
+    "expectedUrgency",
+    "expectedQuarantineGuidance",
+    "expectedScoutingSteps",
+    "expectedIpmResponse"
+  ],
+  "requiredImageFields": [
+    "imageId",
+    "sourceId",
+    "sourceUrl",
+    "mediaUrl",
+    "creator",
+    "licenseId",
+    "attributionText",
+    "retrievedAt",
+    "rightsReviewedAt",
+    "intendedUseApproved",
+    "handling"
+  ],
+  "sourcePlan": [
+    {
+      "sourceId": "growpath_owner_media",
+      "status": "preferred_pending_assets",
+      "purpose": "Cannabis, facility, root-zone, progression, and confirmed outcome cases with direct rights records.",
+      "requirements": [
+        "owner or creator permission",
+        "case-level expected outcome review",
+        "image-level attribution and intended-use approval"
+      ]
+    },
+    {
+      "sourceId": "plantvillage",
+      "status": "candidate_pending_license_review",
+      "purpose": "Controlled-background disease candidates only; not a substitute for whole-plant or field evidence.",
+      "requirements": [
+        "identify the governing image license",
+        "approve commercial inference-QA use",
+        "retain image-level provenance",
+        "do not use for model training"
+      ]
+    },
+    {
+      "sourceId": "extension_ipm_media",
+      "status": "candidate_metadata_only",
+      "purpose": "Extension-backed signs, confirmation methods, and treatment principles; media copying requires separate rights review.",
+      "requirements": [
+        "separate page authority from media copyright",
+        "retain current page URL and review date",
+        "cross-check pesticide guidance against current label and jurisdiction"
+      ]
+    },
+    {
+      "sourceId": "commissioned_mimic_cases",
+      "status": "preferred_pending_capture",
+      "purpose": "Abiotic mimics, beneficial lookalikes, ambiguous evidence, and retake workflows captured specifically for QA.",
+      "requirements": [
+        "document conditions and measurements",
+        "record creator permission",
+        "review expected classification and uncertainty"
+      ]
+    }
+  ],
+  "treatmentEvidencePolicy": {
+    "trustedSourceClasses": [
+      "peer_reviewed_research",
+      "university_extension",
+      "government_agriculture_or_regulation",
+      "current_official_product_label"
+    ],
+    "preferredRegistries": ["UC IPM", "university extension", "EPA IPM principles"],
+    "requiredCrossChecks": [
+      "crop and site",
+      "jurisdiction",
+      "current product label",
+      "worker and harvest intervals",
+      "beneficial compatibility"
+    ],
+    "forumsOrSocialAsSoleSupport": false
+  },
+  "caseGroups": {
+    "diseases": [
+      {
+        "caseId": "powdery_mildew",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "surface colonies",
+          "distribution pattern",
+          "wipe or microscopy confirmation"
+        ]
+      },
+      {
+        "caseId": "botrytis_gray_mold_bud_rot",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "internal flower or tissue browning",
+          "sporulation when present",
+          "humidity and condensation context"
+        ]
+      },
+      {
+        "caseId": "downy_mildew",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "angular lesions",
+          "underside sporulation",
+          "host and moisture context"
+        ]
+      },
+      {
+        "caseId": "septoria_and_leaf_spots",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "lesion margin and center",
+          "distribution",
+          "pathogen confirmation when needed"
+        ]
+      },
+      {
+        "caseId": "fusarium",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "vascular or root symptoms",
+          "asymmetric wilt pattern",
+          "laboratory confirmation"
+        ]
+      },
+      {
+        "caseId": "pythium_root_rot",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "root color and integrity",
+          "root-zone oxygen and temperature",
+          "laboratory confirmation"
+        ]
+      },
+      {
+        "caseId": "damping_off",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "stem constriction",
+          "seedling collapse",
+          "propagation moisture pattern"
+        ]
+      },
+      {
+        "caseId": "rust",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "pustule color and location",
+          "spore transfer",
+          "host-specific alternatives"
+        ]
+      },
+      {
+        "caseId": "bacterial_leaf_spot",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "water-soaked or angular lesions",
+          "spread pattern",
+          "laboratory confirmation"
+        ]
+      },
+      {
+        "caseId": "mosaic_virus_symptoms",
+        "expectedClass": "disease",
+        "quota": 6,
+        "requiredSigns": [
+          "mosaic or distortion pattern",
+          "vector or propagation context",
+          "laboratory confirmation before certainty"
+        ]
+      }
+    ],
+    "pestsAndBeneficialLookalikes": [
+      {
+        "caseId": "two_spotted_spider_mites",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["stippling", "webbing", "mites or eggs under magnification"]
+      },
+      {
+        "caseId": "broad_mites",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "new-growth distortion",
+          "microscopic mites or eggs",
+          "rule out heat and herbicide injury"
+        ]
+      },
+      {
+        "caseId": "russet_mites",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "bronzing and stunting",
+          "microscopy confirmation",
+          "distribution across new growth"
+        ]
+      },
+      {
+        "caseId": "thrips",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["silver feeding scars", "frass", "adult or larval confirmation"]
+      },
+      {
+        "caseId": "aphids",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "colonies",
+          "honeydew or cast skins",
+          "distinguish predators and parasitoid mummies"
+        ]
+      },
+      {
+        "caseId": "whiteflies",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["underside nymphs", "adult flight response", "honeydew"]
+      },
+      {
+        "caseId": "fungus_gnats",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "adult trap counts",
+          "larvae in medium",
+          "root-zone moisture context"
+        ]
+      },
+      {
+        "caseId": "mealybugs",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["wax deposits", "colonies in protected sites", "honeydew"]
+      },
+      {
+        "caseId": "scale_insects",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "attached covers or bodies",
+          "crawler stage",
+          "distinguish edema and stem texture"
+        ]
+      },
+      {
+        "caseId": "leafminers",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["mine pattern", "larva or frass in mine", "adult context"]
+      },
+      {
+        "caseId": "caterpillars",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": ["chewing pattern", "frass", "larva or egg confirmation"]
+      },
+      {
+        "caseId": "root_aphids",
+        "expectedClass": "pest",
+        "quota": 6,
+        "requiredSigns": [
+          "root-zone colony",
+          "waxy residue",
+          "distinguish fungus gnat larvae and root disease"
+        ]
+      },
+      {
+        "caseId": "beneficial_and_harmless_lookalikes",
+        "expectedClass": "insufficient_evidence",
+        "quota": 12,
+        "requiredSigns": [
+          "organism morphology",
+          "predatory or parasitized behavior",
+          "avoid automatic treatment"
+        ]
+      }
+    ],
+    "abioticMimics": [
+      {
+        "caseId": "nutrient_deficiency",
+        "expectedClass": "deficiency",
+        "quota": 6,
+        "requiredSigns": [
+          "mobile or immobile distribution",
+          "tissue or solution evidence",
+          "rule out root limitation"
+        ]
+      },
+      {
+        "caseId": "nutrient_excess",
+        "expectedClass": "excess",
+        "quota": 6,
+        "requiredSigns": ["input history", "EC or tissue evidence", "toxicity pattern"]
+      },
+      {
+        "caseId": "nutrient_lockout",
+        "expectedClass": "lockout",
+        "quota": 6,
+        "requiredSigns": ["root-zone pH and EC", "available-input context", "root health"]
+      },
+      {
+        "caseId": "nutrient_antagonism",
+        "expectedClass": "antagonism",
+        "quota": 6,
+        "requiredSigns": [
+          "measured competing ions",
+          "input history",
+          "tissue or solution confirmation"
+        ]
+      },
+      {
+        "caseId": "overwatering",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "substrate moisture trend",
+          "oxygen and root condition",
+          "irrigation timing"
+        ]
+      },
+      {
+        "caseId": "underwatering",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "dryback measurement",
+          "plant recovery response",
+          "root-zone distribution"
+        ]
+      },
+      {
+        "caseId": "light_stress",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": ["PPFD or DLI", "canopy distribution", "distance and schedule"]
+      },
+      {
+        "caseId": "heat_stress",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "leaf and air temperature",
+          "event timing",
+          "canopy distribution"
+        ]
+      },
+      {
+        "caseId": "wind_burn",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": ["fan-facing distribution", "air-speed context", "asymmetry"]
+      },
+      {
+        "caseId": "cold_damage",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "minimum temperature",
+          "exposure timing",
+          "affected tissue pattern"
+        ]
+      },
+      {
+        "caseId": "edema",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "corky underside lesions",
+          "water and humidity balance",
+          "rule out scale and disease"
+        ]
+      },
+      {
+        "caseId": "spray_burn",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "application timing",
+          "droplet or coverage pattern",
+          "product and light context"
+        ]
+      },
+      {
+        "caseId": "ph_problem",
+        "expectedClass": "lockout",
+        "quota": 6,
+        "requiredSigns": [
+          "calibrated root-zone pH",
+          "input and runoff method",
+          "medium-specific range"
+        ]
+      },
+      {
+        "caseId": "ec_problem",
+        "expectedClass": "excess",
+        "quota": 6,
+        "requiredSigns": ["calibrated EC", "sampling method", "input and substrate trend"]
+      },
+      {
+        "caseId": "calcium_root_environment",
+        "expectedClass": "insufficient_evidence",
+        "quota": 6,
+        "requiredSigns": [
+          "new-growth pattern",
+          "root-zone and transpiration context",
+          "avoid photo-only calcium certainty"
+        ]
+      },
+      {
+        "caseId": "normal_senescence",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "plant stage",
+          "older-tissue progression",
+          "absence of spreading signs"
+        ]
+      },
+      {
+        "caseId": "physical_damage",
+        "expectedClass": "other_abiotic",
+        "quota": 6,
+        "requiredSigns": [
+          "localized trauma",
+          "handling or equipment context",
+          "non-progressive pattern"
+        ]
+      },
+      {
+        "caseId": "organic_release_timing",
+        "expectedClass": "organic_release_timing",
+        "quota": 6,
+        "requiredSigns": [
+          "amendment timing",
+          "temperature and moisture",
+          "do not equate input total with plant availability"
+        ]
+      }
+    ]
+  },
+  "mediaRecords": []
+}
