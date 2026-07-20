@@ -93,7 +93,8 @@ const tests = {
   ["tool shell uses ScreenBoundary", /ScreenBoundary/],
   ["tool shell uses result surface", /ToolResultSurface/],
   ["tool shell uses 8px cards", /borderRadius:\s*8/],
-  ["tool shell uses shared back fallback", /backFallbackHref="\/home\/personal\/tools"/]
+  ["tool shell keeps Personal back default", /backFallbackHref\s*=\s*"\/home\/personal\/tools"/],
+  ["tool shell uses shared back fallback", /backFallbackHref=\{backFallbackHref\}/]
 ].forEach(([description, pattern]) => {
   requireText("BackendCalculatorToolScreen", backendToolScreen, pattern, description);
 });
