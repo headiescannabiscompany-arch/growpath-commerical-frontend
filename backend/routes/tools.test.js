@@ -1268,15 +1268,34 @@ describe("Tools Router (tools.js)", () => {
     }));
 
     const ipm = await authed(
-      request(app).post("/api/tools/ipm-scout").send({
-        growId: "grow_1",
-        plantId: "plant_1",
-        pestSeen: "mites",
-        leafDamage: "stippling",
-        undersideInspection: "webbing under leaf",
-        stickyTrapCount: 12,
-        notes: "mites, webbing"
-      })
+      request(app)
+        .post("/api/tools/ipm-scout")
+        .send({
+          growId: "grow_1",
+          plantId: "plant_1",
+          pestSeen: "mites",
+          leafDamage: "stippling",
+          undersideInspection: "webbing under leaf",
+          stickyTrapCount: 12,
+          trapContext: "yellow trap, north bench, 7 days",
+          plantsChecked: 8,
+          plantsAffected: 2,
+          distribution: "lower leaves on two adjacent plants",
+          progression: "slowly spreading over three days",
+          notes: "mites, webbing",
+          evidenceAssetIds: ["evidence-1", "evidence-2"],
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            photoCount: 2,
+            photosAnalyzed: 2,
+            provider: "openai",
+            providerLabel: "OpenAI IPM photo review",
+            confidence: "medium",
+            quality: "usable",
+            evidenceUsed: ["fine stippling", "webbing on leaf underside"]
+          }
+        })
     );
     const cropId = await authed(
       request(app).post("/api/tools/species-crop-id").send({
@@ -1293,19 +1312,53 @@ describe("Tools Router (tools.js)", () => {
     expect(ipm.status).toBe(201);
     expect(ipm.body.outputs).toMatchObject({
       suspectedIssue: "pest_pressure",
-      suspectedOrganism: "mites possible",
+      suspectedOrganism: "spider mites possible",
       severity: "medium",
       primaryAnswer: expect.objectContaining({
         source: "growpathai_ipm_scout",
         suspectedIssue: "pest_pressure",
-        suspectedOrganism: "mites possible"
+        suspectedOrganism: "spider mites possible"
       }),
       gptVerification: expect.objectContaining({
         provider: "gpt",
-        status: "pending_gpt_review",
+        status: "not_configured",
+        providerLabel: "GPT structured IPM second opinion",
+        mediaAnalysisPerformed: false,
         requiredForTreatmentDecision: true,
         documentationTarget: "ToolRun.outputs.gptVerification"
       }),
+      readiness: expect.objectContaining({
+        status: "ready_for_working_hypothesis"
+      }),
+      pressureSummary: expect.objectContaining({
+        plantsChecked: 8,
+        plantsAffected: 2,
+        affectedPercent: 25,
+        stickyTrapCount: 12
+      }),
+      mediaAnalysis: expect.objectContaining({
+        performed: true,
+        photosAnalyzed: 2,
+        providerLabel: "OpenAI IPM photo review",
+        status: "photo_pixels_analyzed"
+      }),
+      methodIds: ["plant-diagnosis-etgu"],
+      sourceIds: expect.arrayContaining([
+        "growpath-method",
+        "user-observation",
+        "uc-ipm",
+        "extension-penn-state"
+      ]),
+      citations: expect.arrayContaining([
+        expect.objectContaining({
+          sourceId: "uc-ipm",
+          url: expect.stringContaining("ipm.ucanr.edu")
+        }),
+        expect.objectContaining({
+          sourceId: "extension-penn-state",
+          url: expect.stringContaining("extension.psu.edu")
+        })
+      ]),
       documentation: expect.objectContaining({
         savedAs: "ToolRun",
         includeBothAnswers: true
@@ -1315,7 +1368,7 @@ describe("Tools Router (tools.js)", () => {
     expect(ipm.body.outputs.verificationDisplay).toHaveLength(2);
     expect(ipm.body.toolRun.outputs.gptVerification).toMatchObject({
       provider: "gpt",
-      status: "pending_gpt_review"
+      status: "not_configured"
     });
     expect(ipm.body.outputs.warnings).toEqual(
       expect.arrayContaining([
@@ -1325,6 +1378,21 @@ describe("Tools Router (tools.js)", () => {
     expect(ipm.body.outputs.taskSuggestions[0]).toMatchObject({
       title: "Repeat IPM scout"
     });
+    expect(ipm.body.outputs.taskSuggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Document IPM evidence and treatment decision",
+          sourceStage: "ipm_treatment_decision"
+        }),
+        expect.objectContaining({
+          title: "Review IPM outcome",
+          sourceStage: "ipm_outcome_review"
+        })
+      ])
+    );
+    expect(ipm.body.outputs.treatmentCategories).toEqual(
+      expect.arrayContaining(["monitor", "sanitation", "consult label/extension"])
+    );
     expect(cropId.status).toBe(201);
     expect(cropId.body.outputs).toMatchObject({
       likelyCrop: "Cannabis",
@@ -1340,6 +1408,19 @@ describe("Tools Router (tools.js)", () => {
         "Confirm crop identity before relying on crop-specific recommendations."
       ])
     );
+  });
+
+  test("rejects an IPM scout with no direct observation instead of inventing defaults", async () => {
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const ipm = await authed(request(app).post("/api/tools/ipm-scout").send({}));
+
+    expect(ipm.status).toBe(400);
+    expect(ipm.body.message).toMatch(/direct observation is required/);
+    expect(mockToolRun.create).not.toHaveBeenCalled();
   });
 
   test("identifies a cannabis flower draft without requiring a grow", async () => {

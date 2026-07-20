@@ -114,6 +114,14 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["IPM screen route", /tool="ipm-scout"/],
   ["IPM follow-up tasks", /Create IPM Task Plan/],
   ["IPM treatment decision", /ipm_treatment_decision/],
+  [
+    "IPM blank observation defaults",
+    /label: "Damage or symptom pattern"[\s\S]*defaultValue: ""/
+  ],
+  ["IPM honest photo status", /Photo pixels analyzed/],
+  ["IPM likely decision", /Mark as Likely Match/],
+  ["IPM uncertain decision", /Mark as Not Sure/],
+  ["IPM rejected decision", /Mark as Doesn't Match/],
   ["species screen route", /tool="species-crop-id"/],
   ["grow-optional crop identity", /growOptional/],
   ["one-step photo identification", /runAfterPrefill: true/],

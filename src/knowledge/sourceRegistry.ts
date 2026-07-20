@@ -211,7 +211,7 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     name: "User observation or grow record",
     sourceType: "user_observation",
     reliabilityTier: "B",
-    trustedFor: ["diagnosis", "consumer_review", "education"],
+    trustedFor: ["diagnosis", "ipm", "consumer_review", "education"],
     notTrustedFor: ["lab_result", "fertilizer_label", "legal_regulatory"],
     notes: "Primary evidence of what was observed; not automatic proof of cause.",
     requiresCrossCheck: true,

@@ -68,8 +68,13 @@ export const methodRegistry: GrowPathMethod[] = [
     ["pattern", "medium", "environment", "numbers", "likely causes"],
     [
       "selected grow/plant",
+      "crop/stage and scout zone",
       "written symptom pattern",
       "symptom progression",
+      "plants checked and affected",
+      "distribution within and across plants",
+      "underside and magnification findings",
+      "dated trap count with location/exposure context",
       "media with analysis status",
       "grow history",
       "environment with explicit units",
@@ -84,12 +89,19 @@ export const methodRegistry: GrowPathMethod[] = [
       "follow-up analysis that preserves the original structured evidence",
       "image analysis performed status",
       "photo count and provider/model execution evidence",
+      "IPM readiness and ranked working hypotheses",
+      "IPM supporting evidence, counter-evidence, and competing candidates",
+      "safe treatment categories without pesticide products or dosing",
+      "normalized GrowPath/GPT agreement state",
+      "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
     ],
     [
       "Do not declare a nutrient deficiency from appearance alone.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
+      "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
       "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."

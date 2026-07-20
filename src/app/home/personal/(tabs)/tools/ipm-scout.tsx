@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -11,6 +12,12 @@ import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
 import { createFacilityTask } from "@/api/facilityTasks";
+import {
+  updateGrowpathModuleRecord,
+  type GrowpathModuleRecord,
+  type GrowpathModuleUserDecision
+} from "@/api/growpathModules";
+import { updateToolRun, type ToolRun } from "@/api/toolRuns";
 
 function firstText(...values: unknown[]) {
   for (const value of values) {
@@ -39,8 +46,69 @@ function growPathAnswer(outputs: any) {
     outputs.aiDiagnosis,
     outputs.diagnosis,
     outputs.summary,
+    outputs.primaryAnswer?.answer,
+    outputs.primaryAnswer?.interpretation,
     outputs.suspectedIssue
   );
+}
+
+async function recordIpmDecision({
+  decision,
+  outputs,
+  toolRun,
+  moduleRecord
+}: {
+  decision: GrowpathModuleUserDecision;
+  outputs: Record<string, any>;
+  toolRun: ToolRun | null;
+  moduleRecord: GrowpathModuleRecord | null;
+}) {
+  const recordedAt = new Date().toISOString();
+  const decisionRecord = {
+    value: decision,
+    recordedAt,
+    meaning:
+      decision === "accepted"
+        ? "The user marked this as the most likely working hypothesis, not a confirmed organism identification."
+        : decision === "rejected"
+          ? "The user marked this result as inconsistent with later observations."
+          : "The user needs more evidence before choosing a working hypothesis."
+  };
+  const nextOutputs = { ...outputs, userDecision: decisionRecord };
+  const toolRunId = String(toolRun?.id || toolRun?._id || "");
+  const moduleRecordId = String(moduleRecord?.id || moduleRecord?._id || "");
+  let saved = false;
+
+  if (toolRunId) {
+    const updatedRun = await updateToolRun(toolRunId, {
+      outputs: nextOutputs,
+      output: nextOutputs,
+      result: nextOutputs
+    });
+    saved = Boolean(updatedRun);
+  }
+
+  if (moduleRecordId) {
+    const updatedRecord = await updateGrowpathModuleRecord(moduleRecordId, {
+      title: moduleRecord?.title || "IPM scout",
+      status: moduleRecord?.status || "active",
+      userDecision: decision,
+      outcome: {
+        ...(moduleRecord?.outcome || {}),
+        lastDecision: decision,
+        decisionRecordedAt: recordedAt
+      },
+      warnings: moduleRecord?.warnings || [],
+      recommendations: moduleRecord?.recommendations || [],
+      limitations: moduleRecord?.limitations || [],
+      tags: moduleRecord?.tags || [],
+      linkedTaskIds: moduleRecord?.linkedTaskIds || [],
+      tasksToCreate: moduleRecord?.tasksToCreate || []
+    });
+    saved = Boolean(updatedRecord) || saved;
+  }
+
+  if (!saved) throw new Error("Unable to save this IPM decision.");
 }
 
 function normalizePriority(
@@ -67,9 +135,19 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
       priority: normalizePriority(task?.priority),
       dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
       ...calendarMetadata,
-      description:
+      sourceStage: String(task?.sourceStage || `ipm_followup_${index + 1}`),
+      description: [
         task?.description ||
-        "Follow up on IPM scout evidence, verification context, inspection steps, and treatment outcome."
+          "Follow up on IPM scout evidence, verification context, inspection steps, and treatment outcome.",
+        index === 0 && growPathAnswer(outputs)
+          ? `GrowPath AI: ${growPathAnswer(outputs)}`
+          : "",
+        index === 0 && verificationAnswer(outputs.gptVerification)
+          ? `GPT verification: ${verificationAnswer(outputs.gptVerification)}`
+          : ""
+      ]
+        .filter(Boolean)
+        .join(" ")
     }));
   }
 
@@ -128,58 +206,207 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
 
 export default function IpmScoutToolRoute() {
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const evidencePayload = providerEvidencePayload(evidenceAssets);
   return (
     <BackendCalculatorToolScreen
       tool="ipm-scout"
       toolKey="ipm-scout"
       title="IPM Scout"
-      subtitle="Record pest, disease, organism, trap, leaf damage, and inspection notes with follow-up tasks."
+      subtitle="Build a repeatable pest and disease scout from direct observations, photos, trap counts, plant distribution, and follow-up checks—without pretending a pattern is a confirmed diagnosis."
+      growOptional
+      noGrowContextMessage="This scout is saved in Saved Runs. Attach a grow or facility to create linked logs, tasks, plant history, and outcome follow-ups."
       aiPrefill={{
-        buttonLabel: "Fill IPM scout from grow and media",
+        buttonLabel: "Analyze Photos & Prefill Scout",
         clearUnfilled: true,
-        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        evidenceAssetIds: () => evidencePayload.evidenceAssetIds,
+        isReady: () => evidencePayload.images.length > 0,
+        notReadyMessage:
+          "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
         buildMessage: () =>
-          `Prefill the IPM Scout from the selected grow and plant's crop identity, stage, environment, recent logs, prior IPM records, diagnoses, and attached photos/videos. Return JSON only with exactly these keys: {"pestSeen":"string","leafDamage":"string","undersideInspection":"string","stickyTrapCount":"string","evidence":"string","additionalInformation":"string"}. Separate direct observations from hypotheses. Do not claim an organism is seen unless it is visibly supported; otherwise say "not confirmed". Do not invent trap counts or an underside inspection. In evidence list concise observed facts. Leave unknown fields blank. In additionalInformation request the exact missing leaf-top, leaf-underside, macro, sticky-trap, whole-plant, or video evidence needed and note plausible alternatives.`
+          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. evidence must list only visible or recorded facts. additionalInformation must name plausible alternatives and the exact leaf-top, leaf-underside, macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
+        buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
+          const evidenceUsed = Array.isArray(response.evidenceUsed)
+            ? response.evidenceUsed
+            : [];
+          const limitations = Array.isArray(response.limitations)
+            ? response.limitations
+            : [];
+          const reportsNoVision = limitations.some((item) =>
+            /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
+              String(item)
+            )
+          );
+          const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+          return {
+            imageAnalysis: {
+              requested: evidenceAssetIds.length > 0,
+              performed:
+                evidenceAssetIds.length > 0 &&
+                evidenceUsed.length > 0 &&
+                photosAnalyzed > 0 &&
+                !reportsNoVision &&
+                String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true",
+              photoCount: evidenceAssetIds.length,
+              photosAnalyzed,
+              provider: response.provider || "assistant",
+              providerLabel: response.providerLabel || "AI IPM photo review",
+              confidence: String(parsed.visualConfidence || "low").toLowerCase(),
+              quality: String(parsed.imageQuality || "limited").toLowerCase(),
+              evidenceUsed,
+              limitations
+            },
+            assistantMethodIds: response.methodIds || [],
+            assistantSourceIds: response.sourceIds || [],
+            assistantCitations: response.citations || []
+          };
+        }
       }}
       formHeader={({ growId, facilityId }) => (
-        <MediaEvidencePicker
-          maxPhotos={10}
-          allowVideo
-          maxVideoSeconds={30}
-          purpose="ipm"
-          sourceContext={{
-            growId: growId || undefined,
-            facilityId: facilityId || undefined
-          }}
-          value={evidenceAssets}
-          onChange={setEvidenceAssets}
-        />
+        <View style={styles.evidenceSection}>
+          <Text style={styles.evidenceTitle}>Scout photos and video</Text>
+          <Text style={styles.evidenceGuidance}>
+            Best set: one whole-plant photo, the damage pattern, sharp leaf tops and
+            undersides, and a macro of the organism or sign. Include a dated sticky trap
+            or short video when movement matters. The result will say whether photo pixels
+            were actually analyzed.
+          </Text>
+          <MediaEvidencePicker
+            maxPhotos={10}
+            allowVideo
+            maxVideoSeconds={30}
+            purpose="ipm"
+            sourceContext={{
+              growId: growId || undefined,
+              facilityId: facilityId || undefined
+            }}
+            value={evidenceAssets}
+            onChange={setEvidenceAssets}
+          />
+        </View>
       )}
       fields={[
-        { key: "pestSeen", label: "Pest or organism seen", defaultValue: "none" },
-        { key: "leafDamage", label: "Leaf damage pattern", defaultValue: "stippling" },
+        {
+          key: "cropContext",
+          label: "Crop and stage",
+          defaultValue: "",
+          section: "1. Scout area and spread",
+          placeholder: "Example: tomato, early fruiting",
+          helpText:
+            "Use the selected grow when attached; otherwise enter only what you know."
+        },
+        {
+          key: "scoutLocation",
+          label: "Scout location",
+          defaultValue: "",
+          placeholder: "Example: tent 1, north bench, lower canopy",
+          helpText: "Name the room, zone, bench, canopy level, or outdoor area."
+        },
+        {
+          key: "plantsChecked",
+          label: "Plants checked",
+          defaultValue: "",
+          keyboardType: "numeric",
+          placeholder: "Leave blank if not counted"
+        },
+        {
+          key: "plantsAffected",
+          label: "Plants affected",
+          defaultValue: "",
+          keyboardType: "numeric",
+          placeholder: "Leave blank if not counted"
+        },
+        {
+          key: "distribution",
+          label: "Where symptoms occur",
+          defaultValue: "",
+          placeholder: "Scattered, one edge, lower leaves, new growth, whole plant",
+          helpText: "Describe the pattern across plants and within each plant."
+        },
+        {
+          key: "progression",
+          label: "Progression since last check",
+          defaultValue: "",
+          placeholder: "New, stable, slowly spreading, rapidly spreading, improving",
+          helpText: "Include the time between checks when known."
+        },
+        {
+          key: "pestSeen",
+          label: "Pest or organism seen",
+          defaultValue: "",
+          section: "2. Inspect the evidence",
+          placeholder:
+            "Not confirmed, or describe body shape, color, movement, eggs, webbing",
+          helpText: "Do not name a pest from damage alone. Record what was directly seen."
+        },
+        {
+          key: "leafDamage",
+          label: "Damage or symptom pattern",
+          defaultValue: "",
+          required: true,
+          placeholder:
+            "Stippling, silvering, holes, trails, spots, residue, wilt, webbing",
+          helpText:
+            "Describe color, shape, location, residue, frass, eggs, insects, or fungal growth."
+        },
         {
           key: "undersideInspection",
           label: "Underside inspection",
-          defaultValue: "checked with loupe"
+          defaultValue: "",
+          placeholder: "Not checked, clear, eggs present, moving specks, residue",
+          helpText: "State what was inspected and what was actually found."
+        },
+        {
+          key: "magnification",
+          label: "Magnification used",
+          defaultValue: "",
+          placeholder: "None, 10x loupe, 30x loupe, microscope"
         },
         {
           key: "stickyTrapCount",
           label: "Sticky trap count",
-          defaultValue: "4",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          placeholder: "Leave blank if no dated count"
+        },
+        {
+          key: "trapContext",
+          label: "Trap context",
+          defaultValue: "",
+          placeholder: "Trap color, zone, hours/days exposed, prior count",
+          helpText:
+            "A count is meaningful only with location, exposure time, and a comparison."
+        },
+        {
+          key: "environmentConditions",
+          label: "Environment and root-zone conditions",
+          defaultValue: "",
+          section: "3. Conditions and history",
+          placeholder:
+            "Temperature/RH with units, leaf wetness, airflow, watering/root notes",
+          helpText: "Record measurements; do not estimate values from photos."
+        },
+        {
+          key: "recentActions",
+          label: "Recent sprays, releases, sanitation, or changes",
+          defaultValue: "",
+          placeholder: "Product/action, date, label rate if already applied, response",
+          helpText: "This is history, not a request for a pesticide rate."
         },
         {
           key: "evidence",
-          label: "Evidence / notes, comma-separated",
+          label: "Direct evidence, comma-separated",
           defaultValue: "",
-          multiline: true
+          multiline: true,
+          placeholder:
+            "Observed facts only: two moving specks, fine webbing, 6 adults on dated trap"
         },
         {
           key: "additionalInformation",
-          label: "Additional IPM context or questions (optional)",
+          label: "Other context or question",
           defaultValue: "",
-          multiline: true
+          multiline: true,
+          placeholder:
+            "What changed, what you suspect, and what decision you need to make"
         }
       ]}
       buildPayload={(
@@ -191,14 +418,28 @@ export default function IpmScoutToolRoute() {
         commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         ...values,
-        evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
-        mediaEvidence: providerEvidencePayload(evidenceAssets).media
+        evidenceAssetIds: evidencePayload.evidenceAssetIds,
+        mediaEvidence: evidencePayload.media
       })}
       buildMetrics={(outputs) => [
+        {
+          key: "readiness",
+          label: "Scout readiness",
+          value: outputs.readiness?.status || "needs evidence",
+          detail: outputs.readiness?.summary || "Review missing checks below."
+        },
         { key: "issue", label: "Issue", value: outputs.suspectedIssue },
         { key: "organism", label: "Organism", value: outputs.suspectedOrganism },
         { key: "severity", label: "Severity", value: outputs.severity },
         { key: "confidence", label: "Confidence", value: outputs.confidence },
+        {
+          key: "affected",
+          label: "Plants affected",
+          value:
+            outputs.pressureSummary?.affectedPercent == null
+              ? "Not counted"
+              : `${outputs.pressureSummary.plantsAffected}/${outputs.pressureSummary.plantsChecked} (${outputs.pressureSummary.affectedPercent}%)`
+        },
         {
           key: "growpath-ai-answer",
           label: "GrowPath AI",
@@ -224,9 +465,14 @@ export default function IpmScoutToolRoute() {
         },
         {
           key: "media",
-          label: "Media reviewed",
-          value: `${outputs.mediaAnalysis?.photosAnalyzed || 0} photos; ${outputs.mediaAnalysis?.videosAnalyzed || 0} videos`,
-          detail: outputs.mediaAnalysis?.videoStatus || "No video attached"
+          label: "Photo pixels analyzed",
+          value: outputs.mediaAnalysis?.performed
+            ? `Yes — ${outputs.mediaAnalysis.photosAnalyzed || 0} photo(s)`
+            : "No",
+          detail:
+            outputs.mediaAnalysis?.providerLabel ||
+            outputs.mediaAnalysis?.status ||
+            "Manual evidence only"
         },
         {
           key: "record",
@@ -235,6 +481,17 @@ export default function IpmScoutToolRoute() {
         }
       ]}
       buildNotices={(outputs) => [
+        {
+          key: "photo-analysis-status",
+          severity: outputs.mediaAnalysis?.performed
+            ? ("info" as const)
+            : ("medium" as const),
+          message: outputs.mediaAnalysis?.performed
+            ? `${outputs.mediaAnalysis.providerLabel || "AI vision"} inspected ${outputs.mediaAnalysis.photosAnalyzed || 0} uploaded photo(s). Treat the visual result as evidence to verify, not an organism confirmation.`
+            : outputs.mediaAnalysis?.requested
+              ? "Photos are attached, but their pixels were not analyzed in this result. Use written observations or run the image-capable photo step again."
+              : "No photo pixels were analyzed. This scout uses only the structured observations you entered."
+        },
         ...(Array.isArray(outputs.warnings)
           ? outputs.warnings.map((message: string, index: number) => ({
               key: `warning-${index}`,
@@ -278,6 +535,43 @@ export default function IpmScoutToolRoute() {
                 message: `Missing information: ${outputs.gptVerification.missingInformation.join("; ")}`
               }
             ]
+          : []),
+        ...(Array.isArray(outputs.supportingEvidence) && outputs.supportingEvidence.length
+          ? [
+              {
+                key: "supporting-evidence",
+                severity: "info" as const,
+                message: `Evidence supporting the working hypothesis: ${outputs.supportingEvidence.join("; ")}`
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.counterEvidence) && outputs.counterEvidence.length
+          ? [
+              {
+                key: "local-counter-evidence",
+                severity: "info" as const,
+                message: `Counter-evidence or competing explanations: ${outputs.counterEvidence.join("; ")}`
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.missingInformation) && outputs.missingInformation.length
+          ? [
+              {
+                key: "local-missing-information",
+                severity: "medium" as const,
+                message: `Still needed: ${outputs.missingInformation.join("; ")}`
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.nextInspectionSteps) &&
+        outputs.nextInspectionSteps.length
+          ? [
+              {
+                key: "next-inspection-steps",
+                severity: "info" as const,
+                message: `Next checks: ${outputs.nextInspectionSteps.join("; ")}`
+              }
+            ]
           : [])
       ]}
       defaultLogTitle={(outputs) =>
@@ -310,7 +604,56 @@ export default function IpmScoutToolRoute() {
           .filter(Boolean)
           .join(" ")
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+      buildActions={({
+        outputs,
+        payload,
+        toolRun,
+        moduleRecord,
+        growId,
+        plantContext
+      }) => [
+        {
+          key: "ipm-decision-likely",
+          label: "Mark as Likely Match",
+          pendingLabel: "Saving...",
+          successMessage: "Saved as the working hypothesis—not a confirmed ID.",
+          onPress: () =>
+            recordIpmDecision({
+              decision: "accepted",
+              outputs,
+              toolRun,
+              moduleRecord
+            })
+        },
+        {
+          key: "ipm-decision-uncertain",
+          label: "Mark as Not Sure",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          successMessage:
+            "Saved as uncertain; gather the missing evidence before acting.",
+          onPress: () =>
+            recordIpmDecision({
+              decision: "uncertain",
+              outputs,
+              toolRun,
+              moduleRecord
+            })
+        },
+        {
+          key: "ipm-decision-rejected",
+          label: "Mark as Doesn't Match",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          successMessage: "Saved as rejected for future outcome review.",
+          onPress: () =>
+            recordIpmDecision({
+              decision: "rejected",
+              outputs,
+              toolRun,
+              moduleRecord
+            })
+        },
         {
           key: "create-ipm-task-plan",
           label: "Create IPM Task Plan",
@@ -356,3 +699,9 @@ export default function IpmScoutToolRoute() {
     />
   );
 }
+
+const styles = StyleSheet.create({
+  evidenceSection: { gap: 8 },
+  evidenceTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800" },
+  evidenceGuidance: { color: "#475569", lineHeight: 19 }
+});

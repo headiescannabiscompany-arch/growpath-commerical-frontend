@@ -14,6 +14,48 @@ When image analysis is available, request a whole-plant context photo, a photo s
 
 Every result must provide a discriminating follow-up question. Saved diagnoses, journal entries, tasks, attached evidence, and user-confirmed outcome feedback remain linked to the selected grow and plant.
 
+## IPM Scout
+
+IPM Scout is a crop-neutral observation and decision workflow. A grow or facility adds
+history, plant scope, logs, tasks, and outcome tracking, but the structured scout may be
+run without one. The form must start with unknown values rather than invented example
+observations.
+
+Collect crop/stage when known, scout zone, plants checked and affected, within-plant and
+across-plant distribution, progression over a stated interval, direct organism/sign
+observations, damage pattern, leaf-underside findings, magnification, dated trap count
+with location/exposure context, measured environment/root-zone conditions, recent
+actions, and media. A raw trap count without comparable placement and exposure is not a
+pressure trend.
+
+The local result ranks working hypotheses and exposes readiness, severity, supporting
+evidence, counter-evidence, competing candidates, missing information, contributing
+conditions, and discriminating next checks. It may offer only these treatment
+categories: monitor, isolate, remove damaged material, improve airflow, reduce leaf
+wetness, sanitation, sticky traps, biological control, mechanical removal, consult
+label/extension, and professional testing. It must not emit pesticide products or
+doses. Product, crop/site legality, label, safety, re-entry, and harvest restrictions
+remain separate checks after identity is sufficiently supported.
+
+The image-capable assistant and the GPT structured second opinion are distinct evidence
+steps. Carry the photo provider, count, quality, evidence used, and limitations into the
+saved scout. The structured GPT pass reviews that saved evidence but must say that it did
+not independently inspect photo or video pixels. Show GrowPath and GPT results together
+with a normalized agreement state.
+
+The user may mark the result as a likely working hypothesis, uncertain, or rejected.
+“Likely” never means confirmed identity. Save that decision with its timestamp in the
+ToolRun and IPM module record, then create comparable repeat-scout, treatment-decision,
+and outcome-review tasks when a grow or facility is attached.
+
+Runtime IPM outputs cite UC IPM's
+[Monitoring with Sticky Traps](https://ipm.ucanr.edu/agriculture/floriculture-and-ornamental-nurseries/monitoring-with-sticky-traps/)
+for comparable trap trends plus direct plant inspection, and Penn State Extension's
+[Designing a Scouting Plan](https://extension.psu.edu/high-tunnel-vegetable-crops-designing-a-scouting-plan)
+for standardized scouting and the limits of sticky cards for non-winged pests and
+unobserved life stages. These support the workflow, not a crop-independent treatment
+threshold or organism identification.
+
 ## Crop identity confirmation
 
 Species/crop identification suggestions remain drafts until the user presses an explicit confirmation action. Confirmation must write the common name, scientific name when known, cultivar separately, aliases, confirmation provenance, timestamp, and source tool run to the selected grow or plant. A grow-level confirmation also updates crop tags and interests so downstream diagnosis and crop-specific tool visibility can use the same identity. Never infer or persist a cultivar from appearance alone.

@@ -8,6 +8,8 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTask = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockCreateFacilityTask = jest.fn();
+const mockUpdateToolRun = jest.fn();
+const mockUpdateGrowpathModuleRecord = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -49,11 +51,13 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 });
 
 jest.mock("@/api/toolRuns", () => ({
-  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+  runCalculator: (...args: any[]) => mockRunCalculator(...args),
+  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
 }));
 
 jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
+  updateGrowpathModuleRecord: (...args: any[]) => mockUpdateGrowpathModuleRecord(...args)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -75,18 +79,55 @@ describe("IpmScoutToolRoute", () => {
         suspectedOrganism: "spider mites",
         severity: "medium",
         confidence: "moderate",
+        readiness: {
+          status: "ready_for_working_hypothesis",
+          summary: "Enough independent scout fields are present."
+        },
+        pressureSummary: {
+          plantsAffected: 2,
+          plantsChecked: 8,
+          affectedPercent: 25
+        },
+        supportingEvidence: ["Stippling was recorded."],
+        counterEvidence: ["No eggs were confirmed."],
+        missingInformation: ["dated sticky-trap comparison"],
+        nextInspectionSteps: ["Inspect leaf undersides at 30x."],
+        taskSuggestions: [
+          {
+            title: "Repeat IPM scout",
+            priority: "medium",
+            dueInDays: 3,
+            sourceStage: "ipm_inspection",
+            description: "Repeat underside inspection and comparable counts."
+          },
+          {
+            title: "Document IPM evidence and treatment decision",
+            priority: "medium",
+            dueInDays: 4,
+            sourceStage: "ipm_treatment_decision",
+            description: "Save photos, trap counts, and the selected treatment category."
+          },
+          {
+            title: "Review IPM outcome",
+            priority: "medium",
+            dueInDays: 7,
+            sourceStage: "ipm_outcome_review",
+            description: "Record whether the response worked and repeat the same count."
+          }
+        ],
         growPathAi: {
           answer:
             "GrowPath AI sees stippling and recommends confirming leaf undersides before treatment."
         },
         gptVerification: {
           status: "completed",
-          agreementStatus: "agreement",
-          providerLabel: "GPT-assisted media verification",
+          agreementStatus: "agrees",
+          providerLabel: "GPT structured IPM second opinion",
           answer:
             "GPT verification agrees mites are plausible but says to verify eggs or moving pests first."
         },
         mediaAnalysis: {
+          performed: true,
           photosAnalyzed: 2,
           videosAnalyzed: 0,
           videoStatus: "stored_for_follow_up; direct video interpretation is not enabled"
@@ -95,7 +136,19 @@ describe("IpmScoutToolRoute", () => {
       },
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
-    mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockCreateGrowpathModuleRecord.mockResolvedValue({
+      id: "module-record-1",
+      title: "IPM scout: possible spider mite pressure",
+      status: "active",
+      warnings: [],
+      recommendations: [],
+      limitations: [],
+      tags: ["ipm-scout"],
+      linkedTaskIds: [],
+      tasksToCreate: []
+    });
+    mockUpdateToolRun.mockResolvedValue({ id: "toolrun-1" });
+    mockUpdateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockSaveToolRunAndCreateTask.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -108,6 +161,22 @@ describe("IpmScoutToolRoute", () => {
     });
   });
 
+  it("starts unknown scout observations blank and explains the photo requirement", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    expect(screen.getByLabelText("IPM Scout Pest or organism seen").props.value).toBe("");
+    expect(screen.getByLabelText("IPM Scout Damage or symptom pattern").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("IPM Scout Underside inspection").props.value).toBe("");
+    expect(screen.getByLabelText("IPM Scout Sticky trap count").props.value).toBe("");
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Upload at least one clear photo before asking AI/)
+      ).toBeTruthy()
+    );
+  });
+
   it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {
     const screen = render(<IpmScoutToolRoute />);
 
@@ -116,9 +185,11 @@ describe("IpmScoutToolRoute", () => {
       "mites"
     );
     fireEvent.changeText(
-      screen.getByLabelText("IPM Scout Evidence / notes, comma-separated"),
+      screen.getByLabelText("IPM Scout Direct evidence, comma-separated"),
       "stippling, leaf underside specks"
     );
+    fireEvent.changeText(screen.getByLabelText("IPM Scout Plants checked"), "8");
+    fireEvent.changeText(screen.getByLabelText("IPM Scout Plants affected"), "2");
     fireEvent.press(screen.getByLabelText("Run IPM Scout"));
 
     await waitFor(() =>
@@ -127,7 +198,9 @@ describe("IpmScoutToolRoute", () => {
         expect.objectContaining({
           growId: "grow-1",
           pestSeen: "mites",
-          evidence: "stippling, leaf underside specks"
+          evidence: "stippling, leaf underside specks",
+          plantsChecked: "8",
+          plantsAffected: "2"
         })
       )
     );
@@ -146,8 +219,10 @@ describe("IpmScoutToolRoute", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("Agreement status")).toBeTruthy();
-    expect(screen.getByText("agreement")).toBeTruthy();
-    expect(screen.getByText("2 photos; 0 videos")).toBeTruthy();
+    expect(screen.getByText("agrees")).toBeTruthy();
+    expect(screen.getByText("Yes — 2 photo(s)")).toBeTruthy();
+    expect(screen.getByText("ready_for_working_hypothesis")).toBeTruthy();
+    expect(screen.getByText("2/8 (25%)")).toBeTruthy();
     expect(
       screen.getByText(/Save this ToolRun so the GrowPath AI scout answer and GPT review/)
     ).toBeTruthy();
@@ -241,6 +316,39 @@ describe("IpmScoutToolRoute", () => {
           ]
         })
       )
+    );
+  });
+
+  it("saves an uncertain user decision to both the ToolRun and IPM record", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Damage or symptom pattern"),
+      "fine stippling"
+    );
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    await waitFor(() => expect(mockCreateGrowpathModuleRecord).toHaveBeenCalled());
+
+    fireEvent.press(screen.getByText("Mark as Not Sure"));
+
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({
+          outputs: expect.objectContaining({
+            userDecision: expect.objectContaining({ value: "uncertain" })
+          })
+        })
+      )
+    );
+    expect(mockUpdateGrowpathModuleRecord).toHaveBeenCalledWith(
+      "module-record-1",
+      expect.objectContaining({
+        userDecision: "uncertain",
+        outcome: expect.objectContaining({ lastDecision: "uncertain" })
+      })
     );
   });
 });
