@@ -288,6 +288,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [ ] Verify iNaturalist terms and every image license before use; exclude noncommercial/all-rights-reserved media from copied commercial-product fixtures and never use the pack for model training.
 
 51. IPM and plant-diagnosis QA pack
+   - [x] Define a 252-record allocation across 41 disease, pest/beneficial-lookalike, and abiotic/root-zone case definitions, with at least two reviewed images required per record.
+   - [x] Add planning and strict validation for ETGU order, identical GrowPath/GPT evidence envelopes, disagreement persistence, linked-record write-backs, image rights, treatment-source cross-checks, and the no-invented-pesticide rule.
    - [ ] Build disease, pest/beneficial-lookalike, and abiotic-mimic cases with multiple images plus plant, stage, distribution, progression, environment, root-zone, measurements, diagnostic signs, alternatives, confirmation method, urgency, quarantine, scout, and response fields.
    - [ ] Preserve ETGU order: pattern, medium/root zone, environment, measured values, then cautious cause ranking.
    - [ ] Send the same reviewed evidence envelope to GrowPath and GPT, store both answers and disagreements, and link Plant, Grow, Log, ToolRun, Task, and Facility records when context exists.
