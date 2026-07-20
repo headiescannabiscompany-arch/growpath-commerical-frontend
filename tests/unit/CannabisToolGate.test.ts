@@ -1,6 +1,7 @@
 jest.mock("expo-router", () => ({
   Redirect: () => null,
   Stack: () => null,
+  useLocalSearchParams: () => ({}),
   usePathname: () => "/home/personal/tools"
 }));
 
@@ -40,6 +41,45 @@ describe("cannabis tool gate", () => {
     expect(
       canOpenCannabisTool("/home/personal/tools/harvest-readiness", {
         tier1: ["Cannabis"]
+      })
+    ).toBe(true);
+  });
+
+  it("gates legacy harvest aliases, genetics, and calendar routes", () => {
+    for (const pathname of [
+      "/home/personal/tools/harvest-estimator",
+      "/home/personal/tools/genetics-inventory",
+      "/home/personal/tools/auto-grow-calendar"
+    ]) {
+      expect(canOpenCannabisTool(pathname, { crops: ["Vegetables"] })).toBe(false);
+    }
+  });
+
+  it("allows a cannabis tool from structured grow context without guessing from its name", () => {
+    expect(
+      canOpenCannabisTool(
+        "/home/personal/tools/harvest-readiness",
+        { crops: ["Vegetables"] },
+        "hide",
+        {
+          id: "grow-cannabis",
+          name: "My garden",
+          growInterests: { crops: ["Cannabis"] }
+        } as any
+      )
+    ).toBe(true);
+    expect(
+      canOpenCannabisTool("/home/personal/tools/harvest-readiness", {}, "hide", {
+        id: "grow-name-only",
+        name: "Cannabis words only"
+      } as any)
+    ).toBe(false);
+  });
+
+  it("keeps crop identification general even when the submitted crop is cannabis", () => {
+    expect(
+      canOpenCannabisTool("/home/personal/tools/species-crop-id", {
+        crops: ["Vegetables"]
       })
     ).toBe(true);
   });

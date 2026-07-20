@@ -81,11 +81,15 @@ export const methodRegistry: GrowPathMethod[] = [
       "nextChecks",
       "discriminating follow-up question",
       "image analysis performed status",
+      "photo count and provider/model execution evidence",
+      "grow-optional draft crop identity from uploaded media",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
     ],
     [
       "Do not declare a nutrient deficiency from appearance alone.",
-      "Do not imply attached photos were visually analyzed by a text-only provider."
+      "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
+      "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
     ],
     ["plant-diagnosis", "ipm-scout", "ask-ai"]
   ),

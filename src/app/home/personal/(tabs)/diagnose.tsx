@@ -946,6 +946,17 @@ export default function DiagnoseRoute({
                         value: result.providerModel
                       }
                     ]
+                  : []),
+                ...(result.imageAnalysis?.requested
+                  ? [
+                      {
+                        key: "photo-analysis",
+                        label: "Photos analyzed",
+                        value: result.imageAnalysis.performed
+                          ? String(result.imageAnalysis.photoCount || 1)
+                          : "Not analyzed"
+                      }
+                    ]
                   : [])
               ]}
               inputs={{
@@ -1006,6 +1017,21 @@ export default function DiagnoseRoute({
                           "Attached photos were not visually analyzed.",
                         remediation:
                           "Use the written findings as preliminary triage only. Add detailed symptom notes or rerun when photo analysis is available."
+                      }
+                    ]
+                  : []),
+                ...(result.imageAnalysis?.performed
+                  ? [
+                      {
+                        key: "image-analysis-performed",
+                        severity: "info" as const,
+                        message: `${result.imageAnalysis.photoCount || 1} submitted photo${
+                          Number(result.imageAnalysis.photoCount || 1) === 1
+                            ? " was"
+                            : "s were"
+                        } inspected by the image-capable diagnosis provider.`,
+                        remediation:
+                          "Compare the listed visible evidence and counter-evidence with the plant in person; a photo result remains cautious triage, not a lab confirmation."
                       }
                     ]
                   : []),

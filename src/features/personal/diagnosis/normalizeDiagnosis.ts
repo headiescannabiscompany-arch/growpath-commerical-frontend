@@ -26,6 +26,8 @@ export type NormalizedDiagnosis = {
     requested?: boolean;
     performed?: boolean;
     photoCount?: number;
+    provider?: string;
+    providerModel?: string;
     reason?: string;
   };
   verification?: {

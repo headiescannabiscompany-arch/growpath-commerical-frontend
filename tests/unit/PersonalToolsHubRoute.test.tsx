@@ -89,6 +89,10 @@ describe("personal tools hub", () => {
     expect(screen.getByText("Environment Review")).toBeTruthy();
     expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
     expect(screen.getByText("Soil & Nutrient Science")).toBeTruthy();
+    expect(screen.getAllByText("No AI credits").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Grow optional").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^Bring: /).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^You get: /).length).toBeGreaterThan(0);
     expect(screen.getByLabelText("link-/home/personal/tools/npk")).toBeTruthy();
     expect(screen.getByLabelText("link-/home/personal/tools/soil-builder")).toBeTruthy();
     expect(screen.queryByText("Nutrient Chemistry")).toBeNull();
@@ -103,6 +107,7 @@ describe("personal tools hub", () => {
     expect(screen.queryByText("Soil & Nutrient Batch Planner")).toBeNull();
     expect(screen.queryByText("Reports & Export")).toBeNull();
     expect(screen.queryByText("Bud Rot Risk")).toBeNull();
+    expect(screen.queryByText("Harvest Readiness Calculator")).toBeNull();
   });
 
   it("keeps the harvest calculator in Tools for cannabis growers", () => {

@@ -16,7 +16,8 @@ import {
   extractIngredientLabel,
   listProductIngredients,
   updateProductIngredient,
-  type ProductIngredient
+  type ProductIngredient,
+  type SourceRecord
 } from "@/api/productIngredients";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -91,6 +92,28 @@ function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function normalizeSourceType(value: string): NonNullable<SourceRecord["sourceType"]> {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  const allowed: NonNullable<SourceRecord["sourceType"]>[] = [
+    "extension",
+    "federal",
+    "academic",
+    "api",
+    "manufacturer_label",
+    "manufacturer",
+    "user_entered",
+    "growpath_verified",
+    "ai_assisted",
+    "other"
+  ];
+  return allowed.includes(normalized as NonNullable<SourceRecord["sourceType"]>)
+    ? (normalized as NonNullable<SourceRecord["sourceType"]>)
+    : "other";
+}
+
 function extractedNumber(data: any, keys: string[]) {
   for (const key of keys) {
     const value = key.split(".").reduce((current, part) => current?.[part], data);
@@ -138,12 +161,13 @@ function fromItem(item?: ProductIngredient | null): Draft {
 function payloadFromDraft(draft: Draft) {
   const sourceName = draft.sourceName.trim();
   const sourceUrl = draft.sourceUrl.trim();
-  const sourceRecords =
+  const sourceType = normalizeSourceType(draft.sourceType || "user_entered");
+  const sourceRecords: SourceRecord[] =
     sourceName || sourceUrl || draft.citation.trim()
       ? [
           {
             sourceName: sourceName || draft.name.trim(),
-            sourceType: draft.sourceType.trim() || "user_entered",
+            sourceType,
             url: sourceUrl,
             citation: draft.citation.trim(),
             license: draft.license.trim(),
@@ -173,7 +197,7 @@ function payloadFromDraft(draft: Draft) {
     photoUrl: draft.photoUrl.trim(),
     applicationNotes: draft.applicationNotes.trim(),
     micronutrientNotes: draft.micronutrientNotes.trim(),
-    sourceType: draft.sourceType.trim() || "user_entered",
+    sourceType,
     confidence: draft.confidence,
     sourceUrl,
     sourceRecords,
@@ -247,7 +271,9 @@ export default function IngredientLibraryRoute() {
       const payload = {
         ...payloadFromDraft(draft),
         evidenceAssetIds: uploadedEvidence.map((asset) => asset._id || asset.id),
-        photoUrls: uploadedEvidence.map((asset) => asset.durableUrl).filter(Boolean),
+        photoUrls: uploadedEvidence
+          .map((asset) => asset.durableUrl)
+          .filter((url): url is string => Boolean(url)),
         labelExtraction,
         labelVerifiedByUser,
         labelVerifiedAt: labelVerifiedByUser ? new Date().toISOString() : null

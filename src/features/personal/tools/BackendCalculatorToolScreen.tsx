@@ -9,7 +9,10 @@ import {
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
-import { askPersonalAssistant } from "@/api/personalAssistant";
+import {
+  askPersonalAssistant,
+  type PersonalAssistantResponse
+} from "@/api/personalAssistant";
 import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
@@ -45,6 +48,8 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
+  growOptional?: boolean;
+  noGrowContextMessage?: string;
   backFallbackHref?: string;
   feedRouteKey?: string;
   formHeader?:
@@ -108,8 +113,37 @@ type BackendCalculatorToolScreenProps = {
     buttonLabel?: string;
     clearUnfilled?: boolean;
     evidenceAssetIds?: () => string[];
+    isReady?: () => boolean;
+    notReadyMessage?: string;
     buildMessage: (context: { growId: string; plantId: string }) => string;
+    runAfterPrefill?: boolean;
+    buildPayloadMetadata?: (context: {
+      response: PersonalAssistantResponse;
+      parsed: Record<string, any>;
+      evidenceAssetIds: string[];
+    }) => Record<string, any>;
   };
+};
+
+const RUN_LABELS: Record<string, string> = {
+  "auto-grow-calendar": "Build Calendar",
+  "clone-rooting": "Review Rooting",
+  "crop-steering-project": "Review Steering Plan",
+  "dry-amendment-mix": "Calculate Blend",
+  "dry-cure-guard": "Check Dry / Cure Risk",
+  "genetics-inventory": "Review Genetics",
+  "harvest-readiness": "Estimate Readiness",
+  "ipm-scout": "Analyze Scout",
+  "nutrient-source-comparison": "Compare Sources",
+  "ph-ec-check": "Check pH / EC",
+  "pheno-hunt": "Compare Phenotypes",
+  "run-comparison": "Compare Runs",
+  "soil-builder": "Build Soil Mix",
+  "soil-nutrient-batch": "Build Production Batch",
+  "species-crop-id": "Review Entered Identity",
+  "stress-test": "Score Recovery",
+  "tissue-culture": "Review TC Batch",
+  "topdress-plan": "Build Topdress Plan"
 };
 
 function coerceParam(value?: string | string[]) {
@@ -167,6 +201,8 @@ export default function BackendCalculatorToolScreen({
   toolKey,
   title,
   subtitle,
+  growOptional = false,
+  noGrowContextMessage,
   backFallbackHref = "/home/personal/tools",
   feedRouteKey,
   formHeader,
@@ -215,6 +251,31 @@ export default function BackendCalculatorToolScreen({
     mode: entitlements.mode,
     longContent: true
   });
+  const aiPrefillReady = aiPrefill?.isReady?.() ?? true;
+  const experience = feature?.experience;
+  const runLabel = RUN_LABELS[toolKey] || "Calculate Result";
+  const experienceMode = experience
+    ? {
+        ai: "AI analyzes the supplied evidence.",
+        ai_assisted:
+          "AI can help fill evidence, but the final result is calculated from the values you review.",
+        calculated:
+          "The result is calculated from the measurements and records you enter.",
+        guided: "The tool turns the information you enter into a reviewable workflow.",
+        library: "The tool creates reusable records for other GrowPath workflows."
+      }[experience.mode]
+    : aiPrefill
+      ? "AI prefill is optional; the final result is calculated from the values you review."
+      : "The result is calculated from the measurements and records you enter.";
+  const aiCreditMessage = experience
+    ? experience.aiCredits === "required"
+      ? "This workflow uses AI credits."
+      : experience.aiCredits === "optional"
+        ? "AI credits are used only when you run the AI step. The calculator itself does not use an AI credit."
+        : "This workflow does not use AI credits."
+    : aiPrefill
+      ? "AI credits are used only when you choose the AI prefill step."
+      : "The calculator does not use AI credits.";
 
   const initialValues = useMemo(
     () =>
@@ -234,14 +295,16 @@ export default function BackendCalculatorToolScreen({
   const [feedback, setFeedback] = useState("");
   const [assistantBriefText, setAssistantBriefText] = useState("");
   const [prefilling, setPrefilling] = useState(false);
+  const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
 
   React.useEffect(() => {
+    if (locked) return;
     let active = true;
     listPersonalGrows()
       .then((grows) => {
         if (!active) return;
         setAvailableGrows(grows);
-        if (!routeGrowId && grows.length === 1) {
+        if (!growOptional && !routeGrowId && grows.length === 1) {
           setGrowId(String(grows[0].id || (grows[0] as any)._id || ""));
         }
       })
@@ -251,7 +314,7 @@ export default function BackendCalculatorToolScreen({
     return () => {
       active = false;
     };
-  }, [routeGrowId]);
+  }, [growOptional, locked, routeGrowId]);
 
   function updateValue(key: string, value: string) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -263,20 +326,24 @@ export default function BackendCalculatorToolScreen({
   }
 
   async function prefillWithAI() {
-    if (!aiPrefill || !growId || prefilling) return;
+    if (!aiPrefill || !aiPrefillReady || (!growId && !growOptional) || prefilling) return;
     setPrefilling(true);
     setFeedback("");
     try {
+      const evidenceAssetIds = aiPrefill.evidenceAssetIds?.() || [];
       const response = await askPersonalAssistant({
-        growId,
+        growId: growId || undefined,
         plantId: plantContext.plantId || undefined,
-        evidenceAssetIds: aiPrefill.evidenceAssetIds?.(),
+        evidenceAssetIds,
         context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
         message: aiPrefill.buildMessage({
           growId,
           plantId: plantContext.plantId || ""
         })
       });
+      if (!response?.success || !response.reply) {
+        throw new Error("AI did not return an identification result.");
+      }
       const raw = String(response.reply || "");
       const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
       const parsed = JSON.parse(match?.[1] || raw.slice(raw.indexOf("{")));
@@ -290,21 +357,31 @@ export default function BackendCalculatorToolScreen({
               : JSON.stringify(parsed[field.key], null, 2)
           ])
       );
-      setValues((current) =>
-        Object.fromEntries(
-          fields.map((field) => [
-            field.key,
-            next[field.key] ?? (aiPrefill.clearUnfilled ? "" : current[field.key] || "")
-          ])
-        )
+      const resolvedValues = Object.fromEntries(
+        fields.map((field) => [
+          field.key,
+          next[field.key] ?? (aiPrefill.clearUnfilled ? "" : values[field.key] || "")
+        ])
       );
-      setFeedback(
-        `AI filled ${Object.keys(next).length} field(s) from grow records. Review before calculating.${
-          response.missingInformation?.length
-            ? ` Optional missing details: ${response.missingInformation.join(", ")}.`
-            : ""
-        }`
-      );
+      const metadata =
+        aiPrefill.buildPayloadMetadata?.({
+          response,
+          parsed,
+          evidenceAssetIds
+        }) || {};
+      setValues(resolvedValues);
+      setAiPrefillPayload(metadata);
+      if (aiPrefill.runAfterPrefill) {
+        await calculateWithValues(resolvedValues, metadata);
+      } else {
+        setFeedback(
+          `AI filled ${Object.keys(next).length} field(s) from available evidence. Review before calculating.${
+            response.missingInformation?.length
+              ? ` Optional missing details: ${response.missingInformation.join(", ")}.`
+              : ""
+          }`
+        );
+      }
     } catch (error: any) {
       setFeedback(error?.message || "AI could not prefill this workflow.");
     } finally {
@@ -313,22 +390,44 @@ export default function BackendCalculatorToolScreen({
   }
 
   const payload = useMemo(
-    () =>
-      buildPayload(values, {
+    () => ({
+      ...buildPayload(values, {
         growId,
         facilityId,
         commercialAccountId,
         plantContext
       }),
-    [buildPayload, commercialAccountId, facilityId, growId, plantContext, values]
+      ...aiPrefillPayload
+    }),
+    [
+      aiPrefillPayload,
+      buildPayload,
+      commercialAccountId,
+      facilityId,
+      growId,
+      plantContext,
+      values
+    ]
   );
 
-  async function calculate() {
+  async function calculateWithValues(
+    submittedValues: Record<string, string>,
+    metadata: Record<string, any> = aiPrefillPayload
+  ) {
     if (running) return;
     setRunning(true);
     setFeedback("");
     try {
-      const response = await runCalculator<Record<string, any>>(tool, payload);
+      const submittedPayload = {
+        ...buildPayload(submittedValues, {
+          growId,
+          facilityId,
+          commercialAccountId,
+          plantContext
+        }),
+        ...metadata
+      };
+      const response = await runCalculator<Record<string, any>>(tool, submittedPayload);
       setOutputs(response.outputs);
       setToolRun(response.toolRun);
       const modulePayload = buildModuleRecordInput({
@@ -336,11 +435,15 @@ export default function BackendCalculatorToolScreen({
         title: defaultLogTitle(response.outputs),
         growId,
         plantId: plantContext.plantId,
-        cropProfileId: response.toolRun?.cropProfileId || payload.cropProfileId || null,
-        cropIdentity: response.toolRun?.cropIdentity || payload.cropIdentity || null,
+        cropProfileId:
+          response.toolRun?.cropProfileId || submittedPayload.cropProfileId || null,
+        cropIdentity:
+          response.toolRun?.cropIdentity || submittedPayload.cropIdentity || null,
         selectedPlantContext:
-          response.toolRun?.selectedPlantContext || payload.selectedPlantContext || null,
-        inputs: payload,
+          response.toolRun?.selectedPlantContext ||
+          submittedPayload.selectedPlantContext ||
+          null,
+        inputs: submittedPayload,
         outputs: response.outputs,
         toolRun: response.toolRun
       });
@@ -366,6 +469,10 @@ export default function BackendCalculatorToolScreen({
     } finally {
       setRunning(false);
     }
+  }
+
+  async function calculate() {
+    await calculateWithValues(values);
   }
   const actions: ToolResultAction[] = [];
   if (outputs && growId) {
@@ -493,11 +600,52 @@ export default function BackendCalculatorToolScreen({
             railMode={bannerPolicy.railMode}
           />
         ) : null}
+        <View style={styles.guidanceCard}>
+          <Text style={styles.resultTitle}>How this tool works</Text>
+          <Text style={styles.guidanceText}>{experienceMode}</Text>
+          <Text style={styles.guidanceText}>{aiCreditMessage}</Text>
+          {experience ? (
+            <>
+              <Text style={styles.guidanceText}>
+                <Text style={styles.guidanceStrong}>Bring: </Text>
+                {experience.inputSummary}
+              </Text>
+              <Text style={styles.guidanceText}>
+                <Text style={styles.guidanceStrong}>You get: </Text>
+                {experience.outputSummary}
+              </Text>
+            </>
+          ) : null}
+          <Text style={styles.guidanceText}>
+            A successful run is saved to Saved Runs. Attach a grow to also enable
+            grow-log, task, and plant-history actions.
+          </Text>
+        </View>
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
         {availableGrows.length ? (
           <View style={styles.growPicker}>
-            <Text style={styles.label}>Select grow</Text>
+            <Text style={styles.label}>
+              {growOptional ? "Attach to a grow (optional)" : "Select grow"}
+            </Text>
+            {growOptional ? (
+              <Text style={styles.guidanceText}>
+                Identification works without a grow. Attach one only to save the result,
+                create tasks, or use plant history.
+              </Text>
+            ) : null}
             <View style={styles.growPickerRow}>
+              {growOptional ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Use crop identification without a grow"
+                  onPress={() => setGrowId("")}
+                  style={[styles.growPill, !growId && styles.growPillOn]}
+                >
+                  <Text style={[styles.growPillText, !growId && styles.growPillTextOn]}>
+                    No grow
+                  </Text>
+                </Pressable>
+              ) : null}
               {availableGrows.map((grow, index) => {
                 const id = String(grow.id || (grow as any)._id || "");
                 if (!id) return null;
@@ -520,34 +668,53 @@ export default function BackendCalculatorToolScreen({
               })}
             </View>
           </View>
+        ) : !growId && growOptional ? (
+          <Text style={styles.feedback}>
+            No grow is required. Upload photos or enter what you know to identify the
+            crop.
+          </Text>
         ) : !growId ? (
           <Text style={styles.feedback}>
             Create a grow first, then return here to run and save this tool.
           </Text>
         ) : null}
-        <ToolPlantContextPicker
-          plants={plantContext.plants}
-          plantId={plantContext.plantId}
-          selectedPlant={plantContext.selectedPlant}
-          onSelect={plantContext.setPlantId}
-        />
+        {growId || !growOptional ? (
+          <ToolPlantContextPicker
+            plants={plantContext.plants}
+            plantId={plantContext.plantId}
+            selectedPlant={plantContext.selectedPlant}
+            onSelect={plantContext.setPlantId}
+          />
+        ) : null}
 
         {aiPrefill ? (
           <View style={styles.guidanceCard}>
-            <Text style={styles.resultTitle}>AI grow-context prefill</Text>
-            <Text style={styles.guidanceText}>
-              AI will use saved grow and plant evidence to fill every supported field. You
-              can add or correct anything before running the tool.
+            <Text style={styles.resultTitle}>
+              {growOptional ? "AI photo identification" : "AI grow-context prefill"}
             </Text>
+            <Text style={styles.guidanceText}>
+              {growOptional
+                ? "AI can inspect uploaded photos and use an attached grow or plant as optional context. Review and confirm every identification."
+                : "AI will use saved grow and plant evidence to fill every supported field. You can add or correct anything before running the tool."}
+            </Text>
+            {!aiPrefillReady && aiPrefill.notReadyMessage ? (
+              <Text style={styles.feedback}>{aiPrefill.notReadyMessage}</Text>
+            ) : null}
             <Pressable
               accessibilityRole="button"
-              disabled={!growId || prefilling}
-              style={styles.secondaryButton}
+              disabled={!aiPrefillReady || (!growId && !growOptional) || prefilling}
+              style={[
+                styles.secondaryButton,
+                (!aiPrefillReady || (!growId && !growOptional) || prefilling) &&
+                  styles.disabled
+              ]}
               onPress={prefillWithAI}
             >
               <Text style={styles.secondaryButtonText}>
                 {prefilling
-                  ? "Reviewing grow..."
+                  ? growOptional
+                    ? "Analyzing photos..."
+                    : "Reviewing grow..."
                   : aiPrefill.buttonLabel || "Fill with AI"}
               </Text>
             </Pressable>
@@ -604,13 +771,12 @@ export default function BackendCalculatorToolScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Run ${title}`}
+          accessibilityHint={runLabel}
           disabled={running}
           onPress={calculate}
           style={[styles.button, running && styles.disabled]}
         >
-          <Text style={styles.buttonText}>
-            {running ? "Calculating..." : "Calculate"}
-          </Text>
+          <Text style={styles.buttonText}>{running ? "Working..." : runLabel}</Text>
         </Pressable>
 
         {bannerPolicy.middle ? (
@@ -643,7 +809,9 @@ export default function BackendCalculatorToolScreen({
             actions={actions}
             feedback={feedback}
             contextMessage={
-              growId ? undefined : "Select a grow to enable log and task actions."
+              growId
+                ? undefined
+                : noGrowContextMessage || "Select a grow to enable log and task actions."
             }
             copyPayload={{ tool, input: payload, output: outputs }}
             footerMessage={
@@ -695,6 +863,7 @@ const styles = StyleSheet.create({
   },
   resultTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
   guidanceText: { color: "#334155", lineHeight: 19 },
+  guidanceStrong: { color: "#334155", fontWeight: "800" },
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#166534",

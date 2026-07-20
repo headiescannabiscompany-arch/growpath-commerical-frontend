@@ -1,4 +1,5 @@
 import type {
+  GrowpathModuleAgreementStatus,
   GrowpathModuleRecordInput,
   GrowpathModuleRecordType
 } from "@/api/growpathModules";
@@ -46,6 +47,23 @@ function compactStrings(values: unknown[]) {
     .filter(Boolean);
 }
 
+function normalizeAgreementStatus(
+  ...values: unknown[]
+): GrowpathModuleAgreementStatus | undefined {
+  const status = firstString(...values).toLowerCase();
+  if (status === "conflict") return "conflicts";
+  if (
+    status === "agrees" ||
+    status === "partially_agrees" ||
+    status === "conflicts" ||
+    status === "insufficient_data" ||
+    status === "not_run"
+  ) {
+    return status;
+  }
+  return undefined;
+}
+
 export function buildModuleRecordInput({
   tool,
   title,
@@ -85,12 +103,12 @@ export function buildModuleRecordInput({
       : undefined;
   const agreementStatus =
     recordType === "ipm_scout"
-      ? firstString(
+      ? normalizeAgreementStatus(
           outputs.agreementStatus,
           outputs.gptVerification?.agreementStatus,
           outputs.gptVerification?.agreement,
           outputs.verificationStatus
-        ) || undefined
+        )
       : undefined;
 
   return {

@@ -178,6 +178,24 @@ describe("DiagnoseRoute", () => {
         imageSupport: true
       }
     });
+    mockDiagnoseEvidence.mockResolvedValue({
+      id: "diagnosis-vision-1",
+      issueSummary: "Possible visual issue",
+      severity: 2,
+      details: {
+        likelyIssues: [{ evidence: ["Visible stippling on the upper leaf surface"] }],
+        recommendations: ["Compare both leaf surfaces."],
+        suggestedTags: [],
+        disclaimer: "Visual triage.",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photoCount: 2,
+          provider: "openai",
+          providerModel: "gpt-4o-mini"
+        }
+      }
+    });
     const screen = render(<DiagnoseRoute />);
     await waitForGrowContext(screen);
     await waitFor(() => expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled());
@@ -195,6 +213,11 @@ describe("DiagnoseRoute", () => {
       )
     );
     expect(mockAnalyzeDiagnosis).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.getByText(/2 submitted photos were inspected/i)).toBeTruthy()
+    );
+    expect(screen.getByText("Photos analyzed")).toBeTruthy();
+    expect(screen.getByText("2")).toBeTruthy();
   });
 
   it("lets users accept or reject diagnosis tags before saving to the grow journal", async () => {

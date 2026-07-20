@@ -1,9 +1,11 @@
-import React from "react";
-import { Redirect, Stack, usePathname } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
 import { useAuth } from "@/auth/AuthContext";
 import { flattenGrowInterests } from "@/utils/growInterests";
+import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { coerceParam, isCannabisGrow } from "@/features/grows/routeUtils";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -11,36 +13,86 @@ const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/pheno-matrix",
   "/home/personal/tools/dry-cure-guard",
   "/home/personal/tools/clone-rooting",
-  "/home/personal/tools/harvest-readiness"
+  "/home/personal/tools/genetics-inventory",
+  "/home/personal/tools/harvest-estimator",
+  "/home/personal/tools/harvest-readiness",
+  "/home/personal/tools/auto-grow-calendar"
 ]);
+
+export function isCannabisToolPath(pathname: string) {
+  return CANNABIS_TOOL_PATHS.has(pathname);
+}
+
+function hasCannabisLabel(values: unknown[]) {
+  return values.some((value) => /\b(cannabis|hemp)\b/i.test(String(value || "")));
+}
 
 export function canOpenCannabisTool(
   pathname: string,
   growInterests: any,
-  cannabisVisibility?: string
+  cannabisVisibility?: string,
+  grow?: PersonalGrow | null,
+  accountPurpose?: unknown
 ) {
-  if (!CANNABIS_TOOL_PATHS.has(pathname)) return true;
+  if (!isCannabisToolPath(pathname)) return true;
   if (String(cannabisVisibility || "").toLowerCase() === "show") return true;
-  return flattenGrowInterests(growInterests).some(
-    (interest) => String(interest).toLowerCase() === "cannabis"
-  );
+  if (hasCannabisLabel(flattenGrowInterests(growInterests))) return true;
+  if (
+    hasCannabisLabel(Array.isArray(accountPurpose) ? accountPurpose : [accountPurpose])
+  ) {
+    return true;
+  }
+  return isCannabisGrow(grow);
 }
 
 export default function ToolsLayout() {
   const pathname = usePathname();
+  const params = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(params.growId);
   const auth = useAuth();
+  const [routeGrow, setRouteGrow] = useState<PersonalGrow | null | undefined>(
+    growId ? undefined : null
+  );
   const matchedTool = personalToolFeatures.find(
     (feature) => feature.href && pathname === feature.href
   );
 
+  useEffect(() => {
+    let active = true;
+    if (!growId || !isCannabisToolPath(pathname)) {
+      setRouteGrow(null);
+      return () => {
+        active = false;
+      };
+    }
+    setRouteGrow(undefined);
+    listPersonalGrows()
+      .then((grows) => {
+        if (!active) return;
+        setRouteGrow(
+          grows.find((grow) => String(grow.id || (grow as any)._id || "") === growId) ||
+            null
+        );
+      })
+      .catch(() => {
+        if (active) setRouteGrow(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [growId, pathname]);
+
   if (matchedTool && !isFeatureNavigable(matchedTool, { allowBetaSurfaces: true })) {
     return <Redirect href="/home/personal/tools" />;
   }
+  if (growId && isCannabisToolPath(pathname) && routeGrow === undefined) return null;
   if (
     !canOpenCannabisTool(
       pathname,
       auth.user?.growInterests,
-      auth.user?.contentControls?.cannabisVisibility
+      (auth.user as any)?.contentControls?.cannabisVisibility,
+      routeGrow,
+      (auth.user as any)?.accountPurpose
     )
   ) {
     return <Redirect href="/home/personal/tools" />;

@@ -3,7 +3,10 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
-import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTasks,
+  type LinkedTaskDraft
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function normalizePriority(
   value: unknown,
@@ -80,7 +83,7 @@ function runComparisonTaskPlan(outputs: Record<string, any>) {
   const worstRun = outputs.worstRun?.name || "review run";
   const sameCultivar = outputs.structuredSummary?.sameCultivar;
 
-  const tasks = [
+  const tasks: LinkedTaskDraft[] = [
     {
       title: "Record run comparison decisions",
       priority: "medium" as const,

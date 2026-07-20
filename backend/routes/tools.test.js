@@ -1059,6 +1059,7 @@ describe("Tools Router (tools.js)", () => {
         growId: "grow_1",
         projectName: "TC mother backup",
         batchNumber: "TC-001",
+        cropType: "cannabis",
         vessels: 20,
         contaminatedVessels: 5,
         fungusVessels: 1,
@@ -1341,6 +1342,59 @@ describe("Tools Router (tools.js)", () => {
     );
   });
 
+  test("identifies a cannabis flower draft without requiring a grow", async () => {
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const cropId = await authed(
+      request(app)
+        .post("/api/tools/species-crop-id")
+        .send({
+          userEnteredName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          commonNames: "Cannabis",
+          identificationNotes:
+            "Dense flower with visible pistils, resinous sugar leaves, and trichome coverage.",
+          userConfirmed: false,
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            photoCount: 1,
+            provider: "openai",
+            providerLabel: "OpenAI vision crop identity",
+            confidence: "high",
+            quality: "usable",
+            identifyingVisualTraits:
+              "Visible bracts, pistils, sugar leaves, and dense inflorescence structure."
+          }
+        })
+    );
+
+    expect(cropId.status).toBe(201);
+    expect(mockGrow.exists).not.toHaveBeenCalled();
+    expect(cropId.body.outputs).toMatchObject({
+      likelyCrop: "Cannabis",
+      scientificName: "Cannabis sativa",
+      confidence: "high",
+      userConfirmationRequired: true,
+      imageAnalysis: {
+        requested: true,
+        performed: true,
+        photoCount: 1,
+        provider: "openai",
+        providerLabel: "OpenAI vision crop identity",
+        confidence: "high",
+        quality: "usable"
+      },
+      cropProfileSuggestion: {
+        source: "ai_vision_draft"
+      }
+    });
+    expect(cropId.body.toolRun.growId).toBeNull();
+  });
+
   test("runs genetics inventory and harvest readiness tools", async () => {
     mockGrow.exists.mockResolvedValue(true);
     mockToolRun.create.mockImplementation((payload) => ({
@@ -1498,7 +1552,7 @@ describe("Tools Router (tools.js)", () => {
         unit: "lb",
         reorderAt: 2,
         cost: 12,
-        recipeUseRate: 1
+        recipeUseRate: 0.25
       })
     );
     const steering = await authed(
@@ -1551,6 +1605,8 @@ describe("Tools Router (tools.js)", () => {
     expect(inventory.body.outputs.reorderSuggestions[0]).toMatchObject({
       title: "Reorder Kelp meal"
     });
+    expect(inventory.body.outputs.recipeAvailability).toBe(4);
+    expect(inventory.body.outputs.costPerUse).toBe(3);
     expect(steering.status).toBe(201);
     expect(steering.body.outputs).toMatchObject({
       steeringIntent: "generative",

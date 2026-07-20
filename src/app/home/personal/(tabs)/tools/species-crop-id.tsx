@@ -84,7 +84,9 @@ export default function SpeciesCropIdToolRoute() {
       tool="species-crop-id"
       toolKey="species-crop-id"
       title="Species / Crop Identification"
-      subtitle="Use private grow context and media to suggest crop identity for diagnosis, nutrient, environment, and IPM context. AI suggestions always require user confirmation."
+      subtitle="Identify a crop from uploaded photos or entered traits. A grow is optional and only adds private history or a place to save the confirmed result."
+      growOptional
+      noGrowContextMessage="Identification is complete. Attach a grow only if you want to save it, log it, or create follow-up tasks."
       formHeader={({ growId }) => (
         <MediaEvidencePicker
           maxPhotos={10}
@@ -97,11 +99,49 @@ export default function SpeciesCropIdToolRoute() {
         />
       )}
       aiPrefill={{
-        buttonLabel: "Suggest crop identity from grow and media",
+        buttonLabel: "Identify Crop from Photos",
         clearUnfilled: true,
         evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        isReady: () => providerEvidencePayload(evidenceAssets).images.length > 0,
+        notReadyMessage: "Upload at least one photo before starting AI identification.",
+        runAfterPrefill: true,
         buildMessage: () =>
-          `Review the selected private grow/plant context and attached photos/video to suggest a crop identity. This may be cannabis. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","userConfirmed":"false","commonNames":"string","identificationNotes":"string"}. Never identify a cultivar/strain from appearance alone. Use "not confirmed" where species-level evidence is insufficient and leave scientificName blank when uncertain. userConfirmed must always be "false" because only the user can confirm. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`
+          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","userConfirmed":"false","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Use "not confirmed" only when crop-level evidence is insufficient, and leave scientificName blank when uncertain. userConfirmed must always be "false" because only the user can confirm. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
+        buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
+          const evidenceUsed = Array.isArray(response.evidenceUsed)
+            ? response.evidenceUsed
+            : [];
+          const limitations = Array.isArray(response.limitations)
+            ? response.limitations
+            : [];
+          const reportsNoVision = limitations.some((item) =>
+            /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
+              String(item)
+            )
+          );
+          const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+          return {
+            imageAnalysis: {
+              requested: evidenceAssetIds.length > 0,
+              performed:
+                evidenceAssetIds.length > 0 &&
+                evidenceUsed.length > 0 &&
+                photosAnalyzed > 0 &&
+                !reportsNoVision &&
+                String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true",
+              photoCount: evidenceAssetIds.length,
+              provider: response.provider || "assistant",
+              providerLabel: response.providerLabel || "AI crop identity review",
+              confidence: String(parsed.visualConfidence || "low").toLowerCase(),
+              quality: String(parsed.imageQuality || "limited").toLowerCase(),
+              identifyingVisualTraits: String(
+                parsed.identifyingVisualTraits || ""
+              ).trim(),
+              evidenceUsed,
+              limitations
+            }
+          };
+        }
       }}
       fields={[
         { key: "userEnteredName", label: "Plant or crop name", defaultValue: "" },
@@ -145,11 +185,37 @@ export default function SpeciesCropIdToolRoute() {
         { key: "scientific", label: "Scientific", value: outputs.scientificName || "-" },
         { key: "confidence", label: "Confidence", value: outputs.confidence },
         {
+          key: "vision",
+          label: "Photo analyzed",
+          value: outputs.imageAnalysis?.performed ? "Yes" : "No"
+        },
+        {
           key: "confirm",
           label: "Needs confirm",
           value: outputs.userConfirmationRequired ? "Yes" : "No"
         }
       ]}
+      buildNotices={(outputs) => {
+        const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+        return [
+          {
+            key: "image-analysis-status",
+            severity: outputs.imageAnalysis?.performed
+              ? ("info" as const)
+              : ("medium" as const),
+            message: outputs.imageAnalysis?.performed
+              ? `${outputs.imageAnalysis.providerLabel || "AI vision"} inspected the uploaded photo pixels. The result is still a draft until you confirm it.`
+              : outputs.imageAnalysis?.requested
+                ? "The uploaded photo pixels were not analyzed. Try again with the image-capable AI available, or enter visible traits manually."
+                : "No photo was analyzed. This result uses only the information entered in the form."
+          },
+          ...warnings.map((message: unknown, index: number) => ({
+            key: `warning-${index}`,
+            severity: "medium" as const,
+            message: String(message)
+          }))
+        ];
+      }}
       defaultLogTitle={(outputs) =>
         `Crop identity: ${outputs.likelyCrop || "unconfirmed crop"}`
       }
@@ -188,12 +254,14 @@ export default function SpeciesCropIdToolRoute() {
           userConfirmed: true as const
         };
 
+        if (!growId) return [];
+
         return [
           {
             key: "confirm-save-crop-identity",
             label: `Confirm & Save to ${target}`,
             pendingLabel: "Saving...",
-            disabled: !growId || invalidIdentity,
+            disabled: invalidIdentity,
             successMessage: `Confirmed crop identity saved to ${target.toLowerCase()}.`,
             onPress: async () => {
               if (plantContext.plantId) {
@@ -208,7 +276,6 @@ export default function SpeciesCropIdToolRoute() {
             label: "Create Crop Identity Tasks",
             variant: "secondary",
             pendingLabel: "Creating...",
-            disabled: !growId,
             successMessage: "Created crop identity tasks.",
             onPress: async () => {
               const result = await saveToolRunAndCreateTasks({

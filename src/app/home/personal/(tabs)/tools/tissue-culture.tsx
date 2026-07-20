@@ -250,6 +250,11 @@ export default function TissueCultureToolRoute() {
       }}
       fields={[
         { key: "projectName", label: "Project name", defaultValue: "TC Project" },
+        {
+          key: "cropType",
+          label: "Crop / species (leave blank if not established)",
+          defaultValue: ""
+        },
         { key: "batchNumber", label: "Batch number", defaultValue: "TC-001" },
         { key: "geneticsId", label: "Genetics ID", defaultValue: "" },
         { key: "motherBankId", label: "Mother-bank line ID", defaultValue: "" },
@@ -521,6 +526,7 @@ export default function TissueCultureToolRoute() {
         commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         projectName: values.projectName,
+        cropType: values.cropType || undefined,
         batchNumber: values.batchNumber,
         geneticsId: values.geneticsId,
         stage: values.stage,

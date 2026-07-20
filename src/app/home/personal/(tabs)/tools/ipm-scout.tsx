@@ -3,7 +3,10 @@ import React, { useState } from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
-import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTasks,
+  type LinkedTaskDraft
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -47,7 +50,7 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
-function ipmTaskPlan(outputs: Record<string, any>) {
+function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
   const planned = Array.isArray(outputs.taskSuggestions) ? outputs.taskSuggestions : [];
   const calendarMetadata = {
     allDay: true,

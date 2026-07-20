@@ -2753,7 +2753,9 @@ function calculateTissueCulture(input = {}) {
   const likelyFailureModes = [];
   const diagnosisTags = [];
   const explantType = String(input.explantType || input.explant || "node").toLowerCase();
-  const cropType = String(input.cropType || "cannabis").toLowerCase();
+  const cropType = String(
+    input.cropType || cropKeyFromInput(input) || "unspecified"
+  ).toLowerCase();
   const cannabisPreset =
     cropType === "cannabis"
       ? {
@@ -3623,7 +3625,42 @@ function calculateSpeciesCropIdentification(input = {}) {
   const commonNames = Array.from(
     new Set([commonName, ...parseList(input.commonNames)].filter(Boolean))
   );
-  const traits = parseList(input.traits || input.identificationNotes || input.notes);
+  const suppliedImageAnalysis =
+    input.imageAnalysis && typeof input.imageAnalysis === "object"
+      ? input.imageAnalysis
+      : {};
+  const imageAnalysis = {
+    requested: suppliedImageAnalysis.requested === true,
+    performed: suppliedImageAnalysis.performed === true,
+    photoCount: Number.isFinite(Number(suppliedImageAnalysis.photoCount))
+      ? Number(suppliedImageAnalysis.photoCount)
+      : 0,
+    provider: String(suppliedImageAnalysis.provider || "").trim() || null,
+    providerLabel: String(suppliedImageAnalysis.providerLabel || "").trim() || null,
+    confidence: ["high", "medium", "low"].includes(
+      String(suppliedImageAnalysis.confidence || "").toLowerCase()
+    )
+      ? String(suppliedImageAnalysis.confidence).toLowerCase()
+      : "low",
+    quality: ["usable", "limited", "unusable"].includes(
+      String(suppliedImageAnalysis.quality || "").toLowerCase()
+    )
+      ? String(suppliedImageAnalysis.quality).toLowerCase()
+      : "limited",
+    identifyingVisualTraits: String(
+      suppliedImageAnalysis.identifyingVisualTraits || ""
+    ).trim(),
+    evidenceUsed: parseList(suppliedImageAnalysis.evidenceUsed),
+    limitations: parseList(suppliedImageAnalysis.limitations)
+  };
+  const traits = [
+    input.traits,
+    input.identificationNotes,
+    input.notes,
+    imageAnalysis.identifyingVisualTraits
+  ]
+    .flatMap(parseList)
+    .filter(Boolean);
   const confirmed =
     input.userConfirmed === true ||
     String(input.userConfirmed || "").toLowerCase() === "true";
@@ -3635,24 +3672,42 @@ function calculateSpeciesCropIdentification(input = {}) {
     scientificName: scientificName || null,
     commonNames,
     cultivarOrStrain: cultivar || null,
-    confidence: confirmed ? "user_confirmed" : traits.length >= 3 ? "medium" : "low",
+    confidence: confirmed
+      ? "user_confirmed"
+      : imageAnalysis.performed
+        ? imageAnalysis.confidence
+        : traits.length >= 3
+          ? "medium"
+          : "low",
     confirmationRequired: !confirmed,
     userConfirmationRequired: !confirmed,
     recommendationContext,
+    imageAnalysis,
     cropProfileSuggestion: {
       commonName,
       scientificName: scientificName || null,
       commonNames,
       cultivarOrStrain: cultivar || null,
       traits,
-      source: confirmed ? "user_confirmed" : "user_entered"
+      source: confirmed
+        ? "user_confirmed"
+        : imageAnalysis.performed
+          ? "ai_vision_draft"
+          : "user_entered"
     },
-    warnings: confirmed
-      ? []
-      : ["Confirm crop identity before relying on crop-specific recommendations."],
+    warnings: [
+      ...(!confirmed
+        ? ["Confirm crop identity before relying on crop-specific recommendations."]
+        : []),
+      ...(imageAnalysis.requested && !imageAnalysis.performed
+        ? ["Uploaded photo pixels were not analyzed by the active provider."]
+        : [])
+    ],
     recommendations: [
       "Attach this identity to the plant or grow profile once confirmed.",
-      "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
+      imageAnalysis.performed
+        ? "Compare the visible flower, leaf, stem, and growth traits with another clear view before confirmation."
+        : "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
     ]
   };
 }
@@ -3994,6 +4049,10 @@ function calculatePersonalInventory(input = {}) {
   const quantity = Math.max(0, number(input.quantity ?? 0, "Quantity"));
   const reorderAt = Math.max(0, number(input.reorderAt ?? 0, "Reorder threshold"));
   const cost = Math.max(0, number(input.cost ?? 0, "Cost"));
+  const recipeUseRate =
+    input.recipeUseRate == null || input.recipeUseRate === ""
+      ? null
+      : Math.max(0, number(input.recipeUseRate, "Recipe use rate"));
   const lowStock = quantity <= reorderAt;
   return {
     name: input.name || "Inventory item",
@@ -4004,12 +4063,8 @@ function calculatePersonalInventory(input = {}) {
     lowStockWarnings: lowStock
       ? [`${input.name || "Item"} is at or below reorder threshold.`]
       : [],
-    recipeAvailability: input.recipeUseRate
-      ? Math.floor(quantity / Math.max(1, number(input.recipeUseRate, "Recipe use rate")))
-      : null,
-    costPerUse: input.recipeUseRate
-      ? Number((cost * number(input.recipeUseRate, "Recipe use rate")).toFixed(2))
-      : null,
+    recipeAvailability: recipeUseRate ? Math.floor(quantity / recipeUseRate) : null,
+    costPerUse: recipeUseRate ? Number((cost * recipeUseRate).toFixed(2)) : null,
     reorderSuggestions: lowStock
       ? [{ title: `Reorder ${input.name || "item"}`, dueInDays: 1, priority: "medium" }]
       : []

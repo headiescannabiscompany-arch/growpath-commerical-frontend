@@ -245,6 +245,18 @@
       {
         "file": "src/app/home/personal/(tabs)/tools/soil-nutrient-batch.tsx",
         "mustContain": "Redirect href=\"/home/commercial/tools/soil-nutrient-batch\""
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx",
+        "mustContain": "growOptional"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx",
+        "mustContain": "Identify Crop from Photos"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx",
+        "mustContain": "clear cannabis flower or harvested bud"
       }
     ]
   },

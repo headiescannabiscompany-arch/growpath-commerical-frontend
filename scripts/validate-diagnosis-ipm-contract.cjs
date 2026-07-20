@@ -109,6 +109,10 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["IPM follow-up tasks", /Create IPM Task Plan/],
   ["IPM treatment decision", /ipm_treatment_decision/],
   ["species screen route", /tool="species-crop-id"/],
+  ["grow-optional crop identity", /growOptional/],
+  ["one-step photo identification", /runAfterPrefill: true/],
+  ["cannabis flower recognition", /clear cannabis flower or harvested bud/],
+  ["honest image analysis status", /imageAnalysisPerformed/],
   ["explicit grow identity save", /savePersonalGrowCropIdentity/],
   ["explicit plant identity save", /savePersonalPlantCropIdentity/],
   ["explicit confirmation action", /Confirm & Save to/],
@@ -177,7 +181,7 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   [
     "species screen tests",
     speciesTest,
-    /creates crop identity tasks[\s\S]*explicitly confirms and saves/
+    /identifies a cannabis flower without requiring a grow[\s\S]*creates crop identity tasks[\s\S]*explicitly confirms and saves/
   ],
   [
     "organism/crop profile tests",

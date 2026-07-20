@@ -21,6 +21,15 @@ export type FeatureArea =
   | "integrations"
   | "business_production";
 
+export type ToolExperience = {
+  mode: "ai" | "ai_assisted" | "calculated" | "guided" | "library";
+  aiCredits: "never" | "optional" | "required";
+  grow: "not_needed" | "optional" | "required";
+  audience?: "general" | "cannabis_context" | "commercial";
+  inputSummary: string;
+  outputSummary: string;
+};
+
 export type FeatureDefinition = {
   key: string;
   title: string;
@@ -31,6 +40,7 @@ export type FeatureDefinition = {
   hubVisible?: boolean;
   acceptsGrowContext?: boolean;
   capabilityKey?: string;
+  experience?: ToolExperience;
   internalNote: string;
 };
 
@@ -93,7 +103,7 @@ export const personalFeatures = {
   }
 } as const satisfies Record<string, Omit<FeatureDefinition, "internalNote">>;
 
-export const personalToolFeatures = [
+export const personalToolFeatures: readonly FeatureDefinition[] = [
   {
     key: "tools.integrations",
     title: "Data Integrations",
@@ -139,6 +149,15 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/ppfd",
     acceptsGrowContext: true,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary: "A canopy PPFD map or average, light hours, and growth stage.",
+      outputSummary:
+        "DLI, hot/low spots, coverage spread, stage fit, and safer next checks."
+    },
     internalNote: "Measured-light calculation works; fixture modeling remains incomplete."
   },
   {
@@ -162,6 +181,16 @@ export const personalToolFeatures = [
     href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Verified product labels, amounts, units, batch volume, and water baseline.",
+      outputSummary:
+        "Elemental ppm, N-P-K ratio, mixing order, release timing, and warnings."
+    },
     internalNote:
       "Twenty-row recipe foundation exists; chemistry and measured-EC work remains."
   },
@@ -200,6 +229,16 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/ingredient-library",
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "library",
+      aiCredits: "never",
+      grow: "not_needed",
+      audience: "general",
+      inputSummary:
+        "Product labels, nutrient forms, source confidence, and optional evidence.",
+      outputSummary:
+        "Reusable ingredient records for mix builders, comparisons, and revisions."
+    },
     internalNote:
       "V1 release CRUD surface for user-entered ingredients with label N-P2O5-K2O, source confidence, favorites, and archive support."
   },
@@ -224,6 +263,16 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Measured temperature, humidity, leaf temperature, light, CO2, and stage.",
+      outputSummary:
+        "A rule-based environment review, conflicts, assumptions, and follow-up tasks."
+    },
     internalNote: "Rule-based ToolRun review is available without spending AI credits."
   },
   {
@@ -290,6 +339,16 @@ export const personalToolFeatures = [
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
+    experience: {
+      mode: "ai",
+      aiCredits: "required",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Clear whole-plant and close-up photos plus symptoms and measured conditions.",
+      outputSummary:
+        "Cautious issue candidates, visible evidence, counter-evidence, and next checks."
+    },
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -302,6 +361,16 @@ export const personalToolFeatures = [
     href: "/home/personal/ai",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
+    experience: {
+      mode: "ai",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "A question plus any selected grow, plant, records, or uploaded evidence.",
+      outputSummary:
+        "A context-aware answer with limitations and reviewable task or log drafts."
+    },
     internalNote:
       "Primary personal AI interface for grow-aware questions, task drafts, and log drafts."
   },
@@ -326,6 +395,16 @@ export const personalToolFeatures = [
     href: "/home/personal/tools/soil-builder",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Batch size, base media, compost, amendments, labels, and intended use.",
+      outputSummary:
+        "Scaled soil recipe, physical balance, release timing, risks, and rest plan."
+    },
     internalNote:
       "Approved beta soil/nutrient workflow wired to ToolRun, grow context, logs, tasks, and backend soil mix calculations."
   },
@@ -465,6 +544,16 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/ipm-scout",
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Scouting observations, traps, damage pattern, severity, and clear photos.",
+      outputSummary:
+        "Likely organism groups, uncertainty, discriminating checks, and inspection tasks."
+    },
     internalNote:
       "Approved beta IPM scouting workflow. It records cautious evidence and follow-up tasks without reckless pesticide dosing."
   },
@@ -477,6 +566,16 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/species-crop-id",
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "not_needed",
+      audience: "general",
+      inputSummary:
+        "One or more clear plant photos; a grow can be attached but is not required.",
+      outputSummary:
+        "A draft crop/species identity, visible traits, confidence, and better-photo guidance."
+    },
     internalNote:
       "Approved beta crop-context workflow. Regional invasive alerts stay out of current programming."
   },
@@ -490,6 +589,16 @@ export const personalToolFeatures = [
     href: "/home/personal/tools/harvest-readiness",
     hubVisible: true,
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "required",
+      audience: "cannabis_context",
+      inputSummary:
+        "Cannabis grow timing, maturity signals, goals, and sharp trichome photos.",
+      outputSummary:
+        "Photo usability, maturity estimate, uncertainty, retake guidance, and decision tasks."
+    },
     internalNote:
       "Approved beta harvest-readiness workflow. Keep the shared calculator visible in Personal Tools for cannabis-enabled users and link the same route contextually from cannabis grows."
   },
@@ -542,7 +651,7 @@ export const personalToolFeatures = [
     internalNote:
       "Inventory belongs to commercial and facility surfaces, not the personal tools hub."
   }
-] as const satisfies readonly FeatureDefinition[];
+];
 
 export function isFeatureNavigable(
   feature: Pick<FeatureDefinition, "status" | "href">,
