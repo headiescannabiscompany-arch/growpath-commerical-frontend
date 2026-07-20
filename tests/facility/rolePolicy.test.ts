@@ -12,6 +12,10 @@ describe("facility role write policy", () => {
     expect(manager.has(CAPABILITY_KEYS.TEAM_INVITE)).toBe(false);
     expect(manager.has(CAPABILITY_KEYS.TEAM_UPDATE_ROLE)).toBe(false);
     expect(manager.has(CAPABILITY_KEYS.TEAM_REMOVE)).toBe(false);
+    expect(can("OWNER", "TEAM_INVITE")).toBe(true);
+    expect(can("MANAGER", "TEAM_INVITE")).toBe(false);
+    expect(can("MANAGER", "TEAM_UPDATE_ROLE")).toBe(false);
+    expect(can("MANAGER", "TEAM_REMOVE")).toBe(false);
   });
 
   it("limits STAFF capabilities to tasks, logs, and read-only core records", () => {
