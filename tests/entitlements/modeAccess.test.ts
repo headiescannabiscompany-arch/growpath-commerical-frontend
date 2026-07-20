@@ -187,6 +187,30 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.mode).toBe("personal");
   });
 
+  it("does not replace authenticated local sessions on bare workspace routes", () => {
+    expect(
+      resolveLocalPreviewSession({
+        hostname: "localhost",
+        pathname: "/home/facility/dashboard",
+        search: ""
+      })
+    ).toBeNull();
+    expect(
+      resolveLocalPreviewSession({
+        hostname: "127.0.0.1",
+        pathname: "/home/commercial",
+        search: "?growId=real-grow-id"
+      })
+    ).toBeNull();
+    expect(
+      resolveLocalPreviewSession({
+        hostname: "localhost",
+        pathname: "/home/personal/tools",
+        search: ""
+      })
+    ).toBeNull();
+  });
+
   it("does not grant Commercial mode from a plan name alone", () => {
     expect(
       resolveEntitlementsMode(

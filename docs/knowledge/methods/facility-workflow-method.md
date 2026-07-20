@@ -12,6 +12,8 @@ Facility Forum reports may enter the shared platform moderation queue without ch
 
 Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, tasks, inventory, sensors, audit and compliance-style records. It is not the commercial storefront workspace and must not pretend to work without a selected facility.
 
+Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.
+
 Facility analytics are selected-facility scoped and record-backed. Task and training completion come from stored task outcomes; SOP compliance comes from applicable recorded steps; alerts come from explicit sensor/environment alert events; batches come from BatchCycle history. Room stability may be reported only when a room-linked environment event explicitly records an in-range or out-of-range state. Keep rooms with missing or ambiguous evidence in an unknown bucket rather than assuming stability.
 
 Sensor and controller integrations begin read-only. Store provider credentials only in encrypted backend fields and expose only configured/encrypted state, never secret values. Each connection must declare provider capabilities, connection status, structured errors, and last-sync state; an adapter is incomplete until it implements connection testing, device discovery, and data pulling. Control/setpoint writes require a separately reviewed future permission scope.

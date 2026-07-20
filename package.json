@@ -175,6 +175,10 @@
     "scheduler": "^0.27.0",
     "victory-native": "^41.20.2"
   },
+  "overrides": {
+    "brace-expansion@<=1.1.15": "1.1.16",
+    "brace-expansion@>=2.0.0 <2.1.2": "2.1.2"
+  },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@babel/parser": "^7.26.0",
