@@ -1,0 +1,1024 @@
+{
+  "schemaVersion": "growpath-living-soil-labs-commerce-qa-v1",
+  "masterItem": 52,
+  "status": "planning",
+  "environmentPolicy": {
+    "allowed": ["test", "staging"],
+    "productionAllowed": false,
+    "qaSeedNamespaceRequired": true
+  },
+  "brand": {
+    "name": "Living Soil Labs",
+    "slug": "living-soil-labs",
+    "recordStatus": "draft",
+    "storefrontStatus": "draft",
+    "publishReady": false,
+    "ownerApprovalStatus": "pending_owner_confirmation",
+    "currency": null,
+    "taxConfigurationStatus": "pending_owner_configuration",
+    "shippingConfigurationStatus": "pending_owner_configuration",
+    "checkoutProcessorStatus": "pending_test_configuration"
+  },
+  "applicationModule": {
+    "name": "Soil & Nutrient Batch Planner",
+    "workspace": "commercial",
+    "brandNameMayReplaceModuleName": false
+  },
+  "methodPresetPolicy": {
+    "approvedGrowPathMethodPresets": [
+      {
+        "presetId": "starter_3-3-3",
+        "labelRatio": "3-3-3"
+      },
+      {
+        "presetId": "veg_3-1-1",
+        "labelRatio": "3-1-1"
+      },
+      {
+        "presetId": "flower_2-6-4",
+        "labelRatio": "2-6-4"
+      },
+      {
+        "presetId": "ripen_0.5-3-3_last_week_if_needed",
+        "labelRatio": "0.5-3-3"
+      }
+    ],
+    "proposedProductRatiosMayReplaceMethodPresets": false,
+    "verifiedLabelRequiredBeforeProductClaim": true,
+    "verifiedFormulaRequiredBeforeProduction": true,
+    "compostAndBiologyUncertaintyRequired": true
+  },
+  "claimPolicy": {
+    "superiorityClaimsAllowedWithoutEvidence": false,
+    "performanceClaimsAllowedWithoutTrials": false,
+    "guaranteedAnalysisMayBeInferred": false,
+    "ingredientOrDensityValuesMayBeInvented": false,
+    "priceWeightInventoryOrTaxMayBeInvented": false,
+    "officialLabelSupports": [
+      "named label version",
+      "guaranteed analysis",
+      "legal and safety label text"
+    ],
+    "officialLabelDoesNotProve": [
+      "superiority",
+      "uptake",
+      "long-term effectiveness",
+      "future batch performance"
+    ],
+    "requiredClaimFields": [
+      "claimId",
+      "claimText",
+      "claimType",
+      "sourceIds",
+      "limitations",
+      "reviewedAt",
+      "approvedForPublication"
+    ]
+  },
+  "sourcePlan": [
+    {
+      "sourceId": "living_soil_labs_owner_record",
+      "runtimeSourceRegistryId": null,
+      "status": "pending_owner_record",
+      "trustedFor": [
+        "brand ownership",
+        "owned formula identity",
+        "owned merchandise identity"
+      ],
+      "notTrustedFor": [
+        "unverified guaranteed analysis",
+        "unmeasured shipping weights",
+        "product performance"
+      ],
+      "requirements": [
+        "owner confirmation",
+        "formula version or merchandise specification",
+        "review date"
+      ]
+    },
+    {
+      "sourceId": "official_product_label",
+      "runtimeSourceRegistryId": "official-product-label",
+      "status": "pending_documents",
+      "trustedFor": [
+        "named guaranteed analysis",
+        "directions",
+        "warnings",
+        "legal and safety label text"
+      ],
+      "notTrustedFor": ["superiority", "crop response", "future batch performance"],
+      "requirements": ["label version", "product and formula linkage", "review date"]
+    },
+    {
+      "sourceId": "credible_batch_lab_coa",
+      "runtimeSourceRegistryId": "credible-lab-coa",
+      "status": "pending_documents",
+      "trustedFor": ["named lab method, sample, batch, and date"],
+      "notTrustedFor": ["other lots", "future batches", "superiority"],
+      "requirements": [
+        "lab identity",
+        "method",
+        "sample and batch linkage",
+        "result date"
+      ]
+    },
+    {
+      "sourceId": "living_soil_labs_owner_media",
+      "runtimeSourceRegistryId": null,
+      "status": "pending_assets",
+      "trustedFor": ["owned product and merchandise appearance"],
+      "notTrustedFor": ["guaranteed analysis", "performance", "shipping weight"],
+      "requirements": [
+        "creator or ownership permission",
+        "product and variant linkage",
+        "attribution preference",
+        "review date"
+      ]
+    }
+  ],
+  "requiredProductFields": [
+    "productId",
+    "name",
+    "productType",
+    "status",
+    "storefrontStatus",
+    "publishReady",
+    "description",
+    "directions",
+    "warnings",
+    "claims",
+    "evidence",
+    "variants"
+  ],
+  "requiredVariantFields": [
+    "variantId",
+    "label",
+    "sizeValue",
+    "sizeUnit",
+    "sku",
+    "priceCents",
+    "currency",
+    "shippingWeight",
+    "shippingWeightUnit",
+    "inventoryCount",
+    "inventoryState",
+    "imageAssetIds"
+  ],
+  "requiredImageAssetFields": [
+    "assetId",
+    "sourceId",
+    "creator",
+    "rightsStatus",
+    "intendedUseApproved",
+    "localPath",
+    "sha256",
+    "productIds",
+    "variantIds",
+    "reviewedAt"
+  ],
+  "productDrafts": [
+    {
+      "productId": "lsl-penny-saver-soil",
+      "name": "Penny Saver Soil",
+      "productType": "soil",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-penny-saver-soil-1-cu-ft",
+          "label": "1 cu ft",
+          "sizeValue": 1,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-penny-saver-soil-1-5-cu-ft",
+          "label": "1.5 cu ft",
+          "sizeValue": 1.5,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-penny-saver-soil-bulk-test",
+          "label": "Bulk test listing",
+          "sizeValue": null,
+          "sizeUnit": "bulk_test_listing",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-living-soil",
+      "name": "Living Soil",
+      "productType": "soil",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-living-soil-1-cu-ft",
+          "label": "1 cu ft",
+          "sizeValue": 1,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-living-soil-1-5-cu-ft",
+          "label": "1.5 cu ft",
+          "sizeValue": 1.5,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-living-soil-bulk-test",
+          "label": "Bulk test listing",
+          "sizeValue": null,
+          "sizeUnit": "bulk_test_listing",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-no-till-soil",
+      "name": "No-Till Soil",
+      "productType": "soil",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-no-till-soil-1-cu-ft",
+          "label": "1 cu ft",
+          "sizeValue": 1,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-no-till-soil-1-5-cu-ft",
+          "label": "1.5 cu ft",
+          "sizeValue": 1.5,
+          "sizeUnit": "cu_ft",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-no-till-soil-bulk-test",
+          "label": "Bulk test listing",
+          "sizeValue": null,
+          "sizeUnit": "bulk_test_listing",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-starter-3-3-3",
+      "name": "Starter",
+      "productType": "dry_nutrient_mix",
+      "proposedLabelRatio": "3-3-3",
+      "ratioStatus": "proposed_pending_verified_label",
+      "methodPresetRelationship": "matches_method_preset_but_is_not_product_evidence",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-starter-1-lb-trial",
+          "label": "1 lb trial",
+          "sizeValue": 1,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-starter-2-lb",
+          "label": "2 lb",
+          "sizeValue": 2,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-starter-5-lb",
+          "label": "5 lb",
+          "sizeValue": 5,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-starter-10-lb",
+          "label": "10 lb",
+          "sizeValue": 10,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-starter-25-lb",
+          "label": "25 lb",
+          "sizeValue": 25,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-veg-3-1-2",
+      "name": "Veg",
+      "productType": "dry_nutrient_mix",
+      "proposedLabelRatio": "3-1-2",
+      "ratioStatus": "proposed_pending_verified_label",
+      "methodPresetRelationship": "does_not_replace_method_preset_veg_3-1-1",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-veg-2-lb",
+          "label": "2 lb",
+          "sizeValue": 2,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-veg-5-lb",
+          "label": "5 lb",
+          "sizeValue": 5,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-veg-10-lb",
+          "label": "10 lb",
+          "sizeValue": 10,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-veg-25-lb",
+          "label": "25 lb",
+          "sizeValue": 25,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-pre-flower-1-3-2",
+      "name": "Pre-Flower",
+      "productType": "dry_nutrient_mix",
+      "proposedLabelRatio": "1-3-2",
+      "ratioStatus": "proposed_pending_verified_label",
+      "methodPresetRelationship": "no_approved_method_preset",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-pre-flower-2-lb",
+          "label": "2 lb",
+          "sizeValue": 2,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-pre-flower-5-lb",
+          "label": "5 lb",
+          "sizeValue": 5,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-pre-flower-10-lb",
+          "label": "10 lb",
+          "sizeValue": 10,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-pre-flower-25-lb",
+          "label": "25 lb",
+          "sizeValue": 25,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-flower-2-6-4",
+      "name": "Flower",
+      "productType": "dry_nutrient_mix",
+      "proposedLabelRatio": "2-6-4",
+      "ratioStatus": "proposed_pending_verified_label",
+      "methodPresetRelationship": "matches_method_preset_but_is_not_product_evidence",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-flower-2-lb",
+          "label": "2 lb",
+          "sizeValue": 2,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-flower-5-lb",
+          "label": "5 lb",
+          "sizeValue": 5,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-flower-10-lb",
+          "label": "10 lb",
+          "sizeValue": 10,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-flower-25-lb",
+          "label": "25 lb",
+          "sizeValue": 25,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-ripen-0-5-3-3",
+      "name": "Ripen",
+      "productType": "dry_nutrient_mix",
+      "proposedLabelRatio": "0.5-3-3",
+      "ratioStatus": "proposed_pending_verified_label",
+      "methodPresetRelationship": "matches_conditional_last_week_method_preset_but_is_not_product_evidence",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-ripen-2-lb",
+          "label": "2 lb",
+          "sizeValue": 2,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-ripen-5-lb",
+          "label": "5 lb",
+          "sizeValue": 5,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-ripen-10-lb",
+          "label": "10 lb",
+          "sizeValue": 10,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-ripen-25-lb",
+          "label": "25 lb",
+          "sizeValue": 25,
+          "sizeUnit": "lb",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-shirt",
+      "name": "Living Soil Labs Shirt",
+      "productType": "merchandise",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-shirt-s",
+          "label": "S",
+          "sizeValue": "S",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-m",
+          "label": "M",
+          "sizeValue": "M",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-l",
+          "label": "L",
+          "sizeValue": "L",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-xl",
+          "label": "XL",
+          "sizeValue": "XL",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-2xl",
+          "label": "2XL",
+          "sizeValue": "2XL",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-3xl",
+          "label": "3XL",
+          "sizeValue": "3XL",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-4xl",
+          "label": "4XL",
+          "sizeValue": "4XL",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        },
+        {
+          "variantId": "lsl-shirt-5xl",
+          "label": "5XL",
+          "sizeValue": "5XL",
+          "sizeUnit": "apparel_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    },
+    {
+      "productId": "lsl-embroidered-hat",
+      "name": "Living Soil Labs Embroidered Hat",
+      "productType": "merchandise",
+      "status": "draft",
+      "storefrontStatus": "hidden_pending_evidence",
+      "publishReady": false,
+      "description": null,
+      "directions": null,
+      "warnings": [],
+      "claims": [],
+      "evidence": {
+        "ownerApproved": false,
+        "formulaRecordId": null,
+        "verifiedLabelSourceIds": [],
+        "verifiedLabSourceIds": [],
+        "imageAssets": [],
+        "reviewedAt": null
+      },
+      "variants": [
+        {
+          "variantId": "lsl-embroidered-hat-adjustable",
+          "label": "Adjustable one-size",
+          "sizeValue": "adjustable_one_size",
+          "sizeUnit": "headwear_size",
+          "sku": null,
+          "priceCents": null,
+          "currency": null,
+          "shippingWeight": null,
+          "shippingWeightUnit": null,
+          "inventoryCount": null,
+          "inventoryState": "unconfigured",
+          "imageAssetIds": []
+        }
+      ]
+    }
+  ],
+  "commerceScenarios": [
+    {
+      "scenarioId": "draft_storefront_hidden",
+      "requiredStates": ["draft product", "hidden storefront"],
+      "expectedResult": "Unapproved products are not publicly purchasable."
+    },
+    {
+      "scenarioId": "in_stock_cart",
+      "requiredStates": ["configured variant", "in stock"],
+      "expectedResult": "Selected variant enters the cart once with its recorded price and currency."
+    },
+    {
+      "scenarioId": "out_of_stock_block",
+      "requiredStates": ["configured variant", "out of stock"],
+      "expectedResult": "Checkout is blocked without decrementing inventory."
+    },
+    {
+      "scenarioId": "discount_apply",
+      "requiredStates": ["eligible code", "eligible cart"],
+      "expectedResult": "Recorded discount is applied once and retained on the order."
+    },
+    {
+      "scenarioId": "discount_reject",
+      "requiredStates": ["invalid or ineligible code"],
+      "expectedResult": "Cart total is unchanged and the reason is shown."
+    },
+    {
+      "scenarioId": "tax_calculation",
+      "requiredStates": ["configured jurisdiction", "taxable cart"],
+      "expectedResult": "Order retains the provider-calculated tax amount and jurisdiction evidence."
+    },
+    {
+      "scenarioId": "shipping_calculation",
+      "requiredStates": ["measured variant weights", "destination", "configured rate"],
+      "expectedResult": "Order retains the selected shipping service, amount, and weight inputs."
+    },
+    {
+      "scenarioId": "checkout_cancel",
+      "requiredStates": ["test checkout session", "buyer cancellation"],
+      "expectedResult": "No paid order or inventory decrement is recorded."
+    },
+    {
+      "scenarioId": "paid_order",
+      "requiredStates": ["test checkout session", "confirmed payment webhook"],
+      "expectedResult": "One paid order is recorded and inventory changes once."
+    },
+    {
+      "scenarioId": "order_cancellation",
+      "requiredStates": ["cancellable order", "authorized owner action"],
+      "expectedResult": "Cancellation reason, actor, timestamp, and inventory decision are retained."
+    },
+    {
+      "scenarioId": "full_refund",
+      "requiredStates": ["paid order", "confirmed refund event"],
+      "expectedResult": "Refund amount, reason, event id, order status, and inventory decision are retained."
+    },
+    {
+      "scenarioId": "order_history",
+      "requiredStates": ["multiple order states"],
+      "expectedResult": "Buyer and owner views show the same recorded product, variant, totals, payment, fulfillment, cancellation, and refund state."
+    }
+  ]
+}
