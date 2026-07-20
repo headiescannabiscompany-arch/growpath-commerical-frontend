@@ -1,0 +1,468 @@
+{
+  "schemaVersion": "growpath-qa-seed-system-v1",
+  "status": "planning",
+  "masterItems": [49, 50, 51, 52, 53, 54, 55],
+  "purpose": "Acceptance-test data only; never production customer data or model-training data.",
+  "environments": {
+    "allowed": ["test", "staging"],
+    "productionAllowed": false,
+    "explicitEnvironmentConfirmationRequired": true
+  },
+  "executionContract": {
+    "qaSeedNamespaceRequired": true,
+    "idempotent": true,
+    "dryRunRequired": true,
+    "verifyRequired": true,
+    "cleanupRequired": true,
+    "plaintextCredentialsAllowed": false,
+    "productionIdentifiersAllowed": false,
+    "requiredEvidence": [
+      "commitSha",
+      "environmentUrl",
+      "qaSeedNamespace",
+      "timestamp",
+      "accountRole",
+      "createdUpdatedSkippedCounts",
+      "checksPerformed",
+      "cleanupResult"
+    ]
+  },
+  "dataRights": {
+    "useForModelTraining": false,
+    "imageLevelLicenseRequired": true,
+    "creatorRequired": true,
+    "attributionRequired": true,
+    "commercialProductQaUseMustBeAllowed": true,
+    "allowAllRightsReservedCopies": false,
+    "allowNonCommercialLicenseCopies": false,
+    "externalReferenceAllowedWhenReviewed": true,
+    "requiredMediaFields": [
+      "sourceUrl",
+      "mediaUrl",
+      "creator",
+      "licenseId",
+      "attributionText",
+      "retrievedAt",
+      "rightsReviewedAt",
+      "intendedUseApproved"
+    ]
+  },
+  "sourceCandidates": [
+    {
+      "id": "inaturalist",
+      "name": "iNaturalist observations and photos",
+      "status": "conditional_review_required",
+      "sourceUrl": "https://www.inaturalist.org/",
+      "termsUrl": "https://www.inaturalist.org/pages/terms",
+      "apiUrl": "https://api.inaturalist.org/v2/docs/",
+      "licenseReviewRequired": true,
+      "reliabilityTier": "B_context_limited_official_source",
+      "crossCheckRequired": true,
+      "lastReviewedAt": "2026-07-20",
+      "trustedFor": [
+        "candidate crop and lookalike observations",
+        "taxon metadata leads",
+        "image-level license discovery"
+      ],
+      "notTrustedFor": [
+        "cultivar inference from appearance",
+        "confirmed plant diagnosis",
+        "commercial AI training",
+        "copying noncommercial or all-rights-reserved media"
+      ],
+      "requirements": [
+        "review terms at execution time",
+        "record the license for each photo separately from observation metadata",
+        "copy only media whose license permits the intended use",
+        "retain creator attribution"
+      ]
+    },
+    {
+      "id": "plantvillage",
+      "name": "PlantVillage Dataset",
+      "status": "conditional_review_required",
+      "sourceUrl": "https://github.com/spMohanty/PlantVillage-Dataset",
+      "licenseReviewRequired": true,
+      "reliabilityTier": "B_context_limited_dataset_source",
+      "crossCheckRequired": true,
+      "lastReviewedAt": "2026-07-20",
+      "trustedFor": [
+        "candidate controlled-background disease-image cases",
+        "research label and crop coverage leads"
+      ],
+      "notTrustedFor": [
+        "field-condition performance assumptions",
+        "cannabis-specific diagnosis",
+        "automatic commercial-use approval",
+        "confirmed diagnosis without case context"
+      ],
+      "requirements": [
+        "identify the governing dataset and image license",
+        "approve the intended commercial QA use",
+        "keep train/test leaf groups separated if used for benchmarking",
+        "pair image labels with GrowPath evidence and alternatives"
+      ]
+    },
+    {
+      "id": "growpath_owner_media",
+      "name": "GrowPathAI owner-supplied or commissioned media",
+      "status": "preferred_pending_assets",
+      "sourceUrl": "TODO_OWNER_MEDIA_SOURCE_REGISTRY_URL",
+      "licenseReviewRequired": true,
+      "reliabilityTier": "B_owner_source_for_owned_claims_only",
+      "crossCheckRequired": true,
+      "lastReviewedAt": "2026-07-20",
+      "trustedFor": [
+        "cannabis/hemp stage and harvested-flower QA",
+        "Living Soil Labs product and merchandise fixtures",
+        "application-specific failure and workflow cases"
+      ],
+      "notTrustedFor": [
+        "unrecorded cultivar provenance",
+        "unverified guaranteed analysis",
+        "medical or pesticide claims"
+      ],
+      "requirements": [
+        "record ownership or permission",
+        "record creator and attribution preference",
+        "record label or formula evidence separately from product photos"
+      ]
+    }
+  ],
+  "packs": [
+    {
+      "id": "plant-identification",
+      "masterItem": 50,
+      "status": "planned",
+      "targetRecordCount": { "minimum": 300, "maximum": 500 },
+      "requiredRecordFields": [
+        "caseId",
+        "acceptedName",
+        "scientificName",
+        "plantCategory",
+        "lifeStage",
+        "expectedAlternatives",
+        "distinguishingFeatures",
+        "expectedConfidenceRange",
+        "media",
+        "expectedResult"
+      ],
+      "caseGroups": {
+        "cannabisHemp": [
+          "seedling",
+          "vegetative",
+          "flowering",
+          "male",
+          "female",
+          "intersex_or_hermaphrodite_morphology",
+          "harvested_flower"
+        ],
+        "foodCrops": [
+          "tomato",
+          "pepper",
+          "cucumber",
+          "lettuce",
+          "basil",
+          "strawberry",
+          "corn",
+          "beans"
+        ],
+        "ornamentals": [
+          "rose",
+          "pothos",
+          "monstera",
+          "peace_lily",
+          "orchid",
+          "marigold",
+          "petunia",
+          "chrysanthemum"
+        ],
+        "weeds": [
+          "crabgrass",
+          "dandelion",
+          "plantain",
+          "clover",
+          "chickweed",
+          "purslane",
+          "lambsquarters",
+          "nutsedge",
+          "poison_ivy"
+        ],
+        "lookalikes": [
+          "tomato_vs_nightshade",
+          "cannabis_vs_japanese_maple",
+          "cannabis_vs_kenaf",
+          "grass_vs_nutsedge"
+        ],
+        "failureCases": [
+          "blurry",
+          "partial_leaf",
+          "mixed_plants",
+          "dead_leaf_only",
+          "artificial_plant",
+          "no_plant"
+        ]
+      },
+      "expectedBehavior": {
+        "growRequired": false,
+        "cannabisCropLevelDraftAllowedFromClearMorphology": true,
+        "cultivarInferenceAllowed": false,
+        "pixelAnalysisDisclosureRequired": true,
+        "replacementPhotoGuidanceRequired": true
+      }
+    },
+    {
+      "id": "diagnosis-ipm",
+      "masterItem": 51,
+      "status": "planned",
+      "targetRecordCount": { "minimum": 90, "maximum": 180 },
+      "requiredRecordFields": [
+        "caseId",
+        "caseGroup",
+        "cropAndCultivar",
+        "lifeStage",
+        "distribution",
+        "progression",
+        "mediumRootZone",
+        "environment",
+        "measurements",
+        "directSigns",
+        "plausibleAlternatives",
+        "confirmationMethod",
+        "urgency",
+        "quarantineGuidance",
+        "scoutingSteps",
+        "allowedIpmCategories",
+        "media",
+        "expectedResult"
+      ],
+      "caseGroups": {
+        "diseases": [
+          "powdery_mildew",
+          "botrytis_gray_mold_bud_rot_evidence",
+          "downy_mildew",
+          "septoria_and_leaf_spots",
+          "fusarium",
+          "pythium_root_rot",
+          "damping_off",
+          "rust",
+          "bacterial_leaf_spot",
+          "mosaic_like_symptoms"
+        ],
+        "pestsAndLookalikes": [
+          "two_spotted_spider_mites",
+          "broad_or_russet_mites",
+          "thrips",
+          "aphids",
+          "whiteflies",
+          "fungus_gnats",
+          "mealybugs",
+          "scale",
+          "leafminers",
+          "caterpillars",
+          "root_aphids",
+          "beneficials_and_harmless_lookalikes"
+        ],
+        "abioticMimics": [
+          "nutrient_deficiency",
+          "nutrient_excess",
+          "lockout",
+          "antagonism",
+          "overwatering",
+          "underwatering",
+          "light_or_heat_stress",
+          "wind_burn",
+          "cold_damage",
+          "edema",
+          "spray_burn",
+          "ph_or_ec_problem",
+          "environment_or_root_limited_calcium_transport",
+          "normal_senescence",
+          "physical_damage"
+        ]
+      },
+      "evidenceContract": {
+        "decisionOrder": [
+          "pattern",
+          "medium_root_zone",
+          "environment",
+          "measured_values",
+          "cause_ranking"
+        ],
+        "sameReviewedEnvelopeForGrowPathAndGpt": true,
+        "agreementStateRequired": true,
+        "pesticideProductOrRateOutputAllowed": false,
+        "writeBackTargets": ["plant", "grow", "log", "toolRun", "task", "facility"]
+      }
+    },
+    {
+      "id": "living-soil-labs-commerce",
+      "masterItem": 52,
+      "status": "planned",
+      "brandName": "Living Soil Labs",
+      "applicationModuleName": "Soil & Nutrient Batch Planner",
+      "requiredRecordFields": [
+        "productId",
+        "productType",
+        "name",
+        "variants",
+        "inventoryState",
+        "shippingWeight",
+        "media",
+        "labelEvidenceStatus",
+        "storefrontState"
+      ],
+      "productDrafts": [
+        {
+          "name": "Penny Saver Soil",
+          "type": "soil",
+          "variants": ["1_cu_ft", "1_5_cu_ft", "bulk_test_listing"]
+        },
+        {
+          "name": "Living Soil",
+          "type": "soil",
+          "variants": ["1_cu_ft", "1_5_cu_ft", "bulk_test_listing"]
+        },
+        {
+          "name": "No-Till Soil",
+          "type": "soil",
+          "variants": ["1_cu_ft", "1_5_cu_ft", "bulk_test_listing"]
+        },
+        {
+          "name": "Starter",
+          "type": "dry_nutrient_mix",
+          "proposedLabelRatio": "3-3-3",
+          "variants": ["1_lb_trial", "2_lb", "5_lb", "10_lb", "25_lb"],
+          "requiresOwnerOrLabelVerification": true
+        },
+        {
+          "name": "Veg",
+          "type": "dry_nutrient_mix",
+          "proposedLabelRatio": "3-1-2",
+          "variants": ["2_lb", "5_lb", "10_lb", "25_lb"],
+          "requiresOwnerOrLabelVerification": true
+        },
+        {
+          "name": "Pre-Flower",
+          "type": "dry_nutrient_mix",
+          "proposedLabelRatio": "1-3-2",
+          "variants": ["2_lb", "5_lb", "10_lb", "25_lb"],
+          "requiresOwnerOrLabelVerification": true
+        },
+        {
+          "name": "Flower",
+          "type": "dry_nutrient_mix",
+          "proposedLabelRatio": "2-6-4",
+          "variants": ["2_lb", "5_lb", "10_lb", "25_lb"],
+          "requiresOwnerOrLabelVerification": true
+        },
+        {
+          "name": "Ripen",
+          "type": "dry_nutrient_mix",
+          "proposedLabelRatio": "0.5-3-3",
+          "variants": ["2_lb", "5_lb", "10_lb", "25_lb"],
+          "requiresOwnerOrLabelVerification": true
+        },
+        {
+          "name": "Living Soil Labs Shirt",
+          "type": "merchandise",
+          "variants": ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"]
+        },
+        {
+          "name": "Living Soil Labs Embroidered Hat",
+          "type": "merchandise",
+          "variants": ["adjustable_one_size"]
+        }
+      ],
+      "orderScenarios": [
+        "in_stock_checkout",
+        "out_of_stock_block",
+        "discount",
+        "tax",
+        "shipping",
+        "cancellation",
+        "refund",
+        "order_history"
+      ]
+    },
+    {
+      "id": "facility-simulator",
+      "masterItem": 53,
+      "status": "planned",
+      "requiredRecordFields": [
+        "facilityId",
+        "qaSeedNamespace",
+        "rooms",
+        "grows",
+        "plants",
+        "members",
+        "equipment",
+        "inventory",
+        "sops",
+        "tasks",
+        "telemetry",
+        "incidents"
+      ],
+      "canonicalRoles": ["owner", "manager", "staff", "viewer"],
+      "personaAssignments": [
+        { "persona": "owner", "role": "owner" },
+        { "persona": "manager", "role": "manager" },
+        { "persona": "grower", "role": "staff" },
+        { "persona": "scout", "role": "staff" },
+        { "persona": "restricted_employee", "role": "viewer" }
+      ],
+      "roomPurposes": [
+        "mother",
+        "clone_propagation",
+        "seedling",
+        "vegetative",
+        "flower",
+        "dry",
+        "cure",
+        "tissue_culture",
+        "cold_storage",
+        "general_storage"
+      ],
+      "telemetryMetrics": [
+        "air_temperature",
+        "relative_humidity",
+        "vpd",
+        "dew_point",
+        "co2",
+        "substrate_moisture",
+        "substrate_ec",
+        "ppfd",
+        "light_state",
+        "alarm",
+        "device_offline",
+        "device_fault"
+      ],
+      "incidents": [
+        "two_hour_humidity_spike_after_lights_off",
+        "dew_point_condensation_risk",
+        "sensor_offline_and_stale_data",
+        "high_substrate_ec",
+        "irrigation_failure",
+        "unexpected_high_co2",
+        "light_or_exhaust_failure",
+        "room_excursion_acknowledgement_and_escalation",
+        "pest_found_and_plant_quarantined",
+        "inventory_shortage",
+        "missed_task_and_overdue_sop",
+        "conflicting_permissions",
+        "csv_api_duplicates_gaps_bad_timestamps_bad_units"
+      ],
+      "acceptanceFocus": [
+        "entitlement_loading",
+        "ai_credit_charge_and_refund",
+        "facility_owner_access",
+        "task_assignment",
+        "uploads",
+        "ask_ai",
+        "alerts",
+        "persistence_and_reload",
+        "tool_write_back_scope"
+      ]
+    }
+  ]
+}
