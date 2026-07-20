@@ -80,8 +80,13 @@ describe("diagnose backend routes", () => {
         notes: "Lower leaves yellow, runoff EC is high, roots stayed wet.",
         cropCommonName: "Tomato",
         scientificName: "Solanum lycopersicum",
-        pattern: { location: "lower old leaves", notes: "yellowing" },
+        pattern: {
+          location: "lower old leaves",
+          progression: "spreading slowly",
+          notes: "yellowing"
+        },
         rootZone: { moisture: "too wet", concern: "slow dryback" },
+        environment: { temp: "24", tempUnit: "C", rh: "60", vpd: "1.2" },
         numbers: { runoffEC: "3.1", feedPH: "6.2" }
       });
 
@@ -101,7 +106,8 @@ describe("diagnose backend routes", () => {
         providerModel: "deterministic-etgu-v1",
         aiResult: expect.objectContaining({
           evidenceObserved: expect.arrayContaining([
-            expect.stringContaining("yellowing")
+            expect.stringContaining("yellowing"),
+            "Reported symptom progression: spreading slowly."
           ]),
           counterEvidence: expect.arrayContaining([
             expect.stringContaining("No lab test")
@@ -119,6 +125,36 @@ describe("diagnose backend routes", () => {
       missingData: expect.any(Array),
       suggestedActions: expect.any(Array),
       followUpQuestion: expect.any(String)
+    });
+    expect(res.body.diagnosis.patternSummary).toContain("progression: spreading slowly");
+    expect(res.body.diagnosis.environmentSummary).toBe(
+      "temp: 24 °C; rh: 60%; vpd: 1.2 kPa"
+    );
+  });
+
+  test("escalates rapidly spreading symptoms for urgent review", async () => {
+    mockDiagnosis.create.mockImplementation(async (payload) =>
+      doc({
+        _id: DIAGNOSIS_ID,
+        ...payload
+      })
+    );
+
+    const res = await request(app)
+      .post("/api/diagnose/analyze")
+      .send({
+        notes: "Yellow spotting is spreading",
+        pattern: {
+          location: "whole plant",
+          progression: "spreading quickly"
+        }
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.diagnosis).toMatchObject({
+      severity: 4,
+      urgency: "urgent",
+      tags: expect.arrayContaining(["urgent_review"])
     });
   });
 

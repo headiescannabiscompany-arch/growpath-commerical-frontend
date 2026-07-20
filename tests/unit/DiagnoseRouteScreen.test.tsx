@@ -147,6 +147,7 @@ describe("DiagnoseRoute", () => {
       issueSummary: "Possible pH issue",
       severity: 2,
       confidence: "medium",
+      followUpQuestion: "What changed after the last irrigation?",
       details: {
         likelyIssues: [{ evidence: ["Leaf yellowing"], nextChecks: ["Check runoff pH"] }],
         recommendations: ["Check runoff pH before changing feed."],
@@ -257,6 +258,71 @@ describe("DiagnoseRoute", () => {
           missingData: ["Check runoff pH"],
           suggestedTask: "Check runoff pH before changing feed."
         })
+      })
+    );
+  });
+
+  it("explains readiness and preserves structured evidence during follow-up", async () => {
+    const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
+
+    expect(
+      screen.getByText(
+        "Add written symptom notes or at least one uploaded photo to run diagnosis."
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Run diagnosis").props.accessibilityHint).toMatch(
+      /Add written symptom notes/
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Diagnosis notes"),
+      "Interveinal yellowing began after the last irrigation"
+    );
+    fireEvent.press(screen.getByLabelText("Diagnosis progression spreading slowly"));
+    fireEvent.press(screen.getByLabelText("Diagnosis temperature unit degrees C"));
+    fireEvent.changeText(screen.getByLabelText("Diagnosis temperature"), "24");
+    fireEvent.changeText(screen.getByLabelText("Diagnosis RH"), "60");
+    fireEvent.changeText(screen.getByLabelText("Diagnosis VPD"), "1.2");
+    fireEvent.changeText(screen.getByLabelText("Diagnosis feed pH"), "6.3");
+
+    expect(screen.getByText(/Ready with written symptoms/)).toBeTruthy();
+    expect(screen.getByText(/4 measured values are included/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+
+    await waitFor(() => expect(mockAnalyzeDiagnosis).toHaveBeenCalledTimes(1));
+    expect(mockAnalyzeDiagnosis).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        pattern: expect.objectContaining({
+          location: "upper new growth",
+          progression: "spreading slowly",
+          notes: "Interveinal yellowing began after the last irrigation"
+        }),
+        environment: {
+          temp: "24",
+          tempUnit: "C",
+          rh: "60",
+          vpd: "1.2"
+        },
+        numbers: expect.objectContaining({ feedPH: "6.3" })
+      })
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Diagnosis follow-up answer"),
+      "Symptoms slowed after the root zone dried."
+    );
+    fireEvent.press(screen.getByLabelText("Refine diagnosis"));
+
+    await waitFor(() => expect(mockAnalyzeDiagnosis).toHaveBeenCalledTimes(2));
+    expect(mockAnalyzeDiagnosis).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        pattern: expect.objectContaining({ progression: "spreading slowly" }),
+        environment: expect.objectContaining({ temp: "24", tempUnit: "C" }),
+        numbers: expect.objectContaining({ feedPH: "6.3" }),
+        followUpQuestion: "What changed after the last irrigation?",
+        followUpAnswer: "Symptoms slowed after the root zone dried."
       })
     );
   });

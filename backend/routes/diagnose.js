@@ -80,10 +80,12 @@ function textOf(context) {
     context.symptom,
     context.pattern?.notes,
     context.pattern?.location,
+    context.pattern?.progression,
     context.rootZone?.moisture,
     context.rootZone?.concern,
     context.environment?.temp,
     context.environment?.rh,
+    context.environment?.vpd,
     context.numbers?.feedEC,
     context.numbers?.runoffEC,
     context.numbers?.feedPH,
@@ -168,7 +170,11 @@ function triageDiagnosis(context = {}) {
     followUpQuestion =
       "How long does the root zone take to dry between irrigations, and how much runoff or pot-weight change are you seeing?";
   }
-  if (/urgent|severe|worse|collapse|rot|mold|mildew|necrosis/.test(text)) {
+  if (
+    /urgent|severe|worse|rapid|spreading quickly|collapse|rot|mold|mildew|necrosis/.test(
+      text
+    )
+  ) {
     severity = 4;
     urgency = "urgent";
     tags.push("urgent_review");
@@ -182,6 +188,11 @@ function triageDiagnosis(context = {}) {
     actions.push(
       "Collect photos and measurements before applying a corrective treatment."
     );
+  }
+
+  const progression = String(context.pattern?.progression || "").trim();
+  if (progression && progression !== "unknown") {
+    evidence.push(`Reported symptom progression: ${progression}.`);
   }
 
   const feedEC = finiteNumber(context.numbers?.feedEC);
@@ -239,13 +250,13 @@ function triageDiagnosis(context = {}) {
     suggestedActions: Array.from(new Set(actions)),
     tags: Array.from(new Set(tags.length ? tags : ["diagnosis_review"])),
     patternSummary: context.pattern
-      ? `location: ${context.pattern.location || "unknown"}; notes: ${context.pattern.notes || ""}`
+      ? `location: ${context.pattern.location || "unknown"}; progression: ${context.pattern.progression || "unknown"}; notes: ${context.pattern.notes || ""}`
       : "",
     rootZoneSummary: context.rootZone
       ? `moisture: ${context.rootZone.moisture || "unknown"}; concern: ${context.rootZone.concern || ""}`
       : "",
     environmentSummary: context.environment
-      ? `temp: ${context.environment.temp || ""}; rh: ${context.environment.rh || ""}; vpd: ${context.environment.vpd || ""}`
+      ? `temp: ${context.environment.temp || ""}${context.environment.temp ? ` °${String(context.environment.tempUnit || "F").toUpperCase()}` : ""}; rh: ${context.environment.rh || ""}${context.environment.rh ? "%" : ""}; vpd: ${context.environment.vpd || ""}${context.environment.vpd ? " kPa" : ""}`
       : "",
     numberSummary: context.numbers
       ? `feedEC: ${context.numbers.feedEC || ""}; runoffEC: ${context.numbers.runoffEC || ""}; feedPH: ${context.numbers.feedPH || ""}; runoffPH: ${context.numbers.runoffPH || ""}`

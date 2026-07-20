@@ -50,6 +50,8 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["ETGU evidence", /evidenceObserved/],
   ["ETGU counter evidence", /counterEvidence/],
   ["ETGU missing data", /missingData/],
+  ["structured progression", /context\.pattern\?\.progression/],
+  ["temperature units", /tempUnit/],
   ["cautious provider", /deterministic-etgu-v1/],
   ["feedback improvement loop", /DiagnosisFeedback\.create[\s\S]*feedbackCount/]
 ].forEach(([description, pattern]) => {
@@ -76,6 +78,10 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["follow-up metadata", /ai_diagnosis_followup/],
   ["grow selector", /listPersonalGrows[\s\S]*Select diagnosis grow/],
   ["text-only photo warning", /Photo analysis is not connected yet/],
+  ["diagnosis readiness", /Diagnosis readiness[\s\S]*readinessMessage/],
+  ["progression control", /Diagnosis progression/],
+  ["temperature unit control", /Diagnosis temperature unit degrees/],
+  ["follow-up preserves structured evidence", /\.\.\.currentDiagnosisContext\(\)/],
   ["image analysis disclosure", /imageAnalysis[\s\S]*performed/],
   ["outcome feedback", /submitDiagnosisFeedback/],
   ["safety language", /not a guaranteed lab diagnosis/]

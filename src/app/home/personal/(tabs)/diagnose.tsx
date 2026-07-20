@@ -153,9 +153,11 @@ export default function DiagnoseRoute({
   const [cultivarOrStrain, setCultivarOrStrain] = useState("");
   const [stage, setStage] = useState("veg");
   const [patternLocation, setPatternLocation] = useState("upper new growth");
+  const [progression, setProgression] = useState("unknown");
   const [rootMoisture, setRootMoisture] = useState("unknown");
   const [rootConcern, setRootConcern] = useState("");
   const [temp, setTemp] = useState("");
+  const [tempUnit, setTempUnit] = useState<"F" | "C">("F");
   const [rh, setRh] = useState("");
   const [vpd, setVpd] = useState("");
   const [feedEC, setFeedEC] = useState("");
@@ -285,9 +287,49 @@ export default function DiagnoseRoute({
     };
   }
 
+  function currentDiagnosisContext() {
+    return {
+      notes: notes.trim(),
+      stage,
+      cropCommonName: cropCommonName.trim(),
+      scientificName: scientificName.trim(),
+      cultivarOrStrain: cultivarOrStrain.trim(),
+      plantName: selectedPlant?.name,
+      selectedPlantContext: selectedPlantContext(),
+      cropProfileId: selectedPlant?.cropProfileId || undefined,
+      plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+      cultivar:
+        cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
+      pattern: {
+        location: patternLocation,
+        progression,
+        notes: notes.trim()
+      },
+      rootZone: {
+        moisture: rootMoisture,
+        concern: rootConcern.trim()
+      },
+      environment: {
+        temp: temp.trim(),
+        tempUnit,
+        rh: rh.trim(),
+        vpd: vpd.trim()
+      },
+      numbers: {
+        feedEC: feedEC.trim(),
+        runoffEC: runoffEC.trim(),
+        feedPH: feedPH.trim(),
+        runoffPH: runoffPH.trim()
+      },
+      workspaceType,
+      facilityId: facilityId || undefined
+    };
+  }
+
   async function runDiagnosis() {
     const evidence = providerEvidencePayload(evidenceAssets);
-    const canAnalyzeAttachedPhotos = providerStatus?.imageSupport === true;
+    const canAnalyzeAttachedPhotos =
+      providerStatus?.configured === true && providerStatus?.imageSupport === true;
     if (
       !enabled ||
       running ||
@@ -297,44 +339,7 @@ export default function DiagnoseRoute({
     setRunning(true);
     setFeedback("");
     try {
-      const pattern = {
-        location: patternLocation,
-        notes: notes.trim()
-      };
-      const rootZone = {
-        moisture: rootMoisture,
-        concern: rootConcern.trim()
-      };
-      const environment = {
-        temp: temp.trim(),
-        rh: rh.trim(),
-        vpd: vpd.trim()
-      };
-      const numbers = {
-        feedEC: feedEC.trim(),
-        runoffEC: runoffEC.trim(),
-        feedPH: feedPH.trim(),
-        runoffPH: runoffPH.trim()
-      };
-      const context = {
-        notes: notes.trim(),
-        stage,
-        cropCommonName: cropCommonName.trim(),
-        scientificName: scientificName.trim(),
-        cultivarOrStrain: cultivarOrStrain.trim(),
-        plantName: selectedPlant?.name,
-        selectedPlantContext: selectedPlantContext(),
-        cropProfileId: selectedPlant?.cropProfileId || undefined,
-        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
-        cultivar:
-          cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
-        pattern,
-        rootZone,
-        environment,
-        numbers,
-        workspaceType,
-        facilityId: facilityId || undefined
-      };
+      const context = currentDiagnosisContext();
       const response = evidence.images.length
         ? await diagnoseEvidence({
             growId,
@@ -439,14 +444,7 @@ export default function DiagnoseRoute({
       const response = await analyzeDiagnosis({
         growId,
         plantId,
-        notes,
-        stage,
-        cropCommonName: cropCommonName.trim(),
-        scientificName: scientificName.trim(),
-        cultivarOrStrain: cultivarOrStrain.trim(),
-        selectedPlantContext: selectedPlantContext(),
-        cropProfileId: selectedPlant?.cropProfileId || undefined,
-        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+        ...currentDiagnosisContext(),
         priorDiagnosisId: result.id || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
@@ -523,15 +521,39 @@ export default function DiagnoseRoute({
     cropCommonName
   );
   const diagnosisEvidence = providerEvidencePayload(evidenceAssets);
+  const photoAnalysisReady =
+    providerStatus?.configured === true && providerStatus?.imageSupport === true;
+  const measuredValueCount = [temp, rh, vpd, feedEC, runoffEC, feedPH, runoffPH].filter(
+    (value) => value.trim()
+  ).length;
   const photoOnlyBlocked =
-    Boolean(diagnosisEvidence.images.length) &&
-    !notes.trim() &&
-    providerStatus?.imageSupport !== true;
+    Boolean(diagnosisEvidence.images.length) && !notes.trim() && !photoAnalysisReady;
   const runDisabled =
     !enabled ||
     running ||
-    (!notes.trim() &&
-      (!diagnosisEvidence.images.length || providerStatus?.imageSupport !== true));
+    (!notes.trim() && (!diagnosisEvidence.images.length || !photoAnalysisReady));
+  const diagnosisReady = enabled && !running && !runDisabled;
+  const readinessMessage = !enabled
+    ? "This account cannot run AI diagnosis."
+    : running
+      ? "Diagnosis is analyzing the submitted evidence."
+      : !notes.trim() && !diagnosisEvidence.images.length
+        ? "Add written symptom notes or at least one uploaded photo to run diagnosis."
+        : photoOnlyBlocked
+          ? "The current provider cannot inspect attached photos. Add written symptom notes to run cautious text triage."
+          : `Ready with ${notes.trim() ? "written symptoms" : "photo evidence"}${
+              diagnosisEvidence.images.length
+                ? `, ${diagnosisEvidence.images.length} uploaded photo${diagnosisEvidence.images.length === 1 ? "" : "s"}`
+                : ""
+            }, and pattern location. ${
+              progression === "unknown"
+                ? "Progression is still unknown; select it when possible."
+                : `Progression is ${progression}.`
+            }${
+              measuredValueCount
+                ? ` ${measuredValueCount} measured value${measuredValueCount === 1 ? " is" : "s are"} included.`
+                : " Add environment or pH/EC measurements when available to improve discrimination."
+            }`;
 
   function toggleAcceptedTag(tag: string) {
     setAcceptedTags((current) =>
@@ -747,6 +769,36 @@ export default function DiagnoseRoute({
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.label}>Progression</Text>
+          <Text style={styles.subtitle}>
+            How has the symptom changed since you first noticed it?
+          </Text>
+          <View style={styles.row}>
+            {[
+              "unknown",
+              "new today",
+              "stable",
+              "spreading slowly",
+              "spreading quickly"
+            ].map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, progression === value && styles.pillOn]}
+                onPress={() => setProgression(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis progression ${value}`}
+              >
+                <Text
+                  style={[styles.pillText, progression === value && styles.pillTextOn]}
+                >
+                  {value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.label}>Root zone</Text>
           <View style={styles.row}>
             {["unknown", "too wet", "too dry", "compacted", "cold roots"].map((value) => (
@@ -776,13 +828,29 @@ export default function DiagnoseRoute({
 
         <View style={styles.section}>
           <Text style={styles.label}>Environment</Text>
+          <View style={styles.row}>
+            <Text style={styles.measurementLabel}>Temperature unit</Text>
+            {(["F", "C"] as const).map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, tempUnit === value && styles.pillOn]}
+                onPress={() => setTempUnit(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis temperature unit degrees ${value}`}
+              >
+                <Text style={[styles.pillText, tempUnit === value && styles.pillTextOn]}>
+                  °{value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
           <View style={styles.grid}>
             <TextInput
               style={styles.gridInput}
               value={temp}
               onChangeText={setTemp}
               keyboardType="numeric"
-              placeholder="Temp"
+              placeholder={`Air temperature (°${tempUnit})`}
               accessibilityLabel="Diagnosis temperature"
             />
             <TextInput
@@ -790,7 +858,7 @@ export default function DiagnoseRoute({
               value={rh}
               onChangeText={setRh}
               keyboardType="numeric"
-              placeholder="RH"
+              placeholder="Relative humidity (%)"
               accessibilityLabel="Diagnosis RH"
             />
             <TextInput
@@ -798,7 +866,7 @@ export default function DiagnoseRoute({
               value={vpd}
               onChangeText={setVpd}
               keyboardType="numeric"
-              placeholder="VPD"
+              placeholder="VPD (kPa)"
               accessibilityLabel="Diagnosis VPD"
             />
           </View>
@@ -812,7 +880,7 @@ export default function DiagnoseRoute({
               value={feedEC}
               onChangeText={setFeedEC}
               keyboardType="numeric"
-              placeholder="Feed EC"
+              placeholder="Feed EC (mS/cm)"
               accessibilityLabel="Diagnosis feed EC"
             />
             <TextInput
@@ -820,7 +888,7 @@ export default function DiagnoseRoute({
               value={runoffEC}
               onChangeText={setRunoffEC}
               keyboardType="numeric"
-              placeholder="Runoff EC"
+              placeholder="Runoff EC (mS/cm)"
               accessibilityLabel="Diagnosis runoff EC"
             />
             <TextInput
@@ -828,7 +896,7 @@ export default function DiagnoseRoute({
               value={feedPH}
               onChangeText={setFeedPH}
               keyboardType="numeric"
-              placeholder="Feed pH"
+              placeholder="Feed pH (0–14)"
               accessibilityLabel="Diagnosis feed pH"
             />
             <TextInput
@@ -836,7 +904,7 @@ export default function DiagnoseRoute({
               value={runoffPH}
               onChangeText={setRunoffPH}
               keyboardType="numeric"
-              placeholder="Runoff pH"
+              placeholder="Runoff pH (0–14)"
               accessibilityLabel="Diagnosis runoff pH"
             />
           </View>
@@ -855,7 +923,7 @@ export default function DiagnoseRoute({
           Photos are used for this diagnosis request. They are not used to train GrowPath
           AI models unless you explicitly opt in.
         </Text>
-        {providerStatus?.imageSupport ? (
+        {photoAnalysisReady ? (
           <Text style={styles.photoReady}>
             Photo analysis is connected. Include the whole plant, the symptom pattern, and
             sharp close-ups of both leaf surfaces.
@@ -908,12 +976,22 @@ export default function DiagnoseRoute({
             ) : null}
           </View>
         ) : null}
+        <View
+          style={[
+            styles.readinessPanel,
+            diagnosisReady ? styles.readinessReady : styles.readinessMissing
+          ]}
+        >
+          <Text style={styles.readinessTitle}>Diagnosis readiness</Text>
+          <Text style={styles.readinessText}>{readinessMessage}</Text>
+        </View>
         <Pressable
           disabled={runDisabled}
           style={[styles.primaryButton, runDisabled && styles.disabled]}
           onPress={runDiagnosis}
           accessibilityRole="button"
           accessibilityLabel="Run diagnosis"
+          accessibilityHint={readinessMessage}
         >
           <Text style={styles.primaryButtonText}>
             {running ? "Analyzing..." : "Run Diagnosis"}
@@ -962,8 +1040,10 @@ export default function DiagnoseRoute({
               inputs={{
                 stage,
                 patternLocation,
+                progression,
                 rootMoisture,
                 temp,
+                tempUnit,
                 rh,
                 vpd,
                 feedEC,
@@ -1238,6 +1318,12 @@ const styles = StyleSheet.create({
   context: { color: "#166534", fontWeight: "700" },
   section: { gap: 7 },
   label: { color: "#334155", fontWeight: "800" },
+  measurementLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "700",
+    alignSelf: "center"
+  },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   pill: {
     borderWidth: 1,

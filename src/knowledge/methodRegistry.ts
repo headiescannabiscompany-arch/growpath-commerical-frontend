@@ -69,9 +69,10 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "selected grow/plant",
       "written symptom pattern",
+      "symptom progression",
       "media with analysis status",
       "grow history",
-      "environment",
+      "environment with explicit units",
       "pH/EC"
     ],
     [
@@ -80,6 +81,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "likelyIssues",
       "nextChecks",
       "discriminating follow-up question",
+      "follow-up analysis that preserves the original structured evidence",
       "image analysis performed status",
       "photo count and provider/model execution evidence",
       "grow-optional draft crop identity from uploaded media",
