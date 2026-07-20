@@ -33,6 +33,7 @@ const featureStatus = read("src/config/featureStatus.ts");
 const productionWebExport = read("scripts/export-production-web.cjs");
 const growOverview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
 const growTools = read("src/app/home/personal/(tabs)/grows/[growId]/tools.tsx");
+const growRouteUtils = read("src/features/grows/routeUtils.ts");
 
 const screens = {
   harvest: read("src/app/home/personal/(tabs)/tools/harvest-readiness.tsx"),
@@ -191,6 +192,16 @@ const tests = {
     "cannabis grow tools harvest entry",
     growTools,
     /Harvest readiness calculator[\s\S]*\/home\/personal\/tools\/harvest-readiness[\s\S]*cannabisOnly: true/
+  ],
+  [
+    "attached cannabis workflow compatibility",
+    growRouteUtils,
+    /CANNABIS_WORKFLOW_IDS[\s\S]*harvest-readiness[\s\S]*hasCannabisWorkflowEvidence/
+  ],
+  [
+    "legacy cannabis grow compatibility",
+    growRouteUtils,
+    /hasStructuredContext[\s\S]*grow\.strain[\s\S]*grow\.cultivar/
   ]
 ].forEach(([description, contents, pattern]) => {
   requireText("harvest discovery", contents, pattern, description);

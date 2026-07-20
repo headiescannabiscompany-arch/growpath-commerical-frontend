@@ -147,7 +147,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["window", "missing media", "risk", "tasks"],
     [
       "Never estimate sensor values from images.",
-      "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces."
+      "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."
     ],
     ["harvest-readiness", "dry-cure-guard"]
   ),
