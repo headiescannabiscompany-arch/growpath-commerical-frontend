@@ -32,6 +32,7 @@ const commercialSoilBatchRoute = read(
   "src/app/home/commercial/tools/soil-nutrient-batch.tsx"
 );
 const commercialToolsIndex = read("src/app/home/commercial/tools/index.tsx");
+const productionWebExport = read("scripts/export-production-web.cjs");
 const facilityInventory = read("src/app/home/facility/(tabs)/inventory.tsx");
 const facilityCreateInventory = read(
   "src/app/home/facility/(tabs)/CreateInventoryItemScreen.tsx"
@@ -124,6 +125,29 @@ const tests = {
     index === 0 ? commercialSoilBatchRoute : commercialToolsIndex,
     pattern,
     description
+  );
+});
+
+[
+  "home/commercial/tools",
+  "home/commercial/tools/ask-ai",
+  "home/commercial/tools/diagnose",
+  "home/commercial/tools/dry-amendment-mix",
+  "home/commercial/tools/environment",
+  "home/commercial/tools/harvest-readiness",
+  "home/commercial/tools/ingredient-library",
+  "home/commercial/tools/library",
+  "home/commercial/tools/npk",
+  "home/commercial/tools/recipe-builder",
+  "home/commercial/tools/report",
+  "home/commercial/tools/soil-builder",
+  "home/commercial/tools/soil-nutrient-batch"
+].forEach((route) => {
+  requireText(
+    "production web export",
+    productionWebExport,
+    new RegExp(`"${route.replace(/\//g, "\\/")}"`),
+    `${route} static fallback`
   );
 });
 
