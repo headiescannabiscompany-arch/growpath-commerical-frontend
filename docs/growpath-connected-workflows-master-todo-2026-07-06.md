@@ -271,6 +271,48 @@ Facility currently has the strongest visual appeal and sense of operational poli
 48. Facility analytics
    - [x] Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
 
+## P8 - QA Seed Data and Real-World Acceptance
+
+49. Governed QA seed-system contract
+   - [x] Add one machine-readable manifest for plant identification, IPM/diagnosis, Living Soil Labs commerce, and Facility simulation packs.
+   - [x] Require non-production environments, deterministic namespaces, idempotent reruns, cleanup support, and no plaintext credentials or tokens.
+   - [x] Require image-level source, creator, license, attribution, review date, and commercial-use approval before third-party media can be copied or uploaded.
+   - [x] Add planning and strict validation commands so incomplete rights/source records remain visible and cannot be treated as seed-ready.
+
+50. Plant-identification QA pack
+   - [ ] Curate 300-500 reviewed images spanning cannabis/hemp stages, food crops, ornamentals, weeds, lookalikes, and failure/no-plant cases.
+   - [ ] Record accepted/scientific name, category, life stage, acceptable alternatives, distinguishing features, expected confidence range, source, creator, license, and attribution for every image.
+   - [ ] Keep crop identification available without a grow, allow clear cannabis/hemp morphology to produce a crop-level draft, and never infer cultivar from appearance.
+   - [ ] Verify iNaturalist terms and every image license before use; exclude noncommercial/all-rights-reserved media from copied commercial-product fixtures and never use the pack for model training.
+
+51. IPM and plant-diagnosis QA pack
+   - [ ] Build disease, pest/beneficial-lookalike, and abiotic-mimic cases with multiple images plus plant, stage, distribution, progression, environment, root-zone, measurements, diagnostic signs, alternatives, confirmation method, urgency, quarantine, scout, and response fields.
+   - [ ] Preserve ETGU order: pattern, medium/root zone, environment, measured values, then cautious cause ranking.
+   - [ ] Send the same reviewed evidence envelope to GrowPath and GPT, store both answers and disagreements, and link Plant, Grow, Log, ToolRun, Task, and Facility records when context exists.
+   - [ ] Treat PlantVillage as a candidate source until repository/dataset licensing and intended commercial QA use are explicitly reviewed; a public repository or “open access” label alone is not approval.
+
+52. Living Soil Labs commercial-commerce QA pack
+   - [ ] Seed Penny Saver Soil, Living Soil, and No-Till Soil product/variant drafts plus proposed dry-mix, sample, shirt, and embroidered-hat fixtures.
+   - [ ] Require verified label/guaranteed-analysis evidence before proposed 3-3-3, 3-1-2, 1-3-2, 2-6-4, or 0.5-3-3 product claims become published test facts; do not silently replace the approved GrowPath method presets.
+   - [ ] Exercise inventory, out-of-stock, weights, images, labels, directions, cart, checkout, orders, discounts, taxes, shipping, cancellation, refund, and order-history states.
+   - [ ] Keep the app module named Soil & Nutrient Batch Planner and keep Living Soil Labs as the seeded commercial brand/storefront.
+
+53. Facility simulation QA pack
+   - [ ] Seed Facility -> rooms/zones -> grows -> plants with canonical Owner, Manager, Staff, and Viewer access; model grower, scout, and restricted-employee duties as assignments/permission constraints rather than inventing incompatible account roles.
+   - [ ] Cover mother, clone/propagation, seedling, veg, flower, dry, cure, tissue culture, cold/storage, equipment, inventory, SOPs, recurring sanitation/scouting, and task assignment.
+   - [ ] Generate normal telemetry plus humidity/dew-point, stale/offline sensor, high substrate EC, irrigation, CO2, light/exhaust, acknowledged excursion, pest quarantine, inventory shortage, missed SOP/task, permission conflict, and malformed import incidents.
+   - [ ] Verify entitlements, AI-credit billing/refunds, Facility Owner access, uploads, Ask AI, alerts, persistence/reload, and tool write-backs across Plant, Grow, Log, ToolRun, Task, room, and Facility scope.
+
+54. Idempotent backend seed runner and cleanup
+   - [ ] Implement dry-run, seed, verify, and cleanup commands against the real backend schemas with a required QA namespace and explicit test/staging environment gate.
+   - [ ] Hash generated test passwords, keep credentials out of fixtures/logs, preserve referential integrity, and make reruns update the named QA records instead of duplicating them.
+   - [ ] Produce counts, created/updated/skipped records, source-rights failures, and cleanup evidence for every run.
+
+55. Execute and close the QA seed packs
+   - [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
+   - [ ] Exercise Personal Free, Personal Pro, Commercial, Facility Owner/Manager/Staff/Viewer, cross-role shared-record, and outside-user loops against the seeded records.
+   - [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
+
 ## Immediate Execution Slice
 
 Start here:
