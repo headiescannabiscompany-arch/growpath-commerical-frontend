@@ -194,7 +194,7 @@ export default function GrowToolsScreen() {
         ]);
         if (!mounted) return;
         setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
-        setCannabisGrow(isCannabisGrow(findGrowById(grows, growId)));
+        setCannabisGrow(isCannabisGrow(findGrowById(grows, growId), rows));
       })();
       return () => {
         mounted = false;

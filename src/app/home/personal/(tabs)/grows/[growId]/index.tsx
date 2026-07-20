@@ -158,9 +158,9 @@ function GrowOverviewContent() {
   const [grow, setGrow] = useState<PersonalGrow | null>(null);
   const [counts, setCounts] = useState({ logs: 0, tasks: 0, runs: 0 });
   const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
+  const [cannabisGrow, setCannabisGrow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const cannabisGrow = isCannabisGrow(grow);
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -180,6 +180,7 @@ function GrowOverviewContent() {
       ]);
       const current = findGrowById(grows, growId);
       setGrow(current);
+      setCannabisGrow(isCannabisGrow(current, runs));
       setCounts({
         logs: Array.isArray(logs) ? logs.length : 0,
         tasks: Array.isArray(tasks) ? tasks.length : 0,
@@ -190,6 +191,7 @@ function GrowOverviewContent() {
     } catch {
       setError("Failed to load grow workspace.");
       setGrow(null);
+      setCannabisGrow(false);
       setCounts({ logs: 0, tasks: 0, runs: 0 });
       setTimeline([]);
     } finally {

@@ -143,4 +143,28 @@ describe("GrowToolsScreen", () => {
     expect(screen.queryByText("Dry / cure")).toBeNull();
     expect(screen.getByText("Compare runs")).toBeTruthy();
   });
+
+  it("restores harvest workflows for a legacy grow with saved cannabis evidence", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Legacy grow"
+      }
+    ]);
+    mockListToolRuns.mockResolvedValue([
+      {
+        id: "run-harvest",
+        growId: "grow-1",
+        toolName: "harvest_readiness",
+        createdAt: "2026-07-20T00:00:00.000Z"
+      }
+    ]);
+
+    const screen = render(<GrowToolsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Harvest readiness calculator")).toBeTruthy()
+    );
+    expect(screen.getByText("Dry / cure")).toBeTruthy();
+  });
 });

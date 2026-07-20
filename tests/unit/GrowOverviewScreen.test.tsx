@@ -153,4 +153,28 @@ describe("GrowOverviewScreen", () => {
     ).toBeTruthy();
     expect(screen.queryByLabelText("Overview link /home/personal/logs/log-1")).toBeNull();
   });
+
+  it("restores harvest links from saved cannabis workflow evidence on a legacy grow", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Legacy grow",
+        updatedAt: "2026-07-20T00:00:00.000Z"
+      }
+    ]);
+    mockListToolRuns.mockResolvedValue([
+      {
+        id: "run-harvest",
+        growId: "grow-1",
+        toolName: "harvest_readiness"
+      }
+    ]);
+
+    const screen = render(<GrowOverviewScreen />);
+
+    await waitFor(() => expect(screen.getByText("Harvest / Diagnosis")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Harvest Readiness from grow_detail_harvest")
+    ).toBeTruthy();
+  });
 });
