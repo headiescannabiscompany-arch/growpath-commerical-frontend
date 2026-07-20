@@ -162,13 +162,10 @@ describe("personal feature status manifest", () => {
 
   test("exposes only release-ready module routes without exposing fake redirects", () => {
     const releaseRoutes = {
-      "tools.vpd": "/home/personal/tools/vpd",
-      "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.npk_recipe": "/home/personal/tools/recipe-builder",
+      "tools.mix_builders": "/home/personal/tools/recipe-builder",
       "tools.ai_diagnosis": "/home/personal/diagnose",
-      "tools.ai_assistant": "/home/personal/ai",
-      "tools.integrations": "/home/personal/tools/integrations"
+      "tools.ai_assistant": "/home/personal/ai"
     };
 
     const navigable = getNavigablePersonalTools();
@@ -182,14 +179,7 @@ describe("personal feature status manifest", () => {
   });
 
   test("exposes approved beta tools only when beta surfaces are enabled", () => {
-    const approvedBetaTools = [
-      "tools.soil_builder",
-      "tools.dry_amendment_mix",
-      "tools.topdress_planner",
-      "tools.ph_ec_adjustment",
-      "tools.ipm_scout",
-      "tools.species_crop_identification"
-    ];
+    const approvedBetaTools = ["tools.ipm_scout", "tools.species_crop_identification"];
 
     const defaultNavigable = getNavigablePersonalTools();
     const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
@@ -199,6 +189,50 @@ describe("personal feature status manifest", () => {
       expect(feature?.status).toBe("beta");
       expect(defaultNavigable).not.toContain(feature);
       expect(betaNavigable).toContain(feature);
+    }
+  });
+
+  test("routes task, grow, internal calculator, export, and commercial utilities outside AI Tools", () => {
+    const hiddenFromAiTools = [
+      "tools.integrations",
+      "tools.vpd",
+      "tools.dew_point_guard",
+      "tools.ph_ec_adjustment",
+      "tools.topdress_planner",
+      "tools.pdf_export",
+      "tools.soil_nutrient_batch_planner"
+    ];
+    const aiTools = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    for (const key of hiddenFromAiTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature?.href).toBeTruthy();
+      expect(feature?.hubVisible).toBe(false);
+      expect(aiTools).not.toContain(feature);
+    }
+
+    expect(
+      personalToolFeatures.find((item) => item.key === "tools.ppfd_dli")?.hubVisible
+    ).not.toBe(false);
+  });
+
+  test("keeps builder components and supporting nutrient tools behind one hub entry", () => {
+    const supportingTools = [
+      "tools.npk_recipe",
+      "tools.soil_builder",
+      "tools.product_ingredient_library",
+      "tools.nutrient_chemistry",
+      "tools.nutrient_source_comparison",
+      "tools.dry_amendment_mix",
+      "tools.topdress_planner"
+    ];
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    for (const key of supportingTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature?.href).toBeTruthy();
+      expect(feature?.hubVisible).toBe(false);
+      expect(hub).not.toContain(feature);
     }
   });
 
@@ -285,16 +319,28 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ai_assistant"].status).toBe("release");
     expect(byKey["tools.ai_assistant"].href).toBe("/home/personal/ai");
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
+    expect(byKey["tools.mix_builders"].area).toBe("water_nutrients");
+    expect(byKey["tools.mix_builders"].title).toBe("Soil & Nutrient Mix Builders");
+    expect(byKey["tools.mix_builders"].href).toBe("/home/personal/tools/recipe-builder");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
+    expect(byKey["tools.npk_recipe"].title).toBe("Nutrient Mix Builder");
+    expect(byKey["tools.npk_recipe"].href).toBe("/home/personal/tools/npk");
+    expect(byKey["tools.npk_recipe"].hubVisible).toBe(false);
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");
+    expect(byKey["tools.soil_builder"].title).toBe("Soil Mix Builder");
     expect(byKey["tools.soil_builder"].status).toBe("beta");
     expect(byKey["tools.soil_builder"].href).toBe("/home/personal/tools/soil-builder");
+    expect(byKey["tools.soil_builder"].hubVisible).toBe(false);
     expect(byKey["tools.dry_amendment_mix"].status).toBe("beta");
     expect(byKey["tools.topdress_planner"].status).toBe("beta");
     expect(byKey["tools.ph_ec_adjustment"].status).toBe("beta");
     expect(byKey["tools.dry_cure_guard"].status).toBe("beta");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
     expect(byKey["tools.product_ingredient_library"].status).toBe("release");
+    expect(byKey["tools.product_ingredient_library"].title).toBe(
+      "Products & Label Library"
+    );
+    expect(byKey["tools.product_ingredient_library"].hubVisible).toBe(false);
     expect(byKey["tools.product_ingredient_library"].href).toBe(
       "/home/personal/tools/ingredient-library"
     );

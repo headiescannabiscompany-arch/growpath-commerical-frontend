@@ -161,7 +161,17 @@ export default function GrowsListScreen() {
                   </Link>
                   <Link href={`/home/personal/tools?growId=${id}`} asChild>
                     <Pressable style={styles.action}>
-                      <Text style={styles.actionText}>Tools</Text>
+                      <Text style={styles.actionText}>AI Tools</Text>
+                    </Pressable>
+                  </Link>
+                  <Link href={`/home/personal/tools/integrations?growId=${id}`} asChild>
+                    <Pressable style={styles.action}>
+                      <Text style={styles.actionText}>Data Integrations</Text>
+                    </Pressable>
+                  </Link>
+                  <Link href={`/home/personal/tools/pdf-export?growId=${id}`} asChild>
+                    <Pressable style={styles.action}>
+                      <Text style={styles.actionText}>Export Report</Text>
                     </Pressable>
                   </Link>
                 </View>

@@ -239,7 +239,7 @@ export default function DryAmendmentMixToolScreen() {
             values.analysisD,
             values.releaseD
           )
-        ].filter((row) => row.name.trim() && row.amount > 0),
+        ].filter((row) => row.name.trim() && (row.amount ?? 0) > 0),
         dosePerGallonSoil: n(values.dosePerGallonSoil),
         packageSizeGrams: n(values.packageSizeGrams),
         applicationDirections: values.applicationDirections || undefined

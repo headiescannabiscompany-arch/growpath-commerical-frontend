@@ -176,6 +176,16 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
+  it("shows actionable photo requirements before the user chooses media", () => {
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    expect(screen.getByText("Photo checklist before analysis")).toBeTruthy();
+    expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
+    expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
+    expect(screen.getByText(/neutral white light/i)).toBeTruthy();
+    expect(screen.getByText(/No trichome photos selected/i)).toBeTruthy();
+  });
+
   it("uploads and analyzes a photo before filling trichome percentages", async () => {
     const screen = render(<HarvestReadinessToolRoute />);
 
@@ -221,9 +231,44 @@ describe("HarvestReadinessToolRoute", () => {
     await waitFor(() => expect(screen.getByText("Better photos needed")).toBeTruthy());
     expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
     expect(screen.getByText("• Trichome heads are out of focus.")).toBeTruthy();
-    expect(screen.getByDisplayValue("65")).toBeTruthy();
-    expect(screen.getByDisplayValue("8")).toBeTruthy();
-    expect(screen.getByDisplayValue("10")).toBeTruthy();
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
+  });
+
+  it("turns analysis-service failures into retake guidance without filling fields", async () => {
+    mockAnalyzeTrichomePhotos.mockRejectedValue(
+      new Error("The photo-analysis service is unavailable.")
+    );
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
+    await waitFor(() => expect(mockUploadImage).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(screen.getByText(/Photo analysis did not run/i)).toBeTruthy()
+    );
+    expect(screen.getByText(/No trichome fields were filled/i)).toBeTruthy();
+    expect(
+      screen.getAllByText(/top, middle, and lower bud sites/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Harvest photo analysis result")).toBeNull();
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {
@@ -314,6 +359,18 @@ describe("HarvestReadinessToolRoute", () => {
     fireEvent.changeText(
       screen.getByLabelText("Harvest Readiness Estimate Trichome sample location"),
       "top and lower buds"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Cloudy %"),
+      "65"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Amber %"),
+      "8"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Clear %"),
+      "10"
     );
     fireEvent.changeText(
       screen.getByLabelText("Harvest Readiness Estimate Harvest batch ID (optional)"),

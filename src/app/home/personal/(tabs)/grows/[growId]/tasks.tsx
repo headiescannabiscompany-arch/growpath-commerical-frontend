@@ -20,6 +20,7 @@ import {
 } from "@/api/tasks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -532,6 +533,20 @@ export default function GrowTasksScreen() {
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="tasks" />
+
+      <ContextualWorkflowLinks
+        title="Task planning tools"
+        helper="Build watering, feeding, topdress, milestone, and grow-calendar tasks with this grow already selected."
+        source="grow_tasks"
+        growId={growId}
+        workflows={[
+          "auto-grow-calendar",
+          "watering",
+          "feeding-schedule",
+          "topdress",
+          "timeline-planner"
+        ]}
+      />
 
       {canWriteTasks ? (
         <View style={styles.form}>

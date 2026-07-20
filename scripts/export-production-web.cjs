@@ -128,6 +128,8 @@ const fallbackRoutes = [
   "home/personal/tools/ppfd",
   "home/personal/tools/bud-rot-risk",
   "home/personal/tools/npk",
+  "home/personal/tools/recipe-builder",
+  "home/personal/tools/soil-builder",
   "home/personal/tools/nutrient-chemistry",
   "home/personal/tools/watering",
   "home/personal/tools/environment-analysis",

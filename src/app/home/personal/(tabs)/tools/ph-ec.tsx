@@ -3,7 +3,10 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
-import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTasks,
+  type LinkedTaskDraft
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
   if (!value.trim()) return fallback;
@@ -30,7 +33,7 @@ function phEcCalendarMetadata(sourceStage: string) {
   };
 }
 
-function phEcTaskPlan(outputs: Record<string, any>) {
+function phEcTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
   const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
   if (planned.length) {
     return planned.slice(0, 8).map((task: any, index: number) => ({

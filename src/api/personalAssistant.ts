@@ -24,6 +24,12 @@ export type PersonalAssistantResponse = {
   providerLabel?: string;
   conversationId?: string;
   evidenceUsed?: string[];
+  mediaAnalysis?: {
+    requested?: boolean;
+    photosAttached?: number;
+    photosAnalyzed?: number;
+    status?: string;
+  };
   missingInformation?: string[];
   limitations?: string[];
   methodIds?: string[];

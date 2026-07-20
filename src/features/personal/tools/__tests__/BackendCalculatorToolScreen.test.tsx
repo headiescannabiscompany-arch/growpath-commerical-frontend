@@ -143,7 +143,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
     renderCloneRootingTool();
 
     expect(screen.queryByText("Clone Rooting Troubleshooter is a Pro tool")).toBeNull();
-    fireEvent.press(screen.getByText("Calculate"));
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
 
     await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
   });
@@ -158,7 +158,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
     renderCloneRootingTool();
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    fireEvent.press(screen.getByText("Calculate"));
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
 
     await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
     expect(mockRunCalculator).toHaveBeenCalledWith(

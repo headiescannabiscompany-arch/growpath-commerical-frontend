@@ -90,11 +90,18 @@ const GROW_WORKSPACE_GROUPS = [
     items: [
       ["Watering plan", "/home/personal/tools/watering"],
       ["Feeding schedule", "/home/personal/tools/feeding-schedule"],
-      ["Feed / topdress recipes", "/home/personal/tools/recipe-builder"],
+      ["Soil & nutrient mix builders", "/home/personal/tools/recipe-builder"],
       ["Environment review", "/home/personal/tools/environment-analysis"],
-      ["pH / EC", "/home/personal/tools/ph-ec"],
       ["Crop steering", "/home/personal/tools/crop-steering-project"],
       ["Stress / recovery", "/home/personal/tools/stress-test"]
+    ]
+  },
+  {
+    title: "Grow data & reports",
+    items: [
+      ["Data integrations", "/home/personal/tools/integrations"],
+      ["Export grow report", "/home/personal/tools/pdf-export"],
+      ["Saved results", "/home/personal/tools/saved-runs"]
     ]
   },
   {
@@ -253,14 +260,14 @@ export default function GrowToolsScreen() {
       <GrowWorkspaceNav growId={growId} active="tools" />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Reusable calculator library</Text>
+        <Text style={styles.cardTitle}>AI tool library</Text>
         <Text style={styles.cardText}>
-          Open the general library for reusable VPD, PPFD/DLI, dew point, pH/EC, and
-          recipe calculations.
+          Open Ask AI, plant diagnosis, PPFD/DLI analysis, and the soil and nutrient mix
+          builders with this grow selected.
         </Text>
         <Link href={withGrow("/home/personal/tools", growId)} asChild>
           <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Open calculator library</Text>
+            <Text style={styles.actionText}>Open AI tools</Text>
           </Pressable>
         </Link>
         <Link href={withGrow("/home/personal/tools/saved-runs", growId)} asChild>

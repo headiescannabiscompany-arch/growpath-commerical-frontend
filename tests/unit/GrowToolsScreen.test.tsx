@@ -103,6 +103,13 @@ describe("GrowToolsScreen", () => {
         "grow-link-/home/personal/tools/harvest-readiness?growId=grow-1"
       )
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("grow-link-/home/personal/tools/integrations?growId=grow-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("grow-link-/home/personal/tools/pdf-export?growId=grow-1")
+    ).toBeTruthy();
+    expect(screen.queryByText("pH / EC")).toBeNull();
     expect(screen.getByText("dew_point_guard | 2026-06-30")).toBeTruthy();
     expect(screen.getByText("Blueberry #1 | Blueberry")).toBeTruthy();
 

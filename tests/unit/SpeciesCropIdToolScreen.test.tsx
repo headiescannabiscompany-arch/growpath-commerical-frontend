@@ -6,9 +6,14 @@ import SpeciesCropIdToolRoute from "@/app/home/personal/(tabs)/tools/species-cro
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockSavePersonalGrowCropIdentity = jest.fn();
+const mockSavePersonalPlantCropIdentity = jest.fn();
+const mockListPersonalGrows = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
+let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
@@ -16,6 +21,27 @@ jest.mock("expo-router", () => ({
     replace: jest.fn()
   })
 }));
+
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return function MockMediaEvidencePicker(props: any) {
+    React.useEffect(() => {
+      props.onChange?.([
+        {
+          id: "evidence-1",
+          _id: "evidence-1",
+          assetType: "photo",
+          durableUrl: "https://example.com/cannabis-flower.jpg",
+          uploadStatus: "uploaded",
+          purpose: "other",
+          qualityWarnings: []
+        }
+      ]);
+    }, [props.onChange]);
+    return React.createElement(View, { testID: "media-evidence-picker" });
+  };
+});
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
@@ -50,8 +76,23 @@ jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args)
 }));
 
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  savePersonalGrowCropIdentity: (...args: any[]) =>
+    mockSavePersonalGrowCropIdentity(...args)
+}));
+
+jest.mock("@/api/plants", () => ({
+  savePersonalPlantCropIdentity: (...args: any[]) =>
+    mockSavePersonalPlantCropIdentity(...args)
+}));
+
 jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+}));
+
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -63,6 +104,7 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
 describe("SpeciesCropIdToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockSearchParams = { growId: "grow-1" };
     mockRunCalculator.mockResolvedValue({
       outputs: {
         likelyCrop: "Cannabis",
@@ -80,6 +122,85 @@ describe("SpeciesCropIdToolRoute", () => {
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3"]
     });
+    mockSavePersonalGrowCropIdentity.mockResolvedValue({ id: "grow-1" });
+    mockSavePersonalPlantCropIdentity.mockResolvedValue({ id: "plant-1" });
+    mockListPersonalGrows.mockResolvedValue([]);
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        cultivar: "",
+        commonNames: "Cannabis",
+        identificationNotes:
+          "Visible bracts, pistils, resinous sugar leaves, and dense flower structure.",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "high",
+        identifyingVisualTraits:
+          "Bracts, pistils, sugar leaves, and trichome-covered inflorescence."
+      }),
+      provider: "openai",
+      providerLabel: "OpenAI vision crop identity",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: {
+        requested: true,
+        photosAttached: 1,
+        photosAnalyzed: 1,
+        status: "completed"
+      },
+      limitations: ["Cultivar cannot be identified from appearance."]
+    });
+  });
+
+  it("identifies a cannabis flower without requiring a grow", async () => {
+    mockSearchParams = {};
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/No grow is required. Upload photos or enter what you know/)
+      ).toBeTruthy()
+    );
+    expect(screen.getByText("Add identification photos")).toBeTruthy();
+    expect(
+      screen.getByText(/appearance cannot prove a cultivar or strain/i)
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText(
+        "Species / Crop Identification User confirmed species? true/false"
+      )
+    ).toBeNull();
+
+    fireEvent.press(screen.getByText("Identify Crop from Photos"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: undefined,
+          evidenceAssetIds: ["evidence-1"]
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          growId: "",
+          userEnteredName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          userConfirmed: false,
+          imageAnalysis: expect.objectContaining({
+            requested: true,
+            performed: true,
+            provider: "openai",
+            confidence: "high"
+          })
+        })
+      )
+    );
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   });
 
   it("creates crop identity tasks from species identification output", async () => {
@@ -144,5 +265,41 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
+  });
+
+  it("explicitly confirms and saves the result to the selected grow", async () => {
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Cannabis"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Scientific name, if known"),
+      "Cannabis sativa"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Cultivar / strain"),
+      "Bruce Banner"
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+
+    await waitFor(() => expect(screen.getByText("Confirm & Save to Grow")).toBeTruthy());
+    fireEvent.press(screen.getByText("Confirm & Save to Grow"));
+
+    await waitFor(() =>
+      expect(mockSavePersonalGrowCropIdentity).toHaveBeenCalledWith(
+        "grow-1",
+        expect.objectContaining({
+          cropCommonName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          cultivar: "Bruce Banner",
+          confidence: "user_confirmed",
+          sourceToolRunId: "toolrun-1",
+          userConfirmed: true
+        })
+      )
+    );
+    expect(screen.getByText("Confirmed crop identity saved to grow.")).toBeTruthy();
   });
 });

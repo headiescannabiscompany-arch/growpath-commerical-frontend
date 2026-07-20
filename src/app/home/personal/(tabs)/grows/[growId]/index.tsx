@@ -314,6 +314,22 @@ function GrowOverviewContent() {
             <Text style={styles.actionText}>Add Task</Text>
           </Pressable>
         </Link>
+        <Link
+          href={`/home/personal/tools/integrations?growId=${encodeURIComponent(growId)}`}
+          asChild
+        >
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Data Integrations</Text>
+          </Pressable>
+        </Link>
+        <Link
+          href={`/home/personal/tools/pdf-export?growId=${encodeURIComponent(growId)}`}
+          asChild
+        >
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Export Report</Text>
+          </Pressable>
+        </Link>
         <Link href={shareGrowHref(grow, growId) as any} asChild>
           <Pressable style={styles.action} accessibilityLabel="Share grow to forum">
             <Text style={styles.actionText}>Share Grow</Text>

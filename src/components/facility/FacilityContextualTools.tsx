@@ -20,7 +20,7 @@ const TOOLS: Record<FacilityToolKey, { label: string; path: string }> = {
     path: "/home/facility/tools/environment"
   },
   "recipe-builder": {
-    label: "Recipe Builder",
+    label: "Soil & Nutrient Mix Builders",
     path: "/home/facility/tools/recipe-builder"
   },
   "harvest-readiness": {

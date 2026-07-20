@@ -58,6 +58,19 @@ const styles = StyleSheet.create({
   cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
   locked: { fontSize: 12, color: "#991B1B", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+  badge: {
+    borderRadius: 999,
+    backgroundColor: "#E2E8F0",
+    color: "#334155",
+    fontSize: 11,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  detail: { marginTop: 8, color: "#475569", fontSize: 12, lineHeight: 18 },
+  detailLabel: { fontWeight: "800", color: "#334155" },
   link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" },
   lockedText: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#991B1B" },
   utilityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
@@ -99,7 +112,7 @@ const AREA_ORDER: FeatureArea[] = [
 const AREA_LABELS: Record<FeatureArea, string> = {
   personal_navigation: "Navigation",
   environment: "Environment",
-  water_nutrients: "Recipe / Nutrients",
+  water_nutrients: "Soil & Nutrient Science",
   plant_health: "Plant Health & AI",
   crop_management: "Crop Management",
   planning_records: "Planning & Records",
@@ -110,13 +123,15 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
-const CORE_TOOL_KEYS = new Set(["tools.npk_recipe", "tools.environment_analysis"]);
+const CORE_TOOL_KEYS = new Set(["tools.mix_builders", "tools.ppfd_dli"]);
 const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
   "tools.crop_steering_projects",
   "tools.pheno_hunting",
   "tools.pheno_matrix",
   "tools.dry_cure_guard",
   "tools.clone_rooting",
+  "tools.genetics_inventory",
+  "tools.auto_grow_calendar",
   "tools.harvest_readiness_ai"
 ]);
 const SOIL_FOCUSED_TOOL_KEYS = new Set([
@@ -126,10 +141,14 @@ const SOIL_FOCUSED_TOOL_KEYS = new Set([
   "tools.soil_nutrient_batch_planner"
 ]);
 
-function toolMatchesInterests(tool: FeatureDefinition, interests: string[]) {
-  if (!interests.length) return true;
+function toolMatchesInterests(
+  tool: FeatureDefinition,
+  interests: string[],
+  cannabisAccountContext = false
+) {
   const selected = new Set(interests.map((item) => item.toLowerCase()));
-  const growsCannabis = selected.has("cannabis");
+  const growsCannabis =
+    cannabisAccountContext || selected.has("cannabis") || selected.has("hemp");
   const soilMethod = Array.from(selected).some((item) =>
     /soil|no-till|organic|amended/.test(item)
   );
@@ -153,6 +172,30 @@ function ToolCard({
   const href = tool.acceptsGrowContext
     ? hrefWithGrow(tool.href || "", growId)
     : tool.href || "";
+  const experience = tool.experience;
+  const modeLabel = experience
+    ? {
+        ai: "AI analysis",
+        ai_assisted: "AI-assisted + calculated",
+        calculated: "Calculated",
+        guided: "Guided workflow",
+        library: "Reusable library"
+      }[experience.mode]
+    : "";
+  const creditLabel = experience
+    ? experience.aiCredits === "required"
+      ? "Uses AI credits"
+      : experience.aiCredits === "optional"
+        ? "AI credits only when AI runs"
+        : "No AI credits"
+    : "";
+  const growLabel = experience
+    ? experience.grow === "required"
+      ? "Grow required"
+      : experience.grow === "optional"
+        ? "Grow optional"
+        : "No grow needed"
+    : "";
 
   return (
     <View style={[styles.card, !enabled && styles.cardLocked]}>
@@ -161,6 +204,23 @@ function ToolCard({
         {!enabled ? <Text style={styles.locked}>Locked</Text> : null}
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>
+      {experience ? (
+        <>
+          <View style={styles.badgeRow}>
+            <Text style={styles.badge}>{modeLabel}</Text>
+            <Text style={styles.badge}>{creditLabel}</Text>
+            <Text style={styles.badge}>{growLabel}</Text>
+          </View>
+          <Text style={styles.detail}>
+            <Text style={styles.detailLabel}>Bring: </Text>
+            {experience.inputSummary}
+          </Text>
+          <Text style={styles.detail}>
+            <Text style={styles.detailLabel}>You get: </Text>
+            {experience.outputSummary}
+          </Text>
+        </>
+      ) : null}
       {enabled ? (
         <Link href={href as Href} style={styles.link} asChild>
           <Text>Open</Text>
@@ -219,8 +279,13 @@ export default function ToolsHubScreen() {
   const selectedInterests = activeGrowInterests.length
     ? activeGrowInterests
     : profileInterests;
+  const cannabisAccountContext =
+    String(
+      (auth.user as any)?.contentControls?.cannabisVisibility || ""
+    ).toLowerCase() === "show" ||
+    /\b(cannabis|hemp)\b/i.test(String((auth.user as any)?.accountPurpose || ""));
   const tools = getNavigablePersonalTools({ allowBetaSurfaces: true }).filter((tool) =>
-    toolMatchesInterests(tool, selectedInterests)
+    toolMatchesInterests(tool, selectedInterests, cannabisAccountContext)
   );
   const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
   const coreTools = tools.filter((tool) => CORE_TOOL_KEYS.has(tool.key));
@@ -237,10 +302,10 @@ export default function ToolsHubScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Grow Intelligence</Text>
+        <Text style={styles.title}>AI Tools</Text>
         <Text style={styles.subtitle}>
-          Ask AI, diagnose plants, build recipes, analyze environment risk, and save
-          outputs back to a grow.
+          Ask AI, diagnose plants, analyze measured light, build soil and nutrient mixes,
+          and save useful outputs back to a grow.
         </Text>
         <View style={styles.context}>
           <Text style={styles.contextText}>
@@ -312,7 +377,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Saved Runs / Reports</Text>
+        <Text style={styles.sectionTitle}>Saved AI & Tool Results</Text>
         <View style={styles.utilityRow}>
           <Link
             href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
@@ -320,14 +385,6 @@ export default function ToolsHubScreen() {
           >
             <Pressable style={styles.utilityButton}>
               <Text style={styles.utilityText}>Saved Runs</Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/pdf-export", growId) as Href}
-            asChild
-          >
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Reports & Export</Text>
             </Pressable>
           </Link>
         </View>

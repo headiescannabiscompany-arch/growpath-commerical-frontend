@@ -30,6 +30,7 @@ const mockGrowLog = {
 
 const mockPlant = {
   find: jest.fn(),
+  findOne: jest.fn(),
   create: jest.fn()
 };
 
@@ -156,6 +157,63 @@ describe("Personal grow workspace routes", () => {
     mockDiagnosis.updateOne.mockResolvedValue({});
     mockPlantGrowthProfile.find.mockReturnValue(leanChain([]));
     app = createApp();
+  });
+
+  test("saves explicitly confirmed crop identity to an owned plant", async () => {
+    const plant = doc({
+      _id: PLANT_ID,
+      userId: TEST_USER,
+      growId: GROW_ID,
+      name: "Plant 1"
+    });
+    mockPlant.findOne.mockResolvedValue(plant);
+    mockPlantGrowthProfile.findOneAndUpdate.mockResolvedValue(
+      doc({
+        _id: "507f1f77bcf86cd799439099",
+        plantId: PLANT_ID,
+        confirmationStatus: "user_confirmed"
+      })
+    );
+
+    const res = await request(app)
+      .patch(`/api/personal/plants/${PLANT_ID}/crop-identity`)
+      .send({
+        growId: GROW_ID,
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        commonNames: ["Cannabis"],
+        cultivar: "Bruce Banner",
+        userConfirmed: true,
+        sourceToolRunId: TOOL_RUN_ID
+      });
+
+    expect(res.status).toBe(200);
+    expect(mockPlant.findOne).toHaveBeenCalledWith({
+      _id: PLANT_ID,
+      $or: [{ userId: TEST_USER }, { user: expect.any(Object) }],
+      deletedAt: null
+    });
+    expect(plant).toMatchObject({
+      cropCommonName: "Cannabis",
+      scientificName: "Cannabis sativa",
+      commonNames: ["Cannabis"],
+      cultivar: "Bruce Banner",
+      strain: "Bruce Banner",
+      cropIdentity: expect.objectContaining({
+        confirmationStatus: "user_confirmed",
+        sourceToolRunId: TOOL_RUN_ID
+      })
+    });
+    expect(plant.save).toHaveBeenCalled();
+    expect(mockPlantGrowthProfile.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ plantId: PLANT_ID }),
+      expect.objectContaining({
+        confirmedScientificName: "Cannabis sativa",
+        cultivarName: "Bruce Banner",
+        confirmationStatus: "user_confirmed"
+      }),
+      expect.objectContaining({ upsert: true })
+    );
   });
 
   test("creates grow-scoped logs, normalizes photo metadata, and links source records", async () => {

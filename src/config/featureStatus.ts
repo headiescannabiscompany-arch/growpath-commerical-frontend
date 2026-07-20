@@ -21,6 +21,15 @@ export type FeatureArea =
   | "integrations"
   | "business_production";
 
+export type ToolExperience = {
+  mode: "ai" | "ai_assisted" | "calculated" | "guided" | "library";
+  aiCredits: "never" | "optional" | "required";
+  grow: "not_needed" | "optional" | "required";
+  audience?: "general" | "cannabis_context" | "commercial";
+  inputSummary: string;
+  outputSummary: string;
+};
+
 export type FeatureDefinition = {
   key: string;
   title: string;
@@ -31,6 +40,7 @@ export type FeatureDefinition = {
   hubVisible?: boolean;
   acceptsGrowContext?: boolean;
   capabilityKey?: string;
+  experience?: ToolExperience;
   internalNote: string;
 };
 
@@ -53,8 +63,9 @@ export const personalFeatures = {
   },
   tools: {
     key: "personal.tools",
-    title: "Tools / AI",
-    description: "Cultivation calculations, analysis, and integrations.",
+    title: "AI Tools",
+    description:
+      "User-facing AI, diagnosis, light analysis, and soil/nutrient mix workflows.",
     area: "personal_navigation",
     status: "release",
     href: "/home/personal/tools"
@@ -92,7 +103,7 @@ export const personalFeatures = {
   }
 } as const satisfies Record<string, Omit<FeatureDefinition, "internalNote">>;
 
-export const personalToolFeatures = [
+export const personalToolFeatures: readonly FeatureDefinition[] = [
   {
     key: "tools.integrations",
     title: "Data Integrations",
@@ -100,8 +111,9 @@ export const personalToolFeatures = [
     area: "integrations",
     status: "release",
     href: "/home/personal/tools/integrations",
+    hubVisible: false,
     internalNote:
-      "Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
+      "Grow-owned workflow surfaced from Grows, not AI Tools. Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
   },
   {
     key: "tools.vpd",
@@ -110,8 +122,10 @@ export const personalToolFeatures = [
     area: "environment",
     status: "release",
     href: "/home/personal/tools/vpd",
+    hubVisible: false,
     acceptsGrowContext: true,
-    internalNote: "Working calculator with grow log and task actions."
+    internalNote:
+      "Working calculation used by AI, telemetry context, saved results, and legacy links; intentionally hidden from user discovery as a small technical calculator."
   },
   {
     key: "tools.dew_point_guard",
@@ -121,9 +135,10 @@ export const personalToolFeatures = [
     area: "environment",
     status: "release",
     href: "/home/personal/tools/dew-point-guard",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
-      "Strong foundation; charts, alerts, and broader provider support remain."
+      "AI/telemetry support workflow intentionally hidden from user discovery; charts, alerts, and broader provider support remain."
   },
   {
     key: "tools.ppfd_dli",
@@ -134,6 +149,15 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/ppfd",
     acceptsGrowContext: true,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary: "A canopy PPFD map or average, light hours, and growth stage.",
+      outputSummary:
+        "DLI, hot/low spots, coverage spread, stage fit, and safer next checks."
+    },
     internalNote: "Measured-light calculation works; fixture modeling remains incomplete."
   },
   {
@@ -148,15 +172,49 @@ export const personalToolFeatures = [
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
-    key: "tools.npk_recipe",
-    title: "Recipe Builder",
+    key: "tools.mix_builders",
+    title: "Soil & Nutrient Mix Builders",
     description:
-      "Build feed, soil, and dry-amendment recipes from ingredients, guaranteed analysis, max amounts, release timing, and target ratios.",
+      "Choose one science-based workflow: build a nutrient mix from verified labels and batch context, or build a soil mix from media structure, compost, minerals, and amendments.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/recipe-builder",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "guided",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Choose nutrient or soil, then bring verified labels, batch details, water or media context, and your intended use.",
+      outputSummary:
+        "One focused builder with visible calculations, evidence quality, assumptions, release timing, and warnings."
+    },
+    internalNote:
+      "Single Personal Tools discovery entry for the two canonical builders. Supporting chemistry, source comparison, dry-amendment, label-library, and topdress workflows must not appear as competing builders."
+  },
+  {
+    key: "tools.npk_recipe",
+    title: "Nutrient Mix Builder",
+    description:
+      "Build science-based nutrient mixes from verified labels, batch volume, elemental conversions, nutrient forms, release timing, and stated assumptions.",
+    area: "water_nutrients",
+    status: "release",
+    href: "/home/personal/tools/npk",
+    hubVisible: false,
+    acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Verified product labels, amounts, units, batch volume, and water baseline.",
+      outputSummary:
+        "Elemental ppm, N-P-K ratio, mixing order, release timing, and warnings."
+    },
     internalNote:
       "Twenty-row recipe foundation exists; chemistry and measured-EC work remains."
   },
@@ -167,6 +225,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -179,6 +238,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/nutrient-source-comparison",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -186,13 +246,24 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.product_ingredient_library",
-    title: "Product / Ingredient Library",
+    title: "Products & Label Library",
     description:
       "Create and manage nutrient, amendment, soil, and input records for recipes and grow planning.",
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/ingredient-library",
+    hubVisible: false,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "library",
+      aiCredits: "never",
+      grow: "not_needed",
+      audience: "general",
+      inputSummary:
+        "Product labels, nutrient forms, source confidence, and optional evidence.",
+      outputSummary:
+        "Reusable ingredient records for mix builders, comparisons, and revisions."
+    },
     internalNote:
       "V1 release CRUD surface for user-entered ingredients with label N-P2O5-K2O, source confidence, favorites, and archive support."
   },
@@ -217,6 +288,16 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Measured temperature, humidity, leaf temperature, light, CO2, and stage.",
+      outputSummary:
+        "A rule-based environment review, conflicts, assumptions, and follow-up tasks."
+    },
     internalNote: "Rule-based ToolRun review is available without spending AI credits."
   },
   {
@@ -249,16 +330,17 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.pdf_export",
-    title: "PDF / Export",
+    title: "Grow Reports & Export",
     description:
       "Export grow timeline, journal, diagnosis, tool run, harvest, pheno, and comparison reports from the records they belong to.",
     area: "planning_records",
     status: "release",
     href: "/home/personal/tools/pdf-export",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_PDF_EXPORT,
     internalNote:
-      "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
+      "Owned by Grows and Profile, not AI Tools. CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
   {
     key: "tools.pheno_matrix",
@@ -282,6 +364,16 @@ export const personalToolFeatures = [
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
+    experience: {
+      mode: "ai",
+      aiCredits: "required",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Clear whole-plant and close-up photos plus symptoms and measured conditions.",
+      outputSummary:
+        "Cautious issue candidates, visible evidence, counter-evidence, and next checks."
+    },
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -294,6 +386,16 @@ export const personalToolFeatures = [
     href: "/home/personal/ai",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
+    experience: {
+      mode: "ai",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "A question plus any selected grow, plant, records, or uploaded evidence.",
+      outputSummary:
+        "A context-aware answer with limitations and reviewable task or log drafts."
+    },
     internalNote:
       "Primary personal AI interface for grow-aware questions, task drafts, and log drafts."
   },
@@ -310,14 +412,25 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.soil_builder",
-    title: "Soil Builder",
+    title: "Soil Mix Builder",
     description:
-      "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
+      "Build science-based soil mixes from physical structure, compost uncertainty, buffering, biology, verified amendments, and release timing.",
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/soil-builder",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Batch size, base media, compost, amendments, labels, and intended use.",
+      outputSummary:
+        "Scaled soil recipe, physical balance, release timing, risks, and rest plan."
+    },
     internalNote:
       "Approved beta soil/nutrient workflow wired to ToolRun, grow context, logs, tasks, and backend soil mix calculations."
   },
@@ -328,6 +441,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/dry-amendment-mix",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -340,10 +454,11 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/topdress",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Approved beta task/calendar workflow wired to ToolRun, grow context, logs, tasks, and release timing warnings."
+      "Task-owned planner surfaced from Personal Tasks and grow Tasks. Wired to ToolRun, grow context, logs, tasks, and release timing warnings."
   },
   {
     key: "tools.ph_ec_adjustment",
@@ -352,10 +467,11 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/ph-ec",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Approved beta pH/EC range workflow. It does not recommend exact pH up/down dosing without product concentration."
+      "Small AI/support calculator hidden from user discovery. It does not recommend exact pH up/down dosing without product concentration."
   },
   {
     key: "tools.crop_steering_projects",
@@ -454,6 +570,16 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/ipm-scout",
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "optional",
+      audience: "general",
+      inputSummary:
+        "Scouting observations, traps, damage pattern, severity, and clear photos.",
+      outputSummary:
+        "Likely organism groups, uncertainty, discriminating checks, and inspection tasks."
+    },
     internalNote:
       "Approved beta IPM scouting workflow. It records cautious evidence and follow-up tasks without reckless pesticide dosing."
   },
@@ -466,6 +592,16 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/species-crop-id",
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "not_needed",
+      audience: "general",
+      inputSummary:
+        "One or more clear plant photos; a grow can be attached but is not required.",
+      outputSummary:
+        "A draft crop/species identity, visible traits, confidence, and better-photo guidance."
+    },
     internalNote:
       "Approved beta crop-context workflow. Regional invasive alerts stay out of current programming."
   },
@@ -479,6 +615,16 @@ export const personalToolFeatures = [
     href: "/home/personal/tools/harvest-readiness",
     hubVisible: true,
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "required",
+      audience: "cannabis_context",
+      inputSummary:
+        "Cannabis grow timing, maturity signals, goals, and sharp trichome photos.",
+      outputSummary:
+        "Photo usability, maturity estimate, uncertainty, retake guidance, and decision tasks."
+    },
     internalNote:
       "Approved beta harvest-readiness workflow. Keep the shared calculator visible in Personal Tools for cannabis-enabled users and link the same route contextually from cannabis grows."
   },
@@ -531,7 +677,7 @@ export const personalToolFeatures = [
     internalNote:
       "Inventory belongs to commercial and facility surfaces, not the personal tools hub."
   }
-] as const satisfies readonly FeatureDefinition[];
+];
 
 export function isFeatureNavigable(
   feature: Pick<FeatureDefinition, "status" | "href">,

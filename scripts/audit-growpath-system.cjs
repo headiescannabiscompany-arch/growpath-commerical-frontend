@@ -41,10 +41,10 @@ const MODULES = [
   },
   {
     phase: "Foundation",
-    name: "Product / Ingredient Library",
+    name: "Products & Label Library",
     route: "/home/personal/tools/ingredient-library",
     keywords: [
-      "Product / Ingredient Library",
+      "Products & Label Library",
       "listProductIngredients",
       "ProductIngredient",
       "guaranteed analysis"
@@ -123,7 +123,7 @@ const MODULES = [
   },
   {
     phase: "Soil & Nutrients",
-    name: "Soil Builder",
+    name: "Soil Mix Builder",
     route: "/home/personal/tools/soil-builder",
     keywords: [
       "soil builder",

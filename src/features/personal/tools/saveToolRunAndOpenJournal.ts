@@ -41,7 +41,7 @@ type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
 type CreateTaskResult =
   | { ok: true; toolRunId: string; taskId: string }
   | { ok: false; error: string };
-type LinkedTaskDraft = {
+export type LinkedTaskDraft = {
   title: string;
   description?: string;
   priority?: "low" | "medium" | "high";

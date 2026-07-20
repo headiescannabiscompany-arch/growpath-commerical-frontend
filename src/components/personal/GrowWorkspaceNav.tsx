@@ -53,7 +53,7 @@ export default function GrowWorkspaceNav({
     { key: "plants", label: "Plants" },
     { key: "journal", label: "Journal" },
     { key: "tasks", label: "Tasks" },
-    { key: "tools", label: "Tools" },
+    { key: "tools", label: "AI Tools" },
     { key: "automation", label: "Automation" },
     { key: "timeline", label: "Timeline" },
     { key: "compare", label: "Compare" }

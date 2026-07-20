@@ -192,3 +192,27 @@ export async function createPersonalPlant(data: {
     return null;
   }
 }
+
+export async function savePersonalPlantCropIdentity(
+  plantId: string,
+  identity: {
+    growId?: string;
+    cropCommonName: string;
+    scientificName?: string;
+    commonNames?: string[] | string;
+    cultivar?: string;
+    cropProfileId?: string | null;
+    confidence?: string;
+    sourceToolRunId?: string | null;
+    userConfirmed: true;
+  }
+): Promise<PersonalPlant> {
+  const response: any = await apiRequest(
+    `/api/personal/plants/${encodeURIComponent(plantId)}/crop-identity`,
+    { method: "PATCH", body: identity }
+  );
+  return (response?.updated ??
+    response?.plant ??
+    response?.data?.plant ??
+    response) as PersonalPlant;
+}

@@ -2753,7 +2753,9 @@ function calculateTissueCulture(input = {}) {
   const likelyFailureModes = [];
   const diagnosisTags = [];
   const explantType = String(input.explantType || input.explant || "node").toLowerCase();
-  const cropType = String(input.cropType || "cannabis").toLowerCase();
+  const cropType = String(
+    input.cropType || cropKeyFromInput(input) || "unspecified"
+  ).toLowerCase();
   const cannabisPreset =
     cropType === "cannabis"
       ? {
@@ -3611,27 +3613,101 @@ function calculateIpmScout(input = {}) {
 }
 
 function calculateSpeciesCropIdentification(input = {}) {
-  const commonName = String(input.commonName || input.crop || "unknown crop").trim();
+  const commonName = String(
+    input.userEnteredName ||
+      input.commonName ||
+      input.crop ||
+      input.scientificName ||
+      "unknown crop"
+  ).trim();
+  const scientificName = String(input.scientificName || "").trim();
   const cultivar = String(input.cultivar || input.strain || "").trim();
-  const traits = parseList(input.traits || input.notes);
-  const confirmed = String(input.userConfirmed || "").toLowerCase() === "true";
+  const commonNames = Array.from(
+    new Set([commonName, ...parseList(input.commonNames)].filter(Boolean))
+  );
+  const suppliedImageAnalysis =
+    input.imageAnalysis && typeof input.imageAnalysis === "object"
+      ? input.imageAnalysis
+      : {};
+  const imageAnalysis = {
+    requested: suppliedImageAnalysis.requested === true,
+    performed: suppliedImageAnalysis.performed === true,
+    photoCount: Number.isFinite(Number(suppliedImageAnalysis.photoCount))
+      ? Number(suppliedImageAnalysis.photoCount)
+      : 0,
+    provider: String(suppliedImageAnalysis.provider || "").trim() || null,
+    providerLabel: String(suppliedImageAnalysis.providerLabel || "").trim() || null,
+    confidence: ["high", "medium", "low"].includes(
+      String(suppliedImageAnalysis.confidence || "").toLowerCase()
+    )
+      ? String(suppliedImageAnalysis.confidence).toLowerCase()
+      : "low",
+    quality: ["usable", "limited", "unusable"].includes(
+      String(suppliedImageAnalysis.quality || "").toLowerCase()
+    )
+      ? String(suppliedImageAnalysis.quality).toLowerCase()
+      : "limited",
+    identifyingVisualTraits: String(
+      suppliedImageAnalysis.identifyingVisualTraits || ""
+    ).trim(),
+    evidenceUsed: parseList(suppliedImageAnalysis.evidenceUsed),
+    limitations: parseList(suppliedImageAnalysis.limitations)
+  };
+  const traits = [
+    input.traits,
+    input.identificationNotes,
+    input.notes,
+    imageAnalysis.identifyingVisualTraits
+  ]
+    .flatMap(parseList)
+    .filter(Boolean);
+  const confirmed =
+    input.userConfirmed === true ||
+    String(input.userConfirmed || "").toLowerCase() === "true";
+  const recommendationContext = confirmed
+    ? `Save ${commonName} as the confirmed crop identity before applying crop-specific targets.`
+    : `Confirm ${commonName} identity before applying crop-specific diagnosis, nutrient, environment, or IPM guidance.`;
   return {
     likelyCrop: commonName,
+    scientificName: scientificName || null,
+    commonNames,
     cultivarOrStrain: cultivar || null,
-    confidence: confirmed ? "user_confirmed" : traits.length >= 3 ? "medium" : "low",
+    confidence: confirmed
+      ? "user_confirmed"
+      : imageAnalysis.performed
+        ? imageAnalysis.confidence
+        : traits.length >= 3
+          ? "medium"
+          : "low",
     confirmationRequired: !confirmed,
+    userConfirmationRequired: !confirmed,
+    recommendationContext,
+    imageAnalysis,
     cropProfileSuggestion: {
       commonName,
+      scientificName: scientificName || null,
+      commonNames,
       cultivarOrStrain: cultivar || null,
       traits,
-      source: confirmed ? "user_confirmed" : "user_entered"
+      source: confirmed
+        ? "user_confirmed"
+        : imageAnalysis.performed
+          ? "ai_vision_draft"
+          : "user_entered"
     },
-    warnings: confirmed
-      ? []
-      : ["Confirm crop identity before relying on crop-specific recommendations."],
+    warnings: [
+      ...(!confirmed
+        ? ["Confirm crop identity before relying on crop-specific recommendations."]
+        : []),
+      ...(imageAnalysis.requested && !imageAnalysis.performed
+        ? ["Uploaded photo pixels were not analyzed by the active provider."]
+        : [])
+    ],
     recommendations: [
       "Attach this identity to the plant or grow profile once confirmed.",
-      "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
+      imageAnalysis.performed
+        ? "Compare the visible flower, leaf, stem, and growth traits with another clear view before confirmation."
+        : "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
     ]
   };
 }
@@ -3740,12 +3816,22 @@ function calculateGeneticsInventory(input = {}) {
 function calculateHarvestReadiness(input = {}) {
   const flowerDay = number(input.flowerDay ?? 49, "Flower day");
   const breederFlowerTime = number(input.breederFlowerTime ?? 63, "Breeder flower time");
-  const cloudyPercent = Math.max(0, number(input.cloudyPercent ?? 50, "Cloudy percent"));
-  const amberPercent = Math.max(0, number(input.amberPercent ?? 5, "Amber percent"));
-  const clearPercent = Math.max(
-    0,
-    number(input.clearPercent ?? 100 - cloudyPercent - amberPercent, "Clear percent")
+  const trichomeInputsComplete = [
+    input.cloudyPercent,
+    input.amberPercent,
+    input.clearPercent
+  ].every(
+    (value) => value !== undefined && value !== null && String(value).trim() !== ""
   );
+  const cloudyPercent = trichomeInputsComplete
+    ? Math.max(0, number(input.cloudyPercent, "Cloudy percent"))
+    : null;
+  const amberPercent = trichomeInputsComplete
+    ? Math.max(0, number(input.amberPercent, "Amber percent"))
+    : null;
+  const clearPercent = trichomeInputsComplete
+    ? Math.max(0, number(input.clearPercent, "Clear percent"))
+    : null;
   const pistilStatus = String(input.pistilStatus || "unknown").toLowerCase();
   const budSwellStatus = String(
     input.budSwellStatus || input.calyxSwellStatus || "unknown"
@@ -3770,10 +3856,21 @@ function calculateHarvestReadiness(input = {}) {
     "Harvest readiness is decision support, not a guarantee. Confirm with photos, cultivar behavior, desired effect, and whole-plant maturity.",
     "Do not harvest from one sugar leaf photo; check multiple bud sites when possible."
   ];
-  if (remaining <= 10 && cloudyPercent >= 50) readinessStatus = "checking_window";
-  if (remaining <= 3 && cloudyPercent >= 60 && amberPercent >= 5)
+  if (!trichomeInputsComplete) {
+    warnings.push(
+      "Trichome percentages are missing. Enter confirmed manual observations or use usable macro-photo analysis before relying on harvest timing."
+    );
+  }
+  if (trichomeInputsComplete && remaining <= 10 && cloudyPercent >= 50)
+    readinessStatus = "checking_window";
+  if (
+    trichomeInputsComplete &&
+    remaining <= 3 &&
+    cloudyPercent >= 60 &&
+    amberPercent >= 5
+  )
     readinessStatus = "ready_soon";
-  if (clearPercent > 25) readinessStatus = "not_ready";
+  if (trichomeInputsComplete && clearPercent > 25) readinessStatus = "not_ready";
   if (structurallyDeveloping && readinessStatus === "ready_soon") {
     readinessStatus = "checking_window";
     warnings.push(
@@ -3812,9 +3909,12 @@ function calculateHarvestReadiness(input = {}) {
     },
     {
       factor: "trichomes",
-      observation: `${cloudyPercent}% cloudy, ${amberPercent}% amber, ${clearPercent}% clear`,
-      interpretation:
-        clearPercent > 25
+      observation: trichomeInputsComplete
+        ? `${cloudyPercent}% cloudy, ${amberPercent}% amber, ${clearPercent}% clear`
+        : "Not entered",
+      interpretation: !trichomeInputsComplete
+        ? "Trichome evidence is missing; no maturity inference was made from trichomes."
+        : clearPercent > 25
           ? "Clear dominant still suggests waiting."
           : "Trichome mix is entering a harvest check window."
     },
@@ -3864,8 +3964,9 @@ function calculateHarvestReadiness(input = {}) {
       breederFlowerTime + 14
     } as the late edge rather than an automatic harvest date.`,
     evidence,
-    trichomeInterpretation:
-      clearPercent > 25
+    trichomeInterpretation: !trichomeInputsComplete
+      ? "Trichome evidence is missing. Add confirmed manual values or usable macro-photo analysis."
+      : clearPercent > 25
         ? "Clear trichomes still suggest waiting."
         : "Trichome mix is entering a check window.",
     pistilInterpretation: evidence.find((row) => row.factor === "pistils")
@@ -3882,7 +3983,8 @@ function calculateHarvestReadiness(input = {}) {
       clearPercent,
       cloudyPercent,
       amberPercent,
-      sampleLocation
+      sampleLocation,
+      evidenceStatus: trichomeInputsComplete ? "entered" : "missing"
     },
     wholePlantMaturity: {
       pistilStatus,
@@ -3911,11 +4013,13 @@ function calculateHarvestReadiness(input = {}) {
       }
     ],
     recommendations: [
-      clearPercent > 25
-        ? "Clear trichomes are still prominent; wait and recheck the same bud sites."
-        : amberPercent >= 20
-          ? "Amber is substantial; decide whether a heavier result is worth further loss of bright aroma and flavor."
-          : "Cloudy-dominant trichomes indicate the main decision window; match timing to the desired effect.",
+      !trichomeInputsComplete
+        ? "Capture usable macro photos or enter confirmed manual trichome observations before making a trichome-based harvest decision."
+        : clearPercent > 25
+          ? "Clear trichomes are still prominent; wait and recheck the same bud sites."
+          : amberPercent >= 20
+            ? "Amber is substantial; decide whether a heavier result is worth further loss of bright aroma and flavor."
+            : "Cloudy-dominant trichomes indicate the main decision window; match timing to the desired effect.",
       structurallyDeveloping
         ? "Buds are still developing structurally. Wait for calyx swell to finish unless plant health forces an earlier harvest."
         : structurallyFinished
@@ -3945,6 +4049,10 @@ function calculatePersonalInventory(input = {}) {
   const quantity = Math.max(0, number(input.quantity ?? 0, "Quantity"));
   const reorderAt = Math.max(0, number(input.reorderAt ?? 0, "Reorder threshold"));
   const cost = Math.max(0, number(input.cost ?? 0, "Cost"));
+  const recipeUseRate =
+    input.recipeUseRate == null || input.recipeUseRate === ""
+      ? null
+      : Math.max(0, number(input.recipeUseRate, "Recipe use rate"));
   const lowStock = quantity <= reorderAt;
   return {
     name: input.name || "Inventory item",
@@ -3955,12 +4063,8 @@ function calculatePersonalInventory(input = {}) {
     lowStockWarnings: lowStock
       ? [`${input.name || "Item"} is at or below reorder threshold.`]
       : [],
-    recipeAvailability: input.recipeUseRate
-      ? Math.floor(quantity / Math.max(1, number(input.recipeUseRate, "Recipe use rate")))
-      : null,
-    costPerUse: input.recipeUseRate
-      ? Number((cost * number(input.recipeUseRate, "Recipe use rate")).toFixed(2))
-      : null,
+    recipeAvailability: recipeUseRate ? Math.floor(quantity / recipeUseRate) : null,
+    costPerUse: recipeUseRate ? Number((cost * recipeUseRate).toFixed(2)) : null,
     reorderSuggestions: lowStock
       ? [{ title: `Reorder ${input.name || "item"}`, dueInDays: 1, priority: "medium" }]
       : []

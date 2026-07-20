@@ -6,6 +6,8 @@ Setup is review gated: select provider, connect, test, fetch structure, preview 
 
 Personal auto-build targets an owned grow and creates read-only spaces, devices, streams, and dashboard definitions. Facility auto-build requires owner or manager access and creates canonical rooms plus read-only devices/streams and draft alert/dashboard definitions. Commercial auto-build targets only owned product trials or grows explicitly intended for trials, demos, or education; it must not turn ordinary storefront or campaign records into cultivation spaces.
 
+Personal Data Integrations are grow-owned discovery. Surface connection and mapping entry points from Grows and the selected grow workspace, not from the general AI Tools hub. Preserve old deep links, but require an owned grow before saving imported structure or telemetry.
+
 Provider metric keys remain source evidence. Normalization must preserve the provider key alongside the canonical metric and must not invent units, readings, thresholds, room identity, or control capability. Controller writes, setpoints, schedules, and automation activation require a separately reviewed permission scope.
 
 Canonical metrics are `air_temperature` in C, `relative_humidity` in percent, `vpd` in kPa, `dew_point` in C, `co2` in ppm, `ppfd` in umol/m2/s, `dli` in mol/m2/day, `substrate_moisture` in percent, `substrate_ec` in mS/cm, `substrate_ph` in pH, plus `irrigation_event`, `alarm`, `device_offline`, and `device_fault` state/event signals. Convert Fahrenheit/Kelvin, fractional moisture/RH, or uS/cm only when the provider supplies that source unit. Unknown keys remain `unmapped` with their raw evidence intact.

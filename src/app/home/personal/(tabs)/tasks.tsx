@@ -656,10 +656,16 @@ export default function PersonalTaskCenterRoute() {
         </View>
       </View>
       <ContextualWorkflowLinks
-        title="Planning workflows"
-        helper="These shared tools create real grow tasks and calendar entries. Select the grow inside the workflow when one is not already in context."
+        title="Task planning tools"
+        helper="These planners belong here because their main output is a real grow task or calendar entry. Select the grow inside the planner when one is not already in context."
         source="personal_tasks_calendar"
-        workflows={["watering", "feeding-schedule", "timeline-planner"]}
+        workflows={[
+          "auto-grow-calendar",
+          "watering",
+          "feeding-schedule",
+          "topdress",
+          "timeline-planner"
+        ]}
       />
       <PersonalFeedPlacement
         placement="top"

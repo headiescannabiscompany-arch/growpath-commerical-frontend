@@ -214,6 +214,8 @@ describe("GrowTasksScreen", () => {
     const screen = render(<GrowTasksScreen />);
 
     await waitFor(() => expect(screen.getByText("Tasks")).toBeTruthy());
+    expect(screen.getByText("Task planning tools")).toBeTruthy();
+    expect(screen.getByLabelText("Topdress Planner from grow_tasks")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Task title"), "Inspect sensor alert");
     fireEvent.press(screen.getByLabelText("Set task source sensor_alert"));
     fireEvent.changeText(screen.getByLabelText("Task source object"), "sensor-alert-2");

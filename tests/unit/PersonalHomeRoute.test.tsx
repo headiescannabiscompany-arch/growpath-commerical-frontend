@@ -160,7 +160,7 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Latest tool")).toBeTruthy();
     expect(screen.getByText("VPD")).toBeTruthy();
     expect(screen.getByText("Check VPD after lights on")).toBeTruthy();
-    expect(screen.getByText("Run Tool")).toBeTruthy();
+    expect(screen.getByText("Open AI Tools")).toBeTruthy();
     expect(screen.getByText("Diagnose")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Discover Storefronts")).toBeTruthy();

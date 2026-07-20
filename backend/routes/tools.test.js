@@ -1059,6 +1059,7 @@ describe("Tools Router (tools.js)", () => {
         growId: "grow_1",
         projectName: "TC mother backup",
         batchNumber: "TC-001",
+        cropType: "cannabis",
         vessels: 20,
         contaminatedVessels: 5,
         fungusVessels: 1,
@@ -1280,9 +1281,11 @@ describe("Tools Router (tools.js)", () => {
     const cropId = await authed(
       request(app).post("/api/tools/species-crop-id").send({
         growId: "grow_1",
-        commonName: "Cannabis",
+        userEnteredName: "Cannabis",
+        scientificName: "Cannabis sativa",
         cultivar: "Blue Dream",
-        traits: "serrated leaves, photoperiod",
+        commonNames: "Cannabis, hemp",
+        identificationNotes: "serrated leaves, photoperiod",
         userConfirmed: false
       })
     );
@@ -1325,14 +1328,71 @@ describe("Tools Router (tools.js)", () => {
     expect(cropId.status).toBe(201);
     expect(cropId.body.outputs).toMatchObject({
       likelyCrop: "Cannabis",
+      scientificName: "Cannabis sativa",
+      commonNames: ["Cannabis", "hemp"],
       cultivarOrStrain: "Blue Dream",
-      confirmationRequired: true
+      confirmationRequired: true,
+      userConfirmationRequired: true,
+      recommendationContext: expect.stringContaining("Confirm Cannabis identity")
     });
     expect(cropId.body.outputs.warnings).toEqual(
       expect.arrayContaining([
         "Confirm crop identity before relying on crop-specific recommendations."
       ])
     );
+  });
+
+  test("identifies a cannabis flower draft without requiring a grow", async () => {
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const cropId = await authed(
+      request(app)
+        .post("/api/tools/species-crop-id")
+        .send({
+          userEnteredName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          commonNames: "Cannabis",
+          identificationNotes:
+            "Dense flower with visible pistils, resinous sugar leaves, and trichome coverage.",
+          userConfirmed: false,
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            photoCount: 1,
+            provider: "openai",
+            providerLabel: "OpenAI vision crop identity",
+            confidence: "high",
+            quality: "usable",
+            identifyingVisualTraits:
+              "Visible bracts, pistils, sugar leaves, and dense inflorescence structure."
+          }
+        })
+    );
+
+    expect(cropId.status).toBe(201);
+    expect(mockGrow.exists).not.toHaveBeenCalled();
+    expect(cropId.body.outputs).toMatchObject({
+      likelyCrop: "Cannabis",
+      scientificName: "Cannabis sativa",
+      confidence: "high",
+      userConfirmationRequired: true,
+      imageAnalysis: {
+        requested: true,
+        performed: true,
+        photoCount: 1,
+        provider: "openai",
+        providerLabel: "OpenAI vision crop identity",
+        confidence: "high",
+        quality: "usable"
+      },
+      cropProfileSuggestion: {
+        source: "ai_vision_draft"
+      }
+    });
+    expect(cropId.body.toolRun.growId).toBeNull();
   });
 
   test("runs genetics inventory and harvest readiness tools", async () => {
@@ -1372,6 +1432,19 @@ describe("Tools Router (tools.js)", () => {
         userGoal: "balanced"
       })
     );
+    const harvestWithoutTrichomes = await authed(
+      request(app).post("/api/tools/harvest-readiness").send({
+        growId: "grow_1",
+        flowerDay: 61,
+        breederFlowerTime: 63,
+        cloudyPercent: "",
+        amberPercent: "",
+        clearPercent: "",
+        pistilStatus: "mostly_receded",
+        budSwellStatus: "fully_swollen",
+        sampleLocation: "mixed_bud_sites"
+      })
+    );
 
     expect(genetics.status).toBe(201);
     expect(genetics.body.outputs).toMatchObject({
@@ -1403,6 +1476,22 @@ describe("Tools Router (tools.js)", () => {
       expect.arrayContaining(["63 day flower estimate", "2 stress notes"])
     );
     expect(harvest.status).toBe(201);
+    expect(harvestWithoutTrichomes.status).toBe(201);
+    expect(harvestWithoutTrichomes.body.outputs).toMatchObject({
+      readinessStatus: "early",
+      trichomeObservation: {
+        clearPercent: null,
+        cloudyPercent: null,
+        amberPercent: null,
+        sampleLocation: "mixed_bud_sites",
+        evidenceStatus: "missing"
+      }
+    });
+    expect(harvestWithoutTrichomes.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Trichome percentages are missing")
+      ])
+    );
     expect(harvest.body.outputs).toMatchObject({
       readinessStatus: "ready_soon",
       harvestTask: expect.objectContaining({ title: "Recheck harvest readiness" }),
@@ -1463,7 +1552,7 @@ describe("Tools Router (tools.js)", () => {
         unit: "lb",
         reorderAt: 2,
         cost: 12,
-        recipeUseRate: 1
+        recipeUseRate: 0.25
       })
     );
     const steering = await authed(
@@ -1516,6 +1605,8 @@ describe("Tools Router (tools.js)", () => {
     expect(inventory.body.outputs.reorderSuggestions[0]).toMatchObject({
       title: "Reorder Kelp meal"
     });
+    expect(inventory.body.outputs.recipeAvailability).toBe(4);
+    expect(inventory.body.outputs.costPerUse).toBe(3);
     expect(steering.status).toBe(201);
     expect(steering.body.outputs).toMatchObject({
       steeringIntent: "generative",

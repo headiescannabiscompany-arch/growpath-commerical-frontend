@@ -3,7 +3,10 @@ import React, { useState } from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
-import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTasks,
+  type LinkedTaskDraft
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -27,7 +30,7 @@ function stressTestCalendarMetadata(sourceStage: string) {
   };
 }
 
-function stressTestTaskPlan(outputs: Record<string, any>) {
+function stressTestTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
   const highRisk = outputs.riskLevel === "high";
   const shouldRetest = Boolean(outputs.selectionSignals?.rejectOrRetest);
   const stressLabel = outputs.stressType || "stress";
@@ -39,7 +42,7 @@ function stressTestTaskPlan(outputs: Record<string, any>) {
     String(outputs.stage || "stress_recovery")
   );
 
-  const tasks = [
+  const tasks: LinkedTaskDraft[] = [
     {
       title: outputs.taskSuggestion?.title || "Recheck stress recovery",
       priority: normalizePriority(

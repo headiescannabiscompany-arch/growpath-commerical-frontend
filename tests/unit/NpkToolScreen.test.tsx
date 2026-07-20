@@ -158,6 +158,15 @@ describe("NpkToolScreen", () => {
     });
   });
 
+  it("shows the canonical nutrient mix builder and its evidence limits", async () => {
+    const screen = await renderNpkToolScreen();
+
+    expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
+    expect(screen.getByText("Nutrient mix science and evidence")).toBeTruthy();
+    expect(screen.getByText(/verified product labels/)).toBeTruthy();
+    expect(screen.getByText(/does not prove product superiority/)).toBeTruthy();
+  });
+
   it("sends label P2O5/K2O and elemental P/K values to the NPK calculator", async () => {
     const screen = await renderNpkToolScreen();
 
@@ -225,7 +234,7 @@ describe("NpkToolScreen", () => {
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
 
-    fireEvent.press(screen.getByLabelText("Ask AI to build NPK recipe"));
+    fireEvent.press(screen.getByLabelText("Ask AI to build nutrient mix"));
 
     expect(mockRouterPush).toHaveBeenCalledWith(
       expect.stringMatching(/^\/home\/personal\/ai\?prompt=/)

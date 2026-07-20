@@ -194,6 +194,60 @@ describe("Personal grows route", () => {
     expect(grow.save).toHaveBeenCalled();
   });
 
+  test("saves explicitly confirmed crop identity to the owned grow", async () => {
+    const grow = doc({
+      _id: GROW_ID,
+      userId: TEST_USER,
+      name: "Flower Tent",
+      growTags: ["Indoor"],
+      cropTypes: [],
+      growInterests: { environment: ["Indoor"] }
+    });
+    grow.markModified = jest.fn();
+    mockGrow.findOne.mockResolvedValue(grow);
+
+    const res = await request(createApp())
+      .patch(`/api/personal/grows/${GROW_ID}/crop-identity`)
+      .send({
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        commonNames: ["Cannabis", "hemp"],
+        cultivar: "Bruce Banner",
+        confidence: "medium",
+        sourceToolRunId: "toolrun-1",
+        userConfirmed: true
+      });
+
+    expect(res.status).toBe(200);
+    expect(grow).toMatchObject({
+      cropCommonName: "Cannabis",
+      scientificName: "Cannabis sativa",
+      commonNames: ["Cannabis", "hemp"],
+      cultivar: "Bruce Banner",
+      strain: "Bruce Banner",
+      cropTypes: ["Cannabis"],
+      growTags: ["Indoor", "Cannabis"],
+      growInterests: { environment: ["Indoor"], crops: ["Cannabis"] },
+      cropIdentity: expect.objectContaining({
+        confirmationStatus: "user_confirmed",
+        confirmationSource: "species_crop_id_tool",
+        sourceToolRunId: "toolrun-1"
+      })
+    });
+    expect(grow.markModified).toHaveBeenCalledWith("growInterests");
+    expect(grow.save).toHaveBeenCalled();
+  });
+
+  test("rejects unconfirmed crop identity writes", async () => {
+    const res = await request(createApp())
+      .patch(`/api/personal/grows/${GROW_ID}/crop-identity`)
+      .send({ cropCommonName: "Cannabis", userConfirmed: false });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("CONFIRMATION_REQUIRED");
+    expect(mockGrow.findOne).not.toHaveBeenCalled();
+  });
+
   test("runs Bruce Banner live pack through personal grow creation and external photo attachment", async () => {
     const pack = livePack("personal");
     const weekZeroPhotos = pack.weeklyLogs[0].photos.map(

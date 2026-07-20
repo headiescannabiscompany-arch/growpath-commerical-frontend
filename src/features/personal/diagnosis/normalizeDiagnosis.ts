@@ -22,6 +22,14 @@ export type NormalizedDiagnosis = {
   growPathReasoning: string[];
   improvementNotice: string;
   providerResult?: unknown;
+  imageAnalysis?: {
+    requested?: boolean;
+    performed?: boolean;
+    photoCount?: number;
+    provider?: string;
+    providerModel?: string;
+    reason?: string;
+  };
   verification?: {
     status?: string;
     agreement?: boolean | null;
@@ -129,6 +137,7 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     followUp: String(
       row?.followUp ||
         row?.followUpQuestion ||
+        details?.followUpQuestion ||
         details?.tasksToCreate?.[0]?.title ||
         details?.suggestedTasks?.[0]?.title ||
         ""
@@ -158,6 +167,7 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     ),
     improvementNotice: String(row?.improvementNotice || details?.improvementNotice || ""),
     providerResult: row?.providerResult || details?.providerResult || undefined,
+    imageAnalysis: row?.imageAnalysis || details?.imageAnalysis || undefined,
     verification: row?.verification || details?.verification || undefined,
     cropIdentity: row?.cropIdentity || details?.cropIdentity || {},
     cropProfileSnapshot: row?.cropProfileSnapshot || details?.cropProfileSnapshot || null

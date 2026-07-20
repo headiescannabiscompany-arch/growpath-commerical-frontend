@@ -106,6 +106,8 @@ export interface PersonalGrow extends Grow {
   updatedAt: string;
   notes?: string;
   cultivar?: string;
+  cropCommonName?: string;
+  scientificName?: string;
   growTags?: string[];
   growInterests?: Record<string, string[]>;
   cropTypes?: string[];
@@ -199,6 +201,26 @@ export async function appendGrowPhotos(
     body: { photos: photoUrls }
   });
   return (res as any)?.grow ?? (res as any)?.data?.grow ?? (res as any) ?? null;
+}
+
+export async function savePersonalGrowCropIdentity(
+  growId: string,
+  identity: {
+    cropCommonName: string;
+    scientificName?: string;
+    commonNames?: string[] | string;
+    cultivar?: string;
+    cropProfileId?: string | null;
+    confidence?: string;
+    sourceToolRunId?: string | null;
+    userConfirmed: true;
+  }
+): Promise<PersonalGrow> {
+  const response: any = await apiRequest(
+    `/api/personal/grows/${encodeURIComponent(growId)}/crop-identity`,
+    { method: "PATCH", body: identity }
+  );
+  return (response?.grow ?? response?.data?.grow ?? response) as PersonalGrow;
 }
 
 export function addEntry(growId: string, data: Record<string, any> = {}) {

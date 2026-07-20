@@ -11,6 +11,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import MixBuilderScienceBasis from "@/features/personal/tools/MixBuilderScienceBasis";
 import { runCalculator, saveToolRunToLog, type ToolRun } from "@/api/toolRuns";
 import {
   archiveNutrientRecipe,
@@ -814,7 +815,7 @@ export default function NpkToolScreen() {
             ? "soil_amendment"
             : "nutrient_recipe",
       shortDescription:
-        "Draft created from GrowPath NPK / Feed Recipe Builder. Review label, batch, image, price, Stripe, and stock before publishing.",
+        "Draft created from GrowPath Nutrient Mix Builder. Review label, batch, image, price, Stripe, and stock before publishing.",
       fullDescription: [
         `Mode: ${recipeMode.replaceAll("_", " ")}`,
         `Stage: ${stage}`,
@@ -868,13 +869,13 @@ export default function NpkToolScreen() {
   if (!enabled) {
     return (
       <ScreenBoundary
-        title="NPK / Feed Recipe Builder"
+        title="Nutrient Mix Builder"
         showBack
         backFallbackHref="/home/personal/tools"
       >
         <LockedScreen
-          title="NPK / Feed Recipe Builder is a Pro tool"
-          message="Free accounts can use core tools and browse the app. Upgrade to build NPK recipes, model release timing, and save results to grow history."
+          title="Nutrient Mix Builder is a Pro tool"
+          message="Free accounts can use core tools and browse the app. Upgrade to build nutrient mixes, model release timing, and save results to grow history."
         />
       </ScreenBoundary>
     );
@@ -882,17 +883,18 @@ export default function NpkToolScreen() {
 
   return (
     <ScreenBoundary
-      title="NPK / Feed Recipe Builder"
+      title="Nutrient Mix Builder"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
+        <Text style={styles.title}>Nutrient Mix Builder</Text>
         <Text style={styles.subtitle}>
           Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
           label N-P2O5-K2O, source water, and release timing. Fertilizer label P and K are
           entered as P2O5 and K2O, then converted to elemental P/K where appropriate.
         </Text>
+        <MixBuilderScienceBasis variant="nutrient" />
         <View style={styles.guidanceCard}>
           <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
           <Text style={styles.fieldHint}>
@@ -908,7 +910,7 @@ export default function NpkToolScreen() {
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Ask AI to build NPK recipe"
+            accessibilityLabel="Ask AI to build nutrient mix"
             style={styles.secondaryButton}
             onPress={() => {
               const prompt = [
@@ -925,7 +927,7 @@ export default function NpkToolScreen() {
               router.push(`/home/personal/ai?${query}` as any);
             }}
           >
-            <Text style={styles.secondaryButtonText}>Ask AI to Build Recipe</Text>
+            <Text style={styles.secondaryButtonText}>Ask AI to Build Nutrient Mix</Text>
           </Pressable>
         </View>
         <PersonalFeedPlacement

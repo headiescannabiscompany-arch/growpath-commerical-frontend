@@ -66,9 +66,34 @@ export const methodRegistry: GrowPathMethod[] = [
     ["diagnosis", "ipm"],
     "plant-diagnosis-etgu-method.md",
     ["pattern", "medium", "environment", "numbers", "likely causes"],
-    ["symptoms", "media", "grow history", "environment", "pH/EC"],
-    ["evidence", "counterEvidence", "likelyIssues", "nextChecks"],
-    ["Do not declare a nutrient deficiency from appearance alone."],
+    [
+      "selected grow/plant",
+      "written symptom pattern",
+      "symptom progression",
+      "media with analysis status",
+      "grow history",
+      "environment with explicit units",
+      "pH/EC"
+    ],
+    [
+      "evidence",
+      "counterEvidence",
+      "likelyIssues",
+      "nextChecks",
+      "discriminating follow-up question",
+      "follow-up analysis that preserves the original structured evidence",
+      "image analysis performed status",
+      "photo count and provider/model execution evidence",
+      "grow-optional draft crop identity from uploaded media",
+      "explicitly confirmed crop identity persisted to the selected grow/plant"
+    ],
+    [
+      "Do not declare a nutrient deficiency from appearance alone.",
+      "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
+      "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
+      "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
+    ],
     ["plant-diagnosis", "ipm-scout", "ask-ai"]
   ),
   method(
@@ -109,11 +134,45 @@ export const methodRegistry: GrowPathMethod[] = [
     "Soil and Nutrients",
     ["soil", "water", "nutrients"],
     "soil-and-nutrient-method.md",
-    ["media environment", "verified inputs", "chemistry", "release", "application"],
-    ["recipe", "labels", "water", "stage", "history"],
-    ["label/elemental math", "release timeline", "antagonisms", "tasks"],
-    ["Compost and mineralization remain uncertain without testing."],
-    ["soil-builder", "npk", "topdress-plan", "watering", "feeding-schedule"]
+    [
+      "open the unified mix-builder chooser",
+      "select exactly one soil or nutrient builder",
+      "verified inputs",
+      "chemistry or structure",
+      "release",
+      "application"
+    ],
+    [
+      "mix goal",
+      "verified labels",
+      "batch and water context",
+      "stage",
+      "lab or measured evidence when available",
+      "history"
+    ],
+    [
+      "label/elemental math or soil structure plan",
+      "release timeline",
+      "source confidence and uncertainty",
+      "antagonisms",
+      "tasks"
+    ],
+    [
+      "Compost, biology, mineralization and long-term availability remain uncertain without testing.",
+      "Official labels support guaranteed analysis and use rates, not superiority, uptake or crop response."
+    ],
+    [
+      "npk",
+      "soil-builder",
+      "ingredient-library",
+      "nutrient-chemistry",
+      "nutrient-source-comparison",
+      "dry-amendment-mix",
+      "topdress-plan",
+      "ph-ec-check",
+      "watering",
+      "feeding-schedule"
+    ]
   ),
   method(
     "clone-rooting",
@@ -147,6 +206,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["window", "missing media", "risk", "tasks"],
     [
       "Never estimate sensor values from images.",
+      "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
       "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."
     ],
     ["harvest-readiness", "dry-cure-guard"]

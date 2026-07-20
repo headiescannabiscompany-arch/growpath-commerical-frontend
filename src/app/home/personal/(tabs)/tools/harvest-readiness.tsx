@@ -15,6 +15,24 @@ import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestV
 import { uploadImage } from "@/api/uploads";
 import { radius } from "@/theme/theme";
 
+const HARVEST_PHOTO_CHECKLIST = [
+  "Use at least 3 sharp macro photos from top, middle, and lower bud sites.",
+  "Focus on intact trichome gland heads on bud calyxes, not pistils or sugar-leaf edges.",
+  "Use neutral white light; avoid purple LEDs, glare, blur, digital zoom, and heavy compression.",
+  "Include one wider bud-context photo so each macro sample has a clear location."
+];
+
+function harvestPhotoRecoveryMessage(detail?: string) {
+  return [
+    detail || "Photo analysis could not run.",
+    "No trichome fields were filled.",
+    "Retake or reselect the photos using the checklist:",
+    HARVEST_PHOTO_CHECKLIST.join(" ")
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 function HarvestPhotoAnalyzer({
   growId,
   initialAnalysis,
@@ -22,7 +40,7 @@ function HarvestPhotoAnalyzer({
 }: {
   growId: string;
   initialAnalysis: TrichomeVisionResult | null;
-  onAnalysis: (result: TrichomeVisionResult) => void;
+  onAnalysis: (result: TrichomeVisionResult | null) => void;
 }) {
   const [previews, setPreviews] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -33,7 +51,6 @@ function HarvestPhotoAnalyzer({
 
   async function pickPhoto() {
     setFeedback("");
-    setAnalysis(null);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       setFeedback("Photo-library permission is required.");
@@ -51,7 +68,10 @@ function HarvestPhotoAnalyzer({
       .filter(Boolean)
       .slice(0, 10);
     if (picked.canceled || !uris?.length) return;
+    setAnalysis(null);
+    onAnalysis(null);
     setPreviews(uris);
+    setImageUrls([]);
     setBusy(true);
     try {
       const uploaded = await Promise.all(uris.map((uri) => uploadImage(uri)));
@@ -63,7 +83,14 @@ function HarvestPhotoAnalyzer({
         `${urls.length} photo${urls.length === 1 ? "" : "s"} uploaded. Run photo analysis next.`
       );
     } catch (error: any) {
-      setFeedback(error?.message || "Unable to upload photo.");
+      onAnalysis(null);
+      setFeedback(
+        harvestPhotoRecoveryMessage(
+          error?.message
+            ? `Photo upload failed: ${error.message}`
+            : "Photo upload failed."
+        )
+      );
     } finally {
       setBusy(false);
     }
@@ -89,13 +116,21 @@ function HarvestPhotoAnalyzer({
               "These photos are not reliable enough to fill the readiness fields.",
               result.recommendation,
               ...(result.limitations || []),
-              "Retake sharp macro photos of trichome heads on bud calyxes in neutral light. Include top and lower bud sites."
+              ...HARVEST_PHOTO_CHECKLIST
             ]
               .filter(Boolean)
               .join(" ")
       );
     } catch (error: any) {
-      setFeedback(error?.message || "Unable to analyze the trichome photo.");
+      setAnalysis(null);
+      onAnalysis(null);
+      setFeedback(
+        harvestPhotoRecoveryMessage(
+          error?.message
+            ? `Photo analysis did not run: ${error.message}`
+            : "Photo analysis did not run."
+        )
+      );
     } finally {
       setBusy(false);
     }
@@ -109,6 +144,14 @@ function HarvestPhotoAnalyzer({
         does not make the harvest decision by itself. Use sharp macro photos of gland
         heads on bud calyxes and confirm across several bud sites.
       </Text>
+      <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
+        <Text style={photoStyles.checklistTitle}>Photo checklist before analysis</Text>
+        {HARVEST_PHOTO_CHECKLIST.map((item, index) => (
+          <Text key={item} style={photoStyles.checklistItem}>
+            {index + 1}. {item}
+          </Text>
+        ))}
+      </View>
       <Pressable
         accessibilityLabel="Choose harvest trichome photo"
         onPress={pickPhoto}
@@ -130,6 +173,11 @@ function HarvestPhotoAnalyzer({
                 onPress={() => {
                   setPreviews((current) => current.filter((_, item) => item !== index));
                   setImageUrls((current) => current.filter((_, item) => item !== index));
+                  setAnalysis(null);
+                  onAnalysis(null);
+                  setFeedback(
+                    "Photo removed. Run analysis again after the remaining photos meet the checklist."
+                  );
                 }}
                 style={photoStyles.removeButton}
               >
@@ -161,6 +209,17 @@ function HarvestPhotoAnalyzer({
       </Pressable>
       {!growId ? (
         <Text style={photoStyles.warning}>Select a grow before analyzing a photo.</Text>
+      ) : null}
+      {!previews.length ? (
+        <Text style={photoStyles.warning}>
+          No trichome photos selected. Choose macro photos that meet the checklist;
+          ordinary whole-plant photos cannot support clear/cloudy/amber percentages.
+        </Text>
+      ) : imageUrls.length < 3 ? (
+        <Text style={photoStyles.warning}>
+          Add photos from more bud sites when possible. One sample can miss differences
+          between top, middle, and lower buds.
+        </Text>
       ) : null}
       {feedback ? <Text style={photoStyles.feedback}>{feedback}</Text> : null}
       {analysis ? (
@@ -369,23 +428,19 @@ export default function HarvestReadinessToolRoute() {
           label: "Cloudy %",
           defaultValue: vision?.photoUsable
             ? String(Math.round(vision.cloudy * 100))
-            : "65",
+            : "",
           keyboardType: "numeric"
         },
         {
           key: "amberPercent",
           label: "Amber %",
-          defaultValue: vision?.photoUsable
-            ? String(Math.round(vision.amber * 100))
-            : "8",
+          defaultValue: vision?.photoUsable ? String(Math.round(vision.amber * 100)) : "",
           keyboardType: "numeric"
         },
         {
           key: "clearPercent",
           label: "Clear %",
-          defaultValue: vision?.photoUsable
-            ? String(Math.round(vision.clear * 100))
-            : "10",
+          defaultValue: vision?.photoUsable ? String(Math.round(vision.clear * 100)) : "",
           keyboardType: "numeric"
         },
         {
@@ -574,6 +629,16 @@ const photoStyles = StyleSheet.create({
   },
   title: { fontSize: 17, fontWeight: "800", color: "#14532D" },
   help: { color: "#475569", lineHeight: 19 },
+  checklist: {
+    borderWidth: 1,
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    gap: 5
+  },
+  checklistTitle: { color: "#14532D", fontWeight: "800" },
+  checklistItem: { color: "#334155", fontSize: 12, lineHeight: 18 },
   previewGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   previewWrap: { flexBasis: 150, flexGrow: 1, maxWidth: 240, minWidth: 130 },
   preview: {
