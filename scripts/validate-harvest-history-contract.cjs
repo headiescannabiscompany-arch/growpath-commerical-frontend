@@ -29,6 +29,10 @@ const modulePersistence = read("src/features/personal/tools/moduleRecordPersiste
 const toolRunsApi = read("src/api/toolRuns.ts");
 const exportScreen = read("src/app/home/personal/(tabs)/tools/pdf-export.tsx");
 const advancedPlanning = read("src/features/personal/tools/advancedPlanning.ts");
+const featureStatus = read("src/config/featureStatus.ts");
+const productionWebExport = read("scripts/export-production-web.cjs");
+const growOverview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
+const growTools = read("src/app/home/personal/(tabs)/grows/[growId]/tools.tsx");
 
 const screens = {
   harvest: read("src/app/home/personal/(tabs)/tools/harvest-readiness.tsx"),
@@ -165,6 +169,31 @@ const tests = {
   ["auto calendar schedule metadata", screens.autoCalendar, /grow_milestone/]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 6 screen", contents, pattern, description);
+});
+
+[
+  [
+    "Personal Tools harvest calculator entry",
+    featureStatus,
+    /tools\.harvest_readiness_ai[\s\S]*title: "Harvest Readiness Calculator"[\s\S]*href: "\/home\/personal\/tools\/harvest-readiness"[\s\S]*hubVisible: true/
+  ],
+  [
+    "production harvest readiness fallback",
+    productionWebExport,
+    /"home\/personal\/tools\/harvest-readiness"/
+  ],
+  [
+    "cannabis grow overview harvest entry",
+    growOverview,
+    /cannabisGrow[\s\S]*grow_detail_harvest[\s\S]*workflows=\{\["harvest-readiness"\]\}/
+  ],
+  [
+    "cannabis grow tools harvest entry",
+    growTools,
+    /Harvest readiness calculator[\s\S]*\/home\/personal\/tools\/harvest-readiness[\s\S]*cannabisOnly: true/
+  ]
+].forEach(([description, contents, pattern]) => {
+  requireText("harvest discovery", contents, pattern, description);
 });
 
 [

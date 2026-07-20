@@ -145,7 +145,10 @@ export const methodRegistry: GrowPathMethod[] = [
     ["readiness evidence", "decision", "measured dry/cure", "outcome"],
     ["macro media", "maturity", "telemetry", "sensory"],
     ["window", "missing media", "risk", "tasks"],
-    ["Never estimate sensor values from images."],
+    [
+      "Never estimate sensor values from images.",
+      "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces."
+    ],
     ["harvest-readiness", "dry-cure-guard"]
   ),
   method(

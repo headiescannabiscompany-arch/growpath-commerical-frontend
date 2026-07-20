@@ -17,6 +17,17 @@ export function findGrowById(grows: PersonalGrow[], growId: string): PersonalGro
   return null;
 }
 
+export function isCannabisGrow(grow: PersonalGrow | null | undefined): boolean {
+  if (!grow) return false;
+  const interests = Object.values(grow.growInterests || {}).flat();
+  const labels = [
+    ...(Array.isArray(grow.growTags) ? grow.growTags : []),
+    ...(Array.isArray(grow.cropTypes) ? grow.cropTypes : []),
+    ...interests
+  ];
+  return labels.some((label) => String(label).toLowerCase().includes("cannabis"));
+}
+
 export function fmtDate(input?: string) {
   if (!input) return "n/a";
   const d = new Date(input);

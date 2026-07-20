@@ -227,7 +227,6 @@ describe("personal feature status manifest", () => {
       "tools.tissue_culture",
       "tools.dry_cure_guard",
       "tools.clone_rooting",
-      "tools.harvest_readiness_ai",
       "tools.auto_grow_calendar",
       "tools.run_comparison"
     ];
@@ -240,6 +239,29 @@ describe("personal feature status manifest", () => {
       expect(feature?.href).toBeTruthy();
       expect(hub).not.toContain(feature);
     }
+  });
+
+  test("keeps the harvest calculator in Personal Tools and linked cannabis grow surfaces", () => {
+    const harvest = personalToolFeatures.find(
+      (item) => item.key === "tools.harvest_readiness_ai"
+    ) as FeatureDefinition;
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    const growOverview = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/personal/(tabs)/grows/[growId]/index.tsx"),
+      "utf8"
+    );
+    const growTools = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/personal/(tabs)/grows/[growId]/tools.tsx"),
+      "utf8"
+    );
+
+    expect(harvest.title).toBe("Harvest Readiness Calculator");
+    expect(harvest.hubVisible).toBe(true);
+    expect(harvest.href).toBe("/home/personal/tools/harvest-readiness");
+    expect(hub).toContain(harvest);
+    expect(growOverview).toContain('workflows={["harvest-readiness"]}');
+    expect(growTools).toContain('"/home/personal/tools/harvest-readiness"');
+    expect(growTools).toContain("{ cannabisOnly: true }");
   });
 
   test("keeps removed/internal-only tools out of the user-facing app", () => {

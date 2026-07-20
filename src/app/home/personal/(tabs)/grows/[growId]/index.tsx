@@ -23,7 +23,12 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
+import {
+  coerceParam,
+  findGrowById,
+  fmtDate,
+  isCannabisGrow
+} from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -155,15 +160,7 @@ function GrowOverviewContent() {
   const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const growTags = Array.from(
-    new Set([
-      ...(Array.isArray(grow?.growTags) ? grow.growTags : []),
-      ...Object.values(grow?.growInterests || {}).flat()
-    ])
-  );
-  const cannabisGrow = growTags.some((tag) =>
-    String(tag).toLowerCase().includes("cannabis")
-  );
+  const cannabisGrow = isCannabisGrow(grow);
 
   const load = useCallback(async () => {
     if (!growId) {

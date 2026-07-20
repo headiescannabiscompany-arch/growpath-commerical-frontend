@@ -471,16 +471,16 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.harvest_readiness_ai",
-    title: "Harvest Readiness AI",
+    title: "Harvest Readiness Calculator",
     description:
       "Estimate harvest readiness from maturity signals, photos, cultivar timing, and user goals.",
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/harvest-readiness",
-    hubVisible: false,
+    hubVisible: true,
     acceptsGrowContext: true,
     internalNote:
-      "Approved beta harvest-readiness workflow using maturity signals, cultivar timing, user goals, ToolRuns, logs, and tasks."
+      "Approved beta harvest-readiness workflow. Keep the shared calculator visible in Personal Tools for cannabis-enabled users and link the same route contextually from cannabis grows."
   },
   {
     key: "tools.run_comparison",
