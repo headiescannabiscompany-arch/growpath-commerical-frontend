@@ -4,6 +4,8 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FacilityTeamTab from "@/app/home/facility/(tabs)/team";
 
 const mockInvite = jest.fn();
+const mockCan = jest.fn();
+let mockFacilityRole = "OWNER";
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 jest.mock("@/state/useFacility", () => ({
@@ -11,7 +13,7 @@ jest.mock("@/state/useFacility", () => ({
 }));
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { TEAM_INVITE: "TEAM_INVITE" },
-  useEntitlements: () => ({ facilityRole: "OWNER", can: () => true })
+  useEntitlements: () => ({ facilityRole: mockFacilityRole, can: mockCan })
 }));
 jest.mock("@/api/team", () => ({
   listTeamMembers: jest.fn().mockResolvedValue([]),
@@ -32,6 +34,12 @@ jest.mock("@/components/ScreenBoundary", () => {
 });
 
 describe("FacilityTeamTab", () => {
+  beforeEach(() => {
+    mockFacilityRole = "OWNER";
+    mockCan.mockReturnValue(true);
+    mockInvite.mockReset();
+  });
+
   it("lets an owner enter an invite email and provides a dashboard back route", async () => {
     mockInvite.mockResolvedValue({});
     const screen = render(<FacilityTeamTab />);
@@ -50,5 +58,21 @@ describe("FacilityTeamTab", () => {
         role: "STAFF"
       })
     );
+  });
+
+  it("shows managers a clear read-and-assign surface without owner invite controls", async () => {
+    mockFacilityRole = "MANAGER";
+    mockCan.mockReturnValue(false);
+
+    const screen = render(<FacilityTeamTab />);
+
+    await waitFor(() => expect(screen.getByText("Team access")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "You can view the team and assign work. Only the facility owner can invite members or change access roles."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Invite team member email")).toBeNull();
+    expect(screen.queryByLabelText("Send team invite")).toBeNull();
   });
 });

@@ -199,21 +199,20 @@ export default function FacilityTeamTab() {
           <Text style={styles.muted}>{header}</Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Invite member</Text>
+        {canInvite ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Invite member</Text>
 
-          <TextInput
-            accessibilityLabel="Invite team member email"
-            value={inviteEmail}
-            onChangeText={setInviteEmail}
-            placeholder="email@company.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-            editable={canInvite}
-          />
+            <TextInput
+              accessibilityLabel="Invite team member email"
+              value={inviteEmail}
+              onChangeText={setInviteEmail}
+              placeholder="email@company.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+            />
 
-          {canInvite ? (
             <View style={styles.roleRow}>
               {(["MANAGER", "STAFF", "VIEWER"] as FacilityRole[]).map((role) => (
                 <Pressable
@@ -234,28 +233,35 @@ export default function FacilityTeamTab() {
                 </Pressable>
               ))}
             </View>
-          ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Send team invite"
-            onPress={sendInvite}
-            disabled={inviting || !inviteEmail.trim() || !canInvite}
-            style={({ pressed }) => [
-              styles.btn,
-              (inviting || !inviteEmail.trim() || !canInvite) && styles.btnDisabled,
-              pressed && styles.pressed
-            ]}
-          >
-            <Text style={styles.btnText}>{inviting ? "Sending..." : "Send invite"}</Text>
-          </Pressable>
-          {!canInvite ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Send team invite"
+              onPress={sendInvite}
+              disabled={inviting || !inviteEmail.trim()}
+              style={({ pressed }) => [
+                styles.btn,
+                (inviting || !inviteEmail.trim()) && styles.btnDisabled,
+                pressed && styles.pressed
+              ]}
+            >
+              <Text style={styles.btnText}>
+                {inviting ? "Sending..." : "Send invite"}
+              </Text>
+            </Pressable>
+            {inviteFeedback ? (
+              <Text style={styles.feedback}>{inviteFeedback}</Text>
+            ) : null}
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Team access</Text>
             <Text style={styles.muted}>
-              Only the facility owner can invite team members and assign access.
+              You can view the team and assign work. Only the facility owner can invite
+              members or change access roles.
             </Text>
-          ) : null}
-          {inviteFeedback ? <Text style={styles.feedback}>{inviteFeedback}</Text> : null}
-        </View>
+          </View>
+        )}
 
         {loading ? (
           <View style={styles.loading}>
@@ -279,7 +285,11 @@ export default function FacilityTeamTab() {
             !loading ? (
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No members yet</Text>
-                <Text style={styles.muted}>Invite your first team member above.</Text>
+                <Text style={styles.muted}>
+                  {canInvite
+                    ? "Invite your first team member above."
+                    : "The facility owner can add members and assign access."}
+                </Text>
               </View>
             ) : null
           }
