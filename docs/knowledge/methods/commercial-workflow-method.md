@@ -14,6 +14,8 @@ Reported commercial Forum content enters the shared moderation queue with an evi
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.
 
+The Soil & Nutrient Batch Planner is a Commercial production tool. Surface its cost, bag-count, pull-sheet, labor, packaging, margin, inventory, formula, batch/lot, product, and trial workflow only inside the Commercial workspace; do not list it in Personal tools.
+
 Integration auto-build is allowed only for an owned product trial or a Commercial grow explicitly identified as a trial, demo, or education space. Preserve read-only devices and streams and never create cultivation spaces from ordinary storefront, order, or campaign records.
 
 Imported telemetry may support an explicitly linked product-trial evidence window. Course examples require review and de-identification before publication; sensor readings alone do not establish product performance, causation, or a publishable claim.

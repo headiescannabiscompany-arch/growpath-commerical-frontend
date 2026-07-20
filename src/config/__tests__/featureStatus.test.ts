@@ -188,8 +188,7 @@ describe("personal feature status manifest", () => {
       "tools.topdress_planner",
       "tools.ph_ec_adjustment",
       "tools.ipm_scout",
-      "tools.species_crop_identification",
-      "tools.soil_nutrient_batch_planner"
+      "tools.species_crop_identification"
     ];
 
     const defaultNavigable = getNavigablePersonalTools();
@@ -201,6 +200,18 @@ describe("personal feature status manifest", () => {
       expect(defaultNavigable).not.toContain(feature);
       expect(betaNavigable).toContain(feature);
     }
+  });
+
+  test("keeps the soil and nutrient batch planner in Commercial only", () => {
+    const feature = personalToolFeatures.find(
+      (item) => item.key === "tools.soil_nutrient_batch_planner"
+    ) as FeatureDefinition | undefined;
+    const personalHub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    expect(feature?.status).toBe("beta");
+    expect(feature?.hubVisible).toBe(false);
+    expect(feature?.href).toBe("/home/commercial/tools/soil-nutrient-batch");
+    expect(personalHub).not.toContain(feature);
   });
 
   test("keeps grow lifecycle workflows in grow workspaces instead of the generic hub", () => {
@@ -222,7 +233,9 @@ describe("personal feature status manifest", () => {
     ];
     const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
     for (const key of workspaceOnly) {
-      const feature = personalToolFeatures.find((item) => item.key === key);
+      const feature = personalToolFeatures.find(
+        (item) => item.key === key
+      ) as FeatureDefinition;
       expect(feature?.hubVisible).toBe(false);
       expect(feature?.href).toBeTruthy();
       expect(hub).not.toContain(feature);
@@ -243,7 +256,7 @@ describe("personal feature status manifest", () => {
   test("places tools in their release categories", () => {
     const byKey = Object.fromEntries(
       personalToolFeatures.map((feature) => [feature.key, feature])
-    );
+    ) as Record<string, FeatureDefinition>;
 
     expect(byKey["tools.ai_diagnosis"].area).toBe("plant_health");
     expect(byKey["tools.ai_assistant"].area).toBe("plant_health");
@@ -280,8 +293,9 @@ describe("personal feature status manifest", () => {
       "/home/personal/tools/tissue-culture"
     );
     expect(byKey["tools.soil_nutrient_batch_planner"].status).toBe("beta");
+    expect(byKey["tools.soil_nutrient_batch_planner"].hubVisible).toBe(false);
     expect(byKey["tools.soil_nutrient_batch_planner"].href).toBe(
-      "/home/personal/tools/soil-nutrient-batch"
+      "/home/commercial/tools/soil-nutrient-batch"
     );
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
     expect(byKey["tools.crop_steering_projects"].status).toBe("beta");

@@ -41,6 +41,7 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/product-lines/line-1",
   "/home/commercial/batch-planner",
   "/home/commercial/batch-planner/batch-1",
+  "/home/commercial/tools/soil-nutrient-batch",
   "/home/commercial/trials",
   "/home/commercial/trials/trial-1",
   "/home/commercial/storefront",

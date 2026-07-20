@@ -28,6 +28,10 @@ const featureStatus = read("src/config/featureStatus.ts");
 const soilBatchScreen = read(
   "src/app/home/personal/(tabs)/tools/soil-nutrient-batch.tsx"
 );
+const commercialSoilBatchRoute = read(
+  "src/app/home/commercial/tools/soil-nutrient-batch.tsx"
+);
+const commercialToolsIndex = read("src/app/home/commercial/tools/index.tsx");
 const facilityInventory = read("src/app/home/facility/(tabs)/inventory.tsx");
 const facilityCreateInventory = read(
   "src/app/home/facility/(tabs)/CreateInventoryItemScreen.tsx"
@@ -112,9 +116,21 @@ const tests = {
 });
 
 [
+  ["commercial soil batch route", /CommercialSoilNutrientBatchToolRoute as default/],
+  ["commercial tools listing", /Soil & Nutrient Batch Planner[\s\S]*\/home\/commercial\/tools\/soil-nutrient-batch/]
+].forEach(([description, pattern], index) => {
+  requireText(
+    "commercial soil nutrient batch surface",
+    index === 0 ? commercialSoilBatchRoute : commercialToolsIndex,
+    pattern,
+    description
+  );
+});
+
+[
   ["personal inventory removed", /key: "tools\.inventory"[\s\S]*status: "remove_from_user_app"[\s\S]*href: undefined/],
   ["inventory decision note", /Inventory belongs to commercial and facility surfaces, not the personal tools hub/],
-  ["soil batch beta route", /tools\.soil_nutrient_batch_planner[\s\S]*href: "\/home\/personal\/tools\/soil-nutrient-batch"/]
+  ["soil batch commercial-only route", /tools\.soil_nutrient_batch_planner[\s\S]*href: "\/home\/commercial\/tools\/soil-nutrient-batch"[\s\S]*hubVisible: false[\s\S]*Commercial-only beta production workflow/]
 ].forEach(([description, pattern]) => {
   requireText("feature status", featureStatus, pattern, description);
 });
@@ -157,7 +173,8 @@ const tests = {
   ["backend personal inventory test", tests.backendTools, /runs inventory, crop steering project, and pheno hunt tools[\s\S]*lowStockWarnings[\s\S]*reorderSuggestions/],
   ["soil batch UI tests", tests.soilBatch, /creates production tasks from soil nutrient batch output[\s\S]*builds an AI soil batch brief/],
   ["feature status inventory test", tests.featureStatus, /keeps removed\/internal-only tools out of the user-facing app[\s\S]*tools\.inventory/],
-  ["feature status soil batch test", tests.featureStatus, /tools\.soil_nutrient_batch_planner[\s\S]*\/home\/personal\/tools\/soil-nutrient-batch/],
+  ["feature status soil batch test", tests.featureStatus, /keeps the soil and nutrient batch planner in Commercial only[\s\S]*\/home\/commercial\/tools\/soil-nutrient-batch/],
+  ["commercial soil batch UI route test", tests.soilBatch, /\/home\/commercial\/tools\/soil-nutrient-batch/],
   ["facility inventory tests", tests.facilityInventory, /does not show AI stock-risk review before inventory exists[\s\S]*uses canonical facility inventory routes/],
   ["facility inventory create tests", tests.facilityCreate, /Create Inventory Item[\s\S]*Inventory item name/],
   ["commercial inventory create tests", tests.commercialCreate, /creates commercial inventory with item type, location, and linked records/],

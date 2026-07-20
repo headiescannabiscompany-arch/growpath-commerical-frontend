@@ -164,7 +164,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "owner-scoped event analytics"
     ],
     ["Never cross workspace scope or invent product claims."],
-    ["commercial-batch-planner", "products", "trials", "forum-qna"]
+    ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),
   method(
     "facility-workflow",

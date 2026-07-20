@@ -183,6 +183,10 @@ export default function CommercialTabsLayout() {
         name="tools/harvest-readiness"
         options={{ href: null, title: "Harvest Readiness" }}
       />
+      <Tabs.Screen
+        name="tools/soil-nutrient-batch"
+        options={{ href: null, title: "Soil & Nutrient Batch Planner" }}
+      />
       <Tabs.Screen name="tools/report" options={{ href: null, title: "Export Report" }} />
     </Tabs>
   );
