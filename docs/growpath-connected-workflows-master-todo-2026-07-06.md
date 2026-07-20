@@ -312,9 +312,11 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [ ] Verify entitlements, AI-credit billing/refunds, Facility Owner access, uploads, Ask AI, alerts, persistence/reload, and tool write-backs across Plant, Grow, Log, ToolRun, Task, room, and Facility scope.
 
 54. Idempotent backend seed runner and cleanup
-   - [ ] Implement dry-run, seed, verify, and cleanup commands against the real backend schemas with a required QA namespace and explicit test/staging environment gate.
-   - [ ] Hash generated test passwords, keep credentials out of fixtures/logs, preserve referential integrity, and make reruns update the named QA records instead of duplicating them.
-   - [ ] Produce counts, created/updated/skipped records, source-rights failures, and cleanup evidence for every run.
+   - [x] Implement dry-run, seed, verify, and cleanup commands against the real backend schemas with a required QA namespace and explicit test/staging environment gate.
+   - [x] Hash generated test passwords, keep credentials out of fixtures/logs, preserve referential integrity, and make reruns update the named QA records instead of duplicating them.
+   - [x] Produce counts, created/updated/skipped records, source-rights failures, and cleanup evidence for every run.
+   - [x] Backend PR `headiescannabiscompany-arch/growpath-commerical#29` merged as `54d4632659b3247261c50cee17646f88ae3e248c` and deployed live to `https://api.growpathai.com` on 2026-07-20; Render and an independent `/health` request both returned healthy/HTTP 200. The runner itself remains production-blocked by design.
+   - [x] Offline planning against the real frontend catalogs produced the intended 87-record graph with zero database writes and correctly blocked source/media-rights, commerce-approval, account-binding, facility-baseline, SOP, telemetry, scenario, and acceptance gaps for item 55.
 
 55. Execute and close the QA seed packs
    - [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
