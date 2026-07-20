@@ -6,6 +6,7 @@ import BackendCalculatorToolScreen, {
 import { createProduct } from "@/api/products";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { createSoilNutrientBatch } from "@/api/commercialWorkflows";
+import MixBuilderScienceBasis from "@/features/personal/tools/MixBuilderScienceBasis";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -24,7 +25,7 @@ function amendment(
     .map((part) => Number(part.trim()));
   return {
     name,
-    doseRate: n(dose, 0),
+    doseRate: n(dose, 0) ?? 0,
     doseUnit,
     releaseClass,
     guaranteedAnalysis: { N, P2O5, K2O }
@@ -222,9 +223,9 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
     : "No amendment rows entered yet.";
 
   return [
-    "AI Soil Builder brief",
+    "AI Soil Mix Builder brief",
     "",
-    "Role: help the user design the recipe conversationally, but call the Soil Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
+    "Role: help the user design the mix conversationally, but call the Soil Mix Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
     `Goal: ${payload.goal || "not set"}`,
     `Stage/use: ${payload.stage || payload.intendedUse || "not set"}`,
     `Target label N-P2O5-K2O: ${payload.targetNpk || "not set"}`,
@@ -264,8 +265,9 @@ export default function SoilBuilderToolScreen() {
     <BackendCalculatorToolScreen
       tool="soil-builder"
       toolKey="soil-builder"
-      title="Soil Builder"
-      subtitle="Build full soil recipes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      title="Soil Mix Builder"
+      subtitle="Build science-based soil mixes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      formHeader={<MixBuilderScienceBasis variant="soil" />}
       aiPrefill={{
         buttonLabel: "Fill soil recipe from grow records",
         buildMessage: () =>
@@ -565,10 +567,10 @@ export default function SoilBuilderToolScreen() {
       assistantBrief={{
         title: "AI-guided, calculator-verified",
         description:
-          "Ask AI to help shape the soil recipe, collect missing label data, and explain fast/medium/slow release choices. The Soil Builder remains the source of truth for recipe math, warnings, ToolRuns, tasks, and product conversion.",
-        buttonLabel: "Ask AI to Build Soil Recipe",
-        accessibilityLabel: "Ask AI to build soil recipe",
-        briefTitle: "AI soil recipe brief",
+          "Ask AI to help shape the soil mix, collect missing label data, and explain fast/medium/slow release choices. The Soil Mix Builder remains the source of truth for recipe math, warnings, ToolRuns, tasks, and product conversion.",
+        buttonLabel: "Ask AI to Build Soil Mix",
+        accessibilityLabel: "Ask AI to build soil mix",
+        briefTitle: "AI soil mix brief",
         buildBrief: ({ payload }) => buildSoilAssistantBrief(payload)
       }}
       buildActions={({ outputs, payload, toolRun }) => [
@@ -644,7 +646,7 @@ export default function SoilBuilderToolScreen() {
               shortDescription:
                 outputs.purposeFit ||
                 payload.goal ||
-                "Soil recipe created from Soil Builder.",
+                "Soil mix created from Soil Mix Builder.",
               fullDescription: Array.isArray(outputs.mixingInstructions)
                 ? outputs.mixingInstructions.join("\n")
                 : payload.safetyNotes ||

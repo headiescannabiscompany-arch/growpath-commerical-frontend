@@ -7,50 +7,56 @@ import { radius } from "@/theme/theme";
 
 const modes = [
   {
-    title: "Feed / nutrient recipe",
+    title: "Nutrient Mix Builder",
     description:
-      "Guaranteed analysis, elemental ppm, water baseline, EC/pH, mixing order, release timing, and K/Ca/Mg screening.",
+      "Science-based guaranteed-analysis math, elemental P/K conversion, water and batch context, nutrient forms, release timing, and explicit uncertainty.",
     path: "npk"
   },
   {
-    title: "Soil / media recipe",
+    title: "Soil Mix Builder",
     description:
-      "Base, compost, aeration, amendments, carbon context, water-holding behavior, drainage, buffering, and cook timing.",
+      "Science-based physical, chemical, and biological soil planning with base, compost, aeration, buffering, amendments, release timing, and test-data precedence.",
     path: "soil-builder"
-  },
-  {
-    title: "Dry amendment / topdress",
-    description:
-      "Use the same ingredient and release engine for initial mixes or grow-stage topdress scheduling.",
-    path: "dry-amendment-mix"
-  },
-  {
-    title: "Ingredient catalog",
-    description:
-      "Store typed or label-derived guaranteed analysis and reuse verified products across recipes.",
-    path: "ingredient-library"
   }
 ] as const;
+
+type MixBuilderContextParams = {
+  growId?: string | string[];
+  plantId?: string | string[];
+  facilityId?: string | string[];
+  commercialAccountId?: string | string[];
+  roomId?: string | string[];
+  productId?: string | string[];
+  productLineId?: string | string[];
+  batchId?: string | string[];
+  trialId?: string | string[];
+  source?: string | string[];
+  workspace?: string | string[];
+};
 
 export default function UnifiedRecipeBuilderRoute({
   basePath = "/home/personal/tools"
 }: {
   basePath?: string;
 } = {}) {
-  const params = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = String(
-    Array.isArray(params.growId) ? params.growId[0] || "" : params.growId || ""
-  );
+  const params = useLocalSearchParams<MixBuilderContextParams>();
+  const contextQuery = new URLSearchParams();
+  Object.entries(params).forEach(([key, rawValue]) => {
+    const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (value) contextQuery.set(key, value);
+  });
+  const query = contextQuery.toString();
   return (
-    <ScreenBoundary title="Soil & Nutrient Recipe Builder" showBack>
+    <ScreenBoundary title="Soil & Nutrient Mix Builders" showBack>
       <View style={styles.body}>
+        <Text style={styles.heading}>Choose one builder</Text>
         <Text style={styles.intro}>
-          One platform for ingredients, water, media behavior, nutrient math, release
-          timing, compatibility, saved recipes, and grow applications.
+          These are the two canonical mix tools. Both use deterministic calculations,
+          preserve source and assumption limits, and defer to verified labels, laboratory
+          results, and measured grow evidence.
         </Text>
         {modes.map((mode) => {
-          const href =
-            `${basePath}/${mode.path}${growId ? `?growId=${encodeURIComponent(growId)}` : ""}` as Href;
+          const href = `${basePath}/${mode.path}${query ? `?${query}` : ""}` as Href;
           return (
             <Link key={mode.title} href={href} asChild>
               <Pressable style={styles.card} accessibilityRole="button">
@@ -67,6 +73,7 @@ export default function UnifiedRecipeBuilderRoute({
 
 const styles = StyleSheet.create({
   body: { padding: 16, gap: 12 },
+  heading: { color: "#0F172A", fontSize: 20, fontWeight: "800" },
   intro: { color: "#475569", lineHeight: 21, marginBottom: 4 },
   card: {
     borderWidth: 1,

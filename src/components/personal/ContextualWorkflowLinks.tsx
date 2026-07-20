@@ -8,6 +8,7 @@ export type ContextualWorkflowKey =
   | "auto-grow-calendar"
   | "watering"
   | "feeding-schedule"
+  | "topdress"
   | "timeline-planner"
   | "pheno-matrix"
   | "harvest-readiness"
@@ -31,6 +32,11 @@ const WORKFLOWS: Record<
     label: "Feeding Schedule",
     description: "Turn a feed plan into scheduled tasks.",
     path: "/home/personal/tools/feeding-schedule"
+  },
+  topdress: {
+    label: "Topdress Planner",
+    description: "Plan application, water-in, response, and recheck tasks.",
+    path: "/home/personal/tools/topdress"
   },
   "timeline-planner": {
     label: "Timeline Planner",

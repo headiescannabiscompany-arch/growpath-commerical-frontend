@@ -4,7 +4,11 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
-const { createPersonalPlant, listPersonalPlants } = require("@/api/plants");
+const {
+  createPersonalPlant,
+  listPersonalPlants,
+  savePersonalPlantCropIdentity
+} = require("@/api/plants");
 
 describe("personal plants API", () => {
   beforeEach(() => {
@@ -59,5 +63,32 @@ describe("personal plants API", () => {
         waterUseProfile: { observedDemand: "high" }
       })
     });
+  });
+
+  it("saves user-confirmed crop identity to a personal plant", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      plant: { id: "plant-1", cropCommonName: "Cannabis" }
+    });
+
+    await savePersonalPlantCropIdentity("plant-1", {
+      growId: "grow-1",
+      cropCommonName: "Cannabis",
+      scientificName: "Cannabis sativa",
+      cultivar: "Bruce Banner",
+      userConfirmed: true
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/personal/plants/plant-1/crop-identity",
+      {
+        method: "PATCH",
+        body: expect.objectContaining({
+          cropCommonName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          cultivar: "Bruce Banner",
+          userConfirmed: true
+        })
+      }
+    );
   });
 });

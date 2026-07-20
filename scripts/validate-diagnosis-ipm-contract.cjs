@@ -74,6 +74,9 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["create diagnosis task", /createPersonalTask/],
   ["source diagnosis link", /sourceDiagnosisId/],
   ["follow-up metadata", /ai_diagnosis_followup/],
+  ["grow selector", /listPersonalGrows[\s\S]*Select diagnosis grow/],
+  ["text-only photo warning", /Photo analysis is not connected yet/],
+  ["image analysis disclosure", /imageAnalysis[\s\S]*performed/],
   ["outcome feedback", /submitDiagnosisFeedback/],
   ["safety language", /not a guaranteed lab diagnosis/]
 ].forEach(([description, pattern]) => {
@@ -93,7 +96,10 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["IPM organism output", /suspectedOrganism/],
   ["IPM task suggestions", /taskSuggestions/],
   ["species calculator", /function calculateSpeciesCropIdentification/],
-  ["crop identity warning", /Confirm crop identity before relying on crop-specific recommendations/]
+  [
+    "crop identity warning",
+    /Confirm crop identity before relying on crop-specific recommendations/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("tool calculators", calculators, pattern, description);
 });
@@ -103,6 +109,9 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["IPM follow-up tasks", /Create IPM Task Plan/],
   ["IPM treatment decision", /ipm_treatment_decision/],
   ["species screen route", /tool="species-crop-id"/],
+  ["explicit grow identity save", /savePersonalGrowCropIdentity/],
+  ["explicit plant identity save", /savePersonalPlantCropIdentity/],
+  ["explicit confirmation action", /Confirm & Save to/],
   ["species confirmation tasks", /Create Crop Identity Tasks/],
   ["crop identity metadata", /crop_identity_confirmation/]
 ].forEach(([description, pattern]) => {
@@ -125,22 +134,56 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
 });
 
 [
-  ["organism API helpers", /createOrganismProfile[\s\S]*updateOrganismProfile[\s\S]*archiveOrganismProfile/],
-  ["crop profile API helpers", /listCropProfiles[\s\S]*createCropProfile[\s\S]*updateCropProfile/],
+  [
+    "organism API helpers",
+    /createOrganismProfile[\s\S]*updateOrganismProfile[\s\S]*archiveOrganismProfile/
+  ],
+  [
+    "crop profile API helpers",
+    /listCropProfiles[\s\S]*createCropProfile[\s\S]*updateCropProfile/
+  ],
   ["regional alert helpers", /createRegionalAlert[\s\S]*archiveRegionalAlert/]
 ].forEach(([description, pattern]) => {
   requireText("crop knowledge API", cropApi, pattern, description);
 });
 
 [
-  ["diagnose backend tests", diagnoseTest, /creates cautious ETGU diagnosis records[\s\S]*records diagnosis feedback/],
-  ["diagnose API tests", diagnoseApiTest, /pre-uploads image diagnosis photos[\s\S]*provider readiness/],
+  [
+    "diagnose backend tests",
+    diagnoseTest,
+    /creates cautious ETGU diagnosis records[\s\S]*records diagnosis feedback/
+  ],
+  [
+    "diagnose API tests",
+    diagnoseApiTest,
+    /pre-uploads image diagnosis photos[\s\S]*provider readiness/
+  ],
   ["diagnosis crop context tests", diagnosisContextTest, /Confirmed crop context/],
-  ["normalizer tests", normalizeTest, /softens absolute provider summaries[\s\S]*legacy analyze details envelope/],
-  ["IPM backend tests", toolsTest, /runs IPM scout and species crop identification tools/],
-  ["IPM screen tests", ipmTest, /creates an IPM follow-up task[\s\S]*creates an IPM task plan/],
-  ["species screen tests", speciesTest, /creates crop identity tasks/],
-  ["organism/crop profile tests", cropTest, /updates and archives organism profiles[\s\S]*starter crop profiles/]
+  [
+    "normalizer tests",
+    normalizeTest,
+    /softens absolute provider summaries[\s\S]*legacy analyze details envelope/
+  ],
+  [
+    "IPM backend tests",
+    toolsTest,
+    /runs IPM scout and species crop identification tools/
+  ],
+  [
+    "IPM screen tests",
+    ipmTest,
+    /creates an IPM follow-up task[\s\S]*creates an IPM task plan/
+  ],
+  [
+    "species screen tests",
+    speciesTest,
+    /creates crop identity tasks[\s\S]*explicitly confirms and saves/
+  ],
+  [
+    "organism/crop profile tests",
+    cropTest,
+    /updates and archives organism profiles[\s\S]*starter crop profiles/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 3 tests", contents, pattern, description);
 });

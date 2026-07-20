@@ -124,7 +124,7 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="tools/recipe-builder"
-        options={{ href: null, title: "Recipe Builder" }}
+        options={{ href: null, title: "Soil & Nutrient Mix Builders" }}
       />
       <Tabs.Screen
         name="tools/dry-amendment-mix"
@@ -134,10 +134,13 @@ export default function FacilityTabsLayout() {
         name="tools/ingredient-library"
         options={{ href: null, title: "Ingredients" }}
       />
-      <Tabs.Screen name="tools/npk" options={{ href: null, title: "NPK Recipe" }} />
+      <Tabs.Screen
+        name="tools/npk"
+        options={{ href: null, title: "Nutrient Mix Builder" }}
+      />
       <Tabs.Screen
         name="tools/soil-builder"
-        options={{ href: null, title: "Soil Builder" }}
+        options={{ href: null, title: "Soil Mix Builder" }}
       />
       <Tabs.Screen
         name="tools/feeding-schedule"

@@ -24,8 +24,9 @@ const TOOLS = [
     href: "/home/commercial/tools/environment"
   },
   {
-    title: "Recipe Builder",
-    description: "Build and compare growing-media and amendment recipes.",
+    title: "Soil & Nutrient Mix Builders",
+    description:
+      "Use the science-based soil or nutrient mix workflow with visible evidence and uncertainty.",
     href: "/home/commercial/tools/recipe-builder"
   },
   {

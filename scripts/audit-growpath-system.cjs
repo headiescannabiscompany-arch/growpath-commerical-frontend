@@ -123,7 +123,7 @@ const MODULES = [
   },
   {
     phase: "Soil & Nutrients",
-    name: "Soil Builder",
+    name: "Soil Mix Builder",
     route: "/home/personal/tools/soil-builder",
     keywords: [
       "soil builder",

@@ -17,8 +17,8 @@ const TOOLS = [
     "/home/facility/ai-diagnosis-photo"
   ],
   [
-    "Recipe Builder",
-    "Build nutrient and media recipes from the shared calculation engine.",
+    "Soil & Nutrient Mix Builders",
+    "Choose the science-based soil or nutrient mix workflow from the shared calculation engine.",
     "/home/facility/tools/recipe-builder"
   ],
   [
@@ -34,8 +34,8 @@ const TOOLS = [
 ] as const;
 
 const LIBRARY = [
-  ["NPK calculator", "/home/facility/tools/npk"],
-  ["Soil / media builder", "/home/facility/tools/soil-builder"],
+  ["Nutrient Mix Builder", "/home/facility/tools/npk"],
+  ["Soil Mix Builder", "/home/facility/tools/soil-builder"],
   ["Ingredient catalog", "/home/facility/tools/ingredient-library"]
 ] as const;
 

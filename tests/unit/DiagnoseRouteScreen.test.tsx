@@ -11,6 +11,7 @@ const mockSubmitDiagnosisFeedback = jest.fn();
 const mockCreatePersonalLog = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockListPersonalPlants = jest.fn();
+const mockListPersonalGrows = jest.fn();
 
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
@@ -70,6 +71,10 @@ jest.mock("@/api/plants", () => ({
   listPersonalPlants: (...args: any[]) => mockListPersonalPlants(...args)
 }));
 
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+}));
+
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { DIAGNOSE_AI: "diagnose_ai" },
   useEntitlements: () => ({ can: () => true })
@@ -103,9 +108,30 @@ jest.mock("expo-image-picker", () => ({
 }));
 
 describe("DiagnoseRoute", () => {
+  async function waitForGrowContext(screen: ReturnType<typeof render>) {
+    await waitFor(() =>
+      expect(screen.getByText("Grow context: Bruce Banner")).toBeTruthy()
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Diagnosis crop common name").props.value).toBe(
+        "Cannabis"
+      )
+    );
+  }
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockListPersonalPlants.mockResolvedValue([]);
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Bruce Banner",
+        status: "flowering",
+        updatedAt: "2026-07-20T12:00:00.000Z",
+        cropCommonName: "Cannabis",
+        cultivar: "Bruce Banner"
+      }
+    ]);
     mockCreatePersonalLog.mockResolvedValue({ id: "log-1" });
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
     mockGetDiagnosisProviderStatus.mockResolvedValue({
@@ -144,7 +170,16 @@ describe("DiagnoseRoute", () => {
   });
 
   it("submits multiple durable evidence photos and their record ids", async () => {
+    mockGetDiagnosisProviderStatus.mockResolvedValue({
+      provider: {
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        configured: true,
+        imageSupport: true
+      }
+    });
     const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
     await waitFor(() => expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled());
 
     fireEvent.press(screen.getByLabelText("Attach diagnosis evidence"));
@@ -164,9 +199,10 @@ describe("DiagnoseRoute", () => {
 
   it("lets users accept or reject diagnosis tags before saving to the grow journal", async () => {
     const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
 
     await waitFor(() =>
-      expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
+      expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
     );
     expect(screen.getByText("Shared Back /home/personal")).toBeTruthy();
     expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled();
@@ -204,9 +240,10 @@ describe("DiagnoseRoute", () => {
 
   it("creates source-linked follow-up tasks from diagnosis results", async () => {
     const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
 
     await waitFor(() =>
-      expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
+      expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
     );
 
     fireEvent.changeText(
@@ -240,5 +277,46 @@ describe("DiagnoseRoute", () => {
       "Accepted tags: yellowing, ph out of range"
     );
     expect(screen.getByText("Follow-up task created.")).toBeTruthy();
+  });
+
+  it("does not pretend a text-only provider analyzed attached photos", async () => {
+    mockGetDiagnosisProviderStatus.mockResolvedValue({
+      provider: {
+        providerName: "growpathai",
+        providerModel: "deterministic-etgu-v1",
+        configured: true,
+        imageSupport: false,
+        mode: "deterministic_triage"
+      }
+    });
+    const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
+
+    await waitFor(() =>
+      expect(screen.getByText("Text diagnosis engine ready")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Attach diagnosis evidence"));
+
+    expect(
+      screen.getByText(/A photo-only request would otherwise produce a generic result/i)
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+    expect(mockDiagnoseEvidence).not.toHaveBeenCalled();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Diagnosis notes"),
+      "Yellowing begins on lower leaves"
+    );
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+
+    await waitFor(() => expect(mockDiagnoseEvidence).toHaveBeenCalled());
+  });
+
+  it("shows the selected grow by name so diagnosis results can be saved", async () => {
+    const screen = render(<DiagnoseRoute />);
+
+    await waitFor(() => expect(mockListPersonalGrows).toHaveBeenCalled());
+    expect(screen.getByLabelText("Select diagnosis grow Bruce Banner")).toBeTruthy();
+    await waitForGrowContext(screen);
   });
 });

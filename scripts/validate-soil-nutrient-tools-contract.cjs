@@ -24,6 +24,9 @@ const chemistry = read("backend/services/nutrientChemistry.js");
 const toolRunsApi = read("src/api/toolRuns.ts");
 const feedingApi = read("src/api/feeding.js");
 const backendTest = read("backend/routes/tools.test.js");
+const featureStatus = read("src/config/featureStatus.ts");
+const mixChooser = read("src/app/home/personal/(tabs)/tools/recipe-builder.tsx");
+const scienceBasis = read("src/features/personal/tools/MixBuilderScienceBasis.tsx");
 
 const screens = {
   npk: read("src/app/home/personal/(tabs)/tools/npk.tsx"),
@@ -41,7 +44,9 @@ const screens = {
 const tests = {
   npk: read("tests/unit/NpkToolScreen.test.tsx"),
   chemistry: read("tests/unit/NutrientChemistryToolScreen.test.tsx"),
-  sourceComparison: read("src/features/personal/tools/__tests__/BackendCalculatorToolScreen.test.tsx"),
+  sourceComparison: read(
+    "src/features/personal/tools/__tests__/BackendCalculatorToolScreen.test.tsx"
+  ),
   soilBuilder: read("tests/unit/SoilBuilderToolScreen.test.tsx"),
   dryAmendmentMix: read("tests/unit/DryAmendmentMixToolScreen.test.tsx"),
   topdress: read("tests/unit/TopdressToolScreen.test.tsx"),
@@ -76,7 +81,12 @@ const tests = {
     `${route} ToolRun-backed calculator route`
   );
   requireText("tool calculators", calculators, new RegExp(`function ${fn}\\b`), fn);
-  requireText("tool calculators export", calculators, new RegExp(`\\b${fn}\\b`), `${fn} export`);
+  requireText(
+    "tool calculators export",
+    calculators,
+    new RegExp(`\\b${fn}\\b`),
+    `${fn} export`
+  );
 });
 
 [
@@ -84,10 +94,22 @@ const tests = {
   ["NPK release timing", /buildAvailabilityEstimate[\s\S]*releaseTimeline/],
   ["pH/EC retest task", /retestTaskSuggestion[\s\S]*Retest pH\s*\/?\s*EC/],
   ["topdress follow-up tasks", /followUpTasks[\s\S]*Water in topdress/],
-  ["feeding schedule risk review", /calculateFeedingScheduleReview[\s\S]*riskLevel[\s\S]*tasksToCreate/],
-  ["dry amendment guaranteed analysis", /calculateDryAmendmentMix[\s\S]*totalAnalysis[\s\S]*achievedRatio/],
-  ["soil builder release timeline", /calculateSoilBuilder[\s\S]*releaseTimeline[\s\S]*stageTimingWarnings/],
-  ["nutrient source speed groups", /calculateNutrientSourceComparison[\s\S]*fastSources[\s\S]*mediumSources[\s\S]*slowSources/]
+  [
+    "feeding schedule risk review",
+    /calculateFeedingScheduleReview[\s\S]*riskLevel[\s\S]*tasksToCreate/
+  ],
+  [
+    "dry amendment guaranteed analysis",
+    /calculateDryAmendmentMix[\s\S]*totalAnalysis[\s\S]*achievedRatio/
+  ],
+  [
+    "soil builder release timeline",
+    /calculateSoilBuilder[\s\S]*releaseTimeline[\s\S]*stageTimingWarnings/
+  ],
+  [
+    "nutrient source speed groups",
+    /calculateNutrientSourceComparison[\s\S]*fastSources[\s\S]*mediumSources[\s\S]*slowSources/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("tool calculators", calculators, pattern, description);
 });
@@ -130,34 +152,147 @@ requireText(
   ["NPK screen ToolRun calculator", screens.npk, /runCalculator<any>\("npk-recipe"/],
   ["NPK task plan", screens.npk, /Create Recipe Task Plan[\s\S]*npkRecipeTasks/],
   ["NPK product draft", screens.npk, /Convert to Product Draft[\s\S]*createProduct/],
-  ["nutrient chemistry compatibility", screens.nutrientChemistry, /compatibilityAnalysis[\s\S]*Create Review Task/],
-  ["source comparison task plan", screens.nutrientSourceComparison, /tool="nutrient-source-comparison"[\s\S]*Create Source Review Tasks/],
-  ["soil builder tasks", screens.soilBuilder, /tool="soil-builder"[\s\S]*Create Recipe Timeline Tasks/],
-  ["soil builder product draft", screens.soilBuilder, /Convert to Product Draft[\s\S]*createProduct/],
-  ["dry amendment batch tasks", screens.dryAmendmentMix, /tool="dry-amendment-mix"[\s\S]*Create Blend Batch Tasks/],
-  ["dry amendment product draft", screens.dryAmendmentMix, /Convert to Product Draft[\s\S]*createProduct/],
-  ["topdress task plan", screens.topdress, /tool="topdress-plan"[\s\S]*Create Topdress Follow-up Tasks/],
+  [
+    "nutrient chemistry compatibility",
+    screens.nutrientChemistry,
+    /compatibilityAnalysis[\s\S]*Create Review Task/
+  ],
+  [
+    "source comparison task plan",
+    screens.nutrientSourceComparison,
+    /tool="nutrient-source-comparison"[\s\S]*Create Source Review Tasks/
+  ],
+  [
+    "soil builder tasks",
+    screens.soilBuilder,
+    /tool="soil-builder"[\s\S]*Create Recipe Timeline Tasks/
+  ],
+  [
+    "soil builder product draft",
+    screens.soilBuilder,
+    /Convert to Product Draft[\s\S]*createProduct/
+  ],
+  [
+    "dry amendment batch tasks",
+    screens.dryAmendmentMix,
+    /tool="dry-amendment-mix"[\s\S]*Create Blend Batch Tasks/
+  ],
+  [
+    "dry amendment product draft",
+    screens.dryAmendmentMix,
+    /Convert to Product Draft[\s\S]*createProduct/
+  ],
+  [
+    "topdress task plan",
+    screens.topdress,
+    /tool="topdress-plan"[\s\S]*Create Topdress Follow-up Tasks/
+  ],
   ["pH/EC task plan", screens.phEc, /tool="ph-ec-check"[\s\S]*Create pH \/ EC Task Plan/],
-  ["feeding schedule saves review", screens.feedingSchedule, /generateSchedule[\s\S]*Create Feeding Review Task/]
+  [
+    "feeding schedule saves review",
+    screens.feedingSchedule,
+    /generateSchedule[\s\S]*Create Feeding Review Task/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 2 screen", contents, pattern, description);
 });
 
+requireText(
+  "NPK screen",
+  screens.npk,
+  /Nutrient Mix Builder[\s\S]*MixBuilderScienceBasis variant="nutrient"/,
+  "canonical nutrient mix builder science basis"
+);
+requireText(
+  "soil builder screen",
+  screens.soilBuilder,
+  /title="Soil Mix Builder"[\s\S]*MixBuilderScienceBasis variant="soil"/,
+  "canonical soil mix builder science basis"
+);
+requireText(
+  "legacy mix chooser",
+  mixChooser,
+  /Nutrient Mix Builder[\s\S]*Soil Mix Builder[\s\S]*two canonical mix tools/,
+  "two canonical mix builder choices"
+);
+requireText(
+  "personal tool manifest",
+  featureStatus,
+  /key: "tools\.npk_recipe"[\s\S]*title: "Nutrient Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/npk"/,
+  "canonical nutrient mix builder catalog entry"
+);
+requireText(
+  "personal tool manifest",
+  featureStatus,
+  /key: "tools\.soil_builder"[\s\S]*title: "Soil Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/soil-builder"/,
+  "canonical soil mix builder catalog entry"
+);
+requireText(
+  "mix builder science basis",
+  scienceBasis,
+  /verified product labels[\s\S]*soil\/substrate lab tests[\s\S]*Lab and measured grow evidence take precedence/,
+  "shared source and uncertainty policy"
+);
+
 [
   ["NPK route test", backendTest, /runs NPK recipe with elemental conversion/],
-  ["pH/EC route test", backendTest, /runs pH\/EC range check and saves a canonical ToolRun/],
-  ["feeding route test", backendTest, /reviews feeding schedules for stage, medium, pH, and EC risk/],
+  [
+    "pH/EC route test",
+    backendTest,
+    /runs pH\/EC range check and saves a canonical ToolRun/
+  ],
+  [
+    "feeding route test",
+    backendTest,
+    /reviews feeding schedules for stage, medium, pH, and EC risk/
+  ],
   ["topdress route test", backendTest, /runs topdress planner with late flower warning/],
-  ["dry amendment route test", backendTest, /runs dry amendment mix builder with guaranteed-analysis output/],
-  ["soil/source route test", backendTest, /runs soil builder and nutrient source comparison foundations/],
-  ["NPK UI tests", tests.npk, /source-linked NPK recipe task plan[\s\S]*commercial-ready product draft/],
-  ["chemistry UI test", tests.chemistry, /creates nutrient review tasks with shared Schedule metadata/],
-  ["soil builder UI tests", tests.soilBuilder, /target profile, release timing[\s\S]*soil recipe task timeline/],
-  ["dry amendment UI tests", tests.dryAmendmentMix, /source-linked dry amendment batch tasks[\s\S]*commercial product drafts/],
-  ["topdress UI tests", tests.topdress, /topdress application and follow-up task schedule/],
+  [
+    "dry amendment route test",
+    backendTest,
+    /runs dry amendment mix builder with guaranteed-analysis output/
+  ],
+  [
+    "soil/source route test",
+    backendTest,
+    /runs soil builder and nutrient source comparison foundations/
+  ],
+  [
+    "NPK UI tests",
+    tests.npk,
+    /source-linked NPK recipe task plan[\s\S]*commercial-ready product draft/
+  ],
+  [
+    "chemistry UI test",
+    tests.chemistry,
+    /creates nutrient review tasks with shared Schedule metadata/
+  ],
+  [
+    "soil builder UI tests",
+    tests.soilBuilder,
+    /target profile, release timing[\s\S]*soil recipe task timeline/
+  ],
+  [
+    "dry amendment UI tests",
+    tests.dryAmendmentMix,
+    /source-linked dry amendment batch tasks[\s\S]*commercial product drafts/
+  ],
+  [
+    "topdress UI tests",
+    tests.topdress,
+    /topdress application and follow-up task schedule/
+  ],
   ["feeding API test", tests.feedingApi, /ToolRun-backed review route/],
-  ["feeding schedule UI test", tests.feedingSchedule, /feeding review tasks with shared Schedule metadata/],
-  ["feeding review unit test", tests.feedingReview, /flags high-risk late flower schedules/]
+  [
+    "feeding schedule UI test",
+    tests.feedingSchedule,
+    /feeding review tasks with shared Schedule metadata/
+  ],
+  [
+    "feeding review unit test",
+    tests.feedingReview,
+    /flags high-risk late flower schedules/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 2 tests", contents, pattern, description);
 });

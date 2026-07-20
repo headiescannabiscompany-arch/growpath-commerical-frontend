@@ -53,8 +53,9 @@ export const personalFeatures = {
   },
   tools: {
     key: "personal.tools",
-    title: "Tools / AI",
-    description: "Cultivation calculations, analysis, and integrations.",
+    title: "AI Tools",
+    description:
+      "User-facing AI, diagnosis, light analysis, and soil/nutrient mix workflows.",
     area: "personal_navigation",
     status: "release",
     href: "/home/personal/tools"
@@ -100,8 +101,9 @@ export const personalToolFeatures = [
     area: "integrations",
     status: "release",
     href: "/home/personal/tools/integrations",
+    hubVisible: false,
     internalNote:
-      "Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
+      "Grow-owned workflow surfaced from Grows, not AI Tools. Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
   },
   {
     key: "tools.vpd",
@@ -110,8 +112,10 @@ export const personalToolFeatures = [
     area: "environment",
     status: "release",
     href: "/home/personal/tools/vpd",
+    hubVisible: false,
     acceptsGrowContext: true,
-    internalNote: "Working calculator with grow log and task actions."
+    internalNote:
+      "Working calculation used by AI, telemetry context, saved results, and legacy links; intentionally hidden from user discovery as a small technical calculator."
   },
   {
     key: "tools.dew_point_guard",
@@ -121,9 +125,10 @@ export const personalToolFeatures = [
     area: "environment",
     status: "release",
     href: "/home/personal/tools/dew-point-guard",
+    hubVisible: false,
     acceptsGrowContext: true,
     internalNote:
-      "Strong foundation; charts, alerts, and broader provider support remain."
+      "AI/telemetry support workflow intentionally hidden from user discovery; charts, alerts, and broader provider support remain."
   },
   {
     key: "tools.ppfd_dli",
@@ -149,12 +154,12 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.npk_recipe",
-    title: "Recipe Builder",
+    title: "Nutrient Mix Builder",
     description:
-      "Build feed, soil, and dry-amendment recipes from ingredients, guaranteed analysis, max amounts, release timing, and target ratios.",
+      "Build science-based nutrient mixes from verified labels, batch volume, elemental conversions, nutrient forms, release timing, and stated assumptions.",
     area: "water_nutrients",
     status: "release",
-    href: "/home/personal/tools/recipe-builder",
+    href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -167,6 +172,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -179,6 +185,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "release",
     href: "/home/personal/tools/nutrient-source-comparison",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -249,16 +256,17 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.pdf_export",
-    title: "PDF / Export",
+    title: "Grow Reports & Export",
     description:
       "Export grow timeline, journal, diagnosis, tool run, harvest, pheno, and comparison reports from the records they belong to.",
     area: "planning_records",
     status: "release",
     href: "/home/personal/tools/pdf-export",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_PDF_EXPORT,
     internalNote:
-      "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
+      "Owned by Grows and Profile, not AI Tools. CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
   {
     key: "tools.pheno_matrix",
@@ -310,9 +318,9 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.soil_builder",
-    title: "Soil Builder",
+    title: "Soil Mix Builder",
     description:
-      "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
+      "Build science-based soil mixes from physical structure, compost uncertainty, buffering, biology, verified amendments, and release timing.",
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/soil-builder",
@@ -328,6 +336,7 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/dry-amendment-mix",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
@@ -340,10 +349,11 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/topdress",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Approved beta task/calendar workflow wired to ToolRun, grow context, logs, tasks, and release timing warnings."
+      "Task-owned planner surfaced from Personal Tasks and grow Tasks. Wired to ToolRun, grow context, logs, tasks, and release timing warnings."
   },
   {
     key: "tools.ph_ec_adjustment",
@@ -352,10 +362,11 @@ export const personalToolFeatures = [
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/ph-ec",
+    hubVisible: false,
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Approved beta pH/EC range workflow. It does not recommend exact pH up/down dosing without product concentration."
+      "Small AI/support calculator hidden from user discovery. It does not recommend exact pH up/down dosing without product concentration."
   },
   {
     key: "tools.crop_steering_projects",

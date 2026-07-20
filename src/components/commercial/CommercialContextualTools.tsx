@@ -20,7 +20,7 @@ const TOOLS: Record<CommercialToolKey, { label: string; path: string }> = {
     path: "/home/commercial/tools/environment"
   },
   "recipe-builder": {
-    label: "Recipe Builder",
+    label: "Soil & Nutrient Mix Builders",
     path: "/home/commercial/tools/recipe-builder"
   },
   "harvest-readiness": {

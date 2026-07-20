@@ -244,6 +244,8 @@ export interface PersonalTask {
   linkedFacilityRunId?: string | null;
   linkedSopId?: string | null;
   linkedForumThreadId?: string | null;
+  assignedToUserId?: string | null;
+  assignedTo?: string | { id?: string; _id?: string } | null;
   requiresProof?: boolean;
   requiresApproval?: boolean;
   proof?: Record<string, any> | null;

@@ -596,18 +596,26 @@ router.post("/plants", async (req, res, next) => {
     if (!name)
       return res.status(400).json({ success: false, message: "Plant name is required" });
     const objectId = userObjectId(uid);
-    const cropProfileId =
+    const requestedCropProfileId =
       req.body?.cropProfileId && validObjectId(req.body.cropProfileId)
         ? new mongoose.Types.ObjectId(String(req.body.cropProfileId))
         : null;
-    if (req.body?.cropProfileId && !cropProfileId) {
+    if (req.body?.cropProfileId && !requestedCropProfileId) {
       return res
         .status(400)
         .json({ success: false, message: "cropProfileId must be a valid id" });
     }
-    if (cropProfileId && !(await CropProfile.exists({ _id: cropProfileId }))) {
+    if (
+      requestedCropProfileId &&
+      !(await CropProfile.exists({ _id: requestedCropProfileId }))
+    ) {
       return res.status(404).json({ success: false, message: "Crop profile not found" });
     }
+    const cropProfileId =
+      requestedCropProfileId ||
+      (plant.cropProfileId && validObjectId(plant.cropProfileId)
+        ? new mongoose.Types.ObjectId(String(plant.cropProfileId))
+        : null);
     const row = await Plant.create({
       userId: uid,
       user: objectId,
@@ -638,6 +646,115 @@ router.post("/plants", async (req, res, next) => {
       plant,
       growthProfile,
       data: { plant, growthProfile }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/plants/:id/crop-identity", async (req, res, next) => {
+  try {
+    const uid = userId(req);
+    if (!validObjectId(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Plant not found" });
+    }
+    if (req.body?.userConfirmed !== true) {
+      return res.status(400).json({
+        success: false,
+        message: "Explicit user confirmation is required before saving crop identity."
+      });
+    }
+    const cropCommonName = String(
+      req.body?.cropCommonName || req.body?.commonName || req.body?.likelyCrop || ""
+    ).trim();
+    if (!cropCommonName || /^unknown crop$/i.test(cropCommonName)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "A confirmed crop name is required." });
+    }
+
+    const plant = await Plant.findOne({
+      _id: req.params.id,
+      $or: userPlantQuery(uid),
+      deletedAt: null
+    });
+    if (!plant) {
+      return res.status(404).json({ success: false, message: "Plant not found" });
+    }
+
+    const scientificName = String(req.body?.scientificName || "").trim();
+    const cultivar = String(
+      req.body?.cultivar || req.body?.cultivarOrStrain || ""
+    ).trim();
+    const commonNames = Array.from(
+      new Set(
+        [
+          cropCommonName,
+          ...(Array.isArray(req.body?.commonNames)
+            ? req.body.commonNames
+            : String(req.body?.commonNames || "").split(","))
+        ]
+          .map((item) => String(item || "").trim())
+          .filter(Boolean)
+      )
+    );
+    const cropProfileId =
+      req.body?.cropProfileId && validObjectId(req.body.cropProfileId)
+        ? new mongoose.Types.ObjectId(String(req.body.cropProfileId))
+        : null;
+    if (req.body?.cropProfileId && !cropProfileId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "cropProfileId must be a valid id" });
+    }
+    if (cropProfileId && !(await CropProfile.exists({ _id: cropProfileId }))) {
+      return res.status(404).json({ success: false, message: "Crop profile not found" });
+    }
+    const confirmedAt = new Date();
+
+    plant.cropCommonName = cropCommonName;
+    plant.scientificName = scientificName;
+    plant.commonNames = commonNames;
+    if (cultivar) {
+      plant.cultivar = cultivar;
+      plant.strain = cultivar;
+    }
+    if (cropProfileId) plant.cropProfileId = cropProfileId;
+    plant.cropIdentity = {
+      commonName: cropCommonName,
+      scientificName,
+      commonNames,
+      cultivarOrStrain: cultivar,
+      confidence: String(req.body?.confidence || "user_confirmed"),
+      confirmationStatus: "user_confirmed",
+      confirmationSource: "species_crop_id_tool",
+      sourceToolRunId: req.body?.sourceToolRunId
+        ? String(req.body.sourceToolRunId)
+        : null,
+      confirmedAt
+    };
+    plant.cropIdentityConfirmedAt = confirmedAt;
+    await plant.save();
+
+    const growthProfile = await buildPlantGrowthOverlay({
+      uid,
+      growId: String(plant.growId || req.body?.growId || ""),
+      plant,
+      body: {
+        ...req.body,
+        cropProfileId: cropProfileId ? String(cropProfileId) : undefined,
+        confirmedScientificName: scientificName,
+        cultivar,
+        confirmationStatus: "user_confirmed"
+      }
+    });
+    const result = plantDto(plant, growthProfile);
+    return res.status(200).json({
+      success: true,
+      updated: result,
+      plant: result,
+      growthProfile,
+      data: { plant: result, growthProfile }
     });
   } catch (error) {
     return next(error);
@@ -1407,9 +1524,7 @@ router.post("/tasks", async (req, res, next) => {
       sourceToolRunId: sourceFields.sourceToolRunId,
       sourceDiagnosisId: sourceFields.sourceDiagnosisId,
       linkedLogId: sourceFields.linkedLogId,
-      linkedCourseId: req.body?.linkedCourseId
-        ? String(req.body.linkedCourseId)
-        : null,
+      linkedCourseId: req.body?.linkedCourseId ? String(req.body.linkedCourseId) : null,
       linkedLiveId: req.body?.linkedLiveId ? String(req.body.linkedLiveId) : null,
       actionUrl: req.body?.actionUrl ? String(req.body.actionUrl) : null
     });

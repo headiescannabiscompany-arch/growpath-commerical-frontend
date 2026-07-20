@@ -138,7 +138,7 @@ export default function PersonalHomeTab() {
               {canCreateGrow ? (
                 <ActionLink href="/home/personal/grows/new" label="Create Grow" />
               ) : null}
-              <ActionLink href="/home/personal/tools" label="Explore Tools" />
+              <ActionLink href="/home/personal/tools" label="Explore AI Tools" />
               <ActionLink href="/home/personal/diagnose" label="Run Diagnosis" />
               <ActionLink href="/home/personal/community" label="Ask Forum / Q&A" />
             </View>
@@ -168,7 +168,7 @@ export default function PersonalHomeTab() {
                 Save photos, watering notes, symptoms, environment readings, and task
                 decisions in the journal.
               </Text>
-              <ActionLink href="/home/personal/tools" label="Open Tools" />
+              <ActionLink href="/home/personal/tools" label="Open AI Tools" />
             </AppCard>
             <AppCard style={styles.onboardingCard}>
               <Text style={styles.stepNumber}>3</Text>
@@ -258,7 +258,7 @@ export default function PersonalHomeTab() {
             ) : null}
             <ActionLink
               href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
-              label="Run Tool"
+              label="Open AI Tools"
             />
             <ActionLink
               href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}

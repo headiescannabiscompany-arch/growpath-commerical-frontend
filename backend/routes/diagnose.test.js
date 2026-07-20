@@ -106,12 +106,8 @@ describe("diagnose backend routes", () => {
           counterEvidence: expect.arrayContaining([
             expect.stringContaining("No lab test")
           ]),
-          missingData: expect.arrayContaining([
-            expect.stringContaining("pH/EC")
-          ]),
-          suggestedActions: expect.arrayContaining([
-            expect.stringContaining("pH")
-          ])
+          missingData: expect.arrayContaining([expect.stringContaining("pH/EC")]),
+          suggestedActions: expect.arrayContaining([expect.stringContaining("pH")])
         })
       })
     );
@@ -121,8 +117,44 @@ describe("diagnose backend routes", () => {
       confidenceLevel: "medium",
       evidenceObserved: expect.any(Array),
       missingData: expect.any(Array),
-      suggestedActions: expect.any(Array)
+      suggestedActions: expect.any(Array),
+      followUpQuestion: expect.any(String)
     });
+  });
+
+  test("stores attached photo evidence without claiming the text engine inspected it", async () => {
+    mockDiagnosis.create.mockImplementation(async (payload) =>
+      doc({
+        _id: DIAGNOSIS_ID,
+        ...payload
+      })
+    );
+
+    const res = await request(app)
+      .post("/api/diagnose")
+      .send({
+        growId: GROW_ID,
+        notes: "Yellow spotting on lower leaves",
+        photoUrls: ["/uploads/leaf-top.jpg", "/uploads/leaf-bottom.jpg"]
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockDiagnosis.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        photos: ["/uploads/leaf-top.jpg", "/uploads/leaf-bottom.jpg"],
+        aiResult: expect.objectContaining({
+          imageAnalysis: {
+            requested: true,
+            performed: false,
+            photoCount: 2,
+            reason: "The deterministic diagnosis provider is text-only."
+          },
+          missingData: expect.arrayContaining([
+            expect.stringContaining("Visual review of the attached photos")
+          ])
+        })
+      })
+    );
   });
 
   test("rejects diagnosis writes for grows outside the authenticated user", async () => {

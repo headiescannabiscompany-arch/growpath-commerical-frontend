@@ -212,12 +212,18 @@ describe("PersonalTaskCenterRoute", () => {
     const screen = render(<PersonalTaskCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Task Center / Schedule")).toBeTruthy());
-    expect(screen.getByText("Planning workflows")).toBeTruthy();
+    expect(screen.getByText("Task planning tools")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow Planner / Auto Calendar from personal_tasks_calendar")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Watering Planner from personal_tasks_calendar")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Feeding Schedule from personal_tasks_calendar")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Topdress Planner from personal_tasks_calendar")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Timeline Planner from personal_tasks_calendar")

@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-16",
+  "version": "2026-07-20",
   "personal": {
     "tabsLayoutFile": "src/app/home/personal/(tabs)/_layout.tsx",
     "visibleTabs": [
@@ -216,11 +216,35 @@
     "safetyAssertions": [
       {
         "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
-        "mustContain": "NPK / Feed Recipe Builder"
+        "mustContain": "Nutrient Mix Builder"
       },
       {
         "file": "src/app/home/personal/(tabs)/tools/_layout.tsx",
-        "mustContain": "NPK / Feed Recipe Builder"
+        "mustContain": "Nutrient Mix Builder"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/index.tsx",
+        "mustContain": "AI Tools"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tasks.tsx",
+        "mustContain": "topdress"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/grows/index.tsx",
+        "mustContain": "/home/personal/tools/integrations?growId="
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/grows/index.tsx",
+        "mustContain": "/home/personal/tools/pdf-export?growId="
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/profile/index.tsx",
+        "mustContain": "Open Grow Reports & Export"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/soil-nutrient-batch.tsx",
+        "mustContain": "Redirect href=\"/home/commercial/tools/soil-nutrient-batch\""
       }
     ]
   },

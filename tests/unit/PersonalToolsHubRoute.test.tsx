@@ -71,8 +71,10 @@ describe("personal tools hub", () => {
     const screen = render(<ToolsHubScreen />);
 
     expect(screen.getByText(/Fruit Trees & Bushes/)).toBeTruthy();
-    expect(screen.getByText("Topdress Planner")).toBeTruthy();
+    expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
+    expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
     expect(screen.getByText("IPM Scout / Pest & Organism Tool")).toBeTruthy();
+    expect(screen.queryByText("Topdress Planner")).toBeNull();
     expect(screen.queryByText("Pheno Hunting")).toBeNull();
     expect(screen.queryByText("Dry / Cure Guard")).toBeNull();
   });
@@ -82,10 +84,24 @@ describe("personal tools hub", () => {
 
     expect(screen.getAllByLabelText("link-/home/personal/ai").length).toBeGreaterThan(0);
     expect(screen.getByText("Start Here")).toBeTruthy();
-    expect(screen.getByText("Recipe Builder")).toBeTruthy();
-    expect(screen.getByText("Environment Monitor")).toBeTruthy();
-    expect(screen.getByText("Soil Builder")).toBeTruthy();
-    expect(screen.getByText("Recipe / Nutrients")).toBeTruthy();
+    expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
+    expect(screen.getByText("PPFD / DLI Analyzer")).toBeTruthy();
+    expect(screen.getByText("Environment Review")).toBeTruthy();
+    expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
+    expect(screen.getByText("Soil & Nutrient Science")).toBeTruthy();
+    expect(screen.getByLabelText("link-/home/personal/tools/npk")).toBeTruthy();
+    expect(screen.getByLabelText("link-/home/personal/tools/soil-builder")).toBeTruthy();
+    expect(screen.queryByText("Nutrient Chemistry")).toBeNull();
+    expect(screen.queryByText("Nutrient Source Comparison")).toBeNull();
+    expect(screen.queryByText("Dry Amendment Mix Builder")).toBeNull();
+    expect(screen.queryByText("Topdress Planner")).toBeNull();
+    expect(screen.queryByText("VPD Calculator")).toBeNull();
+    expect(screen.queryByText("Environment Monitor")).toBeNull();
+    expect(screen.queryByText("pH / EC Range Check")).toBeNull();
+    expect(screen.queryByText("Data Integrations")).toBeNull();
+    expect(screen.queryByText("Grow Reports & Export")).toBeNull();
+    expect(screen.queryByText("Soil & Nutrient Batch Planner")).toBeNull();
+    expect(screen.queryByText("Reports & Export")).toBeNull();
     expect(screen.queryByText("Bud Rot Risk")).toBeNull();
   });
 
@@ -110,7 +126,7 @@ describe("personal tools hub", () => {
     expect(screen.getByText("AI Credits 10 / 10")).toBeTruthy();
     expect(screen.getAllByText("Ask AI").length).toBeGreaterThan(0);
     expect(screen.getByText("Plant Issue Diagnosis")).toBeTruthy();
-    expect(screen.getByText("Soil Builder")).toBeTruthy();
+    expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
     expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryAllByText("Upgrade to unlock").length).toBeGreaterThan(0);
   });
@@ -127,7 +143,7 @@ describe("personal tools hub", () => {
     const screen = render(<ToolsHubScreen />);
 
     expect(screen.getByText(/AI-credit balance and usage/)).toBeTruthy();
-    expect(screen.getByText("Soil Builder")).toBeTruthy();
+    expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
     expect(screen.queryAllByText("Upgrade to unlock")).toHaveLength(0);
   });
 });

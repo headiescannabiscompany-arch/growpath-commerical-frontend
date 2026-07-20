@@ -69,7 +69,12 @@ const tests = {
     `${route} ToolRun-backed calculator route`
   );
   requireText("tool calculators", calculators, new RegExp(`function ${fn}\\b`), fn);
-  requireText("tool calculator exports", calculators, new RegExp(`\\b${fn}\\b`), `${fn} export`);
+  requireText(
+    "tool calculator exports",
+    calculators,
+    new RegExp(`\\b${fn}\\b`),
+    `${fn} export`
+  );
 });
 
 [
@@ -86,7 +91,10 @@ const tests = {
   ["run comparison next-run tasks", /calculateRunComparison[\s\S]*tasksToCreate/],
   ["auto calendar stage timeline", /calculateAutoGrowCalendar[\s\S]*stageTimeline/],
   ["auto calendar task schedule", /calculateAutoGrowCalendar[\s\S]*taskSchedule/],
-  ["auto calendar harvest windows", /calculateAutoGrowCalendar[\s\S]*plantSpecificHarvestWindows/]
+  [
+    "auto calendar harvest windows",
+    /calculateAutoGrowCalendar[\s\S]*plantSpecificHarvestWindows/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("tool calculators", calculators, pattern, description);
 });
@@ -155,13 +163,36 @@ const tests = {
 
 [
   ["harvest ToolRun screen", screens.harvest, /tool="harvest-readiness"/],
+  [
+    "harvest photo checklist",
+    screens.harvest,
+    /HARVEST_PHOTO_CHECKLIST[\s\S]*Photo checklist before analysis/
+  ],
+  ["harvest photo failure status", screens.harvest, /Photo analysis did not run/],
+  [
+    "harvest photo failure leaves fields unchanged",
+    screens.harvest,
+    /No trichome fields were filled/
+  ],
   ["harvest decision tasks", screens.harvest, /Create Harvest Decision Tasks/],
   ["harvest batch save", screens.harvest, /Save Harvest Review[\s\S]*updateHarvestBatch/],
-  ["harvest schedule metadata", screens.harvest, /harvest_readiness_recheck[\s\S]*dry_cure_setup/],
+  [
+    "harvest schedule metadata",
+    screens.harvest,
+    /harvest_readiness_recheck[\s\S]*dry_cure_setup/
+  ],
   ["dry/cure ToolRun screen", screens.dryCure, /tool="dry-cure-guard"/],
   ["dry/cure monitoring tasks", screens.dryCure, /Create Dry\/Cure Monitoring Tasks/],
-  ["dry/cure harvest batch save", screens.dryCure, /Save to Harvest Batch[\s\S]*updateHarvestBatch/],
-  ["dry/cure schedule metadata", screens.dryCure, /dry_cure_condition_check[\s\S]*dry_cure_outcome_notes/],
+  [
+    "dry/cure harvest batch save",
+    screens.dryCure,
+    /Save to Harvest Batch[\s\S]*updateHarvestBatch/
+  ],
+  [
+    "dry/cure schedule metadata",
+    screens.dryCure,
+    /dry_cure_condition_check[\s\S]*dry_cure_outcome_notes/
+  ],
   ["run comparison ToolRun screen", screens.runComparison, /tool="run-comparison"/],
   ["run comparison next-run tasks", screens.runComparison, /Create Next-Run Tasks/],
   ["run comparison schedule metadata", screens.runComparison, /run_comparison_followup/],
@@ -208,7 +239,10 @@ const tests = {
 });
 
 [
-  ["export screen loads records", /listPersonalLogs[\s\S]*listPersonalTasks[\s\S]*listPersonalPlants[\s\S]*listToolRuns/],
+  [
+    "export screen loads records",
+    /listPersonalLogs[\s\S]*listPersonalTasks[\s\S]*listPersonalPlants[\s\S]*listToolRuns/
+  ],
   ["export rows", /buildExportRows/],
   ["CSV export", /exportToCsv[\s\S]*Export CSV/],
   ["export package copy", /Export package[\s\S]*CSV export is available now/],
@@ -225,19 +259,60 @@ const tests = {
   ["ToolRun export rows", /type: "tool_run"/],
   ["harvest timeline milestones", /Harvest window[\s\S]*Dry complete[\s\S]*Cure check/]
 ].forEach(([description, pattern]) => {
-  requireText("advanced planning export/report helpers", advancedPlanning, pattern, description);
+  requireText(
+    "advanced planning export/report helpers",
+    advancedPlanning,
+    pattern,
+    description
+  );
 });
 
 [
-  ["dry/cure backend test", tests.backendTools, /runs dry\/cure guard without treating temperatures above 68F as automatic failure/],
-  ["run/calendar backend test", tests.backendTools, /runs run comparison and auto grow calendar tools/],
-  ["harvest readiness backend test", tests.backendTools, /runs genetics inventory and harvest readiness tools[\s\S]*harvestTask/],
-  ["harvest batch backend test", tests.personalBackend, /creates, lists, updates, and archives harvest batches with dry\/cure records/],
-  ["harvest batch API test", tests.harvestApi, /creates, lists, updates, and archives harvest\/dry-cure records/],
-  ["harvest UI tests", tests.harvest, /Create Harvest Decision Tasks[\s\S]*saves harvest readiness review to a harvest batch record/],
-  ["dry/cure UI tests", tests.dryCure, /creates dry\/cure monitoring tasks[\s\S]*saves dry\/cure readings to a harvest batch record/],
-  ["run comparison UI tests", tests.runComparison, /creates next-run tasks from run comparison output/],
-  ["auto calendar UI tests", tests.autoCalendar, /creates tasks from the generated grow calendar schedule/],
+  [
+    "dry/cure backend test",
+    tests.backendTools,
+    /runs dry\/cure guard without treating temperatures above 68F as automatic failure/
+  ],
+  [
+    "run/calendar backend test",
+    tests.backendTools,
+    /runs run comparison and auto grow calendar tools/
+  ],
+  [
+    "harvest readiness backend test",
+    tests.backendTools,
+    /runs genetics inventory and harvest readiness tools[\s\S]*harvestTask/
+  ],
+  [
+    "harvest batch backend test",
+    tests.personalBackend,
+    /creates, lists, updates, and archives harvest batches with dry\/cure records/
+  ],
+  [
+    "harvest batch API test",
+    tests.harvestApi,
+    /creates, lists, updates, and archives harvest\/dry-cure records/
+  ],
+  [
+    "harvest UI tests",
+    tests.harvest,
+    /Create Harvest Decision Tasks[\s\S]*saves harvest readiness review to a harvest batch record/
+  ],
+  [
+    "dry/cure UI tests",
+    tests.dryCure,
+    /creates dry\/cure monitoring tasks[\s\S]*saves dry\/cure readings to a harvest batch record/
+  ],
+  [
+    "run comparison UI tests",
+    tests.runComparison,
+    /creates next-run tasks from run comparison output/
+  ],
+  [
+    "auto calendar UI tests",
+    tests.autoCalendar,
+    /creates tasks from the generated grow calendar schedule/
+  ],
   ["export route test", tests.exportRoute, /uses shared back behavior on PDF \/ Export/],
   ["harvest helper tests", tests.planning, /estimates a harvest readiness window/]
 ].forEach(([description, contents, pattern]) => {

@@ -62,7 +62,10 @@ function parseContext(body = {}) {
       return body;
     }
   }
-  return { ...body, ...(body.context && typeof body.context === "object" ? body.context : {}) };
+  return {
+    ...body,
+    ...(body.context && typeof body.context === "object" ? body.context : {})
+  };
 }
 
 function strings(value) {
@@ -91,8 +94,19 @@ function textOf(context) {
     .toLowerCase();
 }
 
+function hasValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
+function finiteNumber(value) {
+  if (!hasValue(value)) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function triageDiagnosis(context = {}) {
   const text = textOf(context);
+  const photos = strings(context.photoUrls || context.photoUrl || context.photos);
   const evidence = [];
   const counterEvidence = [];
   const missingData = [];
@@ -102,30 +116,57 @@ function triageDiagnosis(context = {}) {
   let issueSummary = "Possible plant stress requiring follow-up";
   let severity = 2;
   let urgency = "medium";
+  let followUpQuestion =
+    "Where did the symptom begin, how quickly is it spreading, and what changed before it appeared?";
 
   if (/spot|stippl|mite|thrip|aphid|gnat|pest|insect|webbing/.test(text)) {
     diagnosisClass = "ipm_or_pest_triage";
     issueSummary = "Possible pest or IPM pressure";
     tags.push("ipm", "scout_required");
-    evidence.push("Entered symptoms mention pest, spotting, stippling, insects, or webbing.");
-    actions.push("Inspect leaf undersides and growing tips with magnification before treatment.");
+    evidence.push(
+      "Entered symptoms mention pest, spotting, stippling, insects, or webbing."
+    );
+    actions.push(
+      "Inspect leaf undersides and growing tips with magnification before treatment."
+    );
     missingData.push("Clear close-up photos of upper and lower leaf surfaces.");
+    followUpQuestion =
+      "Are insects, eggs, webbing, black specks, or moving dots visible on leaf undersides or growing tips?";
   }
   if (/yellow|chlorosis|pale|deficien|nitrogen|calcium|magnesium/.test(text)) {
     diagnosisClass = "nutrition_or_root_zone_triage";
     issueSummary = "Possible nutrition or root-zone issue";
     tags.push("nutrition", "root_zone_check");
-    evidence.push("Entered symptoms mention yellowing, chlorosis, pale growth, or nutrient terms.");
-    actions.push("Check recent feed strength, pH, EC, dryback, and runoff trend before changing nutrients.");
-    missingData.push("Recent input and runoff pH/EC readings.");
+    evidence.push(
+      "Entered symptoms mention yellowing, chlorosis, pale growth, or nutrient terms."
+    );
+    actions.push(
+      "Check recent feed strength, pH, EC, dryback, and runoff trend before changing nutrients."
+    );
+    if (
+      !hasValue(context.numbers?.feedPH) ||
+      !hasValue(context.numbers?.runoffPH) ||
+      !hasValue(context.numbers?.feedEC) ||
+      !hasValue(context.numbers?.runoffEC)
+    ) {
+      missingData.push("Recent input and runoff pH/EC readings.");
+    }
+    followUpQuestion =
+      "Does the yellowing begin on older or newer growth, and what are the current input and runoff pH/EC readings?";
   }
   if (/wet|overwater|droop|root|runoff|ec|ph|lockout/.test(text)) {
     diagnosisClass = "root_zone_or_irrigation_triage";
     issueSummary = "Possible root-zone or irrigation stress";
     tags.push("root_zone", "irrigation_review");
-    evidence.push("Entered context mentions root-zone, moisture, pH, EC, runoff, droop, or lockout.");
-    actions.push("Review irrigation volume, dryback, pot weight, runoff, and root-zone oxygen.");
+    evidence.push(
+      "Entered context mentions root-zone, moisture, pH, EC, runoff, droop, or lockout."
+    );
+    actions.push(
+      "Review irrigation volume, dryback, pot weight, runoff, and root-zone oxygen."
+    );
     missingData.push("Pot weight/dryback trend and runoff amount.");
+    followUpQuestion =
+      "How long does the root zone take to dry between irrigations, and how much runoff or pot-weight change are you seeing?";
   }
   if (/urgent|severe|worse|collapse|rot|mold|mildew|necrosis/.test(text)) {
     severity = 4;
@@ -135,20 +176,63 @@ function triageDiagnosis(context = {}) {
   }
   if (!evidence.length) {
     evidence.push("User supplied plant-health notes for triage.");
-    missingData.push("Photos, exact symptom location, pH/EC, irrigation timing, and recent environment.");
-    actions.push("Collect photos and measurements before applying a corrective treatment.");
+    missingData.push(
+      "Photos, exact symptom location, pH/EC, irrigation timing, and recent environment."
+    );
+    actions.push(
+      "Collect photos and measurements before applying a corrective treatment."
+    );
+  }
+
+  const feedEC = finiteNumber(context.numbers?.feedEC);
+  const runoffEC = finiteNumber(context.numbers?.runoffEC);
+  if (feedEC !== null && runoffEC !== null) {
+    evidence.push(`Entered EC comparison: feed ${feedEC}, runoff ${runoffEC}.`);
+    if (runoffEC >= feedEC + 0.5) {
+      tags.push("runoff_ec_elevated");
+      actions.unshift(
+        "Confirm runoff sampling consistency and review salt accumulation before increasing feed strength."
+      );
+    }
+  }
+
+  const feedPH = finiteNumber(context.numbers?.feedPH);
+  const runoffPH = finiteNumber(context.numbers?.runoffPH);
+  if (feedPH !== null && runoffPH !== null) {
+    evidence.push(`Entered pH comparison: feed ${feedPH}, runoff ${runoffPH}.`);
+    if (Math.abs(runoffPH - feedPH) >= 1) {
+      tags.push("root_zone_ph_drift");
+      actions.unshift(
+        "Recheck pH meter calibration and compare another root-zone sample before correcting pH."
+      );
+    }
+  }
+
+  if (photos.length) {
+    counterEvidence.push(
+      `${photos.length} photo${photos.length === 1 ? " was" : "s were"} attached as evidence, but the current text-only engine did not interpret image pixels.`
+    );
+    missingData.push(
+      "Visual review of the attached photos by an image-capable provider or a qualified grower."
+    );
   }
 
   counterEvidence.push(
     "No lab test, microscopy confirmation, or full environmental trend was provided."
   );
-  actions.push("Create a follow-up check and compare symptoms after the next irrigation/light cycle.");
+  actions.push(
+    "Create a follow-up check and compare symptoms after the next irrigation/light cycle."
+  );
 
   return {
     issueSummary,
     diagnosisClass,
     severity,
-    confidenceLevel: "medium",
+    confidenceLevel:
+      evidence.length >= 2 &&
+      (feedEC !== null || runoffEC !== null || feedPH !== null || runoffPH !== null)
+        ? "medium"
+        : "low",
     evidenceObserved: Array.from(new Set(evidence)),
     counterEvidence: Array.from(new Set(counterEvidence)),
     missingData: Array.from(new Set(missingData)),
@@ -167,6 +251,15 @@ function triageDiagnosis(context = {}) {
       ? `feedEC: ${context.numbers.feedEC || ""}; runoffEC: ${context.numbers.runoffEC || ""}; feedPH: ${context.numbers.feedPH || ""}; runoffPH: ${context.numbers.runoffPH || ""}`
       : "",
     urgency,
+    followUpQuestion,
+    imageAnalysis: {
+      requested: photos.length > 0,
+      performed: false,
+      photoCount: photos.length,
+      reason: photos.length
+        ? "The deterministic diagnosis provider is text-only."
+        : "No photos were attached."
+    },
     growPathReasoning: [
       "Compared symptom pattern, root-zone context, environment, and measured numbers.",
       "Kept the result as a possible triage finding because key confirmation data may be missing."
@@ -189,6 +282,8 @@ function dto(row) {
     counterEvidence: aiResult.counterEvidence || [],
     missingData: aiResult.missingData || [],
     suggestedActions: aiResult.suggestedActions || value.aiActions || [],
+    followUpQuestion: aiResult.followUpQuestion || "",
+    imageAnalysis: aiResult.imageAnalysis || null,
     cropIdentity: value.cropIdentity || {},
     cropProfileSnapshot: value.cropProfileSnapshot || null
   };
@@ -214,7 +309,7 @@ async function createDiagnosis(req, res, next) {
             requiresUserConfirmation: !context.cropProfileId
           }
         : {});
-    const photos = strings(context.photoUrl || context.photos);
+    const photos = strings(context.photoUrls || context.photoUrl || context.photos);
     const created = await Diagnosis.create({
       user: toObjectId(uid),
       growId,
@@ -225,7 +320,10 @@ async function createDiagnosis(req, res, next) {
       cropCommonName: String(context.cropCommonName || cropIdentity.commonName || ""),
       scientificName: String(context.scientificName || cropIdentity.scientificName || ""),
       cultivarOrStrain: String(
-        context.cultivarOrStrain || context.cultivar || cropIdentity.cultivarOrStrain || ""
+        context.cultivarOrStrain ||
+          context.cultivar ||
+          cropIdentity.cultivarOrStrain ||
+          ""
       ),
       cropIdentity,
       cropProfileId:
@@ -291,7 +389,10 @@ router.get("/:id", async (req, res, next) => {
   try {
     const uid = requireUser(req, res);
     if (!uid) return;
-    const row = await Diagnosis.findOne({ _id: req.params.id, user: toObjectId(uid) }).lean();
+    const row = await Diagnosis.findOne({
+      _id: req.params.id,
+      user: toObjectId(uid)
+    }).lean();
     if (!row) return res.status(404).json({ message: "Diagnosis not found" });
     res.json({ diagnosis: dto(row) });
   } catch (error) {

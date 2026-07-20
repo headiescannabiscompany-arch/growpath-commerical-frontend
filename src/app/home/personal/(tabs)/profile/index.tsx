@@ -573,6 +573,22 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.rowLabel}>Grow reports and export</Text>
+        <Text style={styles.mutedText}>
+          Export records across your account, or open a specific grow first to create a
+          grow-scoped report.
+        </Text>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/home/personal/tools/pdf-export" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Open grow reports and export"
+        >
+          <Text style={styles.accountActionText}>Open Grow Reports & Export</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.rowLabel}>Privacy and account data</Text>
         <Text style={styles.mutedText}>
           Export your account data as JSON, or request account deletion. Deletion

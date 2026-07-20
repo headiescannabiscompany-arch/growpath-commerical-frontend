@@ -6,6 +6,8 @@ import BackendCalculatorToolScreen, {
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
+import { savePersonalGrowCropIdentity } from "@/api/grows";
+import { savePersonalPlantCropIdentity } from "@/api/plants";
 import type { EvidenceAsset } from "@/types/evidence";
 
 function normalizePriority(
@@ -49,7 +51,7 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
   return [
     {
       title: needsConfirm ? "Confirm crop identity" : "Save crop identity to profile",
-      priority: needsConfirm ? "high" : ("medium" as const),
+      priority: needsConfirm ? ("high" as const) : ("medium" as const),
       dueDate: tomorrow(1),
       ...cropIdentityCalendarMetadata("crop_identity_confirmation"),
       description:
@@ -161,28 +163,68 @@ export default function SpeciesCropIdToolRoute() {
         priority: outputs.userConfirmationRequired ? "high" : "medium",
         ...cropIdentityCalendarMetadata("crop_identity_confirmation")
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
-        {
-          key: "create-crop-identity-tasks",
-          label: "Create Crop Identity Tasks",
-          variant: "secondary",
-          pendingLabel: "Creating...",
-          disabled: !growId,
-          successMessage: "Created crop identity tasks.",
-          onPress: async () => {
-            const result = await saveToolRunAndCreateTasks({
-              growId,
-              ...plantContext.toolRunContext,
-              toolKey: "species-crop-id",
-              toolRunId: toolRun?.id || toolRun?._id,
-              input: payload,
-              output: outputs,
-              tasks: speciesCropTaskPlan(outputs)
-            });
-            if (!result.ok) throw new Error(result.error);
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => {
+        const cropCommonName = String(
+          outputs.likelyCrop || payload.userEnteredName || ""
+        ).trim();
+        const invalidIdentity = !cropCommonName || /^unknown crop$/i.test(cropCommonName);
+        const target = plantContext.plantId ? "Plant" : "Grow";
+        const identity = {
+          growId,
+          cropCommonName,
+          scientificName: String(
+            outputs.scientificName || payload.scientificName || ""
+          ).trim(),
+          commonNames:
+            outputs.commonNames ||
+            String(payload.commonNames || "")
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+          cultivar: String(outputs.cultivarOrStrain || payload.cultivar || "").trim(),
+          cropProfileId: outputs.cropProfileSuggestion?.cropProfileId || null,
+          confidence: "user_confirmed",
+          sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
+          userConfirmed: true as const
+        };
+
+        return [
+          {
+            key: "confirm-save-crop-identity",
+            label: `Confirm & Save to ${target}`,
+            pendingLabel: "Saving...",
+            disabled: !growId || invalidIdentity,
+            successMessage: `Confirmed crop identity saved to ${target.toLowerCase()}.`,
+            onPress: async () => {
+              if (plantContext.plantId) {
+                await savePersonalPlantCropIdentity(plantContext.plantId, identity);
+              } else {
+                await savePersonalGrowCropIdentity(growId, identity);
+              }
+            }
+          },
+          {
+            key: "create-crop-identity-tasks",
+            label: "Create Crop Identity Tasks",
+            variant: "secondary",
+            pendingLabel: "Creating...",
+            disabled: !growId,
+            successMessage: "Created crop identity tasks.",
+            onPress: async () => {
+              const result = await saveToolRunAndCreateTasks({
+                growId,
+                ...plantContext.toolRunContext,
+                toolKey: "species-crop-id",
+                toolRunId: toolRun?.id || toolRun?._id,
+                input: payload,
+                output: outputs,
+                tasks: speciesCropTaskPlan(outputs)
+              });
+              if (!result.ok) throw new Error(result.error);
+            }
           }
-        }
-      ]}
+        ];
+      }}
     />
   );
 }

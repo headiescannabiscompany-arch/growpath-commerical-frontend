@@ -72,6 +72,17 @@ const GrowSchema = new mongoose.Schema(
     name: { type: String, required: true },
     strain: { type: String },
     cultivar: { type: String },
+    cropCommonName: { type: String, default: "" },
+    scientificName: { type: String, default: "" },
+    commonNames: { type: [String], default: [] },
+    cropProfileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CropProfile",
+      default: null,
+      index: true
+    },
+    cropIdentity: { type: mongoose.Schema.Types.Mixed, default: null },
+    cropIdentityConfirmedAt: { type: Date, default: null },
     breeder: { type: String },
     photo: { type: String },
     photoUrl: { type: String },

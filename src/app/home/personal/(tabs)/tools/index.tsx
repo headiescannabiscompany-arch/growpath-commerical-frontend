@@ -99,7 +99,7 @@ const AREA_ORDER: FeatureArea[] = [
 const AREA_LABELS: Record<FeatureArea, string> = {
   personal_navigation: "Navigation",
   environment: "Environment",
-  water_nutrients: "Recipe / Nutrients",
+  water_nutrients: "Soil & Nutrient Science",
   plant_health: "Plant Health & AI",
   crop_management: "Crop Management",
   planning_records: "Planning & Records",
@@ -110,7 +110,11 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
-const CORE_TOOL_KEYS = new Set(["tools.npk_recipe", "tools.environment_analysis"]);
+const CORE_TOOL_KEYS = new Set([
+  "tools.npk_recipe",
+  "tools.soil_builder",
+  "tools.ppfd_dli"
+]);
 const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
   "tools.crop_steering_projects",
   "tools.pheno_hunting",
@@ -237,10 +241,10 @@ export default function ToolsHubScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Grow Intelligence</Text>
+        <Text style={styles.title}>AI Tools</Text>
         <Text style={styles.subtitle}>
-          Ask AI, diagnose plants, build recipes, analyze environment risk, and save
-          outputs back to a grow.
+          Ask AI, diagnose plants, analyze measured light, build soil and nutrient mixes,
+          and save useful outputs back to a grow.
         </Text>
         <View style={styles.context}>
           <Text style={styles.contextText}>
@@ -312,7 +316,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Saved Runs / Reports</Text>
+        <Text style={styles.sectionTitle}>Saved AI & Tool Results</Text>
         <View style={styles.utilityRow}>
           <Link
             href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
@@ -320,14 +324,6 @@ export default function ToolsHubScreen() {
           >
             <Pressable style={styles.utilityButton}>
               <Text style={styles.utilityText}>Saved Runs</Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/pdf-export", growId) as Href}
-            asChild
-          >
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Reports & Export</Text>
             </Pressable>
           </Link>
         </View>

@@ -33,7 +33,7 @@ export default function PersonalTabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="tools" options={{ title: "Tools" }} />
+      <Tabs.Screen name="tools" options={{ title: "AI Tools" }} />
       <Tabs.Screen name="community" options={{ title: "Forum / Q&A" }} />
       <Tabs.Screen name="discover" options={{ title: "Discover" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />

@@ -465,15 +465,6 @@ function GrowPlantsContent() {
                     <Text style={styles.quickActionText}>Diagnose</Text>
                   </Pressable>
                 </Link>
-                <Link href={withPlant("/home/personal/tools/vpd", plant)} asChild>
-                  <Pressable
-                    style={styles.quickAction}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Run VPD for ${plant.name || "plant"}`}
-                  >
-                    <Text style={styles.quickActionText}>VPD</Text>
-                  </Pressable>
-                </Link>
                 <Link href={withPlant("/home/personal/tools/watering", plant)} asChild>
                   <Pressable
                     style={styles.quickAction}

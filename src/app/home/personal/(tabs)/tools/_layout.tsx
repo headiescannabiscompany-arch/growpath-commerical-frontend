@@ -67,7 +67,7 @@ export default function ToolsLayout() {
         name="ingredient-library"
         options={{ title: "Product / Ingredient Library" }}
       />
-      <Stack.Screen name="npk" options={{ title: "NPK / Feed Recipe Builder" }} />
+      <Stack.Screen name="npk" options={{ title: "Nutrient Mix Builder" }} />
       <Stack.Screen name="watering" options={{ title: "Watering Planner" }} />
       <Stack.Screen
         name="feeding-schedule"
@@ -81,8 +81,8 @@ export default function ToolsLayout() {
       <Stack.Screen name="pdf-export" options={{ title: "PDF / Export" }} />
       <Stack.Screen name="saved-runs" options={{ title: "Saved Tool Runs" }} />
       <Stack.Screen name="pheno-matrix" options={{ title: "Pheno Matrix" }} />
-      <Stack.Screen name="soil-builder" options={{ title: "Soil Builder" }} />
-      <Stack.Screen name="recipe-builder" options={{ title: "Recipe Builder" }} />
+      <Stack.Screen name="soil-builder" options={{ title: "Soil Mix Builder" }} />
+      <Stack.Screen name="recipe-builder" options={{ title: "Mix Builders" }} />
       <Stack.Screen
         name="dry-amendment-mix"
         options={{ title: "Dry Amendment Mix Builder" }}
