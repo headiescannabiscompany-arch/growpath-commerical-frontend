@@ -94,11 +94,28 @@ describe("Facility simulator QA catalog", () => {
     });
   });
 
-  it("defines governed metrics and leaves telemetry ungenerated in planning mode", () => {
+  it("defines governed metrics and deterministic synthetic telemetry", () => {
     const { telemetryContract } = loadCatalog();
 
     expect(telemetryContract.targetMinimumTelemetryPoints).toBe(240);
-    expect(telemetryContract.telemetryRecords).toEqual([]);
+    expect(telemetryContract.telemetryRecords).toHaveLength(252);
+    expect(telemetryContract.generator).toMatchObject({
+      deterministic: true,
+      recordsPerScenario: 18,
+      observedProductionData: false,
+      operationalSetpoints: false
+    });
+    expect(
+      new Set(telemetryContract.telemetryRecords.map((record: any) => record.recordedAt))
+        .size
+    ).toBe(252);
+    expect(
+      telemetryContract.telemetryRecords.every(
+        (record: any) =>
+          record.synthetic === true &&
+          record.providerMetricKey.startsWith("qa.synthetic.")
+      )
+    ).toBe(true);
     expect(
       Object.fromEntries(
         telemetryContract.canonicalMetrics.map((metric: any) => [
@@ -151,6 +168,13 @@ describe("Facility simulator QA catalog", () => {
       "conflicting_permissions",
       "csv_api_duplicates_gaps_bad_timestamps_bad_units"
     ]);
+    expect(
+      new Set(
+        catalog.telemetryContract.telemetryRecords.map((record: any) => record.scenarioId)
+      )
+    ).toEqual(
+      new Set(catalog.scenarioDefinitions.map((scenario: any) => scenario.scenarioId))
+    );
     expect(catalog.scenarioRuns).toEqual([]);
   });
 
@@ -168,16 +192,62 @@ describe("Facility simulator QA catalog", () => {
       accountPurpose: "cannabis_hemp_facility_qa",
       cannabisVisibilityEligible: true,
       publicVisibility: false,
-      ownerApproved: false,
+      ownerApproved: true,
       address: null,
       licenseNumber: null,
       metrcLicenseNumber: null
     });
+    expect(catalog.seedInputApproval).toMatchObject({
+      status: "approved",
+      scope: "private synthetic QA fixtures for test and staging only"
+    });
+    expect(catalog.seedInputApproval.excludes).toEqual(
+      expect.arrayContaining([
+        "production records or identifiers",
+        "operational cultivation setpoints",
+        "external media or source-rights approval"
+      ])
+    );
     expect(
       [...recordGraph.grows, ...recordGraph.plants].every(
         (record: any) => record.synthetic === true && record.cultivar === null
       )
     ).toBe(true);
+  });
+
+  it("is seed-input-ready without claiming post-seed acceptance", () => {
+    const catalog = loadCatalog();
+
+    expect(catalog.status).toBe("seed_ready");
+    expect(catalog.acceptanceLifecycle).toEqual({
+      seedReadinessRequiresScenarioRuns: false,
+      seedReadinessRequiresBrowserEvidence: false,
+      postSeedAcceptanceRequiresScenarioRuns: true,
+      postSeedAcceptanceRequiresBrowserEvidence: true,
+      evidenceMayBeRecordedBeforeExecution: false
+    });
+    expect(
+      catalog.rolePolicy.personaAssignments.every((persona: any) =>
+        ["seed_on_execution", "bound_verified"].includes(persona.accountBindingStatus)
+      )
+    ).toBe(true);
+    expect(
+      catalog.recordGraph.rooms.every(
+        (room: any) =>
+          room.baselineStatus === "reviewed_configured" &&
+          Object.keys(room.baselines).length > 0
+      )
+    ).toBe(true);
+    expect(
+      catalog.recordGraph.sops.every(
+        (sop: any) =>
+          sop.status === "approved" &&
+          sop.ownerApproved === true &&
+          sop.checklist.length > 0
+      )
+    ).toBe(true);
+    expect(catalog.scenarioRuns).toEqual([]);
+    expect(catalog.acceptanceEvidence).toEqual([]);
   });
 
   it("defines confirmation-gated write-backs and the acceptance matrix", () => {

@@ -2,7 +2,7 @@
 
 Date: 2026-07-20
 
-Status: Master items 49-54 are implemented. Governed source/media approval, staging execution, role-loop acceptance, and cleanup evidence remain pending under item 55.
+Status: Master items 49-54 are implemented. The private synthetic Facility pack is seed-input-ready; governed source/media approval for the other packs, staging execution, role-loop acceptance, and cleanup evidence remain pending under item 55.
 
 ## Purpose
 
@@ -43,6 +43,8 @@ Delivery evidence for item 54:
 - The separate GitHub dependency-audit job reported current advisories from the unchanged backend lockfile. That repository-level dependency-remediation work is recorded as a delivery exception; it is not evidence that seed execution occurred.
 
 Deployment of the runner does not seed production and does not expose a seed API route. The strict catalog and environment gates remain active; networked staging execution belongs to item 55.
+
+The item-55 lifecycle correction was merged in backend PR `headiescannabiscompany-arch/growpath-commerical#30` as `f727c259bb4b7829c6809e86c566467151572ca3`. Render showed that exact commit live on both `https://api.growpathai.com` and the free `https://growpath-api-staging.onrender.com` service on 2026-07-20. It allows selected-pack execution and separates true pre-seed blockers from scenario/browser evidence that can exist only after seeding. Production seeding remains blocked.
 
 ## Non-negotiable safety rules
 
@@ -100,6 +102,8 @@ Seed a realistic Facility with rooms/zones, grows, plants, equipment, inventory,
 
 The simulator must test persistence and exact write-back scope as well as the visible result: Plant, Grow, Log, ToolRun, Task, room, Facility, alert, entitlement, and AI-credit records.
 
+The Facility catalog now has explicit owner approval limited to private synthetic QA/staging inputs, five seed-time account bindings, ten broad non-operational room-boundary profiles, eight synthetic test-adapter records, six executable QA-only SOP checklists, and 252 deterministic telemetry points across all 14 scenarios. Scenario runs and browser acceptance are intentionally empty until the staging records are actually exercised.
+
 ## Definition of seed-ready
 
 A pack becomes `seed_ready` only when:
@@ -110,3 +114,5 @@ A pack becomes `seed_ready` only when:
 4. The real backend schema mapping, idempotent seed command, verification command, and cleanup command exist.
 5. Contract tests pass in a networked environment.
 6. A named test/staging execution produces an evidence record and successful cleanup verification.
+
+For independently executable packs, steps 5-6 are post-seed acceptance rather than circular prerequisites to the first seed. The selected pack must first pass its governed input checks; only real execution may create scenario, browser, persistence, rerun, and cleanup evidence.

@@ -13,6 +13,7 @@ const fixturePath = path.join(
   "facility-simulator-qa-catalog.json"
 );
 const allowPlanning = process.argv.includes("--allow-planning");
+const requireAcceptance = process.argv.includes("--require-acceptance");
 
 function requireCondition(condition, message, errors) {
   if (!condition) errors.push(message);
@@ -60,6 +61,7 @@ function main() {
   const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
   const errors = [];
   const blockers = [];
+  const postSeedBlockers = [];
 
   requireCondition(
     fixture.schemaVersion === "growpath-facility-simulator-qa-v1",
@@ -85,6 +87,28 @@ function main() {
       fixture.dataClassification?.maySupportProductClaims === false &&
       fixture.dataClassification?.mayBePublished === false,
     "Facility simulation data must remain synthetic, non-production, and unpublished.",
+    errors
+  );
+  requireCondition(
+    fixture.seedInputApproval?.status === "approved" &&
+      fixture.seedInputApproval?.scope ===
+        "private synthetic QA fixtures for test and staging only" &&
+      Array.isArray(fixture.seedInputApproval?.excludes) &&
+      fixture.seedInputApproval.excludes.includes("production records or identifiers") &&
+      fixture.seedInputApproval.excludes.includes("operational cultivation setpoints") &&
+      fixture.seedInputApproval.excludes.includes(
+        "external media or source-rights approval"
+      ),
+    "Synthetic seed approval must explicitly exclude production, operational, and source-rights use.",
+    errors
+  );
+  requireCondition(
+    fixture.acceptanceLifecycle?.seedReadinessRequiresScenarioRuns === false &&
+      fixture.acceptanceLifecycle?.seedReadinessRequiresBrowserEvidence === false &&
+      fixture.acceptanceLifecycle?.postSeedAcceptanceRequiresScenarioRuns === true &&
+      fixture.acceptanceLifecycle?.postSeedAcceptanceRequiresBrowserEvidence === true &&
+      fixture.acceptanceLifecycle?.evidenceMayBeRecordedBeforeExecution === false,
+    "Facility seed readiness and post-seed acceptance must remain separate lifecycle phases.",
     errors
   );
 
@@ -113,11 +137,11 @@ function main() {
   if (!facility.ownerApproved) {
     blockers.push("Facility template lacks owner approval.");
   }
-  if (facility.seedRecordStatus !== "seeded_verified") {
-    blockers.push(
-      `Facility record is not seeded_verified (${facility.seedRecordStatus}).`
-    );
-  }
+  requireCondition(
+    ["planned", "seeded_verified"].includes(facility.seedRecordStatus),
+    `Facility seedRecordStatus is invalid (${facility.seedRecordStatus}).`,
+    errors
+  );
 
   const rolePolicy = fixture.rolePolicy || {};
   requireCondition(
@@ -153,9 +177,9 @@ function main() {
   );
   const personaIds = uniqueIds(personas, "personaId", "Persona", errors);
   for (const persona of personas) {
-    if (persona.accountBindingStatus !== "bound_verified") {
+    if (!["seed_on_execution", "bound_verified"].includes(persona.accountBindingStatus)) {
       blockers.push(
-        `Persona ${persona.personaId} is not bound_verified (${persona.accountBindingStatus}).`
+        `Persona ${persona.personaId} is not ready for seed-time binding (${persona.accountBindingStatus}).`
       );
     }
   }
@@ -311,12 +335,23 @@ function main() {
       `Room ${room.roomId} has invalid zone, room type, or tracking mode.`,
       errors
     );
-    if (room.baselineStatus !== "reviewed_configured") {
+    if (
+      room.baselineStatus !== "reviewed_configured" ||
+      !room.baselines ||
+      !Object.keys(room.baselines).length
+    ) {
       blockers.push(`Room ${room.roomId} baselines are not reviewed/configured.`);
     }
-    if (room.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Room ${room.roomId} is not seeded_verified.`);
-    }
+    requireCondition(
+      room.baselinePurpose === "synthetic boundary-testing only; not operational advice",
+      `Room ${room.roomId} must disclose its synthetic non-operational baseline purpose.`,
+      errors
+    );
+    requireCondition(
+      ["planned", "seeded_verified"].includes(room.seedRecordStatus),
+      `Room ${room.roomId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
 
   for (const grow of grows) {
@@ -328,9 +363,11 @@ function main() {
       `Grow ${grow.growId} has invalid room, synthetic scope, crop, or cultivar evidence.`,
       errors
     );
-    if (grow.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Grow ${grow.growId} is not seeded_verified.`);
-    }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(grow.seedRecordStatus),
+      `Grow ${grow.growId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
   for (const plant of plants) {
     requireCondition(
@@ -347,9 +384,11 @@ function main() {
       `Plant ${plant.plantId} room does not match its grow room.`,
       errors
     );
-    if (plant.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Plant ${plant.plantId} is not seeded_verified.`);
-    }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(plant.seedRecordStatus),
+      `Plant ${plant.plantId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
   for (const item of equipment) {
     requireCondition(
@@ -359,15 +398,19 @@ function main() {
     );
     if (
       !hasText(item.connectionStatus) ||
-      item.connectionStatus !== "verified_test_adapter"
+      !["synthetic_test_adapter_ready", "verified_test_adapter"].includes(
+        item.connectionStatus
+      )
     ) {
       blockers.push(
-        `Equipment ${item.equipmentId} lacks a verified test adapter (${item.connectionStatus}).`
+        `Equipment ${item.equipmentId} lacks a seed-ready synthetic test adapter (${item.connectionStatus}).`
       );
     }
-    if (item.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Equipment ${item.equipmentId} is not seeded_verified.`);
-    }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(item.seedRecordStatus),
+      `Equipment ${item.equipmentId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
   for (const item of inventory) {
     requireCondition(
@@ -378,9 +421,11 @@ function main() {
       `Inventory ${item.inventoryId} needs synthetic quantities, reorder point, and unit.`,
       errors
     );
-    if (item.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Inventory ${item.inventoryId} is not seeded_verified.`);
-    }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(item.seedRecordStatus),
+      `Inventory ${item.inventoryId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
   for (const sop of sops) {
     requireCondition(
@@ -392,9 +437,14 @@ function main() {
     if (!sop.ownerApproved) {
       blockers.push(`SOP ${sop.sopId} lacks owner approval.`);
     }
-    if (sop.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`SOP ${sop.sopId} is not seeded_verified.`);
+    if (!Array.isArray(sop.checklist) || sop.checklist.length === 0) {
+      blockers.push(`SOP ${sop.sopId} lacks executable synthetic QA steps.`);
     }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(sop.seedRecordStatus),
+      `SOP ${sop.sopId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
   for (const task of tasks) {
     requireCondition(
@@ -406,9 +456,11 @@ function main() {
       `Task ${task.taskId} has invalid room, SOP, assignee, schedule, or verification rule.`,
       errors
     );
-    if (task.seedRecordStatus !== "seeded_verified") {
-      blockers.push(`Task ${task.taskId} is not seeded_verified.`);
-    }
+    requireCondition(
+      ["planned", "seeded_verified"].includes(task.seedRecordStatus),
+      `Task ${task.taskId} has invalid seedRecordStatus.`,
+      errors
+    );
   }
 
   const telemetry = fixture.telemetryContract || {};
@@ -506,6 +558,8 @@ function main() {
   const requiredPointFields = telemetry.requiredPointFields || [];
   const telemetryRecords = telemetry.telemetryRecords || [];
   const telemetryIds = new Set();
+  const telemetryTimestamps = new Set();
+  const scenarioMetrics = new Map();
   for (const [index, point] of telemetryRecords.entries()) {
     const label = point.telemetryId || `index ${index}`;
     for (const field of requiredPointFields) {
@@ -521,6 +575,7 @@ function main() {
       errors
     );
     telemetryIds.add(point.telemetryId);
+    const recordedAt = String(point.recordedAt || "");
     requireCondition(
       scenarioIds.includes(point.scenarioId) &&
         point.facilityId === facility.facilityId &&
@@ -530,17 +585,36 @@ function main() {
       errors
     );
     requireCondition(
-      hasText(point.providerMetricKey) &&
+      hasText(point.deviceId) &&
+        hasText(point.providerMetricKey) &&
         Object.prototype.hasOwnProperty.call(expectedMetrics, point.canonicalMetric) &&
         point.normalizedUnit === expectedMetrics[point.canonicalMetric] &&
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(point.recordedAt || ""),
-      `Telemetry point ${label} lacks provider key, canonical unit, or timestamp.`,
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(recordedAt) &&
+        !Number.isNaN(Date.parse(recordedAt)),
+      `Telemetry point ${label} lacks device/provider identity, canonical unit, or valid timestamp.`,
       errors
     );
+    requireCondition(
+      !telemetryTimestamps.has(recordedAt),
+      `Telemetry timestamp ${recordedAt || "<missing>"} is duplicated.`,
+      errors
+    );
+    telemetryTimestamps.add(recordedAt);
+    if (!scenarioMetrics.has(point.scenarioId)) {
+      scenarioMetrics.set(point.scenarioId, new Set());
+    }
+    scenarioMetrics.get(point.scenarioId).add(point.canonicalMetric);
   }
   if (telemetryRecords.length < telemetry.targetMinimumTelemetryPoints) {
     blockers.push(
       `Telemetry has ${telemetryRecords.length}/${telemetry.targetMinimumTelemetryPoints} required synthetic points.`
+    );
+  }
+  for (const scenarioId of scenarioIds) {
+    requireCondition(
+      scenarioMetrics.get(scenarioId)?.size === metrics.length,
+      `Scenario ${scenarioId} must include all ${metrics.length} governed metrics.`,
+      errors
     );
   }
 
@@ -563,14 +637,14 @@ function main() {
       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(run.executedAt || "") ||
       !hasText(run.evidenceRef)
     ) {
-      blockers.push(
+      postSeedBlockers.push(
         `Scenario ${run.scenarioId} lacks verified timestamped run evidence.`
       );
     }
   }
   for (const scenarioId of scenarioIds) {
     if (!runScenarioIds.has(scenarioId)) {
-      blockers.push(`Scenario ${scenarioId} has no verified run evidence.`);
+      postSeedBlockers.push(`Scenario ${scenarioId} has no verified run evidence.`);
     }
   }
 
@@ -633,14 +707,14 @@ function main() {
       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(evidence.testedAt || "") ||
       !hasText(evidence.evidenceRef)
     ) {
-      blockers.push(
+      postSeedBlockers.push(
         `Acceptance check ${evidence.checkId} lacks verified timestamped evidence.`
       );
     }
   }
   for (const checkId of acceptanceChecks) {
     if (!evidenceChecks.has(checkId)) {
-      blockers.push(`Acceptance check ${checkId} has no evidence.`);
+      postSeedBlockers.push(`Acceptance check ${checkId} has no evidence.`);
     }
   }
 
@@ -669,7 +743,11 @@ function main() {
 
   const summary = {
     fixture: path.relative(ROOT, fixturePath),
-    mode: allowPlanning ? "planning" : "strict",
+    mode: allowPlanning
+      ? "planning"
+      : requireAcceptance
+        ? "acceptance"
+        : "seed-readiness",
     status: fixture.status,
     personaCount: personas.length,
     zoneCount: zones.length,
@@ -686,7 +764,9 @@ function main() {
     scenarioRunCount: scenarioRuns.length,
     acceptanceEvidenceCount: acceptanceEvidence.length,
     errorCount: errors.length,
-    blockerCount: blockers.length
+    seedBlockerCount: blockers.length,
+    postSeedBlockerCount: postSeedBlockers.length,
+    blockerCount: blockers.length + postSeedBlockers.length
   };
   console.log(JSON.stringify(summary, null, 2));
 
@@ -703,9 +783,22 @@ function main() {
     }
     process.exit(1);
   }
+  if (!allowPlanning && requireAcceptance && postSeedBlockers.length) {
+    console.error("Facility simulator QA acceptance is incomplete:");
+    postSeedBlockers.slice(0, 35).forEach((blocker) => console.error(`- ${blocker}`));
+    if (postSeedBlockers.length > 35) {
+      console.error(`- ... ${postSeedBlockers.length - 35} more blockers`);
+    }
+    process.exit(1);
+  }
   if (allowPlanning && blockers.length) {
     console.log(
-      `Planning blockers retained: ${blockers.length}. Strict mode stays blocked until test accounts, records, telemetry, incidents, and acceptance evidence are verified.`
+      `Planning seed blockers retained: ${blockers.length}. Seed-readiness stays blocked until its governed inputs are complete.`
+    );
+  }
+  if (postSeedBlockers.length) {
+    console.log(
+      `Post-seed acceptance blockers retained: ${postSeedBlockers.length}. Run with --require-acceptance after staging execution and browser review.`
     );
   }
 }

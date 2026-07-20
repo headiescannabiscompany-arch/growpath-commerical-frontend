@@ -319,6 +319,9 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Offline planning against the real frontend catalogs produced the intended 87-record graph with zero database writes and correctly blocked source/media-rights, commerce-approval, account-binding, facility-baseline, SOP, telemetry, scenario, and acceptance gaps for item 55.
 
 55. Execute and close the QA seed packs
+   - [x] Correct the seed lifecycle so selected packs can be seeded from complete governed inputs while scenario runs and browser acceptance remain separately tracked post-seed evidence. Backend PR `#30` merged as `f727c259bb4b7829c6809e86c566467151572ca3` and is live on both production and staging Render services.
+   - [x] Make the Facility simulator seed-input-ready with five seed-time personas, reviewed synthetic-only room profiles, synthetic test adapters, six executable QA checklists, and 252 deterministic telemetry points covering all 14 scenarios. Approval is limited to private test/staging fixtures and excludes production, claims, setpoints, external media rights, and Living Soil Labs product facts.
+   - [x] Run a selected-pack offline plan against backend `f727c259bb4b7829c6809e86c566467151572ca3`: 326 Facility records planned, zero database writes, zero seed blockers, zero unrelated rights failures, and only scenario/browser work retained as post-seed obligations.
    - [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
    - [ ] Exercise Personal Free, Personal Pro, Commercial, Facility Owner/Manager/Staff/Viewer, cross-role shared-record, and outside-user loops against the seeded records.
    - [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
