@@ -281,6 +281,12 @@ describe("DiagnoseRoute", () => {
         evidenceAssetIds: ["evidence-1", "evidence-2"],
         context: expect.objectContaining({
           priorDiagnosisId: "diagnosis-vision-1",
+          priorCropIdentity: expect.objectContaining({
+            commonName: "Cannabis",
+            confidence: "high",
+            source: "visual_suggestion",
+            requiresUserConfirmation: true
+          }),
           followUpQuestion: "What are the current root-zone EC and pH readings?",
           followUpAnswer:
             "No feeding schedule is recorded; specify the next measurements and photos."
