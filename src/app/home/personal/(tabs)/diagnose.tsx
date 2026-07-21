@@ -570,7 +570,9 @@ export default function DiagnoseRoute({
       backFallbackHref="/home/personal"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Plant Issue Diagnosis</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Plant Issue Diagnosis
+        </Text>
         <Text style={styles.subtitle}>
           Cautious triage based on the context you provide. Results are possibilities, not
           certainty.

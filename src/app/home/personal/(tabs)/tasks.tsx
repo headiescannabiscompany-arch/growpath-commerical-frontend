@@ -586,7 +586,9 @@ export default function PersonalTaskCenterRoute() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Task Center / Schedule</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Task Center / Schedule
+      </Text>
       <Text style={styles.subtitle}>
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
         product-linked notes, alerts, and sensor follow-ups.

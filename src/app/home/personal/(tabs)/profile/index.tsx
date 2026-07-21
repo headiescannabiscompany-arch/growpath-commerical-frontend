@@ -368,7 +368,9 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Profile</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Profile
+      </Text>
       <Text style={styles.subtitle}>Account and plan details</Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_profile" longContent />
 

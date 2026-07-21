@@ -221,7 +221,9 @@ export default function DiscoverDirectory() {
       routeKey="discover"
       header={
         <View>
-          <Text style={styles.title}>Discover</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Discover
+          </Text>
           <Text style={styles.subtitle}>
             Search once, then scroll through every customer-facing community and
             commercial section.

@@ -152,7 +152,9 @@ export default function CommunityTab() {
         />
       }
     >
-      <Text style={styles.title}>Forum / Q&A</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Forum / Q&A
+      </Text>
       <Text style={styles.subtitle}>
         Discussion, grow help, product questions, course Q&A, memberships, and
         notifications from the shared forum endpoints. Feed placements on this page are

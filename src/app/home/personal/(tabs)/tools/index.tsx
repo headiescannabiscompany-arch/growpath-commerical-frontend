@@ -302,7 +302,9 @@ export default function ToolsHubScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>AI Tools</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          AI Tools
+        </Text>
         <Text style={styles.subtitle}>
           Ask AI, diagnose plants, analyze measured light, build soil and nutrient mixes,
           and save useful outputs back to a grow.
