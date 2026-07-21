@@ -265,6 +265,7 @@ export default function NewLogScreen() {
     <ScreenBoundary
       title="New Journal Entry"
       showBack
+      preferBackFallback
       backFallbackHref={
         growId
           ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`

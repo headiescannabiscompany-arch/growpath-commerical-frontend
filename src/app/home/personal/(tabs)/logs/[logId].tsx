@@ -158,6 +158,7 @@ export default function LogDetailScreen() {
     <ScreenBoundary
       title={log?.title || "Journal Entry"}
       showBack
+      preferBackFallback
       backFallbackHref={
         log?.growId
           ? `/home/personal/grows/${encodeURIComponent(log.growId)}/journal`
