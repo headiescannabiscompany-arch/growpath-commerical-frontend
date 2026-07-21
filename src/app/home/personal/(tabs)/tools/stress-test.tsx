@@ -98,6 +98,7 @@ export default function StressTestToolRoute() {
       subtitle="Record recovery from difficult conditions for pheno selection, keeper decisions, and crop-steering suitability."
       formHeader={({ growId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}

@@ -229,6 +229,7 @@ export default function TissueCultureToolRoute() {
       subtitle="Track TC batch status, vessels, contamination, rooting, acclimation, SOP version, and next transfer tasks."
       formHeader={({ growId, facilityId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}

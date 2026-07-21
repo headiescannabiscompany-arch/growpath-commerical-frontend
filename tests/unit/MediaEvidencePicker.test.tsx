@@ -55,6 +55,7 @@ describe("MediaEvidencePicker", () => {
     const onChange = jest.fn();
     const screen = render(
       <MediaEvidencePicker
+        aiUsable
         purpose="diagnosis"
         sourceContext={{ growId: "grow-1", plantId: "plant-1" }}
         onChange={onChange}
@@ -75,13 +76,35 @@ describe("MediaEvidencePicker", () => {
           plantId: "plant-1",
           purpose: "diagnosis",
           durableUrl: "/uploads/evidence.jpg",
-          uploadStatus: "uploaded"
+          uploadStatus: "uploaded",
+          aiUsable: true
         })
       )
     );
+    expect(
+      screen.getByText(
+        "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
+      )
+    ).toBeTruthy();
     expect(onChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ id: "saved-1", durableUrl: "/uploads/evidence.jpg" })
     ]);
+  });
+
+  it("does not approve ordinary record media for AI unless the surface opts in", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "file:///label.jpg", type: "image", mimeType: "image/jpeg" }]
+    });
+    const screen = render(<MediaEvidencePicker purpose="product" />);
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+
+    await waitFor(() =>
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ purpose: "product", aiUsable: false })
+      )
+    );
   });
 
   it("limits selection to remaining photo capacity", async () => {

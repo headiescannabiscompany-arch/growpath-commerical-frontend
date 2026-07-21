@@ -769,6 +769,7 @@ export default function AiScreen({
 
       <View style={styles.composer}>
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}

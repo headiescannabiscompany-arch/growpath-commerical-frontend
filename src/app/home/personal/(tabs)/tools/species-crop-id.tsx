@@ -98,6 +98,7 @@ export default function SpeciesCropIdToolRoute() {
             prove a cultivar or strain.
           </Text>
           <MediaEvidencePicker
+            aiUsable
             maxPhotos={10}
             allowVideo
             maxVideoSeconds={30}

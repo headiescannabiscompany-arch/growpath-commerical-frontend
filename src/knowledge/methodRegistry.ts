@@ -108,6 +108,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not label a combined billable scout-and-GPT action as a free calculator or hide its AI-credit cost until after the run.",
       "Do not count empty AI-prefill keys as filled fields or display raw empty arrays as scout evidence.",
       "Do not derive scout or trap counts from photos, and do not count unknown placeholder phrases as completed IPM fields.",
+      "Do not strand a newly selected diagnosis or IPM upload as non-AI-usable after explicitly disclosing and receiving current-workflow AI approval.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",

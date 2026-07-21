@@ -72,6 +72,7 @@ export default function GeneticsInventoryToolRoute() {
       subtitle="Record cultivar, parentage, feeding response, stress notes, flower timing, and keeper signals."
       formHeader={({ growId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}

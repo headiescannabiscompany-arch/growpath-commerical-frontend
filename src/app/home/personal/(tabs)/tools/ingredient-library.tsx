@@ -494,6 +494,7 @@ export default function IngredientLibraryRoute() {
           </Text>
 
           <MediaEvidencePicker
+            aiUsable
             maxPhotos={10}
             allowVideo={false}
             purpose="product"

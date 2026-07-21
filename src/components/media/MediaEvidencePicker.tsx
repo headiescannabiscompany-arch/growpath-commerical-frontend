@@ -17,6 +17,7 @@ type Props = {
   maxPhotos?: number;
   allowVideo?: boolean;
   maxVideoSeconds?: number;
+  aiUsable?: boolean;
   purpose: EvidencePurpose;
   sourceContext?: EvidenceLinks;
   value?: EvidenceAsset[];
@@ -36,7 +37,8 @@ function toLocalAsset(
   asset: ImagePicker.ImagePickerAsset,
   purpose: EvidencePurpose,
   sourceContext: EvidenceLinks,
-  source: EvidenceSource
+  source: EvidenceSource,
+  aiUsable: boolean
 ): EvidenceAsset {
   const assetType = asset.type === "video" ? "video" : "photo";
   return {
@@ -53,6 +55,7 @@ function toLocalAsset(
     source,
     purpose,
     uploadStatus: "local",
+    aiUsable,
     qualityWarnings: []
   };
 }
@@ -61,6 +64,7 @@ export default function MediaEvidencePicker({
   maxPhotos = 10,
   allowVideo = false,
   maxVideoSeconds = 30,
+  aiUsable = false,
   purpose,
   sourceContext = {},
   value,
@@ -135,7 +139,7 @@ export default function MediaEvidencePicker({
     if (picked.canceled) return;
     const selected = (picked.assets || [])
       .slice(0, remaining)
-      .map((asset) => toLocalAsset(asset, purpose, sourceContext, "library"));
+      .map((asset) => toLocalAsset(asset, purpose, sourceContext, "library", aiUsable));
     await uploadSelected(selected);
   }
 
@@ -150,7 +154,13 @@ export default function MediaEvidencePicker({
       quality: 0.8
     });
     if (picked.canceled || !picked.assets?.[0]) return;
-    const local = toLocalAsset(picked.assets[0], purpose, sourceContext, "library");
+    const local = toLocalAsset(
+      picked.assets[0],
+      purpose,
+      sourceContext,
+      "library",
+      aiUsable
+    );
     if ((local.durationSeconds || 0) > maxVideoSeconds) {
       local.uploadStatus = "failed";
       local.error = `Video must be ${maxVideoSeconds} seconds or shorter.`;
@@ -167,7 +177,9 @@ export default function MediaEvidencePicker({
         <Text style={styles.summary}>{summary}</Text>
       </View>
       <Text style={styles.help}>
-        Upload clear, durable evidence. Failed uploads are never sent to AI analysis.
+        {aiUsable
+          ? "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
+          : "Upload clear, durable evidence. Failed uploads are never sent to AI analysis."}
       </Text>
       <View style={styles.actions}>
         <Pressable

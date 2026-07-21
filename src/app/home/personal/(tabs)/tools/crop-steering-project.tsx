@@ -77,6 +77,7 @@ export default function CropSteeringProjectToolRoute() {
       subtitle="Review current conditions and optionally turn stage-appropriate steering techniques into grow tasks. Measurements and plant response remain the source of truth."
       formHeader={({ growId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}

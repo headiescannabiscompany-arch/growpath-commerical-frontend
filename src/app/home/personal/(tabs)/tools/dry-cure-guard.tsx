@@ -132,6 +132,7 @@ export default function DryCureGuardToolScreen() {
       subtitle="Check dry-room and jar moisture risk without pretending one target guarantees quality."
       formHeader={({ growId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}
