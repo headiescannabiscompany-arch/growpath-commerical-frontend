@@ -266,6 +266,28 @@ describe("DiagnoseRoute", () => {
     expect(
       screen.getByText("What are the current root-zone EC and pH readings?")
     ).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Diagnosis follow-up answer"),
+      "No feeding schedule is recorded; specify the next measurements and photos."
+    );
+    fireEvent.press(screen.getByLabelText("Refine diagnosis"));
+
+    await waitFor(() => expect(mockDiagnoseEvidence).toHaveBeenCalledTimes(2));
+    expect(mockDiagnoseEvidence).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        photoUrls: ["/uploads/leaf-top.jpg", "/uploads/leaf-bottom.jpg"],
+        evidenceAssetIds: ["evidence-1", "evidence-2"],
+        context: expect.objectContaining({
+          priorDiagnosisId: "diagnosis-vision-1",
+          followUpQuestion: "What are the current root-zone EC and pH readings?",
+          followUpAnswer:
+            "No feeding schedule is recorded; specify the next measurements and photos."
+        })
+      })
+    );
+    expect(mockAnalyzeDiagnosis).not.toHaveBeenCalled();
   });
 
   it("tells the user exactly when submitted photos need replacement", async () => {

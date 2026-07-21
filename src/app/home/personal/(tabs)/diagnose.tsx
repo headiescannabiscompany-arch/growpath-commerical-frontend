@@ -547,14 +547,22 @@ export default function DiagnoseRoute({
     setRunning(true);
     setFeedback("");
     try {
-      const response = await analyzeDiagnosis({
-        growId,
-        plantId,
+      const evidence = providerEvidencePayload(evidenceAssets);
+      const followUpContext = {
         ...currentDiagnosisContext(),
         priorDiagnosisId: result.id || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
-      });
+      };
+      const response = evidence.images.length
+        ? await diagnoseEvidence({
+            growId,
+            plantId,
+            context: followUpContext,
+            photoUrls: evidence.images,
+            evidenceAssetIds: evidence.evidenceAssetIds
+          })
+        : await analyzeDiagnosis({ growId, plantId, ...followUpContext });
       const normalized = normalizeDiagnosisResponse(response);
       setResult(normalized);
       setAcceptedTags(normalized.tags);
