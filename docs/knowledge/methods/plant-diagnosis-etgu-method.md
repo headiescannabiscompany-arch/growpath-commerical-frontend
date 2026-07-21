@@ -50,6 +50,13 @@ saved scout. The structured GPT pass reviews that saved evidence but must say th
 not independently inspect photo or video pixels. Show GrowPath and GPT results together
 with a normalized agreement state.
 
+The UI must disclose the AI-credit cost before each provider-backed action. Photo
+prefill and the structured GPT second opinion are separate billable actions. If the
+main scout action automatically includes the second opinion, its visible label must say
+so and state the one-credit cost; the result must record the actual charge or zero after
+a failed/refunded, unavailable, or insufficient-credit provider attempt. Do not call a
+combined billable action a free calculator.
+
 The user may mark the result as a likely working hypothesis, uncertain, or rejected.
 “Likely” never means confirmed identity. Save that decision with its timestamp in the
 ToolRun and IPM module record, then create comparable repeat-scout, treatment-decision,

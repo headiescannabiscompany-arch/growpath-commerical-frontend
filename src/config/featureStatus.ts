@@ -578,7 +578,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
       inputSummary:
         "Crop/zone, affected-plant counts, distribution, progression, underside and magnification findings, dated trap context, environment, and clear photos.",
       outputSummary:
-        "Readiness, ranked working hypotheses, supporting/counter-evidence, safe IPM categories, GrowPath/GPT comparison, decisions, and repeat-scout tasks."
+        "Readiness, ranked working hypotheses, supporting/counter-evidence, safe IPM categories, an explicitly priced GPT comparison, decisions, and repeat-scout tasks."
     },
     internalNote:
       "Approved beta IPM scouting workflow. It records cautious evidence and follow-up tasks without reckless pesticide dosing."

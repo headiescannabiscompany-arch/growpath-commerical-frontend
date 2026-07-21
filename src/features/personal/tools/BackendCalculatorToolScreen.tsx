@@ -64,6 +64,10 @@ type BackendCalculatorToolScreenProps = {
         commercialAccountId: string;
       }) => React.ReactNode);
   status?: string;
+  runLabel?: string;
+  runAccessibilityLabel?: string;
+  experienceMessage?: string;
+  aiCreditMessage?: string;
   fields: ToolField[];
   buildPayload: (
     values: Record<string, string>,
@@ -212,6 +216,10 @@ export default function BackendCalculatorToolScreen({
   feedRouteKey,
   formHeader,
   status = "CALCULATED",
+  runLabel: runLabelOverride,
+  runAccessibilityLabel,
+  experienceMessage,
+  aiCreditMessage: aiCreditMessageOverride,
   fields,
   buildPayload,
   buildMetrics = defaultMetrics,
@@ -259,29 +267,33 @@ export default function BackendCalculatorToolScreen({
   const aiPrefillReady = aiPrefill?.isReady?.() ?? true;
   const isCropIdentification = tool === "species-crop-id";
   const experience = feature?.experience;
-  const runLabel = RUN_LABELS[toolKey] || "Calculate Result";
-  const experienceMode = experience
-    ? {
-        ai: "AI analyzes the supplied evidence.",
-        ai_assisted:
-          "AI can help fill evidence, but the final result is calculated from the values you review.",
-        calculated:
-          "The result is calculated from the measurements and records you enter.",
-        guided: "The tool turns the information you enter into a reviewable workflow.",
-        library: "The tool creates reusable records for other GrowPath workflows."
-      }[experience.mode]
-    : aiPrefill
-      ? "AI prefill is optional; the final result is calculated from the values you review."
-      : "The result is calculated from the measurements and records you enter.";
-  const aiCreditMessage = experience
-    ? experience.aiCredits === "required"
-      ? "This workflow uses AI credits."
-      : experience.aiCredits === "optional"
-        ? "AI credits are used only when you run the AI step. The calculator itself does not use an AI credit."
-        : "This workflow does not use AI credits."
-    : aiPrefill
-      ? "AI credits are used only when you choose the AI prefill step."
-      : "The calculator does not use AI credits.";
+  const runLabel = runLabelOverride || RUN_LABELS[toolKey] || "Calculate Result";
+  const experienceMode =
+    experienceMessage ||
+    (experience
+      ? {
+          ai: "AI analyzes the supplied evidence.",
+          ai_assisted:
+            "AI can help fill evidence, but the final result is calculated from the values you review.",
+          calculated:
+            "The result is calculated from the measurements and records you enter.",
+          guided: "The tool turns the information you enter into a reviewable workflow.",
+          library: "The tool creates reusable records for other GrowPath workflows."
+        }[experience.mode]
+      : aiPrefill
+        ? "AI prefill is optional; the final result is calculated from the values you review."
+        : "The result is calculated from the measurements and records you enter.");
+  const aiCreditMessage =
+    aiCreditMessageOverride ||
+    (experience
+      ? experience.aiCredits === "required"
+        ? "This workflow uses AI credits."
+        : experience.aiCredits === "optional"
+          ? "AI credits are used only when you run the AI step. The calculator itself does not use an AI credit."
+          : "This workflow does not use AI credits."
+      : aiPrefill
+        ? "AI credits are used only when you choose the AI prefill step."
+        : "The calculator does not use AI credits.");
 
   const initialValues = useMemo(
     () =>
@@ -803,7 +815,7 @@ export default function BackendCalculatorToolScreen({
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Run ${title}`}
+          accessibilityLabel={runAccessibilityLabel || `Run ${title}`}
           accessibilityHint={runLabel}
           disabled={running}
           onPress={calculate}
