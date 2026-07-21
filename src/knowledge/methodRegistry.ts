@@ -76,6 +76,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "underside and magnification findings",
       "dated trap count with location/exposure context",
       "media with analysis status",
+      "explicitly selected existing grow media with grow/plant/log provenance",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -100,6 +101,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Do not declare a nutrient deficiency from appearance alone.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Do not send existing private grow media to diagnosis until the user explicitly selects each photo.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",

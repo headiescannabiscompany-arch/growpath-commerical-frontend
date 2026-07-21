@@ -9,9 +9,11 @@ const mockDiagnoseEvidence = jest.fn();
 const mockGetDiagnosisProviderStatus = jest.fn();
 const mockSubmitDiagnosisFeedback = jest.fn();
 const mockCreatePersonalLog = jest.fn();
+const mockListPersonalLogs = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockListPersonalPlants = jest.fn();
 const mockListPersonalGrows = jest.fn();
+const mockCreateEvidenceAsset = jest.fn();
 
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
@@ -60,8 +62,17 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
 });
 
 jest.mock("@/api/logs", () => ({
-  createPersonalLog: (...args: any[]) => mockCreatePersonalLog(...args)
+  createPersonalLog: (...args: any[]) => mockCreatePersonalLog(...args),
+  listPersonalLogs: (...args: any[]) => mockListPersonalLogs(...args)
 }));
+
+jest.mock("@/api/evidence", () => {
+  const actual = jest.requireActual("@/api/evidence");
+  return {
+    ...actual,
+    createEvidenceAsset: (...args: any[]) => mockCreateEvidenceAsset(...args)
+  };
+});
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args)
@@ -122,6 +133,7 @@ describe("DiagnoseRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockListPersonalPlants.mockResolvedValue([]);
+    mockListPersonalLogs.mockResolvedValue([]);
     mockListPersonalGrows.mockResolvedValue([
       {
         id: "grow-1",
@@ -133,6 +145,11 @@ describe("DiagnoseRoute", () => {
       }
     ]);
     mockCreatePersonalLog.mockResolvedValue({ id: "log-1" });
+    mockCreateEvidenceAsset.mockImplementation(async (input) => ({
+      ...input,
+      id: "saved-existing-1",
+      _id: "saved-existing-1"
+    }));
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
     mockGetDiagnosisProviderStatus.mockResolvedValue({
       provider: {
@@ -219,6 +236,92 @@ describe("DiagnoseRoute", () => {
     );
     expect(screen.getByText("Photos analyzed")).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
+  });
+
+  it("reuses an existing grow photo as explicit diagnosis evidence", async () => {
+    mockListPersonalLogs.mockResolvedValue([
+      {
+        id: "log-photo-1",
+        growId: "grow-1",
+        date: "2026-07-20T12:00:00.000Z",
+        title: "Ready to chop",
+        notes: "",
+        photos: ["/uploads/existing-flower.jpg"],
+        photoMetadata: [
+          {
+            url: "/uploads/existing-flower.jpg",
+            plantId: "plant-photo-1",
+            mimeType: "image/jpeg",
+            createdAt: "2026-07-20T12:00:00.000Z"
+          }
+        ],
+        createdAt: "2026-07-20T12:00:00.000Z",
+        updatedAt: "2026-07-20T12:00:00.000Z"
+      }
+    ]);
+    mockGetDiagnosisProviderStatus.mockResolvedValue({
+      provider: {
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        configured: true,
+        imageSupport: true
+      }
+    });
+
+    const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
+    await waitFor(() =>
+      expect(screen.getByText("Diagnosis and photo analysis ready")).toBeTruthy()
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Use saved photo Ready to chop")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByLabelText("Use saved photo Ready to chop"));
+
+    await waitFor(() =>
+      expect(mockCreateEvidenceAsset).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          plantId: "plant-photo-1",
+          logId: "log-photo-1",
+          originalUri: "/uploads/existing-flower.jpg",
+          durableUrl: "/uploads/existing-flower.jpg",
+          purpose: "diagnosis",
+          aiUsable: true
+        })
+      )
+    );
+    expect(screen.getByText("Added saved grow photo: Ready to chop.")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Run diagnosis").props.disabled).not.toBe(true)
+    );
+
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+    await waitFor(() =>
+      expect(mockDiagnoseEvidence).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          photoUrls: ["/uploads/existing-flower.jpg"],
+          evidenceAssetIds: ["saved-existing-1"]
+        })
+      )
+    );
+  });
+
+  it("falls back to the full plant list when the grow-filtered response is empty", async () => {
+    mockListPersonalPlants.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      { id: "plant-1", growId: "grow-1", name: "Bruce Banner #1" },
+      { id: "plant-2", growId: "other-grow", name: "Other grow plant" }
+    ]);
+
+    const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Diagnose plant Bruce Banner #1")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Diagnose plant Other grow plant")).toBeNull();
   });
 
   it("lets users accept or reject diagnosis tags before saving to the grow journal", async () => {
