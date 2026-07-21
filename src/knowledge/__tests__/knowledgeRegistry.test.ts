@@ -54,6 +54,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "defensible common, genus, or family-level candidate retained when exact species is unresolved"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

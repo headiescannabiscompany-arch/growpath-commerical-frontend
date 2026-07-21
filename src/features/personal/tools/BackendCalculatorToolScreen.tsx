@@ -129,6 +129,7 @@ type BackendCalculatorToolScreenProps = {
     normalizeFieldValue?: (context: {
       fieldKey: string;
       value: unknown;
+      parsed: Record<string, any>;
     }) => string | undefined;
     runAfterPrefill?: boolean;
     buildPayloadMetadata?: (context: {
@@ -389,7 +390,8 @@ export default function BackendCalculatorToolScreen({
             const value = parsed[field.key];
             const configuredValue = aiPrefill.normalizeFieldValue?.({
               fieldKey: field.key,
-              value
+              value,
+              parsed
             });
             return [field.key, configuredValue ?? normalizedPrefillText(value)];
           })

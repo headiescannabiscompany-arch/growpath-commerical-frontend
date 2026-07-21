@@ -80,6 +80,33 @@ function isSpeciesCropRun(run: ToolRun | null) {
   return type === "species_crop_id" || type === "species_crop_identification";
 }
 
+function unresolvedSavedCropName(value: unknown) {
+  return /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
+    String(value || "").trim()
+  );
+}
+
+function savedCropCandidate(outputs: Record<string, any>) {
+  const suppliedName = String(outputs.likelyCrop || "").trim();
+  if (suppliedName && !unresolvedSavedCropName(suppliedName)) return suppliedName;
+  const commonNames = Array.isArray(outputs.commonNames)
+    ? outputs.commonNames
+    : String(outputs.commonNames || "").split(/[,;\n]/);
+  return (
+    commonNames
+      .map((candidate: unknown) => String(candidate || "").trim())
+      .find((candidate: string) => candidate && !unresolvedSavedCropName(candidate)) ||
+    suppliedName ||
+    "-"
+  );
+}
+
+function displayOutputsFor(run: ToolRun | null) {
+  const outputs = runOutputs(run);
+  if (!isSpeciesCropRun(run)) return outputs;
+  return { ...outputs, likelyCrop: savedCropCandidate(outputs) };
+}
+
 function metricsFor(run: ToolRun | null): ToolResultMetric[] {
   const outputs = runOutputs(run);
   if (isSpeciesCropRun(run)) {
@@ -95,7 +122,7 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
         ? Math.floor(suppliedPhotoCount)
         : 0;
     return [
-      { key: "crop", label: "Likely crop", value: outputs.likelyCrop || "-" },
+      { key: "crop", label: "Likely crop", value: savedCropCandidate(outputs) },
       {
         key: "scientific",
         label: "Scientific name",
@@ -140,6 +167,17 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
       ? outputs.imageAnalysis
       : null;
   const provenance: ToolResultNotice[] = [];
+
+  if (isSpeciesCropRun(run)) {
+    const candidate = savedCropCandidate(outputs);
+    if (unresolvedSavedCropName(outputs.likelyCrop) && candidate !== "-") {
+      provenance.push({
+        key: "crop-id-working-candidate",
+        severity: "info",
+        message: `Working identification candidate: ${candidate}. Exact species remains unconfirmed; confirm the identity before applying crop-specific guidance.`
+      });
+    }
+  }
 
   if (isSpeciesCropRun(run) && imageAnalysis?.performed) {
     const suppliedPhotoCount = Number(
@@ -205,7 +243,7 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     ...provenance,
     ...(run?.warnings || []).map((message, index) => ({
       key: `warning-${index}`,
-      severity: "medium",
+      severity: "medium" as const,
       message
     }))
   ];
@@ -431,9 +469,7 @@ export default function SavedToolRunsScreen() {
               summary={selectedRun.summary || ""}
               metrics={metricsFor(selectedRun)}
               inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
-              outputs={
-                selectedRun.outputs || selectedRun.output || selectedRun.result || {}
-              }
+              outputs={displayOutputsFor(selectedRun)}
               notices={noticesFor(selectedRun)}
               recommendations={selectedRun.recommendations || []}
               formulas={selectedRun.formulas || []}

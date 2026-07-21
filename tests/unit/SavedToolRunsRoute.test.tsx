@@ -61,11 +61,12 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ title, summary, metrics, notices }: any) =>
+  return ({ title, summary, metrics, notices, outputs }: any) =>
     React.createElement(
       React.Fragment,
       null,
       React.createElement(Text, null, `${title}: ${summary}`),
+      React.createElement(Text, null, `Displayed output: ${outputs?.likelyCrop || "-"}`),
       ...(metrics || []).map((metric: any) =>
         React.createElement(Text, { key: metric.key }, `${metric.label}: ${metric.value}`)
       ),
@@ -128,11 +129,13 @@ describe("SavedToolRunsRoute", () => {
       toolType: "species_crop_id",
       summary: "species_crop_id completed",
       outputs: {
-        likelyCrop: "Tomato",
-        scientificName: "Solanum lycopersicum",
-        confidence: "high",
+        likelyCrop: "Not confirmed",
+        commonNames: ["Mint"],
+        scientificName: null,
+        confidence: "medium",
         userConfirmationRequired: true,
-        identifyingVisualTraits: "Compound leaves, stem hairs, and a ripe fruit.",
+        identifyingVisualTraits:
+          "Flower clusters on a leafy stem suggest a mint-family plant.",
         imageAnalysis: {
           requested: true,
           performed: true,
@@ -141,8 +144,8 @@ describe("SavedToolRunsRoute", () => {
           providerModel: "gpt-4o-mini",
           providerLabel: "GrowPath context + OpenAI image review",
           quality: "usable",
-          evidenceUsed: ["evidence-tomato-1"],
-          limitations: ["Cultivar cannot be identified from appearance."]
+          evidenceUsed: ["evidence-mint-1"],
+          limitations: ["Exact mint species cannot be confirmed from these views."]
         }
       },
       createdAt: "2026-07-21T12:00:00.000Z"
@@ -153,19 +156,21 @@ describe("SavedToolRunsRoute", () => {
     const screen = render(<SavedToolRunsRoute />);
 
     await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
-    expect(screen.getByText("Likely crop: Tomato")).toBeTruthy();
+    expect(screen.getByText("Likely crop: Mint")).toBeTruthy();
+    expect(screen.getByText("Displayed output: Mint")).toBeTruthy();
     expect(screen.getByText("Photos inspected: 1")).toBeTruthy();
     expect(screen.getByText("Image quality: usable")).toBeTruthy();
     expect(screen.getByText("Needs confirmation: Yes")).toBeTruthy();
     expect(
       screen.getByText(/OpenAI image review inspected 1 uploaded photo/i)
     ).toBeTruthy();
-    expect(screen.getByText(/Evidence: evidence-tomato-1/i)).toBeTruthy();
+    expect(screen.getByText(/Working identification candidate: Mint/i)).toBeTruthy();
+    expect(screen.getByText(/Evidence: evidence-mint-1/i)).toBeTruthy();
     expect(
-      screen.getByText(/Visible identification traits: Compound leaves/i)
+      screen.getByText(/Visible identification traits: Flower clusters/i)
     ).toBeTruthy();
     expect(
-      screen.getByText(/Cultivar cannot be identified from appearance/i)
+      screen.getByText(/Exact mint species cannot be confirmed from these views/i)
     ).toBeTruthy();
   });
 });
