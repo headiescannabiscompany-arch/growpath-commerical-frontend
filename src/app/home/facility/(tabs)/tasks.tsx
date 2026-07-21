@@ -274,6 +274,9 @@ export default function FacilityTasksRoute() {
   const [newGrowId, setNewGrowId] = useState("");
   const [newRequiresProof, setNewRequiresProof] = useState(false);
   const [newRequiresApproval, setNewRequiresApproval] = useState(false);
+  const [showTaskCreator, setShowTaskCreator] = useState(
+    Boolean(contextGrowId || contextRoomId || firstParam(params.assignee))
+  );
   const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
   const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -453,6 +456,18 @@ export default function FacilityTasksRoute() {
         {error ? <InlineError error={error} /> : null}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>New Task</Text>
+          {canWrite ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Toggle facility task creator"
+              onPress={() => setShowTaskCreator((current) => !current)}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>
+                {showTaskCreator ? "Hide task creator" : "Create a task"}
+              </Text>
+            </Pressable>
+          ) : null}
           {contextName ? (
             <View style={styles.contextBanner}>
               <Text style={styles.contextTitle}>{contextName}</Text>
@@ -463,7 +478,7 @@ export default function FacilityTasksRoute() {
           ) : null}
           {!canWrite ? (
             <Text style={styles.muted}>{taskAccess.hiddenCreateReason}</Text>
-          ) : (
+          ) : showTaskCreator ? (
             <View style={styles.form}>
               <Text style={styles.label}>Title</Text>
               <View style={styles.chipRow}>
@@ -719,6 +734,10 @@ export default function FacilityTasksRoute() {
                 </Text>
               </TouchableOpacity>
             </View>
+          ) : (
+            <Text style={styles.muted}>
+              Keep the work queue in view. Open the creator when you need to add a task.
+            </Text>
           )}
         </View>
         {loading ? (
@@ -814,8 +833,9 @@ export default function FacilityTasksRoute() {
                 accessibilityRole="button"
                 accessibilityLabel={`Open task ${title}`}
                 onPress={() => {
-                  if (!id) return;
-                  router.push({ pathname: "/home/facility/tasks/[id]", params: { id } });
+                  if (id) {
+                    router.push(`/home/facility/tasks/${encodeURIComponent(id)}` as any);
+                  }
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
@@ -829,7 +849,7 @@ export default function FacilityTasksRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>{">"}</Text>
+                {id ? <Text style={styles.chev}>{">"}</Text> : null}
               </Pressable>
             );
           }}
