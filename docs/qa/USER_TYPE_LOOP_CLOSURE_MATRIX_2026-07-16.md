@@ -255,8 +255,18 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   `dep-d9fiuam7r5hc73frpg2g`. The final retest retained five defensible visual/follow-up
   fields while leaving counts, inspection history, trap context, environment, and
   recent actions blank. Profile proved one disclosed credit (`67 / 100 -> 66 / 100`),
-  20 billed requests, and zero refunds. Fresh device upload, failed-provider refund,
-  and independent accuracy review remain open.
+  20 billed requests, and zero refunds. At that point, fresh device upload,
+  failed-provider refund, and independent accuracy review remained open.
+- Frontend PR `#93`, merge `91ca611e0af6c01571a33410cd3aeb95c9c32970`, fixed
+  newly uploaded AI-workflow evidence that had been stranded without current-workflow
+  approval. Render deployment `dep-d9fmh0h9rddc73cotla0` was live at 8:41 AM ET. A
+  genuine 3.7 MB file selected through the production Browser persisted as evidence
+  `6a5f6a3e9a4ebf90c8c78619`, filled four defensible visual/follow-up fields, left all
+  unsupported scout counts, inspection history, trap, and environment fields blank,
+  and charged exactly one credit (`66 / 100 -> 65 / 100`, 21 billed requests, zero
+  refunds). Fresh IPM file upload is closed; failed-provider refund proof and independent
+  accuracy review remain open. Final-SHA screenshot capture timed out, so no screenshot
+  or video artifact is claimed for this retest.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -269,10 +279,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       reopening also passed. Structured IPM insufficient-evidence handling, the
       explicit one-credit GPT review, uncertain decision, log/task-plan writeback, and
       fresh Journal/Tasks/Timeline hard reloads also passed. Saved-photo pixel analysis,
-      normalized photo prefill, and its exact one-credit charge also passed. Remaining
-      fresh device uploads, failure/refund, exact saved-diagnosis reopening, lifecycle,
-      billing, broader accessibility, exported video, and independent-review checks
-      stay open.
+      normalized photo prefill, fresh IPM file upload, and both exact one-credit charges
+      also passed. Remaining diagnosis file upload, failure/refund, exact saved-diagnosis
+      reopening, lifecycle, billing, broader accessibility, exported video, and
+      independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording

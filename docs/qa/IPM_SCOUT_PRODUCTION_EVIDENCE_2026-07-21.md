@@ -3,8 +3,8 @@
 Status: partial Personal Pro acceptance completed in the in-app Browser. The
 structured scout, GPT review charge, user decision, grow-log writeback, task plan,
 Journal/Tasks/Timeline persistence, true deep-link reload, saved-photo pixel analysis,
-photo-prefill normalization, and exact photo-prefill credit charge all passed. A fresh
-device upload, failed-provider refund check, and independent accuracy review remain open.
+photo-prefill normalization, fresh file upload, and exact photo-prefill credit charges
+all passed. A failed-provider refund check and independent accuracy review remain open.
 
 ## Session
 
@@ -14,8 +14,8 @@ device upload, failed-provider refund check, and independent accuracy review rem
 - Grow: `6a551a9d2fb9f669d2319c06`
 - Evidence surface: signed-in in-app Browser, Render dashboard, exact persisted record
   links, hard reloads, and the production live-URL verifier
-- Final deployed frontend SHA: `ab71b8404a6dc6e11f5932038d46599a653e6cfa`
-- Final frontend deployment: `dep-d9fiuam7r5hc73frpg2g`, live July 21 at 4:36 AM ET
+- Final deployed frontend SHA: `91ca611e0af6c01571a33410cd3aeb95c9c32970`
+- Final frontend deployment: `dep-d9fmh0h9rddc73cotla0`, live July 21 at 8:41 AM ET
 - Deployed backend image-analysis SHA: `9ec163618eb22ce6b9e7f16a3f6228fe0237657b`
 - Backend deployment: `dep-d9fikp99rddc73clkip0`, live July 21 at 4:15 AM ET
 
@@ -150,6 +150,43 @@ environment, and recent actions remained blank. Profile persisted `67 / 100` to
 `66 / 100`, 34 credits across 20 billed requests, and zero refunds. The action therefore
 charged exactly one disclosed credit and did not count unknowns as completed scouting.
 
+## Fresh file upload and current-workflow approval
+
+A pre-fix production file upload completed and created evidence asset
+`6a5f63319a4ebf90c8c784a6`, but the picker had not persisted `aiUsable: true`. The
+backend correctly refused it with `A selected photo is not ready or was not approved
+for AI analysis.` Profile remained `66 / 100`, 34 credits across 20 billed requests,
+and zero refunds, so the invalid evidence was not sent to the provider or charged.
+
+Frontend PR `#93` fixed the broken consent handoff. Local commit
+`656c1048abb54fb1ed7f181eb8b4c70bdb570523`, merge
+`91ca611e0af6c01571a33410cd3aeb95c9c32970`, and GitHub CI run `29830775442`
+made AI-enabled media pickers disclose that adding media approves AI use for the current
+workflow only, is not model training, and persists that approval on the evidence record.
+Ordinary record-only media remains non-AI-usable by default. The gate passed in 3m03s,
+and Render deployment `dep-d9fmh0h9rddc73cotla0` was live at 8:41 AM ET.
+
+The 8:42-8:53 AM ET production retest used the Browser file chooser to add a genuine
+3.7 MB JPEG from the account's `Ready to chop` grow evidence as a new upload. The page
+showed the new disclosure and persisted uploaded evidence asset
+`6a5f6a3e9a4ebf90c8c78619`. The production vision request filled exactly four non-empty
+fields:
+
+- organism `not confirmed`;
+- damage `some yellowing and possibly necrotic tips on leaves`;
+- direct evidence `visible yellowing and necrosis on some leaf tips, healthy-looking
+  buds`; and
+- follow-up context recommending underside inspection, comparison with surrounding
+  plants, and review of growing conditions before distinguishing nutrient or
+  environmental stress.
+
+Crop/stage, scout location, plants checked, plants affected, distribution, progression,
+underside inspection, magnification, sticky-trap count/context, environment/root-zone
+conditions, and recent actions remained blank. The page reported `AI filled 4 non-empty
+fields from available evidence. Empty or unknown values were left blank.` A hard Profile
+load proved exactly one disclosed charge: `66 / 100 -> 65 / 100`, 35 credits across 21
+billed requests, and zero refunds.
+
 ## Visual evidence
 
 Genuine Browser screenshots were exported outside the repository:
@@ -172,6 +209,12 @@ No repository screenshot or video artifact is claimed. Browser semantic inspecti
 exact source URLs provide the Journal/Tasks/Timeline reload evidence because the later
 viewport screenshot command timed out; no image was fabricated or substituted.
 
+For the final fresh-upload SHA, multiple direct viewport and optimized CDP screenshot
+attempts timed out on both the result and Profile ledger tabs. The semantic result,
+exact form values, uploaded asset ID, and hard-loaded ledger were recovered from the
+same Browser session, but no screenshot artifact tied to SHA
+`91ca611e0af6c01571a33410cd3aeb95c9c32970` is claimed.
+
 ## What this closes and what remains
 
 Closed for this Personal Pro IPM slice:
@@ -181,14 +224,15 @@ Closed for this Personal Pro IPM slice:
 - GPT second-opinion charge disclosure and exact one-credit persistence;
 - uncertain user-decision persistence;
 - grow-log and three-task-plan writeback;
-- exact source-linked Saved Runs, Journal, Tasks, and full Timeline visibility; and
+- exact source-linked Saved Runs, Journal, Tasks, and full Timeline visibility;
 - direct/hard-reload reliability for dynamic `/home/*` routes;
-- selected saved-photo bytes inspected by the production vision model; and
-- exact one-credit photo-prefill billing with unknown measurement fields left blank.
+- selected saved-photo bytes inspected by the production vision model;
+- exact one-credit photo-prefill billing with unknown measurement fields left blank; and
+- fresh file upload through the Browser chooser with current-workflow-only approval,
+  real pixel analysis, and exact one-credit billing.
 
 Still open:
 
-- fresh device photo upload (saved-photo prefill is now proven);
 - failed-provider refund proof;
 - independent pest/pathogen accuracy review using owner-approved evidence sources;
 - desktop/mobile accessibility and exported video for the complete Personal Pro loop;
