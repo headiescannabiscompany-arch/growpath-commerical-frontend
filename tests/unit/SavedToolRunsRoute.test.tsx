@@ -261,6 +261,7 @@ describe("SavedToolRunsRoute", () => {
         ],
         missingInformation: []
       },
+      warnings: ["Measured humidity may increase water-loss pressure."],
       createdAt: "2026-07-21T20:30:00.000Z"
     };
     mockListToolRuns.mockResolvedValue([cloneRun]);
@@ -275,6 +276,29 @@ describe("SavedToolRunsRoute", () => {
     expect(screen.getByText("Still pending: 6/12")).toBeTruthy();
     expect(screen.getByText("Direct root evidence: mixed")).toBeTruthy();
     expect(screen.getByText(/65% RH was recorded/i)).toBeTruthy();
+    expect(
+      screen.getAllByText(/Measured humidity may increase water-loss pressure/i)
+    ).toHaveLength(1);
     expect(screen.getByText(/do not prove hidden roots/i)).toBeTruthy();
+  });
+
+  it("keeps legacy Clone Rooting warnings when structured bottlenecks are absent", async () => {
+    const legacyCloneRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "clone_rooting",
+      summary: "Legacy clone batch review.",
+      inputs: {},
+      outputs: {},
+      warnings: ["Legacy saved warning remains available."],
+      createdAt: "2026-07-20T20:30:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([legacyCloneRun]);
+    mockGetToolRun.mockResolvedValue(legacyCloneRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Legacy saved warning remains available.")).toBeTruthy();
   });
 });
