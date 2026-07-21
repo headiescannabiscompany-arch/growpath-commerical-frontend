@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -41,6 +42,8 @@ import { radius } from "@/theme/theme";
 function rowId(row: any) {
   return String(row?._id || row?.id || "");
 }
+
+const WebDropZone = View as any;
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -336,6 +339,8 @@ export default function FacilityRoomsTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [draggedRoomId, setDraggedRoomId] = useState("");
+  const [dropRoomId, setDropRoomId] = useState("");
 
   const [roomName, setRoomName] = useState("");
   const [roomType, setRoomType] =
@@ -523,14 +528,9 @@ export default function FacilityRoomsTab() {
     }
   }
 
-  async function moveRoom(roomIndex: number, direction: -1 | 1) {
+  async function saveRoomOrder(nextRooms: Room[], movedRoom: Room) {
     if (!facilityId || !canEditRooms || saving) return;
-    const targetIndex = roomIndex + direction;
-    if (targetIndex < 0 || targetIndex >= rooms.length) return;
     const previousRooms = rooms;
-    const nextRooms = [...rooms];
-    const [movedRoom] = nextRooms.splice(roomIndex, 1);
-    nextRooms.splice(targetIndex, 0, movedRoom);
     setRooms(nextRooms);
     setSaving(true);
     setFeedback("");
@@ -545,6 +545,29 @@ export default function FacilityRoomsTab() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function moveRoom(roomIndex: number, direction: -1 | 1) {
+    const targetIndex = roomIndex + direction;
+    if (targetIndex < 0 || targetIndex >= rooms.length) return;
+    const nextRooms = [...rooms];
+    const [movedRoom] = nextRooms.splice(roomIndex, 1);
+    nextRooms.splice(targetIndex, 0, movedRoom);
+    await saveRoomOrder(nextRooms, movedRoom);
+  }
+
+  async function dropRoom(targetRoomId: string, placeAfter: boolean) {
+    const sourceIndex = rooms.findIndex((room) => rowId(room) === draggedRoomId);
+    const targetIndex = rooms.findIndex((room) => rowId(room) === targetRoomId);
+    setDropRoomId("");
+    setDraggedRoomId("");
+    if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return;
+    const nextRooms = [...rooms];
+    const [movedRoom] = nextRooms.splice(sourceIndex, 1);
+    let insertionIndex = targetIndex + (placeAfter ? 1 : 0);
+    if (sourceIndex < insertionIndex) insertionIndex -= 1;
+    nextRooms.splice(insertionIndex, 0, movedRoom);
+    await saveRoomOrder(nextRooms, movedRoom);
   }
 
   async function getRoomFormHelp() {
@@ -837,8 +860,9 @@ export default function FacilityRoomsTab() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Arrange room workspaces</Text>
           <Text style={styles.muted}>
-            Put rooms in the order your team uses them. The saved order is shared across
-            GrowPathAI modes. Open a room for its grows, plants, work, and environment.
+            Drag rooms into the order your team uses, or use the move buttons. The saved
+            order is shared across GrowPathAI modes. Open a room for its grows, plants,
+            work, and environment.
           </Text>
           {rooms.length ? (
             rooms.map((room, roomIndex) => {
@@ -850,7 +874,44 @@ export default function FacilityRoomsTab() {
                 (item) => String(item.roomId ?? "") === id
               );
               return (
-                <View key={id || room.name} style={styles.row}>
+                <WebDropZone
+                  key={id || room.name}
+                  onDragOver={(event: any) => {
+                    if (!draggedRoomId || draggedRoomId === id) return;
+                    event.preventDefault?.();
+                    setDropRoomId(id);
+                  }}
+                  onDragLeave={() =>
+                    setDropRoomId((current) => (current === id ? "" : current))
+                  }
+                  onDrop={(event: any) => {
+                    event.preventDefault?.();
+                    const bounds = event.currentTarget?.getBoundingClientRect?.();
+                    const placeAfter = Boolean(
+                      bounds && Number(event.clientY) > bounds.top + bounds.height / 2
+                    );
+                    void dropRoom(id, placeAfter);
+                  }}
+                  style={[styles.row, dropRoomId === id && styles.rowDropTarget]}
+                >
+                  {canEditRooms && rooms.length > 1 && Platform.OS === "web" ? (
+                    <WebDropZone
+                      draggable={!saving}
+                      onDragStart={(event: any) => {
+                        setDraggedRoomId(id);
+                        event.dataTransfer?.setData("text/plain", id);
+                        if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragEnd={() => {
+                        setDraggedRoomId("");
+                        setDropRoomId("");
+                      }}
+                      accessibilityLabel={`Drag ${room.name || "room"} to reorder`}
+                      style={styles.dragHandle}
+                    >
+                      <Text style={styles.dragHandleText}>⋮⋮ Drag to reorder</Text>
+                    </WebDropZone>
+                  ) : null}
                   <Pressable
                     onPress={() => {
                       setActiveRoomId(id);
@@ -902,7 +963,7 @@ export default function FacilityRoomsTab() {
                       </Pressable>
                     </View>
                   ) : null}
-                </View>
+                </WebDropZone>
               );
             })
           ) : (
@@ -1606,6 +1667,15 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     gap: 3
   },
+  rowDropTarget: { borderTopColor: "#166534", borderTopWidth: 3 },
+  dragHandle: {
+    alignSelf: "flex-start",
+    borderRadius: radius.card,
+    backgroundColor: "#ECFDF5",
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  dragHandleText: { color: "#166534", fontWeight: "900" },
   roomWorkspace: { gap: 3 },
   openWorkspace: { color: "#166534", fontWeight: "800", marginTop: 3 },
   orderControls: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 7 },
