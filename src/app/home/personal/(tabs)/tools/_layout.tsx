@@ -100,7 +100,7 @@ export default function ToolsLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "Tools / AI" }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="vpd" options={{ title: "VPD Calculator" }} />
       <Stack.Screen name="dew-point-guard" options={{ title: "Dew Point Guard" }} />
       <Stack.Screen

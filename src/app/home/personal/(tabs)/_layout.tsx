@@ -25,7 +25,7 @@ export default function PersonalTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
         tabBarStyle: hideTabBar ? { display: "none" } : undefined
