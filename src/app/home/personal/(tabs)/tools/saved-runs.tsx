@@ -68,8 +68,59 @@ function formatValue(value: unknown) {
   return String(value);
 }
 
+function runOutputs(run: ToolRun | null): Record<string, any> {
+  return (run?.outputs || run?.result || {}) as Record<string, any>;
+}
+
+function isSpeciesCropRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "species_crop_id" || type === "species_crop_identification";
+}
+
 function metricsFor(run: ToolRun | null): ToolResultMetric[] {
-  const outputs = run?.outputs || run?.result || {};
+  const outputs = runOutputs(run);
+  if (isSpeciesCropRun(run)) {
+    const imageAnalysis =
+      outputs.imageAnalysis && typeof outputs.imageAnalysis === "object"
+        ? outputs.imageAnalysis
+        : {};
+    const suppliedPhotoCount = Number(
+      imageAnalysis.photosAnalyzed || imageAnalysis.photoCount || 0
+    );
+    const photoCount =
+      Number.isFinite(suppliedPhotoCount) && suppliedPhotoCount > 0
+        ? Math.floor(suppliedPhotoCount)
+        : 0;
+    return [
+      { key: "crop", label: "Likely crop", value: outputs.likelyCrop || "-" },
+      {
+        key: "scientific",
+        label: "Scientific name",
+        value: outputs.scientificName || "-"
+      },
+      { key: "confidence", label: "Confidence", value: outputs.confidence || "-" },
+      {
+        key: "photos",
+        label: "Photos inspected",
+        value: imageAnalysis.performed ? String(photoCount || 1) : "0"
+      },
+      {
+        key: "quality",
+        label: "Image quality",
+        value: imageAnalysis.performed
+          ? imageAnalysis.quality || "not provided"
+          : "not analyzed"
+      },
+      {
+        key: "confirm",
+        label: "Needs confirmation",
+        value: outputs.userConfirmationRequired ? "Yes" : "No"
+      }
+    ];
+  }
   const entries = Object.entries(outputs)
     .filter(([, value]) => value != null && typeof value !== "object")
     .slice(0, 6);
@@ -83,11 +134,81 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
 }
 
 function noticesFor(run: ToolRun | null): ToolResultNotice[] {
-  return (run?.warnings || []).map((message, index) => ({
-    key: `warning-${index}`,
-    severity: "medium",
-    message
-  }));
+  const outputs = runOutputs(run);
+  const imageAnalysis =
+    outputs.imageAnalysis && typeof outputs.imageAnalysis === "object"
+      ? outputs.imageAnalysis
+      : null;
+  const provenance: ToolResultNotice[] = [];
+
+  if (isSpeciesCropRun(run) && imageAnalysis?.performed) {
+    const suppliedPhotoCount = Number(
+      imageAnalysis.photosAnalyzed || imageAnalysis.photoCount || 1
+    );
+    const photoCount =
+      Number.isFinite(suppliedPhotoCount) && suppliedPhotoCount > 0
+        ? Math.floor(suppliedPhotoCount)
+        : 1;
+    const provider =
+      imageAnalysis.providerLabel || imageAnalysis.provider || "AI image review";
+    const model = imageAnalysis.providerModel
+      ? ` Model: ${imageAnalysis.providerModel}.`
+      : "";
+    const evidence = Array.isArray(imageAnalysis.evidenceUsed)
+      ? imageAnalysis.evidenceUsed.map(String).filter(Boolean)
+      : [];
+    provenance.push({
+      key: "crop-id-image-provenance",
+      severity: "info",
+      message: `${provider} inspected ${photoCount} uploaded photo${
+        photoCount === 1 ? "" : "s"
+      }. Image quality: ${imageAnalysis.quality || "not provided"}.${model}${
+        evidence.length ? ` Evidence: ${evidence.join(", ")}.` : ""
+      }`
+    });
+
+    const visibleTraits = String(
+      outputs.identifyingVisualTraits || imageAnalysis.identifyingVisualTraits || ""
+    ).trim();
+    if (visibleTraits) {
+      provenance.push({
+        key: "crop-id-visible-traits",
+        severity: "info",
+        message: `Visible identification traits: ${visibleTraits}`
+      });
+    }
+
+    const limitations = [
+      ...(Array.isArray(outputs.limitations) ? outputs.limitations : []),
+      ...(Array.isArray(imageAnalysis.limitations) ? imageAnalysis.limitations : [])
+    ]
+      .map(String)
+      .filter(Boolean)
+      .filter((value, index, values) => values.indexOf(value) === index);
+    if (limitations.length) {
+      provenance.push({
+        key: "crop-id-limitations",
+        severity: "medium",
+        message: `Limitations: ${limitations.join(" ")}`
+      });
+    }
+  } else if (isSpeciesCropRun(run) && imageAnalysis?.requested) {
+    provenance.push({
+      key: "crop-id-image-not-analyzed",
+      severity: "medium",
+      message:
+        "Photos were attached to this run, but the saved result does not attest that their pixels were analyzed."
+    });
+  }
+
+  return [
+    ...provenance,
+    ...(run?.warnings || []).map((message, index) => ({
+      key: `warning-${index}`,
+      severity: "medium",
+      message
+    }))
+  ];
 }
 
 function runTitle(run: ToolRun | null) {

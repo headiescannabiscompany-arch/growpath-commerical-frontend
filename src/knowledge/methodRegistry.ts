@@ -98,7 +98,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicit IPM AI-credit cost and charged/refunded result",
       "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",
-      "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved in the saved result",
+      "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
     ],
     [
