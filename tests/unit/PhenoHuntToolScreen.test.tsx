@@ -239,7 +239,7 @@ describe("PhenoHuntToolRoute", () => {
     fireEvent.press(screen.getByText("Fill pheno hunt from grow"));
     await waitFor(() =>
       expect(
-        screen.getByText(/AI filled 3 field\(s\) from available evidence/)
+        screen.getByText(/AI filled 3 non-empty fields from available evidence/)
       ).toBeTruthy()
     );
     fireEvent.press(screen.getByLabelText("Run Pheno Hunting"));

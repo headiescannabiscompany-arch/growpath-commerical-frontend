@@ -999,6 +999,7 @@ Completed and pushed:
 649. Personal logs, ToolRuns, tasks, and full grow Timeline reads now combine no-store requests with per-request freshness keys, preventing an older grow-filtered Journal response from masking newly persisted diagnosis or IPM records.
 650. Production Render now applies a higher-priority `/home/*` SPA rewrite, the repo mirrors that rule, and the live verifier plus final go/no-go evidence contract require a dynamic personal-grow deep link to return successfully; true Journal, Tasks, and Timeline hard reloads retained the exact July 21 diagnosis/IPM records on deployed merge `f72b5fbb7b60371d8994ae306737b58ca30cd4b3`.
 651. Personal IPM Scout now offers saved photos from the selected grow as explicit opt-in evidence, names each source log, preserves grow/plant/log provenance in a separate IPM-purpose evidence link without re-uploading, shares the same ten-photo limit with new uploads, and states that unselected private grow media is not sent or used for model training.
+652. AI evidence prefill now counts only non-empty values actually placed into tool forms, leaves unknown provider fields blank, and normalizes returned evidence lists into readable comma-separated text instead of exposing raw empty arrays such as `[]` as user observations.
 
 ## Working Rule For Codex
 

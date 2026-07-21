@@ -20,6 +20,21 @@ import {
 } from "@/api/growpathModules";
 import { updateToolRun, type ToolRun } from "@/api/toolRuns";
 
+export function normalizeIpmPrefillField({
+  fieldKey,
+  value
+}: {
+  fieldKey: string;
+  value: unknown;
+}) {
+  if (fieldKey !== "evidence" || !Array.isArray(value)) return undefined;
+  return value
+    .map(String)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
 function firstText(...values: unknown[]) {
   for (const value of values) {
     const text = String(value || "").trim();
@@ -230,6 +245,7 @@ export default function IpmScoutToolRoute() {
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
         buildMessage: () =>
           `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. evidence must list only visible or recorded facts. additionalInformation must name plausible alternatives and the exact leaf-top, leaf-underside, macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
+        normalizeFieldValue: normalizeIpmPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
             ? response.evidenceUsed
