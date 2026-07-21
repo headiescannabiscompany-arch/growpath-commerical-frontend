@@ -63,6 +63,7 @@ export async function listPersonalLogs(options?: {
 }): Promise<PersonalLog[]> {
   try {
     const res: any = await apiRequest(`/api/personal/logs`, {
+      cache: "no-store",
       params: options?.growId ? { growId: options.growId } : undefined
     });
     const logs = res?.data?.logs ?? res?.logs ?? res?.items;

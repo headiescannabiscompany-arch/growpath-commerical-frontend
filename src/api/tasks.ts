@@ -266,6 +266,7 @@ export async function listPersonalTasks(options?: {
   try {
     const listPersonalRes = await apiRequest("/api/personal/tasks", {
       method: "GET",
+      cache: "no-store",
       params: options?.growId ? { growId: options.growId } : undefined
     });
 

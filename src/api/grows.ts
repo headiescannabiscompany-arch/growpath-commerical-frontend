@@ -166,7 +166,8 @@ export async function getPersonalGrowTimeline(
   if (!growId) return [];
   try {
     const res = await apiRequest(
-      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`
+      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`,
+      { cache: "no-store" }
     );
     const rows = Array.isArray(res)
       ? res

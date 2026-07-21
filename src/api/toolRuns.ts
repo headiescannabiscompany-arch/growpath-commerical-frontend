@@ -260,6 +260,7 @@ export async function listToolRuns(options?: {
     if (options?.includeArchived) params.includeArchived = "true";
     const res: any = await apiRequest("/api/tools", {
       method: "GET",
+      cache: "no-store",
       params: Object.keys(params).length ? params : undefined
     });
     const rows = Array.isArray(res)
