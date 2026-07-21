@@ -58,6 +58,12 @@ because it exists. The same photo count limit applies to saved and newly uploade
 State that selected photos are included only in the current IPM request and are not used for
 model training.
 
+Newly added IPM or diagnosis photos must follow the same explicit boundary. The media picker
+must state that adding the file approves AI use for the current workflow only and not model
+training, then persist the uploaded evidence as AI-usable. A successfully uploaded file must
+not be stranded in a non-AI-usable state; a failed upload must remain visible and must never be
+sent or billed.
+
 The UI must disclose the AI-credit cost before each provider-backed action. Photo
 prefill and the structured GPT second opinion are separate billable actions. If the
 main scout action automatically includes the second opinion, its visible label must say

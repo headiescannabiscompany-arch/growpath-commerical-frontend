@@ -315,6 +315,7 @@ export default function IpmScoutToolRoute() {
             maxPhotos={10}
           />
           <MediaEvidencePicker
+            aiUsable
             maxPhotos={10}
             allowVideo
             maxVideoSeconds={30}

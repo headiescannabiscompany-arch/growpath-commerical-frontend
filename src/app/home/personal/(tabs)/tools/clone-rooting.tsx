@@ -98,6 +98,7 @@ export default function CloneRootingToolRoute() {
       }}
       formHeader={({ growId }) => (
         <MediaEvidencePicker
+          aiUsable
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}
