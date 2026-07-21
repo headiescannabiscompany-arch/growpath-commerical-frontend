@@ -173,4 +173,56 @@ describe("SavedToolRunsRoute", () => {
       screen.getByText(/Exact mint species cannot be confirmed from these views/i)
     ).toBeTruthy();
   });
+
+  it("keeps saved Dry Cure light and timing evidence visible", async () => {
+    const dryCureRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "dry_cure_guard",
+      summary: "Measured drying checkpoint.",
+      inputs: {
+        mode: "drying",
+        daysInStage: 1,
+        lightExposure: "dark",
+        dryRoomTemp: 68,
+        dryRoomRH: 60
+      },
+      outputs: {
+        assessmentStatus: "measured_snapshot",
+        moldRisk: "monitor",
+        overdryRisk: "monitor",
+        mode: "drying",
+        daysInStage: 1,
+        lightExposure: "dark",
+        lightStatus: "protected",
+        stageTiming: {
+          nextCheckHours: 24,
+          completionStatus: "not_determined_by_clock",
+          planningWindow: "usually_10_to_14_days_under_controlled_conditions"
+        },
+        realisticNotes:
+          "A 24-hour item is the next recheck, not the finish date. Controlled drying is commonly planned around 10-14 days; a hot, fast, low-humidity dry can reach an endpoint in 5-7 days with higher quality-loss or overdry concern. Longer than 14 days can occur but is not recommended as a routine target."
+      },
+      createdAt: "2026-07-21T20:05:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([dryCureRun]);
+    mockGetToolRun.mockResolvedValue(dryCureRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Light protection: protected")).toBeTruthy();
+    expect(screen.getByText("Day in stage: 1")).toBeTruthy();
+    expect(
+      screen.getByText("Stage timing: Plan 10-14 days; 24h is a recheck")
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Completion basis: Measurements, not elapsed time")
+    ).toBeTruthy();
+    expect(screen.getByText(/5-7 days with higher quality-loss/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Longer than 14 days can occur but is not recommended/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Saved light condition: dark/i)).toBeTruthy();
+  });
 });

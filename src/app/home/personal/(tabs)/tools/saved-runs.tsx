@@ -72,12 +72,24 @@ function runOutputs(run: ToolRun | null): Record<string, any> {
   return (run?.outputs || run?.result || {}) as Record<string, any>;
 }
 
+function runInputs(run: ToolRun | null): Record<string, any> {
+  return (run?.inputs || run?.input || run?.params || {}) as Record<string, any>;
+}
+
 function isSpeciesCropRun(run: ToolRun | null) {
   const type = String(run?.toolType || run?.toolName || "")
     .trim()
     .toLowerCase()
     .replaceAll("-", "_");
   return type === "species_crop_id" || type === "species_crop_identification";
+}
+
+function isDryCureRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "dry_cure_guard";
 }
 
 function unresolvedSavedCropName(value: unknown) {
@@ -148,6 +160,57 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       }
     ];
   }
+  if (isDryCureRun(run)) {
+    const inputs = runInputs(run);
+    const stageTiming =
+      outputs.stageTiming && typeof outputs.stageTiming === "object"
+        ? outputs.stageTiming
+        : {};
+    const mode = String(outputs.mode || inputs.mode || "").toLowerCase();
+    return [
+      {
+        key: "assessment",
+        label: "Assessment",
+        value: outputs.assessmentStatus || "Not assessed"
+      },
+      {
+        key: "mold",
+        label: "Mold concern",
+        value: outputs.moldRisk || "Not assessed"
+      },
+      {
+        key: "overdry",
+        label: "Overdry concern",
+        value: outputs.overdryRisk || "Not assessed"
+      },
+      {
+        key: "light",
+        label: "Light protection",
+        value: outputs.lightStatus || inputs.lightExposure || "Not recorded"
+      },
+      {
+        key: "stage-day",
+        label: "Day in stage",
+        value: formatValue(outputs.daysInStage ?? inputs.daysInStage)
+      },
+      {
+        key: "timing",
+        label: "Stage timing",
+        value:
+          mode === "drying"
+            ? "Plan 10-14 days; 24h is a recheck"
+            : "Measurement-based; 24h is a recheck"
+      },
+      {
+        key: "completion",
+        label: "Completion basis",
+        value:
+          stageTiming.completionStatus === "not_determined_by_clock"
+            ? "Measurements, not elapsed time"
+            : formatValue(stageTiming.completionStatus)
+      }
+    ];
+  }
   const entries = Object.entries(outputs)
     .filter(([, value]) => value != null && typeof value !== "object")
     .slice(0, 6);
@@ -175,6 +238,30 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
         key: "crop-id-working-candidate",
         severity: "info",
         message: `Working identification candidate: ${candidate}. Exact species remains unconfirmed; confirm the identity before applying crop-specific guidance.`
+      });
+    }
+  }
+
+  if (isDryCureRun(run)) {
+    const inputs = runInputs(run);
+    const realisticNotes = String(outputs.realisticNotes || "").trim();
+    if (realisticNotes) {
+      provenance.push({
+        key: "dry-cure-stage-timing",
+        severity: "info",
+        message: realisticNotes
+      });
+    }
+
+    const lightExposure = String(
+      outputs.lightExposure || inputs.lightExposure || ""
+    ).trim();
+    const lightStatus = String(outputs.lightStatus || "").trim();
+    if (lightExposure || lightStatus) {
+      provenance.push({
+        key: "dry-cure-light-evidence",
+        severity: lightStatus === "quality_concern" ? "medium" : "info",
+        message: `Saved light condition: ${lightExposure || "not recorded"}. Light protection assessment: ${lightStatus || "not assessed"}.`
       });
     }
   }
