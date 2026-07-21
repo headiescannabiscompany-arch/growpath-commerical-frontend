@@ -54,7 +54,7 @@ opened
 `/home/personal/logs/new?growId=6a551a9d2fb9f669d2319c06`, and the journal form
 retained that grow ID.
 
-Six navigation, visual, and accessibility findings were fixed and live-retested:
+Seven navigation, visual, and accessibility findings were fixed and live-retested:
 
 | Finding                                                                                                                                      | Merge and CI                                                                                                                                                          | Deployment and live result                                                                                                                                                                                                           |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -64,6 +64,7 @@ Six navigation, visual, and accessibility findings were fixed and live-retested:
 | Journal Back followed browser history to Personal Home instead of the selected grow's Journal                                                | PR `#70`, merge `ecdc97f1185f7986b7783d2c38ee713bdaed6784`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29793127917` | Render `dep-d9fcnm68bjmc73dl0fog`, live at 9:33 PM ET; Back from New Journal Entry and the existing `AI grow summary` detail returned to the exact grow Journal                                                                      |
 | Journal ToolRun and task cards were static, and Personal task source routes discarded the task ID                                            | PR `#71`, merge `4ba02db44e05ba44c307d0ac6dada635cd2c6122`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29793933588` | Render `dep-d9fcvicm0tmc73f8l0d0`, live at 9:49 PM ET; production Journal exposed 13 exact saved-run links and the clicked URL preserved `toolRunId=6a5dc87b62c955c489aaece0`                                                        |
 | Exact saved-run links selected the right record below the full history list, outside the initial viewport, while the page repeated its title | PR `#72`, merge `115856c84ed5009f95e8a6abe9c791d9eb142178`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29794475573` | Render `dep-d9fd51km0tmc73f8o68g`, live at 10:01 PM ET; the same production click scrolled to the green `Opened from source link` result, showed one heading, retained Saved run history below it, and produced no missing-run error |
+| Saved Tool Runs Back discarded the Journal or task source and returned to Personal Home                                                      | PR `#74`, merge `27fe657d2dc3ae911a40c553afa659fb8fa0e553`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29795482075` | Render `dep-d9fdfcl7vvec73cecirg`, live at 10:23 PM ET; production preserved bounded Journal/task/timeline source context and Back returned to the exact grow Journal with all 13 saved-run links intact                 |
 
 ## Exact source-reopen production evidence
 
@@ -79,21 +80,36 @@ outputs, warnings, and follow-up actions. Semantic inspection found one
 
 The existing log source path was also live-retested: `AI grow summary` opened log
 `6a5bf200cd95f5443f8b4445`, retained its saved content, and Back returned to the exact
-grow Journal. Exact Personal task URLs and task focusing are covered by the merged
-route/component tests, but this production grow reported zero open tasks and did not
-provide a real task card to click. Production task source-reopen therefore remains a
-separate live check rather than being inferred from automated evidence.
+grow Journal.
+
+The task chain was then exercised with production data. ToolRun
+`6a5dc87b62c955c489aaece0` created task `6a5ed5694789c2c0dd0f2da6`. Journal exposed one
+exact
+`/home/personal/grows/6a551a9d2fb9f669d2319c06/tasks?taskId=6a5ed5694789c2c0dd0f2da6`
+source link; opening it showed the focused `Follow up on species_crop_id` task with
+the `Opened from Journal` marker and no unavailable-task error. `View Source` reopened
+the exact saved ToolRun with no missing-run error. The temporary QA task was archived,
+and the final Journal retest showed zero task links and the original 13 ToolRun links.
+
+That task retest also exposed Saved Tool Runs Back returning to Personal Home. PR `#74`
+carried a bounded source context for Journal, task, and timeline entry points. After
+merge `27fe657d2dc3ae911a40c553afa659fb8fa0e553` became live as Render deployment
+`dep-d9fdfcl7vvec73cecirg`, the production Journal -> saved ToolRun -> Back loop returned
+to the exact grow Journal. Semantic inspection found the Journal heading, 13 saved-run
+links, and zero archived-task links.
 
 Genuine in-app Browser screenshots were captured in the release task after the Grows,
-journal, and saved-run deployments, including the visibly focused ToolRun result tied
-to merge `115856c84ed5009f95e8a6abe9c791d9eb142178` and deployment
-`dep-d9fd51km0tmc73f8o68g`. They were emitted in the task but were not exported as
+journal, saved-run, and task deployments, including the focused ToolRun result, focused
+task source chain, and final exact-Journal Back result tied to merge
+`27fe657d2dc3ae911a40c553afa659fb8fa0e553` and deployment
+`dep-d9fdfcl7vvec73cecirg`. They were emitted in the task but were not exported as
 repository image files; no repository screenshot/video artifact is claimed.
 
 ## Remaining Personal Pro acceptance
 
-This closes the paid text-AI deduction/persistence slice plus existing-log and saved-
-ToolRun source reopening, not the entire Personal Pro session. Production task source
-reopening, full diagnosis/upload usage, failed-request refund behavior, billing refresh,
+This closes the paid text-AI deduction/persistence slice plus existing-log, saved-
+ToolRun, and production task source reopening, including a newly created and cleaned-up
+ToolRun-to-task chain. It does not close the entire Personal Pro session. Full
+diagnosis/upload usage, failed-request refund behavior, billing refresh,
 cancellation/expiry, password/email lifecycle, desktop/mobile accessibility, exported
-screenshots/video, and a newly created log/task/tool chain remain open.
+screenshots/video, and a newly created journal-log persistence check remain open.
