@@ -50,6 +50,14 @@ saved scout. The structured GPT pass reviews that saved evidence but must say th
 not independently inspect photo or video pixels. Show GrowPath and GPT results together
 with a normalized agreement state.
 
+When a selected personal grow already has photos in its logs, IPM Scout must offer those
+photos as reusable evidence. Reuse is opt-in per photo and must name the source log before
+selection. Create a separate IPM-purpose evidence link without re-uploading the image,
+preserve grow/plant/log provenance, and never send private grow media to the provider merely
+because it exists. The same photo count limit applies to saved and newly uploaded photos.
+State that selected photos are included only in the current IPM request and are not used for
+model training.
+
 The UI must disclose the AI-credit cost before each provider-backed action. Photo
 prefill and the structured GPT second opinion are separate billable actions. If the
 main scout action automatically includes the second opinion, its visible label must say

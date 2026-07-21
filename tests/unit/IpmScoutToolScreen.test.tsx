@@ -184,6 +184,7 @@ describe("IpmScoutToolRoute", () => {
     expect(
       screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
     ).toBeTruthy();
+    expect(screen.getByText("Use photos already in this grow")).toBeTruthy();
   });
 
   it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {
