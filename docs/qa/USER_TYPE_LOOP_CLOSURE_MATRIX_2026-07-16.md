@@ -299,6 +299,19 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   `dep-d9fqtpu7r5hc7383e7k0`; the exact endpoint returned HTTP 200, subsequent health
   passed, and the authenticated Mint ToolRun/Profile retest completed at the unchanged
   `59 / 100`, 41 credits across 25 billed requests, zero refunds.
+- Production Harvest Readiness now requires three sharp top/middle/lower macro photos plus
+  one wider context image before AI analysis can run. Backend PR `#43`, merge
+  `bb0968f3b25d9dd62541cdfb2aff6479f1392be0`, was Live as
+  `dep-d9frm7cvikkc73bho5t0`; frontend PR `#102`, merge
+  `8ebf26a9fbe3986ec9c518c76c7471c7d8b379e6`, was Live as
+  `dep-d9frnbu8bjmc73e1dkig`. One genuine owner photo persisted as evidence
+  `6a5fbc97f7dfa4a764f878ba`, produced exact `Add 3 more photos` guidance, left the
+  Analyze control `aria-disabled`, and did not charge: Profile remained `59 / 100`,
+  41 credits across 25 billed requests, zero refunds. The owner-supplied EtGU videos
+  were reviewed as useful low-quality/acquisition QA examples, not scientific ground
+  truth. A rightful complete four-photo set, provider result, exact one-credit charge,
+  saved provenance, and connected writeback remain open. See
+  `docs/qa/HARVEST_READINESS_PRODUCTION_EVIDENCE_2026-07-21.md`.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -316,7 +329,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       outcome feedback, journal persistence, and exact saved-diagnosis reopening now
       pass too. No-grow Crop ID photo transport, exact one-credit billing, cannabis
       crop-level draft without cultivar inference, and a genuine roadside non-cannabis
-      `Mint` working candidate with saved provenance now pass too. Remaining
+      `Mint` working candidate with saved provenance now pass too. Harvest Readiness
+      four-photo guidance, blank observation inputs, and the incomplete-set no-charge
+      boundary also pass on the final deployed SHAs. Remaining Harvest provider output,
+      saved provenance/writeback, complete-photo billing, other
       failed-provider refund, lifecycle, broader accessibility,
       exported final-SHA video/screenshot, and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
