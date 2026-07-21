@@ -247,6 +247,16 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   `dep-d9fha3t7vvec73ea0kig` at 2:45 AM ET. True Journal, Tasks, and full Timeline hard
   reloads retained the exact records. See
   `docs/qa/IPM_SCOUT_PRODUCTION_EVIDENCE_2026-07-21.md`.
+- The selected saved-grow-photo IPM prefill now sends real account-owned photo bytes to
+  the production vision model. Backend merge
+  `9ec163618eb22ce6b9e7f16a3f6228fe0237657b` was live as
+  `dep-d9fikp99rddc73clkip0`; frontend merge
+  `ab71b8404a6dc6e11f5932038d46599a653e6cfa` was live as
+  `dep-d9fiuam7r5hc73frpg2g`. The final retest retained five defensible visual/follow-up
+  fields while leaving counts, inspection history, trap context, environment, and
+  recent actions blank. Profile proved one disclosed credit (`67 / 100 -> 66 / 100`),
+  20 billed requests, and zero refunds. Fresh device upload, failed-provider refund,
+  and independent accuracy review remain open.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -258,9 +268,11 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       photo-backed follow-up, feedback, diagnosis log/task writeback, and exact log
       reopening also passed. Structured IPM insufficient-evidence handling, the
       explicit one-credit GPT review, uncertain decision, log/task-plan writeback, and
-      fresh Journal/Tasks/Timeline hard reloads also passed. Remaining fresh diagnosis/
-      IPM upload, failure/refund, exact saved-diagnosis reopening, lifecycle, billing,
-      broader accessibility, exported video, and independent-review checks stay open.
+      fresh Journal/Tasks/Timeline hard reloads also passed. Saved-photo pixel analysis,
+      normalized photo prefill, and its exact one-credit charge also passed. Remaining
+      fresh device uploads, failure/refund, exact saved-diagnosis reopening, lifecycle,
+      billing, broader accessibility, exported video, and independent-review checks
+      stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
