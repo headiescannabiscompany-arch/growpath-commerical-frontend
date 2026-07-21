@@ -570,7 +570,7 @@ describe("sourceObjectHref", () => {
         linkedGrowId: "grow-1",
         workspaceType: "personal"
       })
-    ).toBe("/home/personal/grows/grow-1/tasks");
+    ).toBe("/home/personal/grows/grow-1/tasks?taskId=task-personal-1");
 
     expect(
       sourceObjectHref({

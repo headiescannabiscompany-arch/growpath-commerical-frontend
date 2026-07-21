@@ -218,7 +218,9 @@ export function sourceObjectHref(source: SourceLike) {
     if (workspace === "commercial") return `/home/commercial/tasks/${taskId}`;
     if (workspace === "facility") return `/home/facility/tasks/${taskId}`;
     return growId
-      ? `/home/personal/grows/${encoded(growId)}/tasks`
+      ? withQuery(`/home/personal/grows/${encoded(growId)}/tasks`, {
+          taskId
+        })
       : "/home/personal/tasks";
   }
 
