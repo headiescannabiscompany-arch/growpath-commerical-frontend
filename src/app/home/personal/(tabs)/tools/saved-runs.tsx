@@ -442,9 +442,15 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     });
   }
 
+  const hasStructuredCloneBottlenecks =
+    isCloneRootingRun(run) &&
+    Array.isArray(outputs.likelyBottlenecks) &&
+    outputs.likelyBottlenecks.length > 0;
+  const warnings = hasStructuredCloneBottlenecks ? [] : run?.warnings || [];
+
   return [
     ...provenance,
-    ...(run?.warnings || []).map((message, index) => ({
+    ...warnings.map((message, index) => ({
       key: `warning-${index}`,
       severity: "medium" as const,
       message
