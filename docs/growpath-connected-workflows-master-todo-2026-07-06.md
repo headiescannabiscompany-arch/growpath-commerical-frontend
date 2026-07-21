@@ -322,9 +322,12 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Correct the seed lifecycle so selected packs can be seeded from complete governed inputs while scenario runs and browser acceptance remain separately tracked post-seed evidence. Backend PR `#30` merged as `f727c259bb4b7829c6809e86c566467151572ca3` and is live on both production and staging Render services.
    - [x] Make the Facility simulator seed-input-ready with five seed-time personas, reviewed synthetic-only room profiles, synthetic test adapters, six executable QA checklists, and 252 deterministic telemetry points covering all 14 scenarios. Approval is limited to private test/staging fixtures and excludes production, claims, setpoints, external media rights, and Living Soil Labs product facts.
    - [x] Run a selected-pack offline plan against backend `f727c259bb4b7829c6809e86c566467151572ca3`: 326 Facility records planned, zero database writes, zero seed blockers, zero unrelated rights failures, and only scenario/browser work retained as post-seed obligations.
+   - [x] Seed and verify the governed Facility pack in networked staging under namespace `growpath-qa-facility-acceptance`; the five role personas shared Facility `6a5ea11685cee9a1c3f9696d`, and the backend Facility-ID guard from PR `#33` is live on staging and production as `7c8c21d9d9a18bafef45eccd0d33b2a8bfb486e5`.
    - [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
    - [ ] Exercise Personal Free, Personal Pro, Commercial, Facility Owner/Manager/Staff/Viewer, cross-role shared-record, and outside-user loops against the seeded records.
+     - Facility staging progress: Manager -> Grower -> Scout/Viewer task persistence passed on shared task `6a5eb37ec9fd257ae2484ce0`; Owner bookends, forced Viewer 403 evidence, production-role retest, exported recording, non-Facility sessions, and outside-user validation remain open. Evidence: `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
    - [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
+     - The 2026-07-20 Facility evidence record now contains SHAs, URLs, namespace, timestamps, role/account suffixes, checks, findings, CI, and deployment status. Screenshot/video, cleanup, production-role rerun, and final acceptance are intentionally still open.
 
 ## Immediate Execution Slice
 

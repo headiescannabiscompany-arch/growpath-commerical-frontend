@@ -120,6 +120,17 @@ control, or can bypass its backend authorization boundary.
   is claimed. Full release evidence and remaining blocks are recorded in
   `docs/qa/RELEASE_EVIDENCE_2026-07-19.md`.
 
+- 2026-07-20 Facility staging follow-up: the governed Facility pack was exercised in
+  the in-app Browser across Owner, Manager, Staff Grower, Staff Scout, and Viewer
+  accounts on Facility `6a5ea11685cee9a1c3f9696d`. Manager-created task
+  `6a5eb37ec9fd257ae2484ce0` was assigned to Grower, completed by Grower, and observed
+  as `DONE` by Scout and Viewer with creation/completion audit events. Four findings
+  were fixed through frontend PRs `#59`-`#62`; final merge
+  `c638c9626ac86982b9c5e167616390118b54db3f` was confirmed live on Render at 8:12 PM
+  ET. The full checkbox remains open pending Owner final-state review, forced Viewer
+  backend 403 evidence, exported recording, and a production-role retest. See
+  `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
+
 ### Personal Free backbone audit
 
 - Environment Review now uses the mounted ToolRun API, clearly identifies its
@@ -142,10 +153,20 @@ control, or can bypass its backend authorization boundary.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed.
 - [ ] Commercial loop session recorded and reviewed.
-- [ ] Facility Owner loop session recorded and reviewed.
-- [ ] Facility Manager loop session recorded and reviewed.
-- [ ] Facility Staff loop session recorded and reviewed.
-- [ ] Facility Viewer loop session recorded and reviewed.
-- [ ] Cross-role Facility chain completed on one shared record.
+- [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
+      record counts reviewed; final post-completion Owner return and exported recording
+      remain open.
+- [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
+      permission controls passed; exported recording and production-role retest remain
+      open.
+- [ ] Facility Staff loop session recorded and reviewed. Grower completion and Scout
+      observation passed in staging; exported recording and production-role retest
+      remain open.
+- [ ] Facility Viewer loop session recorded and reviewed. Read-only tasks/team passed
+      in staging; forced backend 403, exported recording, and production-role retest
+      remain open.
+- [ ] Cross-role Facility chain completed on one shared record. Manager -> Grower ->
+      Scout/Viewer persistence passed in staging; Owner bookends and production rerun
+      remain open.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
