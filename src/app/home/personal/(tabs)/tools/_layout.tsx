@@ -131,7 +131,7 @@ export default function ToolsLayout() {
       />
       <Stack.Screen name="timeline-planner" options={{ title: "Timeline Planner" }} />
       <Stack.Screen name="pdf-export" options={{ title: "PDF / Export" }} />
-      <Stack.Screen name="saved-runs" options={{ title: "Saved Tool Runs" }} />
+      <Stack.Screen name="saved-runs" options={{ headerShown: false }} />
       <Stack.Screen name="pheno-matrix" options={{ title: "Pheno Matrix" }} />
       <Stack.Screen name="soil-builder" options={{ title: "Soil Mix Builder" }} />
       <Stack.Screen name="recipe-builder" options={{ title: "Mix Builders" }} />

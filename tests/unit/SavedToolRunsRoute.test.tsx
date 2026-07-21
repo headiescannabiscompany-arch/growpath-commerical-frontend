@@ -91,11 +91,12 @@ describe("SavedToolRunsRoute", () => {
         toolType: undefined
       })
     );
-    await waitFor(() =>
-      expect(mockGetToolRun).toHaveBeenCalledWith("run-1")
-    );
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
 
     expect(screen.getByLabelText("Selected saved tool run run-1")).toBeTruthy();
+    expect(screen.getByLabelText("Opened exact saved tool result run-1")).toBeTruthy();
+    expect(screen.getByText("Opened from source link")).toBeTruthy();
+    expect(screen.getByText("Saved run history")).toBeTruthy();
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("vpd result: Full VPD result.")).toBeTruthy();
   });
