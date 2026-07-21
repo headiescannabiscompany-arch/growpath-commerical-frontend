@@ -228,6 +228,82 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   });
 
+  it("shows a defensible non-cannabis common candidate when exact species is uncertain", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Not confirmed",
+        scientificName: "",
+        cultivar: "",
+        commonNames: "Mint",
+        identificationNotes:
+          "Flower clusters and a leafy stem suggest a mint-family plant; exact species remains uncertain.",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium",
+        identifyingVisualTraits:
+          "Flower clusters on a leafy stem suggest a mint-family plant."
+      }),
+      provider: "openai",
+      providerLabel: "OpenAI vision crop identity",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: {
+        requested: true,
+        photosAttached: 1,
+        photosAnalyzed: 1,
+        status: "completed",
+        providerModel: "gpt-4o-mini"
+      },
+      limitations: ["Exact mint species cannot be confirmed from these views."]
+    });
+    mockRunCalculator.mockResolvedValue({
+      outputs: {
+        likelyCrop: "Mint",
+        commonNames: ["Mint"],
+        scientificName: null,
+        confidence: "medium",
+        userConfirmationRequired: true,
+        identifyingVisualTraits:
+          "Flower clusters on a leafy stem suggest a mint-family plant.",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photosAnalyzed: 1,
+          providerLabel: "OpenAI vision crop identity",
+          providerModel: "gpt-4o-mini",
+          confidence: "medium",
+          quality: "usable",
+          evidenceUsed: ["evidence-1"]
+        }
+      },
+      toolRun: { id: "toolrun-mint-1", _id: "toolrun-mint-1" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Crop from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "Mint",
+          scientificName: "",
+          userConfirmed: false,
+          imageAnalysis: expect.objectContaining({
+            performed: true,
+            confidence: "medium"
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("Mint");
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+  });
+
   it("creates crop identity tasks from species identification output", async () => {
     const screen = render(<SpeciesCropIdToolRoute />);
 

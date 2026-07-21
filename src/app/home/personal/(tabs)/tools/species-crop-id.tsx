@@ -18,6 +18,30 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
+function unresolvedCropName(value: unknown) {
+  return /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
+    String(value || "").trim()
+  );
+}
+
+function normalizeCropIdentityPrefillField({
+  fieldKey,
+  value,
+  parsed
+}: {
+  fieldKey: string;
+  value: unknown;
+  parsed: Record<string, any>;
+}) {
+  if (fieldKey !== "userEnteredName") return undefined;
+  const suppliedName = String(value || "").trim();
+  if (suppliedName && !unresolvedCropName(suppliedName)) return suppliedName;
+  return String(parsed.commonNames || "")
+    .split(/[,;\n]/)
+    .map((candidate) => candidate.trim())
+    .find((candidate) => candidate && !unresolvedCropName(candidate));
+}
+
 function cropIdentityCalendarMetadata(sourceStage: string) {
   return {
     allDay: true,
@@ -117,7 +141,8 @@ export default function SpeciesCropIdToolRoute() {
         notReadyMessage: "Upload at least one photo before starting AI identification.",
         runAfterPrefill: true,
         buildMessage: () =>
-          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Use "not confirmed" only when crop-level evidence is insufficient, and leave scientificName blank when uncertain. Every AI result is a draft because only the user can confirm it. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
+          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. When exact species remains uncertain but the visible evidence supports a useful common, genus, or family-level working candidate (for example, mint), put that candidate in userEnteredName and leave scientificName blank; reserve "not confirmed" for cases where no crop-level or broader plant candidate is defensible. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Every AI result is a draft because only the user can confirm it. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
+        normalizeFieldValue: normalizeCropIdentityPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
             ? response.evidenceUsed

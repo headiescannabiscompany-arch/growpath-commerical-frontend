@@ -98,6 +98,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicit IPM AI-credit cost and charged/refunded result",
       "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",
+      "defensible common, genus, or family-level candidate retained when exact species is unresolved",
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
     ],
@@ -114,6 +115,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not strand a newly selected diagnosis or IPM upload as non-AI-usable after explicitly disclosing and receiving current-workflow AI approval.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
+      "Do not replace a defensible broader crop candidate with a confirmation placeholder merely because exact species remains unresolved.",
       "Do not discard server-attested crop-identification vision provenance and relabel an analyzed result as text-only or unanalyzed.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
       "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
