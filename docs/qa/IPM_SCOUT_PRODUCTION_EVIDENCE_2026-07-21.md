@@ -2,8 +2,9 @@
 
 Status: partial Personal Pro acceptance completed in the in-app Browser. The
 structured scout, GPT review charge, user decision, grow-log writeback, task plan,
-Journal/Tasks/Timeline persistence, and true deep-link reload all passed. A fresh
-IPM photo upload/photo-prefill pass and independent accuracy review remain open.
+Journal/Tasks/Timeline persistence, true deep-link reload, saved-photo pixel analysis,
+photo-prefill normalization, and exact photo-prefill credit charge all passed. A fresh
+device upload, failed-provider refund check, and independent accuracy review remain open.
 
 ## Session
 
@@ -13,8 +14,10 @@ IPM photo upload/photo-prefill pass and independent accuracy review remain open.
 - Grow: `6a551a9d2fb9f669d2319c06`
 - Evidence surface: signed-in in-app Browser, Render dashboard, exact persisted record
   links, hard reloads, and the production live-URL verifier
-- Final deployed frontend SHA: `f72b5fbb7b60371d8994ae306737b58ca30cd4b3`
-- Final frontend deployment: `dep-d9fha3t7vvec73ea0kig`, live July 21 at 2:45 AM ET
+- Final deployed frontend SHA: `ab71b8404a6dc6e11f5932038d46599a653e6cfa`
+- Final frontend deployment: `dep-d9fiuam7r5hc73frpg2g`, live July 21 at 4:36 AM ET
+- Deployed backend image-analysis SHA: `9ec163618eb22ce6b9e7f16a3f6228fe0237657b`
+- Backend deployment: `dep-d9fikp99rddc73clkip0`, live July 21 at 4:15 AM ET
 
 ## Truthful insufficient-evidence scout
 
@@ -108,6 +111,45 @@ After that final deployment:
   live. Ignored evidence was written to
   `tmp/spec/live-url-checks/2026-07-21T06-47-13-270Z.json`.
 
+## Saved-photo pixel analysis and normalized prefill
+
+Frontend PR `#89`, merge `08d90b01923eb531de8e3bfbeb3f41df3fa4f5c7`, added
+explicit reuse of account-owned saved grow photos. Frontend PR `#90`, merge
+`39d7b1104bc2b2feb98b9d0b9d6fc3340530a24a`, normalized empty prefill responses.
+Backend PR `#39`, merge `9ec163618eb22ce6b9e7f16a3f6228fe0237657b`, then loaded
+only selected, account-owned, AI-usable JPEG/PNG/WebP evidence from the private upload
+disk and sent the real bytes to the configured OpenAI vision model. Ownership, grow and
+plant scope, MIME type, per-file size, total size, and photo-count guards run before a
+billable provider call. Unavailable or unowned evidence is refused without charging,
+and provider failure is refunded. Backend CI, including the full test job and ZAP,
+passed before Render deployment `dep-d9fikp99rddc73clkip0` went live at 4:15 AM ET.
+
+The first production saved-photo run after that backend deploy used selected evidence
+asset `6a5f2b3f9a4ebf90c8c779eb`. Its reply described visible cannabis flowers, mature
+buds, leaf-tip yellowing/browning, and the grow-tent setting, then requested leaf
+underside, root-zone, and macro evidence to distinguish nutrient stress from pest
+alternatives. This proved that pixels, rather than only filenames or grow text, were
+inspected. Profile persisted the exact one-credit change from `68 / 100` to `67 / 100`,
+with weekly use increasing to 33 credits across 19 billed requests and zero refunds.
+
+That run also exposed a real UI finding: model placeholder phrases and a photo-derived
+plant count inflated the prefill to 16 fields. Frontend PR `#91`, merge
+`ab71b8404a6dc6e11f5932038d46599a653e6cfa`, now keeps plants checked, plants affected,
+and sticky-trap counts empty because they are scout measurements; it also suppresses
+unknown placeholders while retaining `pestSeen: not confirmed` as an explicit identity
+limitation. GitHub CI passed, and Render deployment `dep-d9fiuam7r5hc73frpg2g` was live
+at 4:36 AM ET.
+
+The final production retest selected saved evidence asset
+`6a5f2fe29a4ebf90c8c77afc` and returned exactly five defensible non-empty fields:
+distribution `uniform`, organism `not confirmed`, `some leaf discoloration`, direct
+evidence `visible cannabis flowers and some leaf discoloration`, and a request for leaf
+underside, closer macro, or sticky-trap evidence. Plants checked, plants affected,
+progression, underside inspection, magnification, sticky-trap count/context,
+environment, and recent actions remained blank. Profile persisted `67 / 100` to
+`66 / 100`, 34 credits across 20 billed requests, and zero refunds. The action therefore
+charged exactly one disclosed credit and did not count unknowns as completed scouting.
+
 ## Visual evidence
 
 Genuine Browser screenshots were exported outside the repository:
@@ -118,6 +160,13 @@ Genuine Browser screenshots were exported outside the repository:
   connected actions; and
 - `growpath-production-ai-credit-ledger-70-ipm-2026-07-21.png` shows the persisted
   `70 / 100`, 16 billed requests, and zero refunds ledger.
+
+Two additional genuine screenshots were emitted directly in the Browser task after
+frontend SHA `ab71b8404a6dc6e11f5932038d46599a653e6cfa` was live. One shows the blank
+measurement/history fields, the retained visible cannabis evidence, and the five-field
+normalization notice. The other shows `66 / 100`, 34 weekly credits, 20 billed requests,
+and zero refunds. These images were not written into the repository, so no repository
+artifact path is claimed.
 
 No repository screenshot or video artifact is claimed. Browser semantic inspection and
 exact source URLs provide the Journal/Tasks/Timeline reload evidence because the later
@@ -133,11 +182,13 @@ Closed for this Personal Pro IPM slice:
 - uncertain user-decision persistence;
 - grow-log and three-task-plan writeback;
 - exact source-linked Saved Runs, Journal, Tasks, and full Timeline visibility; and
-- direct/hard-reload reliability for dynamic `/home/*` routes.
+- direct/hard-reload reliability for dynamic `/home/*` routes;
+- selected saved-photo bytes inspected by the production vision model; and
+- exact one-credit photo-prefill billing with unknown measurement fields left blank.
 
 Still open:
 
-- fresh IPM photo upload and the separately disclosed photo-prefill credit path;
+- fresh device photo upload (saved-photo prefill is now proven);
 - failed-provider refund proof;
 - independent pest/pathogen accuracy review using owner-approved evidence sources;
 - desktop/mobile accessibility and exported video for the complete Personal Pro loop;
