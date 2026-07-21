@@ -102,7 +102,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not declare a nutrient deficiency from appearance alone.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
       "Do not send existing private grow media to diagnosis until the user explicitly selects each photo.",
-      "Do not drop attached photo evidence during follow-up analysis or coerce blank measurements to zero.",
+      "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",

@@ -551,6 +551,7 @@ export default function DiagnoseRoute({
       const followUpContext = {
         ...currentDiagnosisContext(),
         priorDiagnosisId: result.id || undefined,
+        priorCropIdentity: result.cropIdentity || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
       };
