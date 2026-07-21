@@ -163,7 +163,9 @@ export default function ForumRoute() {
     >
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>Forum / Q&A</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Forum / Q&A
+          </Text>
           <Text style={styles.subtitle}>
             Discussion, Q&A, grow help, course/product/live questions, and community
             replies. Promotional feed placements around this page are campaign ads, not

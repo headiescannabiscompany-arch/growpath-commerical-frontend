@@ -30,4 +30,22 @@ describe("Personal root header policy", () => {
     expect(aiLayout).toContain("headerShown: true");
     expect(aiLayout).toContain('options={{ title: "AI Assistant" }}');
   });
+
+  test.each([
+    ["home", "src/app/home/personal/(tabs)/index.tsx", "Your Garden"],
+    ["grows", "src/app/home/personal/(tabs)/grows/index.tsx", "Grows"],
+    ["tools", "src/app/home/personal/(tabs)/tools/index.tsx", "AI Tools"],
+    ["profile", "src/app/home/personal/(tabs)/profile/index.tsx", "Profile"],
+    ["forum tab", "src/app/home/personal/(tabs)/community.tsx", "Forum / Q&A"],
+    ["forum workflow", "src/app/home/personal/(tabs)/forum/index.tsx", "Forum / Q&A"],
+    ["diagnosis", "src/app/home/personal/(tabs)/diagnose.tsx", "Plant Issue Diagnosis"],
+    ["tasks", "src/app/home/personal/(tabs)/tasks.tsx", "Task Center / Schedule"],
+    ["discover", "src/app/discover.tsx", "Discover"],
+    ["courses", "src/screens/CoursesScreen.js", "Courses"]
+  ])("gives the %s root title heading semantics", (_name, file, title) => {
+    const source = read(file);
+
+    expect(source).toContain('accessibilityRole="header"');
+    expect(source).toContain(title);
+  });
 });

@@ -115,7 +115,9 @@ export default function PersonalHomeTab() {
       header={
         <View>
           <Text style={styles.kicker}>Personal workspace</Text>
-          <Text style={styles.headerTitle}>Your Garden</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>
+            Your Garden
+          </Text>
           <Text style={styles.headerSubtitle}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
           </Text>

@@ -243,7 +243,9 @@ export default function CoursesScreen({ navigation } = {}) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Courses</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Courses
+      </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
 
       {!access.canViewCourses ? (

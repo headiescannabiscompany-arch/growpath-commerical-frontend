@@ -97,7 +97,9 @@ export default function GrowsListScreen() {
       contentContainerStyle={styles.content}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Grows</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Grows
+        </Text>
         <Text style={styles.subtitle}>
           Grows are the parent object for journal entries, tool runs, and tasks.
         </Text>
