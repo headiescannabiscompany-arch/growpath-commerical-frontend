@@ -11,6 +11,7 @@ import type {
   EvidencePurpose,
   EvidenceSource
 } from "@/types/evidence";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 type Props = {
   maxPhotos?: number;
@@ -191,10 +192,14 @@ export default function MediaEvidencePicker({
         ) : null}
       </View>
       <View style={styles.grid}>
-        {assets.map((asset) => (
+        {assets.map((asset, index) => (
           <View key={asset.id} style={styles.asset}>
             {asset.assetType === "photo" ? (
-              <Image source={{ uri: asset.originalUri }} style={styles.preview} />
+              <Image
+                source={{ uri: resolveImageUri(asset.originalUri || asset.durableUrl) }}
+                style={styles.preview}
+                accessibilityLabel={`Evidence photo ${index + 1}`}
+              />
             ) : (
               <View style={[styles.preview, styles.videoPreview]}>
                 <Text style={styles.videoText}>Video</Text>
