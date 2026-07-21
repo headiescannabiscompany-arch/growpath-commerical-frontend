@@ -267,6 +267,17 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   refunds). Fresh IPM file upload is closed; failed-provider refund proof and independent
   accuracy review remain open. Final-SHA screenshot capture timed out, so no screenshot
   or video artifact is claimed for this retest.
+- A genuine fresh-file Plant Diagnosis then ran once from `65 / 100` and persisted the
+  exact three-credit result at `62 / 100`, 38 credits across 22 billed requests, and
+  zero refunds. The unlabeled photo produced a draft `Cannabis` / `Cannabis sativa`
+  identity without cultivar inference; `Unsure` feedback, ToolRun
+  `6a5f8e039a4ebf90c8c78977`, and journal entry
+  `6a5f8e8a9a4ebf90c8c7899f` persisted and reopened. That run exposed silent
+  `veg` / `upper new growth` defaults and conflated result labels. PR `#95`, merge
+  `2f2cfeeeabe1d1bfcaeafc4a0743cdf28204488b`, fixed both; Render deploy
+  `dep-d9fp4ssm0tmc73fifr9g` was live at 11:40 AM ET. The deployed non-billable retest
+  showed explicit Stage/Pattern `unknown` choices and left the balance at `62 / 100`.
+  See `docs/qa/PLANT_DIAGNOSIS_PRODUCTION_EVIDENCE_2026-07-21.md`.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -280,9 +291,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       explicit one-credit GPT review, uncertain decision, log/task-plan writeback, and
       fresh Journal/Tasks/Timeline hard reloads also passed. Saved-photo pixel analysis,
       normalized photo prefill, fresh IPM file upload, and both exact one-credit charges
-      also passed. Remaining diagnosis file upload, failure/refund, exact saved-diagnosis
-      reopening, lifecycle, billing, broader accessibility, exported video, and
-      independent-review checks stay open.
+      also passed. Fresh diagnosis file upload, exact three-credit billing, submitted
+      outcome feedback, journal persistence, and exact saved-diagnosis reopening now
+      pass too. Remaining failed-provider refund, lifecycle, broader accessibility,
+      exported final-SHA video/screenshot, and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
