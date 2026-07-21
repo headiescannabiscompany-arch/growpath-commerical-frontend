@@ -290,6 +290,15 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   IDs, limited quality, medium confidence, and confirmation guidance, and did not
   charge again: Profile remained `59 / 100`, 41 credits across 25 billed requests,
   zero refunds. See `docs/qa/CROP_IDENTIFICATION_PRODUCTION_EVIDENCE_2026-07-21.md`.
+- The final Crop ID hard reload exposed and closed a separate production availability
+  incident. At 1:20:06 PM EDT, `/api/commercial/courses/public` treated `public` as a
+  CommercialRecord ID, raised an unhandled Mongo error, and caused Render to restart
+  the API. Backend PR `#42` added published-storefront/public-course projection, strict
+  ID validation, and async error forwarding. Merge
+  `76453037a988aef03ea75642cbaad6f3438f0762` was Live as
+  `dep-d9fqtpu7r5hc7383e7k0`; the exact endpoint returned HTTP 200, subsequent health
+  passed, and the authenticated Mint ToolRun/Profile retest completed at the unchanged
+  `59 / 100`, 41 credits across 25 billed requests, zero refunds.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.

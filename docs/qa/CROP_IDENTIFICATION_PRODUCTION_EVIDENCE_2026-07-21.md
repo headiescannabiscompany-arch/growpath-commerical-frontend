@@ -8,18 +8,22 @@ This record covers production Crop ID photo transport, no-grow operation, cannab
 - Production API: `https://api.growpathai.com`
 - Account/role: Personal Pro, trialing
 - Browser evidence: authenticated in-app Browser semantic inspection of live pages
-- Final frontend SHA: `8d250dd656a18ef8c1f80715667b7491369906e5`
-- Final backend SHA: `54eefe8c5929948e024467bb5b8d16457890bad7`
+- Crop ID behavior frontend SHA: `8d250dd656a18ef8c1f80715667b7491369906e5`
+- Crop ID behavior backend SHA: `54eefe8c5929948e024467bb5b8d16457890bad7`
+- Evidence/checklist frontend SHA retested before the availability follow-up: `071f84bacde4f82098b413f4b9dd5316d1d885ba`
+- Final production API availability SHA: `76453037a988aef03ea75642cbaad6f3438f0762`
 
 ## Releases
 
-| Area                                               | PR             | Merge SHA                                  | Render deploy              | Production evidence                                                                  |
-| -------------------------------------------------- | -------------- | ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------ |
-| Preserve server-attested Crop ID vision provenance | Backend `#40`  | `8292bf83819fd665df2c4da84c46b9dc0a766ab2` | `dep-d9fq1d99rddc73c5qamg` | Live 2026-07-21 12:39:17 PM EDT                                                      |
-| Send and display Crop ID vision provenance         | Frontend `#97` | `bbec8b55db6dab0011e2343548522739e2e0076c` | `dep-d9fq2gh9rddc73csm440` | Live 2026-07-21 12:41:38 PM EDT                                                      |
-| Surface provenance when reopening Saved Runs       | Frontend `#98` | `bb876e6ae5f44d823ec6283f57a6db4b23e1ae03` | `dep-d9fq8st8nd3s73ffumug` | Live 2026-07-21 12:55:15 PM EDT                                                      |
-| Preserve a defensible broader candidate            | Backend `#41`  | `54eefe8c5929948e024467bb5b8d16457890bad7` | `dep-d9fqdkt7vvec73eiacsg` | Live after a 1m21s deploy; independent `/health` passed at 2026-07-21 1:07:06 PM EDT |
-| Show the broader candidate in new and old results  | Frontend `#99` | `8d250dd656a18ef8c1f80715667b7491369906e5` | `dep-d9fqeie7r5hc7382tla0` | Live after a 2m08s deploy, approximately 2026-07-21 1:09:29 PM EDT                   |
+| Area                                                    | PR              | Merge SHA                                  | Render deploy              | Production evidence                                                                  |
+| ------------------------------------------------------- | --------------- | ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------ |
+| Preserve server-attested Crop ID vision provenance      | Backend `#40`   | `8292bf83819fd665df2c4da84c46b9dc0a766ab2` | `dep-d9fq1d99rddc73c5qamg` | Live 2026-07-21 12:39:17 PM EDT                                                      |
+| Send and display Crop ID vision provenance              | Frontend `#97`  | `bbec8b55db6dab0011e2343548522739e2e0076c` | `dep-d9fq2gh9rddc73csm440` | Live 2026-07-21 12:41:38 PM EDT                                                      |
+| Surface provenance when reopening Saved Runs            | Frontend `#98`  | `bb876e6ae5f44d823ec6283f57a6db4b23e1ae03` | `dep-d9fq8st8nd3s73ffumug` | Live 2026-07-21 12:55:15 PM EDT                                                      |
+| Preserve a defensible broader candidate                 | Backend `#41`   | `54eefe8c5929948e024467bb5b8d16457890bad7` | `dep-d9fqdkt7vvec73eiacsg` | Live after a 1m21s deploy; independent `/health` passed at 2026-07-21 1:07:06 PM EDT |
+| Show the broader candidate in new and old results       | Frontend `#99`  | `8d250dd656a18ef8c1f80715667b7491369906e5` | `dep-d9fqeie7r5hc7382tla0` | Live after a 2m08s deploy, approximately 2026-07-21 1:09:29 PM EDT                   |
+| Publish this Crop ID evidence and checklist update      | Frontend `#100` | `071f84bacde4f82098b413f4b9dd5316d1d885ba` | `dep-d9fqjhd7vvec73cp6ahg` | Live after a 2m10s deploy, approximately 2026-07-21 1:20:07 PM EDT                   |
+| Prevent public-course requests from terminating the API | Backend `#42`   | `76453037a988aef03ea75642cbaad6f3438f0762` | `dep-d9fqtpu7r5hc7383e7k0` | Live after a 1m16s deploy, approximately 2026-07-21 1:41:07 PM EDT                   |
 
 ## Production case 1: cannabis without a grow
 
@@ -51,6 +55,16 @@ This record covers production Crop ID photo transport, no-grow operation, cannab
 - Frontend focused Crop ID and Saved Runs coverage passed; the diagnosis/IPM/Crop ID contract plus delivery, corruption, export, lint, formatting, and diff guards passed.
 - Frontend GitHub CI passed in 3m06s, including Expo dependency verification, Expo Doctor, production dependency audit, lint, delivery guards, and the full test step.
 - Repository-wide TypeScript continues to report known unrelated existing files only; no touched-file TypeScript failure remained.
+
+## Post-release API availability incident and recovery
+
+- During the hard reload against frontend evidence release `071f84bacde4f82098b413f4b9dd5316d1d885ba`, production displayed a real connection/session-check failure and the independent API request returned Render HTTP 502.
+- Render application logs showed the exact cause at 2026-07-21 1:20:06 PM EDT: the normal `GET /api/commercial/courses/public` request was routed as a dynamic CommercialRecord ID, so `public` caused an unhandled Mongo `CastError` and the process shut down.
+- Render restarted the instance at 1:20:59 PM EDT; startup completed at 1:21:02 PM EDT and independent `/health` passed at 1:21:12 PM EDT. This automatic recovery was temporary mitigation, not acceptance.
+- Backend PR `#42` added the real public published-course response, limits it to published courses owned by published storefronts, returns an explicit public-field projection, rejects malformed record IDs before querying Mongo, and forwards remaining async failures to the application error boundary.
+- PR `#42` passed both GitHub checks (`test` 2m05s and `lint-and-test` 9m16s, including the API security scan), merged as `76453037a988aef03ea75642cbaad6f3438f0762`, and deployed Live as `dep-d9fqtpu7r5hc7383e7k0`.
+- At 1:41:35 PM EDT, the exact formerly crashing production endpoint returned HTTP 200. At 1:41:43 PM EDT, `/health` still returned `ok: true`, proving that request no longer terminated the service.
+- The authenticated in-app Browser then reopened exact Crop ID ToolRun `6a5fa308b9f052dfe64627ff` with `Likely crop: Mint`, two inspected photos, medium confidence, limited image quality, and confirmation required. Profile also reopened at `59 / 100`, 41 credits across 25 billed requests, zero refunds.
 
 ## Honest remaining work
 
