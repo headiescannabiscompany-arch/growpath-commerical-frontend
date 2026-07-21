@@ -118,6 +118,8 @@ photo action a unique accessible name.
 | Frontend saved-photo selection | PR `#76`, merge `60d466e104263115265206c256754d584a69f9b1`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29796576244` | Render `dep-d9fdr3l7vvec73cejd80`, live at 10:48 PM ET |
 | Frontend preview and accessible controls | PR `#77`, merge `e67e5fb4091350a3953f4bbbab97256f022af990`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29796990218` | Render `dep-d9fdvft7vvec73e7vuag`, live at 10:58 PM ET; both saved cannabis photos rendered and exposed distinct controls |
 | Backend evidence and diagnosis contract | Backend PR `#34`, merge `a78d219589a8c434e2e9ce8e58c663af52708570`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical/actions/runs/29799411551` | Production Render `dep-d9ferid7vvec73cf8630`, live at 11:57 PM ET; ownership-scoped saved-photo evidence was accepted by diagnosis |
+| Backend visual crop and photo context | Backend PR `#35`, merge `29db80b439f7f6e2d52e227515f245c5a85b144a`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical/actions/runs/29800719450` and `https://github.com/headiescannabiscompany-arch/growpath-commerical/actions/runs/29800719455` | Production Render `dep-d9ff8rl7vvec73cfh0jg`, live July 21 at 12:25 AM ET; strict provider output now includes draft crop identity, visible evidence, image usability, limitations, and a discriminating follow-up |
+| Frontend visual result context | Frontend PR `#79`, merge `6ed88c43dcda7fd0cc215fef5cf80ace973baff9`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29800932620` | Render `dep-d9ff85e8bjmc73dmf9v0`, live July 21 at 12:25 AM ET; the production result displayed the visual identity, evidence, photo-quality guidance, provider/model/photo count, and follow-up question |
 
 Immediately before the diagnosis, Profile showed `93 / 100` and
 `7 credits across 7 billed requests; 0 credits refunded`. The user explicitly selected
@@ -140,20 +142,51 @@ provider result, and final Profile balance. They were emitted in the release tas
 were not exported as repository files, so no repository screenshot/video artifact is
 claimed.
 
-This proves the existing-photo transport, ownership boundary, image-capable provider
-path, one successful billed request, and exact ledger deduction. It does not prove that
-the diagnosis is agronomically complete: the live result had no plant selector, crop
-identity was `unspecified`, and the recommendation remained generic. Fresh file upload,
-failed-request refund behavior, plant/crop context, result follow-up and outcome capture,
-log/task writeback, and saved-result reopening remain open.
+That first request proved the existing-photo transport, ownership boundary,
+image-capable provider path, one successful billed request, and exact ledger deduction.
+It also exposed that the strict provider schema omitted the crop-identity and photo-
+quality fields the result screen expected.
+
+After backend PR `#35` and frontend PR `#79` were both live, the same saved photo was
+selected again as evidence record `6a5ef52b5ce1862f4e622327`. Immediately before the
+request, Profile showed `90 / 100`, `10 credits across 8 billed requests`, and zero
+refunds. The production result then reported:
+
+- draft crop identity `Cannabis` / `Cannabis sativa`, high confidence, not ambiguous;
+- no cultivar or strain inference;
+- visible identity evidence including cannabis leaf shape, flowering calyxes, and
+  trichomes;
+- one photo inspected and usable for cautious triage;
+- visible healthy buds plus possible leaf-tip burn/discoloration;
+- replacement guidance for a less cluttered, closer symptom photo and a whole-plant
+  view;
+- provider `openai`, model `gpt-4o-mini`, and a specific feeding-schedule follow-up;
+- explicit user confirmation required before the visual identity becomes saved crop
+  context.
+
+The grow's production Plants page showed `No plants yet`, so there was no real plant row
+for a selector to hide. The result correctly used the submitted image to suggest draft
+crop context without inventing a plant record or strain.
+
+After the result, Profile persisted `87 / 100`, `13 credits across 9 billed requests`,
+and `0 credits refunded`. The second diagnosis therefore deducted exactly three credits
+once. Genuine in-app Browser screenshots were exported outside the repository for the
+result overview, draft crop identity/photo evidence, and final credit ledger. They are
+tied to the production URL, the two release SHAs above, and the July 21 12:25 AM ET
+deployments; no repository image artifact is claimed.
+
+Fresh file upload, failed-request refund behavior, answering/refining the provider
+follow-up, outcome feedback, log/task writeback, saved-result reopening, and independent
+accuracy review remain open.
 
 ## Remaining Personal Pro acceptance
 
 This closes the paid text-AI deduction/persistence slice plus existing-log, saved-
 ToolRun, and production task source reopening, including a newly created and cleaned-up
-ToolRun-to-task chain. It also closes successful saved-photo transport and the exact
-three-credit production diagnosis deduction. It does not close the entire Personal Pro
-session. Fresh upload, failed-request refund behavior, plant/crop diagnosis context,
-result follow-up/writeback/reopening, billing refresh, cancellation/expiry,
+ToolRun-to-task chain. It also closes successful saved-photo transport, visual cannabis
+identity/photo-quality context, and two exact three-credit production diagnosis
+deductions. It does not close the entire Personal Pro session. Fresh upload,
+failed-request refund behavior, result follow-up/writeback/reopening, billing refresh,
+cancellation/expiry,
 password/email lifecycle, desktop/mobile accessibility, exported screenshots/video,
 and a newly created journal-log persistence check remain open.

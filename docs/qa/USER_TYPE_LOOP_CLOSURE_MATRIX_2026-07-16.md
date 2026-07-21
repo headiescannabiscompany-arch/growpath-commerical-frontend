@@ -203,11 +203,19 @@ control, or can bypass its backend authorization boundary.
   then completed an OpenAI-backed diagnosis and deducted exactly three credits:
   `93 / 100`, 7 credits across 7 requests became `90 / 100`, 10 credits across 8
   requests, with zero refunds.
-- That diagnosis proved saved-photo transport, provider use, and ledger persistence but
-  exposed the next finding: no plant selector was present, crop identity was
-  `unspecified`, and the recommendation remained generic. Fresh upload, failure/refund,
-  plant/crop context, follow-up/outcome capture, writeback/reopening, and independent
-  accuracy review remain open.
+- Backend PR `#35` and frontend PR `#79` closed the missing visual-context finding.
+  Backend merge `29db80b439f7f6e2d52e227515f245c5a85b144a` and frontend merge
+  `6ed88c43dcda7fd0cc215fef5cf80ace973baff9` were both live at 12:25 AM ET as Render
+  deployments `dep-d9ff8rl7vvec73cfh0jg` and `dep-d9ff85e8bjmc73dmf9v0`. A fresh
+  production request using the same real saved photo identified `Cannabis` /
+  `Cannabis sativa` at high confidence without inferring a strain, displayed the visible
+  identity evidence, reported the photo usable with exact improvement guidance, and
+  asked a discriminating feeding-schedule follow-up. The grow's Plants page showed `No
+  plants yet`, confirming that no real plant row was being hidden from the selector.
+- That live request deducted and persisted exactly three credits: `90 / 100`, 10 credits
+  across 8 requests became `87 / 100`, 13 credits across 9 requests, with zero refunds.
+  Fresh upload, failure/refund, follow-up/outcome capture, writeback/reopening, and
+  independent accuracy review remain open.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -215,8 +223,9 @@ control, or can bypass its backend authorization boundary.
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
       entry passed; existing-log, saved-ToolRun, and production task source reopening
       also passed. Successful saved-photo diagnosis transport and exact three-credit
-      deduction passed. Remaining journal-log create/persist, fresh upload,
-      failure/refund, plant/crop context, diagnosis follow-up/writeback/reopening,
+      deduction passed twice; visual cannabis identity and photo-quality context also
+      passed. Remaining journal-log create/persist, fresh upload, failure/refund,
+      diagnosis follow-up/writeback/reopening,
       lifecycle, billing, broader accessibility, and exported-recording checks stay
       open.
 - [ ] Commercial loop session recorded and reviewed.
