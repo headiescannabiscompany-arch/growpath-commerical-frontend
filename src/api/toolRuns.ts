@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 
 export interface ToolRun {
   id?: string;
@@ -261,7 +262,7 @@ export async function listToolRuns(options?: {
     const res: any = await apiRequest("/api/tools", {
       method: "GET",
       cache: "no-store",
-      params: Object.keys(params).length ? params : undefined
+      params: withFreshnessParam(params)
     });
     const rows = Array.isArray(res)
       ? res

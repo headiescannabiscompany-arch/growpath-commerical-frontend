@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 
@@ -267,7 +268,7 @@ export async function listPersonalTasks(options?: {
     const listPersonalRes = await apiRequest("/api/personal/tasks", {
       method: "GET",
       cache: "no-store",
-      params: options?.growId ? { growId: options.growId } : undefined
+      params: withFreshnessParam(options?.growId ? { growId: options.growId } : {})
     });
 
     if (
