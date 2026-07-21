@@ -18,10 +18,12 @@ const styles = StyleSheet.create({
 
 export default function BackButton({
   label = "< Back",
-  fallbackHref = "/home"
+  fallbackHref = "/home",
+  preferFallback = false
 }: {
   label?: string;
   fallbackHref?: string;
+  preferFallback?: boolean;
 }) {
   const router = useRouter();
 
@@ -33,7 +35,7 @@ export default function BackButton({
           ? window.history.length > 1
           : true;
 
-    if (canGoBack) {
+    if (!preferFallback && canGoBack) {
       router.back();
       return;
     }

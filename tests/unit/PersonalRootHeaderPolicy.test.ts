@@ -57,6 +57,8 @@ describe("Personal root header policy", () => {
     expect(logsLayout).toContain("screenOptions={{ headerShown: false }}");
     expect(newLog).toContain("showBack");
     expect(logDetail).toContain("showBack");
+    expect(newLog).toContain("preferBackFallback");
+    expect(logDetail).toContain("preferBackFallback");
     expect(newLog).toContain('accessibilityRole="header"');
     expect(logDetail).toContain('accessibilityRole="header"');
   });
