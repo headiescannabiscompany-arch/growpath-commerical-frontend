@@ -105,11 +105,55 @@ task source chain, and final exact-Journal Back result tied to merge
 `dep-d9fdfcl7vvec73cecirg`. They were emitted in the task but were not exported as
 repository image files; no repository screenshot/video artifact is claimed.
 
+## Production saved-photo diagnosis and credit evidence
+
+The same Personal Pro/trialing account was retested at
+`https://growpathai.com/home/personal/diagnose?growId=6a551a9d2fb9f669d2319c06`.
+Frontend PRs `#76` and `#77` exposed private photos already saved to the selected grow,
+made reuse explicit per photo, repaired backend-relative previews, and gave every saved
+photo action a unique accessible name.
+
+| Release | Merge and CI | Deployment and live result |
+| --- | --- | --- |
+| Frontend saved-photo selection | PR `#76`, merge `60d466e104263115265206c256754d584a69f9b1`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29796576244` | Render `dep-d9fdr3l7vvec73cejd80`, live at 10:48 PM ET |
+| Frontend preview and accessible controls | PR `#77`, merge `e67e5fb4091350a3953f4bbbab97256f022af990`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29796990218` | Render `dep-d9fdvft7vvec73e7vuag`, live at 10:58 PM ET; both saved cannabis photos rendered and exposed distinct controls |
+| Backend evidence and diagnosis contract | Backend PR `#34`, merge `a78d219589a8c434e2e9ce8e58c663af52708570`; CI `https://github.com/headiescannabiscompany-arch/growpath-commerical/actions/runs/29799411551` | Production Render `dep-d9ferid7vvec73cf8630`, live at 11:57 PM ET; ownership-scoped saved-photo evidence was accepted by diagnosis |
+
+Immediately before the diagnosis, Profile showed `93 / 100` and
+`7 credits across 7 billed requests; 0 credits refunded`. The user explicitly selected
+the saved grow photo `Ready to chop`; the diagnosis page created evidence record
+`6a5eee44773443409356cdd3`, displayed `1/10 photos`, and enabled the diagnosis action.
+One provider-backed photo-only diagnosis then completed against the real saved image.
+It reported source `openai`, model `gpt-4o-mini`, medium severity, and a tentative
+nutritional-issue result with observed yellowing/browning, inconsistent leaf color,
+counter-evidence, and follow-up checks.
+
+After returning to and reloading Profile, the server balance showed:
+
+- `90 / 100` AI credits;
+- `10 credits across 8 billed requests`;
+- `0 credits refunded`.
+
+The exact three-credit diagnosis charge therefore completed once and persisted through
+route navigation. Genuine in-app Browser screenshots showed the selected real photo,
+provider result, and final Profile balance. They were emitted in the release task but
+were not exported as repository files, so no repository screenshot/video artifact is
+claimed.
+
+This proves the existing-photo transport, ownership boundary, image-capable provider
+path, one successful billed request, and exact ledger deduction. It does not prove that
+the diagnosis is agronomically complete: the live result had no plant selector, crop
+identity was `unspecified`, and the recommendation remained generic. Fresh file upload,
+failed-request refund behavior, plant/crop context, result follow-up and outcome capture,
+log/task writeback, and saved-result reopening remain open.
+
 ## Remaining Personal Pro acceptance
 
 This closes the paid text-AI deduction/persistence slice plus existing-log, saved-
 ToolRun, and production task source reopening, including a newly created and cleaned-up
-ToolRun-to-task chain. It does not close the entire Personal Pro session. Full
-diagnosis/upload usage, failed-request refund behavior, billing refresh,
-cancellation/expiry, password/email lifecycle, desktop/mobile accessibility, exported
-screenshots/video, and a newly created journal-log persistence check remain open.
+ToolRun-to-task chain. It also closes successful saved-photo transport and the exact
+three-credit production diagnosis deduction. It does not close the entire Personal Pro
+session. Fresh upload, failed-request refund behavior, plant/crop diagnosis context,
+result follow-up/writeback/reopening, billing refresh, cancellation/expiry,
+password/email lifecycle, desktop/mobile accessibility, exported screenshots/video,
+and a newly created journal-log persistence check remain open.

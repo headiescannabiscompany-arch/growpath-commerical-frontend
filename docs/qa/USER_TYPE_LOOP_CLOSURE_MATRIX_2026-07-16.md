@@ -192,14 +192,33 @@ control, or can bypass its backend authorization boundary.
   context. Render deployment `dep-d9fdfcl7vvec73cecirg` was live at 10:23 PM ET; a
   fresh production Journal -> ToolRun -> Back retest returned to the exact grow
   Journal with its heading, 13 ToolRun links, and zero archived-task links.
+- Frontend PRs `#76` and `#77` exposed real saved grow photos as opt-in diagnosis
+  evidence, repaired their production previews, and gave every photo action a unique
+  accessible name. Final frontend merge
+  `e67e5fb4091350a3953f4bbbab97256f022af990` was live as Render deployment
+  `dep-d9fdvft7vvec73e7vuag` at 10:58 PM ET.
+- Backend PR `#34`, merge `a78d219589a8c434e2e9ce8e58c663af52708570`, added the
+  ownership-scoped evidence contract and multi-image diagnosis path. Production Render
+  deployment `dep-d9ferid7vvec73cf8630` was live at 11:57 PM ET. One real saved photo
+  then completed an OpenAI-backed diagnosis and deducted exactly three credits:
+  `93 / 100`, 7 credits across 7 requests became `90 / 100`, 10 credits across 8
+  requests, with zero refunds.
+- That diagnosis proved saved-photo transport, provider use, and ledger persistence but
+  exposed the next finding: no plant selector was present, crop identity was
+  `unspecified`, and the recommendation remained generic. Fresh upload, failure/refund,
+  plant/crop context, follow-up/outcome capture, writeback/reopening, and independent
+  accuracy review remain open.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
       entry passed; existing-log, saved-ToolRun, and production task source reopening
-      also passed. Remaining journal-log create/persist, diagnosis/upload, lifecycle,
-      billing, broader accessibility, and exported-recording checks stay open.
+      also passed. Successful saved-photo diagnosis transport and exact three-credit
+      deduction passed. Remaining journal-log create/persist, fresh upload,
+      failure/refund, plant/crop context, diagnosis follow-up/writeback/reopening,
+      lifecycle, billing, broader accessibility, and exported-recording checks stay
+      open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
