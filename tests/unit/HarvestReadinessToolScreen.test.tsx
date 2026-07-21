@@ -8,19 +8,48 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
-const mockUploadImage = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
-const mockRequestPhotoPermission = jest.fn();
-const mockLaunchPhotoLibrary = jest.fn();
 const mockListPersonalGrows = jest.fn();
 let mockRouteParams: Record<string, string> = { growId: "grow-1" };
 
-jest.mock("expo-image-picker", () => ({
-  MediaTypeOptions: { Images: "Images" },
-  requestMediaLibraryPermissionsAsync: (...args: any[]) =>
-    mockRequestPhotoPermission(...args),
-  launchImageLibraryAsync: (...args: any[]) => mockLaunchPhotoLibrary(...args)
-}));
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Pressable, Text, View } = require("react-native");
+  const asset = (index: number) => ({
+    id: `evidence-${index}`,
+    _id: `64b00000000000000000000${index}`,
+    assetType: "photo",
+    originalUri: `file:///trichomes-${index}.jpg`,
+    durableUrl: `/uploads/trichomes-${index}.jpg`,
+    mimeType: "image/jpeg",
+    source: "library",
+    purpose: "harvest",
+    uploadStatus: "uploaded",
+    aiUsable: true,
+    qualityWarnings: []
+  });
+  return ({ onChange }: any) =>
+    React.createElement(
+      View,
+      { accessibilityLabel: "Media evidence picker" },
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add one harvest evidence photo",
+          onPress: () => onChange([asset(1)])
+        },
+        React.createElement(Text, null, "Add One Photo")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add complete harvest photo set",
+          onPress: () => onChange([asset(1), asset(2), asset(3), asset(4)])
+        },
+        React.createElement(Text, null, "Add Complete Photo Set")
+      )
+    );
+});
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRouteParams,
@@ -84,10 +113,6 @@ jest.mock("@/api/harvestBatches", () => ({
   updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
 }));
 
-jest.mock("@/api/uploads", () => ({
-  uploadImage: (...args: any[]) => mockUploadImage(...args)
-}));
-
 jest.mock("@/api/harvestVision", () => ({
   analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
 }));
@@ -138,24 +163,32 @@ describe("HarvestReadinessToolRoute", () => {
       linkedToolRunIds: ["toolrun-old"]
     });
     mockUpdateHarvestBatch.mockResolvedValue({ id: "harvest-1" });
-    mockRequestPhotoPermission.mockResolvedValue({ granted: true });
-    mockLaunchPhotoLibrary.mockResolvedValue({
-      canceled: false,
-      assets: [{ uri: "file:///trichomes.jpg" }]
-    });
-    mockUploadImage.mockResolvedValue({ url: "/uploads/trichomes.jpg" });
     mockAnalyzeTrichomePhotos.mockResolvedValue({
       photoUsable: true,
+      imageQuality: "usable",
       clear: 0.12,
       cloudy: 0.73,
       amber: 0.15,
       confidence: 0.81,
       dominant: "cloudy",
+      visibleTraits: ["Intact opaque gland heads"],
       evidence: ["Mostly opaque gland heads"],
       recommendation: "Confirm across additional bud sites.",
       limitations: [],
-      provider: "openai_vision",
-      imagesAnalyzed: 1
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: [
+        "64b000000000000000000001",
+        "64b000000000000000000002",
+        "64b000000000000000000003",
+        "64b000000000000000000004"
+      ],
+      analysisId: "usage-harvest-1",
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 58,
+      creditStatus: "charged"
     });
   });
 
@@ -183,54 +216,84 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
     expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
     expect(screen.getByText(/neutral white light/i)).toBeTruthy();
-    expect(screen.getByText(/No trichome photos selected/i)).toBeTruthy();
+    expect(screen.getByText(/No trichome evidence is ready/i)).toBeTruthy();
   });
 
-  it("uploads and analyzes a photo before filling trichome percentages", async () => {
+  it("blocks an incomplete photo set without spending a credit", () => {
     const screen = render(<HarvestReadinessToolRoute />);
 
-    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
-    await waitFor(() =>
-      expect(mockUploadImage).toHaveBeenCalledWith("file:///trichomes.jpg")
-    );
+    fireEvent.press(screen.getByLabelText("Add one harvest evidence photo"));
+
+    expect(screen.getByText(/Add 3 more photos/i)).toBeTruthy();
+    expect(screen.getByText(/no AI credit will be used yet/i)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
+  it("analyzes a complete evidence set before filling trichome percentages", async () => {
+    const screen = render(<HarvestReadinessToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
       expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
-        expect.objectContaining({ growId: "grow-1", images: ["/uploads/trichomes.jpg"] })
+        expect.objectContaining({
+          growId: "grow-1",
+          evidenceAssetIds: [
+            "64b000000000000000000001",
+            "64b000000000000000000002",
+            "64b000000000000000000003",
+            "64b000000000000000000004"
+          ]
+        })
       )
     );
     expect(screen.getByDisplayValue("73")).toBeTruthy();
     expect(screen.getByDisplayValue("15")).toBeTruthy();
     expect(screen.getByDisplayValue("12")).toBeTruthy();
-    expect(screen.getByText("Photo quality: usable")).toBeTruthy();
+    expect(screen.getByText("Qualified macro evidence")).toBeTruthy();
     expect(screen.getByText("Confirm across additional bud sites.")).toBeTruthy();
     expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
+    expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
+    expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();
   });
 
   it("explains when better photos are needed without filling readiness fields", async () => {
     mockAnalyzeTrichomePhotos.mockResolvedValue({
       photoUsable: false,
-      clear: 0,
-      cloudy: 0,
-      amber: 0,
+      imageQuality: "limited",
+      clear: null,
+      cloudy: null,
+      amber: null,
       confidence: 0.24,
       dominant: "uncertain",
+      visibleTraits: ["Pistils visible; gland heads blurred"],
       evidence: [],
       recommendation: "Move closer and stabilize the camera.",
       limitations: ["Trichome heads are out of focus."],
-      provider: "openai_vision",
-      imagesAnalyzed: 1
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: ["64b000000000000000000001"],
+      analysisId: "usage-harvest-2",
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 57,
+      creditStatus: "charged"
     });
     const screen = render(<HarvestReadinessToolRoute />);
 
-    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
-    await waitFor(() => expect(mockUploadImage).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
-    await waitFor(() => expect(screen.getByText("Better photos needed")).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByText("Better photos needed — no percentages filled")
+      ).toBeTruthy()
+    );
     expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
-    expect(screen.getByText("• Trichome heads are out of focus.")).toBeTruthy();
+    expect(screen.getByText("Limitation: Trichome heads are out of focus.")).toBeTruthy();
     expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
       ""
     );
@@ -248,8 +311,7 @@ describe("HarvestReadinessToolRoute", () => {
     );
     const screen = render(<HarvestReadinessToolRoute />);
 
-    fireEvent.press(screen.getByLabelText("Choose harvest trichome photo"));
-    await waitFor(() => expect(mockUploadImage).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
@@ -291,8 +353,8 @@ describe("HarvestReadinessToolRoute", () => {
           growId: "grow-1",
           flowerDay: "56",
           sampleLocation: "top and lower buds",
-          budSwell: "mostly_swollen",
-          smellNotes: "building",
+          budSwell: "",
+          smellNotes: "",
           trichomeSource: "manual_entry"
         })
       )
