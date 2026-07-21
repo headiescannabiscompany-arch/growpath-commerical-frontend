@@ -250,9 +250,14 @@ export const methodRegistry: GrowPathMethod[] = [
       "tasks",
       "forum alerts",
       "moderation audit",
-      "owner-scoped event analytics"
+      "owner-scoped event analytics",
+      "published-course discovery limited to published storefronts and explicit public fields"
     ],
-    ["Never cross workspace scope or invent product claims."],
+    [
+      "Never cross workspace scope or invent product claims.",
+      "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
+      "Never pass reserved public route words or malformed record IDs into database ID queries."
+    ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),
   method(
