@@ -97,4 +97,35 @@ describe("existing grow diagnosis photo evidence", () => {
       })
     );
   });
+
+  it("creates an IPM evidence link with the original grow, plant, and log provenance", () => {
+    const input = existingGrowPhotoEvidenceInput(
+      {
+        id: "log-2:0",
+        url: "/uploads/scout.jpg",
+        title: "Underside scout",
+        capturedAt: "2026-07-21T12:00:00.000Z",
+        growId: "grow-2",
+        plantId: "plant-from-photo",
+        logId: "log-2",
+        mimeType: "image/jpeg"
+      },
+      "plant-selected",
+      "ipm"
+    );
+
+    expect(input).toEqual(
+      expect.objectContaining({
+        growId: "grow-2",
+        plantId: "plant-from-photo",
+        logId: "log-2",
+        originalUri: "/uploads/scout.jpg",
+        durableUrl: "/uploads/scout.jpg",
+        source: "upload",
+        purpose: "ipm",
+        uploadStatus: "uploaded",
+        aiUsable: true
+      })
+    );
+  });
 });

@@ -60,6 +60,7 @@ type BackendCalculatorToolScreenProps = {
     | React.ReactNode
     | ((context: {
         growId: string;
+        plantId: string;
         facilityId: string;
         commercialAccountId: string;
       }) => React.ReactNode);
@@ -713,7 +714,12 @@ export default function BackendCalculatorToolScreen({
         ) : null}
 
         {typeof formHeader === "function"
-          ? formHeader({ growId, facilityId, commercialAccountId })
+          ? formHeader({
+              growId,
+              plantId: plantContext.plantId,
+              facilityId,
+              commercialAccountId
+            })
           : formHeader}
 
         {aiPrefill ? (

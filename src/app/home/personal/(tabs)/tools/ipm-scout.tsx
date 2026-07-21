@@ -9,6 +9,7 @@ import {
   type LinkedTaskDraft
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
 import { createFacilityTask } from "@/api/facilityTasks";
@@ -266,7 +267,7 @@ export default function IpmScoutToolRoute() {
           };
         }
       }}
-      formHeader={({ growId, facilityId }) => (
+      formHeader={({ growId, plantId, facilityId }) => (
         <View style={styles.evidenceSection}>
           <Text style={styles.evidenceTitle}>Scout photos and video</Text>
           <Text style={styles.evidenceGuidance}>
@@ -275,6 +276,14 @@ export default function IpmScoutToolRoute() {
             or short video when movement matters. The result will say whether photo pixels
             were actually analyzed.
           </Text>
+          <SavedGrowPhotoEvidencePicker
+            growId={growId}
+            plantId={plantId}
+            purpose="ipm"
+            value={evidenceAssets}
+            onChange={setEvidenceAssets}
+            maxPhotos={10}
+          />
           <MediaEvidencePicker
             maxPhotos={10}
             allowVideo

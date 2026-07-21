@@ -1,5 +1,5 @@
 import type { PersonalLog } from "@/api/logs";
-import type { EvidenceAssetCreateInput } from "@/types/evidence";
+import type { EvidenceAssetCreateInput, EvidencePurpose } from "@/types/evidence";
 
 export type ExistingGrowPhotoCandidate = {
   id: string;
@@ -75,7 +75,8 @@ export function existingGrowPhotoCandidates(
 
 export function existingGrowPhotoEvidenceInput(
   candidate: ExistingGrowPhotoCandidate,
-  selectedPlantId = ""
+  selectedPlantId = "",
+  purpose: EvidencePurpose = "diagnosis"
 ): EvidenceAssetCreateInput {
   return {
     growId: candidate.growId,
@@ -88,7 +89,7 @@ export function existingGrowPhotoEvidenceInput(
     width: candidate.width,
     height: candidate.height,
     source: "upload",
-    purpose: "diagnosis",
+    purpose,
     uploadStatus: "uploaded",
     aiUsable: true,
     qualityWarnings: []
