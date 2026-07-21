@@ -274,10 +274,13 @@ describe("DiagnoseRoute", () => {
       expect(screen.getByText("Diagnosis and photo analysis ready")).toBeTruthy()
     );
     await waitFor(() =>
-      expect(screen.getByLabelText("Use saved photo Ready to chop")).toBeTruthy()
+      expect(screen.getByLabelText("Use saved photo Ready to chop, item 1")).toBeTruthy()
     );
 
-    fireEvent.press(screen.getByLabelText("Use saved photo Ready to chop"));
+    expect(
+      screen.getByLabelText("Saved grow photo Ready to chop").props.source.uri
+    ).toMatch(/^https?:\/\//);
+    fireEvent.press(screen.getByLabelText("Use saved photo Ready to chop, item 1"));
 
     await waitFor(() =>
       expect(mockCreateEvidenceAsset).toHaveBeenCalledWith(

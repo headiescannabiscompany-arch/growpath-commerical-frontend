@@ -41,6 +41,7 @@ import type { EvidenceAsset } from "@/types/evidence";
 import { createEvidenceAsset, providerEvidencePayload } from "@/api/evidence";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -1017,7 +1018,7 @@ export default function DiagnoseRoute({
               <Text style={styles.photoWarning}>{existingPhotoError}</Text>
             ) : existingGrowPhotos.length ? (
               <View style={styles.savedPhotoGrid}>
-                {existingGrowPhotos.map((candidate) => {
+                {existingGrowPhotos.map((candidate, candidateIndex) => {
                   const capturedDate = displayDate(candidate.capturedAt);
                   const selected = evidenceAssets.some(
                     (asset) =>
@@ -1031,7 +1032,7 @@ export default function DiagnoseRoute({
                   return (
                     <View key={candidate.id} style={styles.savedPhotoCard}>
                       <Image
-                        source={{ uri: candidate.url }}
+                        source={{ uri: resolveImageUri(candidate.url) }}
                         style={styles.savedPhotoPreview}
                         accessibilityLabel={`Saved grow photo ${candidate.title}`}
                       />
@@ -1043,7 +1044,9 @@ export default function DiagnoseRoute({
                       ) : null}
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel={`Use saved photo ${candidate.title}`}
+                        accessibilityLabel={`Use saved photo ${candidate.title}, item ${
+                          candidateIndex + 1
+                        }`}
                         accessibilityState={{
                           disabled: selected || busy || photoLimitReached,
                           selected

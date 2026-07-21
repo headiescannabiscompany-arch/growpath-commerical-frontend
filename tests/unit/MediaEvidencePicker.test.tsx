@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { API_URL } from "@/api/apiRequest";
 
 const mockPermission = jest.fn();
 const mockPicker = jest.fn();
@@ -105,6 +106,30 @@ describe("MediaEvidencePicker", () => {
       expect(mockPicker).toHaveBeenCalledWith(
         expect.objectContaining({ selectionLimit: 1, allowsMultipleSelection: true })
       )
+    );
+  });
+
+  it("resolves backend-relative evidence URLs for preview", () => {
+    const screen = render(
+      <MediaEvidencePicker
+        purpose="diagnosis"
+        value={[
+          {
+            id: "existing-photo",
+            assetType: "photo",
+            originalUri: "/uploads/existing-photo.jpg",
+            durableUrl: "/uploads/existing-photo.jpg",
+            source: "upload",
+            purpose: "diagnosis",
+            uploadStatus: "uploaded",
+            qualityWarnings: []
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByLabelText("Evidence photo 1").props.source.uri).toBe(
+      `${API_URL}/uploads/existing-photo.jpg`
     );
   });
 
