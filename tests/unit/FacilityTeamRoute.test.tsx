@@ -5,9 +5,13 @@ import FacilityTeamTab from "@/app/home/facility/(tabs)/team";
 
 const mockInvite = jest.fn();
 const mockCan = jest.fn();
+const mockListTeamMembers = jest.fn();
+const mockPush = jest.fn();
 let mockFacilityRole = "OWNER";
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush, replace: jest.fn() })
+}));
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
@@ -16,7 +20,7 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({ facilityRole: mockFacilityRole, can: mockCan })
 }));
 jest.mock("@/api/team", () => ({
-  listTeamMembers: jest.fn().mockResolvedValue([]),
+  listTeamMembers: (...args: any[]) => mockListTeamMembers(...args),
   inviteTeamMember: (...args: any[]) => mockInvite(...args)
 }));
 jest.mock("@/components/ScreenBoundary", () => {
@@ -36,8 +40,11 @@ jest.mock("@/components/ScreenBoundary", () => {
 describe("FacilityTeamTab", () => {
   beforeEach(() => {
     mockFacilityRole = "OWNER";
-    mockCan.mockReturnValue(true);
+    mockCan.mockImplementation((capability) => capability === "TASKS_WRITE");
     mockInvite.mockReset();
+    mockListTeamMembers.mockReset();
+    mockListTeamMembers.mockResolvedValue([]);
+    mockPush.mockReset();
   });
 
   it("lets an owner enter an invite email and provides a dashboard back route", async () => {
@@ -62,7 +69,9 @@ describe("FacilityTeamTab", () => {
 
   it("shows managers a clear read-and-assign surface without owner invite controls", async () => {
     mockFacilityRole = "MANAGER";
-    mockCan.mockReturnValue(false);
+    mockListTeamMembers.mockResolvedValue([
+      { userId: "staff-1", name: "Alex Grower", role: "STAFF" }
+    ]);
 
     const screen = render(<FacilityTeamTab />);
 
@@ -74,5 +83,25 @@ describe("FacilityTeamTab", () => {
     ).toBeTruthy();
     expect(screen.queryByLabelText("Invite team member email")).toBeNull();
     expect(screen.queryByLabelText("Send team invite")).toBeNull();
+    expect(screen.getByLabelText("Assign task to Alex Grower")).toBeTruthy();
+  });
+
+  it("keeps the Viewer team list read-only without unusable assignment controls", async () => {
+    mockFacilityRole = "VIEWER";
+    mockCan.mockReturnValue(false);
+    mockListTeamMembers.mockResolvedValue([
+      { userId: "staff-1", name: "Alex Grower", role: "STAFF" }
+    ]);
+
+    const screen = render(<FacilityTeamTab />);
+
+    await waitFor(() => expect(screen.getByText("Alex Grower")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "You can view the team. Only owners and managers can assign work, and only the facility owner can manage access roles."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Assign task to Alex Grower")).toBeNull();
+    expect(screen.queryByLabelText("Invite team member email")).toBeNull();
   });
 });
