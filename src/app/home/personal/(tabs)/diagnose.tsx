@@ -106,6 +106,20 @@ function providerResultSummary(providerResult: unknown): string[] {
   if (data.overallHealth) lines.push(`Overall health: ${data.overallHealth}`);
   if (data.diagnosisClass) lines.push(`Diagnosis class: ${data.diagnosisClass}`);
   if (data.urgency) lines.push(`Urgency: ${data.urgency}`);
+  if (data.cropIdentity?.commonName) {
+    lines.push(
+      `Draft crop identity: ${data.cropIdentity.commonName}${
+        data.cropIdentity.scientificName ? ` (${data.cropIdentity.scientificName})` : ""
+      }${data.cropIdentity.confidence ? `, ${data.cropIdentity.confidence} confidence` : ""}`
+    );
+  }
+  if (data.imageAnalysis?.performed) {
+    lines.push(
+      data.imageAnalysis.usableForTriage === false
+        ? "Photo review: inspected, but not usable for triage"
+        : `Photo review: ${data.imageAnalysis.photoCount || 1} inspected and usable for cautious triage`
+    );
+  }
   if (Array.isArray(data.likelyIssues)) {
     data.likelyIssues.slice(0, 3).forEach((issue: any, index: number) => {
       const confidence =
@@ -582,30 +596,45 @@ export default function DiagnoseRoute({
           remediation:
             "Confirm the crop species before applying crop-specific diagnosis, nutrient, or IPM recommendations."
         }
-      : result.cropIdentity?.cropProfileMatched
+      : result.cropIdentity?.requiresUserConfirmation
         ? {
-            key: "crop-profile-match",
-            severity:
-              result.cropIdentity.cropProfileCurationStatus === "reviewed"
-                ? ("info" as const)
-                : ("medium" as const),
-            message: `Matched crop profile: ${
-              result.cropProfileSnapshot?.displayName ||
-              result.cropIdentity.commonName ||
-              "crop profile"
-            }`,
+            key: "crop-identity-confirmation",
+            severity: "medium" as const,
+            message: `Draft crop identity: ${
+              result.cropIdentity.commonName || "not identified"
+            }${
+              result.cropIdentity.confidence
+                ? ` (${result.cropIdentity.confidence} confidence)`
+                : ""
+            }. This has not been confirmed by the user.`,
             remediation:
-              result.cropIdentity.cropProfileCurationStatus === "reviewed"
-                ? "Crop-specific defaults are linked to reviewed profile data."
-                : "Profile is stored but still needs license/review confirmation before being treated as verified guidance."
+              result.cropIdentity.clarificationPrompt ||
+              "Confirm or correct the crop species before applying crop-specific guidance."
           }
-        : {
-            key: "crop-profile-missing",
-            severity: "info" as const,
-            message: "No reviewed crop profile matched this diagnosis.",
-            remediation:
-              "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
-          }
+        : result.cropIdentity?.cropProfileMatched
+          ? {
+              key: "crop-profile-match",
+              severity:
+                result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                  ? ("info" as const)
+                  : ("medium" as const),
+              message: `Matched crop profile: ${
+                result.cropProfileSnapshot?.displayName ||
+                result.cropIdentity.commonName ||
+                "crop profile"
+              }`,
+              remediation:
+                result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                  ? "Crop-specific defaults are linked to reviewed profile data."
+                  : "Profile is stored but still needs license/review confirmation before being treated as verified guidance."
+            }
+          : {
+              key: "crop-profile-missing",
+              severity: "info" as const,
+              message: "No reviewed crop profile matched this diagnosis.",
+              remediation:
+                "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
+            }
     : null;
 
   const diagnosisCropContext = diagnosisCropContextState(
@@ -1264,7 +1293,22 @@ export default function DiagnoseRoute({
                       }
                     ]
                   : []),
-                ...(result.imageAnalysis?.performed
+                ...(result.imageAnalysis?.performed &&
+                result.imageAnalysis.usableForTriage === false
+                  ? [
+                      {
+                        key: "image-analysis-unusable",
+                        severity: "high" as const,
+                        message:
+                          result.imageAnalysis.qualityIssues?.join(" ") ||
+                          "The provider inspected the photos but could not use them for meaningful triage.",
+                        remediation:
+                          "Replace the photo using the listed quality and coverage guidance before relying on the result."
+                      }
+                    ]
+                  : []),
+                ...(result.imageAnalysis?.performed &&
+                result.imageAnalysis.usableForTriage !== false
                   ? [
                       {
                         key: "image-analysis-performed",
@@ -1316,6 +1360,63 @@ export default function DiagnoseRoute({
                       Provider output was not supplied as a separate structured payload.
                     </Text>
                   )}
+                  <Text style={styles.providerTitle}>Draft crop identity</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.cropIdentity?.commonName || "Not identified"}
+                    {result.cropIdentity?.scientificName
+                      ? ` | ${result.cropIdentity.scientificName}`
+                      : ""}
+                    {result.cropIdentity?.confidence
+                      ? ` | ${result.cropIdentity.confidence} confidence`
+                      : ""}
+                  </Text>
+                  <Text style={styles.providerLine}>
+                    {result.cropIdentity?.source === "visual_suggestion"
+                      ? "Suggested from the submitted photo evidence. Confirm or correct the crop before treating it as saved crop context."
+                      : result.cropIdentity?.source === "user_context"
+                        ? "Taken from the crop context supplied with this diagnosis."
+                        : result.cropIdentity?.commonName &&
+                            result.cropIdentity.commonName !== "unspecified"
+                          ? "Returned with the supplied or saved diagnosis context; review the confirmation notice before applying crop-specific guidance."
+                          : "The submitted evidence did not support a useful crop suggestion."}
+                  </Text>
+                  {result.cropIdentity?.visibleEvidence?.map((line, index) => (
+                    <Text key={`crop-evidence-${index}`} style={styles.providerLine}>
+                      - Visible identity evidence: {line}
+                    </Text>
+                  ))}
+                  {result.cropIdentity?.alternatives?.map((line, index) => (
+                    <Text key={`crop-alternative-${index}`} style={styles.providerLine}>
+                      - Alternative to confirm: {line}
+                    </Text>
+                  ))}
+                  <Text style={styles.providerTitle}>Photo evidence quality</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.imageAnalysis?.performed
+                      ? `${result.imageAnalysis.photoCount || 1} photo${
+                          Number(result.imageAnalysis.photoCount || 1) === 1 ? "" : "s"
+                        } inspected | ${
+                          result.imageAnalysis.usableForTriage === false
+                            ? "replacement needed"
+                            : "usable for cautious triage"
+                        }`
+                      : "No image inspection was recorded"}
+                  </Text>
+                  {result.imageAnalysis?.observedFeatures?.map((line, index) => (
+                    <Text key={`photo-feature-${index}`} style={styles.providerLine}>
+                      - Visible feature: {line}
+                    </Text>
+                  ))}
+                  {result.imageAnalysis?.qualityIssues?.map((line, index) => (
+                    <Text key={`photo-quality-${index}`} style={styles.providerLine}>
+                      - Replace or improve: {line}
+                    </Text>
+                  ))}
+                  {result.imageAnalysis?.limitations?.map((line, index) => (
+                    <Text key={`photo-limit-${index}`} style={styles.providerLine}>
+                      - Limitation: {line}
+                    </Text>
+                  ))}
                   <Text style={styles.providerTitle}>GrowPath AI reasoning</Text>
                   {result.growPathReasoning.length ? (
                     result.growPathReasoning.map((line) => (

@@ -209,9 +209,24 @@ describe("DiagnoseRoute", () => {
           requested: true,
           performed: true,
           photoCount: 2,
+          usableForTriage: true,
+          qualityIssues: [],
+          observedFeatures: ["Leaf surfaces are in focus"],
+          limitations: ["Root zone is not visible"],
           provider: "openai",
           providerModel: "gpt-4o-mini"
-        }
+        },
+        cropIdentity: {
+          commonName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          confidence: "high",
+          source: "visual_suggestion",
+          requiresUserConfirmation: true,
+          visibleEvidence: ["Pistils and trichome-covered bracts are visible"],
+          alternatives: [],
+          clarificationPrompt: "Confirm that this crop is Cannabis."
+        },
+        followUpQuestion: "What are the current root-zone EC and pH readings?"
       }
     });
     const screen = render(<DiagnoseRoute />);
@@ -236,6 +251,86 @@ describe("DiagnoseRoute", () => {
     );
     expect(screen.getByText("Photos analyzed")).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByText("Draft crop identity")).toBeTruthy();
+    expect(
+      screen.getByText(/Cannabis \| Cannabis sativa \| high confidence/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Pistils and trichome-covered bracts are visible/i)
+    ).toBeTruthy();
+    expect(screen.getByText("Photo evidence quality")).toBeTruthy();
+    expect(
+      screen.getByText(/2 photos inspected \| usable for cautious triage/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Root zone is not visible/i)).toBeTruthy();
+    expect(
+      screen.getByText("What are the current root-zone EC and pH readings?")
+    ).toBeTruthy();
+  });
+
+  it("tells the user exactly when submitted photos need replacement", async () => {
+    mockGetDiagnosisProviderStatus.mockResolvedValue({
+      provider: {
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        configured: true,
+        imageSupport: true
+      }
+    });
+    mockDiagnoseEvidence.mockResolvedValue({
+      id: "diagnosis-vision-unusable",
+      issueSummary: "Photo evidence needs replacement",
+      severity: 1,
+      details: {
+        likelyIssues: [],
+        recommendations: ["Retake one whole-plant photo in even light."],
+        suggestedTags: [],
+        disclaimer: "No useful visual triage was possible from these photos.",
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photoCount: 2,
+          usableForTriage: false,
+          qualityIssues: [
+            "Both photos are too blurry to inspect leaf detail.",
+            "A whole-plant context photo is missing."
+          ],
+          observedFeatures: [],
+          limitations: ["Leaf surfaces cannot be compared"]
+        },
+        cropIdentity: {
+          commonName: "",
+          scientificName: "",
+          confidence: "low",
+          source: "insufficient_evidence",
+          requiresUserConfirmation: true,
+          visibleEvidence: [],
+          alternatives: [],
+          clarificationPrompt: "Retake a sharp whole-plant and close leaf photo."
+        },
+        followUpQuestion: "Can you add one sharp whole-plant photo in neutral light?"
+      }
+    });
+
+    const screen = render(<DiagnoseRoute />);
+    await waitForGrowContext(screen);
+    await waitFor(() => expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled());
+
+    fireEvent.press(screen.getByLabelText("Attach diagnosis evidence"));
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+
+    await waitFor(() => expect(mockDiagnoseEvidence).toHaveBeenCalled());
+    expect(screen.getAllByText(/Both photos are too blurry/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/A whole-plant context photo is missing/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/2 photos inspected \| replacement needed/i)).toBeTruthy();
+    expect(screen.getByText(/Leaf surfaces cannot be compared/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Can you add one sharp whole-plant photo in neutral light/i)
+    ).toBeTruthy();
   });
 
   it("reuses an existing grow photo as explicit diagnosis evidence", async () => {

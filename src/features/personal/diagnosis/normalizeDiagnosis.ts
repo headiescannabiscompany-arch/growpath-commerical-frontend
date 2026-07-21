@@ -26,6 +26,10 @@ export type NormalizedDiagnosis = {
     requested?: boolean;
     performed?: boolean;
     photoCount?: number;
+    usableForTriage?: boolean;
+    qualityIssues?: string[];
+    observedFeatures?: string[];
+    limitations?: string[];
     provider?: string;
     providerModel?: string;
     reason?: string;
@@ -42,6 +46,9 @@ export type NormalizedDiagnosis = {
     cultivarOrStrain?: string;
     confidence?: string;
     ambiguous?: boolean;
+    visibleEvidence?: string[];
+    alternatives?: string[];
+    source?: "user_context" | "visual_suggestion" | "insufficient_evidence";
     cropProfileMatched?: boolean;
     cropProfileId?: string | null;
     cropProfileCurationStatus?: string | null;

@@ -45,6 +45,54 @@ describe("normalizeDiagnosisResponse", () => {
     expect(result.explanation).toBe(DIAGNOSIS_SAFETY_DISCLAIMER);
   });
 
+  it("preserves visual crop suggestions, image quality, and the discriminating follow-up", () => {
+    const result = normalizeDiagnosisResponse({
+      diagnosis: {
+        id: "d-visual",
+        issueSummary: "Possible late-flower nutrient stress",
+        providerName: "openai",
+        aiResult: {
+          cropIdentity: {
+            commonName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            confidence: "high",
+            source: "visual_suggestion",
+            requiresUserConfirmation: true,
+            visibleEvidence: ["Pistils and trichome-covered bracts are visible"],
+            alternatives: []
+          },
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            photoCount: 1,
+            usableForTriage: true,
+            qualityIssues: [],
+            observedFeatures: ["Flower and sugar leaves are in focus"],
+            limitations: ["Root zone is not visible"]
+          },
+          followUpQuestion: "What are the current root-zone EC and pH readings?"
+        }
+      }
+    });
+
+    expect(result.cropIdentity).toEqual(
+      expect.objectContaining({
+        commonName: "Cannabis",
+        source: "visual_suggestion",
+        requiresUserConfirmation: true,
+        visibleEvidence: ["Pistils and trichome-covered bracts are visible"]
+      })
+    );
+    expect(result.imageAnalysis).toEqual(
+      expect.objectContaining({
+        performed: true,
+        usableForTriage: true,
+        limitations: ["Root zone is not visible"]
+      })
+    );
+    expect(result.followUp).toBe("What are the current root-zone EC and pH readings?");
+  });
+
   it("softens absolute provider summaries before display", () => {
     expect(
       normalizeDiagnosisResponse({
