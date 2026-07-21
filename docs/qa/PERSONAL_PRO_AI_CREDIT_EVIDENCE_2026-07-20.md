@@ -203,8 +203,8 @@ that feedback was saved.
 The diagnosis was then saved to grow log `6a5f04d84622b8f588e8c10a` and reopened at its
 exact production URL. Follow-up task `6a5f04e14622b8f588e8c110` persisted in the same
 grow with high priority, due July 22, accepted diagnosis tags, and source diagnosis
-`6a5f04b04622b8f588e8c0e2`. Journal showed the linked task, log, feedback, automation
-event, and both final ToolRuns.
+`6a5f04b04622b8f588e8c0e2`. Journal showed the linked task, log, and both final
+ToolRuns; the full grow Timeline showed the diagnosis feedback and automation event.
 
 The five additional provider-backed diagnosis requests after the earlier `87 / 100`
 checkpoint each charged exactly three credits. Final Profile state was `72 / 100`,
@@ -217,6 +217,32 @@ artifact is claimed.
 Fresh file upload, failed-request refund behavior, exact saved-diagnosis reopening, and
 independent accuracy review remain open.
 
+## Production IPM Scout and reload evidence
+
+The same Personal Pro session then completed a structured IPM Scout pass using a
+truthful no-pest baseline. The result stayed at
+`monitoring_and_differential_needed`, did not confirm an organism, listed the exact
+missing evidence and next inspection steps, and did not recommend a pesticide product
+or rate.
+
+The live pass exposed that the automatic GPT review charged one credit while the action
+still looked free. Frontend PR `#84` made the one-credit GPT review explicit before and
+after submission. The post-fix ToolRun `6a5f0ce94622b8f588e8c2fb`, uncertain decision,
+log `6a5f0d204622b8f588e8c310`, and three source-linked IPM tasks persisted. A hard
+Profile reload proved `71 / 100 -> 70 / 100`, 16 billed requests, and zero refunds.
+
+PRs `#85` and `#86` then closed stale grow-history reads with no-store requests plus a
+per-request freshness key. A clean reload exposed a separate production-host 404 for
+dynamic personal routes. The live Render service received a higher-priority `/home/*`
+rewrite, and PR `#87` versioned and release-gated it. Final merge
+`f72b5fbb7b60371d8994ae306737b58ca30cd4b3` was live as
+`dep-d9fha3t7vvec73ea0kig` at 2:45 AM ET. True hard reloads of Journal, Tasks, and the
+full grow Timeline then retained the exact July 21 IPM and diagnosis records. The
+nine-URL production verifier also passed after that final SHA was live.
+
+The complete record, exact IDs, release chain, and remaining photo/refund/independent-
+review checks are in `docs/qa/IPM_SCOUT_PRODUCTION_EVIDENCE_2026-07-21.md`.
+
 ## Remaining Personal Pro acceptance
 
 This closes the paid text-AI deduction/persistence slice plus existing-log, saved-
@@ -224,7 +250,10 @@ ToolRun, and production task source reopening, including a newly created and cle
 ToolRun-to-task chain. It also closes successful saved-photo transport, visual cannabis
 identity/photo-quality context, photo-backed follow-up refinement, outcome feedback,
 diagnosis-to-log/task persistence, exact log reopening, and seven exact three-credit
-production diagnosis deductions. It does not close the entire Personal Pro session.
-Fresh file upload, failed-request refund behavior, exact saved-diagnosis reopening,
-billing refresh, cancellation/expiry, password/email lifecycle, desktop/mobile
-accessibility, exported video, and independent outside-user review remain open.
+production diagnosis deductions. It also closes the structured IPM insufficient-
+evidence result, explicit one-credit GPT review, uncertain decision, log/task plan,
+fresh Journal/Tasks/Timeline reloads, and dynamic personal deep-link reliability. It
+does not close the entire Personal Pro session. Fresh diagnosis/IPM file upload,
+failed-request refund behavior, exact saved-diagnosis reopening, billing refresh,
+cancellation/expiry, password/email lifecycle, desktop/mobile accessibility, exported
+video, and independent outside-user review remain open.

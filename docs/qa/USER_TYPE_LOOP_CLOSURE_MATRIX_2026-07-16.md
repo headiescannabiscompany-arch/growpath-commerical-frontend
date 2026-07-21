@@ -230,10 +230,23 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   `6a5f04b04622b8f588e8c0e2`.
 - `Unsure` outcome feedback persisted, log `6a5f04d84622b8f588e8c10a` reopened at its
   exact URL, and high-priority task `6a5f04e14622b8f588e8c110` persisted with the same
-  diagnosis source and accepted tags. Journal showed the connected task, log, feedback,
-  automation event, and ToolRuns. Final Profile state was `72 / 100`, 28 credits across
-  14 billed requests, and zero refunds. Fresh file upload, failure/refund, exact saved-
-  diagnosis reopening, and independent accuracy review remain open.
+  diagnosis source and accepted tags. Journal showed the connected task, log, and
+  ToolRuns; the full grow Timeline showed diagnosis feedback and automation events.
+  Final Profile state was `72 / 100`, 28 credits across 14 billed requests, and zero
+  refunds. Fresh file upload, failure/refund, exact saved-diagnosis reopening, and
+  independent accuracy review remain open.
+- A production IPM Scout no-pest baseline remained an insufficient-evidence working
+  hypothesis with no organism confirmation or pesticide-rate advice. PR `#84` made the
+  automatic GPT review's one-credit charge explicit. Post-fix ToolRun
+  `6a5f0ce94622b8f588e8c2fb`, uncertain decision, log
+  `6a5f0d204622b8f588e8c310`, and three source-linked IPM tasks persisted; Profile
+  hard reload proved `71 / 100 -> 70 / 100`, 16 billed requests, and zero refunds.
+  PRs `#85`/`#86` fixed stale grow-history reads. A separate production deep-link 404
+  was fixed by the Render `/home/*` rewrite and release-gated in PR `#87`; final merge
+  `f72b5fbb7b60371d8994ae306737b58ca30cd4b3` was live as
+  `dep-d9fha3t7vvec73ea0kig` at 2:45 AM ET. True Journal, Tasks, and full Timeline hard
+  reloads retained the exact records. See
+  `docs/qa/IPM_SCOUT_PRODUCTION_EVIDENCE_2026-07-21.md`.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -243,9 +256,11 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       also passed. Successful saved-photo diagnosis transport and exact three-credit
       deduction passed seven times; visual cannabis identity, photo-quality context,
       photo-backed follow-up, feedback, diagnosis log/task writeback, and exact log
-      reopening also passed. Remaining fresh upload, failure/refund, exact saved-
-      diagnosis reopening, lifecycle, billing, broader accessibility, exported video,
-      and independent-review checks stay open.
+      reopening also passed. Structured IPM insufficient-evidence handling, the
+      explicit one-credit GPT review, uncertain decision, log/task-plan writeback, and
+      fresh Journal/Tasks/Timeline hard reloads also passed. Remaining fresh diagnosis/
+      IPM upload, failure/refund, exact saved-diagnosis reopening, lifecycle, billing,
+      broader accessibility, exported video, and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
