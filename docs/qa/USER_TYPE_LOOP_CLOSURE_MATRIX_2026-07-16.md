@@ -278,6 +278,18 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   `dep-d9fp4ssm0tmc73fifr9g` was live at 11:40 AM ET. The deployed non-billable retest
   showed explicit Stage/Pattern `unknown` choices and left the balance at `62 / 100`.
   See `docs/qa/PLANT_DIAGNOSIS_PRODUCTION_EVIDENCE_2026-07-21.md`.
+- Production Crop ID then passed two genuine no-grow photo cases. One cannabis-flower
+  run returned `Cannabis` / `Cannabis sativa` without inferring a cultivar and charged
+  exactly one credit. One owner-supplied two-photo roadside non-cannabis run inspected
+  both photos, returned medium-confidence mint-family evidence, and charged exactly one
+  credit, but initially hid `Mint` behind `Not confirmed`. Backend PRs `#40`/`#41` and
+  frontend PRs `#97`-`#99` preserved provenance and the defensible broader candidate.
+  On final frontend `8d250dd656a18ef8c1f80715667b7491369906e5` and backend
+  `54eefe8c5929948e024467bb5b8d16457890bad7`, exact ToolRun
+  `6a5fa308b9f052dfe64627ff` reopened as `Likely crop: Mint`, retained both evidence
+  IDs, limited quality, medium confidence, and confirmation guidance, and did not
+  charge again: Profile remained `59 / 100`, 41 credits across 25 billed requests,
+  zero refunds. See `docs/qa/CROP_IDENTIFICATION_PRODUCTION_EVIDENCE_2026-07-21.md`.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -293,7 +305,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       normalized photo prefill, fresh IPM file upload, and both exact one-credit charges
       also passed. Fresh diagnosis file upload, exact three-credit billing, submitted
       outcome feedback, journal persistence, and exact saved-diagnosis reopening now
-      pass too. Remaining failed-provider refund, lifecycle, broader accessibility,
+      pass too. No-grow Crop ID photo transport, exact one-credit billing, cannabis
+      crop-level draft without cultivar inference, and a genuine roadside non-cannabis
+      `Mint` working candidate with saved provenance now pass too. Remaining
+      failed-provider refund, lifecycle, broader accessibility,
       exported final-SHA video/screenshot, and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
