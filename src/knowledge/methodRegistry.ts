@@ -90,6 +90,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "follow-up analysis that preserves the original structured evidence",
       "image analysis performed status",
       "photo count and provider/model execution evidence",
+      "distinct overall confidence, ranked-candidate confidence, health status, and action urgency",
       "IPM readiness and ranked working hypotheses",
       "IPM supporting evidence, counter-evidence, and competing candidates",
       "safe treatment categories without pesticide products or dosing",
@@ -101,6 +102,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Do not declare a nutrient deficiency from appearance alone.",
+      "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
       "Do not send existing private grow media to diagnosis or IPM until the user explicitly selects each photo and its grow/plant/log provenance is preserved.",
       "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",

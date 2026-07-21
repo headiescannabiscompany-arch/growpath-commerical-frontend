@@ -201,7 +201,15 @@ describe("DiagnoseRoute", () => {
       issueSummary: "Possible visual issue",
       severity: 2,
       details: {
-        likelyIssues: [{ evidence: ["Visible stippling on the upper leaf surface"] }],
+        overallHealth: "concern",
+        urgency: "medium",
+        likelyIssues: [
+          {
+            issue: "Possible light stress",
+            confidence: 0.8,
+            evidence: ["Visible stippling on the upper leaf surface"]
+          }
+        ],
         recommendations: ["Compare both leaf surfaces."],
         suggestedTags: [],
         disclaimer: "Visual triage.",
@@ -251,6 +259,12 @@ describe("DiagnoseRoute", () => {
     );
     expect(screen.getByText("Photos analyzed")).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByText("Top candidate confidence")).toBeTruthy();
+    expect(screen.getByText("80%")).toBeTruthy();
+    expect(screen.getByText("Health status")).toBeTruthy();
+    expect(screen.getByText("CONCERN")).toBeTruthy();
+    expect(screen.getByText("Action urgency")).toBeTruthy();
+    expect(screen.getAllByText("MEDIUM").length).toBeGreaterThan(0);
     expect(screen.getByText("Draft crop identity")).toBeTruthy();
     expect(
       screen.getByText(/Cannabis \| Cannabis sativa \| high confidence/i)
@@ -496,6 +510,13 @@ describe("DiagnoseRoute", () => {
     await waitForGrowContext(screen);
 
     expect(
+      screen.getByLabelText("Diagnosis stage unknown").props.accessibilityState
+    ).toEqual({ selected: true });
+    expect(
+      screen.getByLabelText("Diagnosis pattern unknown").props.accessibilityState
+    ).toEqual({ selected: true });
+
+    expect(
       screen.getByText(
         "Add written symptom notes or at least one uploaded photo to run diagnosis."
       )
@@ -516,6 +537,9 @@ describe("DiagnoseRoute", () => {
     fireEvent.changeText(screen.getByLabelText("Diagnosis feed pH"), "6.3");
 
     expect(screen.getByText(/Ready with written symptoms/)).toBeTruthy();
+    expect(
+      screen.getByText(/stage and pattern location are still unknown/i)
+    ).toBeTruthy();
     expect(screen.getByText(/4 measured values are included/)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Run diagnosis"));
 
@@ -523,8 +547,9 @@ describe("DiagnoseRoute", () => {
     expect(mockAnalyzeDiagnosis).toHaveBeenLastCalledWith(
       expect.objectContaining({
         growId: "grow-1",
+        stage: "unknown",
         pattern: expect.objectContaining({
-          location: "upper new growth",
+          location: "unknown",
           progression: "spreading slowly",
           notes: "Interveinal yellowing began after the last irrigation"
         }),

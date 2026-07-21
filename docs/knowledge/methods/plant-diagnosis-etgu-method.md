@@ -4,6 +4,8 @@ Read the pattern. Read the medium. Read the environment. Read the numbers. Then 
 
 Required evidence includes old/new growth location, distribution, progression, whole plant and close media, medium/root-zone behavior, watering/feed/topdress history, environment, pH/EC and crop stage. The interface must ask for progression explicitly, label temperature units, and preserve pattern, root-zone, environment, measured-number, and attached-photo context when a user answers the follow-up question. Blank numeric fields are missing evidence and must never be coerced to zero. Consider deficiency, excess, lockout, antagonism, water/root issues, environment-limited uptake, pests/disease, spray/light/physical damage, organic release timing and salt buildup.
 
+Stage and symptom location must start as unknown unless they come from explicit structured context or the user selects them. Do not silently submit vegetative stage or upper-growth location as user evidence. Results must keep overall confidence, ranked-candidate confidence, health status/severity, and action urgency distinct; when the provider omits overall confidence, label it as not provided and show any ranked-candidate percentage under its own name.
+
 Output likely causes with evidence, counter-evidence, missing information and discriminating next checks. Say “consistent with a calcium transport issue” rather than declaring a calcium deficiency when humidity, roots, pH or K/Ca/Mg competition could match.
 
 ## Image evidence behavior

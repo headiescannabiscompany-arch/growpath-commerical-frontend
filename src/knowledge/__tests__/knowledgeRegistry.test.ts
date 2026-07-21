@@ -48,6 +48,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "counterEvidence"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "distinct overall confidence, ranked-candidate confidence, health status, and action urgency"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

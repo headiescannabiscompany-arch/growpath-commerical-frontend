@@ -166,8 +166,8 @@ export default function DiagnoseRoute({
   const [cropCommonName, setCropCommonName] = useState("");
   const [scientificName, setScientificName] = useState("");
   const [cultivarOrStrain, setCultivarOrStrain] = useState("");
-  const [stage, setStage] = useState("veg");
-  const [patternLocation, setPatternLocation] = useState("upper new growth");
+  const [stage, setStage] = useState("unknown");
+  const [patternLocation, setPatternLocation] = useState("unknown");
   const [progression, setProgression] = useState("unknown");
   const [rootMoisture, setRootMoisture] = useState("unknown");
   const [rootConcern, setRootConcern] = useState("");
@@ -579,6 +579,10 @@ export default function DiagnoseRoute({
     running ||
     (!notes.trim() && (!diagnosisEvidence.images.length || !photoAnalysisReady));
   const diagnosisReady = enabled && !running && !runDisabled;
+  const missingStructuredContext = [
+    stage === "unknown" ? "stage" : "",
+    patternLocation === "unknown" ? "pattern location" : ""
+  ].filter(Boolean);
   const readinessMessage = !enabled
     ? "This account cannot run AI diagnosis."
     : running
@@ -591,7 +595,15 @@ export default function DiagnoseRoute({
               diagnosisEvidence.images.length
                 ? `, ${diagnosisEvidence.images.length} uploaded photo${diagnosisEvidence.images.length === 1 ? "" : "s"}`
                 : ""
-            }, and pattern location. ${
+            }. ${
+              missingStructuredContext.length
+                ? `${missingStructuredContext.join(" and ")} ${
+                    missingStructuredContext.length === 1 ? "is" : "are"
+                  } still unknown; select ${
+                    missingStructuredContext.length === 1 ? "it" : "them"
+                  } when possible.`
+                : `Stage is ${stage.replace("_", " ")} and pattern location is ${patternLocation}.`
+            } ${
               progression === "unknown"
                 ? "Progression is still unknown; select it when possible."
                 : `Progression is ${progression}.`
@@ -761,13 +773,14 @@ export default function DiagnoseRoute({
 
         <Text style={styles.label}>Stage</Text>
         <View style={styles.row}>
-          {["seedling", "veg", "flower", "late_flower"].map((value) => (
+          {["unknown", "seedling", "veg", "flower", "late_flower"].map((value) => (
             <Pressable
               key={value}
               style={[styles.pill, stage === value && styles.pillOn]}
               onPress={() => setStage(value)}
               accessibilityRole="button"
               accessibilityLabel={`Diagnosis stage ${value.replace("_", " ")}`}
+              accessibilityState={{ selected: stage === value }}
             >
               <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
                 {value.replace("_", " ")}
@@ -790,6 +803,7 @@ export default function DiagnoseRoute({
           <Text style={styles.label}>Pattern location</Text>
           <View style={styles.row}>
             {[
+              "unknown",
               "lower old leaves",
               "upper new growth",
               "middle",
@@ -802,6 +816,7 @@ export default function DiagnoseRoute({
                 onPress={() => setPatternLocation(value)}
                 accessibilityRole="button"
                 accessibilityLabel={`Diagnosis pattern ${value}`}
+                accessibilityState={{ selected: patternLocation === value }}
               >
                 <Text
                   style={[
@@ -1065,16 +1080,37 @@ export default function DiagnoseRoute({
               status={result.source === "unverified" ? "UNVERIFIED SOURCE" : "ANALYSIS"}
               summary={result.explanation}
               metrics={[
+                result.confidence !== "unknown"
+                  ? {
+                      key: "overall-confidence",
+                      label: "Overall confidence",
+                      value: result.confidence.toUpperCase()
+                    }
+                  : result.topCandidateConfidence != null
+                    ? {
+                        key: "top-candidate-confidence",
+                        label: "Top candidate confidence",
+                        value: `${Math.round(result.topCandidateConfidence * 100)}%`
+                      }
+                    : {
+                        key: "overall-confidence",
+                        label: "Overall confidence",
+                        value: "NOT PROVIDED"
+                      },
                 {
-                  key: "confidence",
-                  label: "Confidence",
-                  value: result.confidence.toUpperCase()
+                  key: "health-status",
+                  label: "Health status",
+                  value: (result.overallHealth || result.severity).toUpperCase()
                 },
-                {
-                  key: "severity",
-                  label: "Severity",
-                  value: result.severity.toUpperCase()
-                },
+                ...(result.urgency
+                  ? [
+                      {
+                        key: "action-urgency",
+                        label: "Action urgency",
+                        value: result.urgency.toUpperCase()
+                      }
+                    ]
+                  : []),
                 { key: "source", label: "Source", value: result.source },
                 ...(result.providerModel
                   ? [

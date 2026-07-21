@@ -93,6 +93,35 @@ describe("normalizeDiagnosisResponse", () => {
     expect(result.followUp).toBe("What are the current root-zone EC and pH readings?");
   });
 
+  it("keeps provider candidate confidence separate from health status and urgency", () => {
+    const result = normalizeDiagnosisResponse({
+      diagnosis: {
+        id: "d-production-vision",
+        issueSummary: "Possible light stress",
+        severity: 4,
+        urgency: "medium",
+        providerName: "openai",
+        aiResult: {
+          overallHealth: "concern",
+          likelyIssues: [
+            { issue: "Possible light stress", confidence: 0.8 },
+            { issue: "Possible nutrient stress", confidence: 0.7 }
+          ]
+        }
+      }
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        confidence: "unknown",
+        topCandidateConfidence: 0.8,
+        overallHealth: "concern",
+        severity: "high",
+        urgency: "medium"
+      })
+    );
+  });
+
   it("softens absolute provider summaries before display", () => {
     expect(
       normalizeDiagnosisResponse({
