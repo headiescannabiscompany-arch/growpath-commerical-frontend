@@ -211,11 +211,29 @@ control, or can bypass its backend authorization boundary.
   `Cannabis sativa` at high confidence without inferring a strain, displayed the visible
   identity evidence, reported the photo usable with exact improvement guidance, and
   asked a discriminating feeding-schedule follow-up. The grow's Plants page showed `No
-  plants yet`, confirming that no real plant row was being hidden from the selector.
+plants yet`, confirming that no real plant row was being hidden from the selector.
 - That live request deducted and persisted exactly three credits: `90 / 100`, 10 credits
   across 8 requests became `87 / 100`, 13 credits across 9 requests, with zero refunds.
-  Fresh upload, failure/refund, follow-up/outcome capture, writeback/reopening, and
-  independent accuracy review remain open.
+- Frontend PR `#81` and backend PR `#36` preserved selected photos through provider
+  follow-up and kept blank pH/EC fields missing. Frontend PR `#82` and backend PRs
+  `#37`/`#38` then made crop provenance deterministic: a photo-supported identity with
+  empty crop context remains `visual_suggestion`, never `user_confirmed`. Final live
+  merges were frontend `be65d3aa53094900d5c0bb62ed90be4628699042` and backend
+  `09a9f7536b57dbbc29d908e7137856a2c42c152d`, deployed as
+  `dep-d9ffve7aqgkc739fuf50` and `dep-d9fg87t7vvec73e9ai1g`.
+- A final fresh saved-photo result and photo-backed follow-up preserved
+  `Cannabis` / `Cannabis sativa` as a high-confidence visual suggestion, retained one
+  usable photo, did not infer a cultivar, incorporated the recorded absence of
+  mold/pests, and left pH, EC, environment, root-zone, and feeding data explicitly
+  missing. ToolRuns `6a5f048a4622b8f588e8c0c9` and
+  `6a5f04b04622b8f588e8c0e4` remained linked to source diagnosis
+  `6a5f04b04622b8f588e8c0e2`.
+- `Unsure` outcome feedback persisted, log `6a5f04d84622b8f588e8c10a` reopened at its
+  exact URL, and high-priority task `6a5f04e14622b8f588e8c110` persisted with the same
+  diagnosis source and accepted tags. Journal showed the connected task, log, feedback,
+  automation event, and ToolRuns. Final Profile state was `72 / 100`, 28 credits across
+  14 billed requests, and zero refunds. Fresh file upload, failure/refund, exact saved-
+  diagnosis reopening, and independent accuracy review remain open.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
@@ -223,11 +241,11 @@ control, or can bypass its backend authorization boundary.
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
       entry passed; existing-log, saved-ToolRun, and production task source reopening
       also passed. Successful saved-photo diagnosis transport and exact three-credit
-      deduction passed twice; visual cannabis identity and photo-quality context also
-      passed. Remaining journal-log create/persist, fresh upload, failure/refund,
-      diagnosis follow-up/writeback/reopening,
-      lifecycle, billing, broader accessibility, and exported-recording checks stay
-      open.
+      deduction passed seven times; visual cannabis identity, photo-quality context,
+      photo-backed follow-up, feedback, diagnosis log/task writeback, and exact log
+      reopening also passed. Remaining fresh upload, failure/refund, exact saved-
+      diagnosis reopening, lifecycle, billing, broader accessibility, exported video,
+      and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
