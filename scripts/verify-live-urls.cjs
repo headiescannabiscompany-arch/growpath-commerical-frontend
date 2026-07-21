@@ -47,6 +47,10 @@ function expectedUrls() {
       url: "https://growpathai.com/communities"
     },
     {
+      name: "personal-grow-deep-link",
+      url: "https://growpathai.com/home/personal/grows/reload-check/journal"
+    },
+    {
       name: "delete-account",
       url: urlFromEnv(
         "EXPO_PUBLIC_DELETE_ACCOUNT_URL",
@@ -125,13 +129,7 @@ function requestUrlWithPowerShell(entry, method) {
 
   const result = spawnSync(
     "powershell.exe",
-    [
-      "-NoProfile",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-Command",
-      command
-    ],
+    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
     { encoding: "utf8" }
   );
 
@@ -188,7 +186,9 @@ async function main() {
   urls.forEach(validateProductionUrl);
 
   if (dryRun) {
-    urls.forEach((entry) => console.log(`[live-url] configured ${entry.name}: ${entry.url}`));
+    urls.forEach((entry) =>
+      console.log(`[live-url] configured ${entry.name}: ${entry.url}`)
+    );
     console.log("Live URL dry run passed.");
     return;
   }

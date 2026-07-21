@@ -114,7 +114,9 @@ describe("live URL verifier", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Live URL dry run passed/);
-    expect(result.stdout).toContain("[live-url] configured privacy: https://growpathai.com/privacy");
+    expect(result.stdout).toContain(
+      "[live-url] configured privacy: https://growpathai.com/privacy"
+    );
   });
 
   it("rejects local production API URLs before network checks", () => {
@@ -157,6 +159,7 @@ describe("live URL verifier", () => {
       "terms",
       "support",
       "communities",
+      "personal-grow-deep-link",
       "delete-account",
       "api-health",
       "api-ready",
@@ -168,7 +171,7 @@ describe("live URL verifier", () => {
       .trim()
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
-    expect(fetchLog).toHaveLength(8);
+    expect(fetchLog).toHaveLength(9);
     expect(fetchLog.every((entry) => entry.method === "HEAD")).toBe(true);
   });
 });
