@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -113,6 +113,8 @@ export default function SavedToolRunsScreen() {
   const [summaryDraft, setSummaryDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
+  const scrollRef = useRef<ScrollView>(null);
+  const pendingFocusRunIdRef = useRef("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -134,6 +136,7 @@ export default function SavedToolRunsScreen() {
   const selectRun = useCallback(async (run: ToolRun) => {
     const id = idFor(run);
     if (!id) return;
+    pendingFocusRunIdRef.current = id;
     setFeedback("");
     const full = await getToolRun(id);
     const nextRun = full || run;
@@ -151,6 +154,7 @@ export default function SavedToolRunsScreen() {
       return;
     }
     void (async () => {
+      pendingFocusRunIdRef.current = targetToolRunId;
       setFeedback("");
       const full = await getToolRun(targetToolRunId);
       if (!full) {
@@ -226,9 +230,15 @@ export default function SavedToolRunsScreen() {
       showBack
       backFallbackHref="/home/personal/tools"
     >
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+      >
         <View style={styles.header}>
-          <Text style={styles.title}>Saved Tool Runs</Text>
+          <Text style={styles.title} accessibilityRole="header">
+            Saved Tool Runs
+          </Text>
           <Text style={styles.subtitle}>
             Reopen, annotate, archive, and continue from saved GrowPath results.
           </Text>
@@ -257,6 +267,74 @@ export default function SavedToolRunsScreen() {
             );
           })}
         </View>
+
+        {selectedRun ? (
+          <View
+            style={styles.selectedResult}
+            onLayout={(event) => {
+              if (pendingFocusRunIdRef.current !== selectedRunId) return;
+              pendingFocusRunIdRef.current = "";
+              scrollRef.current?.scrollTo({
+                y: Math.max(0, event.nativeEvent.layout.y - 12),
+                animated: false
+              });
+            }}
+          >
+            <Text
+              style={styles.selectedLabel}
+              accessibilityLabel={`Opened exact saved tool result ${selectedRunId}`}
+            >
+              {targetToolRunId === selectedRunId
+                ? "Opened from source link"
+                : "Selected result"}
+            </Text>
+            <ToolResultSurface
+              title={`${runTitle(selectedRun)} result`}
+              status={selectedRun.status || "completed"}
+              summary={selectedRun.summary || ""}
+              metrics={metricsFor(selectedRun)}
+              inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
+              outputs={
+                selectedRun.outputs || selectedRun.output || selectedRun.result || {}
+              }
+              notices={noticesFor(selectedRun)}
+              recommendations={selectedRun.recommendations || []}
+              formulas={selectedRun.formulas || []}
+              uncertainty={selectedRun.uncertainty || null}
+              confidence={selectedRun.confidence || null}
+              actions={actions}
+              feedback={feedback}
+              copyPayload={selectedRun}
+            />
+            <View style={styles.editor}>
+              <Text style={styles.label}>Summary / note</Text>
+              <TextInput
+                value={summaryDraft}
+                onChangeText={setSummaryDraft}
+                multiline
+                style={styles.input}
+                placeholder="Add a short note for this saved run"
+              />
+              <Pressable
+                accessibilityRole="button"
+                onPress={saveSummary}
+                style={styles.primary}
+              >
+                <Text style={styles.primaryText}>Save Note</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : feedback ? (
+          <Text style={styles.feedback}>{feedback}</Text>
+        ) : null}
+
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_saved_runs"
+          longContent
+        />
+
+        <Text style={styles.sectionTitle}>Saved run history</Text>
 
         {loading ? (
           <View style={styles.card}>
@@ -299,55 +377,6 @@ export default function SavedToolRunsScreen() {
           </View>
         )}
 
-        {selectedRun ? (
-          <View style={styles.editor}>
-            <Text style={styles.label}>Summary / note</Text>
-            <TextInput
-              value={summaryDraft}
-              onChangeText={setSummaryDraft}
-              multiline
-              style={styles.input}
-              placeholder="Add a short note for this saved run"
-            />
-            <Pressable
-              accessibilityRole="button"
-              onPress={saveSummary}
-              style={styles.primary}
-            >
-              <Text style={styles.primaryText}>Save Note</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
-        <PersonalFeedPlacement
-          placement="middle"
-          routeKey="personal_tools_saved_runs"
-          longContent
-        />
-
-        {selectedRun ? (
-          <ToolResultSurface
-            title={`${runTitle(selectedRun)} result`}
-            status={selectedRun.status || "completed"}
-            summary={selectedRun.summary || ""}
-            metrics={metricsFor(selectedRun)}
-            inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
-            outputs={
-              selectedRun.outputs || selectedRun.output || selectedRun.result || {}
-            }
-            notices={noticesFor(selectedRun)}
-            recommendations={selectedRun.recommendations || []}
-            formulas={selectedRun.formulas || []}
-            uncertainty={selectedRun.uncertainty || null}
-            confidence={selectedRun.confidence || null}
-            actions={actions}
-            feedback={feedback}
-            copyPayload={selectedRun}
-          />
-        ) : feedback ? (
-          <Text style={styles.feedback}>{feedback}</Text>
-        ) : null}
-
         <PersonalFeedPlacement
           placement="bottom"
           routeKey="personal_tools_saved_runs"
@@ -366,6 +395,16 @@ const styles = StyleSheet.create({
   subtitle: { color: "#475569", lineHeight: 20 },
   context: { color: "#166534", fontWeight: "800" },
   filters: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  selectedResult: {
+    gap: 12,
+    borderWidth: 2,
+    borderColor: "#166534",
+    borderRadius: radius.card,
+    backgroundColor: "#F0FDF4",
+    padding: 12
+  },
+  selectedLabel: { color: "#166534", fontSize: 12, fontWeight: "800" },
+  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
   chip: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
