@@ -243,6 +243,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "optional coldest material or container surface temperature",
       "equilibrated jar or bag RH",
       "measurement time and source",
+      "days in the current stage",
+      "explicit light exposure condition",
       "airflow and material density"
     ],
     [
@@ -253,6 +255,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "air dew point and explicitly labeled air spread",
       "surface-to-dew-point margin only when a surface temperature was measured",
       "evidence used, missing information, and limitations",
+      "stage timing that distinguishes a 24-hour recheck from completion",
+      "10-14 day controlled-dry planning context and 5-7 day fast-dry quality warning",
       "review ID, evidence IDs, provider/model, image quality, visible traits, limitations, photo count, and credit status"
     ],
     [
@@ -260,6 +264,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never default missing dry/cure temperature, RH, airflow, or density to a plausible-looking value; incomplete measurements produce an insufficient-evidence result.",
       "Never call air temperature minus dew point a surface condensation margin. Calculate a surface margin only from an entered coldest-surface measurement.",
       "Never label mold risk as low or ruled out from one room reading, a photo, or the absence of visible growth.",
+      "Keep drying and curing material protected from light; record dark, brief work light, continuous indirect light, direct light, or unknown without guessing from a photo.",
+      "Treat a 24-hour task as a recheck, never completion. Show 10-14 days only as a controlled-drying planning window, 5-7 days as a possible fast/hot/low-humidity quality concern, and longer than 14 days as possible but not recommended as routine; elapsed time alone never completes the stage.",
       "Require cannabis/hemp grow context at the Dry / Cure Guard API boundary before saving a ToolRun.",
       "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
