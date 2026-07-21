@@ -562,14 +562,25 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
   {
     key: "tools.clone_rooting",
     title: "Clone Rooting Troubleshooter",
-    description: "Check clone rooting conditions, bottlenecks, and follow-up tasks.",
+    description:
+      "Review a cannabis/hemp cutting batch from direct counts, root evidence, measured conditions, and repeatable follow-up.",
     area: "plant_health",
     status: "beta",
     href: "/home/personal/tools/clone-rooting",
     hubVisible: false,
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "required",
+      audience: "cannabis_context",
+      inputSummary:
+        "Required batch age, total/rooted/failed counts and direct root evidence; optional callus/wilt counts, timestamped environment, donor health, sanitation, medium, stem/leaf observations, and photos.",
+      outputSummary:
+        "Evidence status, batch percentages, measured context, cautious bottlenecks, missing information, limitations, and scheduled recount/photo/environment/outcome tasks."
+    },
     internalNote:
-      "Approved beta clone-room workflow wired to grow context, saved ToolRuns, and follow-up tasks."
+      "Approved beta cannabis/hemp propagation workflow wired to an API-enforced grow gate, evidence-first calculator, saved ToolRuns, direct-root limitations, optional one-credit AI prefill, and follow-up tasks."
   },
   {
     key: "tools.ipm_scout",

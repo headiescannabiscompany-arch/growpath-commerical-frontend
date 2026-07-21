@@ -205,10 +205,41 @@ export const methodRegistry: GrowPathMethod[] = [
     "Clone Rooting",
     ["propagation"],
     "clone-rooting-method.md",
-    ["batch evidence", "environment", "progress", "outcome"],
-    ["mother", "counts", "media", "time", "environment"],
-    ["bottlenecks", "performance", "tasks"],
-    ["Do not claim hidden roots."],
+    [
+      "select owned cannabis/hemp grow",
+      "count batch",
+      "record direct root evidence",
+      "record measured context",
+      "review bottlenecks and missing evidence",
+      "schedule recount",
+      "record outcome"
+    ],
+    [
+      "days since cut",
+      "total/rooted/failed counts",
+      "direct root evidence",
+      "optional callus/wilt counts",
+      "timestamp and measurement source",
+      "humidity, air/root-zone temperature, PPFD and photoperiod when measured",
+      "mother health, sanitation, medium, stem and leaf observations",
+      "photo analysis provenance"
+    ],
+    [
+      "evidence status",
+      "validated batch counts and percentages",
+      "measured environment snapshot",
+      "structured bottlenecks and counter-limits",
+      "missing information",
+      "source and method IDs",
+      "recount/photo/environment/outcome tasks"
+    ],
+    [
+      "Require an owned cannabis/hemp grow at the API boundary.",
+      "Do not use elapsed days, top growth, callus, or tug resistance as proof of hidden roots.",
+      "Do not silently default counts, environmental measurements, donor health, sanitation, or media observations.",
+      "Present published environmental ranges as cultivar- and study-specific context, never universal targets.",
+      "Attached media is not analyzed unless provider execution evidence confirms pixel inspection."
+    ],
     ["clone-rooting"]
   ),
   method(

@@ -65,11 +65,29 @@ describe("CloneRootingToolRoute", () => {
     jest.resetAllMocks();
     mockRunCalculator.mockResolvedValue({
       outputs: {
+        assessmentStatus: "measured_batch_review",
         riskLevel: "high",
-        rootingProgress: "behind",
+        rootingProgress: "mixed_progress_with_losses",
         daysSinceCut: 9,
-        clonePerformanceSummary: { rootingPercent: 20 },
-        likelyBottlenecks: [{ issue: "humidity dipping too low" }],
+        batchCounts: { total: 12, rooted: 3, failed: 2, pending: 7 },
+        clonePerformanceSummary: { rootingPercent: 25, failurePercent: 16.7 },
+        environmentSnapshot: { humidityRh: 78, lightPpfd: 110 },
+        mediaAnalysis: {
+          requested: false,
+          performed: false,
+          status: "not_requested",
+          limitations: ["No clone images were submitted for visual review."]
+        },
+        missingInformation: ["plug or root-zone temperature"],
+        likelyBottlenecks: [
+          {
+            key: "failed-cuts",
+            severity: "high",
+            issue: "Failed cuts are present.",
+            evidence: "2 of 12 cuts were failed or culled.",
+            recommendations: ["Inspect the failed cuts and review sanitation."]
+          }
+        ],
         followUpTask: {
           title: "Recheck clone tray",
           priority: "high",
@@ -94,8 +112,28 @@ describe("CloneRootingToolRoute", () => {
       "9"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Clone Rooting Troubleshooter Rooted count"),
+      screen.getByLabelText("Clone Rooting Troubleshooter Total cuts in batch"),
+      "12"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Visibly rooted count"),
       "3"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Failed or culled count"),
+      "2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Direct root evidence"),
+      "mixed"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Propagation humidity (% RH)"),
+      "78"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter PPFD at cutting height"),
+      "110"
     );
     fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
 
@@ -104,8 +142,13 @@ describe("CloneRootingToolRoute", () => {
         "clone-rooting",
         expect.objectContaining({
           growId: "grow-1",
-          daysSinceCut: "9",
-          rootedCount: "3"
+          daysSinceCut: 9,
+          cloneCount: 12,
+          rootedCount: 3,
+          failedCount: 2,
+          rootEvidence: "mixed",
+          humidity: 78,
+          lightPpfd: 110
         })
       )
     );
@@ -122,12 +165,15 @@ describe("CloneRootingToolRoute", () => {
           toolKey: "clone-rooting",
           toolRunId: "toolrun-1",
           input: expect.objectContaining({
-            daysSinceCut: "9",
-            rootedCount: "3"
+            daysSinceCut: 9,
+            cloneCount: 12,
+            rootedCount: 3,
+            failedCount: 2,
+            rootEvidence: "mixed"
           }),
           output: expect.objectContaining({
             riskLevel: "high",
-            rootingProgress: "behind"
+            rootingProgress: "mixed_progress_with_losses"
           }),
           tasks: [
             expect.objectContaining({
@@ -140,16 +186,16 @@ describe("CloneRootingToolRoute", () => {
                 channels: ["in_app"],
                 reminders: [expect.objectContaining({ offsetMinutes: -720 })]
               }),
-              description: expect.stringContaining("humidity dipping too low")
+              description: expect.stringContaining("Failed cuts are present")
             }),
             expect.objectContaining({
-              title: "Photograph clone tray and weak cuts",
+              title: "Photograph tray, stem bases, and visible roots",
               sourceStage: "clone_photo_review"
             }),
             expect.objectContaining({
-              title: "Adjust clone environment if needed",
+              title: "Isolate affected cuts and verify clone conditions",
               priority: "high",
-              sourceStage: "clone_environment_adjustment"
+              sourceStage: "clone_environment_review"
             }),
             expect.objectContaining({
               title: "Update clone survival and transplant decision",
@@ -159,5 +205,55 @@ describe("CloneRootingToolRoute", () => {
         })
       )
     );
+  });
+
+  it("blocks a run until real batch counts and direct root evidence are entered", async () => {
+    const screen = render(<CloneRootingToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Complete the required fields: Days since cut, Total cuts in batch, Visibly rooted count, Failed or culled count, Direct root evidence."
+        )
+      ).toBeTruthy()
+    );
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+  });
+
+  it("rejects counts that cannot fit inside the batch", async () => {
+    const screen = render(<CloneRootingToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Days since cut"),
+      "8"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Total cuts in batch"),
+      "10"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Visibly rooted count"),
+      "8"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Failed or culled count"),
+      "3"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Clone Rooting Troubleshooter Direct root evidence"),
+      "roots_visible"
+    );
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Visibly rooted count plus failed count cannot exceed the total cuts."
+        )
+      ).toBeTruthy()
+    );
+    expect(mockRunCalculator).not.toHaveBeenCalled();
   });
 });

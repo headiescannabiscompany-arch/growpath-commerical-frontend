@@ -52,7 +52,12 @@ const tests = {
     `${route} ToolRun-backed calculator route`
   );
   requireText("tool calculators", calculators, new RegExp(`function ${fn}\\b`), fn);
-  requireText("tool calculator exports", calculators, new RegExp(`\\b${fn}\\b`), `${fn} export`);
+  requireText(
+    "tool calculator exports",
+    calculators,
+    new RegExp(`\\b${fn}\\b`),
+    `${fn} export`
+  );
 });
 
 [
@@ -110,13 +115,30 @@ const tests = {
 
 [
   ["clone ToolRun screen", cloneScreen, /tool="clone-rooting"/],
+  ["clone blank count fields", cloneScreen, /key: "cloneCount"[\s\S]*defaultValue: ""/],
+  [
+    "clone direct-root field",
+    cloneScreen,
+    /key: "rootEvidence"[\s\S]*Direct root evidence/
+  ],
+  ["clone count consistency validation", cloneScreen, /rooted \+ failed > total/],
+  [
+    "clone hidden-root limit",
+    cloneScreen,
+    /Elapsed time and top growth do not prove hidden roots/
+  ],
+  ["clone provider execution provenance", cloneScreen, /imageAnalysisPerformed/],
   ["clone follow-up tasks", cloneScreen, /Create Clone Follow-up Tasks/],
   ["clone schedule metadata", cloneScreen, /clone_rooting_followup/],
   ["clone photo review", cloneScreen, /clone_photo_review/],
-  ["clone environment adjustment", cloneScreen, /clone_environment_adjustment/],
+  ["clone environment review", cloneScreen, /clone_environment_review/],
   ["clone transplant decision", cloneScreen, /clone_transplant_decision/],
   ["TC ToolRun screen", tcScreen, /tool="tissue-culture"/],
-  ["TC batch/vessel fields", tcScreen, /Batch number[\s\S]*Total vessels[\s\S]*Contaminated vessels/],
+  [
+    "TC batch/vessel fields",
+    tcScreen,
+    /Batch number[\s\S]*Total vessels[\s\S]*Contaminated vessels/
+  ],
   ["TC media/SOP fields", tcScreen, /Media recipe[\s\S]*SOP version/],
   ["TC acclimation field", tcScreen, /Acclimated plants/],
   ["TC cost fields", tcScreen, /Media cost[\s\S]*Vessel \/ supply cost[\s\S]*Labor cost/],
@@ -130,12 +152,36 @@ const tests = {
 });
 
 [
-  ["clone backend test", tests.backendTools, /runs stress testing and clone rooting tools[\s\S]*clonePerformanceSummary/],
-  ["TC backend test", tests.backendTools, /runs tissue culture and soil nutrient batch tools[\s\S]*costTracking[\s\S]*generatedCalendar/],
-  ["module record backend tests", tests.backendModules, /lists supported module record types[\s\S]*updates and archives owned module records/],
-  ["clone UI test", tests.clone, /creates clone rooting follow-up tasks from the saved ToolRun[\s\S]*clone_transplant_decision/],
-  ["TC UI test", tests.tc, /creates tissue culture workflow tasks from the saved ToolRun[\s\S]*Vessel \/ supply cost[\s\S]*creates default tissue culture follow-up task/],
-  ["module persistence tests", tests.modulePersistence, /maps approved real tools[\s\S]*run_comparison/]
+  [
+    "clone backend test",
+    tests.backendTools,
+    /runs stress testing and clone rooting tools[\s\S]*clonePerformanceSummary/
+  ],
+  [
+    "TC backend test",
+    tests.backendTools,
+    /runs tissue culture and soil nutrient batch tools[\s\S]*costTracking[\s\S]*generatedCalendar/
+  ],
+  [
+    "module record backend tests",
+    tests.backendModules,
+    /lists supported module record types[\s\S]*updates and archives owned module records/
+  ],
+  [
+    "clone UI test",
+    tests.clone,
+    /blocks a run until real batch counts[\s\S]*rejects counts that cannot fit inside the batch/
+  ],
+  [
+    "TC UI test",
+    tests.tc,
+    /creates tissue culture workflow tasks from the saved ToolRun[\s\S]*Vessel \/ supply cost[\s\S]*creates default tissue culture follow-up task/
+  ],
+  [
+    "module persistence tests",
+    tests.modulePersistence,
+    /maps approved real tools[\s\S]*run_comparison/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 5 tests", contents, pattern, description);
 });
