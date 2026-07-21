@@ -210,7 +210,11 @@ Implement this through a shared page/header rule rather than custom back buttons
 
 - As a commercial owner, I can create a course with title, thumbnail, banner, short description, full description, category, grow interests, skill level, price/free setting, visibility, videos, linked videos, documents, images, modules, lessons, quizzes/checklists, products, live sessions, and forum discussion.
 - As a commercial owner, I can upload videos.
-- As a commercial owner, I can link external videos.
+- As a commercial owner, I can choose a lesson video source explicitly: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Pasting a known provider URL should detect and normalize the provider automatically while still showing the owner what will be saved.
+- External video sources store the original URL plus normalized provider metadata and an availability-check result; they never accept pasted iframe/HTML or claim that GrowPath owns or hosts third-party media.
+- GrowPath embeds supported media only when the provider and specific video permit it. Embedding-disabled, private, deleted, age/region-restricted, or otherwise unavailable videos receive an actionable author warning and a learner-safe Open on provider or lesson-resource fallback.
+- Every video lesson records captions/transcript status, includes a text summary or equivalent lesson content, and exposes a direct-link fallback. Third-party embeds use privacy-aware click-to-load behavior where appropriate.
+- Course progress records the learner's GrowPath lesson completion. Provider watch duration or completion is shown only when a supported integration supplies trustworthy events; otherwise the app does not fabricate viewing analytics.
 - As a commercial owner, I can upload documents/PDFs.
 - As a commercial owner, I can create modules and lessons.
 - As a commercial owner, I can publish/unpublish courses.
