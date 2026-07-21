@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import {
   analyzeDiagnosis,
@@ -8,7 +16,7 @@ import {
   getDiagnosisProviderStatus,
   submitDiagnosisFeedback
 } from "@/api/diagnose";
-import { createPersonalLog } from "@/api/logs";
+import { createPersonalLog, listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { createPersonalTask } from "@/api/tasks";
@@ -19,18 +27,28 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
 import {
+  existingGrowPhotoCandidates,
+  existingGrowPhotoEvidenceInput,
+  type ExistingGrowPhotoCandidate
+} from "@/features/personal/diagnosis/existingGrowPhotoEvidence";
+import {
   normalizeDiagnosisResponse,
   type NormalizedDiagnosis
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
-import { providerEvidencePayload } from "@/api/evidence";
+import { createEvidenceAsset, providerEvidencePayload } from "@/api/evidence";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
+}
+
+function displayDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
 }
 
 function addDaysIso(days: number) {
@@ -177,6 +195,12 @@ export default function DiagnoseRoute({
     null
   );
   const [providerStatusError, setProviderStatusError] = useState("");
+  const [existingGrowPhotos, setExistingGrowPhotos] = useState<
+    ExistingGrowPhotoCandidate[]
+  >([]);
+  const [existingPhotoLoading, setExistingPhotoLoading] = useState(false);
+  const [existingPhotoError, setExistingPhotoError] = useState("");
+  const [addingExistingPhotoId, setAddingExistingPhotoId] = useState("");
 
   useEffect(() => {
     if (workspaceType !== "personal") return;
@@ -222,8 +246,43 @@ export default function DiagnoseRoute({
             return Array.isArray(rows) ? rows : [];
           })
         : listPersonalPlants({ growId });
-    request.then(setPlants).catch(() => setPlants([]));
+    request
+      .then(async (rows) => {
+        if (rows.length || workspaceType !== "personal") return rows;
+        const allPlants = await listPersonalPlants();
+        return allPlants.filter((plant) => String(plant.growId || "") === growId);
+      })
+      .then(setPlants)
+      .catch(() => setPlants([]));
   }, [facilityId, growId, workspaceType]);
+
+  useEffect(() => {
+    if (!growId || workspaceType !== "personal") {
+      setExistingGrowPhotos([]);
+      setExistingPhotoError("");
+      setExistingPhotoLoading(false);
+      return;
+    }
+    let mounted = true;
+    setExistingPhotoLoading(true);
+    setExistingPhotoError("");
+    listPersonalLogs({ growId })
+      .then((logs) => {
+        if (!mounted) return;
+        setExistingGrowPhotos(existingGrowPhotoCandidates(logs, growId));
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setExistingGrowPhotos([]);
+        setExistingPhotoError("Unable to load saved grow photos.");
+      })
+      .finally(() => {
+        if (mounted) setExistingPhotoLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [growId, workspaceType]);
 
   useEffect(() => {
     if (!enabled) {
@@ -356,6 +415,38 @@ export default function DiagnoseRoute({
       setFeedback(error?.message || "Unable to run diagnosis.");
     } finally {
       setRunning(false);
+    }
+  }
+
+  async function addExistingGrowPhoto(candidate: ExistingGrowPhotoCandidate) {
+    if (
+      addingExistingPhotoId ||
+      evidenceAssets.some(
+        (asset) =>
+          asset.durableUrl === candidate.url || asset.originalUri === candidate.url
+      ) ||
+      evidenceAssets.filter((asset) => asset.assetType === "photo").length >= 10
+    )
+      return;
+    setAddingExistingPhotoId(candidate.id);
+    setFeedback("");
+    try {
+      const saved = await createEvidenceAsset(
+        existingGrowPhotoEvidenceInput(candidate, plantId)
+      );
+      setEvidenceAssets((current) =>
+        current.some(
+          (asset) =>
+            asset.durableUrl === candidate.url || asset.originalUri === candidate.url
+        )
+          ? current
+          : [...current, saved]
+      );
+      setFeedback(`Added saved grow photo: ${candidate.title}.`);
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to add the saved grow photo.");
+    } finally {
+      setAddingExistingPhotoId("");
     }
   }
 
@@ -912,6 +1003,74 @@ export default function DiagnoseRoute({
           </View>
         </View>
 
+        {workspaceType === "personal" && growId ? (
+          <View style={styles.savedPhotoSection}>
+            <Text style={styles.label}>Use photos already in this grow</Text>
+            <Text style={styles.subtitle}>
+              Reuse saved grow evidence instead of uploading the same photo again.
+              Selecting a photo explicitly includes it in this diagnosis request; it is
+              not used for model training.
+            </Text>
+            {existingPhotoLoading ? (
+              <Text style={styles.savedPhotoStatus}>Loading saved photos...</Text>
+            ) : existingPhotoError ? (
+              <Text style={styles.photoWarning}>{existingPhotoError}</Text>
+            ) : existingGrowPhotos.length ? (
+              <View style={styles.savedPhotoGrid}>
+                {existingGrowPhotos.map((candidate) => {
+                  const capturedDate = displayDate(candidate.capturedAt);
+                  const selected = evidenceAssets.some(
+                    (asset) =>
+                      asset.durableUrl === candidate.url ||
+                      asset.originalUri === candidate.url
+                  );
+                  const busy = addingExistingPhotoId === candidate.id;
+                  const photoLimitReached =
+                    evidenceAssets.filter((asset) => asset.assetType === "photo")
+                      .length >= 10;
+                  return (
+                    <View key={candidate.id} style={styles.savedPhotoCard}>
+                      <Image
+                        source={{ uri: candidate.url }}
+                        style={styles.savedPhotoPreview}
+                        accessibilityLabel={`Saved grow photo ${candidate.title}`}
+                      />
+                      <Text style={styles.savedPhotoTitle} numberOfLines={2}>
+                        {candidate.title}
+                      </Text>
+                      {capturedDate ? (
+                        <Text style={styles.savedPhotoMeta}>{capturedDate}</Text>
+                      ) : null}
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Use saved photo ${candidate.title}`}
+                        accessibilityState={{
+                          disabled: selected || busy || photoLimitReached,
+                          selected
+                        }}
+                        disabled={selected || busy || photoLimitReached}
+                        onPress={() => addExistingGrowPhoto(candidate)}
+                        style={[
+                          styles.savedPhotoButton,
+                          (selected || busy || photoLimitReached) && styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.savedPhotoButtonText}>
+                          {selected ? "Added" : busy ? "Adding..." : "Use Photo"}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <Text style={styles.savedPhotoStatus}>
+                No saved grow photos are available yet. Add new evidence below.
+              </Text>
+            )}
+          </View>
+        ) : null}
+
         <MediaEvidencePicker
           maxPhotos={10}
           allowVideo
@@ -1367,6 +1526,39 @@ const styles = StyleSheet.create({
     backgroundColor: "#E2E8F0"
   },
   photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
+  savedPhotoSection: {
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 10,
+    padding: 12
+  },
+  savedPhotoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  savedPhotoCard: {
+    borderColor: "#D9E2EC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 5,
+    padding: 8,
+    width: 156
+  },
+  savedPhotoPreview: {
+    backgroundColor: "#E2E8F0",
+    borderRadius: radius.card,
+    height: 104,
+    width: "100%"
+  },
+  savedPhotoTitle: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  savedPhotoMeta: { color: "#64748B", fontSize: 12 },
+  savedPhotoStatus: { color: "#475569", fontSize: 12, lineHeight: 18 },
+  savedPhotoButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  savedPhotoButtonText: { color: "#FFFFFF", fontWeight: "800" },
   photoReady: {
     color: "#166534",
     backgroundColor: "#F0FDF4",

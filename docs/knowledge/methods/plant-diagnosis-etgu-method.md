@@ -14,6 +14,13 @@ When image analysis is available, request a whole-plant context photo, a photo s
 
 Every result must provide a discriminating follow-up question. Saved diagnoses, journal entries, tasks, attached evidence, and user-confirmed outcome feedback remain linked to the selected grow and plant.
 
+When a selected grow already contains saved photos, diagnosis must let the user
+explicitly reuse those private grow-log photos instead of requiring duplicate uploads.
+Reuse is opt-in per photo: show the source log, create a diagnosis-purpose evidence
+link only after selection, preserve grow/plant/log provenance, and state that the photo
+will be included in the diagnosis request but not used for model training. Never send
+an existing private photo merely because it is present in the grow history.
+
 ## IPM Scout
 
 IPM Scout is a crop-neutral observation and decision workflow. A grow or facility adds
