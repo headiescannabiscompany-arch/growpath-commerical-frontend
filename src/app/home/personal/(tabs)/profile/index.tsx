@@ -103,6 +103,44 @@ const styles = StyleSheet.create({
   mutedText: { marginTop: 8, fontSize: 12, color: "#64748B", lineHeight: 18 }
 });
 
+type PlanAction = readonly [label: string, href: string, primary: boolean];
+
+export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
+  const planRank: Record<string, number> = {
+    free: 0,
+    pro: 1,
+    commercial: 2,
+    facility: 3
+  };
+  const currentRank = planRank[String(plan || "free").toLowerCase()] ?? 0;
+  const actions: PlanAction[] = [];
+
+  if (currentRank < planRank.pro) {
+    actions.push(["Upgrade to Pro", "/home/personal/upgrade/pro", true]);
+  }
+  if (currentRank < planRank.commercial) {
+    actions.push([
+      "Upgrade to Commercial",
+      "/home/personal/upgrade/commercial",
+      currentRank >= planRank.pro
+    ]);
+  }
+  if (currentRank < planRank.facility) {
+    actions.push([
+      "Apply / Upgrade to Facility",
+      "/home/personal/upgrade/facility",
+      false
+    ]);
+  }
+  actions.push([
+    "Manage Billing",
+    "/home/personal/profile/billing",
+    currentRank >= planRank.pro
+  ]);
+
+  return actions;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
   const auth = useAuth();
@@ -124,6 +162,7 @@ export default function ProfileScreen() {
   const [deleting, setDeleting] = useState(false);
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
+  const planActions = getPersonalProfilePlanActions(plan);
   const emailVerified = Boolean(auth.user?.emailVerified);
 
   useEffect(() => {
@@ -428,12 +467,7 @@ export default function ProfileScreen() {
           limits.
         </Text>
         <View style={styles.actionGrid}>
-          {[
-            ["Upgrade to Pro", "/home/personal/upgrade/pro", true],
-            ["Upgrade to Commercial", "/home/personal/upgrade/commercial", false],
-            ["Apply / Upgrade to Facility", "/home/personal/upgrade/facility", false],
-            ["Manage Billing", "/home/personal/profile/billing", false]
-          ].map(([label, href, primary]) => (
+          {planActions.map(([label, href, primary]) => (
             <Pressable
               key={String(label)}
               accessibilityRole="button"
