@@ -57,6 +57,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "defensible common, genus, or family-level candidate retained when exact species is unresolved"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "published-course discovery limited to published storefronts and explicit public fields"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never pass reserved public route words or malformed record IDs into database ID queries."
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {
