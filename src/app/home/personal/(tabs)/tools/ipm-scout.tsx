@@ -212,6 +212,11 @@ export default function IpmScoutToolRoute() {
       tool="ipm-scout"
       toolKey="ipm-scout"
       title="IPM Scout"
+      status="CALCULATED + GPT REVIEW"
+      runLabel="Analyze Scout + GPT Review (1 AI credit)"
+      runAccessibilityLabel="Run IPM Scout and GPT review for 1 AI credit"
+      experienceMessage="GrowPath calculates a local working hypothesis from the observations you review. The main action also runs a separate GPT structured second opinion against the same saved evidence."
+      aiCreditMessage="Each provider-backed action is separate: photo prefill uses 1 AI credit, and Analyze Scout + GPT Review uses 1 AI credit. A failed provider call is refunded; the result shows the actual charge."
       subtitle="Build a repeatable pest and disease scout from direct observations, photos, trap counts, plant distribution, and follow-up checks—without pretending a pattern is a confirmed diagnosis."
       growOptional
       noGrowContextMessage="This scout is saved in Saved Runs. Attach a grow or facility to create linked logs, tasks, plant history, and outcome follow-ups."
@@ -422,6 +427,15 @@ export default function IpmScoutToolRoute() {
         mediaEvidence: evidencePayload.media
       })}
       buildMetrics={(outputs) => [
+        {
+          key: "ai-credit-cost",
+          label: "AI credits used",
+          value: String(outputs.aiCreditsUsed ?? 0),
+          detail:
+            outputs.gptVerification?.status === "completed"
+              ? "Charged for the completed GPT structured second opinion."
+              : "No completed provider-backed second opinion was charged."
+        },
         {
           key: "readiness",
           label: "Scout readiness",

@@ -132,7 +132,8 @@ describe("IpmScoutToolRoute", () => {
           videosAnalyzed: 0,
           videoStatus: "stored_for_follow_up; direct video interpretation is not enabled"
         },
-        documentation: { savedAs: "ToolRun" }
+        documentation: { savedAs: "ToolRun" },
+        aiCreditsUsed: 1
       },
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
@@ -175,6 +176,14 @@ describe("IpmScoutToolRoute", () => {
         screen.getByText(/Upload at least one clear photo before asking AI/)
       ).toBeTruthy()
     );
+    expect(
+      screen.getByText(
+        "Each provider-backed action is separate: photo prefill uses 1 AI credit, and Analyze Scout + GPT Review uses 1 AI credit. A failed provider call is refunded; the result shows the actual charge."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    ).toBeTruthy();
   });
 
   it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {
@@ -190,7 +199,9 @@ describe("IpmScoutToolRoute", () => {
     );
     fireEvent.changeText(screen.getByLabelText("IPM Scout Plants checked"), "8");
     fireEvent.changeText(screen.getByLabelText("IPM Scout Plants affected"), "2");
-    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -206,6 +217,7 @@ describe("IpmScoutToolRoute", () => {
     );
 
     await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    expect(screen.getByText("AI credits used")).toBeTruthy();
     expect(screen.getByText("GrowPath AI")).toBeTruthy();
     expect(
       screen.getByText(
@@ -235,7 +247,9 @@ describe("IpmScoutToolRoute", () => {
       screen.getByLabelText("IPM Scout Pest or organism seen"),
       "mites"
     );
-    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
 
     await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
 
@@ -275,7 +289,9 @@ describe("IpmScoutToolRoute", () => {
       screen.getByLabelText("IPM Scout Pest or organism seen"),
       "mites"
     );
-    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
 
     await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
 
@@ -326,7 +342,9 @@ describe("IpmScoutToolRoute", () => {
       screen.getByLabelText("IPM Scout Damage or symptom pattern"),
       "fine stippling"
     );
-    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
 
     await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
     await waitFor(() => expect(mockCreateGrowpathModuleRecord).toHaveBeenCalled());

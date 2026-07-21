@@ -94,6 +94,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "IPM supporting evidence, counter-evidence, and competing candidates",
       "safe treatment categories without pesticide products or dosing",
       "normalized GrowPath/GPT agreement state",
+      "explicit IPM AI-credit cost and charged/refunded result",
       "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
@@ -104,6 +105,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not send existing private grow media to diagnosis until the user explicitly selects each photo.",
       "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
+      "Do not label a combined billable scout-and-GPT action as a free calculator or hide its AI-credit cost until after the run.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
