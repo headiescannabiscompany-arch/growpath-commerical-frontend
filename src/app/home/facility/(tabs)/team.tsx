@@ -25,6 +25,7 @@ import {
 } from "@/api/team";
 import type { FacilityRole } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -63,6 +64,10 @@ export default function FacilityTeamTab() {
   const canInvite =
     Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) || can(facilityRole, "TEAM_INVITE");
   const isOwner = String(facilityRole || "").toUpperCase() === "OWNER";
+  const canAssignTasks = getFacilityTaskAccess({
+    can: ent?.can,
+    facilityRole
+  }).canAssignTask;
 
   const mapApiError = useApiErrorHandler();
   const mapApiErrorRef = useRef(mapApiError);
@@ -257,8 +262,9 @@ export default function FacilityTeamTab() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Team access</Text>
             <Text style={styles.muted}>
-              You can view the team and assign work. Only the facility owner can invite
-              members or change access roles.
+              {canAssignTasks
+                ? "You can view the team and assign work. Only the facility owner can invite members or change access roles."
+                : "You can view the team. Only owners and managers can assign work, and only the facility owner can manage access roles."}
             </Text>
           </View>
         )}
@@ -312,7 +318,7 @@ export default function FacilityTeamTab() {
                     </Text>
                   ) : null}
                   <View style={styles.memberActions}>
-                    {memberId ? (
+                    {canAssignTasks && memberId ? (
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={`Assign task to ${title}`}
