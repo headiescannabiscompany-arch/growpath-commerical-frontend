@@ -546,8 +546,18 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     href: "/home/personal/tools/dry-cure-guard",
     hubVisible: false,
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "required",
+      audience: "cannabis_context",
+      inputSummary:
+        "Measured room temperature/RH, optional coldest-surface temperature, equilibrated container RH, duration, sensor/time, airflow, density, and representative observations.",
+      outputSummary:
+        "Evidence readiness, air dew point, measured surface margin, condensation signal, moisture concerns, limitations, and repeat-check tasks."
+    },
     internalNote:
-      "Approved beta dry/cure workflow wired to harvest/grow context, ToolRuns, log summaries, and check tasks."
+      "Approved beta cannabis/hemp dry/cure workflow wired to API-gated grow context, measured evidence, harvest batches, ToolRuns, log summaries, and check tasks."
   },
   {
     key: "tools.clone_rooting",

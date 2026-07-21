@@ -72,10 +72,13 @@ describe("DryCureGuardToolScreen", () => {
     jest.resetAllMocks();
     mockRunCalculator.mockResolvedValue({
       outputs: {
-        moldRisk: "medium",
-        overdryRisk: "low",
+        assessmentStatus: "measured_snapshot",
+        moldRisk: "monitor",
+        overdryRisk: "monitor",
         dewPointF: 53.2,
         dewPointSpreadC: 6.1,
+        surfaceDewPointMarginC: 3.4,
+        condensationRisk: "not_indicated_by_entered_surface_reading",
         nextAction: "Keep airflow gentle and verify jar RH before sealing.",
         taskSuggestions: [{ title: "Check dry room tomorrow", priority: "high" }]
       },
@@ -107,12 +110,41 @@ describe("DryCureGuardToolScreen", () => {
     });
   });
 
+  function enterRequiredReadings(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Stage"), "curing");
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Measured room temperature"),
+      "68"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Measured room RH"),
+      "60"
+    );
+  }
+
+  it("does not run with blank measurements or invent default readings", async () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Complete the required fields: Stage, Measured room temperature, Measured room RH."
+        )
+      ).toBeTruthy()
+    );
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+    expect(screen.queryByDisplayValue("68")).toBeNull();
+    expect(screen.queryByDisplayValue("60")).toBeNull();
+  });
+
   it("creates dry/cure monitoring tasks from the saved ToolRun", async () => {
     const screen = render(<DryCureGuardToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    enterRequiredReadings(screen);
     fireEvent.changeText(
-      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      screen.getByLabelText("Dry / Cure Guard Equilibrated jar or bag RH (during cure)"),
       "63"
     );
     fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
@@ -123,6 +155,8 @@ describe("DryCureGuardToolScreen", () => {
         expect.objectContaining({
           growId: "grow-1",
           mode: "curing",
+          dryRoomTemp: 68,
+          dryRoomRH: 60,
           jarRH: 63
         })
       )
@@ -142,7 +176,7 @@ describe("DryCureGuardToolScreen", () => {
             jarRH: 63
           }),
           output: expect.objectContaining({
-            moldRisk: "medium",
+            moldRisk: "monitor",
             nextAction: "Keep airflow gentle and verify jar RH before sealing."
           }),
           tasks: [
@@ -156,7 +190,7 @@ describe("DryCureGuardToolScreen", () => {
                 channels: ["in_app"],
                 reminders: [expect.objectContaining({ offsetMinutes: -720 })]
               }),
-              description: expect.stringContaining("Mold risk: medium")
+              description: expect.stringContaining("Mold risk: monitor")
             }),
             expect.objectContaining({
               title: "Inspect buds for dry/cure quality",
@@ -179,9 +213,13 @@ describe("DryCureGuardToolScreen", () => {
   it("saves dry/cure readings to a harvest batch record", async () => {
     const screen = render(<DryCureGuardToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    enterRequiredReadings(screen);
     fireEvent.changeText(
-      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      screen.getByLabelText("Dry / Cure Guard Coldest surface temperature (recommended)"),
+      "59"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Equilibrated jar or bag RH (during cure)"),
       "63"
     );
     fireEvent.changeText(
@@ -213,7 +251,7 @@ describe("DryCureGuardToolScreen", () => {
             jarRh: 63,
             dewPointF: 53.2,
             linkedToolRunId: "toolrun-1",
-            qualityNotes: expect.stringContaining("Mold risk: medium")
+            qualityNotes: expect.stringContaining("Mold risk: monitor")
           })
         ]
       })
