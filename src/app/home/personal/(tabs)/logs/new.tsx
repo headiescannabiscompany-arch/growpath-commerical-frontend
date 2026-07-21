@@ -272,7 +272,9 @@ export default function NewLogScreen() {
       }
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>New Journal Entry</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          New Journal Entry
+        </Text>
         <Text style={styles.subtitle}>
           {growId ? `Grow context: ${growId}` : "No grow selected"}
         </Text>

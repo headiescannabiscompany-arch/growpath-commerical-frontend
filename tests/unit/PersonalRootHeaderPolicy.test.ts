@@ -48,4 +48,16 @@ describe("Personal root header policy", () => {
     expect(source).toContain('accessibilityRole="header"');
     expect(source).toContain(title);
   });
+
+  test("uses the journal ScreenBoundary back control without a duplicate stack header", () => {
+    const logsLayout = read("src/app/home/personal/(tabs)/logs/_layout.tsx");
+    const newLog = read("src/app/home/personal/(tabs)/logs/new.tsx");
+    const logDetail = read("src/app/home/personal/(tabs)/logs/[logId].tsx");
+
+    expect(logsLayout).toContain("screenOptions={{ headerShown: false }}");
+    expect(newLog).toContain("showBack");
+    expect(logDetail).toContain("showBack");
+    expect(newLog).toContain('accessibilityRole="header"');
+    expect(logDetail).toContain('accessibilityRole="header"');
+  });
 });

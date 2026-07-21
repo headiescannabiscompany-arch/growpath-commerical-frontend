@@ -165,7 +165,9 @@ export default function LogDetailScreen() {
       }
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{log?.title || "Journal Entry"}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {log?.title || "Journal Entry"}
+        </Text>
         <PersonalFeedPlacement
           placement="top"
           routeKey="personal_logs_logid"
