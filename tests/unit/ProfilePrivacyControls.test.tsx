@@ -11,6 +11,7 @@ const mockRetryMe = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockUpdateContentControls = jest.fn();
+let mockEntitlementsPlan = "free";
 
 jest.mock("@/api/users", () => ({
   deleteAccount: (...args: any[]) => mockDeleteAccount(...args),
@@ -45,7 +46,7 @@ jest.mock("@/auth/AuthContext", () => ({
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
-    plan: "free",
+    plan: mockEntitlementsPlan,
     mode: "personal"
   })
 }));
@@ -85,6 +86,7 @@ describe("Profile privacy controls", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockUpdateContentControls.mockReset();
+    mockEntitlementsPlan = "free";
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
     mockUpdateContentControls.mockResolvedValue({
@@ -133,6 +135,23 @@ describe("Profile privacy controls", () => {
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
+
+  it("does not offer a Pro account its current or a lower plan", () => {
+    mockEntitlementsPlan = "pro";
+    const screen = render(<Profile />);
+
+    expect(screen.queryByText("Upgrade to Pro")).toBeNull();
+    expect(screen.getByText("Upgrade to Commercial")).toBeTruthy();
+    expect(screen.getByText("Apply / Upgrade to Facility")).toBeTruthy();
+    expect(screen.getByText("Manage Billing")).toBeTruthy();
+  });
+
+  it("shows a Free account the Pro upgrade as its primary next plan", () => {
+    const screen = render(<Profile />);
+
+    expect(screen.getByText("Upgrade to Pro")).toBeTruthy();
+    expect(screen.getByText("Manage Billing")).toBeTruthy();
   });
 
   it("lets an adult account hide cannabis without entering the parental PIN", async () => {
