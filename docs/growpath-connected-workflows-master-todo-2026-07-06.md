@@ -326,6 +326,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
    - [ ] Exercise Personal Free, Personal Pro, Commercial, Facility Owner/Manager/Staff/Viewer, cross-role shared-record, and outside-user loops against the seeded records.
      - Facility staging progress: Manager -> Grower -> Scout/Viewer task persistence passed on shared task `6a5eb37ec9fd257ae2484ce0`; Owner bookends, forced Viewer 403 evidence, production-role retest, exported recording, non-Facility sessions, and outside-user validation remain open. Evidence: `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
+     - Personal Pro production progress: one provider-backed Ask AI request deducted and persisted exactly one credit (`94 -> 93`) with zero refunds. The invalid current-plan upgrade was fixed in frontend PR `#64` and live-retested on merge `cc822f8dbc242c08279aeb9089628b85010c3c0a`. The complete Personal Pro loop remains open. Evidence: `docs/qa/PERSONAL_PRO_AI_CREDIT_EVIDENCE_2026-07-20.md`.
    - [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
      - The 2026-07-20 Facility evidence record now contains SHAs, URLs, namespace, timestamps, role/account suffixes, checks, findings, CI, and deployment status. Screenshot/video, cleanup, production-role rerun, and final acceptance are intentionally still open.
 

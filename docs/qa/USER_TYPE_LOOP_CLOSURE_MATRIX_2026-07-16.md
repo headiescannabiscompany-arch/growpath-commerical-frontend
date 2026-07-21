@@ -149,9 +149,25 @@ control, or can bypass its backend authorization boundary.
 - Static and automated closure checks are complete for these two repaired tools. The
   Personal Free session remains open until the deployed build is recorded end to end.
 
+### Personal Pro production AI-credit follow-up
+
+- 2026-07-20, approximately 8:23-8:34 PM ET: the production Personal Pro/trialing
+  account completed one provider-backed Ask AI request. The server balance persisted
+  from `94 / 100` and 6 billed requests to `93 / 100` and 7 billed requests with zero
+  refunds after returning to Profile.
+- The same session exposed an invalid `Upgrade to Pro` action for the current Pro plan.
+  PR `#64` fixed the plan-action set; merge
+  `cc822f8dbc242c08279aeb9089628b85010c3c0a` was live at 8:33 PM ET and the production
+  retest showed no Pro upgrade while preserving Commercial, Facility, and billing
+  actions.
+- Exact evidence and remaining Personal Pro blocks are recorded in
+  `docs/qa/PERSONAL_PRO_AI_CREDIT_EVIDENCE_2026-07-20.md`.
+
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
-- [ ] Personal Pro loop session recorded and reviewed.
+- [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
+      deduction/persistence and plan-action retest passed; the remaining lifecycle,
+      tool, billing, accessibility, and exported-recording checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
