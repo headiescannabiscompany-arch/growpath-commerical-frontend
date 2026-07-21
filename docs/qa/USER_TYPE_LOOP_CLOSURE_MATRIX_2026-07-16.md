@@ -162,12 +162,20 @@ control, or can bypass its backend authorization boundary.
   actions.
 - Exact evidence and remaining Personal Pro blocks are recorded in
   `docs/qa/PERSONAL_PRO_AI_CREDIT_EVIDENCE_2026-07-20.md`.
+- The production Grows -> New Journal Entry path was then retested with exact grow
+  context. Duplicate root/journal headers and missing root heading semantics were fixed
+  through PRs `#66`-`#68`; final merge
+  `e8c24316a415882163f4ea04768bff074342c6b9` was live at 9:12 PM ET. Post-fix in-app
+  Browser screenshots showed one visible Grows title and one visible journal title;
+  semantic inspection found one level-1 heading on each route and the journal Back
+  control remained available.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
-      deduction/persistence and plan-action retest passed; the remaining lifecycle,
-      tool, billing, accessibility, and exported-recording checks stay open.
+      deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
+      entry passed. Remaining create/persist/source-reopen, task/tool, lifecycle,
+      billing, broader accessibility, and exported-recording checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
