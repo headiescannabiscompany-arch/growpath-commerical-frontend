@@ -169,13 +169,30 @@ control, or can bypass its backend authorization boundary.
   Browser screenshots showed one visible Grows title and one visible journal title;
   semantic inspection found one level-1 heading on each route and the journal Back
   control remained available.
+- PR `#70`, merge `ecdc97f1185f7986b7783d2c38ee713bdaed6784`, then made Journal
+  Back prefer the exact selected-grow fallback. Render deployment
+  `dep-d9fcnm68bjmc73dl0fog` was live at 9:33 PM ET; New Journal Entry and the existing
+  `AI grow summary` detail both returned to the selected grow's Journal.
+- PR `#71`, merge `4ba02db44e05ba44c307d0ac6dada635cd2c6122`, made every Journal
+  log, ToolRun, and task card actionable and preserved exact ToolRun/task IDs. Render
+  deployment `dep-d9fcvicm0tmc73f8l0d0` was live at 9:49 PM ET. Production exposed 13
+  exact saved-run links and opened ToolRun `6a5dc87b62c955c489aaece0` without an error.
+- That retest showed the selected result below the full history list. PR `#72`, merge
+  `115856c84ed5009f95e8a6abe9c791d9eb142178`, moved and scrolled the selected result
+  into view and removed the duplicate Saved Tool Runs title. Render deployment
+  `dep-d9fd51km0tmc73f8o68g` was live at 10:01 PM ET; the same Journal click displayed
+  one heading and the green `Opened from source link` result immediately. The task
+  route/focus is covered automatically, but production task-source clicking remains
+  open because this grow had no task card.
 
 - [ ] Public / signed-out loop session recorded and reviewed.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
-      entry passed. Remaining create/persist/source-reopen, task/tool, lifecycle,
-      billing, broader accessibility, and exported-recording checks stay open.
+      entry passed; existing-log and saved-ToolRun source reopening also passed.
+      Remaining new-record create/persist, production task source reopening,
+      diagnosis/upload, lifecycle, billing, broader accessibility, and
+      exported-recording checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed; final post-completion Owner return and exported recording
