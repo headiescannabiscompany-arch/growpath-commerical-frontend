@@ -2,6 +2,8 @@ export type NormalizedDiagnosis = {
   id: string;
   issueSummary: string;
   confidence: "low" | "medium" | "high" | "unknown";
+  topCandidateConfidence: number | null;
+  overallHealth: string;
   severity: "low" | "medium" | "high" | "unknown";
   evidence: string[];
   counterEvidence: string[];
@@ -92,6 +94,24 @@ function band(value: unknown): "low" | "medium" | "high" | "unknown" {
   return "unknown";
 }
 
+function confidenceBand(value: unknown): "low" | "medium" | "high" | "unknown" {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const normalized = value > 1 && value <= 100 ? value / 100 : value;
+    if (normalized >= 0.75 && normalized <= 1) return "high";
+    if (normalized >= 0.45 && normalized < 0.75) return "medium";
+    if (normalized > 0 && normalized < 0.45) return "low";
+  }
+  return band(value);
+}
+
+function candidateConfidence(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  const normalized = numeric > 1 && numeric <= 100 ? numeric / 100 : numeric;
+  return normalized >= 0 && normalized <= 1 ? normalized : null;
+}
+
 function cautiousIssueSummary(value: unknown): string {
   const summary = String(value || "").trim() || "No diagnosis summary returned.";
   return summary
@@ -112,7 +132,12 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     response ??
     {};
   const details = response?.details ?? row?.details ?? row?.aiResult ?? {};
-  const likelyIssues = Array.isArray(details?.likelyIssues) ? details.likelyIssues : [];
+  const providerDetails = row?.providerResult || details?.providerResult || {};
+  const likelyIssues = Array.isArray(details?.likelyIssues)
+    ? details.likelyIssues
+    : Array.isArray(providerDetails?.likelyIssues)
+      ? providerDetails.likelyIssues
+      : [];
   const evidence = strings(row?.evidenceObserved ?? row?.evidence);
   const counterEvidence = strings(row?.counterEvidence);
   const missingData = strings(row?.missingData);
@@ -122,7 +147,14 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     issueSummary: cautiousIssueSummary(
       row?.issueSummary || row?.possibleIssue || row?.summary
     ),
-    confidence: band(row?.confidence ?? row?.confidenceLevel),
+    confidence: confidenceBand(
+      row?.confidence ??
+        row?.confidenceLevel ??
+        details?.overallConfidence ??
+        details?.confidence
+    ),
+    topCandidateConfidence: candidateConfidence(likelyIssues[0]?.confidence),
+    overallHealth: String(row?.overallHealth || details?.overallHealth || ""),
     severity: band(row?.severity ?? row?.severityLevel),
     evidence: evidence.length
       ? evidence
