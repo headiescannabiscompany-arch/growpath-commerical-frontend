@@ -23,5 +23,8 @@ services:
         value: growpathai.com
     routes:
       - type: rewrite
+        source: /home/*
+        destination: /index.html
+      - type: rewrite
         source: /*
         destination: /index.html

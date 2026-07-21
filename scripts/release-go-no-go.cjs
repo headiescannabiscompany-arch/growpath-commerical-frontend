@@ -41,6 +41,7 @@ const evidenceRequirements = [
         "privacy",
         "terms",
         "support",
+        "personal-grow-deep-link",
         "delete-account",
         "api-health",
         "api-ready",
@@ -69,10 +70,10 @@ const evidenceRequirements = [
     validate: (body) =>
       Boolean(
         statusInRange(body.loginStatus, 200, 299) &&
-          statusInRange(body.exportStatus, 200, 299) &&
-          statusInRange(body.deleteStatus, 200, 299) &&
-          statusInRange(body.postDeleteLoginStatus, 400, 499) &&
-          Array.isArray(body.exportTopLevelKeys)
+        statusInRange(body.exportStatus, 200, 299) &&
+        statusInRange(body.deleteStatus, 200, 299) &&
+        statusInRange(body.postDeleteLoginStatus, 400, 499) &&
+        Array.isArray(body.exportTopLevelKeys)
       )
   },
   {
@@ -181,7 +182,9 @@ function hasValues(names) {
 function hasTruthyValues(names) {
   return (body) => {
     const values = body?.values || {};
-    return names.every((name) => /^(yes|true|1)$/i.test(String(values[name] || "").trim()));
+    return names.every((name) =>
+      /^(yes|true|1)$/i.test(String(values[name] || "").trim())
+    );
   };
 }
 
