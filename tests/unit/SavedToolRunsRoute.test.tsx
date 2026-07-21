@@ -61,8 +61,18 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ title, summary }: any) =>
-    React.createElement(Text, null, `${title}: ${summary}`);
+  return ({ title, summary, metrics, notices }: any) =>
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Text, null, `${title}: ${summary}`),
+      ...(metrics || []).map((metric: any) =>
+        React.createElement(Text, { key: metric.key }, `${metric.label}: ${metric.value}`)
+      ),
+      ...(notices || []).map((notice: any) =>
+        React.createElement(Text, { key: notice.key }, notice.message)
+      )
+    );
 });
 
 describe("SavedToolRunsRoute", () => {
@@ -109,5 +119,53 @@ describe("SavedToolRunsRoute", () => {
       screen.getByText("Shared Back /home/personal/grows/grow-1/journal Prefer true")
     ).toBeTruthy();
     expect(screen.getByText("vpd result: Full VPD result.")).toBeTruthy();
+  });
+
+  it("surfaces saved Crop ID vision provenance instead of hiding nested metadata", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "species_crop_id completed",
+      outputs: {
+        likelyCrop: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        confidence: "high",
+        userConfirmationRequired: true,
+        identifyingVisualTraits: "Compound leaves, stem hairs, and a ripe fruit.",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photosAnalyzed: 1,
+          provider: "growpath_context_plus_openai",
+          providerModel: "gpt-4o-mini",
+          providerLabel: "GrowPath context + OpenAI image review",
+          quality: "usable",
+          evidenceUsed: ["evidence-tomato-1"],
+          limitations: ["Cultivar cannot be identified from appearance."]
+        }
+      },
+      createdAt: "2026-07-21T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Likely crop: Tomato")).toBeTruthy();
+    expect(screen.getByText("Photos inspected: 1")).toBeTruthy();
+    expect(screen.getByText("Image quality: usable")).toBeTruthy();
+    expect(screen.getByText("Needs confirmation: Yes")).toBeTruthy();
+    expect(
+      screen.getByText(/OpenAI image review inspected 1 uploaded photo/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Evidence: evidence-tomato-1/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Visible identification traits: Compound leaves/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Cultivar cannot be identified from appearance/i)
+    ).toBeTruthy();
   });
 });

@@ -52,7 +52,7 @@ describe("GrowPath knowledge registries", () => {
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
-      "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved in the saved result"
+      "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result"
     );
   });
 
