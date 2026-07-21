@@ -15,7 +15,11 @@ import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
-import { buildGrowTimeline, type GrowTimelineItem } from "@/features/grows/timeline";
+import {
+  buildGrowTimeline,
+  growJournalItemHref,
+  type GrowTimelineItem
+} from "@/features/grows/timeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
 
@@ -42,6 +46,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontWeight: "700", color: "#0F172A" },
   cardMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
+  cardAction: { color: "#166534", fontWeight: "700", marginTop: 8 },
   empty: { marginTop: 14, color: "#64748B" },
   chipsRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 10 },
   chip: {
@@ -56,6 +61,12 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 12, fontWeight: "700", color: "#0F172A" },
   chipTextOn: { color: "#FFFFFF" }
 });
+
+function sourceActionLabel(kind: GrowTimelineItem["kind"]) {
+  if (kind === "tool_run") return "Open saved tool result";
+  if (kind === "task") return "Open task";
+  return "Open journal entry";
+}
 
 export default function GrowJournalScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
@@ -120,7 +131,9 @@ export default function GrowJournalScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Journal</Text>
+      <Text style={styles.title} accessibilityRole="header">
+        Journal
+      </Text>
       <Text style={styles.subtitle}>
         Timeline of logs, tool results, and tasks for this grow.
       </Text>
@@ -188,24 +201,23 @@ export default function GrowJournalScreen() {
                 {fmtDate(item.at || undefined)}
                 {item.kind === "task" ? (item.completed ? " | COMPLETE" : " | OPEN") : ""}
               </Text>
+              <Text style={styles.cardAction}>{sourceActionLabel(item.kind)}</Text>
             </>
           );
-
-          if (item.kind !== "log") {
-            return (
-              <View key={`${item.kind}-${item.id}`} style={styles.card}>
-                {content}
-              </View>
-            );
-          }
 
           return (
             <Link
               key={`${item.kind}-${item.id}`}
-              href={`/home/personal/logs/${encodeURIComponent(item.id)}`}
+              href={growJournalItemHref(item, growId) as any}
               asChild
             >
-              <Pressable style={styles.card}>{content}</Pressable>
+              <Pressable
+                style={styles.card}
+                accessibilityRole="link"
+                accessibilityLabel={`${sourceActionLabel(item.kind)}: ${item.title}`}
+              >
+                {content}
+              </Pressable>
             </Link>
           );
         })

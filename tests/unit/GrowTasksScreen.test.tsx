@@ -8,6 +8,7 @@ const mockDeletePersonalTask = jest.fn();
 const mockListPersonalTasks = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
 let mockCanUseTaskReminders = true;
+let mockTaskId = "";
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
@@ -30,7 +31,7 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
-    useLocalSearchParams: () => ({ growId: "grow-task-1" }),
+    useLocalSearchParams: () => ({ growId: "grow-task-1", taskId: mockTaskId }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,
@@ -59,6 +60,7 @@ describe("GrowTasksScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockCanUseTaskReminders = true;
+    mockTaskId = "";
     mockListPersonalTasks.mockResolvedValue([
       {
         id: "task-open-1",
@@ -323,5 +325,17 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Task reminders are Pro")).toBeTruthy();
     expect(screen.queryByLabelText("Task title")).toBeNull();
     expect(screen.queryByLabelText("Complete task")).toBeNull();
+  });
+
+  it("focuses the exact task opened from a source link", async () => {
+    mockTaskId = "task-done-1";
+
+    const screen = render(<GrowTasksScreen />);
+
+    await waitFor(() => expect(screen.getByText("Opened from Journal")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Focused task Review VPD result. Opened from Journal")
+    ).toBeTruthy();
+    expect(screen.getAllByText(/Review VPD result/)[0]).toBeTruthy();
   });
 });
