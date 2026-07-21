@@ -238,17 +238,29 @@ export const methodRegistry: GrowPathMethod[] = [
       "three macro bud-site photos plus one wider context photo",
       "maturity",
       "telemetry",
-      "sensory"
+      "sensory",
+      "simultaneous measured room temperature and RH",
+      "optional coldest material or container surface temperature",
+      "equilibrated jar or bag RH",
+      "measurement time and source",
+      "airflow and material density"
     ],
     [
       "window",
       "missing media",
       "risk",
       "tasks",
+      "air dew point and explicitly labeled air spread",
+      "surface-to-dew-point margin only when a surface temperature was measured",
+      "evidence used, missing information, and limitations",
       "review ID, evidence IDs, provider/model, image quality, visible traits, limitations, photo count, and credit status"
     ],
     [
       "Never estimate sensor values from images.",
+      "Never default missing dry/cure temperature, RH, airflow, or density to a plausible-looking value; incomplete measurements produce an insufficient-evidence result.",
+      "Never call air temperature minus dew point a surface condensation margin. Calculate a surface margin only from an entered coldest-surface measurement.",
+      "Never label mold risk as low or ruled out from one room reading, a photo, or the absence of visible growth.",
+      "Require cannabis/hemp grow context at the Dry / Cure Guard API boundary before saving a ToolRun.",
       "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",

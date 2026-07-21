@@ -70,6 +70,7 @@ type BackendCalculatorToolScreenProps = {
   experienceMessage?: string;
   aiCreditMessage?: string;
   fields: ToolField[];
+  validateValues?: (values: Record<string, string>) => string | null;
   buildPayload: (
     values: Record<string, string>,
     context: {
@@ -235,6 +236,7 @@ export default function BackendCalculatorToolScreen({
   experienceMessage,
   aiCreditMessage: aiCreditMessageOverride,
   fields,
+  validateValues,
   buildPayload,
   buildMetrics = defaultMetrics,
   buildNotices = defaultNotices,
@@ -462,6 +464,11 @@ export default function BackendCalculatorToolScreen({
     metadata: Record<string, any> = aiPrefillPayload
   ) {
     if (running) return;
+    const validationMessage = validateValues?.(submittedValues);
+    if (validationMessage) {
+      setFeedback(validationMessage);
+      return;
+    }
     setRunning(true);
     setFeedback("");
     try {
