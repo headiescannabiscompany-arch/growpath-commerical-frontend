@@ -169,7 +169,7 @@ describe("GrowTasksScreen", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
-        "Grow task link /home/personal/tools/saved-runs?toolRunId=run-1"
+        "Grow task link /home/personal/tools/saved-runs?toolRunId=run-1&growId=grow-task-1&sourceContext=task&sourceTaskId=task-done-1"
       )
     ).toBeTruthy();
     expect(screen.getByLabelText("Grow task link /store?q=batch-linked-1")).toBeTruthy();

@@ -1,4 +1,5 @@
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
 
 export type GrowTimelineKind = "log" | "tool_run" | "task";
 
@@ -14,9 +15,16 @@ export type GrowTimelineItem = {
 };
 
 export function growJournalItemHref(item: GrowTimelineItem, growId: string) {
+  if (item.kind === "tool_run") {
+    return savedRunSourceHref({
+      toolRunId: item.id,
+      growId,
+      sourceContext: "journal"
+    });
+  }
+
   const sourceTypeByKind = {
     log: "grow_log",
-    tool_run: "tool_run",
     task: "task"
   } as const;
 

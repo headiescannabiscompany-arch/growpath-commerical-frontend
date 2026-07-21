@@ -7,7 +7,11 @@ const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ toolRunId: "run-1" })
+  useLocalSearchParams: () => ({
+    toolRunId: "run-1",
+    growId: "grow-1",
+    sourceContext: "journal"
+  })
 }));
 
 jest.mock("@react-navigation/native", () => {
@@ -32,12 +36,16 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+    ScreenBoundary: ({ children, showBack, backFallbackHref, preferBackFallback }: any) =>
       React.createElement(
         View,
         null,
         showBack
-          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          ? React.createElement(
+              Text,
+              null,
+              `Shared Back ${backFallbackHref} Prefer ${preferBackFallback}`
+            )
           : null,
         children
       )
@@ -87,7 +95,7 @@ describe("SavedToolRunsRoute", () => {
 
     await waitFor(() =>
       expect(mockListToolRuns).toHaveBeenCalledWith({
-        growId: undefined,
+        growId: "grow-1",
         toolType: undefined
       })
     );
@@ -97,7 +105,9 @@ describe("SavedToolRunsRoute", () => {
     expect(screen.getByLabelText("Opened exact saved tool result run-1")).toBeTruthy();
     expect(screen.getByText("Opened from source link")).toBeTruthy();
     expect(screen.getByText("Saved run history")).toBeTruthy();
-    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(
+      screen.getByText("Shared Back /home/personal/grows/grow-1/journal Prefer true")
+    ).toBeTruthy();
     expect(screen.getByText("vpd result: Full VPD result.")).toBeTruthy();
   });
 });
