@@ -27,12 +27,26 @@ export function normalizeIpmPrefillField({
   fieldKey: string;
   value: unknown;
 }) {
-  if (fieldKey !== "evidence" || !Array.isArray(value)) return undefined;
-  return value
-    .map(String)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .join(", ");
+  if (fieldKey === "evidence" && Array.isArray(value)) {
+    return value
+      .map(String)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  // These are scout measurements, not facts that can be inferred from a photo.
+  if (["plantsChecked", "plantsAffected", "stickyTrapCount"].includes(fieldKey)) {
+    return "";
+  }
+
+  const text = String(value ?? "").trim();
+  const isUnknownPlaceholder =
+    /^(?:unknown|unavailable|n\/?a|not\s+(?:applicable|assessed|confirmed|determined|documented|known|observed|performed|provided|used|visible)|none\s+(?:documented|observed|provided))$/i.test(
+      text
+    );
+  if (fieldKey !== "pestSeen" && isUnknownPlaceholder) return "";
+  return undefined;
 }
 
 function firstText(...values: unknown[]) {
@@ -244,7 +258,7 @@ export default function IpmScoutToolRoute() {
         notReadyMessage:
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
         buildMessage: () =>
-          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. evidence must list only visible or recorded facts. additionalInformation must name plausible alternatives and the exact leaf-top, leaf-underside, macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
+          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. Leave every unknown value as an empty string; except for pestSeen, do not fill fields with placeholders such as "not determined", "not performed", "not provided", "not applicable", or "none documented". plantsChecked, plantsAffected, and stickyTrapCount must stay empty because a photo is not a completed scout count. evidence must list only visible or recorded facts. additionalInformation must name plausible alternatives and the exact leaf-top, leaf-underside, macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
         normalizeFieldValue: normalizeIpmPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)

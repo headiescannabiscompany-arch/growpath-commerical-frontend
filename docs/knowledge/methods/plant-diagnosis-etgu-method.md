@@ -68,6 +68,11 @@ combined billable action a free calculator.
 Photo-prefill feedback must count only non-empty values actually placed into the form.
 Leave unknown or empty provider values blank, and normalize returned lists into readable
 comma-separated evidence instead of exposing raw empty arrays such as `[]` as observations.
+Photo review must not prefill plants checked, plants affected, or sticky-trap counts because
+those are scout measurements, not facts established by an image. Unknown placeholders such
+as `not determined`, `not performed`, `not provided`, or `none documented` remain blank and
+must not inflate the filled-field count; `pestSeen: not confirmed` may remain as an explicit
+organism-identity limitation.
 
 The user may mark the result as a likely working hypothesis, uncertain, or rejected.
 “Likely” never means confirmed identity. Save that decision with its timestamp in the

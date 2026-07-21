@@ -81,8 +81,27 @@ describe("IpmScoutToolRoute", () => {
       })
     ).toBe("visible leaf edge browning, no insect visible");
     expect(normalizeIpmPrefillField({ fieldKey: "evidence", value: [] })).toBe("");
+    expect(normalizeIpmPrefillField({ fieldKey: "plantsChecked", value: ["1"] })).toBe(
+      ""
+    );
+    expect(normalizeIpmPrefillField({ fieldKey: "plantsChecked", value: "1" })).toBe("");
     expect(
-      normalizeIpmPrefillField({ fieldKey: "plantsChecked", value: ["1"] })
+      normalizeIpmPrefillField({ fieldKey: "plantsAffected", value: "not confirmed" })
+    ).toBe("");
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "stickyTrapCount", value: "not applicable" })
+    ).toBe("");
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "progression", value: "not determined" })
+    ).toBe("");
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "recentActions", value: "none documented" })
+    ).toBe("");
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "pestSeen", value: "not confirmed" })
+    ).toBeUndefined();
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "leafDamage", value: "leaf-edge browning" })
     ).toBeUndefined();
   });
 
