@@ -1,6 +1,7 @@
 // CONTRACT: All facility-scoped resources must use endpoints.ts (no hardcoded paths)
 // and must return canonical envelopes.
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 
@@ -167,7 +168,7 @@ export async function getPersonalGrowTimeline(
   try {
     const res = await apiRequest(
       `/api/personal/grows/${encodeURIComponent(growId)}/timeline`,
-      { cache: "no-store" }
+      { cache: "no-store", params: withFreshnessParam() }
     );
     const rows = Array.isArray(res)
       ? res

@@ -1,5 +1,6 @@
 // src/api/logs.ts
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 
 export interface PersonalLog {
   id: string;
@@ -64,7 +65,7 @@ export async function listPersonalLogs(options?: {
   try {
     const res: any = await apiRequest(`/api/personal/logs`, {
       cache: "no-store",
-      params: options?.growId ? { growId: options.growId } : undefined
+      params: withFreshnessParam(options?.growId ? { growId: options.growId } : {})
     });
     const logs = res?.data?.logs ?? res?.logs ?? res?.items;
     return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
