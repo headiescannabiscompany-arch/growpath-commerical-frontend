@@ -65,6 +65,10 @@ so and state the one-credit cost; the result must record the actual charge or ze
 a failed/refunded, unavailable, or insufficient-credit provider attempt. Do not call a
 combined billable action a free calculator.
 
+Photo-prefill feedback must count only non-empty values actually placed into the form.
+Leave unknown or empty provider values blank, and normalize returned lists into readable
+comma-separated evidence instead of exposing raw empty arrays such as `[]` as observations.
+
 The user may mark the result as a likely working hypothesis, uncertain, or rejected.
 “Likely” never means confirmed identity. Save that decision with its timestamp in the
 ToolRun and IPM module record, then create comparable repeat-scout, treatment-decision,

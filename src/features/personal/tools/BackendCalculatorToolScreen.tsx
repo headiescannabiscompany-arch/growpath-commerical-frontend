@@ -126,6 +126,10 @@ type BackendCalculatorToolScreenProps = {
     isReady?: () => boolean;
     notReadyMessage?: string;
     buildMessage: (context: { growId: string; plantId: string }) => string;
+    normalizeFieldValue?: (context: {
+      fieldKey: string;
+      value: unknown;
+    }) => string | undefined;
     runAfterPrefill?: boolean;
     buildPayloadMetadata?: (context: {
       response: PersonalAssistantResponse;
@@ -202,6 +206,14 @@ function defaultNotices(outputs: Record<string, any>): ToolResultNotice[] {
 
 function outputSummary(outputs: Record<string, any>) {
   return JSON.stringify(outputs, null, 2).slice(0, 3000);
+}
+
+function normalizedPrefillText(value: unknown) {
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value)) return value.length ? JSON.stringify(value, null, 2) : "";
+  if (value == null) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return JSON.stringify(value, null, 2);
 }
 
 export { tomorrow };
@@ -373,12 +385,14 @@ export default function BackendCalculatorToolScreen({
       const next = Object.fromEntries(
         fields
           .filter((field) => parsed[field.key] != null)
-          .map((field) => [
-            field.key,
-            typeof parsed[field.key] === "string"
-              ? parsed[field.key]
-              : JSON.stringify(parsed[field.key], null, 2)
-          ])
+          .map((field) => {
+            const value = parsed[field.key];
+            const configuredValue = aiPrefill.normalizeFieldValue?.({
+              fieldKey: field.key,
+              value
+            });
+            return [field.key, configuredValue ?? normalizedPrefillText(value)];
+          })
       );
       const resolvedValues = Object.fromEntries(
         fields.map((field) => [
@@ -397,8 +411,16 @@ export default function BackendCalculatorToolScreen({
       if (aiPrefill.runAfterPrefill) {
         await calculateWithValues(resolvedValues, metadata);
       } else {
+        const filledFieldCount = Object.values(next).filter((value) =>
+          String(value).trim()
+        ).length;
+        const prefillSummary = filledFieldCount
+          ? `AI filled ${filledFieldCount} non-empty field${
+              filledFieldCount === 1 ? "" : "s"
+            } from available evidence. Empty or unknown values were left blank. Review before calculating.`
+          : "AI reviewed the available evidence but could not prefill any non-empty fields. Empty or unknown values were left blank. Add clearer evidence or complete the form manually.";
         setFeedback(
-          `AI filled ${Object.keys(next).length} field(s) from available evidence. Review before calculating.${
+          `${prefillSummary}${
             response.missingInformation?.length
               ? ` Optional missing details: ${response.missingInformation.join(", ")}.`
               : ""

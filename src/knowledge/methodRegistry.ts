@@ -106,6 +106,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
       "Do not label a combined billable scout-and-GPT action as a free calculator or hide its AI-credit cost until after the run.",
+      "Do not count empty AI-prefill keys as filled fields or display raw empty arrays as scout evidence.",
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",

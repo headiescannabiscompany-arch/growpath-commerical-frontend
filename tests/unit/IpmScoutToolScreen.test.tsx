@@ -1,7 +1,9 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import IpmScoutToolRoute from "@/app/home/personal/(tabs)/tools/ipm-scout";
+import IpmScoutToolRoute, {
+  normalizeIpmPrefillField
+} from "@/app/home/personal/(tabs)/tools/ipm-scout";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
@@ -71,6 +73,19 @@ jest.mock("@/api/facilityTasks", () => ({
 }));
 
 describe("IpmScoutToolRoute", () => {
+  it("normalizes provider evidence arrays into readable scout observations", () => {
+    expect(
+      normalizeIpmPrefillField({
+        fieldKey: "evidence",
+        value: [" visible leaf edge browning ", "", "no insect visible"]
+      })
+    ).toBe("visible leaf edge browning, no insect visible");
+    expect(normalizeIpmPrefillField({ fieldKey: "evidence", value: [] })).toBe("");
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "plantsChecked", value: ["1"] })
+    ).toBeUndefined();
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockRunCalculator.mockResolvedValue({
