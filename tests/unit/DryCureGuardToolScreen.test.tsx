@@ -113,12 +113,20 @@ describe("DryCureGuardToolScreen", () => {
   function enterRequiredReadings(screen: ReturnType<typeof render>) {
     fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Stage"), "curing");
     fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Days in current stage"),
+      "2"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Dry / Cure Guard Measured room temperature"),
       "68"
     );
     fireEvent.changeText(
       screen.getByLabelText("Dry / Cure Guard Measured room RH"),
       "60"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Light condition"),
+      "dark"
     );
   }
 
@@ -130,7 +138,7 @@ describe("DryCureGuardToolScreen", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "Complete the required fields: Stage, Measured room temperature, Measured room RH."
+          "Complete the required fields: Stage, Days in current stage, Measured room temperature, Measured room RH, Light condition."
         )
       ).toBeTruthy()
     );
@@ -155,9 +163,11 @@ describe("DryCureGuardToolScreen", () => {
         expect.objectContaining({
           growId: "grow-1",
           mode: "curing",
+          daysInStage: 2,
           dryRoomTemp: 68,
           dryRoomRH: 60,
-          jarRH: 63
+          jarRH: 63,
+          lightExposure: "dark"
         })
       )
     );
@@ -173,7 +183,9 @@ describe("DryCureGuardToolScreen", () => {
           toolRunId: "toolrun-1",
           input: expect.objectContaining({
             mode: "curing",
-            jarRH: 63
+            daysInStage: 2,
+            jarRH: 63,
+            lightExposure: "dark"
           }),
           output: expect.objectContaining({
             moldRisk: "monitor",
@@ -259,5 +271,15 @@ describe("DryCureGuardToolScreen", () => {
     await waitFor(() =>
       expect(screen.getByText("Saved dry/cure record to harvest batch.")).toBeTruthy()
     );
+  });
+
+  it("explains darkness and stage timing without calling 24 hours completion", () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    expect(screen.getByText(/Keep drying and curing material dark/i)).toBeTruthy();
+    expect(screen.getByText(/Plan controlled drying around 10-14 days/i)).toBeTruthy();
+    expect(screen.getByText(/Fast, hot, low-humidity drying/i)).toBeTruthy();
+    expect(screen.getByText(/Longer than 14 days can occur/i)).toBeTruthy();
+    expect(screen.getByText(/24-hour item is only a recheck/i)).toBeTruthy();
   });
 });

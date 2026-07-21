@@ -15,6 +15,7 @@ export type SourceUseCase =
   | "commercial_product"
   | "legal_regulatory"
   | "device_api"
+  | "post_harvest"
   | "education";
 
 export type SourceType =
@@ -102,6 +103,48 @@ export const sourceRegistry: SourceRegistryEntry[] = [
       lastReviewedAt: "2026-07-18"
     })
   ),
+  {
+    id: "pmc9404914-postharvest-review",
+    name: "Postharvest Operations of Cannabis and Their Effect on Cannabinoid Content",
+    domain: "pmc.ncbi.nlm.nih.gov",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Supports method-dependent drying variability and post-harvest process factors; does not establish one universal completion day.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "pmid-6643-cannabis-storage-light",
+    name: "The stability of cannabis and its preparations on storage",
+    domain: "pubmed.ncbi.nlm.nih.gov",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Supports protecting cannabis material from light as a cannabinoid-quality measure; not a mold or safety determination.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "owner-observation-dry-window-2026-07-21",
+    name: "Owner drying-window observation (2026-07-21)",
+    sourceType: "user_observation",
+    reliabilityTier: "B",
+    trustedFor: ["post_harvest", "education"],
+    notTrustedFor: ["lab_result", "legal_regulatory", "diagnosis"],
+    notes:
+      "Planning observation: controlled drying commonly targets 10-14 days; hot, fast, low-humidity drying may reach an endpoint in 5-7 days with quality concerns; longer than 14 days can occur but is not recommended as routine. Never use elapsed time alone as completion evidence.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc9404914-postharvest-review",
+      "pmid-6643-cannabis-storage-light"
+    ],
+    lastReviewedAt: "2026-07-21"
+  },
   {
     id: "official-product-label",
     name: "Official product or safety label",

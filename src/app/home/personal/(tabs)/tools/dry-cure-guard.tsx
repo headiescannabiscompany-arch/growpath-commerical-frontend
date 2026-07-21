@@ -45,6 +45,9 @@ function dryCureCalendarMetadata(sourceStage: string) {
 
 function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
   const mode = String(payload.mode || "drying").toLowerCase();
+  const daysInStage = optionalNumber(payload.daysInStage) || 0;
+  const daysUntilStageDay = (targetDay: number) =>
+    Math.max(1, Math.ceil(targetDay - daysInStage));
   const firstSuggestion = Array.isArray(outputs.taskSuggestions)
     ? outputs.taskSuggestions[0]
     : null;
@@ -52,34 +55,78 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
     outputs.moldRisk ? `Mold risk: ${outputs.moldRisk}` : "",
     outputs.overdryRisk ? `Overdry risk: ${outputs.overdryRisk}` : "",
     outputs.dewPointF != null ? `Dew point: ${outputs.dewPointF} F` : "",
+    payload.lightExposure ? `Light exposure: ${payload.lightExposure}` : "",
+    payload.daysInStage != null ? `Stage day: ${payload.daysInStage}` : "",
     outputs.nextAction ? `Next action: ${outputs.nextAction}` : ""
   ]
     .filter(Boolean)
     .join("\n");
 
+  const firstCheck = {
+    title: firstSuggestion?.title || "24-hour dry/cure recheck - not completion",
+    priority: firstSuggestion?.priority || "medium",
+    dueDate: tomorrow(1),
+    ...dryCureCalendarMetadata("dry_cure_condition_check"),
+    description: [
+      riskSummary ||
+        "Check dry-room temp/RH, light exposure, airflow, material density, and jar RH if curing.",
+      "This is a 24-hour monitoring checkpoint, not a finish date."
+    ].join("\n")
+  };
+
+  if (mode === "drying") {
+    return [
+      firstCheck,
+      {
+        title: "Inspect drying quality and interior moisture",
+        priority: "high" as const,
+        dueDate: tomorrow(daysUntilStageDay(3)),
+        ...dryCureCalendarMetadata("dry_cure_bud_inspection"),
+        description:
+          "Check darkness, stem flex, exterior crispness, representative interior moisture, aroma, and any ammonia, musty, sour, or hay notes."
+      },
+      {
+        title: "Assess fast-dry quality risk - not completion",
+        priority: "high" as const,
+        dueDate: tomorrow(daysUntilStageDay(7)),
+        ...dryCureCalendarMetadata("dry_cure_fast_window_review"),
+        description:
+          "A hot, fast, low-humidity dry can reach an endpoint in 5-7 days but may overdry the exterior or reduce quality. Measure and inspect; do not mark complete from the calendar."
+      },
+      {
+        title: "Review the controlled drying window",
+        priority: "medium" as const,
+        dueDate: tomorrow(daysUntilStageDay(10)),
+        ...dryCureCalendarMetadata("dry_cure_planning_window_review"),
+        description:
+          "Controlled drying is commonly planned around 10-14 days. Use measured trends, interior/exterior feel, aroma, and an equilibrated container check to decide whether to continue."
+      },
+      {
+        title: "Record drying outcome or continue monitoring",
+        priority: "medium" as const,
+        dueDate: tomorrow(daysUntilStageDay(14)),
+        ...dryCureCalendarMetadata("dry_cure_outcome_notes"),
+        description:
+          "Day 14 is a review point, not an automatic completion date. Longer dries can occur but are not recommended as routine; save the measurements and observations supporting transition or continued drying."
+      }
+    ];
+  }
+
   return [
-    {
-      title: firstSuggestion?.title || "Check dry/cure conditions",
-      priority: firstSuggestion?.priority || "medium",
-      dueDate: tomorrow(1),
-      ...dryCureCalendarMetadata("dry_cure_condition_check"),
-      description:
-        riskSummary ||
-        "Check dry-room temp/RH, airflow, bud density risk, and jar RH if curing."
-    },
+    firstCheck,
     {
       title: "Inspect buds for dry/cure quality",
-      priority: mode === "drying" ? ("high" as const) : ("medium" as const),
-      dueDate: tomorrow(mode === "drying" ? 2 : 1),
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
       ...dryCureCalendarMetadata("dry_cure_bud_inspection"),
       description:
-        "Check stem flex/snap, exterior crispness, interior moisture, aroma, and any ammonia or hay notes."
+        "Check darkness, exterior/interior moisture, aroma, texture, and any ammonia, musty, sour, or hay notes."
     },
     {
       title:
         mode === "curing" ? "Check jar RH and burp response" : "Prepare jar RH check",
       priority: "medium" as const,
-      dueDate: tomorrow(mode === "curing" ? 1 : 5),
+      dueDate: tomorrow(mode === "curing" ? 7 : 5),
       ...dryCureCalendarMetadata("dry_cure_jar_rh_review"),
       description:
         "Record jar or bag RH, burp timing, aroma trend, texture, and whether material is stabilizing or over-drying."
@@ -87,7 +134,7 @@ function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, a
     {
       title: "Record dry/cure outcome notes",
       priority: "medium" as const,
-      dueDate: tomorrow(mode === "curing" ? 3 : 7),
+      dueDate: tomorrow(mode === "curing" ? 14 : 7),
       ...dryCureCalendarMetadata("dry_cure_outcome_notes"),
       description:
         "Save smell, texture, moisture, trim readiness, and cure quality notes back to the grow timeline."
@@ -135,6 +182,14 @@ function dryCureRecord(
         : "",
       payload.measuredAt ? `Measured at: ${payload.measuredAt}` : "",
       payload.measurementSource ? `Measurement source: ${payload.measurementSource}` : "",
+      payload.lightExposure ? `Light exposure: ${payload.lightExposure}` : "",
+      payload.daysInStage != null ? `Days in stage: ${payload.daysInStage}` : "",
+      outputs.stageTiming?.planningWindow
+        ? `Planning window: ${outputs.stageTiming.planningWindow}`
+        : "",
+      outputs.stageTiming?.completionBasis
+        ? `Completion basis: ${outputs.stageTiming.completionBasis}`
+        : "",
       outputs.nextAction ? `Next action: ${outputs.nextAction}` : "",
       payload.observations ? `Observations: ${payload.observations}` : ""
     ]
@@ -151,8 +206,8 @@ export default function DryCureGuardToolScreen() {
       tool="dry-cure-guard"
       toolKey="dry-cure-guard"
       title="Dry / Cure Guard"
-      subtitle="Use real room, surface, and container readings to spot moisture concerns without pretending one target guarantees quality."
-      experienceMessage="This is a measured-condition workflow. Unknown readings stay blank, and the result cannot diagnose mold or guarantee product safety."
+      subtitle="Use real room, surface, container, light, and stage-time evidence without pretending one target or one day guarantees quality."
+      experienceMessage="This is a measured-condition workflow. Drying and curing stay protected from light; a 24-hour item is only a recheck, and completion depends on measurements and trends."
       aiCreditMessage="The calculator itself uses no AI credit. Optional AI prefill uses one credit only when you choose it and may summarize saved records or approved media; it cannot invent sensor readings."
       formHeader={({ growId }) => (
         <View style={styles.evidenceSection}>
@@ -168,6 +223,16 @@ export default function DryCureGuardToolScreen() {
             <Text style={styles.measurementText}>
               3. During cure, let the container reading equilibrate and record its RH,
               sensor, time, aroma, texture, and representative interior checks.
+            </Text>
+            <Text style={styles.measurementText}>
+              4. Keep drying and curing material dark. Use light only briefly for work and
+              record any continuous or direct exposure.
+            </Text>
+            <Text style={styles.measurementText}>
+              5. Plan controlled drying around 10-14 days. Fast, hot, low-humidity drying
+              may reach an endpoint in 5-7 days with greater quality-loss or overdry
+              concern. Longer than 14 days can occur but is not recommended as a routine
+              target. Time alone never marks it done.
             </Text>
             <Text style={styles.measurementWarning}>
               Photos may document structure or visible concerns, but cannot supply
@@ -191,7 +256,7 @@ export default function DryCureGuardToolScreen() {
         clearUnfilled: true,
         evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         buildMessage: () =>
-          `Prefill this Dry/Cure Guard review from the selected grow's harvest batch, dry/cure records, room or device telemetry, logged temperature/RH, surface temperature, jar readings, tasks, and attached photos/video. Return JSON only with exactly these keys: {"mode":"string","dryRoomTemp":"string","tempUnit":"string","dryRoomRH":"string","surfaceTemp":"string","jarRH":"string","hoursAtConditions":"string","measuredAt":"string","measurementSource":"string","harvestBatchId":"string","airflow":"string","budDensity":"string","observations":"string"}. Numeric room temperature, surface temperature, room RH, jar RH, and duration must come from saved measurements; never estimate them from an image. Media may support visible density, drying structure, surface condition, or airflow setup, but cannot diagnose or rule mold in or out. Leave unknowns blank. In observations summarize aroma/texture notes, evidence limitations, and the exact sensor or close-up checks still needed.`
+          `Prefill this Dry/Cure Guard review from the selected grow's harvest batch, dry/cure records, room or device telemetry, logged temperature/RH, surface temperature, jar readings, tasks, and attached photos/video. Return JSON only with exactly these keys: {"mode":"string","daysInStage":"string","dryRoomTemp":"string","tempUnit":"string","dryRoomRH":"string","surfaceTemp":"string","jarRH":"string","hoursAtConditions":"string","measuredAt":"string","measurementSource":"string","harvestBatchId":"string","lightExposure":"string","airflow":"string","budDensity":"string","observations":"string"}. Numeric room temperature, surface temperature, room RH, jar RH, duration, and days in stage must come from saved measurements or explicit dated records; never estimate them from an image. Light exposure may be dark, brief_work_light, continuous_indirect, direct_light, or unknown and must come from an explicit record, not a visual guess. Media may support visible density, drying structure, surface condition, or airflow setup, but cannot diagnose or rule mold in or out. Leave unknowns blank. In observations summarize aroma/texture notes, evidence limitations, and the exact sensor or close-up checks still needed.`
       }}
       fields={[
         {
@@ -203,6 +268,16 @@ export default function DryCureGuardToolScreen() {
             "Choose the stage being measured; do not infer it from the selected grow.",
           required: true,
           section: "Current process"
+        },
+        {
+          key: "daysInStage",
+          label: "Days in current stage",
+          defaultValue: "",
+          placeholder: "Elapsed stage days, not days remaining",
+          helpText:
+            "Used to schedule checkpoints. It never becomes an automatic completion countdown.",
+          keyboardType: "numeric",
+          required: true
         },
         {
           key: "dryRoomTemp",
@@ -275,6 +350,17 @@ export default function DryCureGuardToolScreen() {
           helpText: "Add a batch ID to save this exact measurement snapshot to the batch."
         },
         {
+          key: "lightExposure",
+          label: "Light condition",
+          defaultValue: "",
+          placeholder:
+            "dark, brief_work_light, continuous_indirect, direct_light, or unknown",
+          helpText:
+            "Drying and curing material should stay protected from light. Record brief work light separately from continuous or direct exposure.",
+          required: true,
+          section: "Environment and exposure"
+        },
+        {
           key: "airflow",
           label: "Observed airflow",
           defaultValue: "",
@@ -299,19 +385,36 @@ export default function DryCureGuardToolScreen() {
       validateValues={(values) => {
         const missing = [
           ["mode", "Stage"],
+          ["daysInStage", "Days in current stage"],
           ["dryRoomTemp", "Measured room temperature"],
-          ["dryRoomRH", "Measured room RH"]
+          ["dryRoomRH", "Measured room RH"],
+          ["lightExposure", "Light condition"]
         ].filter(([key]) => !String(values[key] || "").trim());
         return missing.length
           ? `Complete the required field${missing.length === 1 ? "" : "s"}: ${missing
               .map(([, label]) => label)
               .join(", ")}.`
-          : null;
+          : !Number.isFinite(Number(values.daysInStage)) || Number(values.daysInStage) < 0
+            ? "Days in current stage must be zero or greater."
+            : ![
+                  "dark",
+                  "brief_work_light",
+                  "continuous_indirect",
+                  "direct_light",
+                  "unknown"
+                ].includes(
+                  String(values.lightExposure || "")
+                    .trim()
+                    .toLowerCase()
+                )
+              ? "Light condition must be dark, brief_work_light, continuous_indirect, direct_light, or unknown."
+              : null;
       }}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
         ...plantContext.toolRunContext,
         mode: values.mode.trim(),
+        daysInStage: measuredNumber(values.daysInStage),
         dryRoomTemp: measuredNumber(values.dryRoomTemp),
         tempUnit: values.tempUnit,
         dryRoomRH: measuredNumber(values.dryRoomRH),
@@ -321,6 +424,7 @@ export default function DryCureGuardToolScreen() {
         measuredAt: values.measuredAt.trim() || undefined,
         measurementSource: values.measurementSource.trim() || undefined,
         harvestBatchId: values.harvestBatchId.trim() || undefined,
+        lightExposure: values.lightExposure.trim() || undefined,
         airflow: values.airflow.trim() || undefined,
         budDensity: values.budDensity.trim() || undefined,
         observations: values.observations || undefined,
@@ -344,6 +448,19 @@ export default function DryCureGuardToolScreen() {
           key: "surface-margin",
           label: "Surface-to-dew-point margin",
           value: metric(outputs.surfaceDewPointMarginC, " C")
+        },
+        {
+          key: "light",
+          label: "Light protection",
+          value: outputs.lightStatus || "Not assessed"
+        },
+        {
+          key: "timing",
+          label: "Stage timing",
+          value:
+            outputs.mode === "drying"
+              ? "Plan 10-14 days; 24h is a recheck"
+              : "Measurement-based; 24h is a recheck"
         },
         {
           key: "condensation",
