@@ -225,4 +225,56 @@ describe("SavedToolRunsRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText(/Saved light condition: dark/i)).toBeTruthy();
   });
+
+  it("keeps saved Clone Rooting batch evidence visible", async () => {
+    const cloneRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "clone_rooting",
+      summary: "Measured clone batch review.",
+      inputs: {
+        daysSinceCut: 9,
+        cloneCount: 12,
+        rootedCount: 3,
+        failedCount: 3,
+        rootEvidence: "mixed"
+      },
+      outputs: {
+        assessmentStatus: "measured_batch_review",
+        riskLevel: "high",
+        rootingProgress: "mixed_outcome",
+        batchCounts: { total: 12, rooted: 3, failed: 3, pending: 6 },
+        clonePerformanceSummary: {
+          rootingPercent: 25,
+          failurePercent: 25,
+          pendingPercent: 50
+        },
+        observations: { rootEvidence: "mixed" },
+        likelyBottlenecks: [
+          {
+            key: "low-humidity",
+            severity: "high",
+            issue: "Measured humidity may increase water-loss pressure.",
+            evidence: "65% RH was recorded.",
+            recommendations: ["Confirm the sensor location and leaf turgor."]
+          }
+        ],
+        missingInformation: []
+      },
+      createdAt: "2026-07-21T20:30:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cloneRun]);
+    mockGetToolRun.mockResolvedValue(cloneRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Evidence status: measured_batch_review")).toBeTruthy();
+    expect(screen.getByText("Visibly rooted: 3/12 (25%)")).toBeTruthy();
+    expect(screen.getByText("Failed / culled: 3/12 (25%)")).toBeTruthy();
+    expect(screen.getByText("Still pending: 6/12")).toBeTruthy();
+    expect(screen.getByText("Direct root evidence: mixed")).toBeTruthy();
+    expect(screen.getByText(/65% RH was recorded/i)).toBeTruthy();
+    expect(screen.getByText(/do not prove hidden roots/i)).toBeTruthy();
+  });
 });

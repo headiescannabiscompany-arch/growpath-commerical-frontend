@@ -92,6 +92,14 @@ function isDryCureRun(run: ToolRun | null) {
   return type === "dry_cure_guard";
 }
 
+function isCloneRootingRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "clone_rooting";
+}
+
 function unresolvedSavedCropName(value: unknown) {
   return /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
     String(value || "").trim()
@@ -211,6 +219,67 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       }
     ];
   }
+  if (isCloneRootingRun(run)) {
+    const counts =
+      outputs.batchCounts && typeof outputs.batchCounts === "object"
+        ? outputs.batchCounts
+        : {};
+    const performance =
+      outputs.clonePerformanceSummary &&
+      typeof outputs.clonePerformanceSummary === "object"
+        ? outputs.clonePerformanceSummary
+        : {};
+    const observations =
+      outputs.observations && typeof outputs.observations === "object"
+        ? outputs.observations
+        : {};
+    return [
+      {
+        key: "assessment",
+        label: "Evidence status",
+        value: outputs.assessmentStatus || "Not assessed"
+      },
+      {
+        key: "risk",
+        label: "Batch concern",
+        value: outputs.riskLevel || "Not assessed"
+      },
+      {
+        key: "progress",
+        label: "Visible progress",
+        value: outputs.rootingProgress || "Not assessed"
+      },
+      {
+        key: "rooted",
+        label: "Visibly rooted",
+        value:
+          counts.rooted != null && counts.total != null
+            ? `${counts.rooted}/${counts.total} (${performance.rootingPercent ?? 0}%)`
+            : "Not assessed"
+      },
+      {
+        key: "failed",
+        label: "Failed / culled",
+        value:
+          counts.failed != null && counts.total != null
+            ? `${counts.failed}/${counts.total} (${performance.failurePercent ?? 0}%)`
+            : "Not assessed"
+      },
+      {
+        key: "pending",
+        label: "Still pending",
+        value:
+          counts.pending != null && counts.total != null
+            ? `${counts.pending}/${counts.total}`
+            : "Not assessed"
+      },
+      {
+        key: "root-evidence",
+        label: "Direct root evidence",
+        value: observations.rootEvidence || "Not checked"
+      }
+    ];
+  }
   const entries = Object.entries(outputs)
     .filter(([, value]) => value != null && typeof value !== "object")
     .slice(0, 6);
@@ -262,6 +331,53 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
         key: "dry-cure-light-evidence",
         severity: lightStatus === "quality_concern" ? "medium" : "info",
         message: `Saved light condition: ${lightExposure || "not recorded"}. Light protection assessment: ${lightStatus || "not assessed"}.`
+      });
+    }
+  }
+
+  if (isCloneRootingRun(run)) {
+    const bottlenecks = Array.isArray(outputs.likelyBottlenecks)
+      ? outputs.likelyBottlenecks
+      : [];
+    bottlenecks.slice(0, 6).forEach((item: any, index: number) => {
+      provenance.push({
+        key: `clone-bottleneck-${item?.key || index}`,
+        severity: ["high", "medium", "low"].includes(item?.severity)
+          ? item.severity
+          : "medium",
+        message: [item?.issue || String(item), item?.evidence].filter(Boolean).join(" "),
+        remediation: Array.isArray(item?.recommendations)
+          ? item.recommendations.join(" ")
+          : undefined
+      });
+    });
+    provenance.push({
+      key: "clone-hidden-root-limit",
+      severity: "info",
+      message:
+        "Elapsed time and top growth do not prove hidden roots or automatic failure. This saved result keeps visible roots, callus, failed cuts, and pending cuts separate."
+    });
+    const missing = Array.isArray(outputs.missingInformation)
+      ? outputs.missingInformation.filter(Boolean)
+      : [];
+    if (missing.length) {
+      provenance.push({
+        key: "clone-missing-evidence",
+        severity: "medium",
+        message: `Still needed for a complete measured review: ${missing.join(", ")}.`
+      });
+    }
+    const media =
+      outputs.mediaAnalysis && typeof outputs.mediaAnalysis === "object"
+        ? outputs.mediaAnalysis
+        : null;
+    if (media?.requested) {
+      provenance.push({
+        key: "clone-photo-provenance",
+        severity: media.performed ? "info" : "medium",
+        message: media.performed
+          ? `${media.providerLabel || "AI clone photo review"} inspected ${media.photosAnalyzed || 0} photo(s). Quality: ${media.quality || "not provided"}.`
+          : "Clone photos were attached, but this saved result does not claim that their pixels were analyzed."
       });
     }
   }

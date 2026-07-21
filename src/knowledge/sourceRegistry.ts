@@ -16,6 +16,7 @@ export type SourceUseCase =
   | "legal_regulatory"
   | "device_api"
   | "post_harvest"
+  | "propagation"
   | "education";
 
 export type SourceType =
@@ -52,6 +53,7 @@ const horticulture = [
   "soil_science",
   "nutrient_chemistry",
   "water_quality",
+  "propagation",
   "education"
 ] as SourceUseCase[];
 
@@ -103,6 +105,33 @@ export const sourceRegistry: SourceRegistryEntry[] = [
       lastReviewedAt: "2026-07-18"
     })
   ),
+  {
+    id: "nc-state-extension-cutting-propagation",
+    name: "NC State Extension Gardener Handbook — Propagation",
+    domain: "content.ces.ncsu.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["propagation", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Supports general cutting-propagation principles: high humidity limits water loss, while rooting media should be clean, low fertility, well drained, and moisture retentive. It does not prove roots in an individual cutting or set a cannabis-specific completion day.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "hort-20250043-cannabis-cutting-environment",
+    name: "Light, Temperature, and Relative Humidity Influence the Adventitious Rooting of Cannabis Stem Cuttings",
+    domain: "hst-j.org",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["propagation", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Cannabis-cutting environment study using two Korean hemp cultivars. Use its tested light, temperature, and RH ranges as study context, not universal targets: cultivar response differed and combined environmental effects were not tested.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["nc-state-extension-cutting-propagation"],
+    lastReviewedAt: "2026-07-21"
+  },
   {
     id: "pmc9404914-postharvest-review",
     name: "Postharvest Operations of Cannabis and Their Effect on Cannabinoid Content",
