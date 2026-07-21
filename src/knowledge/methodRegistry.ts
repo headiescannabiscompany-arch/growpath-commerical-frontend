@@ -227,12 +227,33 @@ export const methodRegistry: GrowPathMethod[] = [
     "Harvest, Dry and Cure",
     ["harvest", "post-harvest"],
     "harvest-dry-cure-method.md",
-    ["readiness evidence", "decision", "measured dry/cure", "outcome"],
-    ["macro media", "maturity", "telemetry", "sensory"],
-    ["window", "missing media", "risk", "tasks"],
+    [
+      "readiness evidence",
+      "decision",
+      "measured dry/cure",
+      "outcome",
+      "photo-review provenance and AI-credit outcome"
+    ],
+    [
+      "three macro bud-site photos plus one wider context photo",
+      "maturity",
+      "telemetry",
+      "sensory"
+    ],
+    [
+      "window",
+      "missing media",
+      "risk",
+      "tasks",
+      "review ID, evidence IDs, provider/model, image quality, visible traits, limitations, photo count, and credit status"
+    ],
     [
       "Never estimate sensor values from images.",
       "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
+      "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
+      "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
+      "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
+      "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",
       "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."
     ],
     ["harvest-readiness", "dry-cure-guard"]
