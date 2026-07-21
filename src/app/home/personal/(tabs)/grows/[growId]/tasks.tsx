@@ -26,6 +26,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
 
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
@@ -261,6 +262,17 @@ function taskSourcePath(task: PersonalTask, growId: string) {
       growId ||
       ""
   );
+  if (sourceType === "tool_run") {
+    const toolRunId = String(
+      task.sourceObjectId || task.sourceToolRunId || task.linkedToolRunId || ""
+    );
+    return savedRunSourceHref({
+      toolRunId,
+      growId,
+      sourceContext: "task",
+      sourceTaskId: getRowId(task)
+    });
+  }
   return sourceObjectHref({
     ...task,
     sourceType,

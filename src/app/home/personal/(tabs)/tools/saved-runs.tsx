@@ -28,6 +28,7 @@ import ToolResultSurface, {
 } from "@/features/personal/tools/ToolResultSurface";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { savedRunBackTarget } from "@/features/personal/tools/savedRunRoutes";
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
@@ -100,12 +101,26 @@ export default function SavedToolRunsScreen() {
     runId?: string | string[];
     toolType?: string | string[];
     toolRunId?: string | string[];
+    sourceContext?: string | string[];
+    sourceTaskId?: string | string[];
   }>();
   const growId = useMemo(() => coerceParam(params.growId), [params.growId]);
   const initialToolType = useMemo(() => coerceParam(params.toolType), [params.toolType]);
   const targetToolRunId = useMemo(
     () => coerceParam(params.toolRunId) || coerceParam(params.runId),
     [params.runId, params.toolRunId]
+  );
+  const sourceContext = useMemo(
+    () => coerceParam(params.sourceContext),
+    [params.sourceContext]
+  );
+  const sourceTaskId = useMemo(
+    () => coerceParam(params.sourceTaskId),
+    [params.sourceTaskId]
+  );
+  const backTarget = useMemo(
+    () => savedRunBackTarget({ growId, sourceContext, sourceTaskId }),
+    [growId, sourceContext, sourceTaskId]
   );
   const [toolType, setToolType] = useState(initialToolType);
   const [runs, setRuns] = useState<ToolRun[]>([]);
@@ -228,7 +243,8 @@ export default function SavedToolRunsScreen() {
     <ScreenBoundary
       title="Saved Tool Runs"
       showBack
-      backFallbackHref="/home/personal/tools"
+      backFallbackHref={backTarget}
+      preferBackFallback={backTarget !== "/home/personal/tools"}
     >
       <ScrollView
         ref={scrollRef}

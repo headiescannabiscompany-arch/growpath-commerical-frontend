@@ -171,7 +171,7 @@ describe("GrowTimelineScreen", () => {
     ).toHaveLength(2);
     expect(
       screen.getByLabelText(
-        "Timeline source link /home/personal/tools/saved-runs?toolRunId=run-1"
+        "Timeline source link /home/personal/tools/saved-runs?toolRunId=run-1&growId=grow-1&sourceContext=timeline"
       )
     ).toBeTruthy();
     expect(

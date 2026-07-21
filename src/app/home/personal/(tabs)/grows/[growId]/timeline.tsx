@@ -17,6 +17,7 @@ import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -183,11 +184,10 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
     });
   }
   if (model.includes("toolrun") || type.includes("tool")) {
-    return sourceObjectHref({
-      sourceType: "tool_run",
-      sourceId,
+    return savedRunSourceHref({
+      toolRunId: sourceId,
       growId,
-      workspaceType: "personal"
+      sourceContext: "timeline"
     });
   }
   if (model.includes("task") || type.includes("task")) {
