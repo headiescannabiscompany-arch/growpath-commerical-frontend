@@ -29,6 +29,9 @@ export type PersonalAssistantResponse = {
     photosAttached?: number;
     photosAnalyzed?: number;
     status?: string;
+    provider?: string;
+    providerModel?: string;
+    providerLabel?: string;
   };
   missingInformation?: string[];
   limitations?: string[];

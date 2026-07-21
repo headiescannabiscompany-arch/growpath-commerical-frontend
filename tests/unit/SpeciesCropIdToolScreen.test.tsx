@@ -111,6 +111,23 @@ describe("SpeciesCropIdToolRoute", () => {
         scientificName: "Cannabis sativa",
         confidence: "medium",
         userConfirmationRequired: true,
+        identificationNotes:
+          "Visible bracts, pistils, resinous sugar leaves, and dense flower structure.",
+        identifyingVisualTraits:
+          "Bracts, pistils, sugar leaves, and trichome-covered inflorescence.",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photoCount: 1,
+          photosAnalyzed: 1,
+          provider: "growpath_context_plus_openai",
+          providerModel: "gpt-4o-mini",
+          providerLabel: "GrowPath context + OpenAI image review",
+          confidence: "high",
+          quality: "usable",
+          evidenceUsed: ["evidence-1"],
+          limitations: ["Cultivar cannot be identified from appearance."]
+        },
         recommendationContext:
           "Confirm crop identity before applying cannabis-specific nutrient or diagnosis guidance."
       },
@@ -147,7 +164,10 @@ describe("SpeciesCropIdToolRoute", () => {
         requested: true,
         photosAttached: 1,
         photosAnalyzed: 1,
-        status: "completed"
+        status: "completed",
+        provider: "openai",
+        providerModel: "gpt-4o-mini",
+        providerLabel: "OpenAI image review"
       },
       limitations: ["Cultivar cannot be identified from appearance."]
     });
@@ -194,12 +214,17 @@ describe("SpeciesCropIdToolRoute", () => {
             requested: true,
             performed: true,
             provider: "openai",
+            providerModel: "gpt-4o-mini",
+            photosAnalyzed: 1,
             confidence: "high"
           })
         })
       )
     );
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    expect(screen.getByText("Photos inspected")).toBeTruthy();
+    expect(screen.getByText("Image quality")).toBeTruthy();
+    expect(screen.getByText(/inspected 1 uploaded photo/i)).toBeTruthy();
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   });
 

@@ -51,6 +51,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved in the saved result"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

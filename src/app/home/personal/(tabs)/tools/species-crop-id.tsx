@@ -141,7 +141,9 @@ export default function SpeciesCropIdToolRoute() {
                 !reportsNoVision &&
                 String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true",
               photoCount: evidenceAssetIds.length,
+              photosAnalyzed,
               provider: response.provider || "assistant",
+              providerModel: response.mediaAnalysis?.providerModel || null,
               providerLabel: response.providerLabel || "AI crop identity review",
               confidence: String(parsed.visualConfidence || "low").toLowerCase(),
               quality: String(parsed.imageQuality || "limited").toLowerCase(),
@@ -192,8 +194,21 @@ export default function SpeciesCropIdToolRoute() {
         { key: "confidence", label: "Confidence", value: outputs.confidence },
         {
           key: "vision",
-          label: "Photo analyzed",
-          value: outputs.imageAnalysis?.performed ? "Yes" : "No"
+          label: "Photos inspected",
+          value: outputs.imageAnalysis?.performed
+            ? String(
+                outputs.imageAnalysis.photosAnalyzed ||
+                  outputs.imageAnalysis.photoCount ||
+                  1
+              )
+            : "0"
+        },
+        {
+          key: "quality",
+          label: "Image quality",
+          value: outputs.imageAnalysis?.performed
+            ? outputs.imageAnalysis.quality || "not provided"
+            : "not analyzed"
         },
         {
           key: "confirm",
@@ -210,7 +225,21 @@ export default function SpeciesCropIdToolRoute() {
               ? ("info" as const)
               : ("medium" as const),
             message: outputs.imageAnalysis?.performed
-              ? `${outputs.imageAnalysis.providerLabel || "AI vision"} inspected the uploaded photo pixels. The result is still a draft until you confirm it.`
+              ? `${outputs.imageAnalysis.providerLabel || "AI vision"} inspected ${
+                  outputs.imageAnalysis.photosAnalyzed ||
+                  outputs.imageAnalysis.photoCount ||
+                  1
+                } uploaded photo${
+                  Number(
+                    outputs.imageAnalysis.photosAnalyzed ||
+                      outputs.imageAnalysis.photoCount ||
+                      1
+                  ) === 1
+                    ? ""
+                    : "s"
+                }. Image quality: ${
+                  outputs.imageAnalysis.quality || "not provided"
+                }. The crop-level result is still a draft until you confirm it.`
               : outputs.imageAnalysis?.requested
                 ? "The uploaded photo pixels were not analyzed. Try again with the image-capable AI available, or enter visible traits manually."
                 : "No photo was analyzed. This result uses only the information entered in the form."
