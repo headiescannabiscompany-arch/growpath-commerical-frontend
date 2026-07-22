@@ -14,7 +14,13 @@ Reported commercial Forum content enters the shared moderation queue with an evi
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.
 
+When one authenticated account is entitled to multiple workspaces, an explicit supported workspace preference controls routing and presentation even when the billing plan has another primary mode. Reject unsupported preferences, but do not silently force an eligible Facility account back to Facility after it deliberately selects Commercial or Personal.
+
 Public commercial-course discovery may expose a course only when both the course and its owning storefront are published. Return an explicit public-field projection with storefront identity and public course content; do not expose owner IDs, commercial account IDs, drafts, arbitrary authoring fields, or private workspace records. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API.
+
+The shared course-detail boundary must also enforce publication. A direct `/api/courses/:id` request may show an unpublished course only to its authenticated author or a platform administrator; anonymous users and other accounts receive not found. Enrollment, checkout, questions, answers, reviews, and public recommendations must resolve published courses rather than treating knowledge of a draft ID as access.
+
+Production authentication must ignore deterministic test identity headers such as `x-test-user-id`; those headers exist only inside the automated test environment. All production owner, Commercial, payment, authoring, and private-record access requires a verified normal authentication token.
 
 Commercial lesson video follows the shared `course-media-workflow` method. Require provider normalization, rights and availability review, an accessible text fallback, privacy-aware third-party playback, and a provider link before publishing; do not equate provider viewing with GrowPath lesson progress.
 
