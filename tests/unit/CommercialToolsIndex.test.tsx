@@ -8,9 +8,10 @@ const mockPush = jest.fn();
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children, href }: any) =>
+    Link: ({ children, href, target }: any) =>
       React.cloneElement(children, {
         href,
+        target,
         onPress: () => mockPush(href)
       })
   };
@@ -49,7 +50,10 @@ describe("CommercialToolsIndex", () => {
       )
     ).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Open Soil & Nutrient Batch Planner"));
+    const batchPlannerLink = screen.getByLabelText("Open Soil & Nutrient Batch Planner");
+
+    expect(batchPlannerLink.props.target).toBe("_top");
+    fireEvent.press(batchPlannerLink);
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/tools/soil-nutrient-batch");
   });

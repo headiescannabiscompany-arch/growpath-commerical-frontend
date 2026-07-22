@@ -68,7 +68,15 @@ export default function CommercialToolsIndex() {
           <AppCard key={tool.href} style={styles.card}>
             <Text style={styles.cardTitle}>{tool.title}</Text>
             <Text style={styles.cardDescription}>{tool.description}</Text>
-            <Link href={tool.href} asChild>
+            <Link
+              href={tool.href}
+              asChild
+              target={
+                tool.href === "/home/commercial/tools/soil-nutrient-batch"
+                  ? "_top"
+                  : undefined
+              }
+            >
               <Pressable
                 accessibilityRole="link"
                 accessibilityLabel={`Open ${tool.title}`}
