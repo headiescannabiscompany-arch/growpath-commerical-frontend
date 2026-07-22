@@ -6,11 +6,18 @@ import StartGrowWizard from "@/features/grows/screens/StartGrowWizard";
 const mockMutateAsync = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
+const mockCanGoBack = jest.fn();
 let mockParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
-  useRouter: () => ({ push: mockPush, replace: mockReplace })
+  useRouter: () => ({
+    push: mockPush,
+    replace: mockReplace,
+    back: mockBack,
+    canGoBack: mockCanGoBack
+  })
 }));
 
 jest.mock("@/features/rooms/hooks", () => ({
@@ -35,6 +42,7 @@ describe("StartGrowWizard", () => {
     jest.resetAllMocks();
     mockParams = { roomId: "room-1", roomName: "Flower Room" };
     mockMutateAsync.mockResolvedValue({ id: "grow-1" });
+    mockCanGoBack.mockReturnValue(true);
   });
 
   it("preselects and submits only the room that launched grow setup", async () => {
@@ -67,9 +75,9 @@ describe("StartGrowWizard", () => {
     await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Back to room grows"));
 
-    expect(mockReplace).toHaveBeenCalledWith(
-      "/home/facility/grows?roomId=room-1&roomName=Flower+Room"
-    );
+    expect(mockCanGoBack).toHaveBeenCalled();
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
