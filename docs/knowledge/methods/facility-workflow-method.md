@@ -20,6 +20,8 @@ Facility task queues and detail screens must show named team members, named room
 
 Facility workspace headings, operational summaries, and downloaded evidence filenames must identify the selected Facility by its readable name. If the name is not available, use a neutral label such as `Selected facility`; never substitute the internal Facility identifier as user-facing context or as a downloaded filename.
 
+Facility AI template links must open a visibly specialized workflow instead of a generic grow assistant. A template may prefill a review request but must not submit it or spend AI credits until the operator chooses Send. Inspection-readiness context must use record-backed audit, deviation, verification, SOP, task, inventory, and integration evidence; missing evidence stays missing, and AI must never certify legal compliance or invent jurisdiction rules.
+
 Facility AI prompts and parental-control PIN fields must opt out of account-credential autofill. The AI composer is ordinary user-authored text, and the parental PIN is a separate one-time-style control value; neither field may invite a browser or device password manager to insert a saved GrowPath email or password.
 
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.

@@ -10,6 +10,10 @@ import { getDiagnosisHistory } from "@/api/diagnose";
 import { listToolRuns } from "@/api/toolRuns";
 import { listNutrientRecipes } from "@/api/nutrientRecipes";
 import { getTelemetryPoints, listTelemetrySources } from "@/api/telemetry";
+import {
+  getFacilityComplianceExport,
+  type FacilityComplianceExport
+} from "@/api/complianceExport";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { getFacilityTasks } from "@/api/facilityTasks";
@@ -124,6 +128,59 @@ interface ContextData {
   photosMetadata: any[];
   recipes: any[];
   environmentHistory: any[];
+  facilityCompliance: FacilityComplianceExport | null;
+}
+
+type FacilityAiPreset = {
+  key: "dew-point" | "compliance" | "inventory" | "harvest";
+  title: string;
+  intro: string;
+  prompt: string;
+  composerHint: string;
+};
+
+const FACILITY_AI_PRESETS: Record<FacilityAiPreset["key"], FacilityAiPreset> = {
+  "dew-point": {
+    key: "dew-point",
+    title: "Dew Point Alert",
+    intro:
+      "Dew point review is loaded. Confirm the room, time window, and sensor readings in the prefilled request before sending.",
+    prompt:
+      "Review this Facility's recorded environment history for condensation and mold risk. Use only measured temperature, relative humidity, dew point, room, and timestamp evidence. Identify missing sensor coverage, risky time windows, and owner-review actions. Do not invent readings or claim a diagnosis.",
+    composerHint: "Review the prefilled dew point request before sending."
+  },
+  compliance: {
+    key: "compliance",
+    title: "Inspection Readiness",
+    intro:
+      "Inspection-readiness evidence is loaded. Review the prefilled request, add any inspection scope or jurisdiction notes, then send it when ready.",
+    prompt:
+      "Review this Facility's current inspection readiness using only the loaded Facility records. Summarize verified evidence for audit logs, deviations, verifications, SOP templates and completed SOP runs, tasks, inventory, and integrations. Separate recorded facts from missing evidence. Identify the three highest-priority gaps and propose owner-review actions. Do not claim legal compliance or invent jurisdiction rules.",
+    composerHint: "Review the prefilled inspection-readiness request before sending."
+  },
+  inventory: {
+    key: "inventory",
+    title: "Inventory Risk",
+    intro:
+      "Inventory-risk review is loaded. Confirm the relevant rooms, time horizon, and reorder assumptions before sending.",
+    prompt:
+      "Review this Facility's recorded inventory for low-stock, missing-count, expiry, and reorder risks. Distinguish recorded quantities from missing par levels or use rates. Prioritize owner-review actions without inventing counts, costs, or supplier timing.",
+    composerHint: "Review the prefilled inventory-risk request before sending."
+  },
+  harvest: {
+    key: "harvest",
+    title: "Harvest Window",
+    intro:
+      "Harvest-window review is loaded. Select the relevant grow and confirm the available stage, photo, and observation evidence before sending.",
+    prompt:
+      "Assess the selected Facility grow's harvest window using only recorded stage, flower age, trichome observations, environment, and photo evidence. State what is missing, give a confidence range, and require owner confirmation before scheduling or changing tasks. Do not invent maturity observations.",
+    composerHint: "Review the prefilled harvest-window request before sending."
+  }
+};
+
+export function facilityAiPresetFor(value: unknown): FacilityAiPreset | null {
+  const key = String(value || "").trim() as FacilityAiPreset["key"];
+  return FACILITY_AI_PRESETS[key] || null;
 }
 
 function parseVpdCommand(
@@ -353,15 +410,22 @@ export default function AiScreen({
     prompt?: string | string[];
     growId?: string | string[];
     facilityId?: string | string[];
+    preset?: string | string[];
   }>();
   const initialPrompt = firstQueryValue(params.prompt);
   const initialGrowId = firstQueryValue(params.growId);
   const activeFacilityId = facilityId || firstQueryValue(params.facilityId);
-  const [draft, setDraft] = useState(initialPrompt);
+  const facilityPreset =
+    workspaceType === "facility"
+      ? facilityAiPresetFor(firstQueryValue(params.preset))
+      : null;
+  const defaultAssistantMessage =
+    "Ask about your next task, recent journal, diagnosis, dew point risk, feeding, watering, or try: vpd 78f 60";
+  const [draft, setDraft] = useState(initialPrompt || facilityPreset?.prompt || "");
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      text: "Ask about your next task, recent journal, diagnosis, dew point risk, feeding, watering, or try: vpd 78f 60"
+      text: facilityPreset?.intro || defaultAssistantMessage
     }
   ]);
   const [context, setContext] = useState<ContextData | null>(null);
@@ -376,6 +440,22 @@ export default function AiScreen({
   const [providerLabel, setProviderLabel] = useState("");
 
   const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
+
+  useEffect(() => {
+    setDraft(initialPrompt || facilityPreset?.prompt || "");
+    setMessages([
+      {
+        role: "assistant",
+        text: facilityPreset?.intro || defaultAssistantMessage
+      }
+    ]);
+    setActions([]);
+    setReferences([]);
+    setProposedWrites([]);
+    setWriteFeedback("");
+    setConversationId("");
+    setProviderLabel("");
+  }, [facilityPreset?.intro, facilityPreset?.key, facilityPreset?.prompt, initialPrompt]);
 
   // Fetch context (grows, logs, tasks) on mount
   useEffect(() => {
@@ -424,6 +504,14 @@ export default function AiScreen({
         const photosMetadata = logs.flatMap((log: any) =>
           Array.isArray(log.photoMetadata) ? log.photoMetadata : []
         );
+        let facilityCompliance: FacilityComplianceExport | null = null;
+        if (facilityScoped && facilityPreset?.key === "compliance") {
+          try {
+            facilityCompliance = await getFacilityComplianceExport(activeFacilityId);
+          } catch (error) {
+            console.warn("[AI] Facility compliance context unavailable:", error);
+          }
+        }
         let environmentHistory: any[] = [];
         if (activeGrowId) {
           try {
@@ -461,7 +549,8 @@ export default function AiScreen({
           diagnoses,
           photosMetadata,
           recipes,
-          environmentHistory
+          environmentHistory,
+          facilityCompliance
         });
         if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
       } catch (err) {
@@ -479,13 +568,14 @@ export default function AiScreen({
           diagnoses: [],
           photosMetadata: [],
           recipes: [],
-          environmentHistory: []
+          environmentHistory: [],
+          facilityCompliance: null
         });
       }
     }
 
     loadContext();
-  }, [activeFacilityId, selectedGrowId, workspaceType]);
+  }, [activeFacilityId, facilityPreset?.key, selectedGrowId, workspaceType]);
 
   const selectedGrow = useMemo(
     () => context?.grows.find((grow) => String(grow.id || grow._id) === selectedGrowId),
@@ -508,7 +598,15 @@ export default function AiScreen({
       photosMetadata: scoped(context?.photosMetadata || []).slice(0, 20),
       environmentHistory: (context?.environmentHistory || []).slice(-100),
       recipes: scoped(context?.recipes || []).slice(0, 20),
-      phenoScores: []
+      phenoScores: [],
+      facilityPreset: facilityPreset?.key || null,
+      facilityCompliance: context?.facilityCompliance
+        ? {
+            generatedAt: context.facilityCompliance.generatedAt,
+            counts: context.facilityCompliance.counts,
+            evidenceSummary: context.facilityCompliance.evidenceSummary || null
+          }
+        : null
     };
   }
 
@@ -638,35 +736,81 @@ export default function AiScreen({
         ) : null}
         {context && (
           <View style={styles.contextCard}>
-            <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>
-            <Text style={styles.contextText}>Grows: {context.growCount}</Text>
-            <Text style={styles.contextText}>
-              Plants:{" "}
-              {
-                (selectedGrowId
-                  ? context.plants.filter(
-                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
-                    )
-                  : context.plants
-                ).length
-              }
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              {facilityPreset ? `${facilityPreset.title} Context` : "Context Loaded"}
             </Text>
-            <Text style={styles.contextText}>Logs: {context.logCount}</Text>
-            <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
-            <Text style={styles.contextText}>Tool runs: {context.toolRuns.length}</Text>
-            <Text style={styles.contextText}>Diagnoses: {context.diagnoses.length}</Text>
-            <Text style={styles.contextText}>
-              Crop context:{" "}
-              {cropContextSummary(
-                selectedGrowId
-                  ? context.plants.filter(
-                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
-                    )
-                  : context.plants
-              )}
-            </Text>
-            <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
-            {context.grows.length ? (
+            {facilityPreset?.key === "compliance" ? (
+              context.facilityCompliance ? (
+                <>
+                  <Text style={styles.contextText}>
+                    Audit logs: {context.facilityCompliance.counts.auditLogs ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Deviations: {context.facilityCompliance.counts.deviations ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Verifications: {context.facilityCompliance.counts.verifications ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    SOP templates: {context.facilityCompliance.counts.sopTemplates ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    SOP runs: {context.facilityCompliance.counts.sopRuns ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                  <Text style={styles.contextText}>
+                    Evidence generated:{" "}
+                    {formatDate(context.facilityCompliance.generatedAt)}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Missing records remain missing evidence; AI cannot certify legal
+                    compliance.
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.contextText}>
+                  Compliance evidence could not be loaded. Refresh or return to Compliance
+                  before requesting a readiness review.
+                </Text>
+              )
+            ) : (
+              <>
+                <Text style={styles.contextText}>Grows: {context.growCount}</Text>
+                <Text style={styles.contextText}>
+                  Plants:{" "}
+                  {
+                    (selectedGrowId
+                      ? context.plants.filter(
+                          (plant) =>
+                            !plant?.growId || String(plant.growId) === selectedGrowId
+                        )
+                      : context.plants
+                    ).length
+                  }
+                </Text>
+                <Text style={styles.contextText}>Logs: {context.logCount}</Text>
+                <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                <Text style={styles.contextText}>
+                  Tool runs: {context.toolRuns.length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Diagnoses: {context.diagnoses.length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Crop context:{" "}
+                  {cropContextSummary(
+                    selectedGrowId
+                      ? context.plants.filter(
+                          (plant) =>
+                            !plant?.growId || String(plant.growId) === selectedGrowId
+                        )
+                      : context.plants
+                  )}
+                </Text>
+                <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
+              </>
+            )}
+            {facilityPreset?.key !== "compliance" && context.grows.length ? (
               <View style={styles.growPicker}>
                 {context.grows.map((grow) => {
                   const id = String(grow.id || grow._id || "");
@@ -688,6 +832,12 @@ export default function AiScreen({
                   );
                 })}
               </View>
+            ) : facilityPreset?.key === "compliance" ? null : workspaceType ===
+              "facility" ? (
+              <Text style={styles.contextText}>
+                No Facility grows are recorded. Facility tasks and operational records
+                remain available to the assistant.
+              </Text>
             ) : (
               <Pressable
                 accessibilityRole="button"
@@ -782,7 +932,9 @@ export default function AiScreen({
           style={styles.input}
           value={draft}
           onChangeText={setDraft}
-          placeholder="Type here..."
+          placeholder={
+            facilityPreset ? `Add notes for ${facilityPreset.title}` : "Type here..."
+          }
           autoComplete="off"
           textContentType="none"
           importantForAutofill="no"
@@ -797,7 +949,11 @@ export default function AiScreen({
         >
           <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>
-        <Text style={styles.hint}>Commands: vpd 78f 60 | vpd 25c 60</Text>
+        <Text style={styles.hint}>
+          {facilityPreset
+            ? facilityPreset.composerHint
+            : "Commands: vpd 78f 60 | vpd 25c 60"}
+        </Text>
       </View>
     </View>
   );
