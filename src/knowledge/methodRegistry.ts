@@ -442,7 +442,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "published-course discovery limited to published storefronts and explicit public fields",
       "direct draft-course detail limited to the authenticated author or platform administrator",
       "explicit eligible workspace preference preserved across plan-backed modes",
-      "workspace preference reapplied before restricted-route access decisions"
+      "workspace preference reapplied before restricted-route access decisions",
+      "workspace selection and routing use the same effective paid-plan capabilities"
     ],
     [
       "Never cross workspace scope or invent product claims.",
