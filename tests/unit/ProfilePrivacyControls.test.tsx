@@ -156,6 +156,11 @@ describe("Profile privacy controls", () => {
 
   it("lets an adult account hide cannabis without entering the parental PIN", async () => {
     const screen = render(<Profile />);
+    expect(screen.getByLabelText("Parental content control PIN").props).toMatchObject({
+      autoComplete: "one-time-code",
+      textContentType: "oneTimeCode",
+      importantForAutofill: "no"
+    });
     fireEvent.press(screen.getByLabelText("Hide cannabis content"));
 
     await waitFor(() =>
