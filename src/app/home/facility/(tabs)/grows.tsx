@@ -113,6 +113,19 @@ export default function FacilityGrowsTab() {
     const n = items.length;
     return n === 1 ? "1 grow" : `${n} grows`;
   }, [items.length]);
+  const roomLabel = String(roomName || "this room");
+
+  function openStartGrow() {
+    router.push({
+      pathname: "/onboarding/start-grow",
+      params: roomId
+        ? {
+            roomId: String(roomId),
+            roomName: roomLabel
+          }
+        : {}
+    });
+  }
 
   return (
     <ScreenBoundary
@@ -151,10 +164,26 @@ export default function FacilityGrowsTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No grows yet</Text>
-                <Text style={styles.muted}>
-                  {"When grows exist on the backend, they'll show up here."}
+                <Text style={styles.emptyTitle}>
+                  {roomId ? "No grows in this room yet" : "No facility grows yet"}
                 </Text>
+                <Text style={styles.muted}>
+                  {roomId
+                    ? `Start a grow in ${roomLabel} to connect its plants, tasks, logs, and AI context.`
+                    : "Start a grow to connect rooms, plants, tasks, logs, and AI context."}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    roomId ? `Start grow in ${roomLabel}` : "Start facility grow"
+                  }
+                  onPress={openStartGrow}
+                  style={({ pressed }) => [styles.startButton, pressed && styles.pressed]}
+                >
+                  <Text style={styles.startButtonText}>
+                    {roomId ? "Start a grow in this room" : "Start a facility grow"}
+                  </Text>
+                </Pressable>
               </View>
             ) : null
           }
@@ -214,6 +243,14 @@ const styles = StyleSheet.create({
   rowSub: { opacity: 0.7 },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+  emptyTitle: { fontSize: 16, fontWeight: "900" },
+  startButton: {
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 11
+  },
+  startButtonText: { color: "white", fontWeight: "900" }
 });

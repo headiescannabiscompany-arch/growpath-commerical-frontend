@@ -838,7 +838,8 @@ export default function FacilityRoomsTab() {
           <Text style={styles.cardTitle}>Arrange room workspaces</Text>
           <Text style={styles.muted}>
             Put rooms in the order your team uses them. The saved order is shared across
-            GrowPathAI modes. Open a room for its grows, plants, work, and environment.
+            GrowPathAI modes. Open a room to review its grow records; use Room Workspace
+            below for tracking, equipment, and batch cycles.
           </Text>
           {rooms.length ? (
             rooms.map((room, roomIndex) => {
@@ -860,7 +861,7 @@ export default function FacilityRoomsTab() {
                       });
                     }}
                     accessibilityRole="button"
-                    accessibilityLabel={`Open ${room.name || "room"}`}
+                    accessibilityLabel={`Open grows for ${room.name || "room"}`}
                     style={styles.roomWorkspace}
                   >
                     <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
@@ -872,7 +873,7 @@ export default function FacilityRoomsTab() {
                         `${linkedEquipment} connected devices`
                       ].join(" | ")}
                     </Text>
-                    <Text style={styles.openWorkspace}>Open workspace {">"}</Text>
+                    <Text style={styles.openWorkspace}>Open grows {">"}</Text>
                   </Pressable>
                   {canEditRooms && rooms.length > 1 ? (
                     <View style={styles.orderControls}>

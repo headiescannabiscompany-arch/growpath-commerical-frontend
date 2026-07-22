@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
@@ -23,6 +23,10 @@ function roomId(room: any) {
 }
 
 export default function StartGrowWizard() {
+  const { roomId: requestedRoomId, roomName: requestedRoomName } = useLocalSearchParams<{
+    roomId?: string;
+    roomName?: string;
+  }>();
   const [name, setName] = useState("Batch Cycle 1");
   const [startDate, setStartDate] = useState(todayIsoDate());
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
@@ -30,16 +34,41 @@ export default function StartGrowWizard() {
   const { data: rooms, isLoading } = useRooms();
   const createGrow = useCreateGrow();
   const router = useRouter();
-
-  useEffect(() => {
-    if (!rooms?.length || selectedRooms.length) return;
-    setSelectedRooms(rooms.map(roomId).filter(Boolean));
-  }, [rooms, selectedRooms.length]);
+  const selectionInitialized = useRef(false);
 
   const validRooms = useMemo(
     () => (rooms || []).filter((room: any) => roomId(room)),
     [rooms]
   );
+  const requestedRoom = useMemo(
+    () => validRooms.find((room: any) => roomId(room) === String(requestedRoomId || "")),
+    [requestedRoomId, validRooms]
+  );
+  const requestedRoomLabel = String(
+    requestedRoom?.name || requestedRoomName || "this room"
+  );
+
+  useEffect(() => {
+    if (!validRooms.length || selectionInitialized.current) return;
+    selectionInitialized.current = true;
+    setSelectedRooms(
+      requestedRoomId
+        ? requestedRoom
+          ? [roomId(requestedRoom)]
+          : []
+        : validRooms.map(roomId).filter(Boolean)
+    );
+  }, [requestedRoom, requestedRoomId, validRooms]);
+
+  const returnToGrows = requestedRoom
+    ? {
+        pathname: "/home/facility/grows",
+        params: {
+          roomId: roomId(requestedRoom),
+          roomName: requestedRoomLabel
+        }
+      }
+    : "/home/facility/grows";
   const canStart =
     name.trim().length > 1 &&
     startDate.trim().length >= 8 &&
@@ -78,17 +107,19 @@ export default function StartGrowWizard() {
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.kicker}>Batch cycle</Text>
+        <Text style={styles.kicker}>{requestedRoom ? "Room grow" : "Batch cycle"}</Text>
         <Text style={styles.title}>Start a grow</Text>
         <Text style={styles.subtitle}>
-          Create the production cycle that rooms, plants, tasks, logs, and AI context will
-          attach to.
+          {requestedRoom
+            ? `Create a production cycle in ${requestedRoomLabel}. Plants, tasks, logs, and AI context will attach to this grow.`
+            : "Create the production cycle that rooms, plants, tasks, logs, and AI context will attach to."}
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Grow or batch name</Text>
         <TextInput
+          accessibilityLabel="Grow or batch name"
           style={styles.input}
           placeholder="Batch Cycle 1"
           placeholderTextColor="#64748b"
@@ -101,6 +132,7 @@ export default function StartGrowWizard() {
 
         <Text style={styles.label}>Start date</Text>
         <TextInput
+          accessibilityLabel="Grow start date"
           style={styles.input}
           placeholder="YYYY-MM-DD"
           placeholderTextColor="#64748b"
@@ -126,6 +158,13 @@ export default function StartGrowWizard() {
         {!isLoading && !validRooms.length ? (
           <Text style={styles.error}>
             Create at least one room before starting a grow.
+          </Text>
+        ) : null}
+
+        {!isLoading && validRooms.length && requestedRoomId && !requestedRoom ? (
+          <Text style={styles.error}>
+            The requested room is no longer available. Select one or more current rooms to
+            continue.
           </Text>
         ) : null}
 
@@ -158,6 +197,7 @@ export default function StartGrowWizard() {
             disabled={!canStart}
             accessibilityRole="button"
             accessibilityLabel="Start grow"
+            accessibilityState={{ disabled: !canStart }}
             style={[styles.primaryButton, !canStart && styles.disabledButton]}
           >
             {createGrow.isPending ? (
@@ -167,16 +207,21 @@ export default function StartGrowWizard() {
             )}
           </Pressable>
           <Pressable
-            onPress={() => router.replace("/home/facility/dashboard")}
+            onPress={() => router.replace(returnToGrows as any)}
             disabled={createGrow.isPending}
             accessibilityRole="button"
-            accessibilityLabel="Skip grow setup"
+            accessibilityLabel={
+              requestedRoom ? "Back to room grows" : "Back to facility grows"
+            }
+            accessibilityState={{ disabled: createGrow.isPending }}
             style={[
               styles.secondaryButton,
               createGrow.isPending && styles.disabledButton
             ]}
           >
-            <Text style={styles.secondaryButtonText}>Skip for now</Text>
+            <Text style={styles.secondaryButtonText}>
+              {requestedRoom ? "Back to room grows" : "Back to facility grows"}
+            </Text>
           </Pressable>
         </View>
       </View>

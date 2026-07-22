@@ -14,6 +14,8 @@ Facility Forum reports may enter the shared platform moderation queue without ch
 
 Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, tasks, inventory, sensors, audit and compliance-style records. It is not the commercial storefront workspace and must not pretend to work without a selected facility.
 
+A Facility room with no grow remains a valid operational record. Its grow view must offer the supported grow-start workflow instead of referring vaguely to backend records. When the operator enters grow setup from one room, preselect only that exact room; never silently attach a new grow to every Facility room. Keep room-card actions precise: a grow-list action must say it opens grows, while equipment and batch-cycle setup remains in the room workspace.
+
 Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
 
 Facility task queues and detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Queue rows link directly to the selected task through a stable, accessible route. Raw database fields, Facility IDs, user IDs, room IDs, source-object IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
