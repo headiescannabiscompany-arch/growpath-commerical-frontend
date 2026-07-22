@@ -17,4 +17,12 @@ Personal Tools presents these through one **Soil & Nutrient Mix Builders** entry
 
 Topdress planning is task-owned: users start it from Personal Tasks or a grow's Tasks workspace because its primary outputs are scheduled application, water-in, response and recheck tasks. Small pH/EC and VPD calculations remain available to AI, saved results and legacy deep links, but are not primary user-facing AI Tool cards. The Soil & Nutrient Batch Planner is Commercial-only because its purpose is production costing, bag counts, pull sheets, labor, packaging, inventory and margin.
 
+## Commercial production batch calculation
+
+The Commercial Soil & Nutrient Batch Planner is deterministic and uses no AI credits for production math. Require an explicit batch volume, bag size, volume unit, purpose, traceable batch name, and at least one ingredient. Blank quantity, cost, label analysis, shrinkage, margin, lot, or inventory values remain unknown; never coerce them to zero or substitute demo values.
+
+Calculate a blended label N-P2O5-K2O estimate only when every ingredient has a positive quantity, complete label analysis, and one compatible quantity unit. Keep label values separate from elemental P and K conversions. A partial known-cost subtotal may be shown, but total cost, cost per bag, retail price, and margin remain unknown until all inputs needed by that result are present.
+
+Inventory comparison is review-only. Compare required and available quantities only when their units match, report shortages, unknown availability, and unit mismatches, and never decrement stock or assign a lot during calculation. The reviewed result may then create an owner-scoped Commercial production batch and linked tasks for pull/lot verification, mixing and actuals, bag/label/QA, inventory review, cleanup, and staging or hold.
+
 “Science-backed” means that the calculation model, inputs, evidence quality and uncertainty are visible. It is not an effectiveness or superiority claim. Verified labels, manufacturer documents, calibrated measurements, water analysis, representative soil/substrate or compost laboratory tests and recorded crop response take precedence over presets and assumptions. Never invent missing analysis, density, compatibility, uptake or response data.

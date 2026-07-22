@@ -76,7 +76,10 @@ const tests = {
   ["guaranteed analysis estimate", /calculateLivingSoilBatch[\s\S]*guaranteedAnalysisEstimate/],
   ["release timeline", /calculateLivingSoilBatch[\s\S]*releaseTimeline/],
   ["mixing sheet", /calculateLivingSoilBatch[\s\S]*mixingSheet/],
-  ["production tasks", /calculateLivingSoilBatch[\s\S]*tasksToCreate[\s\S]*Pull ingredients[\s\S]*Mix batch/],
+  [
+    "production tasks",
+    /calculateLivingSoilBatch[\s\S]*tasksToCreate[\s\S]*Pull ingredients and verify lots[\s\S]*Mix production batch and record actuals[\s\S]*Bag, label, and complete batch QA/
+  ],
   ["inventory low stock warnings", /calculatePersonalInventory[\s\S]*lowStockWarnings/],
   ["inventory reorder suggestions", /calculatePersonalInventory[\s\S]*reorderSuggestions/],
   ["inventory cost per use", /calculatePersonalInventory[\s\S]*costPerUse/]
@@ -101,13 +104,13 @@ const tests = {
 [
   ["soil batch ToolRun screen", /tool="soil-nutrient-batch"/],
   ["batch planner title", /Soil & Nutrient Batch Planner/],
-  ["ingredient rows", /Ingredients as lines: name, quantity, unit, cost, N, P2O5, K2O/],
+  ["ingredient rows", /Ingredients: name, quantity, unit, cost, N, P2O5, K2O/],
   ["labor cost field", /Labor cost/],
   ["packaging cost field", /Packaging cost/],
   ["margin field", /Target margin %/],
   ["cost metric", /Cost \/ bag/],
   ["AI brief", /AI-guided, calculator-verified[\s\S]*Ask AI to Plan Batch/],
-  ["production tasks action", /Create Batch Task Plan/],
+  ["production tasks action", /Save Production Batch & Tasks/],
   ["ingredient pull task", /ingredient_pull/],
   ["mixing actuals task", /batch_mixing_actuals/],
   ["QA label task", /batch_qa_label_review/],
@@ -195,7 +198,11 @@ const tests = {
 [
   ["backend soil batch test", tests.backendTools, /runs tissue culture and soil nutrient batch tools[\s\S]*costPerBag[\s\S]*ingredientPullSheet/],
   ["backend personal inventory test", tests.backendTools, /runs inventory, crop steering project, and pheno hunt tools[\s\S]*lowStockWarnings[\s\S]*reorderSuggestions/],
-  ["soil batch UI tests", tests.soilBatch, /creates production tasks from soil nutrient batch output[\s\S]*builds an AI soil batch brief/],
+  [
+    "soil batch UI tests",
+    tests.soilBatch,
+    /saves a durable Commercial production batch and linked task plan[\s\S]*keeps the optional AI brief separate from deterministic production math/
+  ],
   ["feature status inventory test", tests.featureStatus, /keeps removed\/internal-only tools out of the user-facing app[\s\S]*tools\.inventory/],
   ["feature status soil batch test", tests.featureStatus, /keeps the soil and nutrient batch planner in Commercial only[\s\S]*\/home\/commercial\/tools\/soil-nutrient-batch/],
   ["commercial soil batch UI route test", tests.soilBatch, /\/home\/commercial\/tools\/soil-nutrient-batch/],

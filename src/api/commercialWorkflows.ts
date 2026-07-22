@@ -100,10 +100,25 @@ export type SoilNutrientBatch = {
   facilityId?: string;
   linkedToolRunId?: string;
   linkedRecipeId?: string;
+  toolRunId?: string;
   batchVolume?: number;
   batchVolumeUnit?: string;
+  bagSize?: number;
+  bagCount?: number | null;
+  usableVolume?: number | null;
   estimatedCost?: number;
   costPerUnit?: number;
+  costEstimate?: Record<string, any>;
+  guaranteedAnalysisEstimate?: Record<string, any>;
+  elementalEstimate?: Record<string, any>;
+  releaseTimeline?: Record<string, any>;
+  ingredientPullSheet?: Array<Record<string, any>>;
+  inventoryReview?: Array<Record<string, any>>;
+  warnings?: string[];
+  missingInformation?: string[];
+  limitations?: string[];
+  calculatorInput?: Record<string, any>;
+  calculatorOutput?: Record<string, any>;
   releaseTimelineNotes?: string;
   guaranteedAnalysisNotes?: string;
   ingredientSummary?: string;
@@ -337,6 +352,14 @@ export async function updateSoilNutrientBatch(
     body: data
   });
   return res?.batch ?? res?.soilNutrientBatch ?? res?.updated ?? res;
+}
+
+export async function createCommercialTask(data: Record<string, any>) {
+  const res = await apiRequest(endpoints.tasksGlobal, {
+    method: "POST",
+    body: { ...data, workspaceType: "commercial" }
+  });
+  return res?.task ?? res?.item ?? res;
 }
 
 export async function fetchCommercialCourses(): Promise<CommercialCourse[]> {

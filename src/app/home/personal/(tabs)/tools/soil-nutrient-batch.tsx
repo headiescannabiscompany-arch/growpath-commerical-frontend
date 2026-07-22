@@ -4,7 +4,7 @@ import { Redirect } from "expo-router";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
-import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { createCommercialTask, createSoilNutrientBatch } from "@/api/commercialWorkflows";
 
 function normalizePriority(
   value: unknown,
@@ -13,20 +13,10 @@ function normalizePriority(
   return value === "low" || value === "medium" || value === "high" ? value : fallback;
 }
 
-function parseIngredientCosts(value: string) {
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return value
-      .split("\n")
-      .map((line) => {
-        const [name, quantity, unit, cost] = line.split(",").map((part) => part.trim());
-        if (!name) return null;
-        return { name, quantity: Number(quantity || 0), unit, cost: Number(cost || 0) };
-      })
-      .filter(Boolean);
-  }
+function optionalNumber(value: unknown) {
+  if (value == null || String(value).trim() === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function parseIngredients(value: string) {
@@ -48,22 +38,28 @@ function parseIngredients(value: string) {
           releaseClass,
           sourceConfidence,
           category,
-          lotId
+          lotId,
+          inventoryItemId,
+          availableQuantity,
+          availableUnit
         ] = line.split(",").map((part) => part.trim());
         if (!name) return null;
         return {
           name,
-          quantity: Number(quantity || 0),
-          amount: Number(quantity || 0),
-          unit,
-          cost: Number(cost || 0),
-          N: Number(N || 0),
-          P2O5: Number(P2O5 || 0),
-          K2O: Number(K2O || 0),
-          releaseClass: releaseClass || "unknown",
-          sourceConfidence: sourceConfidence || "low",
+          quantity: optionalNumber(quantity),
+          amount: optionalNumber(quantity),
+          unit: unit || undefined,
+          cost: optionalNumber(cost),
+          N: optionalNumber(N),
+          P2O5: optionalNumber(P2O5),
+          K2O: optionalNumber(K2O),
+          releaseClass: releaseClass || undefined,
+          sourceConfidence: sourceConfidence || undefined,
           category: category || undefined,
-          lotId: lotId || undefined
+          lotId: lotId || undefined,
+          inventoryItemId: inventoryItemId || undefined,
+          availableQuantity: optionalNumber(availableQuantity),
+          availableUnit: availableUnit || undefined
         };
       })
       .filter(Boolean);
@@ -85,7 +81,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     return suggested.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `Soil batch follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
-      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      dueAt: tomorrow(Number(task?.dueInDays ?? index + 1)),
       ...calendarMetadata,
       description:
         task?.description ||
@@ -103,7 +99,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     {
       title: `Pull ingredients for ${recipe}`,
       priority: "medium" as const,
-      dueDate: tomorrow(1),
+      dueAt: tomorrow(1),
       ...calendarMetadata,
       sourceStage: "ingredient_pull",
       description:
@@ -112,7 +108,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     {
       title: `Mix and record ${recipe} actuals`,
       priority: warningPriority,
-      dueDate: tomorrow(2),
+      dueAt: tomorrow(2),
       ...calendarMetadata,
       sourceStage: "batch_mixing_actuals",
       description: `Mix the batch, record actual weights/volumes, moisture activation, shrinkage, photos, and operator notes.${bagCount}`
@@ -120,7 +116,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     {
       title: "QA soil batch label and release notes",
       priority: warningPriority,
-      dueDate: tomorrow(3),
+      dueAt: tomorrow(3),
       ...calendarMetadata,
       sourceStage: "batch_qa_label_review",
       description:
@@ -129,7 +125,7 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
     {
       title: "Update inventory or product draft",
       priority: "medium" as const,
-      dueDate: tomorrow(4),
+      dueAt: tomorrow(4),
       ...calendarMetadata,
       sourceStage: "batch_inventory_product_update",
       description:
@@ -145,10 +141,10 @@ function buildSoilBatchAssistantBrief(payload: Record<string, any>) {
         .slice(0, 12)
         .map(
           (row: any, index: number) =>
-            `${index + 1}. ${row.name || "Unnamed"}: ${row.quantity || row.amount || 0} ${
-              row.unit || "units"
-            }, cost ${row.cost ?? 0}, label ${row.N ?? 0}-${row.P2O5 ?? 0}-${
-              row.K2O ?? 0
+            `${index + 1}. ${row.name || "Unnamed"}: ${row.quantity ?? row.amount ?? "unknown"} ${
+              row.unit || "unknown unit"
+            }, cost ${row.cost ?? "unknown"}, label ${row.N ?? "unknown"}-${row.P2O5 ?? "unknown"}-${
+              row.K2O ?? "unknown"
             }, release ${row.releaseClass || "unknown"}, confidence ${
               row.sourceConfidence || "unknown"
             }`
@@ -163,10 +159,10 @@ function buildSoilBatchAssistantBrief(payload: Record<string, any>) {
     `Purpose/stage: ${payload.purpose || "not set"} / ${payload.stage || "not set"}`,
     `Recipe: ${payload.recipeId || "not set"}`,
     `Batch volume: ${payload.batchVolume || "-"} with ${payload.bagSize || "-"} bag size`,
-    `Labor cost: ${payload.laborCost || 0}`,
-    `Packaging cost: ${payload.packagingCost || 0}`,
-    `Shrinkage: ${payload.shrinkagePercent || 0}%`,
-    `Target margin: ${payload.targetMarginPercent || 0}%`,
+    `Labor cost: ${payload.laborCost ?? "unknown"}`,
+    `Packaging cost: ${payload.packagingCost ?? "unknown"}`,
+    `Shrinkage: ${payload.shrinkagePercent ?? "unknown"}%`,
+    `Target margin: ${payload.targetMarginPercent ?? "unknown"}%`,
     "Ingredients:",
     ingredientLines,
     "",
@@ -181,89 +177,192 @@ export function CommercialSoilNutrientBatchToolRoute() {
       toolKey="soil-nutrient-batch"
       title="Soil & Nutrient Batch Planner"
       subtitle="Scale a purpose-built soil, dry amendment, or nutrient batch while checking guaranteed analysis, release timing, stage fit, cost, warnings, and tasks."
+      growOptional
+      noGrowContextMessage="A grow is optional. The reviewed result can be saved as a Commercial production batch without changing inventory."
       backFallbackHref="/home/commercial/tools"
       feedRouteKey="commercial_tool_soil_nutrient_batch"
+      experienceMessage="Deterministic production math uses only the values you enter. Missing label, cost, shrinkage, and inventory evidence stays visibly unknown. No AI credits are used to calculate the batch."
       aiPrefill={{
         buttonLabel: "Fill batch from recipe and inventory",
         clearUnfilled: true,
         buildMessage: () =>
-          `Prefill this Soil & Nutrient Batch Plan from the selected grow's saved recipe, verified ingredient/product catalog, label analyses, inventory lots and costs, water profile, medium, stage/purpose, prior batch actuals, shrinkage, packaging, labor, QA outcomes, and commercial/facility production records available to this workspace. Return JSON only with exactly these string keys: purpose, stage, recipeId, batchVolume, bagSize, ingredients, laborCost, packagingCost, shrinkagePercent, targetMarginPercent, batchNotes. ingredients must be a JSON-array string or lines containing name, quantity, unit, cost, N, P2O5, K2O, releaseClass, sourceConfidence, category, lotId. Never invent analysis, lot, quantity, cost, margin, or inventory. Preserve label N-P2O5-K2O separately from elemental conversions. Leave unknowns blank. In batchNotes identify missing labels/COAs, compost uncertainty, release timing, K/Ca/Mg antagonism, water context, substitutions, production scope, and QA checks.`
+          `Prefill this Soil & Nutrient Batch Plan from saved recipes, verified ingredient/product catalog, label analyses, inventory lots and costs, crop and medium context, prior batch actuals, packaging, labor, QA outcomes, and commercial/facility production records available to this workspace. Return JSON only with exactly these string keys: batchName, purpose, stage, medium, growStyle, plantCount, recipeId, batchVolume, batchVolumeUnit, bagSize, ingredients, laborCost, packagingCost, shrinkagePercent, targetMarginPercent, measuredFinishedEc, maximumAcceptableEc, batchNotes. ingredients must be a JSON-array string or lines containing name, quantity, unit, cost, N, P2O5, K2O, releaseClass, sourceConfidence, category, lotId, inventoryItemId, availableQuantity, availableUnit. Never invent analysis, lot, quantity, cost, margin, density, or inventory. Preserve label N-P2O5-K2O separately from elemental conversions. Leave unknowns blank. In batchNotes identify missing labels/COAs, compost uncertainty, release timing, K/Ca/Mg antagonism, water context, substitutions, production scope, and QA checks.`
       }}
       fields={[
-        { key: "purpose", label: "Purpose", defaultValue: "seedling" },
-        { key: "stage", label: "Crop stage", defaultValue: "seedling" },
-        { key: "recipeId", label: "Recipe ID or name", defaultValue: "Base Soil Mix" },
+        {
+          key: "batchName",
+          label: "Production batch name",
+          defaultValue: "",
+          placeholder: "Required: a traceable batch name",
+          required: true,
+          section: "Batch identity"
+        },
+        {
+          key: "purpose",
+          label: "Purpose",
+          defaultValue: "",
+          placeholder: "Seedling mix, transplant blend, topdress...",
+          required: true,
+          section: "Batch identity"
+        },
+        {
+          key: "stage",
+          label: "Crop stage",
+          defaultValue: "",
+          section: "Batch identity"
+        },
+        { key: "medium", label: "Medium", defaultValue: "", section: "Batch identity" },
+        {
+          key: "growStyle",
+          label: "Grow style",
+          defaultValue: "",
+          section: "Batch identity"
+        },
+        {
+          key: "plantCount",
+          label: "Plant count (optional)",
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "Batch identity"
+        },
+        {
+          key: "recipeId",
+          label: "Recipe ID or version",
+          defaultValue: "",
+          section: "Batch identity"
+        },
         {
           key: "batchVolume",
           label: "Batch volume",
-          defaultValue: "120",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          required: true,
+          section: "Yield and packaging"
+        },
+        {
+          key: "batchVolumeUnit",
+          label: "Batch and bag volume unit",
+          defaultValue: "",
+          placeholder: "gal, cu ft, L...",
+          required: true,
+          section: "Yield and packaging"
         },
         {
           key: "bagSize",
           label: "Bag size",
-          defaultValue: "1.5",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          required: true,
+          section: "Yield and packaging"
         },
         {
           key: "ingredients",
           label:
-            "Ingredients as lines: name, quantity, unit, cost, N, P2O5, K2O, releaseClass, confidence, category",
-          defaultValue:
-            "Compost, 40, gal, 80, 1, 1, 1, slow, low, compost\nFast N meal, 4, lb, 24, 12, 0, 0, fast, medium, dry_amendment\nGypsum, 3, lb, 12, 0, 0, 0, medium, medium, mineral",
-          multiline: true
+            "Ingredients: name, quantity, unit, cost, N, P2O5, K2O, release, confidence, category, lot, inventory ID, available quantity, available unit",
+          defaultValue: "",
+          placeholder:
+            "One ingredient per line. Leave unknown columns blank; they will not become zero.",
+          helpText:
+            "Use one compatible quantity unit when you want a blended label estimate. Inventory availability is reviewed only and is never decremented here.",
+          multiline: true,
+          required: true,
+          section: "Ingredient pull sheet"
         },
         {
           key: "laborCost",
           label: "Labor cost",
-          defaultValue: "120",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "Cost and margin"
         },
         {
           key: "packagingCost",
           label: "Packaging cost",
-          defaultValue: "60",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "Cost and margin"
         },
         {
           key: "shrinkagePercent",
           label: "Shrinkage %",
-          defaultValue: "5",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          helpText:
+            "Leave blank when unknown; saleable yield and bag count will remain unknown.",
+          section: "Yield and packaging"
         },
         {
           key: "targetMarginPercent",
           label: "Target margin %",
-          defaultValue: "40",
-          keyboardType: "numeric"
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "Cost and margin"
+        },
+        {
+          key: "measuredFinishedEc",
+          label: "Measured finished EC (optional)",
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "QA evidence"
+        },
+        {
+          key: "maximumAcceptableEc",
+          label: "Your maximum acceptable EC (optional)",
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "QA evidence"
         },
         {
           key: "batchNotes",
           label: "Batch evidence, substitutions, and QA notes (optional)",
           defaultValue: "",
-          multiline: true
+          multiline: true,
+          section: "QA evidence"
         }
       ]}
+      validateValues={(values) => {
+        if (!values.batchName.trim()) return "Enter a traceable production batch name.";
+        if (!values.purpose.trim()) return "Enter the intended purpose.";
+        if (!optionalNumber(values.batchVolume) || Number(values.batchVolume) <= 0)
+          return "Batch volume must be greater than zero.";
+        if (!values.batchVolumeUnit.trim()) return "Enter the batch and bag volume unit.";
+        if (!optionalNumber(values.bagSize) || Number(values.bagSize) <= 0)
+          return "Bag size must be greater than zero.";
+        if (!parseIngredients(values.ingredients).length)
+          return "Enter at least one ingredient.";
+        return null;
+      }}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
+        batchName: values.batchName.trim(),
         purpose: values.purpose,
         stage: values.stage,
+        medium: values.medium || undefined,
+        growStyle: values.growStyle || undefined,
+        plantCount: optionalNumber(values.plantCount),
         recipeId: values.recipeId,
-        batchVolume: values.batchVolume,
-        bagSize: values.bagSize,
+        batchVolume: optionalNumber(values.batchVolume),
+        batchVolumeUnit: values.batchVolumeUnit,
+        bagSize: optionalNumber(values.bagSize),
         ingredients: parseIngredients(values.ingredients),
-        ingredientCosts: parseIngredientCosts(values.ingredients),
-        laborCost: values.laborCost,
-        packagingCost: values.packagingCost,
-        shrinkagePercent: values.shrinkagePercent,
-        targetMarginPercent: values.targetMarginPercent,
+        laborCost: optionalNumber(values.laborCost),
+        packagingCost: optionalNumber(values.packagingCost),
+        shrinkagePercent: optionalNumber(values.shrinkagePercent),
+        targetMarginPercent: optionalNumber(values.targetMarginPercent),
+        measuredFinishedEc: optionalNumber(values.measuredFinishedEc),
+        maximumAcceptableEc: optionalNumber(values.maximumAcceptableEc),
         batchNotes: values.batchNotes || undefined
       })}
       buildMetrics={(outputs) => [
         { key: "purpose", label: "Purpose", value: outputs.purpose },
         { key: "fit", label: "Purpose fit", value: outputs.purposeFit },
-        { key: "bags", label: "Bag count", value: outputs.bagCount },
+        { key: "bags", label: "Bag count", value: outputs.bagCount ?? "Unknown" },
+        {
+          key: "analysisStatus",
+          label: "Label estimate",
+          value: outputs.guaranteedAnalysisEstimate?.status || "Unknown"
+        },
         { key: "analysisN", label: "N", value: outputs.guaranteedAnalysisEstimate?.N },
         {
           key: "analysisP",
@@ -275,23 +374,40 @@ export function CommercialSoilNutrientBatchToolRoute() {
           label: "K2O",
           value: outputs.guaranteedAnalysisEstimate?.K2O
         },
-        { key: "costPerBag", label: "Cost / bag", value: outputs.costPerBag }
-      ]}
-      defaultLogTitle={(outputs) => `Soil batch plan: ${outputs.recipeId || "recipe"}`}
-      defaultTask={(outputs) => ({
-        title: outputs.taskSuggestion?.title || "Build soil batch",
-        priority: outputs.taskSuggestion?.priority || "medium",
-        dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 1),
-        allDay: true,
-        calendarType: "soil_nutrient_batch",
-        sourceStage: "production_batch",
-        reminderPlan: {
-          channels: ["in_app"],
-          reminders: [{ offsetMinutes: -24 * 60 }]
+        {
+          key: "costPerBag",
+          label: "Cost / bag",
+          value: outputs.costPerBag ?? "Unknown"
         },
-        description:
-          "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
-      })}
+        {
+          key: "inventoryShortages",
+          label: "Inventory shortages",
+          value: Array.isArray(outputs.inventoryShortages)
+            ? outputs.inventoryShortages.length
+            : "Unknown"
+        },
+        { key: "aiCredits", label: "AI credits used", value: outputs.aiCreditsUsed ?? 0 }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.warnings) ? outputs.warnings : []).map(
+          (message: string, index: number) => ({
+            key: `warning-${index}`,
+            severity: "high" as const,
+            message
+          })
+        ),
+        ...(Array.isArray(outputs.missingInformation) ? outputs.missingInformation : [])
+          .slice(0, 8)
+          .map((message: string, index: number) => ({
+            key: `missing-${index}`,
+            severity: "medium" as const,
+            message,
+            remediation: "Add verified evidence or leave this value explicitly unknown."
+          }))
+      ]}
+      defaultLogTitle={(outputs) =>
+        `Soil batch plan: ${outputs.batchName || outputs.recipeId || "batch"}`
+      }
       assistantBrief={{
         title: "AI-guided, calculator-verified",
         description:
@@ -301,25 +417,63 @@ export function CommercialSoilNutrientBatchToolRoute() {
         briefTitle: "AI soil batch brief",
         buildBrief: ({ payload }) => buildSoilBatchAssistantBrief(payload)
       }}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+      buildActions={({ outputs, payload, toolRun }) => [
         {
-          key: "create-soil-batch-tasks",
-          label: "Create Batch Task Plan",
-          variant: "secondary",
-          pendingLabel: "Creating...",
-          disabled: !growId,
-          successMessage: "Created soil batch tasks.",
+          key: "save-commercial-production-batch",
+          label: "Save Production Batch & Tasks",
+          variant: "primary",
+          pendingLabel: "Saving batch...",
+          successMessage:
+            "Saved the production batch and its reviewed Commercial task plan. Inventory was not changed.",
           onPress: async () => {
-            const result = await saveToolRunAndCreateTasks({
-              growId,
-              ...plantContext.toolRunContext,
-              toolKey: "soil-nutrient-batch",
-              toolRunId: toolRun?.id || toolRun?._id,
-              input: payload,
-              output: outputs,
-              tasks: soilBatchTaskPlan(outputs)
+            const linkedToolRunId = String(toolRun?.id || toolRun?._id || "");
+            const savedBatch = await createSoilNutrientBatch({
+              batchName: payload.batchName,
+              name: payload.batchName,
+              purpose: payload.purpose,
+              linkedToolRunId,
+              toolRunId: linkedToolRunId,
+              linkedRecipeId: payload.recipeId || undefined,
+              batchVolume: payload.batchVolume,
+              batchVolumeUnit: payload.batchVolumeUnit,
+              bagSize: payload.bagSize,
+              bagCount: outputs.bagCount,
+              usableVolume: outputs.usableVolume,
+              estimatedCost: outputs.costEstimate?.totalCost ?? undefined,
+              costPerUnit: outputs.costPerBag ?? undefined,
+              costEstimate: outputs.costEstimate,
+              guaranteedAnalysisEstimate: outputs.guaranteedAnalysisEstimate,
+              elementalEstimate: outputs.elementalEstimate,
+              releaseTimeline: outputs.releaseTimeline,
+              ingredientPullSheet: outputs.ingredientPullSheet,
+              inventoryReview: outputs.inventoryReview,
+              warnings: outputs.warnings,
+              missingInformation: outputs.missingInformation,
+              limitations: outputs.limitations,
+              calculatorInput: payload,
+              calculatorOutput: outputs,
+              ingredientSummary: `${outputs.ingredientPullSheet?.length || 0} ingredient pull(s)`,
+              mixingInstructions: Array.isArray(outputs.mixingSheet)
+                ? outputs.mixingSheet.join("\n")
+                : "",
+              notes: payload.batchNotes || "",
+              status: "planned"
             });
-            if (!result.ok) throw new Error(result.error);
+            const savedBatchId = String(savedBatch?.id || savedBatch?._id || "");
+            if (!savedBatchId) throw new Error("The production batch was not returned.");
+            await Promise.all(
+              soilBatchTaskPlan(outputs).map((task) =>
+                createCommercialTask({
+                  ...task,
+                  priority: task.priority === "medium" ? "normal" : task.priority,
+                  sourceType: "product_batch",
+                  sourceId: savedBatchId,
+                  linkedProductBatchId: savedBatchId,
+                  linkedToolRunId,
+                  status: "open"
+                })
+              )
+            );
           }
         }
       ]}

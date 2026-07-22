@@ -3737,86 +3737,150 @@ function calculateTissueCulture(input = {}) {
 }
 
 function calculateLivingSoilBatch(input = {}) {
-  const batchVolume = Math.max(0, number(input.batchVolume ?? 0, "Batch volume"));
-  const bagSize = Math.max(0.01, number(input.bagSize ?? 1, "Bag size"));
+  const requiredPositive = (value, label) => {
+    if (value == null || value === "") throw new TypeError(`${label} is required`);
+    const parsed = number(value, label);
+    if (parsed <= 0) throw new TypeError(`${label} must be greater than zero`);
+    return parsed;
+  };
+  const optionalNonNegative = (value, label) => {
+    if (value == null || value === "") return null;
+    const parsed = number(value, label);
+    if (parsed < 0) throw new TypeError(`${label} cannot be negative`);
+    return parsed;
+  };
+  const money = (value) => (value == null ? null : Number(value.toFixed(2)));
+  const unique = (values) => Array.from(new Set(values.filter(Boolean)));
+  const batchVolume = requiredPositive(input.batchVolume, "Batch volume");
+  const bagSize = requiredPositive(input.bagSize, "Bag size");
   const ingredientCosts = Array.isArray(input.ingredientCosts)
     ? input.ingredientCosts
     : [];
   const explicitIngredients = Array.isArray(input.ingredients) ? input.ingredients : [];
   const ingredients = explicitIngredients.length ? explicitIngredients : ingredientCosts;
-  const laborCost = Math.max(0, number(input.laborCost ?? 0, "Labor cost"));
-  const packagingCost = Math.max(0, number(input.packagingCost ?? 0, "Packaging cost"));
-  const shrinkagePercent = Math.max(
-    0,
-    number(input.shrinkagePercent ?? 0, "Shrinkage percent")
+  if (!ingredients.length) throw new TypeError("At least one ingredient is required");
+  const laborCost = optionalNonNegative(input.laborCost, "Labor cost");
+  const packagingCost = optionalNonNegative(input.packagingCost, "Packaging cost");
+  const shrinkagePercent = optionalNonNegative(
+    input.shrinkagePercent,
+    "Shrinkage percent"
   );
-  const ingredientTotal = ingredients.reduce((sum, row) => {
-    return sum + Math.max(0, Number(row.cost ?? row.totalCost ?? 0));
-  }, 0);
-  const usableVolume = batchVolume * (1 - shrinkagePercent / 100);
-  const bagCount = Math.floor(usableVolume / bagSize);
-  const totalBatchCost = ingredientTotal + laborCost + packagingCost;
-  const costPerBag = bagCount ? totalBatchCost / bagCount : 0;
-  const marginPercent = Math.max(
-    0,
-    number(input.targetMarginPercent ?? 40, "Target margin percent")
+  if (shrinkagePercent != null && shrinkagePercent >= 100) {
+    throw new TypeError("Shrinkage percent must be less than 100");
+  }
+  const marginPercent = optionalNonNegative(
+    input.targetMarginPercent,
+    "Target margin percent"
   );
-  const retailPriceSuggestion = costPerBag
-    ? costPerBag / (1 - Math.min(90, marginPercent) / 100)
-    : 0;
+  if (marginPercent != null && marginPercent >= 100) {
+    throw new TypeError("Target margin percent must be less than 100");
+  }
   const normalizedIngredients = ingredients.map((row, index) => {
-    const amount = Number(row.quantity ?? row.amount ?? 0);
+    const name = String(row.name || "").trim();
+    if (!name) throw new TypeError(`Ingredient ${index + 1} name is required`);
+    const amount = optionalNonNegative(row.quantity ?? row.amount, `${name} quantity`);
     const releaseClass = releaseBucket(row);
-    const sourceConfidence = sourceConfidenceFor(row);
+    const explicitConfidence = String(
+      row.sourceConfidence || row.confidence || ""
+    ).toLowerCase();
+    const sourceConfidence = ["high", "medium", "low"].includes(explicitConfidence)
+      ? explicitConfidence
+      : "unknown";
     return {
-      name: String(row.name || `Ingredient ${index + 1}`),
-      amount: Number.isFinite(amount) ? amount : 0,
-      unit: String(row.unit || row.amountUnit || ""),
-      cost: Number(row.cost ?? row.totalCost ?? 0),
-      labelN: Number(row.N ?? row.labelN ?? row.labelNPK?.N ?? 0),
-      labelP2O5: Number(row.P2O5 ?? row.P ?? row.labelP2O5 ?? row.labelNPK?.P2O5 ?? 0),
-      labelK2O: Number(row.K2O ?? row.K ?? row.labelK2O ?? row.labelNPK?.K2O ?? 0),
-      Ca: Number(row.Ca ?? row.elemental?.Ca ?? 0),
-      Mg: Number(row.Mg ?? row.elemental?.Mg ?? 0),
-      S: Number(row.S ?? row.elemental?.S ?? 0),
+      name,
+      amount,
+      unit: String(row.unit || row.amountUnit || "").trim(),
+      cost: optionalNonNegative(row.cost ?? row.totalCost, `${name} cost`),
+      labelN: optionalNonNegative(row.N ?? row.labelN ?? row.labelNPK?.N, `${name} N`),
+      labelP2O5: optionalNonNegative(
+        row.P2O5 ?? row.P ?? row.labelP2O5 ?? row.labelNPK?.P2O5,
+        `${name} P2O5`
+      ),
+      labelK2O: optionalNonNegative(
+        row.K2O ?? row.K ?? row.labelK2O ?? row.labelNPK?.K2O,
+        `${name} K2O`
+      ),
+      Ca: optionalNonNegative(row.Ca ?? row.elemental?.Ca, `${name} Ca`),
+      Mg: optionalNonNegative(row.Mg ?? row.elemental?.Mg, `${name} Mg`),
+      S: optionalNonNegative(row.S ?? row.elemental?.S, `${name} S`),
       releaseClass,
       sourceConfidence,
-      category: String(row.category || "")
+      category: String(row.category || ""),
+      inventoryItemId: row.inventoryItemId || null,
+      lotId: row.lotId || null,
+      availableQuantity: optionalNonNegative(
+        row.availableQuantity ?? row.inventoryQuantity,
+        `${name} available quantity`
+      ),
+      availableUnit: String(row.availableUnit || row.inventoryUnit || "").trim()
     };
   });
   const ingredientPullSheet = normalizedIngredients.map((row) => ({
-    name: String(row.name || "Ingredient"),
-    quantity: Number(row.amount ?? 0),
-    unit: String(row.unit || ""),
-    cost: Number(row.cost ?? row.totalCost ?? 0),
+    name: row.name,
+    quantity: row.amount,
+    unit: row.unit || null,
+    cost: row.cost,
     releaseClass: row.releaseClass,
-    sourceConfidence: row.sourceConfidence
+    sourceConfidence: row.sourceConfidence,
+    inventoryItemId: row.inventoryItemId,
+    lotId: row.lotId,
+    availableQuantity: row.availableQuantity,
+    availableUnit: row.availableUnit || null
   }));
-  const amountTotal = normalizedIngredients.reduce(
-    (sum, row) => sum + Math.max(0, row.amount),
-    0
+  const analysisUnits = unique(
+    normalizedIngredients.map((row) => row.unit.toLowerCase())
   );
+  const analysisComplete = normalizedIngredients.every(
+    (row) =>
+      row.amount != null &&
+      row.amount > 0 &&
+      row.unit &&
+      row.labelN != null &&
+      row.labelP2O5 != null &&
+      row.labelK2O != null
+  );
+  const analysisCompatible = analysisComplete && analysisUnits.length === 1;
+  const amountTotal = analysisCompatible
+    ? normalizedIngredients.reduce((sum, row) => sum + row.amount, 0)
+    : null;
   const weightedPercent = (key) => {
-    const denominator = amountTotal || normalizedIngredients.length || 1;
+    if (!amountTotal) return null;
     return (
-      normalizedIngredients.reduce((sum, row) => {
-        const weight = amountTotal ? Math.max(0, row.amount) : 1;
-        return sum + weight * Number(row[key] || 0);
-      }, 0) / denominator
+      normalizedIngredients.reduce((sum, row) => sum + row.amount * row[key], 0) /
+      amountTotal
     );
   };
   const guaranteedAnalysisEstimate = {
-    N: Number(weightedPercent("labelN").toFixed(2)),
-    P2O5: Number(weightedPercent("labelP2O5").toFixed(2)),
-    K2O: Number(weightedPercent("labelK2O").toFixed(2))
+    status: analysisCompatible
+      ? "calculated_from_compatible_label_units"
+      : "not_calculated",
+    N: analysisCompatible ? Number(weightedPercent("labelN").toFixed(2)) : null,
+    P2O5: analysisCompatible ? Number(weightedPercent("labelP2O5").toFixed(2)) : null,
+    K2O: analysisCompatible ? Number(weightedPercent("labelK2O").toFixed(2)) : null,
+    basisUnit: analysisCompatible ? analysisUnits[0] : null
   };
   const elementalEstimate = {
     N: guaranteedAnalysisEstimate.N,
-    P: Number((guaranteedAnalysisEstimate.P2O5 * 0.44).toFixed(2)),
-    K: Number((guaranteedAnalysisEstimate.K2O * 0.83).toFixed(2)),
-    Ca: Number(weightedPercent("Ca").toFixed(2)),
-    Mg: Number(weightedPercent("Mg").toFixed(2)),
-    S: Number(weightedPercent("S").toFixed(2))
+    P:
+      guaranteedAnalysisEstimate.P2O5 == null
+        ? null
+        : Number((guaranteedAnalysisEstimate.P2O5 * 0.4364).toFixed(2)),
+    K:
+      guaranteedAnalysisEstimate.K2O == null
+        ? null
+        : Number((guaranteedAnalysisEstimate.K2O * 0.8301).toFixed(2)),
+    Ca:
+      analysisCompatible && normalizedIngredients.every((row) => row.Ca != null)
+        ? Number(weightedPercent("Ca").toFixed(2))
+        : null,
+    Mg:
+      analysisCompatible && normalizedIngredients.every((row) => row.Mg != null)
+        ? Number(weightedPercent("Mg").toFixed(2))
+        : null,
+    S:
+      analysisCompatible && normalizedIngredients.every((row) => row.S != null)
+        ? Number(weightedPercent("S").toFixed(2))
+        : null
   };
   const releaseTimeline = normalizedIngredients.reduce(
     (acc, row) => {
@@ -3825,7 +3889,7 @@ function calculateLivingSoilBatch(input = {}) {
       acc[key].push({
         name: row.name,
         amount: row.amount,
-        unit: row.unit,
+        unit: row.unit || null,
         role:
           key === "immediate" || key === "fast"
             ? "near-term support"
@@ -3840,11 +3904,38 @@ function calculateLivingSoilBatch(input = {}) {
   const stage = String(input.stage || input.purpose || "").toLowerCase();
   const purpose = String(input.purpose || input.intendedUse || "production_batch");
   const warnings = [];
-  if (bagCount <= 0)
+  const missingInformation = [];
+  normalizedIngredients.forEach((row) => {
+    if (row.amount == null || !row.unit)
+      missingInformation.push(
+        `${row.name}: quantity and unit are required for the pull sheet.`
+      );
+    if (row.cost == null) missingInformation.push(`${row.name}: cost is unknown.`);
+    if (row.labelN == null || row.labelP2O5 == null || row.labelK2O == null)
+      missingInformation.push(`${row.name}: complete label N-P2O5-K2O is missing.`);
+    if (row.sourceConfidence === "unknown")
+      missingInformation.push(`${row.name}: source confidence is unknown.`);
+  });
+  if (laborCost == null) missingInformation.push("Labor cost is unknown.");
+  if (packagingCost == null) missingInformation.push("Packaging cost is unknown.");
+  if (shrinkagePercent == null) missingInformation.push("Shrinkage is unknown.");
+  if (!analysisCompatible) {
+    warnings.push(
+      analysisComplete
+        ? "Guaranteed analysis was not calculated because ingredient quantities use incompatible units. Convert them to one mass or volume unit first."
+        : "Guaranteed analysis remains unknown until every ingredient has a quantity, compatible unit, and complete label N-P2O5-K2O."
+    );
+  }
+  const usableVolume =
+    shrinkagePercent == null ? null : batchVolume * (1 - shrinkagePercent / 100);
+  const bagCount = usableVolume == null ? null : Math.floor(usableVolume / bagSize);
+  const leftoverVolume =
+    usableVolume == null || bagCount == null ? null : usableVolume - bagCount * bagSize;
+  if (bagCount === 0)
     warnings.push("Batch volume and bag size do not produce any sellable bags.");
   if (
     /seedling|clone/.test(stage) &&
-    (guaranteedAnalysisEstimate.N > 2 ||
+    ((guaranteedAnalysisEstimate.N != null && guaranteedAnalysisEstimate.N > 2) ||
       releaseTimeline.immediate.length ||
       releaseTimeline.fast.length)
   ) {
@@ -3873,12 +3964,16 @@ function calculateLivingSoilBatch(input = {}) {
     warnings.push("One or more ingredient values have low source confidence.");
   }
   if (
+    guaranteedAnalysisEstimate.K2O != null &&
+    guaranteedAnalysisEstimate.N != null &&
     guaranteedAnalysisEstimate.K2O > guaranteedAnalysisEstimate.N * 2 &&
     guaranteedAnalysisEstimate.K2O > 1
   ) {
     warnings.push("High potassium may compete with calcium/magnesium uptake.");
   }
   if (
+    guaranteedAnalysisEstimate.P2O5 != null &&
+    guaranteedAnalysisEstimate.N != null &&
     guaranteedAnalysisEstimate.P2O5 > guaranteedAnalysisEstimate.N * 1.8 &&
     guaranteedAnalysisEstimate.P2O5 > 1
   ) {
@@ -3892,20 +3987,91 @@ function calculateLivingSoilBatch(input = {}) {
   if (normalizedIngredients.some((row) => /gypsum/i.test(row.name))) {
     warnings.push("Gypsum supplies calcium/sulfur support but is not pH down.");
   }
+  const measuredFinishedEc = optionalNonNegative(
+    input.measuredFinishedEc,
+    "Measured finished EC"
+  );
+  const maximumAcceptableEc = optionalNonNegative(
+    input.maximumAcceptableEc,
+    "Maximum acceptable EC"
+  );
+  if (
+    input.saltRiskObserved === true ||
+    (measuredFinishedEc != null &&
+      maximumAcceptableEc != null &&
+      measuredFinishedEc > maximumAcceptableEc)
+  ) {
+    warnings.push(
+      "Measured or observed EC/salt risk exceeds the user-entered acceptance limit; hold the batch for review."
+    );
+  }
+  const inventoryReview = normalizedIngredients.map((row) => {
+    const comparable =
+      row.amount != null &&
+      row.availableQuantity != null &&
+      row.unit &&
+      row.availableUnit &&
+      row.unit.toLowerCase() === row.availableUnit.toLowerCase();
+    return {
+      name: row.name,
+      inventoryItemId: row.inventoryItemId,
+      lotId: row.lotId,
+      requiredQuantity: row.amount,
+      requiredUnit: row.unit || null,
+      availableQuantity: row.availableQuantity,
+      availableUnit: row.availableUnit || null,
+      status: comparable
+        ? row.availableQuantity < row.amount
+          ? "shortage"
+          : "available"
+        : row.availableQuantity == null
+          ? "availability_unknown"
+          : "unit_mismatch"
+    };
+  });
+  if (inventoryReview.some((row) => row.status === "shortage")) {
+    warnings.push("Inventory is short for one or more ingredient pulls.");
+  }
+  if (inventoryReview.some((row) => row.status === "unit_mismatch")) {
+    warnings.push(
+      "Inventory units do not match the recipe units for one or more ingredients."
+    );
+  }
+  const ingredientKnownCost = normalizedIngredients.reduce(
+    (sum, row) => sum + (row.cost == null ? 0 : row.cost),
+    0
+  );
+  const costsComplete =
+    normalizedIngredients.every((row) => row.cost != null) &&
+    laborCost != null &&
+    packagingCost != null;
+  const knownCostSubtotal = ingredientKnownCost + (laborCost || 0) + (packagingCost || 0);
+  const totalBatchCost = costsComplete ? knownCostSubtotal : null;
+  const costPerBag =
+    totalBatchCost != null && bagCount != null && bagCount > 0
+      ? totalBatchCost / bagCount
+      : null;
+  const retailPriceSuggestion =
+    costPerBag != null && marginPercent != null
+      ? costPerBag / (1 - marginPercent / 100)
+      : null;
   const purposeFit = warnings.length
     ? "review_before_use"
     : "fits_entered_purpose_with_current_data";
   const costEstimate = {
-    ingredientCost: Number(ingredientTotal.toFixed(2)),
-    laborCost: Number(laborCost.toFixed(2)),
-    packagingCost: Number(packagingCost.toFixed(2)),
-    totalCost: Number(totalBatchCost.toFixed(2)),
-    costPerBatch: Number(totalBatchCost.toFixed(2)),
-    costPerBag: Number(costPerBag.toFixed(2)),
-    costPerGallon: batchVolume ? Number((totalBatchCost / batchVolume).toFixed(2)) : null,
-    costPerCubicFoot: batchVolume
-      ? Number((totalBatchCost / (batchVolume / 7.48052)).toFixed(2))
-      : null
+    status: costsComplete ? "complete" : "partial_missing_costs",
+    ingredientCost: normalizedIngredients.every((row) => row.cost != null)
+      ? money(ingredientKnownCost)
+      : null,
+    knownCostSubtotal: money(knownCostSubtotal),
+    laborCost: money(laborCost),
+    packagingCost: money(packagingCost),
+    totalCost: money(totalBatchCost),
+    costPerBatch: money(totalBatchCost),
+    costPerBag: money(costPerBag),
+    costPerGallon: totalBatchCost == null ? null : money(totalBatchCost / batchVolume),
+    costPerCubicFoot:
+      totalBatchCost == null ? null : money(totalBatchCost / (batchVolume / 7.48052))
   };
   return {
     recipeId: input.recipeId || null,
@@ -3913,17 +4079,25 @@ function calculateLivingSoilBatch(input = {}) {
     purpose,
     stage: input.stage || null,
     purposeFit,
-    batchSummary: `${purpose} batch: ${usableVolume.toFixed(2)} usable volume from ${batchVolume} total.`,
+    batchSummary:
+      usableVolume == null
+        ? `${purpose} batch: ${batchVolume} total volume; saleable yield is unknown until shrinkage is entered.`
+        : `${purpose} batch: ${usableVolume.toFixed(2)} usable volume from ${batchVolume} total.`,
     batchVolume,
     bagSize,
-    usableVolume: Number(usableVolume.toFixed(2)),
+    shrinkagePercent,
+    usableVolume: usableVolume == null ? null : Number(usableVolume.toFixed(2)),
     bagCount,
-    totalBatchCost: Number(totalBatchCost.toFixed(2)),
-    costPerBag: Number(costPerBag.toFixed(2)),
-    retailPriceSuggestion: Number(retailPriceSuggestion.toFixed(2)),
+    leftoverVolume: leftoverVolume == null ? null : Number(leftoverVolume.toFixed(2)),
+    totalBatchCost: money(totalBatchCost),
+    costPerBag: money(costPerBag),
+    retailPriceSuggestion: money(retailPriceSuggestion),
     marginEstimate: {
       targetMarginPercent: marginPercent,
-      grossMarginPerBag: Number((retailPriceSuggestion - costPerBag).toFixed(2))
+      grossMarginPerBag:
+        retailPriceSuggestion == null || costPerBag == null
+          ? null
+          : money(retailPriceSuggestion - costPerBag)
     },
     costEstimate,
     ingredientPullSheet,
@@ -3939,11 +4113,20 @@ function calculateLivingSoilBatch(input = {}) {
     sourceConfidenceWarnings: warnings.filter((warning) =>
       /source confidence|Compost|castings/i.test(warning)
     ),
+    inventoryReview,
+    inventoryShortages: inventoryReview.filter((row) => row.status === "shortage"),
+    inventoryCommitStatus: "not_applied",
+    packagingPlan: {
+      bagSize,
+      bagCount,
+      leftoverVolume: leftoverVolume == null ? null : Number(leftoverVolume.toFixed(2)),
+      status: bagCount == null ? "awaiting_shrinkage" : "calculated"
+    },
     mixingSheet: [
       "Verify recipe version and ingredient lots before pulling material.",
       "Confirm purpose, stage, release timing, and source confidence before mixing.",
       "Record actual pulled amounts, shrinkage, batch number, bag count, and packaging lot.",
-      "Create production tasks for pull, mix, moisture/cook check, bagging, and inventory update."
+      "Create reviewed production tasks for pull, mix, moisture/cook check, bagging, inventory update, cleanup, and staging."
     ],
     mixingInstructions: [
       "Measure all base materials first.",
@@ -3952,15 +4135,51 @@ function calculateLivingSoilBatch(input = {}) {
       "Moisten gradually and rest/cook organic mixes when appropriate.",
       "Label the batch with recipe, version, purpose, and target use date."
     ],
-    warnings: Array.from(new Set(warnings)),
+    warnings: unique(warnings),
+    missingInformation: unique(missingInformation),
+    evidenceStatus:
+      analysisCompatible && costsComplete
+        ? "calculated_from_user_entered_evidence"
+        : "partial_user_evidence",
+    methodIds: ["soil-and-nutrient-method", "commercial-workflow-method"],
+    sourceIds: ["growpath-method", "user-observation"],
+    providerLabel: "GrowPath deterministic batch calculator",
+    aiCreditsUsed: 0,
+    limitations: [
+      "Guaranteed analysis is an estimate from user-entered label values and compatible quantity units, not a laboratory result or registration claim.",
+      "Inventory is reviewed only; this calculation never decrements stock or assigns lots automatically.",
+      "Compost, castings, biological activity, density, compatibility, plant uptake, and crop response remain uncertain without direct evidence."
+    ],
     recommendations: [
       "Use this as a purpose-built mix record, not only a cost sheet.",
       "Compare plant response, pH/EC checks, topdress timing, and final results before reusing the formula.",
       "Save the batch to the grow timeline and create follow-up plant-response tasks."
     ],
     tasksToCreate: [
-      { title: "Pull ingredients", dueInDays: 0, priority: "medium" },
-      { title: "Mix batch", dueInDays: 1, priority: "medium" },
+      {
+        title: "Pull ingredients and verify lots",
+        dueInDays: 0,
+        priority: inventoryReview.some((row) => row.status === "shortage")
+          ? "high"
+          : "medium"
+      },
+      {
+        title: "Mix production batch and record actuals",
+        dueInDays: 1,
+        priority: "medium"
+      },
+      {
+        title: "Bag, label, and complete batch QA",
+        dueInDays: 2,
+        priority: warnings.length ? "high" : "medium"
+      },
+      { title: "Review and update inventory actuals", dueInDays: 2, priority: "medium" },
+      { title: "Clean the production area", dueInDays: 2, priority: "medium" },
+      {
+        title: "Stage or hold the finished batch",
+        dueInDays: 3,
+        priority: warnings.length ? "high" : "medium"
+      },
       {
         title: "Check plant response after use",
         dueInDays: 7,
@@ -3972,7 +4191,7 @@ function calculateLivingSoilBatch(input = {}) {
       dueInDays: 1,
       priority: "medium"
     },
-    logSummary: `${purpose} batch planned with ${normalizedIngredients.length} inputs, ${bagCount} bags, and ${warnings.length} warning(s).`
+    logSummary: `${purpose} batch planned with ${normalizedIngredients.length} inputs, ${bagCount == null ? "unknown" : bagCount} bags, and ${warnings.length} warning(s).`
   };
 }
 

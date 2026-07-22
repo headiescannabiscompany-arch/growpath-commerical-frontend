@@ -18,6 +18,8 @@ Public commercial-course discovery may expose a course only when both the course
 
 The Soil & Nutrient Batch Planner is a Commercial production tool. Surface its cost, bag-count, pull-sheet, labor, packaging, margin, inventory, formula, batch/lot, product, and trial workflow only inside the Commercial workspace; do not list it in Personal tools.
 
+A batch calculation is not an inventory transaction. Save the reviewed calculation as an owner-scoped Commercial batch linked to its ToolRun, then create source-linked Commercial production tasks. Preserve missing costs, analyses, shrinkage, lots, and availability as unknown. Do not decrement inventory, assign lots, publish a product claim, or authorize batch release without a separate explicit reviewed action.
+
 Integration auto-build is allowed only for an owned product trial or a Commercial grow explicitly identified as a trial, demo, or education space. Preserve read-only devices and streams and never create cultivation spaces from ordinary storefront, order, or campaign records.
 
 Imported telemetry may support an explicitly linked product-trial evidence window. Course examples require review and de-identification before publication; sensor readings alone do not establish product performance, causation, or a publishable claim.

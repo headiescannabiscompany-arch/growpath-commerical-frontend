@@ -181,11 +181,14 @@ export const methodRegistry: GrowPathMethod[] = [
       "release timeline",
       "source confidence and uncertainty",
       "antagonisms",
+      "commercial batch yield, packaging, cost completeness and inventory review",
       "tasks"
     ],
     [
       "Compost, biology, mineralization and long-term availability remain uncertain without testing.",
-      "Official labels support guaranteed analysis and use rates, not superiority, uptake or crop response."
+      "Official labels support guaranteed analysis and use rates, not superiority, uptake or crop response.",
+      "Do not coerce missing batch quantity, analysis, cost, shrinkage, margin, lot or inventory values to zero.",
+      "Calculate blended label analysis only from complete values expressed in compatible quantity units; inventory review never decrements stock."
     ],
     [
       "npk",
@@ -395,10 +398,12 @@ export const methodRegistry: GrowPathMethod[] = [
       "forum alerts",
       "moderation audit",
       "owner-scoped event analytics",
+      "owner-scoped production batches linked to ToolRuns and Commercial tasks",
       "published-course discovery limited to published storefronts and explicit public fields"
     ],
     [
       "Never cross workspace scope or invent product claims.",
+      "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
       "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     ],
