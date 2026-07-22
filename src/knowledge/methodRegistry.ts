@@ -478,6 +478,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "human-readable audit summaries with full-record drill-in",
       "template-backed or owner-entered SOP checklists",
       "human-readable two-run SOP comparison selection",
+      "review-complete and mutation-locked SOP evidence runs",
+      "readable SOP evidence summaries and step differences",
       "separate seed-readiness and post-seed QA evidence"
     ],
     [
@@ -487,6 +489,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never invite saved account credentials into an AI prompt or parental-control PIN field.",
       "Never convert unavailable Facility compliance evidence to a zero or expose raw identifier arrays as the audit summary.",
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
+      "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
     ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]
