@@ -84,6 +84,40 @@ observed as read-only by Viewer, and reopened by Owner for final audit confirmat
 The connected Gmail mailbox did not contain the recipient mailbox, and the installed
 Chrome session was unavailable, so those role results are not inferred.
 
+### Production Owner inventory loop - 2026-07-22
+
+The same production Owner session completed the Facility inventory create, persistence,
+adjustment, and cleanup loop at `https://growpathai.com/home/facility/inventory`.
+
+- The Owner created `[QA inventory 2026-07-22] Verification marker` with quantity 1
+  each and a release-only SKU. The list reported `1 items | 1 units on hand`, and the
+  record survived a hard reload.
+- A `+1` quantity adjustment persisted as 2 after reload. A `-1` adjustment restored
+  the marker to 1 before cleanup.
+- The live detail exposed raw database fields and internal identifiers and had no
+  cleanup action. Frontend PR `#148`, merge
+  `65409b6ce535d0bff4d07d7bc04652c8ed0c46ea`, replaced that payload with readable
+  SKU and record-time information, clarified adjustments, and added confirmed
+  removal. The full frontend regression passed: 301 suites, 1,165 tests, and one
+  snapshot.
+- The new production screen was observed at `2026-07-22T22:39:52.644Z`; screenshot
+  and DOM evidence at `2026-07-22T22:40:05.767Z` showed readable record information,
+  no raw identifiers, and the removal control.
+- The first confirmed removal issued the canonical record-ID request but received 404
+  because the backend treated every update/delete identifier only as an SKU. Backend
+  PR `#55`, merge `3036d43901000b0697c7723bba7b9877c08cdf4e`, made Facility
+  inventory update/delete accept either a record ID or SKU while preserving Facility
+  scope, role gates, soft deletion, and audit details. Both database-backed inventory
+  contract suites passed locally (19 tests), and both backend CI jobs, including the
+  API security scan, passed.
+- After the production API deployment, confirmed deletion returned to the empty list
+  at `2026-07-22T23:05:56.281Z`. A hard reload at
+  `2026-07-22T23:06:06.403Z` still showed `0 items | 0 units on hand` and the temporary
+  marker was absent. Final screenshot evidence is tied to the two merge SHAs above.
+
+This closes the production Owner inventory loop without leaving test inventory. It
+does not close the separate Manager, Staff, Viewer, or cross-role task chain.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to

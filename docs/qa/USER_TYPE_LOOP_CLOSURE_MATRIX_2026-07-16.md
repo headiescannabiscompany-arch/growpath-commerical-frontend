@@ -130,6 +130,15 @@ control, or can bypass its backend authorization boundary.
   ET. The full checkbox remains open pending Owner final-state review, forced Viewer
   backend 403 evidence, exported recording, and a production-role retest. See
   `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
+- 2026-07-22 production Facility inventory follow-up: the Owner created a temporary
+  item, proved create/reload and quantity-adjustment persistence, then exposed and
+  fixed a raw-detail/cleanup defect through frontend PR `#148` and the record-ID/SKU
+  backend mismatch through backend PR `#55`. Frontend merge
+  `65409b6ce535d0bff4d07d7bc04652c8ed0c46ea` and backend merge
+  `3036d43901000b0697c7723bba7b9877c08cdf4e` were live when confirmed removal
+  succeeded at `2026-07-22T23:05:56.281Z`. A hard reload at
+  `2026-07-22T23:06:06.403Z` showed `0 items | 0 units on hand`; no test inventory
+  remained. See `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
 
 ### Personal Free backbone audit
 
@@ -339,7 +348,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed. Production Owner created and assigned the shared QA task
       on `93bb0217` and captured screenshot/DOM evidence at
-      `2026-07-22T22:17:21.853Z`; final post-completion Owner return remains open.
+      `2026-07-22T22:17:21.853Z`. The production inventory create, reload, adjustment,
+      confirmed cleanup, and post-delete reload loop also passed on frontend
+      `65409b6c` and backend `3036d439` at `2026-07-22T23:06:06.403Z`; final
+      post-completion Owner task return remains open.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. The production shared QA task is assigned to the
       existing Manager, but the Manager production credential was not supplied.
