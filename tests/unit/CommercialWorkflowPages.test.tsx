@@ -1523,7 +1523,11 @@ describe("commercial workflow pages", () => {
     );
     expect(screen.getByText("Learner preview")).toBeTruthy();
     expect(screen.getByLabelText("Course learner preview banner")).toBeTruthy();
-    expect(screen.getByText(/lessons available in this course outline/)).toBeTruthy();
+    expect(screen.getByText("Course lessons")).toBeTruthy();
+    expect(screen.getByText("Application rate")).toBeTruthy();
+    expect(screen.queryByLabelText("Save commercial course detail")).toBeNull();
+    expect(screen.queryByLabelText("Add commercial course lesson")).toBeNull();
+    expect(screen.getByText("Return to Course Editor")).toBeTruthy();
   });
 
   it("creates marketing plans with linked products and click tracking", async () => {

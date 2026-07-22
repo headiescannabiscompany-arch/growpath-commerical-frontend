@@ -20,7 +20,7 @@ A draft may retain incomplete media so an author can return to it. Publishing or
 
 The author must open the source before recording availability. Record available, link-only, restricted, or unavailable plus an optional note for login, age, region, domain, privacy, removal, or embedding limits. This is a timestamped author check, not continuous GrowPath monitoring. A successful GrowPath upload may record first-party availability and check time automatically, but it does not waive rights or accessibility review.
 
-Draft courses, lessons, media metadata, summaries, documents, and authoring fields are owner-only records. Public catalogs and direct course-detail routes may return them only after publication; an authenticated author or platform administrator may preview the author's own draft. Anonymous and unrelated authenticated requests must receive the same not-found response so a guessed or shared draft ID cannot disclose unpublished content.
+Draft courses, lessons, media metadata, summaries, documents, and authoring fields are owner-only records. Public catalogs and direct course-detail routes may return them only after publication; an authenticated author or platform administrator may preview the author's own draft. That learner preview must render learner-facing course and lesson content, provider playback/fallback, and accessibility status without exposing authoring controls. Anonymous and unrelated authenticated requests must receive the same not-found response so a guessed or shared draft ID cannot disclose unpublished content.
 
 ## Playback and fallback
 

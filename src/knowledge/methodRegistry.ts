@@ -412,7 +412,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "learner-visible availability and accessibility status",
       "external provider link",
       "GrowPath-only explicit completion state",
-      "owner-only draft preview and published-only public detail access"
+      "owner-only draft preview and published-only public detail access",
+      "learner preview without authoring controls"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
