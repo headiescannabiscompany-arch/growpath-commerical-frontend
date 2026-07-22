@@ -112,18 +112,22 @@ export default function FacilitySopRunsCompareResultRoute() {
   const [left, setLeft] = useState<SopRunDetail | null>(null);
   const [right, setRight] = useState<SopRunDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const run = async () => {
       if (!leftId || !rightId) {
         setError("Select two saved runs before comparing them.");
+        setLoading(false);
         return;
       }
       if (!facilityId) {
         setError("Select a facility first.");
+        setLoading(false);
         return;
       }
       setError(null);
+      setLoading(true);
       try {
         const [a, b] = await Promise.all([
           apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(leftId))),
@@ -133,6 +137,10 @@ export default function FacilitySopRunsCompareResultRoute() {
         setRight(b?.run ?? b?.data ?? b);
       } catch (e: unknown) {
         setError(getErrorMessage(e, "Failed to compare runs"));
+        setLeft(null);
+        setRight(null);
+      } finally {
+        setLoading(false);
       }
     };
     void run();
@@ -166,51 +174,56 @@ export default function FacilitySopRunsCompareResultRoute() {
           identifiers.
         </Text>
         {error ? <Text style={styles.err}>{error}</Text> : null}
+        {loading ? <Text style={styles.sub}>Loading saved run evidence...</Text> : null}
 
-        <View style={styles.summaryCard}>
-          <Text style={styles.title}>Outcome summary</Text>
-          <Text style={styles.summaryValue}>{comparison.outcome}</Text>
-          <Text style={styles.sub}>
-            {comparison.changed} checklist{" "}
-            {comparison.changed === 1 ? "step has" : "steps have"} a different status or
-            appears in only one run.
-          </Text>
-        </View>
+        {!loading && !error && left && right ? (
+          <>
+            <View style={styles.summaryCard}>
+              <Text style={styles.title}>Outcome summary</Text>
+              <Text style={styles.summaryValue}>{comparison.outcome}</Text>
+              <Text style={styles.sub}>
+                {comparison.changed} checklist{" "}
+                {comparison.changed === 1 ? "step has" : "steps have"} a different status
+                or appears in only one run.
+              </Text>
+            </View>
 
-        <View style={styles.runRow}>
-          <RunSummaryCard
-            label="Reference run"
-            run={left}
-            counts={comparison.leftCounts}
-            fallbackTitle="Reference SOP run"
-          />
-          <RunSummaryCard
-            label="Comparison run"
-            run={right}
-            counts={comparison.rightCounts}
-            fallbackTitle="Comparison SOP run"
-          />
-        </View>
+            <View style={styles.runRow}>
+              <RunSummaryCard
+                label="Reference run"
+                run={left}
+                counts={comparison.leftCounts}
+                fallbackTitle="Reference SOP run"
+              />
+              <RunSummaryCard
+                label="Comparison run"
+                run={right}
+                counts={comparison.rightCounts}
+                fallbackTitle="Comparison SOP run"
+              />
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.title}>Checklist differences</Text>
-          {comparison.rows.length ? (
-            comparison.rows.map((row) => (
-              <View
-                key={row.key}
-                style={[styles.stepRow, row.changed && styles.changedRow]}
-              >
-                <Text style={styles.stepTitle}>{row.title}</Text>
-                <View style={styles.statusRow}>
-                  <Text style={styles.statusText}>Reference: {row.leftStatus}</Text>
-                  <Text style={styles.statusText}>Comparison: {row.rightStatus}</Text>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.sub}>Neither run contains checklist steps.</Text>
-          )}
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.title}>Checklist differences</Text>
+              {comparison.rows.length ? (
+                comparison.rows.map((row) => (
+                  <View
+                    key={row.key}
+                    style={[styles.stepRow, row.changed && styles.changedRow]}
+                  >
+                    <Text style={styles.stepTitle}>{row.title}</Text>
+                    <View style={styles.statusRow}>
+                      <Text style={styles.statusText}>Reference: {row.leftStatus}</Text>
+                      <Text style={styles.statusText}>Comparison: {row.rightStatus}</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.sub}>Neither run contains checklist steps.</Text>
+              )}
+            </View>
+          </>
+        ) : null}
       </ScrollView>
     </ScreenBoundary>
   );

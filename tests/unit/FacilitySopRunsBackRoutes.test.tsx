@@ -216,6 +216,21 @@ describe("facility SOP run nested back behavior", () => {
     expect(JSON.stringify(screen.toJSON())).not.toContain('"stepId"');
   });
 
+  it("does not present empty comparison evidence when run selection is missing", async () => {
+    mockParams = {};
+    const screen = render(<FacilitySopRunsCompareResultRoute />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Select two saved runs before comparing them.")
+      ).toBeTruthy()
+    );
+
+    expect(screen.queryByText("Outcome summary")).toBeNull();
+    expect(screen.queryByText("Reference SOP run")).toBeNull();
+    expect(screen.queryByText("Checklist differences")).toBeNull();
+  });
+
   it("selects two saved SOP runs without exposing internal id inputs", async () => {
     const screen = render(<FacilitySopRunsCompareRoute />);
 
