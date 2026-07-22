@@ -70,6 +70,9 @@ export default function CannabisContentControls() {
         }
         keyboardType="number-pad"
         secureTextEntry
+        autoComplete="one-time-code"
+        textContentType="oneTimeCode"
+        importantForAutofill="no"
       />
       <View style={styles.actions}>
         <Action

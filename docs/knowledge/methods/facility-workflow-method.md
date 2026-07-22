@@ -14,6 +14,8 @@ Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, task
 
 Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
 
+Facility AI prompts and parental-control PIN fields must opt out of account-credential autofill. The AI composer is ordinary user-authored text, and the parental PIN is a separate one-time-style control value; neither field may invite a browser or device password manager to insert a saved GrowPath email or password.
+
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
 Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.

@@ -108,6 +108,11 @@ describe("personal AI screen", () => {
 
     await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
     expect(screen.getByText("Grows: 1")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Type here...").props).toMatchObject({
+      autoComplete: "off",
+      textContentType: "none",
+      importantForAutofill: "no"
+    });
 
     fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "vpd 78f 60");
     fireEvent.press(screen.getByText("Send"));

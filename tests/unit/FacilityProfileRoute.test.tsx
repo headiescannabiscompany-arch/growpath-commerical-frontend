@@ -84,6 +84,11 @@ describe("FacilityProfileRoute", () => {
 
     expect(screen.getByText("Facility workspace")).toBeTruthy();
     expect(screen.getByText("Operational facility identity")).toBeTruthy();
+    expect(screen.getByLabelText("Parental content control PIN").props).toMatchObject({
+      autoComplete: "one-time-code",
+      textContentType: "oneTimeCode",
+      importantForAutofill: "no"
+    });
 
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));

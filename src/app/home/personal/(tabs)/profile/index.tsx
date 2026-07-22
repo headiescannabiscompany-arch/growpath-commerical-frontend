@@ -535,6 +535,9 @@ export default function ProfileScreen() {
           }
           keyboardType="number-pad"
           secureTextEntry
+          autoComplete="one-time-code"
+          textContentType="oneTimeCode"
+          importantForAutofill="no"
         />
         <View style={styles.actionGrid}>
           <Pressable

@@ -783,6 +783,9 @@ export default function AiScreen({
           value={draft}
           onChangeText={setDraft}
           placeholder="Type here..."
+          autoComplete="off"
+          textContentType="none"
+          importantForAutofill="no"
           onSubmitEditing={send}
         />
         <Pressable
