@@ -139,6 +139,15 @@ control, or can bypass its backend authorization boundary.
   succeeded at `2026-07-22T23:05:56.281Z`. A hard reload at
   `2026-07-22T23:06:06.403Z` showed `0 items | 0 units on hand`; no test inventory
   remained. See `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
+- 2026-07-22 production Facility SOP/compliance follow-up: the Owner created a
+  three-step SOP template, completed and locked its run, proved hard-reload
+  persistence, and confirmed the resulting audit events. The first deviation write
+  exposed a globally colliding reference and unhandled API restart at
+  `2026-07-22T23:22:09Z`. Backend PR `#56`, merge `0f330650`, added collision-resistant
+  references and the async error boundary; frontend PR `#150`, merge `c0e4f4c3`,
+  recorded the durable policy. After the backend was live, deviation create, resolve,
+  audit persistence, hard reload, and HTTP 200 health all passed by
+  `2026-07-22T23:43:36Z`. No open QA deviation remained.
 
 ### Personal Free backbone audit
 
@@ -351,7 +360,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       `2026-07-22T22:17:21.853Z`. The production inventory create, reload, adjustment,
       confirmed cleanup, and post-delete reload loop also passed on frontend
       `65409b6c` and backend `3036d439` at `2026-07-22T23:06:06.403Z`; final
-      post-completion Owner task return remains open.
+      post-completion Owner task return remains open. The production template-backed
+      SOP completion, lock/reload, compliance deviation create/resolve, audit, and
+      post-fix API-health loop passed on backend `0f330650` and frontend policy merge
+      `c0e4f4c3` by `2026-07-22T23:43:36Z`.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. The production shared QA task is assigned to the
       existing Manager, but the Manager production credential was not supplied.
