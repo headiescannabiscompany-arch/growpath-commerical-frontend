@@ -17,6 +17,8 @@ import { useFacility } from "@/state/useFacility";
 import { completeFacilityTask, deleteTask, getTask, updateTask } from "@/api/tasks";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { listTeamMembers, type TeamMember } from "@/api/team";
+import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { radius } from "@/theme/theme";
 
@@ -229,15 +231,32 @@ function canManageRole(role: unknown) {
   return role === "OWNER" || role === "MANAGER";
 }
 
-function renderKV(obj: AnyRec, key: string) {
-  const v = obj?.[key];
-  if (v === undefined || v === null || v === "") return null;
-  return (
-    <View style={styles.kv} key={key}>
-      <Text style={styles.k}>{key}</Text>
-      <Text style={styles.v}>{typeof v === "string" ? v : JSON.stringify(v)}</Text>
-    </View>
-  );
+function rowId(row: AnyRec) {
+  return String(row?.id ?? row?._id ?? "");
+}
+
+function rowName(row: AnyRec, fallback: string) {
+  return String(row?.name ?? row?.title ?? row?.label ?? fallback);
+}
+
+function memberId(member: TeamMember) {
+  return String(member.userId || member.id || "");
+}
+
+function memberLabel(member: TeamMember) {
+  return String(member.name || member.email || "Team member");
+}
+
+function formatDate(value: unknown) {
+  if (!value) return "Not set";
+  const text = String(value);
+  const dateOnlyMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString();
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
 }
 
 function linkedFieldsForSource(
@@ -289,6 +308,7 @@ export default function FacilityTaskDetail() {
   const ent = useEntitlements();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
+  const { rooms } = useFacilityRooms(facilityId);
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -307,6 +327,8 @@ export default function FacilityTaskDetail() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
   const [form, setForm] = useState({
     title: "",
     notes: "",
@@ -333,8 +355,14 @@ export default function FacilityTaskDetail() {
       try {
         clearError();
         setFeedback("");
-        const res = await getTask(facilityId, String(id));
+        const [res, team] = await Promise.all([
+          getTask(facilityId, String(id)),
+          canAssign
+            ? listTeamMembers(facilityId).catch(() => [] as TeamMember[])
+            : Promise.resolve([] as TeamMember[])
+        ]);
         setItem((res as AnyRec) ?? null);
+        setMembers(team);
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -342,7 +370,7 @@ export default function FacilityTaskDetail() {
         setRefreshing(false);
       }
     },
-    [facilityId, id, clearError, handleApiError]
+    [facilityId, id, canAssign, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -351,7 +379,7 @@ export default function FacilityTaskDetail() {
       title: String(item.title ?? item.name ?? ""),
       notes: String(item.notes ?? item.description ?? ""),
       dueDate: dateOnly(item.dueDate ?? item.dueAt ?? item.due),
-      assignedTo: pickId(item.assignedTo ?? item.assignee),
+      assignedTo: pickId(item.assignedToUserId ?? item.assignedTo ?? item.assignee),
       sourceType: String(item.sourceType ?? "manual"),
       sourceObjectId: String(item.sourceObjectId ?? item.sourceId ?? ""),
       roomId: String(item.roomId ?? item.linkedRoomId ?? ""),
@@ -394,7 +422,10 @@ export default function FacilityTaskDetail() {
   async function saveAssignment() {
     if (!canAssign) return;
     await update(
-      { assignedTo: form.assignedTo.trim() || null },
+      {
+        assignedTo: form.assignedTo.trim() || null,
+        assignedToUserId: form.assignedTo.trim() || null
+      },
       form.assignedTo.trim() ? "Task assigned." : "Assignment cleared."
     );
   }
@@ -465,29 +496,22 @@ export default function FacilityTaskDetail() {
   const targetPath = linkedObjectPath(item);
   const showTargetPath = targetPath && (!sourcePath || targetPath !== sourcePath);
   const sourceReference = taskSourceReference(item);
-
-  const keys = useMemo(() => {
-    if (!item) return [];
-    const preferred = [
-      "id",
-      "_id",
-      "title",
-      "status",
-      "completed",
-      "dueAt",
-      "dueDate",
-      "assignedTo",
-      "assignee",
-      "createdAt",
-      "updatedAt",
-      "notes",
-      "description"
-    ];
-    const rest = Object.keys(item)
-      .filter((k) => !preferred.includes(k))
-      .sort();
-    return [...preferred.filter((k) => k in item), ...rest];
-  }, [item]);
+  const assignedId = pickId(item?.assignedToUserId ?? item?.assignedTo ?? item?.assignee);
+  const assignedMember = members.find((member) => memberId(member) === assignedId);
+  const assigneeName = assignedMember
+    ? memberLabel(assignedMember)
+    : item?.assigneeName
+      ? String(item.assigneeName)
+      : assignedId
+        ? "Assigned team member"
+        : "Unassigned";
+  const linkedRoomId = pickId(item?.linkedRoomId ?? item?.roomId);
+  const linkedRoom = rooms.find((room) => rowId(room) === linkedRoomId);
+  const linkedRoomName = linkedRoom
+    ? rowName(linkedRoom, "Room")
+    : linkedRoomId
+      ? "Linked room"
+      : "No room";
 
   return (
     <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/tasks">
@@ -517,14 +541,14 @@ export default function FacilityTaskDetail() {
         {item ? (
           <>
             <View style={styles.card}>
+              <Text style={styles.taskTitle}>{title}</Text>
               <Text style={styles.sectionTitle}>Task Workflow</Text>
               <Text style={styles.summaryLine}>
-                {sourceObjectLabel(item.sourceType)}{" "}
-                {sourceReference || "source not linked"}
-                {item.roomId || item.linkedRoomId
-                  ? ` | Room: ${String(item.linkedRoomId ?? item.roomId)}`
-                  : ""}
+                Source: {sourceObjectLabel(item.sourceType || "manual")}
+                {sourceReference ? " · Linked record available" : " · No linked record"}
               </Text>
+              <Text style={styles.summaryLine}>Room: {linkedRoomName}</Text>
+              <Text style={styles.summaryLine}>Assigned to: {assigneeName}</Text>
               <Text style={styles.summaryLine}>
                 {item.requiresProof ? "Proof required" : "Proof optional"} |{" "}
                 {item.requiresApproval ? "Approval required" : "Approval optional"}
@@ -606,16 +630,58 @@ export default function FacilityTaskDetail() {
 
                   {canAssign ? (
                     <View style={styles.formGroup}>
-                      <Text style={styles.label}>Assign to user id</Text>
-                      <TextInput
-                        accessibilityLabel="Task detail assignee"
-                        value={form.assignedTo}
-                        onChangeText={(assignedTo) =>
-                          setForm((current) => ({ ...current, assignedTo }))
-                        }
-                        style={styles.input}
-                        placeholder="user id"
-                      />
+                      <Text style={styles.label}>Assign to team member</Text>
+                      <View style={styles.chipRow}>
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel="Clear facility task assignment"
+                          onPress={() =>
+                            setForm((current) => ({ ...current, assignedTo: "" }))
+                          }
+                          style={[styles.chip, !form.assignedTo && styles.chipSelected]}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              !form.assignedTo && styles.chipTextSelected
+                            ]}
+                          >
+                            Unassigned
+                          </Text>
+                        </TouchableOpacity>
+                        {members.map((member) => {
+                          const memberUserId = memberId(member);
+                          const label = memberLabel(member);
+                          if (!memberUserId) return null;
+                          return (
+                            <TouchableOpacity
+                              key={memberUserId}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Assign facility task to ${label}`}
+                              onPress={() =>
+                                setForm((current) => ({
+                                  ...current,
+                                  assignedTo: memberUserId
+                                }))
+                              }
+                              style={[
+                                styles.chip,
+                                form.assignedTo === memberUserId && styles.chipSelected
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.chipText,
+                                  form.assignedTo === memberUserId &&
+                                    styles.chipTextSelected
+                                ]}
+                              >
+                                {label} · {String(member.role || "member").toLowerCase()}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel="Save task assignment"
@@ -656,7 +722,7 @@ export default function FacilityTaskDetail() {
                               form.sourceType === sourceType && styles.chipTextSelected
                             ]}
                           >
-                            {sourceType.replace(/_/g, " ")}
+                            {sourceObjectLabel(sourceType)}
                           </Text>
                         </TouchableOpacity>
                       ))}
@@ -664,27 +730,83 @@ export default function FacilityTaskDetail() {
                   </View>
 
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Linked source / room</Text>
-                    <View style={styles.inlineInputs}>
-                      <TextInput
-                        accessibilityLabel="Task detail source object"
-                        value={form.sourceObjectId}
-                        onChangeText={(sourceObjectId) =>
-                          setForm((current) => ({ ...current, sourceObjectId }))
-                        }
-                        style={[styles.input, styles.inlineInput]}
-                        placeholder="source object id"
-                      />
-                      <TextInput
-                        accessibilityLabel="Task detail room"
-                        value={form.roomId}
-                        onChangeText={(roomId) =>
-                          setForm((current) => ({ ...current, roomId }))
-                        }
-                        style={[styles.input, styles.inlineInput]}
-                        placeholder="room id"
-                      />
+                    <Text style={styles.label}>Room</Text>
+                    <View style={styles.chipRow}>
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Clear task detail room"
+                        onPress={() => setForm((current) => ({ ...current, roomId: "" }))}
+                        style={[styles.chip, !form.roomId && styles.chipSelected]}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            !form.roomId && styles.chipTextSelected
+                          ]}
+                        >
+                          No room
+                        </Text>
+                      </TouchableOpacity>
+                      {rooms.map((room) => {
+                        const roomId = rowId(room);
+                        const label = rowName(room, "Room");
+                        if (!roomId) return null;
+                        return (
+                          <TouchableOpacity
+                            key={roomId}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Set task detail room ${label}`}
+                            onPress={() => setForm((current) => ({ ...current, roomId }))}
+                            style={[
+                              styles.chip,
+                              form.roomId === roomId && styles.chipSelected
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.chipText,
+                                form.roomId === roomId && styles.chipTextSelected
+                              ]}
+                            >
+                              {label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Toggle advanced task linkage"
+                      accessibilityState={{ expanded: showAdvancedLinkage }}
+                      onPress={() => setShowAdvancedLinkage((current) => !current)}
+                      style={styles.secondaryBtn}
+                    >
+                      <Text style={styles.secondaryBtnText}>
+                        {showAdvancedLinkage
+                          ? "Hide Advanced Linkage"
+                          : "Show Advanced Linkage"}
+                      </Text>
+                    </TouchableOpacity>
+                    {showAdvancedLinkage ? (
+                      <View style={styles.advancedPanel}>
+                        <Text style={styles.helpText}>
+                          Only use this when linking a record that cannot be selected from
+                          its own GrowPath screen.
+                        </Text>
+                        <TextInput
+                          accessibilityLabel="Task detail source object"
+                          value={form.sourceObjectId}
+                          onChangeText={(sourceObjectId) =>
+                            setForm((current) => ({ ...current, sourceObjectId }))
+                          }
+                          style={styles.input}
+                          placeholder="Linked record reference"
+                        />
+                      </View>
+                    ) : null}
                   </View>
 
                   <View style={styles.chipRow}>
@@ -773,8 +895,20 @@ export default function FacilityTaskDetail() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Task Details</Text>
-              <View style={styles.kvWrap}>{keys.map((key) => renderKV(item, key))}</View>
+              <Text style={styles.sectionTitle}>Record Summary</Text>
+              <Text style={styles.summaryLine}>
+                Status:{" "}
+                {complete ? "Completed" : sourceObjectLabel(item.status || "open")}
+              </Text>
+              <Text style={styles.summaryLine}>
+                Due: {formatDate(item.dueAt ?? item.dueDate ?? item.due)}
+              </Text>
+              <Text style={styles.summaryLine}>
+                Created: {formatDate(item.createdAt)}
+              </Text>
+              <Text style={styles.summaryLine}>
+                Updated: {formatDate(item.updatedAt)}
+              </Text>
             </View>
           </>
         ) : null}
@@ -798,6 +932,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
+  taskTitle: { color: "#0f172a", fontSize: 22, fontWeight: "900" },
   form: { gap: 12 },
   formGroup: { gap: 8 },
   label: { fontSize: 12, opacity: 0.7 },
@@ -814,8 +949,6 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: "#0f172a", borderColor: "#0f172a" },
   chipText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
   chipTextSelected: { color: "white" },
-  inlineInputs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  inlineInput: { minWidth: 160, flexGrow: 1 },
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
@@ -852,11 +985,15 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: "white", fontWeight: "800" },
   secondaryBtnText: { fontWeight: "800" },
   dangerBtnText: { color: "#B91C1C", fontWeight: "800" },
-
-  kvWrap: { gap: 10, marginTop: 8 },
-  kv: { gap: 4 },
-  k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
+  advancedPanel: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#e2e8f0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 10
+  },
+  helpText: { color: "#475569", fontSize: 12, fontWeight: "700" },
 
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "800" },

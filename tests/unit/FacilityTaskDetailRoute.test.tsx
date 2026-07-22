@@ -6,6 +6,7 @@ import FacilityTaskDetail from "@/app/home/facility/tasks/[id]";
 const mockCompleteFacilityTask = jest.fn();
 const mockDeleteTask = jest.fn();
 const mockGetTask = jest.fn();
+const mockListTeamMembers = jest.fn();
 const mockUpdateTask = jest.fn();
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -30,6 +31,22 @@ jest.mock("@/api/tasks", () => ({
   deleteTask: (...args: any[]) => mockDeleteTask(...args),
   getTask: (...args: any[]) => mockGetTask(...args),
   updateTask: (...args: any[]) => mockUpdateTask(...args)
+}));
+
+jest.mock("@/api/team", () => ({
+  listTeamMembers: (...args: any[]) => mockListTeamMembers(...args)
+}));
+
+jest.mock("@/features/facility/useFacilityRooms", () => ({
+  useFacilityRooms: () => ({
+    rooms: [
+      { id: "flower-1", name: "Flower Room" },
+      { id: "veg-1", name: "Veg Room" },
+      { id: "media-room", name: "Media Room" }
+    ],
+    loading: false,
+    error: null
+  })
 }));
 
 jest.mock("@/components/InlineError", () => ({
@@ -65,6 +82,20 @@ describe("FacilityTaskDetail", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     taskOverrides = {};
+    mockListTeamMembers.mockResolvedValue([
+      {
+        id: "membership-1",
+        userId: "user-1",
+        role: "OWNER",
+        name: "Facility Owner"
+      },
+      {
+        id: "membership-2",
+        userId: "user-2",
+        role: "MANAGER",
+        name: "Facility Manager"
+      }
+    ]);
     mockGetTask.mockImplementation(() =>
       Promise.resolve({
         id: "task-1",
@@ -95,14 +126,19 @@ describe("FacilityTaskDetail", () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
-    expect(screen.getByText(/Sensor Alert alert-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: flower-1/)).toBeTruthy();
+    expect(
+      screen.getByText("Source: Sensor Alert · Linked record available")
+    ).toBeTruthy();
+    expect(screen.getByText("Room: Flower Room")).toBeTruthy();
+    expect(screen.getByText("Assigned to: Facility Owner")).toBeTruthy();
+    expect(screen.queryByText("Task Details")).toBeNull();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
 
     fireEvent.press(screen.getByLabelText("Set task detail source sop"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced task linkage"));
     fireEvent.changeText(screen.getByLabelText("Task detail source object"), "sop-7");
-    fireEvent.changeText(screen.getByLabelText("Task detail room"), "veg-1");
+    fireEvent.press(screen.getByLabelText("Set task detail room Veg Room"));
     fireEvent.press(screen.getByLabelText("Toggle task detail proof required"));
     fireEvent.press(screen.getByLabelText("Toggle task detail approval required"));
     fireEvent.press(screen.getByLabelText("Save task workflow context"));
@@ -116,6 +152,25 @@ describe("FacilityTaskDetail", () => {
         linkedRoomId: "veg-1",
         requiresProof: false,
         requiresApproval: false
+      })
+    );
+  });
+
+  it("assigns facility tasks through named team choices", async () => {
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Facility Manager · manager")).toBeTruthy()
+    );
+
+    expect(screen.queryByPlaceholderText("user id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Assign facility task to Facility Manager"));
+    fireEvent.press(screen.getByLabelText("Save task assignment"));
+
+    await waitFor(() =>
+      expect(mockUpdateTask).toHaveBeenCalledWith("facility-1", "task-1", {
+        assignedTo: "user-2",
+        assignedToUserId: "user-2"
       })
     );
   });
@@ -160,7 +215,9 @@ describe("FacilityTaskDetail", () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
-    expect(screen.getByText(/Sensor Alert sensor-alert-linked-1/)).toBeTruthy();
+    expect(
+      screen.getByText("Source: Sensor Alert · Linked record available")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
@@ -177,7 +234,7 @@ describe("FacilityTaskDetail", () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
-    expect(screen.getByText(/Forum thread-facility/)).toBeTruthy();
+    expect(screen.getByText("Source: Forum · Linked record available")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
@@ -214,14 +271,12 @@ describe("FacilityTaskDetail", () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
-    expect(screen.getByText(/Course course-linked-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: room-linked-1/)).toBeTruthy();
+    expect(screen.getByText("Source: Course · Linked record available")).toBeTruthy();
+    expect(screen.getByText("Room: Linked room")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      "/home/facility/sop-runs/course-linked-1"
-    );
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/sop-runs/course-linked-1");
   });
 
   it.each([
@@ -257,11 +312,12 @@ describe("FacilityTaskDetail", () => {
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText("Set task detail source feed_campaign"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced task linkage"));
     fireEvent.changeText(
       screen.getByLabelText("Task detail source object"),
       "campaign-7"
     );
-    fireEvent.changeText(screen.getByLabelText("Task detail room"), "media-room");
+    fireEvent.press(screen.getByLabelText("Set task detail room Media Room"));
     fireEvent.press(screen.getByLabelText("Save task workflow context"));
 
     await waitFor(() =>
