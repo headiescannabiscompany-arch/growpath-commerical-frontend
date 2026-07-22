@@ -114,6 +114,10 @@ function StatTile({
   );
 }
 
+export function formatMissedComplianceCount(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? value : "Not tracked";
+}
+
 export default function FacilityReportsTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
@@ -384,7 +388,7 @@ export default function FacilityReportsTab() {
                 <StatTile label="Logs" value={report.compliance?.totalLogs ?? 0} />
                 <StatTile
                   label="Missed"
-                  value={report.compliance?.missedLast7d ?? 0}
+                  value={formatMissedComplianceCount(report.compliance?.missedLast7d)}
                   detail="last 7 days"
                 />
               </View>

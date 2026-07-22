@@ -49,6 +49,52 @@ function statusOf(row: any) {
   return String(row?.status || row?.state || "open").toLowerCase();
 }
 
+export function formatFacilityAuditAction(action: unknown) {
+  const normalized = String(action || "Audit event")
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .toLowerCase();
+  return normalized.replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+export function formatFacilityAuditDetails(action: unknown, details: unknown) {
+  let parsed = details;
+  if (typeof details === "string") {
+    const trimmed = details.trim();
+    if (!trimmed) return "";
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return trimmed;
+    }
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return parsed ? String(parsed) : "";
+  }
+
+  const record = parsed as Record<string, unknown>;
+  const roomIds = Array.isArray(record.roomIds) ? record.roomIds.filter(Boolean) : [];
+  if (
+    roomIds.length &&
+    String(action || "")
+      .toUpperCase()
+      .includes("REORDER")
+  ) {
+    return `${roomIds.length} ${roomIds.length === 1 ? "room" : "rooms"} reordered.`;
+  }
+
+  const parts: string[] = [];
+  const title = String(record.title || record.name || "").trim();
+  const status = String(record.status || record.state || "").trim();
+  const role = String(record.role || "").trim();
+  if (title) parts.push(title);
+  if (status) parts.push(`Status: ${formatFacilityAuditAction(status)}`);
+  if (role) parts.push(`Role: ${formatFacilityAuditAction(role)}`);
+  return parts.length
+    ? parts.join(" · ")
+    : "Open the full audit log for recorded details.";
+}
+
 function openDeviation(row: Deviation) {
   const status = statusOf(row);
   return status !== "resolved" && status !== "closed";
@@ -577,9 +623,13 @@ export default function FacilityComplianceTab() {
                     key={`${log.timestamp || index}-${log.action}`}
                     style={styles.row}
                   >
-                    <Text style={styles.rowTitle}>{log.action || "Audit event"}</Text>
+                    <Text style={styles.rowTitle}>
+                      {formatFacilityAuditAction(log.action)}
+                    </Text>
                     <Text style={styles.rowMeta}>
-                      {log.details || log.timestamp || ""}
+                      {formatFacilityAuditDetails(log.action, log.details) ||
+                        log.timestamp ||
+                        ""}
                     </Text>
                   </View>
                 ))
