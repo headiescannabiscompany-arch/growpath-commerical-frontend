@@ -67,10 +67,9 @@ describe("StartGrowWizard", () => {
     await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Back to room grows"));
 
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: "/home/facility/grows",
-      params: { roomId: "room-1", roomName: "Flower Room" }
-    });
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/home/facility/grows?roomId=room-1&roomName=Flower+Room"
+    );
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 

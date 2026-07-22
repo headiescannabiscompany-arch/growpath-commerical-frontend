@@ -22,6 +22,11 @@ function roomId(room: any) {
   return String(room?.id || room?._id || room?.roomId || "");
 }
 
+export function facilityRoomGrowsHref(id: string, name: string) {
+  const params = new URLSearchParams({ roomId: id, roomName: name });
+  return `/home/facility/grows?${params.toString()}`;
+}
+
 export default function StartGrowWizard() {
   const { roomId: requestedRoomId, roomName: requestedRoomName } = useLocalSearchParams<{
     roomId?: string;
@@ -61,13 +66,7 @@ export default function StartGrowWizard() {
   }, [requestedRoom, requestedRoomId, validRooms]);
 
   const returnToGrows = requestedRoom
-    ? {
-        pathname: "/home/facility/grows",
-        params: {
-          roomId: roomId(requestedRoom),
-          roomName: requestedRoomLabel
-        }
-      }
+    ? facilityRoomGrowsHref(roomId(requestedRoom), requestedRoomLabel)
     : "/home/facility/grows";
   const canStart =
     name.trim().length > 1 &&
