@@ -657,7 +657,8 @@ describe("AlertCenterRoute", () => {
         "Review live notification records, mark them read, or create source-linked follow-up tasks."
       )
     ).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /home/facility/tasks/task-7")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/tasks")).toBeTruthy();
+    expect(screen.getByText("Open Tasks")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create task from alert"));
     await waitFor(() =>
