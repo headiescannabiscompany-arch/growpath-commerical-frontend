@@ -256,6 +256,18 @@ describe("entitlement mode access", () => {
     expect(resolveWorkspaceMode("pro", "personal")).toBe("personal");
   });
 
+  it("honors an explicitly selected eligible workspace over the account plan", () => {
+    expect(resolveWorkspaceMode("facility", "commercial", "commercial")).toBe(
+      "commercial"
+    );
+    expect(resolveWorkspaceMode("facility", "personal", "personal")).toBe("personal");
+    expect(resolveWorkspaceMode("commercial", "facility", "facility")).toBe("facility");
+  });
+
+  it("does not honor a preferred mode that entitlement resolution rejected", () => {
+    expect(resolveWorkspaceMode("facility", "facility", "commercial")).toBe("facility");
+  });
+
   it("applies facility role capabilities only after paid facility access is effective", () => {
     expect(shouldApplyFacilityRoleCapabilities("facility", "facility")).toBe(true);
     expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);

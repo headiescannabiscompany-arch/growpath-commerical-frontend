@@ -354,11 +354,16 @@ export function resolveEntitlementsMode(
 
 export function resolveWorkspaceMode(
   requestedPlan: any,
-  resolvedMode: EntitlementsMode
+  resolvedMode: EntitlementsMode,
+  preferredMode: PreferredMode | null = null
 ): EntitlementsMode {
   const requestedPlanKey = String(requestedPlan || "free")
     .trim()
     .toLowerCase();
+
+  // An explicit preference wins only when entitlement resolution confirmed that
+  // exact mode. Unsupported preferences fall through to the paid-account intent.
+  if (preferredMode && resolvedMode === preferredMode) return resolvedMode;
 
   if (requestedPlanKey === "facility" || resolvedMode === "facility") {
     return "facility";
@@ -402,7 +407,7 @@ function applyServerCtx(
     user?.subscriptionStatus;
   const plan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
   const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode);
-  const mode = resolveWorkspaceMode(requestedPlan, resolvedMode);
+  const mode = resolveWorkspaceMode(requestedPlan, resolvedMode, preferredMode);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
 

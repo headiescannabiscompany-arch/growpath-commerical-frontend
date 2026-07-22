@@ -60,14 +60,26 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "direct draft-course detail limited to the authenticated author or platform administrator"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "explicit eligible workspace preference preserved across plan-backed modes"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never honor deterministic test identity headers as production authentication."
     );
     expect(methodsForTool("course-player").map((entry) => entry.id)).toContain(
       "course-media-workflow"
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "Vimeo unlisted privacy hash when present"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID."
     );
     expect(getSourceEntry("youtube-player-documentation")?.trustedFor).toContain(
       "course_media"

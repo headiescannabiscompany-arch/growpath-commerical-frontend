@@ -411,13 +411,15 @@ export const methodRegistry: GrowPathMethod[] = [
       "approved embed capability or link-only fallback",
       "learner-visible availability and accessibility status",
       "external provider link",
-      "GrowPath-only explicit completion state"
+      "GrowPath-only explicit completion state",
+      "owner-only draft preview and published-only public detail access"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
       "Never imply GrowPath owns, hosts, continuously monitors, or verifies watch analytics for third-party media.",
       "Never publish video without rights confirmation, a timestamped availability check, accessibility status, text summary, and external-link fallback.",
       "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
+      "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],
     ["course-builder", "course-player", "commercial-courses", "facility-training"]
@@ -437,12 +439,17 @@ export const methodRegistry: GrowPathMethod[] = [
       "moderation audit",
       "owner-scoped event analytics",
       "owner-scoped production batches linked to ToolRuns and Commercial tasks",
-      "published-course discovery limited to published storefronts and explicit public fields"
+      "published-course discovery limited to published storefronts and explicit public fields",
+      "direct draft-course detail limited to the authenticated author or platform administrator",
+      "explicit eligible workspace preference preserved across plan-backed modes"
     ],
     [
       "Never cross workspace scope or invent product claims.",
       "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
       "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
+      "Never treat knowledge of a draft course ID as permission to read, enroll, check out, discuss, or review it.",
+      "Never honor deterministic test identity headers as production authentication.",
+      "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
