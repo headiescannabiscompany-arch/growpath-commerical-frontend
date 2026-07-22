@@ -8,6 +8,11 @@ import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import {
+  formatFacilityAuditAction,
+  formatFacilityAuditDetails,
+  formatFacilityAuditTimestamp
+} from "@/utils/facilityAuditPresentation";
 
 type AuditLogItem = AuditLog & {
   id?: string;
@@ -19,6 +24,8 @@ type AuditLogItem = AuditLog & {
   targetId?: string;
   type?: string;
   message?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 function pickId(x: AuditLogItem, idx: number) {
@@ -98,8 +105,7 @@ export default function FacilityAuditLogEntityRoute() {
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.h1}>Audit Logs for Entity</Text>
-          <Text style={styles.sub}>entity: {entity}</Text>
-          <Text style={styles.sub}>entityId: {entityId}</Text>
+          <Text style={styles.sub}>{formatFacilityAuditAction(entity)} history</Text>
         </View>
       }
       ListEmptyComponent={<Text style={styles.sub}>No matching audit logs.</Text>}
@@ -108,9 +114,23 @@ export default function FacilityAuditLogEntityRoute() {
         return (
           <View style={styles.card}>
             <Text style={styles.title}>
-              {String(item?.action || item?.type || "Event")}
+              {formatFacilityAuditAction(item?.action || item?.type)}
             </Text>
-            <Text style={styles.sub}>{String(item?.details || item?.message || "")}</Text>
+            <Text style={styles.sub}>
+              {formatFacilityAuditDetails(
+                item?.action || item?.type,
+                item?.details ?? item?.message
+              ) || "Facility event recorded."}
+            </Text>
+            {formatFacilityAuditTimestamp(
+              item?.timestamp || item?.createdAt || item?.updatedAt
+            ) ? (
+              <Text style={styles.meta}>
+                {formatFacilityAuditTimestamp(
+                  item?.timestamp || item?.createdAt || item?.updatedAt
+                )}
+              </Text>
+            ) : null}
             <Link
               href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
               style={styles.link}
@@ -131,6 +151,7 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900" },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
+  meta: { color: "#64748B", fontSize: 12 },
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",

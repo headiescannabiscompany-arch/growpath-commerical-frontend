@@ -1,7 +1,7 @@
 import {
   formatFacilityAuditAction,
   formatFacilityAuditDetails
-} from "@/app/home/facility/(tabs)/compliance";
+} from "@/utils/facilityAuditPresentation";
 import { formatMissedComplianceCount } from "@/app/home/facility/(tabs)/reports";
 
 describe("Facility reporting presentation", () => {
@@ -14,7 +14,13 @@ describe("Facility reporting presentation", () => {
     );
     expect(
       formatFacilityAuditDetails("TASK_CREATED", '{"title":"Room check","status":"OPEN"}')
-    ).toBe("Room check · Status: Open");
+    ).toBe("Room check | Status: Open");
+    expect(
+      formatFacilityAuditDetails(
+        "ROOM_UPDATED",
+        "Room 6a563c662fb9f669d231a012 updated in facility 6a563bec2fb9f669d2319fa5"
+      )
+    ).toBe("Open the full audit log for recorded details.");
   });
 
   it("keeps unavailable compliance evidence visibly unknown", () => {

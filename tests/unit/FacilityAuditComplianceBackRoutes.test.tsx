@@ -3,6 +3,7 @@ import { render } from "@testing-library/react-native";
 
 import FacilityAuditLogDetailRoute from "@/app/home/facility/audit-logs/[id]";
 import FacilityAuditLogEntityRoute from "@/app/home/facility/audit-logs/[entity]/[entityId]";
+import FacilityAuditLogsIndexRoute from "@/app/home/facility/audit-logs";
 import FacilityComplianceAiDashboardRoute from "@/app/home/facility/compliance/ai4.dashboard";
 import FacilityComplianceReportDetailRoute from "@/app/home/facility/compliance/report-detail";
 
@@ -94,7 +95,46 @@ describe("facility audit and compliance nested back behavior", () => {
 
     expect(screen.getByText("Shared Back /home/facility/audit-logs")).toBeTruthy();
     expect(screen.getByText("Audit Logs for Entity")).toBeTruthy();
-    expect(screen.getByText("Room update")).toBeTruthy();
+    expect(screen.getByText("Room Update")).toBeTruthy();
+    expect(screen.getByText("Room history")).toBeTruthy();
+    expect(screen.queryByText("entityId: room-1")).toBeNull();
+  });
+
+  it("summarizes the primary audit list without raw JSON or identifier arrays", () => {
+    mockUseAuditLogs.mockReturnValue({
+      logs: [
+        {
+          id: "audit-reorder",
+          action: "ROOMS_REORDERED",
+          details: JSON.stringify({
+            roomIds: [
+              "6a563c662fb9f669d231a012",
+              "6a563c652fb9f669d231a004",
+              "6a563c642fb9f669d2319ff6"
+            ]
+          }),
+          timestamp: "2026-07-22T19:00:00.000Z"
+        },
+        {
+          id: "audit-task",
+          action: "TASK_CREATED",
+          details: JSON.stringify({ title: "QA room check", status: "OPEN" })
+        }
+      ],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn()
+    });
+
+    const screen = render(<FacilityAuditLogsIndexRoute />);
+
+    expect(screen.getByText("Rooms Reordered")).toBeTruthy();
+    expect(screen.getByText("3 rooms reordered.")).toBeTruthy();
+    expect(screen.getByText("QA room check | Status: Open")).toBeTruthy();
+    expect(screen.queryByText(/roomIds/)).toBeNull();
+    expect(screen.queryByText(/6a563c662fb9f669d231a012/)).toBeNull();
+    expect(screen.getAllByText("Open Detail")).toHaveLength(2);
   });
 
   it("uses the shared back fallback on compliance report detail", () => {
