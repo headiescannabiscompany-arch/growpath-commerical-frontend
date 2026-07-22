@@ -87,12 +87,30 @@ describe("facility SOP run nested back behavior", () => {
     mockCreateTemplate.mockResolvedValue({ id: "template-created" });
     mockRefetchTemplates.mockResolvedValue(undefined);
     mockApiRequest.mockImplementation((path: string) => {
-      if (path.includes("/sop-runs/run-")) {
+      if (path.endsWith("/sop-runs/run-1")) {
         return Promise.resolve({
           run: {
+            title: "Daily room check",
             status: "active",
             completedAt: null,
-            steps: [{ stepId: "step-1", title: "Inspect room", status: "pending" }]
+            steps: [
+              { stepId: "step-1", title: "Inspect room", status: "done" },
+              { stepId: "step-2", title: "Record environment", status: "pending" }
+            ]
+          }
+        });
+      }
+      if (path.endsWith("/sop-runs/run-2")) {
+        return Promise.resolve({
+          run: {
+            title: "Night room check",
+            status: "completed",
+            completedAt: "2026-07-22T18:00:00.000Z",
+            steps: [
+              { stepId: "step-1", title: "Inspect room", status: "done" },
+              { stepId: "step-2", title: "Record environment", status: "done" },
+              { stepId: "step-3", title: "Lock doors", status: "skipped" }
+            ]
           }
         });
       }
@@ -113,7 +131,47 @@ describe("facility SOP run nested back behavior", () => {
     await waitFor(() =>
       expect(screen.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy()
     );
-    expect(screen.getByText("SOP Run Detail")).toBeTruthy();
+    expect(screen.getByText("Daily room check")).toBeTruthy();
+  });
+
+  it("shows readable SOP evidence and blocks completion while a step is pending", async () => {
+    mockParams = { id: "run-1" };
+    const screen = render(<FacilitySopRunDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+
+    expect(screen.queryByText(/runId:/i)).toBeNull();
+    expect(screen.queryByText("Raw audit envelope")).toBeNull();
+    expect(screen.getByText("1/2")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Mark SOP run complete").props.accessibilityState
+    ).toEqual({ disabled: true });
+    expect(
+      screen.getByText(
+        "Review every checklist step as Done or Skipped before completing this run."
+      )
+    ).toBeTruthy();
+  });
+
+  it("locks completed SOP evidence against checklist changes", async () => {
+    mockParams = { id: "run-2" };
+    const screen = render(<FacilitySopRunDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Night room check")).toBeTruthy());
+
+    expect(screen.queryByText("Add evidence step")).toBeNull();
+    expect(screen.getByText("Run Completed")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Mark SOP run complete").props.accessibilityState
+    ).toEqual({ disabled: true });
+    expect(
+      screen.getByLabelText("Mark SOP step Inspect room done").props.accessibilityState
+    ).toEqual({ disabled: true });
+    expect(
+      screen.getByText(
+        "This completed run is locked so its checklist remains reliable evidence."
+      )
+    ).toBeTruthy();
   });
 
   it("uses shared back behavior on SOP run start and presets", () => {
@@ -137,6 +195,25 @@ describe("facility SOP run nested back behavior", () => {
       expect(result.getByText("Shared Back /home/facility/sop-runs/compare")).toBeTruthy()
     );
     expect(result.getByText("SOP Compare Result")).toBeTruthy();
+  });
+
+  it("compares SOP outcomes with readable summaries instead of ids or JSON", async () => {
+    mockParams = { leftId: "run-1", rightId: "run-2" };
+    const screen = render(<FacilitySopRunsCompareResultRoute />);
+
+    await waitFor(() => expect(screen.getByText("Night room check")).toBeTruthy());
+
+    expect(screen.getByText("Reference run")).toBeTruthy();
+    expect(screen.getByText("Comparison run")).toBeTruthy();
+    expect(
+      screen.getByText("The comparison run has 1 more completed step.")
+    ).toBeTruthy();
+    expect(screen.getAllByText("Record environment").length).toBeGreaterThan(0);
+    expect(screen.getByText("Reference: Pending")).toBeTruthy();
+    expect(screen.getAllByText("Comparison: Done").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/left: run-1/i)).toBeNull();
+    expect(screen.queryByText(/right: run-2/i)).toBeNull();
+    expect(JSON.stringify(screen.toJSON())).not.toContain('"stepId"');
   });
 
   it("selects two saved SOP runs without exposing internal id inputs", async () => {
