@@ -12,6 +12,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
+import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import { addLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -20,6 +21,10 @@ import { getLearningAccess } from "@/features/learning/learningAccess";
 import { persistImageUris } from "@/utils/photoUploads";
 import { radius } from "../theme/theme";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
+import {
+  emptyLessonMediaDraft,
+  prepareLessonMediaSubmission
+} from "@/features/learning/lessonMedia";
 
 function firstDocumentAsset(result) {
   if (!result || result.canceled) return null;
@@ -36,7 +41,7 @@ export default function AddLessonScreen({ route, navigation }) {
   const [title, setTitle] = useState("");
   const [order, setOrder] = useState("");
   const [content, setContent] = useState(""); // text lesson
-  const [videoUrl, setVideoUrl] = useState("");
+  const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
   const [videoFile, setVideoFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
@@ -55,6 +60,14 @@ export default function AddLessonScreen({ route, navigation }) {
 
       if (!result.canceled && result.assets[0]) {
         setVideoFile(result.assets[0]);
+        setMediaDraft((current) => ({
+          ...current,
+          sourceType: "growpath_upload",
+          originalUrl: "",
+          availabilityStatus: "unchecked",
+          lastCheckedAt: "",
+          allowEmbed: false
+        }));
         Alert.alert("Video selected", "Video will upload when you save the lesson.");
       }
     } catch (_err) {
@@ -118,6 +131,13 @@ export default function AddLessonScreen({ route, navigation }) {
       return Alert.alert("Missing title", "Please add a lesson title.");
     }
 
+    const previewMedia = videoFile
+      ? null
+      : prepareLessonMediaSubmission(mediaDraft, mediaDraft.originalUrl);
+    if (previewMedia?.errors.length) {
+      return Alert.alert("Video source needs attention", previewMedia.errors.join(" "));
+    }
+
     const [imageUrls, uploadedVideo, uploadedPdf, uploadedAudio] = await Promise.all([
       persistImageUris(images.map((image) => image.uri)),
       videoFile ? uploadCourseMedia(videoFile) : Promise.resolve(null),
@@ -125,11 +145,26 @@ export default function AddLessonScreen({ route, navigation }) {
       audioFile ? uploadCourseMedia(audioFile) : Promise.resolve(null)
     ]);
 
+    const preparedMedia = uploadedVideo
+      ? prepareLessonMediaSubmission(
+          {
+            ...mediaDraft,
+            sourceType: "growpath_upload",
+            availabilityStatus: "available",
+            lastCheckedAt: new Date().toISOString(),
+            allowEmbed: false
+          },
+          uploadedVideo.url
+        )
+      : previewMedia;
+
     await addLesson(courseId, {
       title,
       order: order ? Number(order) : 1,
       content,
-      videoUrl: uploadedVideo?.url || videoUrl,
+      videoUrl: preparedMedia?.videoUrl || "",
+      externalVideoUrl: preparedMedia?.externalVideoUrl || "",
+      mediaSource: preparedMedia?.mediaSource || undefined,
       pdfUrl: uploadedPdf?.url || pdfUrl,
       audioUrl: uploadedAudio?.url || "",
       imageUrls,
@@ -179,22 +214,16 @@ export default function AddLessonScreen({ route, navigation }) {
         editable={access.canCreateCourses}
       />
 
-      <Text style={styles.label}>Video</Text>
-      <TouchableOpacity
-        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
-        onPress={pickVideo}
+      <LessonMediaSourceEditor
+        value={mediaDraft}
+        onChange={setMediaDraft}
         disabled={!access.canCreateCourses}
-      >
-        <Text style={styles.uploadBtnText}>
-          {videoFile ? "Video Selected" : "Upload Video File"}
-        </Text>
-      </TouchableOpacity>
-      <TextInput
-        style={styles.input}
-        placeholder="Or paste video URL (YouTube, Vimeo, etc.)"
-        value={videoUrl}
-        onChangeText={setVideoUrl}
-        editable={access.canCreateCourses}
+        onPickUpload={pickVideo}
+        pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
+        onRemove={() => {
+          setVideoFile(null);
+          setMediaDraft(emptyLessonMediaDraft());
+        }}
       />
 
       <Text style={styles.label}>PDF Document</Text>
@@ -250,7 +279,11 @@ export default function AddLessonScreen({ route, navigation }) {
         defaultExpanded={false}
       />
 
-      <PersonalFeedPlacement placement="middle" routeKey="personal_lesson_add" longContent />
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_lesson_add"
+        longContent
+      />
 
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
@@ -261,10 +294,14 @@ export default function AddLessonScreen({ route, navigation }) {
       </TouchableOpacity>
 
       <Text style={styles.helpText}>
-        Selected images, videos, PDFs, and audio upload when you save. Pasted video and
-        PDF links are saved as provided.
+        Selected files upload when you save. Video page links are normalized to their
+        provider and retain an external fallback; pasted embed code is rejected.
       </Text>
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_add" longContent />
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_lesson_add"
+        longContent
+      />
     </ScreenContainer>
   );
 }

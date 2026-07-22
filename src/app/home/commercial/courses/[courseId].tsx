@@ -12,9 +12,16 @@ import {
   ProductLine,
   updateCommercialCourse
 } from "@/api/commercialWorkflows";
+import { uploadCourseMedia } from "@/api/uploads";
 import { InlineError } from "@/components/InlineError";
+import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import {
+  emptyLessonMediaDraft,
+  lessonMediaPublishIssues,
+  prepareLessonMediaSubmission
+} from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
@@ -51,6 +58,11 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
   if (!course.lessons?.length) warnings.push("add lesson");
+  course.lessons?.forEach((lesson, index) => {
+    lessonMediaPublishIssues(lesson).forEach((issue) =>
+      warnings.push(`lesson ${index + 1}: ${issue}`)
+    );
+  });
   if (course.access === "paid") {
     if (!Number(course.price)) warnings.push("add paid price");
     if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
@@ -60,6 +72,7 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
 }
 
 function blocksCoursePublish(warning: string) {
+  if (warning.startsWith("lesson ")) return true;
   return [
     "add description",
     "add grow interests",
@@ -119,7 +132,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonBody, setLessonBody] = useState("");
   const [lessonType, setLessonType] = useState("video");
-  const [lessonExternalVideoUrl, setLessonExternalVideoUrl] = useState("");
+  const [lessonMediaDraft, setLessonMediaDraft] = useState(() => emptyLessonMediaDraft());
+  const [lessonVideoFile, setLessonVideoFile] = useState<any>(null);
   const [lessonDocumentUrls, setLessonDocumentUrls] = useState("");
   const [lessonRelatedProductIds, setLessonRelatedProductIds] = useState("");
   const [lessonRelatedLiveIds, setLessonRelatedLiveIds] = useState("");
@@ -233,11 +247,34 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setMessage("");
     setError(null);
     try {
+      const previewMedia = lessonVideoFile
+        ? null
+        : prepareLessonMediaSubmission(lessonMediaDraft, lessonMediaDraft.originalUrl);
+      if (previewMedia?.errors.length) {
+        throw new Error(previewMedia.errors.join(" "));
+      }
+      const uploadedVideo = lessonVideoFile
+        ? await uploadCourseMedia(lessonVideoFile)
+        : null;
+      const preparedMedia = uploadedVideo
+        ? prepareLessonMediaSubmission(
+            {
+              ...lessonMediaDraft,
+              sourceType: "growpath_upload",
+              availabilityStatus: "available",
+              lastCheckedAt: new Date().toISOString(),
+              allowEmbed: false
+            },
+            uploadedVideo.url
+          )
+        : previewMedia;
       const updated = await addCommercialCourseLesson(courseId, {
         title: lessonTitle.trim(),
         body: lessonBody.trim(),
         lessonType: lessonType.trim() || "video",
-        externalVideoUrl: lessonExternalVideoUrl.trim() || undefined,
+        videoUrl: preparedMedia?.videoUrl || undefined,
+        externalVideoUrl: preparedMedia?.externalVideoUrl || undefined,
+        mediaSource: preparedMedia?.mediaSource || undefined,
         documentUrls: splitIds(lessonDocumentUrls),
         relatedProductIds: splitIds(lessonRelatedProductIds),
         relatedLiveIds: splitIds(lessonRelatedLiveIds),
@@ -269,7 +306,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       setLessonTitle("");
       setLessonBody("");
       setLessonType("video");
-      setLessonExternalVideoUrl("");
+      setLessonMediaDraft(emptyLessonMediaDraft());
+      setLessonVideoFile(null);
       setLessonDocumentUrls("");
       setLessonRelatedProductIds("");
       setLessonRelatedLiveIds("");
@@ -281,6 +319,32 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       setError(err);
     } finally {
       setAddingLesson(false);
+    }
+  }
+
+  async function pickLessonVideo() {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        throw new Error("Photo-library permission is required to upload a lesson video.");
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 1
+      });
+      if (!result.canceled && result.assets?.[0]) {
+        setLessonVideoFile(result.assets[0]);
+        setLessonMediaDraft((current) => ({
+          ...current,
+          sourceType: "growpath_upload",
+          originalUrl: "",
+          availabilityStatus: "unchecked",
+          lastCheckedAt: "",
+          allowEmbed: false
+        }));
+      }
+    } catch (err) {
+      setError(err);
     }
   }
 
@@ -690,6 +754,17 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           style={[styles.input, styles.textArea]}
           value={lessonBody}
         />
+        <LessonMediaSourceEditor
+          value={lessonMediaDraft}
+          onChange={setLessonMediaDraft}
+          disabled={addingLesson}
+          onPickUpload={pickLessonVideo}
+          pendingUploadName={lessonVideoFile?.fileName || lessonVideoFile?.name || ""}
+          onRemove={() => {
+            setLessonVideoFile(null);
+            setLessonMediaDraft(emptyLessonMediaDraft());
+          }}
+        />
         <View style={styles.formGrid}>
           <TextInput
             accessibilityLabel="Commercial course lesson type"
@@ -704,14 +779,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             placeholder="Related product IDs"
             style={styles.input}
             value={lessonRelatedProductIds}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson external video URL"
-            autoCapitalize="none"
-            onChangeText={setLessonExternalVideoUrl}
-            placeholder="External video URL"
-            style={styles.input}
-            value={lessonExternalVideoUrl}
           />
           <TextInput
             accessibilityLabel="Commercial course lesson documents"

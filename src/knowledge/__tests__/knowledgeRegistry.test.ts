@@ -63,6 +63,18 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     );
+    expect(methodsForTool("course-player").map((entry) => entry.id)).toContain(
+      "course-media-workflow"
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "Vimeo unlisted privacy hash when present"
+    );
+    expect(getSourceEntry("youtube-player-documentation")?.trustedFor).toContain(
+      "course_media"
+    );
+    expect(getSourceEntry("vimeo-video-privacy-documentation")?.trustedFor).toContain(
+      "course_media"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

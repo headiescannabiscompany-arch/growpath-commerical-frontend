@@ -16,6 +16,8 @@ Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/
 
 Public commercial-course discovery may expose a course only when both the course and its owning storefront are published. Return an explicit public-field projection with storefront identity and public course content; do not expose owner IDs, commercial account IDs, drafts, arbitrary authoring fields, or private workspace records. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API.
 
+Commercial lesson video follows the shared `course-media-workflow` method. Require provider normalization, rights and availability review, an accessible text fallback, privacy-aware third-party playback, and a provider link before publishing; do not equate provider viewing with GrowPath lesson progress.
+
 The Soil & Nutrient Batch Planner is a Commercial production tool. Surface its cost, bag-count, pull-sheet, labor, packaging, margin, inventory, formula, batch/lot, product, and trial workflow only inside the Commercial workspace; do not list it in Personal tools.
 
 A batch calculation is not an inventory transaction. Save the reviewed calculation as an owner-scoped Commercial batch linked to its ToolRun, then create source-linked Commercial production tasks. Preserve missing costs, analyses, shrinkage, lots, and availability as unknown. Do not decrement inventory, assign lots, publish a product claim, or authorize batch release without a separate explicit reviewed action.

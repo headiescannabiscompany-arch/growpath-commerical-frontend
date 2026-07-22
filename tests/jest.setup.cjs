@@ -43,6 +43,14 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined)
 }));
 
+jest.mock("react-native-webview", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    WebView: (props) => React.createElement(View, props)
+  };
+});
+
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
   return {

@@ -19,6 +19,7 @@ export type SourceUseCase =
   | "grow_history"
   | "propagation"
   | "tissue_culture"
+  | "course_media"
   | "education";
 
 export type SourceType =
@@ -34,6 +35,7 @@ export type SourceType =
   | "grower_media"
   | "seo_blog"
   | "internal_growpath_method"
+  | "provider_documentation"
   | "user_observation";
 
 export interface SourceRegistryEntry {
@@ -60,6 +62,32 @@ const horticulture = [
 ] as SourceUseCase[];
 
 export const sourceRegistry: SourceRegistryEntry[] = [
+  {
+    id: "youtube-player-documentation",
+    name: "YouTube Embedded Players and API documentation",
+    domain: "developers.google.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["course_media"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for player URL behavior and provider-side data-sharing constraints; not evidence that an individual video is available, embeddable, licensed, captioned, or suitable.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-07-22"
+  },
+  {
+    id: "vimeo-video-privacy-documentation",
+    name: "Vimeo video privacy and oEmbed documentation",
+    domain: "help.vimeo.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["course_media"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for Vimeo privacy, domain restrictions, and unlisted privacy hashes; not evidence of an individual video's current availability, rights, or accessibility.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-07-22"
+  },
   {
     id: "uc-ipm",
     name: "UC Integrated Pest Management",

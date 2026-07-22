@@ -80,10 +80,10 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Course create/edit supports thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks.
    - [x] Published commercial courses appear on their published storefront and in course discovery, with discovery opening the canonical storefront course detail.
    - [x] Commercial and facility educators use the shared course capability; facility-only visibility remains available for private training.
-   - [ ] Replace the generic lesson video URL field with a provider-aware media source chooser: GrowPath upload, YouTube, Rumble, Vimeo, and Other video URL. Detect supported providers from pasted URLs, preview the normalized source, and never accept arbitrary iframe/HTML input.
-   - [ ] Store normalized lesson-media metadata separately from the original URL: source type, provider video ID/canonical URL, title/thumbnail when available, embed capability, link-only fallback, availability-check status, creator rights confirmation, and last-checked time. Do not imply that GrowPath owns, hosts, or continuously monitors third-party media.
-   - [ ] Make third-party playback resilient and honest across web/mobile: use an approved embed only when the provider and content allow it, otherwise show an explicit Open on provider action; preserve lesson text/resources when media is unavailable; warn authors about private, deleted, age-restricted, region-restricted, or embedding-disabled content before publishing.
-   - [ ] Require an accessible lesson fallback for every video source: captions or transcript status, a text summary, and a learner-visible external-link fallback. Use privacy-aware click-to-load behavior where third-party embeds set tracking cookies, and distinguish GrowPath lesson progress from provider watch analytics that GrowPath cannot verify.
+   - [x] Replace the generic lesson video URL field with a provider-aware media source chooser: GrowPath upload, YouTube, Rumble, Vimeo, and Other video URL. Detect supported providers from pasted URLs, preview the normalized source, and never accept arbitrary iframe/HTML input.
+   - [x] Store normalized lesson-media metadata separately from the original URL: source type, provider video ID/canonical URL, title/thumbnail when available, embed capability, link-only fallback, availability-check status, creator rights confirmation, and last-checked time. Do not imply that GrowPath owns, hosts, or continuously monitors third-party media.
+   - [x] Make third-party playback resilient and honest across web/mobile: use an approved embed only when the provider and content allow it, otherwise show an explicit Open on provider action; preserve lesson text/resources when media is unavailable; warn authors about private, deleted, age-restricted, region-restricted, or embedding-disabled content before publishing.
+   - [x] Require an accessible lesson fallback for every video source: captions or transcript status, a text summary, and a learner-visible external-link fallback. Use privacy-aware click-to-load behavior where third-party embeds set tracking cookies, and distinguish GrowPath lesson progress from provider watch analytics that GrowPath cannot verify.
 
 8. Facility room creation
    - [x] Facility owners/managers can add rooms, greenhouses, outdoor beds, seedling rooms or veg racks, clone/tissue-culture/cold-storage spaces, and optional zones.
@@ -187,7 +187,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
 
 27. Course builder
    - [x] Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
-   - [ ] Complete the provider-aware lesson media chooser and validation/fallback/accessibility rules defined in Course workflow minimum item 7.
+   - [x] Complete the provider-aware lesson media chooser and validation/fallback/accessibility rules defined in Course workflow minimum item 7.
 
 28. Course player
    - [x] Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.

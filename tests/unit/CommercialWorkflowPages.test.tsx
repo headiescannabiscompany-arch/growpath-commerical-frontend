@@ -527,8 +527,14 @@ describe("commercial workflow pages", () => {
             id: "course-1",
             title: "Living Soil Product Use",
             thumbnailUrl: "https://example.com/course-thumb.jpg",
+            bannerUrl: "https://example.com/course-updated-banner.jpg",
+            category: "product_training",
+            description: "Updated product course description.",
+            access: "paid",
             price: 49,
             growInterests: ["living soil"],
+            stripeProductId: "prod_course_updated",
+            stripePriceId: "price_course_updated",
             lessons: [{ id: "lesson-new", ...options.body }]
           },
           lesson: { id: "lesson-new", ...options.body }
@@ -1412,8 +1418,17 @@ describe("commercial workflow pages", () => {
       "product-1, product-2"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial course lesson external video URL"),
+      screen.getByLabelText("Lesson video page URL"),
       "https://example.com/water-in-demo"
+    );
+    fireEvent.press(screen.getByLabelText("Current availability: Available"));
+    fireEvent.press(
+      screen.getByLabelText("Confirm rights or permission for lesson video")
+    );
+    fireEvent.press(screen.getByLabelText("Captions: Provided"));
+    fireEvent.changeText(
+      screen.getByLabelText("Learner-visible lesson video summary"),
+      "See the water-in sequence and expected soil response."
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson documents"),
@@ -1447,6 +1462,13 @@ describe("commercial workflow pages", () => {
             body: "Water in the topdress and check response.",
             lessonType: "assignment",
             externalVideoUrl: "https://example.com/water-in-demo",
+            mediaSource: expect.objectContaining({
+              sourceType: "other_url",
+              availabilityStatus: "available",
+              creatorRightsConfirmed: true,
+              captionsStatus: "provided",
+              textSummary: "See the water-in sequence and expected soil response."
+            }),
             documentUrls: [
               "https://example.com/water-in-sop.pdf",
               "https://example.com/topdress-chart.pdf"
