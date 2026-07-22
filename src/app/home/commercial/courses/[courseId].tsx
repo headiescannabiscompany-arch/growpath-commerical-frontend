@@ -14,6 +14,7 @@ import {
 } from "@/api/commercialWorkflows";
 import { uploadCourseMedia } from "@/api/uploads";
 import { InlineError } from "@/components/InlineError";
+import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -384,6 +385,86 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     lessons
   });
   const publishBlocked = setupWarnings.some(blocksCoursePublish);
+
+  if (learnerPreview) {
+    return (
+      <AppPage
+        routeKey="commercial-course-learner-preview"
+        backFallbackHref="/home/commercial/courses"
+        longContent
+        header={
+          <View style={styles.header}>
+            <Text style={styles.kicker}>Learner preview</Text>
+            <Text style={styles.title}>{courseTitle(course)}</Text>
+            <Text style={styles.subtitle}>
+              Review the course as a learner will see it. Authoring controls are hidden in
+              preview mode.
+            </Text>
+            <View style={styles.actions}>
+              <ActionLink
+                href={`/home/commercial/courses/${encodeURIComponent(courseId)}`}
+                label="Return to Course Editor"
+              />
+              <ActionLink href="/home/commercial/courses" label="All Courses" />
+            </View>
+          </View>
+        }
+      >
+        {loading ? <Text style={styles.muted}>Loading learner preview...</Text> : null}
+        {error ? <InlineError error={error} /> : null}
+        {course ? (
+          <>
+            <AppCard>
+              <Text style={styles.kicker}>Course overview</Text>
+              <Text style={styles.title}>{course.title || "Untitled course"}</Text>
+              {course.bannerUrl ? (
+                <Image
+                  accessibilityLabel="Course learner preview banner"
+                  source={{ uri: resolveImageUri(course.bannerUrl) }}
+                  style={styles.bannerPreview}
+                  resizeMode="cover"
+                />
+              ) : null}
+              <Text style={styles.body}>
+                {course.description || "No description yet."}
+              </Text>
+              <View style={styles.detailGrid}>
+                <DetailRow label="Category" value={course.category} />
+                <DetailRow label="Grow interests" value={course.growInterests} />
+                <DetailRow label="Access" value={course.access} />
+                <DetailRow label="Status" value={course.status} />
+                <DetailRow label="Lessons" value={lessons.length} />
+              </View>
+            </AppCard>
+
+            <AppCard>
+              <Text style={styles.cardTitle}>Course lessons</Text>
+              {lessons.length ? (
+                <View style={styles.list}>
+                  {lessons.map((lesson, index) => (
+                    <View
+                      key={String(lesson.id || lesson._id || index)}
+                      style={styles.row}
+                    >
+                      <Text style={styles.rowTitle}>
+                        {lesson.title || `Lesson ${index + 1}`}
+                      </Text>
+                      {lesson.body ? (
+                        <Text style={styles.body}>{lesson.body}</Text>
+                      ) : null}
+                      <LessonMediaCard lesson={lesson} compact />
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.muted}>No learner lessons are available yet.</Text>
+              )}
+            </AppCard>
+          </>
+        ) : null}
+      </AppPage>
+    );
+  }
 
   return (
     <AppPage
