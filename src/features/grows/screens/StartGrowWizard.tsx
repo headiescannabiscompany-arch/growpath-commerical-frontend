@@ -104,14 +104,14 @@ export default function StartGrowWizard() {
   }
 
   function returnToOrigin() {
-    if (typeof router.canGoBack === "function" && router.canGoBack()) {
-      router.back();
-      return;
-    }
-
     const browserLocation = (globalThis as any).location;
     if (browserLocation && typeof browserLocation.assign === "function") {
       browserLocation.assign(returnToGrows);
+      return;
+    }
+
+    if (typeof router.canGoBack === "function" && router.canGoBack()) {
+      router.back();
       return;
     }
 
