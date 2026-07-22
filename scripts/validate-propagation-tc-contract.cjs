@@ -69,6 +69,16 @@ const tests = {
   ["TC batch summary", /calculateTissueCulture[\s\S]*batchSummary/],
   ["TC vessel tracking", /calculateTissueCulture[\s\S]*vesselStatus/],
   ["TC contamination diagnosis", /calculateTissueCulture[\s\S]*diagnosisRecord/],
+  ["TC release review", /calculateTissueCulture[\s\S]*releaseReview/],
+  ["TC photo provenance", /calculateTissueCulture[\s\S]*mediaAnalysis/],
+  [
+    "TC official source",
+    /calculateTissueCulture[\s\S]*usda-ars-hemp-tissue-culture-protocol-2025/
+  ],
+  [
+    "TC primary research source",
+    /calculateTissueCulture[\s\S]*frontiers-2021-drug-type-cannabis-tc/
+  ],
   ["TC calendar", /calculateTissueCulture[\s\S]*generatedCalendar/],
   ["TC media recipe", /calculateTissueCulture[\s\S]*mediaRecipe/],
   ["TC SOP version", /calculateTissueCulture[\s\S]*SOPVersion/],
@@ -139,14 +149,20 @@ const tests = {
     tcScreen,
     /Batch number[\s\S]*Total vessels[\s\S]*Contaminated vessels/
   ],
-  ["TC media/SOP fields", tcScreen, /Media recipe[\s\S]*SOP version/],
-  ["TC acclimation field", tcScreen, /Acclimated plants/],
+  ["TC blank batch field", tcScreen, /key: "batchNumber"[\s\S]*defaultValue: ""/],
+  ["TC blank vessel field", tcScreen, /key: "vessels"[\s\S]*defaultValue: ""/],
+  ["TC workflow lane", tcScreen, /key: "workflowLane"[\s\S]*cryopreservation/],
+  ["TC direct inspection", tcScreen, /key: "inspectionStatus"[\s\S]*mixed/],
+  ["TC media/SOP fields", tcScreen, /SOP version[\s\S]*Media recipe/],
+  ["TC acclimation field", tcScreen, /Plants entering acclimation/],
   ["TC cost fields", tcScreen, /Media cost[\s\S]*Vessel \/ supply cost[\s\S]*Labor cost/],
-  ["TC workflow tasks", tcScreen, /Create TC Workflow Tasks/],
+  ["TC provider execution provenance", tcScreen, /imageAnalysisPerformed/],
+  ["TC no automatic release", tcScreen, /does not automatically release/],
+  ["TC workflow tasks", tcScreen, /Create TC Evidence Tasks/],
   ["TC calendar metadata", tcScreen, /tissue_culture_workflow/],
-  ["TC contamination review", tcScreen, /Review contamination and browning/],
-  ["TC rooting/acclimation review", tcScreen, /rooting_acclimation_review/],
-  ["TC SOP/media review", tcScreen, /sop_media_review/]
+  ["TC release review task", tcScreen, /tc_release_review/],
+  ["TC transfer review", tcScreen, /tc_transfer_review/],
+  ["TC cold-storage recovery", tcScreen, /tc_cold_storage_recovery/]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 5 screen", contents, pattern, description);
 });
@@ -175,7 +191,7 @@ const tests = {
   [
     "TC UI test",
     tests.tc,
-    /creates tissue culture workflow tasks from the saved ToolRun[\s\S]*Vessel \/ supply cost[\s\S]*creates default tissue culture follow-up task/
+    /starts blank and refuses to create a fake batch[\s\S]*Vessel \/ supply cost[\s\S]*creates a default follow-up from the recorded schedule/
   ],
   [
     "module persistence tests",

@@ -100,6 +100,14 @@ function isCloneRootingRun(run: ToolRun | null) {
   return type === "clone_rooting";
 }
 
+function isTissueCultureRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "tissue_culture";
+}
+
 function unresolvedSavedCropName(value: unknown) {
   return /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
     String(value || "").trim()
@@ -280,6 +288,80 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       }
     ];
   }
+  if (isTissueCultureRun(run)) {
+    const vesselStatus =
+      outputs.vesselStatus && typeof outputs.vesselStatus === "object"
+        ? outputs.vesselStatus
+        : {};
+    const releaseReview =
+      outputs.releaseReview && typeof outputs.releaseReview === "object"
+        ? outputs.releaseReview
+        : {};
+    return [
+      {
+        key: "assessment",
+        label: "Evidence status",
+        value: outputs.assessmentStatus || "Not assessed"
+      },
+      {
+        key: "release",
+        label: "Release review",
+        value: releaseReview.status || "Not assessed"
+      },
+      {
+        key: "lane-stage",
+        label: "Lane / stage",
+        value:
+          [outputs.workflowLane, outputs.stage].filter(Boolean).join(" / ") ||
+          "Not recorded"
+      },
+      {
+        key: "contamination",
+        label: "Contaminated vessels",
+        value:
+          vesselStatus.contaminated != null && vesselStatus.total != null
+            ? `${vesselStatus.contaminated}/${vesselStatus.total} (${vesselStatus.contaminationPercent ?? 0}%)`
+            : "Not assessed"
+      },
+      {
+        key: "fungal-like",
+        label: "Fungal-like appearance",
+        value:
+          vesselStatus.fungalLikeAppearance != null && vesselStatus.total != null
+            ? `${vesselStatus.fungalLikeAppearance}/${vesselStatus.total} (${vesselStatus.fungalLikeAppearancePercent ?? 0}%)`
+            : "Not assessed"
+      },
+      {
+        key: "rooted",
+        label: "Rooted vessels",
+        value:
+          vesselStatus.rooted != null && vesselStatus.total != null
+            ? `${vesselStatus.rooted}/${vesselStatus.total} (${vesselStatus.rootedPercent ?? 0}%)`
+            : "Not assessed"
+      },
+      {
+        key: "missing",
+        label: "Missing evidence items",
+        value: Array.isArray(outputs.missingInformation)
+          ? outputs.missingInformation.length
+          : "Not assessed"
+      },
+      {
+        key: "protocol-survival",
+        label: "Protocol survival",
+        value:
+          outputs.protocolSurvivalRate == null
+            ? "Not recorded"
+            : `${outputs.protocolSurvivalRate}%`
+      },
+      {
+        key: "acclimation-survival",
+        label: "Acclimation survival",
+        value:
+          outputs.acclimationRate == null ? "Not recorded" : `${outputs.acclimationRate}%`
+      }
+    ];
+  }
   const entries = Object.entries(outputs)
     .filter(([, value]) => value != null && typeof value !== "object")
     .slice(0, 6);
@@ -382,6 +464,81 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     }
   }
 
+  if (isTissueCultureRun(run)) {
+    const failureModes = Array.isArray(outputs.diagnosisRecord?.likelyFailureModes)
+      ? outputs.diagnosisRecord.likelyFailureModes
+      : [];
+    failureModes.forEach((item: any, index: number) => {
+      provenance.push({
+        key: `tc-failure-${item?.key || index}`,
+        severity: item?.severity === "high" ? "high" : "medium",
+        message: [item?.issue || String(item), item?.evidence].filter(Boolean).join(" "),
+        remediation: Array.isArray(item?.nextChecks)
+          ? item.nextChecks.join(" ")
+          : undefined
+      });
+    });
+    const releaseBlockers = Array.isArray(outputs.releaseReview?.blockers)
+      ? outputs.releaseReview.blockers
+      : [];
+    releaseBlockers.forEach((message: string, index: number) => {
+      provenance.push({
+        key: `tc-release-blocker-${index}`,
+        severity: "high",
+        message: `Release blocker: ${message}.`
+      });
+    });
+    const missing = Array.isArray(outputs.missingInformation)
+      ? outputs.missingInformation.filter(Boolean)
+      : [];
+    if (missing.length) {
+      provenance.push({
+        key: "tc-missing-evidence",
+        severity: "medium",
+        message: `Still needed for a complete traceable review: ${missing.join(", ")}.`
+      });
+    }
+    const media =
+      outputs.mediaAnalysis && typeof outputs.mediaAnalysis === "object"
+        ? outputs.mediaAnalysis
+        : null;
+    if (media?.requested) {
+      provenance.push({
+        key: "tc-photo-provenance",
+        severity: media.performed ? "info" : "medium",
+        message: media.performed
+          ? `${media.providerLabel || "AI tissue culture photo review"} inspected ${media.photosAnalyzed || 0} photo(s). Quality: ${media.quality || "not provided"}.`
+          : "Tissue-culture media was attached, but this saved result does not claim that photo pixels were analyzed."
+      });
+    }
+    const limitations = [
+      ...(Array.isArray(outputs.diagnosisRecord?.limitations)
+        ? outputs.diagnosisRecord.limitations
+        : []),
+      ...(Array.isArray(media?.limitations) ? media.limitations : []),
+      ...(Array.isArray(outputs.limitations) ? outputs.limitations : [])
+    ]
+      .map(String)
+      .filter(Boolean)
+      .filter((value, index, values) => values.indexOf(value) === index);
+    limitations.slice(0, 5).forEach((message, index) => {
+      provenance.push({
+        key: `tc-limitation-${index}`,
+        severity: "info",
+        message
+      });
+    });
+    if (Array.isArray(outputs.storageReminders)) {
+      outputs.storageReminders.forEach((message: string, index: number) => {
+        provenance.push({
+          key: `tc-storage-${index}`,
+          severity: "info",
+          message
+        });
+      });
+    }
+  }
+
   if (isSpeciesCropRun(run) && imageAnalysis?.performed) {
     const suppliedPhotoCount = Number(
       imageAnalysis.photosAnalyzed || imageAnalysis.photoCount || 1
@@ -446,7 +603,14 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     isCloneRootingRun(run) &&
     Array.isArray(outputs.likelyBottlenecks) &&
     outputs.likelyBottlenecks.length > 0;
-  const warnings = hasStructuredCloneBottlenecks ? [] : run?.warnings || [];
+  const hasStructuredTissueCultureNotices =
+    isTissueCultureRun(run) &&
+    (Boolean(outputs.diagnosisRecord?.likelyFailureModes?.length) ||
+      Boolean(outputs.releaseReview?.blockers?.length));
+  const warnings =
+    hasStructuredCloneBottlenecks || hasStructuredTissueCultureNotices
+      ? []
+      : run?.warnings || [];
 
   return [
     ...provenance,

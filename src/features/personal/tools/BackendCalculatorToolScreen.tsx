@@ -45,6 +45,11 @@ type ToolField = {
   helpText?: string;
   section?: string;
   required?: boolean;
+  options?: Array<{
+    value: string;
+    label: string;
+    description?: string;
+  }>;
 };
 
 type BackendCalculatorToolScreenProps = {
@@ -835,16 +840,53 @@ export default function BackendCalculatorToolScreen({
                 {field.helpText ? (
                   <Text style={styles.fieldHelp}>{field.helpText}</Text>
                 ) : null}
-                <TextInput
-                  accessibilityLabel={`${title} ${field.label}`}
-                  accessibilityHint={field.helpText}
-                  placeholder={field.placeholder}
-                  style={[styles.input, field.multiline && styles.textArea]}
-                  value={values[field.key] ?? ""}
-                  onChangeText={(value) => updateValue(field.key, value)}
-                  keyboardType={field.keyboardType || "default"}
-                  multiline={field.multiline}
-                />
+                {field.options?.length ? (
+                  <View
+                    accessibilityRole="radiogroup"
+                    accessibilityLabel={`${title} ${field.label}`}
+                    style={styles.optionGrid}
+                  >
+                    {field.options.map((option) => {
+                      const selected = values[field.key] === option.value;
+                      return (
+                        <Pressable
+                          key={option.value}
+                          accessibilityRole="radio"
+                          accessibilityLabel={`${title} ${field.label}: ${option.label}`}
+                          accessibilityHint={option.description}
+                          accessibilityState={{ checked: selected }}
+                          onPress={() => updateValue(field.key, option.value)}
+                          style={[styles.optionCard, selected && styles.optionCardOn]}
+                        >
+                          <Text
+                            style={[
+                              styles.optionCardLabel,
+                              selected && styles.optionCardLabelOn
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                          {option.description ? (
+                            <Text style={styles.optionCardDescription}>
+                              {option.description}
+                            </Text>
+                          ) : null}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <TextInput
+                    accessibilityLabel={`${title} ${field.label}`}
+                    accessibilityHint={field.helpText}
+                    placeholder={field.placeholder}
+                    style={[styles.input, field.multiline && styles.textArea]}
+                    value={values[field.key] ?? ""}
+                    onChangeText={(value) => updateValue(field.key, value)}
+                    keyboardType={field.keyboardType || "default"}
+                    multiline={field.multiline}
+                  />
+                )}
               </View>
             </React.Fragment>
           ))}
@@ -974,6 +1016,22 @@ const styles = StyleSheet.create({
   form: { gap: 10 },
   field: { gap: 6 },
   label: { fontSize: 13, fontWeight: "700", color: "#334155" },
+  optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  optionCard: {
+    minWidth: 150,
+    flexGrow: 1,
+    flexBasis: 180,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    padding: 10,
+    gap: 3,
+    backgroundColor: "#FFFFFF"
+  },
+  optionCardOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
+  optionCardLabel: { color: "#334155", fontWeight: "800" },
+  optionCardLabelOn: { color: "#166534" },
+  optionCardDescription: { color: "#64748B", fontSize: 12, lineHeight: 16 },
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",

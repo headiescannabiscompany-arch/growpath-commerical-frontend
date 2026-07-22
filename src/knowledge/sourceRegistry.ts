@@ -17,6 +17,7 @@ export type SourceUseCase =
   | "device_api"
   | "post_harvest"
   | "propagation"
+  | "tissue_culture"
   | "education";
 
 export type SourceType =
@@ -130,6 +131,34 @@ export const sourceRegistry: SourceRegistryEntry[] = [
       "Cannabis-cutting environment study using two Korean hemp cultivars. Use its tested light, temperature, and RH ranges as study context, not universal targets: cultivar response differed and combined environmental effects were not tested.",
     requiresCrossCheck: true,
     preferredCrossCheckSources: ["nc-state-extension-cutting-propagation"],
+    lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "usda-ars-hemp-tissue-culture-protocol-2025",
+    name: "USDA ARS Hemp Germplasm Laboratory Tissue Culture Protocol",
+    domain: "ars.usda.gov",
+    sourceType: "government",
+    reliabilityTier: "A",
+    trustedFor: ["tissue_culture", "propagation", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Official 2025 hemp germplasm laboratory protocol supporting the Stage 0-4 workflow, sterile handling, contamination controls, rooting, and acclimation context. Its protocol values are not universal production targets or batch release evidence.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["frontiers-2021-drug-type-cannabis-tc"],
+    lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "frontiers-2021-drug-type-cannabis-tc",
+    name: "Drug-type cannabis micropropagation and cryopreservation study",
+    domain: "frontiersin.org",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["tissue_culture", "propagation", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Primary drug-type cannabis tissue-culture research (DOI 10.3389/fpls.2021.732344) supporting genotype- and protocol-dependent media, contamination, rooting, acclimation, and recovery outcomes. It does not create universal targets or prove an individual batch clean.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["usda-ars-hemp-tissue-culture-protocol-2025"],
     lastReviewedAt: "2026-07-21"
   },
   {

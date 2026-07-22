@@ -2687,572 +2687,742 @@ function calculateAutoGrowCalendar(input = {}) {
 }
 
 function calculateTissueCulture(input = {}) {
-  const vessels = Math.max(0, number(input.vessels ?? 0, "Vessels"));
-  const contaminated = Math.max(
-    0,
-    number(input.contaminatedVessels ?? 0, "Contaminated vessels")
+  const clean = (value) => String(value == null ? "" : value).trim();
+  const lower = (value) =>
+    clean(value)
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_");
+  const uniqueValues = (values) =>
+    values
+      .map(clean)
+      .filter(Boolean)
+      .filter((value, index, all) => all.indexOf(value) === index);
+  const requiredText = (value, label) => {
+    const result = clean(value);
+    if (!result) throw new TypeError(`${label} is required`);
+    return result;
+  };
+  const wholeCount = (value, label, required = false) => {
+    const parsed = optionalNumber(value, label);
+    if (parsed == null) {
+      if (required) throw new TypeError(`${label} is required`);
+      return null;
+    }
+    if (!Number.isInteger(parsed) || parsed < 0) {
+      throw new TypeError(`${label} must be a whole number of zero or greater`);
+    }
+    return parsed;
+  };
+  const nonNegativeNumber = (value, label) => {
+    const parsed = optionalNumber(value, label);
+    if (parsed != null && parsed < 0) {
+      throw new TypeError(`${label} must be zero or greater`);
+    }
+    return parsed;
+  };
+  const choice = (value, label, choices, aliases = {}) => {
+    const normalized = lower(value);
+    const resolved = aliases[normalized] || normalized;
+    if (!resolved) throw new TypeError(`${label} is required`);
+    if (!choices.includes(resolved)) {
+      throw new TypeError(`${label} must be one of: ${choices.join(", ")}`);
+    }
+    return resolved;
+  };
+  const percent = (part, total) => Number(((part / Math.max(total, 1)) * 100).toFixed(1));
+
+  const projectName = requiredText(input.projectName, "Project name");
+  const batchNumber = requiredText(input.batchNumber, "Batch number");
+  const stage = choice(
+    input.stage,
+    "Tissue culture stage",
+    [
+      "stock_selection",
+      "initiation",
+      "multiplication",
+      "rooting",
+      "acclimation",
+      "storage",
+      "recovery"
+    ],
+    {
+      stage_0: "stock_selection",
+      stage_1: "initiation",
+      stage_2: "multiplication",
+      stage_3: "rooting",
+      stage_4: "acclimation"
+    }
   );
-  const rooted = Math.max(0, number(input.rootedVessels ?? 0, "Rooted vessels"));
-  const acclimated = Math.max(
-    0,
-    number(input.acclimatedPlants ?? 0, "Acclimated plants")
+  const workflowLane = choice(
+    input.workflowLane || input.productionPhase || input.preservationMode,
+    "Workflow lane",
+    ["mother_bank", "production", "cold_storage", "cryopreservation"]
   );
-  const transfersDueDays = Math.max(
-    0,
-    number(input.transfersDueDays ?? 14, "Transfers due days")
+  const inspectionStatus = choice(input.inspectionStatus, "Direct inspection status", [
+    "not_inspected",
+    "inspected_no_visible_issue",
+    "visible_issue_present",
+    "mixed"
+  ]);
+  const observedAt = requiredText(
+    input.observedAt || input.measuredAt,
+    "Observation date/time"
   );
-  const stage = String(input.stage || input.tcStage || "initiation").toLowerCase();
-  const symptomsText = String(
-    input.symptoms || input.diagnosisNotes || input.notes || ""
-  ).toLowerCase();
-  const browningVessels = Math.max(
-    0,
-    number(input.browningVessels ?? 0, "Browning vessels")
+  const observationSource = requiredText(
+    input.observationSource || input.measurementSource,
+    "Observation source"
   );
-  const stalledVessels = Math.max(
-    0,
-    number(input.stalledVessels ?? 0, "Stalled vessels")
+
+  const vessels = wholeCount(input.vessels ?? input.vesselCount, "Total vessels", true);
+  if (vessels < 1) throw new TypeError("Total vessels must be greater than zero");
+  const contaminated = wholeCount(
+    input.contaminatedVessels,
+    "Contaminated vessels",
+    true
   );
-  const totalExplantsStarted = Math.max(
-    vessels,
-    number(input.totalExplantsStarted ?? vessels, "Total explants started")
+  const fungalLike = wholeCount(
+    input.fungalLikeVessels ?? input.fungusVessels,
+    "Fungal-like appearance vessels",
+    true
   );
-  const mediaCost = Math.max(0, number(input.mediaCost ?? 0, "Media cost"));
-  const vesselSupplyCost = Math.max(
-    0,
-    number(input.vesselSupplyCost ?? input.vesselCost ?? 0, "Vessel supply cost")
+  const browning = wholeCount(input.browningVessels, "Browning vessels", true);
+  const stalled = wholeCount(input.stalledVessels, "Stalled vessels", true);
+  const rooted = wholeCount(input.rootedVessels, "Rooted vessels", true);
+  [
+    [contaminated, "Contaminated vessels"],
+    [fungalLike, "Fungal-like appearance vessels"],
+    [browning, "Browning vessels"],
+    [stalled, "Stalled vessels"],
+    [rooted, "Rooted vessels"]
+  ].forEach(([count, label]) => {
+    if (count > vessels) throw new TypeError(`${label} cannot exceed total vessels`);
+  });
+  if (fungalLike > contaminated) {
+    throw new TypeError(
+      "Fungal-like appearance vessels cannot exceed contaminated vessels"
+    );
+  }
+  if (
+    inspectionStatus === "not_inspected" &&
+    [contaminated, fungalLike, browning, stalled, rooted].some((count) => count > 0)
+  ) {
+    throw new TypeError(
+      "Direct inspection cannot be not_inspected when visible vessel counts are recorded"
+    );
+  }
+
+  const transferCycle = wholeCount(input.transferCycle, "Transfer cycle");
+  const maxProductionTransfers = wholeCount(
+    input.maxProductionTransfers,
+    "Maximum production transfers"
   );
-  const laborCost = Math.max(0, number(input.laborCost ?? 0, "Labor cost"));
-  const totalProjectCost = mediaCost + vesselSupplyCost + laborCost;
-  const contaminationRate = vessels ? contaminated / vessels : 0;
-  const rootingRate = vessels ? rooted / vessels : 0;
-  const acclimationRate = rooted ? acclimated / rooted : 0;
-  const fungusVessels = Math.max(
-    0,
-    number(input.fungusVessels ?? input.fungalVessels ?? 0, "Fungus vessels")
+  if (
+    transferCycle != null &&
+    maxProductionTransfers != null &&
+    transferCycle > maxProductionTransfers
+  ) {
+    throw new TypeError(
+      "Transfer cycle cannot exceed the recorded maximum production transfers"
+    );
+  }
+  const transferDueDays = wholeCount(
+    input.transfersDueDays ?? input.daysToNextTransfer,
+    "Next transfer due days"
   );
-  const fungusRate = vessels ? fungusVessels / vessels : 0;
-  const transferCycle = Math.max(
-    0,
-    number(input.transferCycle ?? input.transferCount ?? 0, "Transfer cycle")
+  const acclimationEntered = wholeCount(
+    input.acclimatedPlants ?? input.acclimationEntered,
+    "Plants entering acclimation"
   );
-  const maxProductionTransfers = Math.max(
-    1,
-    number(input.maxProductionTransfers ?? 12, "Max production transfers")
+  const acclimationSurvived = wholeCount(
+    input.acclimationSurvived,
+    "Acclimation survivors"
   );
-  const productionPhase = String(
-    input.productionPhase || input.tcProductionPhase || "production"
-  ).toLowerCase();
-  const explantSize = String(input.explantSize || "standard").toLowerCase();
-  const technicianOwner = String(input.technicianOwner || input.assignedTech || "");
-  const motherBlockStartDate = input.motherBlockStartDate || input.initiationDate || null;
-  const productionEndDate = input.productionEndDate || input.endDate || null;
-  const mediaType = String(input.mediaType || input.mediaRecipe || "");
-  const vesselType = String(input.vesselType || "glass jar");
-  const warnings = [];
-  const likelyFailureModes = [];
-  const diagnosisTags = [];
-  const explantType = String(input.explantType || input.explant || "node").toLowerCase();
-  const cropType = String(
-    input.cropType || cropKeyFromInput(input) || "unspecified"
-  ).toLowerCase();
-  const cannabisPreset =
-    cropType === "cannabis"
-      ? {
-          explantType,
-          suggestedStartingPoints:
-            explantType === "shoot_tip"
-              ? [
-                  "Use actively growing shoot tips from clean, pest-free stock.",
-                  "Start with conservative sterilization timing and adjust by cultivar response.",
-                  "Track browning, vitrification, and clean shoot recovery separately."
-                ]
-              : [
-                  "Use node sections from clean, pest-free stock with visible meristem tissue.",
-                  "Track sterilization timing, rinse count, media lot, and vessel ID for each batch.",
-                  "Compare response by cultivar before changing hormone balance across all batches."
-                ],
-          warning:
-            "Cannabis TC response varies by cultivar, explant condition, sterilization timing, media balance, and hormone level."
-        }
+  if (
+    acclimationEntered != null &&
+    acclimationSurvived != null &&
+    acclimationSurvived > acclimationEntered
+  ) {
+    throw new TypeError(
+      "Acclimation survivors cannot exceed plants entering acclimation"
+    );
+  }
+  const initialProtocolUnits = wholeCount(
+    input.initialProtocolUnits,
+    "Initial protocol cohort units"
+  );
+  const survivingProtocolUnits = wholeCount(
+    input.survivingProtocolUnits,
+    "Surviving protocol cohort units"
+  );
+  const regrowingProtocolUnits = wholeCount(
+    input.regrowingProtocolUnits,
+    "Regrowing protocol cohort units"
+  );
+  if (
+    initialProtocolUnits != null &&
+    survivingProtocolUnits != null &&
+    survivingProtocolUnits > initialProtocolUnits
+  ) {
+    throw new TypeError(
+      "Surviving protocol cohort units cannot exceed initial protocol cohort units"
+    );
+  }
+  if (
+    survivingProtocolUnits != null &&
+    regrowingProtocolUnits != null &&
+    regrowingProtocolUnits > survivingProtocolUnits
+  ) {
+    throw new TypeError(
+      "Regrowing protocol cohort units cannot exceed surviving protocol cohort units"
+    );
+  }
+
+  const mediaCost = nonNegativeNumber(input.mediaCost, "Media cost");
+  const vesselSupplyCost = nonNegativeNumber(
+    input.vesselSupplyCost,
+    "Vessel and supply cost"
+  );
+  const laborCost = nonNegativeNumber(input.laborCost, "Labor cost");
+  const costValues = [mediaCost, vesselSupplyCost, laborCost];
+  const hasCostEvidence = costValues.some((value) => value != null);
+  const totalProjectCost = hasCostEvidence
+    ? Number(costValues.reduce((sum, value) => sum + (value || 0), 0).toFixed(2))
+    : null;
+  const costSurvivorCount = survivingProtocolUnits ?? acclimationSurvived;
+  const costPerSurvivingPlant =
+    totalProjectCost != null && costSurvivorCount != null && costSurvivorCount > 0
+      ? Number((totalProjectCost / costSurvivorCount).toFixed(2))
       : null;
-  if (contaminationRate > 0.15)
-    warnings.push(
-      "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes."
+
+  const vesselTraceability = (
+    Array.isArray(input.vesselTraceability) ? input.vesselTraceability : []
+  )
+    .map((row) => ({
+      vesselId: clean(row?.vesselId),
+      rack: clean(row?.rack) || null,
+      shelf: clean(row?.shelf) || null,
+      status: clean(row?.status) || null,
+      parentVesselId: clean(row?.parentVesselId) || null,
+      notes: clean(row?.notes) || null
+    }))
+    .filter((row) => row.vesselId);
+  const vesselIds = vesselTraceability.map((row) => row.vesselId);
+  if (new Set(vesselIds).size !== vesselIds.length) {
+    throw new TypeError("Vessel traceability IDs must be unique within the batch");
+  }
+  if (vesselTraceability.length > vessels) {
+    throw new TypeError("Vessel traceability rows cannot exceed total vessels");
+  }
+
+  const SOPVersion = clean(input.SOPVersion || input.sopVersion) || null;
+  const mediaRecipe = clean(input.mediaRecipe) || null;
+  const mediaLotId = clean(input.mediaLotId) || null;
+  const sterilizationRunId = clean(input.sterilizationRunId) || null;
+  const sterilizationMethod = clean(input.sterilizationMethod) || null;
+  const sterilizationOutcome = clean(input.sterilizationOutcome) || null;
+  const technicianOwner = clean(input.technicianOwner) || null;
+  const lastAction = clean(input.lastAction) || null;
+  const lastActionBy = clean(input.lastActionBy) || null;
+  const lastActionAt = clean(input.lastActionAt) || null;
+  const geneticsId = clean(input.geneticsId) || null;
+  const motherBankId = clean(input.motherBankId) || null;
+  const sourceBatchId = clean(input.sourceBatchId) || null;
+  const parentTransferId = clean(input.parentTransferId) || null;
+  const visiblePatterns = clean(input.visiblePatterns || input.symptoms) || null;
+  const contaminationDisposition = clean(input.contaminationDisposition) || null;
+  const optionalChoice = (value, label, choices) => {
+    const normalized = lower(value);
+    if (!normalized) return "not_recorded";
+    if (!choices.includes(normalized)) {
+      throw new TypeError(`${label} must be one of: ${choices.join(", ")}`);
+    }
+    return normalized;
+  };
+  const pathogenTestStatus = optionalChoice(input.pathogenTestStatus, "Pathogen status", [
+    "not_tested",
+    "pending",
+    "clear",
+    "detected",
+    "inconclusive"
+  ]);
+  const geneticStabilityStatus = optionalChoice(
+    input.geneticStabilityStatus,
+    "Genetic stability status",
+    ["not_reviewed", "reviewed_no_observed_off_types", "concern", "lab_reviewed"]
+  );
+  const cryopreservationValidationStatus = optionalChoice(
+    input.cryopreservationValidationStatus,
+    "Cryopreservation validation status",
+    ["not_applicable", "planned", "validated", "failed"]
+  );
+
+  const missingInformation = uniqueValues([
+    geneticsId ? "" : "genetics or source-line ID",
+    motherBankId || sourceBatchId ? "" : "mother-bank or source-batch link",
+    SOPVersion ? "" : "SOP version",
+    mediaRecipe ? "" : "media recipe",
+    mediaLotId ? "" : "media preparation or lot ID",
+    sterilizationRunId ? "" : "sterilization run ID",
+    sterilizationMethod ? "" : "sterilization method",
+    sterilizationOutcome ? "" : "sterilization control outcome",
+    technicianOwner || lastActionBy ? "" : "technician custody",
+    lastAction && lastActionAt ? "" : "last handling action and timestamp",
+    vesselTraceability.length ? "" : "vessel IDs and rack/shelf traceability",
+    pathogenTestStatus !== "not_recorded" ? "" : "pathogen/indexing status",
+    geneticStabilityStatus !== "not_recorded"
+      ? ""
+      : "genetic stability or off-type review",
+    transferCycle != null ? "" : "transfer cycle",
+    transferDueDays != null ? "" : "next transfer review timing"
+  ]);
+
+  const likelyFailureModes = [];
+  const addFailureMode = (key, severity, issue, evidence, nextChecks) => {
+    likelyFailureModes.push({ key, severity, issue, evidence, nextChecks });
+  };
+  if (contaminated > 0) {
+    addFailureMode(
+      "visible-contamination-pattern",
+      "high",
+      "Visible contamination-like growth is present and requires isolation and disposition.",
+      `${contaminated}/${vessels} vessels (${percent(contaminated, vessels)}%) were recorded as contaminated.`,
+      [
+        "Isolate affected vessels and map the pattern by vessel, rack, source explant, media lot, sterilization run, and handler.",
+        "Use an appropriate laboratory method if organism identification is necessary; appearance alone is not identification."
+      ]
     );
-  if (fungusRate > 0.045)
-    warnings.push(
-      "Fungus pressure is above the production danger band. Isolate affected vessels and review room/tool hygiene immediately."
+  }
+  if (fungalLike > 0) {
+    addFailureMode(
+      "fungal-like-appearance",
+      "high",
+      "A fungal-like appearance was recorded, but no microorganism identity is established.",
+      `${fungalLike}/${vessels} vessels showed the recorded visual pattern.`,
+      [
+        "Photograph representative vessels without opening them, record timing and distribution, and keep the label fungal-like until laboratory evidence supports more."
+      ]
     );
-  else if (fungusRate > 0.02)
-    warnings.push(
-      "Fungus pressure is above a strong commercial target. Increase technician shelf walks and remove suspect vessels early."
+  }
+  if (browning > 0) {
+    addFailureMode(
+      "browning-or-oxidation",
+      "medium",
+      "Browning or oxidation is present in part of the batch.",
+      `${browning}/${vessels} vessels (${percent(browning, vessels)}%) were recorded with browning.`,
+      [
+        "Compare explant source, handling time, transfer age, media lot, and vessel position before changing the whole protocol."
+      ]
     );
-  if (contaminationRate > 0.1)
-    warnings.push(
-      "Overall contamination is above the commercial target band. Audit transfer technique, media lots, vessel handling, and room workflow."
+  }
+  if (stalled > 0) {
+    addFailureMode(
+      "stalled-growth",
+      "medium",
+      "Stalled growth is present and should be compared across genotype, explant, medium, and environment.",
+      `${stalled}/${vessels} vessels (${percent(stalled, vessels)}%) were recorded as stalled.`,
+      [
+        "Compare the affected cohort with clean controls and the same protocol on prior transfers; do not assign one cause from appearance alone."
+      ]
     );
-  if (transferCycle >= maxProductionTransfers)
-    warnings.push(
-      "This production line has reached the transfer-cycle limit. Refresh from mother block or retire the line before more multiplication."
+  }
+  if (/hyperhyd|vitrif/.test(lower(visiblePatterns))) {
+    addFailureMode(
+      "hyperhydricity-like-pattern",
+      "medium",
+      "A hyperhydricity-like visual pattern was recorded.",
+      visiblePatterns,
+      [
+        "Review vessel ventilation, media formulation, handling, and genotype response together; confirm the pattern before revising the SOP."
+      ]
     );
-  else if (transferCycle >= Math.max(1, maxProductionTransfers - 2))
-    warnings.push(
-      "This production line is nearing its transfer-cycle limit. Plan a mother-block refresh before the next production turn."
-    );
+  }
   if (
-    productionPhase.includes("establishment") ||
-    productionPhase.includes("acclimating")
+    transferCycle != null &&
+    maxProductionTransfers != null &&
+    transferCycle >= Math.max(0, maxProductionTransfers - 2)
   ) {
-    warnings.push(
-      "Establishment/acclimating cultures should be handled gently; early stress can carry into later production turns."
+    addFailureMode(
+      "transfer-limit-near",
+      "high",
+      "The production line is near its owner-recorded transfer-cycle limit.",
+      `Transfer cycle ${transferCycle}/${maxProductionTransfers} was recorded.`,
+      [
+        "Review the owner-approved refresh/retirement SOP and compare genetic stability, vigor, contamination, and recovery evidence before another multiplication cycle."
+      ]
     );
   }
-  if (vessels && rootingRate < 0.4)
-    warnings.push(
-      "Rooting rate is low for this batch. Compare media recipe, transfer timing, genetics, and vessel conditions."
-    );
-  if (contaminated || /fuzzy|mold|slime|cloudy|yeast|contam/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Likely contamination",
-      category: "sterility",
-      confidence: contaminationRate > 0.15 ? 0.8 : 0.65,
-      evidence: [
-        contaminated ? `${contaminated} contaminated vessel(s)` : null,
-        /fuzzy|mold/.test(symptomsText) ? "Fuzzy/mold symptoms noted" : null,
-        /slime|cloudy|yeast/.test(symptomsText)
-          ? "Bacterial/cloudy/yeast-like symptoms noted"
-          : null,
-        fungusVessels ? `${fungusVessels} fungus vessel(s)` : null,
-        fungusRate > 0.045 ? "Fungus rate is above the rapid-spread danger band" : null
-      ].filter(Boolean),
-      counterEvidence: [
-        contaminated && contaminated < vessels
-          ? `${Math.max(0, vessels - contaminated)} vessel(s) are not marked contaminated`
-          : null,
-        !/fuzzy|mold|slime|cloudy|yeast|contam/.test(symptomsText)
-          ? "No contamination symptom keywords were entered"
-          : null
-      ].filter(Boolean),
-      nextChecks: [
-        "Check whether contamination is isolated to one vessel or spread across the batch.",
-        "Check how soon contamination appeared after transfer.",
-        "Review explant cleaning, rinse count, tools, media sterilization, and vessel handling."
-      ],
-      taskSuggestions: [
-        {
-          title: "Isolate or cull contaminated TC vessels",
-          dueInDays: 0,
-          priority: "high"
-        },
-        {
-          title: "Audit TC sterilization and media handling notes",
-          dueInDays: 1,
-          priority: "high"
-        }
-      ]
-    });
-    diagnosisTags.push("contamination", "sterility");
-  }
-  if (/endo|internal|vascular/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Possible endophytic contamination",
-      category: "source_material",
-      confidence: 0.65,
-      evidence: ["Internal/endophytic/vascular contamination notes entered"],
-      counterEvidence: [
-        "Confirm whether smaller explants or shoot tips from clean stock reduce recurrence."
-      ],
-      nextChecks: [
-        "Compare larger nodal pieces against smaller shoot tips.",
-        "Track whether contamination appears after apparently clean initiation.",
-        "Escalate cleaning methods only after cutting smaller fails."
-      ],
-      taskSuggestions: [
-        {
-          title: "Compare TC explant size against contamination pattern",
-          dueInDays: 1,
-          priority: "high"
-        }
-      ]
-    });
-    diagnosisTags.push("endophytic_contamination", "source_material");
-  }
-  if (browningVessels || /brown|black|oxid/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Possible browning or oxidation",
-      category: "oxidation",
-      confidence: browningVessels ? 0.7 : 0.6,
-      evidence: [
-        browningVessels ? `${browningVessels} browning vessel(s)` : null,
-        /brown|black|oxid/.test(symptomsText)
-          ? "Browning/blackening symptoms noted"
-          : null
-      ].filter(Boolean),
-      counterEvidence: [
-        browningVessels && browningVessels < vessels
-          ? `${Math.max(0, vessels - browningVessels)} vessel(s) are not marked browning`
-          : null,
-        !/brown|black|oxid/.test(symptomsText)
-          ? "No browning symptom keywords were entered"
-          : null
-      ].filter(Boolean),
-      nextChecks: [
-        "Check whether browning appeared immediately after sterilization.",
-        "Review bleach/alcohol exposure time, media pH, and cultivar sensitivity.",
-        "Consider charcoal or antioxidant strategy in the next trial if appropriate."
-      ],
-      taskSuggestions: [
-        {
-          title: "Review TC browning and oxidation pattern",
-          dueInDays: 1,
-          priority: "medium"
-        },
-        {
-          title: "Compare antioxidant or charcoal notes before next TC batch",
-          dueInDays: 7,
-          priority: "medium"
-        }
-      ]
-    });
-    diagnosisTags.push("browning", "oxidation");
-  }
-  if (stalledVessels || /stall|no growth|slow/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Possible stalled initiation or slow growth response",
-      category: "growth_response",
-      confidence: stalledVessels ? 0.65 : 0.55,
-      evidence: [
-        stalledVessels ? `${stalledVessels} stalled vessel(s)` : null,
-        /stall|no growth|slow/.test(symptomsText)
-          ? "Stalled/no-growth notes entered"
-          : null
-      ].filter(Boolean),
-      counterEvidence: [
-        rooted ? `${rooted} vessel(s) have rooted` : null,
-        !/stall|no growth|slow/.test(symptomsText)
-          ? "No stalled-growth symptom keywords were entered"
-          : null
-      ].filter(Boolean),
-      nextChecks: [
-        "Check days since transfer.",
-        "Compare against vessels from the same batch.",
-        "Review media strength, hormone balance, temperature, light, and explant maturity."
-      ],
-      taskSuggestions: [
-        {
-          title: "Compare stalled TC vessels against clean active vessels",
-          dueInDays: 2,
-          priority: "medium"
-        },
-        {
-          title: "Review TC media strength and hormone notes",
-          dueInDays: 3,
-          priority: "medium"
-        }
-      ]
-    });
-    diagnosisTags.push("stalled_growth");
-  }
-  if (/callus/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Possible hormone balance issue",
-      category: "media_balance",
-      confidence: 0.65,
-      evidence: ["Callus instead of clean shoot growth noted"],
-      counterEvidence: rooted
-        ? [`${rooted} vessel(s) have rooted despite callus notes`]
+
+  const releaseBlockers = uniqueValues([
+    contaminated > 0 ? "visible contamination requires isolation and disposition" : "",
+    ["visible_issue_present", "mixed"].includes(inspectionStatus)
+      ? "direct inspection recorded visible issues"
+      : "",
+    SOPVersion ? "" : "SOP version is missing",
+    mediaLotId ? "" : "media lot is missing",
+    sterilizationRunId && sterilizationOutcome
+      ? ""
+      : "sterilization run/control evidence is incomplete",
+    vesselTraceability.length ? "" : "vessel traceability is missing",
+    pathogenTestStatus === "clear"
+      ? ""
+      : "pathogen/indexing status is not recorded as clear",
+    ["reviewed_no_observed_off_types", "lab_reviewed"].includes(geneticStabilityStatus)
+      ? ""
+      : "genetic stability/off-type review is incomplete",
+    workflowLane === "cryopreservation" &&
+    cryopreservationValidationStatus !== "validated"
+      ? "cryopreservation process/recovery validation is not recorded"
+      : ""
+  ]);
+
+  const suppliedImageAnalysis =
+    input.imageAnalysis && typeof input.imageAnalysis === "object"
+      ? input.imageAnalysis
+      : {};
+  const mediaEvidence = Array.isArray(input.mediaEvidence) ? input.mediaEvidence : [];
+  const evidenceAssetIds = Array.isArray(input.evidenceAssetIds)
+    ? input.evidenceAssetIds.map(String).filter(Boolean)
+    : [];
+  const photosAttached = mediaEvidence.filter((item) =>
+    /photo|image/i.test(String(item?.type || item?.mimeType || item?.kind || ""))
+  ).length;
+  const videosAttached = mediaEvidence.filter((item) =>
+    /video/i.test(String(item?.type || item?.mimeType || item?.kind || ""))
+  ).length;
+  const photosAnalyzed = Number(suppliedImageAnalysis.photosAnalyzed || 0);
+  const imageRequested =
+    suppliedImageAnalysis.requested === true ||
+    evidenceAssetIds.length > 0 ||
+    photosAttached > 0;
+  const imagePerformed =
+    imageRequested && suppliedImageAnalysis.performed === true && photosAnalyzed > 0;
+  const mediaAnalysis = {
+    requested: imageRequested,
+    performed: imagePerformed,
+    photosAttached: Math.max(photosAttached, evidenceAssetIds.length),
+    photosAnalyzed: imagePerformed ? photosAnalyzed : 0,
+    videosAttached,
+    videosAnalyzed: 0,
+    provider: imagePerformed ? clean(suppliedImageAnalysis.provider) || null : null,
+    providerLabel: imagePerformed
+      ? clean(suppliedImageAnalysis.providerLabel) || "AI tissue culture photo review"
+      : null,
+    confidence: imagePerformed
+      ? lower(suppliedImageAnalysis.confidence) || "low"
+      : "not_assessed",
+    quality: imagePerformed
+      ? lower(suppliedImageAnalysis.quality) || "limited"
+      : "not_reviewed",
+    evidenceUsed:
+      imagePerformed && Array.isArray(suppliedImageAnalysis.evidenceUsed)
+        ? suppliedImageAnalysis.evidenceUsed.map(String).filter(Boolean)
         : [],
-      nextChecks: [
-        "Review cytokinin level.",
-        "Review auxin/cytokinin balance.",
-        "Compare against previous media recipes."
-      ],
-      taskSuggestions: [
-        {
-          title: "Review TC hormone balance before next transfer",
-          dueInDays: 2,
-          priority: "medium"
-        }
-      ]
-    });
-    diagnosisTags.push("callus", "media_balance");
+    limitations: uniqueValues([
+      ...(Array.isArray(suppliedImageAnalysis.limitations)
+        ? suppliedImageAnalysis.limitations
+        : []),
+      imageRequested && !imagePerformed
+        ? "Media is attached, but this saved result does not attest that photo pixels were analyzed."
+        : "",
+      videosAttached
+        ? "Attached video is stored as evidence; direct video interpretation is not enabled."
+        : "",
+      "Media may document visible vessel and explant patterns but cannot identify a microorganism, prove pathogen freedom, supply counts, or verify hidden vessel contents."
+    ]),
+    status: imagePerformed
+      ? "photo_pixels_analyzed"
+      : imageRequested
+        ? "media_attached_not_analyzed"
+        : "no_media_submitted"
+  };
+
+  const measuredIncubationTempC = nonNegativeNumber(
+    input.measuredIncubationTempC,
+    "Measured incubation temperature"
+  );
+  const measuredPhotoperiodHours = nonNegativeNumber(
+    input.measuredPhotoperiodHours,
+    "Measured photoperiod"
+  );
+  if (measuredPhotoperiodHours != null && measuredPhotoperiodHours > 24) {
+    throw new TypeError("Measured photoperiod must be no more than 24 hours");
   }
-  if (/vitrification|watery|glassy|translucent/.test(symptomsText)) {
-    likelyFailureModes.push({
-      issue: "Possible vitrification",
-      category: "media_environment",
-      confidence: 0.7,
-      evidence: ["Watery, glassy, or translucent growth noted"],
-      counterEvidence: [
-        "Confirm whether symptoms are limited to one media lot or vessel style."
-      ],
-      nextChecks: [
-        "Review agar strength.",
-        "Review vessel venting/gas exchange.",
-        "Review hormone strength and humidity."
-      ],
-      taskSuggestions: [
-        {
-          title: "Check TC agar strength and vessel venting notes",
+  const multiplicationRate = nonNegativeNumber(
+    input.multiplicationRate,
+    "Multiplication rate"
+  );
+  const contaminationRate = percent(contaminated, vessels);
+  const fungusRate = percent(fungalLike, vessels);
+  const rootingRate = percent(rooted, vessels);
+  const acclimationRate =
+    acclimationEntered != null && acclimationEntered > 0 && acclimationSurvived != null
+      ? percent(acclimationSurvived, acclimationEntered)
+      : null;
+  const protocolSurvivalRate =
+    initialProtocolUnits != null &&
+    initialProtocolUnits > 0 &&
+    survivingProtocolUnits != null
+      ? percent(survivingProtocolUnits, initialProtocolUnits)
+      : null;
+
+  const generatedCalendar = [
+    contaminated > 0
+      ? {
+          title: `Confirm isolation and disposition: ${batchNumber}`,
           dueInDays: 1,
-          priority: "medium"
+          priority: "high",
+          sourceStage: "contamination_disposition",
+          description:
+            "Recount isolated vessels and document location, media lot, sterilization run, handler, visible pattern, and final disposition without naming an organism from appearance."
         }
-      ]
-    });
-    diagnosisTags.push("vitrification");
-  }
-  if (
-    /acclimation|wilt after transfer|dome/.test(symptomsText) ||
-    (rooted && acclimated / rooted < 0.5)
-  ) {
-    likelyFailureModes.push({
-      issue: "Possible acclimation failure",
-      category: "hardening_off",
-      confidence: rooted && acclimated / rooted < 0.5 ? 0.7 : 0.6,
-      evidence: [
-        rooted && acclimated / rooted < 0.5
-          ? "Low acclimation survival from rooted vessels"
-          : null,
-        /acclimation|wilt after transfer|dome/.test(symptomsText)
-          ? "Acclimation/dome/wilt notes entered"
-          : null
-      ].filter(Boolean),
-      counterEvidence: [
-        acclimated ? `${acclimated} plant(s) acclimated successfully` : null,
-        !/acclimation|wilt after transfer|dome/.test(symptomsText)
-          ? "No acclimation symptom keywords were entered"
-          : null
-      ].filter(Boolean),
-      nextChecks: [
-        "Confirm agar was rinsed from roots.",
-        "Review humidity dome schedule.",
-        "Check light level and medium moisture after transfer."
-      ],
-      taskSuggestions: [
-        {
-          title: "Review TC acclimation dome and vent schedule",
+      : null,
+    missingInformation.length
+      ? {
+          title: `Complete TC traceability: ${batchNumber}`,
           dueInDays: 1,
-          priority: "medium"
-        },
-        {
-          title: "Count surviving acclimated TC plants",
-          dueInDays: 3,
-          priority: "medium"
+          priority: "high",
+          sourceStage: "traceability_review",
+          description: `Complete: ${missingInformation.join(", ")}.`
         }
-      ]
-    });
-    diagnosisTags.push("acclimation_failure");
-  }
-  const stageCalendar = [];
-  if (stage.includes("initiation")) {
-    stageCalendar.push(
-      { title: "Check for early contamination", dueInDays: 3, priority: "medium" },
-      { title: "Check for browning/oxidation", dueInDays: 7, priority: "medium" },
-      { title: "Evaluate shoot growth", dueInDays: 21, priority: "medium" }
-    );
-  } else if (stage.includes("multiplication")) {
-    stageCalendar.push(
-      { title: "Evaluate shoots for transfer", dueInDays: 28, priority: "medium" },
-      { title: "Subculture if ready", dueInDays: 42, priority: "medium" }
-    );
-  } else if (stage.includes("rooting")) {
-    stageCalendar.push(
-      { title: "Check root formation", dueInDays: 14, priority: "medium" },
-      { title: "Prepare acclimation setup", dueInDays: 21, priority: "medium" }
-    );
-  } else if (stage.includes("acclimation")) {
-    stageCalendar.push(
-      { title: "Vent humidity dome briefly", dueInDays: 3, priority: "medium" },
-      { title: "Increase venting", dueInDays: 7, priority: "medium" },
-      { title: "Remove dome if stable", dueInDays: 14, priority: "medium" }
-    );
-  } else if (stage.includes("storage")) {
-    stageCalendar.push(
-      { title: "Check stored cultures", dueInDays: 30, priority: "medium" },
-      { title: "Refresh storage culture if needed", dueInDays: 180, priority: "medium" }
-    );
-  }
-  if (warnings.length) {
-    stageCalendar.unshift({
-      title: "Review TC batch issue notes",
-      dueInDays: 0,
-      priority: "high"
-    });
-  }
-  if (productionPhase.includes("mother")) {
-    stageCalendar.push({
-      title: "Harvest apical material for production refresh",
-      dueInDays: 28,
-      priority: "medium",
-      sourceStage: "mother_block_refresh"
-    });
-  }
-  if (transferCycle >= Math.max(1, maxProductionTransfers - 2)) {
-    stageCalendar.unshift({
-      title: "Refresh production line from mother block",
-      dueInDays: 0,
-      priority: "high",
-      sourceStage: "transfer_cycle_limit"
-    });
-  }
-  if (productionPhase.includes("acclimation") || stage.includes("acclimation")) {
-    stageCalendar.push({
-      title: "Grade small/medium/large TC plants after acclimation",
-      dueInDays: 14,
-      priority: "medium",
-      sourceStage: "acclimation_grading"
-    });
-  }
-  const targetBands = {
-    fungusTargetPercent: 2,
-    fungusDangerPercent: 4.5,
-    overallTargetPercent: 10,
-    commercialReference:
-      "Production notes from a large TC facility: keep fungus near or below 2%, treat about 4.5% as a rapid-spread danger band, and keep overall contamination under 10%."
-  };
-  const productionControls = {
-    productionPhase,
-    transferCycle,
-    maxProductionTransfers,
-    transfersRemaining: Math.max(0, maxProductionTransfers - transferCycle),
-    motherBlockStartDate,
-    productionEndDate,
-    technicianOwner,
-    mediaType,
-    vesselType,
-    explantType,
-    explantSize,
-    explantSizeTradeoff:
-      "Larger explants usually grow faster but carry more contamination risk; smaller explants establish slower but can reduce internal/vascular contamination pressure.",
-    multiplicationStrategy:
-      "Prefer direct shoot multiplication and track transfer cycles; refresh production material from mother block before long chains of laterals accumulate."
-  };
-  const acclimationGuidance = {
-    inVitroRootingStrategy:
-      "Many commercial TC workflows prioritize shoot multiplication in vitro and handle rooting/acclimation as a separate production phase.",
-    greenhouseTransition:
-      "Remove media from plantlets before greenhouse transfer, maintain humidity so plants do not dry out, then gradually train photosynthesis, roots, and cuticle development.",
-    grading:
-      "Grade plantlets by size before acclimation/ship scheduling so small, medium, and large lots can be handled consistently."
-  };
+      : null,
+    transferDueDays != null
+      ? {
+          title: `Review transfer readiness: ${batchNumber}`,
+          dueInDays: transferDueDays,
+          priority: releaseBlockers.length ? "high" : "medium",
+          sourceStage: "transfer_review",
+          description:
+            "Recount the cohort, review direct inspection, traceability, quality-control evidence, and the owner-approved SOP before transfer."
+        }
+      : null
+  ].filter(Boolean);
+
+  const storageReminders = [
+    workflowLane === "cold_storage"
+      ? "Ordinary cold storage is recorded. Track location, measured temperature, entry, retrieval, survival, regrowth, and contamination after recovery."
+      : "",
+    workflowLane === "cryopreservation"
+      ? "Cryopreservation is a separate validated process; do not label ordinary refrigeration or cold storage as cryopreservation."
+      : "",
+    clean(input.plannedRetrievalDate)
+      ? `Planned retrieval date: ${clean(input.plannedRetrievalDate)}.`
+      : ""
+  ].filter(Boolean);
+
+  const recommendations = uniqueValues([
+    ...likelyFailureModes.flatMap((item) => item.nextChecks || []),
+    missingInformation.length
+      ? `Complete traceability before release: ${missingInformation.join(", ")}.`
+      : "",
+    releaseBlockers.length
+      ? "Keep the batch blocked from production/storage release until each listed blocker is reviewed and resolved by the responsible owner."
+      : "Review the complete evidence packet and owner-approved SOP before release; this calculator does not release material automatically.",
+    "Compare outcomes by genotype/source line, explant type, SOP version, media lot, transfer cycle, technician, vessel position, measured environment, and final surviving plants.",
+    "Treat published media, temperature, light, hormone, and timing values as protocol-specific contextâ€”not universal targets."
+  ]);
+
+  const projectStatus = likelyFailureModes.some((item) => item.severity === "high")
+    ? "needs_attention"
+    : missingInformation.length
+      ? "traceability_incomplete"
+      : "reviewed";
+  const assessmentStatus = missingInformation.length
+    ? "partial_measured_batch_review"
+    : "measured_batch_review";
+  const warnings = uniqueValues([
+    contaminated > 0
+      ? "Visible contamination-like growth was recorded. Isolate and document affected vessels; appearance does not identify the organism."
+      : "",
+    releaseBlockers.length
+      ? `Release review is blocked: ${releaseBlockers.join("; ")}.`
+      : "",
+    workflowLane === "cryopreservation" &&
+    cryopreservationValidationStatus !== "validated"
+      ? "Cryopreservation is not established by a cold temperature entry alone; validated freezing, storage, retrieval, and recovery evidence is required."
+      : ""
+  ]);
+
   return {
-    projectName: input.projectName || "Tissue culture project",
-    batchNumber: input.batchNumber || null,
-    cropType,
-    purpose: input.purpose || "preservation",
+    methodIds: ["tissue-culture"],
+    sourceIds: [
+      "usda-ars-hemp-tissue-culture-protocol-2025",
+      "frontiers-2021-drug-type-cannabis-tc"
+    ],
+    assessmentStatus,
+    confidence: missingInformation.length ? "limited" : "moderate",
+    projectName,
+    projectStatus,
+    workflowLane,
     stage,
-    productionPhase,
-    explantPreset: cannabisPreset,
-    projectStatus:
-      contaminationRate > 0.35 ||
-      fungusRate > 0.045 ||
-      transferCycle >= maxProductionTransfers
-        ? "at_risk"
-        : warnings.length
-          ? "needs_attention"
-          : "active",
-    targetBands,
-    productionControls,
-    acclimationGuidance,
     batchSummary: {
-      vessels,
-      contaminatedVessels: contaminated,
-      fungusVessels,
-      rootedVessels: rooted,
-      acclimatedPlants: acclimated,
-      browningVessels,
-      stalledVessels,
-      mediaRecipe: input.mediaRecipe || "",
-      sopVersion: input.SOPVersion || input.sopVersion || ""
+      batchNumber,
+      totalVessels: vessels,
+      observationDateTime: observedAt,
+      observationSource,
+      directInspection: inspectionStatus
     },
+    batchNarrative: `${vessels} vessel${vessels === 1 ? "" : "s"} reviewed for ${batchNumber} at ${stage}; ${contaminated} recorded with visible contamination-like growth.`,
     vesselStatus: {
-      cleanVessels: Math.max(
-        0,
-        vessels - contaminated - browningVessels - stalledVessels
-      ),
-      contaminatedVessels: contaminated,
-      fungusVessels,
-      browningVessels,
-      stalledVessels,
-      rootedVessels: rooted,
-      acclimatedPlants: acclimated
+      total: vessels,
+      contaminated,
+      fungalLikeAppearance: fungalLike,
+      browning,
+      stalled,
+      rooted,
+      contaminationPercent: contaminationRate,
+      fungalLikeAppearancePercent: fungusRate,
+      browningPercent: percent(browning, vessels),
+      stalledPercent: percent(stalled, vessels),
+      rootedPercent: rootingRate
     },
-    contaminationRate: Number((contaminationRate * 100).toFixed(2)),
-    fungusRate: Number((fungusRate * 100).toFixed(2)),
-    rootingRate: Number((rootingRate * 100).toFixed(2)),
-    acclimationRate: Number((acclimationRate * 100).toFixed(2)),
-    successMetrics: {
-      totalExplantsStarted,
-      cleanExplants: Math.max(0, vessels - contaminated),
-      contaminatedExplants: contaminated,
-      fungusExplants: fungusVessels,
-      oxidizedExplants: browningVessels,
-      stalledExplants: stalledVessels,
-      rootedShoots: rooted,
-      acclimatedPlants: acclimated,
-      contaminationRate: Number((contaminationRate * 100).toFixed(2)),
-      fungusRate: Number((fungusRate * 100).toFixed(2)),
-      rootingRate: Number((rootingRate * 100).toFixed(2)),
-      acclimationRate: Number((acclimationRate * 100).toFixed(2))
-    },
-    costTracking: {
-      mediaCost: Number(mediaCost.toFixed(2)),
-      vesselSupplyCost: Number(vesselSupplyCost.toFixed(2)),
-      laborCost: Number(laborCost.toFixed(2)),
-      totalProjectCost: Number(totalProjectCost.toFixed(2)),
-      costPerVessel: vessels ? Number((totalProjectCost / vessels).toFixed(2)) : null,
-      costPerCleanVessel:
-        vessels - contaminated > 0
-          ? Number((totalProjectCost / (vessels - contaminated)).toFixed(2))
+    contaminationRate,
+    fungusRate,
+    multiplicationRate,
+    rootingRate,
+    acclimationRate,
+    protocolSurvivalRate,
+    productionControls: {
+      transferCycle,
+      maxProductionTransfers,
+      transfersRemaining:
+        transferCycle != null && maxProductionTransfers != null
+          ? maxProductionTransfers - transferCycle
           : null,
-      costPerAcclimatedPlant: acclimated
-        ? Number((totalProjectCost / acclimated).toFixed(2))
-        : null
+      transferDueDays,
+      explantSizeTradeoff:
+        "Explant size, genotype, donor condition, contamination pressure, medium, and handling interact; this review does not assume one best explant size."
+    },
+    traceability: {
+      geneticsId,
+      motherBankId,
+      sourceBatchId,
+      parentTransferId,
+      technicianOwner,
+      lastAction,
+      lastActionBy,
+      lastActionAt,
+      vesselRowsRecorded: vesselTraceability.length,
+      vessels: vesselTraceability,
+      missingInformation
+    },
+    SOPVersion,
+    mediaRecipe: {
+      name: mediaRecipe,
+      mediaType: clean(input.mediaType) || null,
+      mediaLotId,
+      sterilizationRunId,
+      sterilizationMethod,
+      sterilizationOutcome
+    },
+    measuredEnvironment: {
+      incubationRoomId: clean(input.incubationRoomId) || null,
+      telemetrySourceIds: clean(input.telemetrySourceIds) || null,
+      incubationTemperatureC: measuredIncubationTempC,
+      photoperiodHours: measuredPhotoperiodHours,
+      inventoryLocation: clean(input.inventoryLocation) || null,
+      measuredAt: observedAt,
+      source: observationSource
     },
     diagnosisRecord: {
+      assessmentType: "visible_pattern_review_not_microorganism_identification",
       likelyFailureModes,
-      taskSuggestions: likelyFailureModes.flatMap((mode) => mode.taskSuggestions || []),
-      tags: Array.from(new Set(diagnosisTags)),
-      disclaimer:
-        "Tissue culture diagnosis is pattern-based. Compare vessels and batches before changing the entire protocol."
+      counterEvidence: uniqueValues([
+        contaminated === 0 ? "No vessels were counted as visibly contaminated." : "",
+        fungalLike === 0 ? "No fungal-like appearance was counted." : "",
+        browning === 0 ? "No browning was counted." : "",
+        stalled === 0 ? "No stalled vessels were counted." : ""
+      ]),
+      visiblePatterns,
+      limitations: [
+        "Visible vessel patterns cannot identify bacteria, fungi, yeast, viruses, viroids, or other causal agents.",
+        "One batch cannot establish a universal cultivar, media, hormone, temperature, light, or transfer protocol.",
+        "Counts may overlap when one vessel has more than one recorded condition."
+      ]
     },
-    nextTransferTasks: [
-      {
-        title: "Review TC vessels for transfer",
-        dueInDays: transfersDueDays,
-        priority: warnings.length ? "high" : "medium"
-      }
-    ],
-    generatedCalendar: stageCalendar,
-    storageReminders: [
-      "Record vessel IDs, media lot, transfer date, contamination disposition, and acclimation outcome.",
-      "For storage cultures, track storage temperature, light condition, last check date, next check date, and refresh due date."
-    ],
-    complianceRecord: {
-      batchNumber: input.batchNumber || null,
-      geneticsId: input.geneticsId || null,
-      SOPVersion: input.SOPVersion || input.sopVersion || null,
-      mediaRecipe: input.mediaRecipe || null,
-      mediaType,
-      vesselType,
+    qualityControl: {
+      pathogenTestStatus,
+      pathogenReportId: clean(input.pathogenReportId) || null,
+      geneticStabilityStatus,
+      offTypeObservations: clean(input.offTypeObservations) || null,
+      contaminationDisposition,
+      cryopreservationValidationStatus
+    },
+    releaseReview: {
+      status: releaseBlockers.length ? "blocked" : "eligible_for_owner_review",
+      automaticRelease: false,
+      blockers: releaseBlockers,
+      note: "GrowPath records the evidence review but does not automatically release tissue-culture material."
+    },
+    acclimationTracking: {
+      cohortId: clean(input.acclimationCohortId) || null,
+      entered: acclimationEntered,
+      survived: acclimationSurvived,
+      survivalPercent: acclimationRate,
+      outcomeNotes: clean(input.protocolOutcomeNotes) || null
+    },
+    protocolOutcome: {
+      protocolId: clean(input.protocolId) || null,
+      protocolVersion: clean(input.protocolVersion) || null,
+      initialUnits: initialProtocolUnits,
+      survivingUnits: survivingProtocolUnits,
+      regrowingUnits: regrowingProtocolUnits,
+      survivalPercent: protocolSurvivalRate
+    },
+    costTracking: {
       mediaCost,
       vesselSupplyCost,
       laborCost,
-      stage,
-      productionPhase,
-      transferCycle,
-      maxProductionTransfers,
-      motherBlockStartDate,
-      productionEndDate,
-      technicianOwner: technicianOwner || null,
-      vesselCount: vessels
+      totalProjectCost,
+      costPerSurvivingPlant,
+      missingCostInputs: uniqueValues([
+        mediaCost == null ? "media cost" : "",
+        vesselSupplyCost == null ? "vessel/supply cost" : "",
+        laborCost == null ? "labor cost" : ""
+      ])
+    },
+    costPerSurvivingPlant,
+    preservation: {
+      mode: workflowLane,
+      coldStorageRoomId: clean(input.coldStorageRoomId) || null,
+      coldStorageTemperatureC: nonNegativeNumber(
+        input.coldStorageTempC,
+        "Cold-storage temperature"
+      ),
+      entryDate: clean(input.coldStorageStartDate) || null,
+      plannedRetrievalDate: clean(input.plannedRetrievalDate) || null,
+      recoveryCheckDays: wholeCount(input.recoveryCheckDays, "Recovery check days"),
+      notes: clean(input.storageNotes) || null
+    },
+    mediaAnalysis,
+    evidenceUsed: uniqueValues([
+      `Direct batch inspection: ${inspectionStatus}.`,
+      `Vessel counts: ${vessels} total, ${contaminated} contaminated, ${fungalLike} fungal-like appearance, ${browning} browning, ${stalled} stalled, ${rooted} rooted.`,
+      `Observed ${observedAt}; source: ${observationSource}.`,
+      ...mediaAnalysis.evidenceUsed
+    ]),
+    missingInformation,
+    nextTransferTasks: [
+      {
+        title:
+          transferDueDays == null
+            ? `Set transfer review date: ${batchNumber}`
+            : `Review transfer readiness: ${batchNumber}`,
+        dueInDays: transferDueDays,
+        dueDate: transferDueDays == null ? null : daysFromNow(transferDueDays),
+        priority: releaseBlockers.length ? "high" : "medium"
+      }
+    ],
+    generatedCalendar,
+    storageReminders,
+    targetBands: {
+      evidenceBoundary:
+        "Use the owner-approved SOP and measured batch outcomes. Published study conditions are protocol/genotype context, not universal production targets."
     },
     warnings,
-    recommendations: [
-      "Keep TC notes as records, not guarantees. Confirm SOPs, media recipes, and contamination decisions with trained lab process.",
-      "Create follow-up tasks for transfer, contamination review, rooting check, and acclimation.",
-      "Do not treat one failed vessel as proof the cultivar or entire method failed; compare the whole batch pattern."
+    recommendations,
+    limitations: [
+      "This is a record and decision-support workflow, not a validated laboratory SOP, pathogen test, genetic-fidelity test, or release authorization.",
+      "Cold storage and cryopreservation are separate workflows with different validation and recovery evidence."
     ]
   };
 }

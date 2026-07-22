@@ -247,10 +247,43 @@ export const methodRegistry: GrowPathMethod[] = [
     "Tissue Culture",
     ["lab", "propagation", "genetics"],
     "tissue-culture-method.md",
-    ["traceability", "protocol", "quality", "storage", "recovery"],
-    ["lineage", "vessels", "SOP/lots", "telemetry", "testing"],
-    ["traceability", "quality controls", "survival/cost", "tasks"],
-    ["Cold storage and cryopreservation are distinct."],
+    [
+      "select owned cannabis/hemp grow",
+      "identify batch, workflow lane and stage",
+      "record timestamped direct vessel counts",
+      "link lineage, SOP, media, sterilization and custody",
+      "review visible patterns without naming microorganisms",
+      "review quality controls and release blockers",
+      "compare protocol, acclimation, storage and recovery outcomes",
+      "schedule owner-timed follow-up"
+    ],
+    [
+      "project and batch identifiers",
+      "mother-bank, production, cold-storage or cryopreservation lane",
+      "stage and direct-inspection status",
+      "timestamp, observation source and total/condition vessel counts",
+      "lineage, vessel/rack/shelf, SOP/media/sterilization lots and custody",
+      "quality-control reports and disposition",
+      "measured environment, protocol cohort, acclimation, cost and storage evidence",
+      "photo analysis provenance"
+    ],
+    [
+      "assessment, lane and stage",
+      "validated counts and percentages",
+      "structured visible failure modes and limits",
+      "traceability and release blockers",
+      "quality, protocol, acclimation, cost, storage and recovery records",
+      "source and method IDs",
+      "evidence and owner-timed tasks"
+    ],
+    [
+      "Require an owned cannabis/hemp grow at the API boundary.",
+      "Do not silently default counts, identifiers, lots, measurements, costs or transfer timing.",
+      "Visible patterns and photos cannot identify microorganisms, prove pathogen freedom or replace laboratory evidence.",
+      "Do not automatically release material; surface blockers for owner review.",
+      "Keep ordinary cold storage separate from validated cryopreservation.",
+      "Published protocol values are study- and genotype-specific context, not universal targets."
+    ],
     ["tissue-culture"]
   ),
   method(

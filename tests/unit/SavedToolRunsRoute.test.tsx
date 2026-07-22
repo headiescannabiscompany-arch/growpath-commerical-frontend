@@ -282,6 +282,91 @@ describe("SavedToolRunsRoute", () => {
     expect(screen.getByText(/do not prove hidden roots/i)).toBeTruthy();
   });
 
+  it("keeps saved Tissue Culture evidence, release blockers, and media limits visible", async () => {
+    const tissueCultureRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "tissue_culture",
+      summary: "Measured tissue-culture batch review.",
+      inputs: {
+        projectName: "MAC1 TC",
+        batchNumber: "TC-042",
+        workflowLane: "production",
+        stage: "initiation"
+      },
+      outputs: {
+        assessmentStatus: "partial_measured_batch_review",
+        workflowLane: "production",
+        stage: "initiation",
+        vesselStatus: {
+          total: 12,
+          contaminated: 3,
+          fungalLikeAppearance: 1,
+          rooted: 4,
+          contaminationPercent: 25,
+          fungalLikeAppearancePercent: 8.3,
+          rootedPercent: 33.3
+        },
+        protocolSurvivalRate: 75,
+        acclimationRate: 80,
+        missingInformation: ["sterilization run ID"],
+        diagnosisRecord: {
+          likelyFailureModes: [
+            {
+              key: "fungal-like-appearance",
+              severity: "high",
+              issue:
+                "A fungal-like appearance was recorded, but no microorganism identity is established.",
+              evidence: "1/12 vessels showed the recorded visual pattern.",
+              nextChecks: ["Map the pattern by media lot and handler."]
+            }
+          ],
+          limitations: ["Visible vessel patterns cannot identify microorganisms."]
+        },
+        releaseReview: {
+          status: "blocked",
+          automaticRelease: false,
+          blockers: ["visible contamination requires isolation and disposition"]
+        },
+        mediaAnalysis: {
+          requested: true,
+          performed: false,
+          limitations: [
+            "Media is attached, but this saved result does not attest that photo pixels were analyzed."
+          ]
+        },
+        limitations: ["Cold storage and cryopreservation are separate workflows."]
+      },
+      warnings: ["Visible contamination requires isolation and disposition."],
+      createdAt: "2026-07-21T21:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([tissueCultureRun]);
+    mockGetToolRun.mockResolvedValue(tissueCultureRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(
+      screen.getByText("Evidence status: partial_measured_batch_review")
+    ).toBeTruthy();
+    expect(screen.getByText("Release review: blocked")).toBeTruthy();
+    expect(screen.getByText("Lane / stage: production / initiation")).toBeTruthy();
+    expect(screen.getByText("Contaminated vessels: 3/12 (25%)")).toBeTruthy();
+    expect(screen.getByText("Fungal-like appearance: 1/12 (8.3%)")).toBeTruthy();
+    expect(screen.getByText("Rooted vessels: 4/12 (33.3%)")).toBeTruthy();
+    expect(screen.getByText("Protocol survival: 75%")).toBeTruthy();
+    expect(screen.getByText("Acclimation survival: 80%")).toBeTruthy();
+    expect(screen.getByText(/no microorganism identity is established/i)).toBeTruthy();
+    expect(screen.getByText(/Release blocker: visible contamination/i)).toBeTruthy();
+    expect(screen.getByText(/sterilization run ID/i)).toBeTruthy();
+    expect(
+      screen.getByText(/does not attest that photo pixels were analyzed/i)
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText(/Visible contamination requires isolation and disposition/i)
+    ).toHaveLength(1);
+  });
+
   it("keeps legacy Clone Rooting warnings when structured bottlenecks are absent", async () => {
     const legacyCloneRun = {
       id: "run-1",
