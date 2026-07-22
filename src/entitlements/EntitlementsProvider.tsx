@@ -77,6 +77,14 @@ function safeStringify(v: any) {
   }
 }
 
+export function entitlementApplicationFingerprint(
+  ctx: any,
+  user: any,
+  preferredMode: PreferredMode | null
+) {
+  return safeStringify({ ctx, user, preferredMode });
+}
+
 function pickMode(ctxMode: any): EntitlementsMode {
   if (ctxMode === "commercial") return "commercial";
   if (ctxMode === "facility") return "facility";
@@ -546,7 +554,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     const ctx = auth.ctx ?? null;
     const user = auth.user ?? null;
 
-    const fingerprint = safeStringify({ ctx, user });
+    const fingerprint = entitlementApplicationFingerprint(ctx, user, preferredMode);
 
     // Only apply if changed
     if (fingerprint !== lastAppliedRef.current) {

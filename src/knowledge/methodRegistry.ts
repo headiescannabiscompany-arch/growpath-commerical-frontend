@@ -441,7 +441,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "owner-scoped production batches linked to ToolRuns and Commercial tasks",
       "published-course discovery limited to published storefronts and explicit public fields",
       "direct draft-course detail limited to the authenticated author or platform administrator",
-      "explicit eligible workspace preference preserved across plan-backed modes"
+      "explicit eligible workspace preference preserved across plan-backed modes",
+      "workspace preference reapplied before restricted-route access decisions"
     ],
     [
       "Never cross workspace scope or invent product claims.",
