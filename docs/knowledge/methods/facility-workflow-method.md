@@ -2,6 +2,8 @@
 
 Facility outreach analytics use the same recorded Feed campaign events as Commercial while remaining facility scoped. Measure education/outreach impressions, clicks, explicit conversions, hides, and reports without introducing direct-sales claims or exposing viewer identity in owner-facing summaries.
 
+Facility outreach destinations must be selected from readable public course, live-event, and Forum/Q&A records whenever those lists are available. Show record titles instead of internal identifiers, preserve the selected canonical identifier in the campaign payload, and keep manual identifiers or slugs behind an explicitly labeled advanced fallback. A failure in one destination list must not erase the other lists or prevent an authorized operator from using a known valid reference.
+
 Facility Forum participation uses the shared discussion engine with membership-verified Facility identity and Facility/room/SOP-adjacent context links. Facility-only discussion must remain scoped to the selected Facility and must not become public commercial advertising.
 
 Facility-internal Forum reads and writes require an active membership for the selected Facility. Public education remains a separate public Forum thread; internal room and operational discussion must use `facilityOnly` visibility and exact Facility context.
