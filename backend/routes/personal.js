@@ -9,6 +9,7 @@ const GrowLog = require("../models/GrowLog");
 const Plant = require("../models/Plant");
 const Task = require("../models/Task");
 const ToolRun = require("../models/ToolRun");
+const GrowpathModuleRecord = require("../models/GrowpathModuleRecord");
 const Diagnosis = require("../models/Diagnosis");
 const DiagnosisFeedback = require("../models/DiagnosisFeedback");
 const HarvestBatch = require("../models/HarvestBatch");
@@ -539,6 +540,61 @@ function toolLabel(run = {}) {
   return String(run.toolName || run.toolType || "tool_run").replace(/[_-]+/g, " ");
 }
 
+function moduleTimelineDescriptors(record = {}) {
+  const recordType = String(record.recordType || "");
+  const outputs = record.outputs || {};
+  const descriptors = [];
+  if (recordType === "crop_steering_project") {
+    descriptors.push({
+      type: "crop_steering_project_created",
+      title: record.title || "Crop steering project created"
+    });
+  } else if (recordType === "crop_steering_entry") {
+    descriptors.push({
+      type: "crop_steering_entry_logged",
+      title: record.title || "Crop steering entry logged"
+    });
+    if (["high", "excessive"].includes(String(outputs.pressureLevel || "")))
+      descriptors.push({
+        type: "high_pressure_steering_event",
+        title: "High steering pressure recorded"
+      });
+    if (String(outputs.recoveryStatus || "") === "poor_recovery")
+      descriptors.push({
+        type: "poor_recovery_logged",
+        title: "Poor steering recovery recorded"
+      });
+    if (String(outputs.recoveryStatus || "") === "recovered")
+      descriptors.push({
+        type: "positive_recovery_logged",
+        title: "Positive steering recovery recorded"
+      });
+  } else if (recordType === "ph_ec_check") {
+    descriptors.push({
+      type: "ph_ec_check_logged",
+      title: record.title || "pH / EC check logged"
+    });
+    if (["high", "low"].includes(String(outputs.runoffECStatus || "")))
+      descriptors.push({
+        type: "runoff_ec_warning",
+        title: "Runoff EC warning recorded"
+      });
+    if (["high", "low"].includes(String(outputs.runoffPHStatus || "")))
+      descriptors.push({
+        type: "runoff_ph_warning",
+        title: "Runoff pH warning recorded"
+      });
+  }
+  return descriptors.length
+    ? descriptors
+    : [
+        {
+          type: "module_record_created",
+          title: record.title || `${recordType || "module"} record`
+        }
+      ];
+}
+
 function sortTimeline(events) {
   return events.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -903,6 +959,7 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
       logs,
       tasks,
       toolRuns,
+      moduleRecords,
       diagnoses,
       diagnosisFeedback,
       harvestBatches,
@@ -935,6 +992,10 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
         .limit(100)
         .lean(),
       ToolRun.find({ user: userObject, growId })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean(),
+      GrowpathModuleRecord.find({ userId: uid, growId, deletedAt: null })
         .sort({ createdAt: -1 })
         .limit(100)
         .lean(),
@@ -1104,7 +1165,12 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
       events.push(
         timelineEvent({
           row: task,
-          type: task.status === "DONE" ? "task_completed" : "task_created",
+          type:
+            task.status === "DONE"
+              ? "task_completed"
+              : ["crop_steering", "ph_ec_check"].includes(String(task.sourceType || ""))
+                ? "steering_task_created"
+                : "task_created",
           sourceModel: "Task",
           title: task.title || "Task",
           summary: task.notes || "",
@@ -1142,6 +1208,41 @@ router.get("/grows/:growId/timeline", async (req, res, next) => {
           }
         })
       );
+    }
+
+    for (const record of moduleRecords) {
+      moduleTimelineDescriptors(record).forEach((descriptor, index) => {
+        events.push({
+          ...timelineEvent({
+            row: record,
+            type: descriptor.type,
+            sourceModel: "GrowpathModuleRecord",
+            title: descriptor.title,
+            summary:
+              record.outcome?.summary ||
+              record.outputs?.logSummary ||
+              record.outputs?.summary ||
+              `${String(record.recordType || "module").replace(/_/g, " ")} saved`,
+            timestamp: record.createdAt,
+            tags: Array.isArray(record.tags) ? record.tags : [],
+            severity:
+              Array.isArray(record.warnings) && record.warnings.length ? "watch" : null,
+            payload: {
+              recordType: record.recordType,
+              status: record.status,
+              projectId: record.inputs?.projectId || null,
+              linkedToolRunId: record.linkedToolRunId || null,
+              linkedLogId: record.linkedLogId || null,
+              linkedTaskIds: record.linkedTaskIds || [],
+              agreementStatus: record.agreementStatus || null,
+              warnings: record.warnings || [],
+              recommendations: record.recommendations || [],
+              outputs: record.outputs || {}
+            }
+          }),
+          id: `GrowpathModuleRecord:${String(record._id)}:${descriptor.type}:${index}`
+        });
+      });
     }
 
     for (const diagnosis of diagnoses) {

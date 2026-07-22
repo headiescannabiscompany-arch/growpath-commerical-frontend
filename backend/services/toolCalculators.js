@@ -927,6 +927,7 @@ function classifyRange(value, range = {}) {
   if (value === null || value === undefined || value === "") return "missing";
   const n = Number(value);
   if (!Number.isFinite(n)) return "missing";
+  if (!range || typeof range !== "object") return "target_missing";
   const min = Number(range.min);
   const max = Number(range.max);
   if (!Number.isFinite(min) || !Number.isFinite(max)) return "missing";
@@ -945,22 +946,42 @@ function normalizeEc(value, unit = "mS/cm") {
 }
 
 function calculatePhEcCheck(input = {}) {
-  const medium = String(input.medium || "soil");
-  const stage = String(input.stage || "veg");
+  const medium = String(input.medium || "").trim();
+  const stage = String(input.stage || "").trim();
+  const normalizedStage = stage.toLowerCase().replace(/[\s-]+/g, "_");
+  const normalizeRange = (value) => {
+    if (!value || typeof value !== "object") return null;
+    const min = Number(value.min);
+    const max = Number(value.max);
+    return Number.isFinite(min) && Number.isFinite(max) && min < max
+      ? { min, max }
+      : null;
+  };
   const targetPHRange =
-    input.targetPHRange ||
-    (medium === "coco" || medium === "hydro"
-      ? { min: 5.7, max: 6.2 }
-      : { min: 6.2, max: 6.8 });
+    normalizeRange(input.targetPHRange) ||
+    (medium
+      ? /coco|hydro|rockwool/i.test(medium)
+        ? { min: 5.7, max: 6.2 }
+        : { min: normalizedStage === "seedling" ? 6.2 : 6.1, max: 6.8 }
+      : null);
   const targetECRange =
-    input.targetECRange ||
-    (stage === "seedling"
+    normalizeRange(input.targetECRange) ||
+    (normalizedStage === "seedling"
       ? { min: 0.4, max: 1.0 }
-      : stage === "flower" || stage === "late_flower"
+      : normalizedStage === "flower" || normalizedStage === "late_flower"
         ? { min: 1.2, max: 2.2 }
-        : { min: 0.8, max: 1.8 });
+        : normalizedStage
+          ? { min: 0.8, max: 1.8 }
+          : null);
   const inputEC = normalizeEc(input.inputEC, input.ecUnit);
   const runoffEC = normalizeEc(input.runoffEC, input.ecUnit);
+  const inputPH = optionalNumber(input.inputPH, "Input pH");
+  const runoffPH = optionalNumber(input.runoffPH, "Runoff pH");
+  const alkalinity = optionalNumber(input.alkalinity, "Alkalinity");
+  const calcium = optionalNumber(input.calcium, "Calcium");
+  const magnesium = optionalNumber(input.magnesium, "Magnesium");
+  const sodium = optionalNumber(input.sodium, "Sodium");
+  const chloride = optionalNumber(input.chloride, "Chloride");
   const phStatus = classifyRange(input.inputPH, targetPHRange);
   const runoffPHStatus = classifyRange(input.runoffPH, targetPHRange);
   const ecStatus = classifyRange(inputEC, targetECRange);
@@ -971,6 +992,14 @@ function calculatePhEcCheck(input = {}) {
   const riskCodes = [];
   let driftDirection = "unknown";
   let canonicalDriftDirection = "unknown";
+
+  const missingInformation = [];
+  if (!medium) missingInformation.push("medium");
+  if (!stage) missingInformation.push("stage");
+  if ((inputEC != null || runoffEC != null) && !String(input.ecUnit || "").trim())
+    missingInformation.push("EC unit");
+  if (inputPH == null && runoffPH == null) missingInformation.push("input or runoff pH");
+  if (inputEC == null && runoffEC == null) missingInformation.push("input or runoff EC");
 
   if (input.runoffPH !== undefined && input.inputPH !== undefined) {
     const drift = Number(input.runoffPH) - Number(input.inputPH);
@@ -993,6 +1022,13 @@ function calculatePhEcCheck(input = {}) {
       "Check dryback, runoff volume, feed strength, and recent feeding history before increasing nutrients."
     );
   }
+  if (runoffEC != null && inputEC != null && runoffEC < inputEC - 0.4) {
+    warnings.push("Runoff EC is meaningfully lower than input EC.");
+    possibleRisks.push(
+      "Plant uptake, weak feed, low fertility, poor retention, or inconsistent measurement may explain the lower runoff EC."
+    );
+    riskCodes.push("low_fertility_or_high_uptake");
+  }
   if (runoffECStatus === "high") {
     warnings.push("Runoff EC is above the selected target range.");
     possibleRisks.push("Root-zone EC may be too high for the selected stage or medium.");
@@ -1006,9 +1042,14 @@ function calculatePhEcCheck(input = {}) {
       "Recheck meter calibration and compare input pH to runoff pH over multiple waterings."
     );
   }
-  if (phStatus === "low" || phStatus === "high") {
-    recommendations.push(
-      "Adjust input pH cautiously based on medium and product instructions."
+  if (canonicalDriftDirection === "input_to_runoff_up") {
+    warnings.push(
+      "pH is drifting upward. Alkalinity, carbonate buffering, lime-heavy media, water source, or uptake patterns may contribute."
+    );
+  }
+  if (canonicalDriftDirection === "input_to_runoff_down") {
+    warnings.push(
+      "pH is drifting downward. Acidic media, buildup, root-zone activity, fertilizer effects, or organic breakdown may contribute."
     );
   }
   const waterSource = String(input.waterSource || "").toLowerCase();
@@ -1026,7 +1067,7 @@ function calculatePhEcCheck(input = {}) {
       "City/well water may contain alkalinity, calcium, magnesium, sodium, chloride, or other minerals that affect pH/EC interpretation."
     );
   }
-  if (Number(input.alkalinity || 0) > 120) {
+  if (alkalinity != null && alkalinity > 120) {
     warnings.push("Water alkalinity is elevated and may push pH upward over time.");
     riskCodes.push("high_alkalinity");
   }
@@ -1040,9 +1081,46 @@ function calculatePhEcCheck(input = {}) {
     "Do not recommend exact pH Up/Down dosing unless product concentration and water volume are known."
   );
 
+  const riskLevel =
+    actionableWarningCount >= 2 ? "high" : actionableWarningCount ? "watch" : "low";
+  const assessmentStatus =
+    !medium ||
+    !stage ||
+    (inputPH == null && runoffPH == null && inputEC == null && runoffEC == null)
+      ? "insufficient_data"
+      : actionableWarningCount
+        ? "range_warning"
+        : "range_review";
+  const tasksToCreate = [
+    {
+      title: "Retest pH / EC",
+      dueInDays: actionableWarningCount ? 1 : 2,
+      priority: actionableWarningCount ? "high" : "medium",
+      sourceStage: "ph_ec_retest",
+      description:
+        "Repeat calibrated input and runoff readings using the same sampling method before changing feed strength or pH adjustment."
+    },
+    ...(actionableWarningCount
+      ? [
+          {
+            title: "Inspect root-zone and plant response",
+            dueInDays: 1,
+            priority: "high",
+            sourceStage: "ph_ec_root_zone_review",
+            description:
+              "Record moisture, irrigation volume, runoff amount, leaf posture, tip burn, color, new growth, and a same-plant photo."
+          }
+        ]
+      : [])
+  ];
+
   return {
-    medium,
-    stage,
+    medium: medium || null,
+    stage: stage || null,
+    cropType: input.cropType || null,
+    projectId: input.projectId || null,
+    assessmentStatus,
+    riskLevel,
     targetPHRange,
     targetECRange,
     normalizedEC: { inputEC, runoffEC, unit: "mS/cm" },
@@ -1054,13 +1132,35 @@ function calculatePhEcCheck(input = {}) {
     canonicalDriftDirection,
     possibleRisks: Array.from(new Set(possibleRisks)),
     riskCodes: Array.from(new Set(riskCodes)),
+    waterProfile: {
+      source: waterSource || null,
+      alkalinity,
+      calcium,
+      magnesium,
+      sodium,
+      chloride
+    },
+    recentInputs: {
+      feedRecipeId: input.recentFeedRecipeId || null,
+      topdressId: input.recentTopdressId || null
+    },
     warnings: Array.from(new Set(warnings)),
     recommendations: Array.from(new Set(recommendations)),
     retestTaskSuggestion: {
       title: "Retest pH / EC",
       dueInDays: actionableWarningCount ? 1 : 3,
-      priority: actionableWarningCount ? "medium" : "low"
+      priority: actionableWarningCount ? "high" : "medium"
     },
+    tasksToCreate,
+    missingInformation,
+    limitations: [
+      "Published or configured ranges are interpretation context, not proof of crop need or permission to dose an adjuster.",
+      "Runoff values depend on substrate, irrigation volume, sampling timing, meter calibration, and collection method.",
+      "No exact pH Up/Down dose is calculated because product concentration and water volume are not established here."
+    ],
+    methodIds: ["soil-nutrients", ...(input.projectId ? ["crop-steering"] : [])],
+    sourceIds: [],
+    logSummary: `pH/EC check for ${medium || "unrecorded medium"} ${stage || "unrecorded stage"}: input pH ${inputPH ?? "?"}, runoff pH ${runoffPH ?? "?"}, input EC ${inputEC ?? "?"}, runoff EC ${runoffEC ?? "?"}.`,
     formulaExplanation:
       "This tool compares measured pH and EC values against selected target ranges and flags runoff drift or buildup. It does not calculate exact pH up/down dosing because product concentration and alkalinity are required."
   };
@@ -5332,21 +5432,30 @@ function calculatePersonalInventory(input = {}) {
 }
 
 function calculateCropSteeringProject(input = {}) {
-  const dryback = input.drybackPercent
-    ? number(input.drybackPercent, "Dryback percent")
-    : null;
-  const runoffEC = input.runoffEC ? number(input.runoffEC, "Runoff EC") : null;
-  const inputEC = input.inputEC ? number(input.inputEC, "Input EC") : null;
-  const recoveryHours = input.recoveryHours
-    ? number(input.recoveryHours, "Recovery hours")
-    : null;
-  const dli = input.dli ? number(input.dli, "DLI") : null;
-  const vpd = input.vpd ? number(input.vpd, "VPD") : null;
+  const dryback = optionalNumber(input.drybackPercent, "Dryback percent");
+  const runoffEC = optionalNumber(input.runoffEC, "Runoff EC");
+  const inputEC = optionalNumber(input.inputEC, "Input EC");
+  const inputPH = optionalNumber(input.inputPH, "Input pH");
+  const runoffPH = optionalNumber(input.runoffPH, "Runoff pH");
+  const recoveryHours = optionalNumber(input.recoveryHours, "Recovery hours");
+  const dli = optionalNumber(input.dli, "DLI");
+  const ppfd = optionalNumber(input.ppfd ?? input.lightIntensity, "PPFD");
+  const vpd = optionalNumber(input.vpd, "VPD");
+  const airTemperature = optionalNumber(
+    input.airTemperature ?? input.temperature,
+    "Air temperature"
+  );
+  const relativeHumidity = optionalNumber(
+    input.relativeHumidity ?? input.humidity,
+    "Relative humidity"
+  );
+  const leafTemperature = optionalNumber(input.leafTemperature, "Leaf temperature");
+  const co2 = optionalNumber(input.co2 ?? input.co2Ppm, "CO2");
   const responseText = String(input.plantResponse || input.response || "").toLowerCase();
-  const stage = String(input.stage || "").toLowerCase();
-  const goal = String(
-    input.steeringIntent || input.steeringGoal || "balanced"
-  ).toLowerCase();
+  const recordedStage = String(input.stage || "").trim();
+  const recordedPhase = String(input.phase || "").trim();
+  const stage = recordedStage.toLowerCase();
+  const goal = String(input.steeringIntent || input.steeringGoal || "").toLowerCase();
   const warnings = [];
   let pressureScore = 0;
   if (dryback != null && dryback > 35)
@@ -5381,17 +5490,20 @@ function calculateCropSteeringProject(input = {}) {
       "Late flower drybacks should be cautious to preserve finish, aroma, and plant health."
     );
   }
-  if (dli != null && dli > 45)
-    warnings.push(
-      "High DLI should be checked against leaf posture, bleaching, tacoing, and cultivar response."
-    );
-  if (vpd != null && vpd > 1.6)
-    warnings.push(
-      "High VPD increases transpiration and dryback pressure; watch calcium transport and wilt response."
-    );
-
-  const pressureLevel =
-    pressureScore >= 5
+  const hasPressureEvidence =
+    dryback != null ||
+    inputEC != null ||
+    runoffEC != null ||
+    inputPH != null ||
+    runoffPH != null ||
+    recoveryHours != null ||
+    Boolean(responseText.trim()) ||
+    dli != null ||
+    ppfd != null ||
+    vpd != null;
+  const pressureLevel = !hasPressureEvidence
+    ? "insufficient_data"
+    : pressureScore >= 5
       ? "excessive"
       : pressureScore >= 3
         ? "high"
@@ -5415,11 +5527,24 @@ function calculateCropSteeringProject(input = {}) {
         ? "positive"
         : "uncertain";
   const steeringOutcome =
-    plantResponse === "positive" && pressureLevel !== "excessive"
-      ? "useful_or_tolerated"
-      : plantResponse === "negative" || pressureLevel === "excessive"
-        ? "exceeded_useful_steering"
-        : "monitor_before_increasing_pressure";
+    pressureLevel === "insufficient_data"
+      ? "insufficient_data"
+      : plantResponse === "positive" && pressureLevel !== "excessive"
+        ? "useful_or_tolerated"
+        : plantResponse === "negative" || pressureLevel === "excessive"
+          ? "exceeded_useful_steering"
+          : "monitor_before_increasing_pressure";
+  const steeringIntent = !goal
+    ? "not_recorded"
+    : /recovery/.test(goal)
+      ? "recovery"
+      : /ripening|finish/.test(goal)
+        ? "ripening"
+        : /vegetative|veg|rooting|mother/.test(goal)
+          ? "vegetative"
+          : /generative|flower|stacking|resin/.test(goal)
+            ? "generative"
+            : "balanced";
   const phenoImpact =
     plantResponse === "positive"
       ? goal.includes("generative")
@@ -5430,25 +5555,140 @@ function calculateCropSteeringProject(input = {}) {
           ? "dryback_sensitive"
           : "recovery_poor"
         : "needs_more_observation";
+  const lightPressureRecorded =
+    ppfd != null ||
+    /increase|raised|higher|dim|lower|reduced/.test(
+      String(input.lightChange || "").toLowerCase()
+    );
+  const phenoTags = [];
+  if (plantResponse === "positive" && dryback != null && dryback >= 20)
+    phenoTags.push("dryback_tolerant");
+  if (plantResponse === "negative" && dryback != null && dryback >= 20)
+    phenoTags.push("dryback_sensitive");
+  if (plantResponse === "positive" && lightPressureRecorded)
+    phenoTags.push("high_light_tolerant");
+  if (plantResponse === "negative" && lightPressureRecorded)
+    phenoTags.push("light_sensitive");
+  if (
+    plantResponse === "positive" &&
+    inputEC != null &&
+    runoffEC != null &&
+    runoffEC <= inputEC * 1.35
+  )
+    phenoTags.push("ec_tolerant");
+  if (warnings.some((warning) => /runoff EC|burn/i.test(warning)))
+    phenoTags.push("ec_sensitive");
+  if (inputPH != null && runoffPH != null && Math.abs(runoffPH - inputPH) >= 0.5)
+    phenoTags.push("ph_sensitive");
+  if (recoveryStatus === "recovered") phenoTags.push("recovery_strong");
+  if (recoveryStatus === "poor_recovery") phenoTags.push("recovery_poor");
+  if (plantResponse === "positive" && steeringIntent === "generative")
+    phenoTags.push("generative_steering_candidate");
+  if (plantResponse === "positive" && steeringIntent === "vegetative")
+    phenoTags.push("vegetative_recovery_candidate");
+
+  const missingInformation = [];
+  if (!input.projectId) missingInformation.push("crop steering project");
+  if (!recordedStage) missingInformation.push("stage");
+  if (!goal) missingInformation.push("steering intent");
+  if (dryback == null) missingInformation.push("dryback measurement");
+  if (!String(input.irrigationTiming || "").trim())
+    missingInformation.push("irrigation timing");
+  if (vpd == null && relativeHumidity == null)
+    missingInformation.push("VPD or relative humidity");
+  if (dli == null && ppfd == null) missingInformation.push("DLI or PPFD");
+  if (inputEC == null && runoffEC == null) missingInformation.push("input or runoff EC");
+  if (inputPH == null && runoffPH == null) missingInformation.push("input or runoff pH");
+  if (!responseText.trim()) missingInformation.push("plant response observation");
+  const assessmentStatus = !hasPressureEvidence
+    ? "insufficient_data"
+    : recoveryStatus === "poor_recovery"
+      ? "pressure_exceeded"
+      : recoveryStatus === "recovered"
+        ? "response_recorded"
+        : "response_pending";
+  const tasksToCreate = [
+    {
+      title:
+        plantResponse === "negative" || pressureLevel === "excessive"
+          ? "Return to recovery steering"
+          : "Check plant recovery",
+      dueInDays: 1,
+      priority: plantResponse === "negative" || warnings.length ? "high" : "medium",
+      sourceStage: "crop_steering_recovery",
+      description:
+        "Recheck the same plant after the next light and irrigation cycle; record posture, wilt, new damage, and recovery time."
+    },
+    ...(dryback != null
+      ? [
+          {
+            title: "Recheck dryback before irrigation",
+            dueInDays: 1,
+            priority: ["high", "excessive"].includes(pressureLevel) ? "high" : "medium",
+            sourceStage: "crop_steering_dryback",
+            description:
+              "Measure dryback using the same method before changing irrigation timing or steering pressure."
+          }
+        ]
+      : []),
+    ...(runoffEC != null || runoffPH != null
+      ? [
+          {
+            title: "Check runoff EC and pH trend",
+            dueInDays: 2,
+            priority: warnings.length ? "high" : "medium",
+            sourceStage: "crop_steering_root_zone",
+            description:
+              "Repeat calibrated input/runoff measurements and compare sampling method, volume, recipe, and root-zone condition."
+          }
+        ]
+      : []),
+    ...(lightPressureRecorded
+      ? [
+          {
+            title: "Check light stress and new growth",
+            dueInDays: 1,
+            priority: plantResponse === "negative" ? "high" : "medium",
+            sourceStage: "crop_steering_light_response",
+            description:
+              "Photograph the same plant and record leaf angle, bleaching, curl, temperature, and PPFD/DLI before another increase."
+          }
+        ]
+      : [])
+  ];
   return {
-    steeringIntent: input.steeringIntent || input.steeringGoal || "balanced",
-    steeringGoal: input.steeringIntent || input.steeringGoal || "balanced",
-    stage: input.stage || null,
+    projectId: input.projectId || null,
+    projectName: input.projectName || null,
+    assessmentStatus,
+    steeringIntent,
+    steeringGoal: steeringIntent,
+    stage: recordedStage || null,
+    medium: input.medium || null,
     plantResponse,
-    observedResponse: input.plantResponse || "not recorded",
+    observedResponse: input.plantResponse || null,
     pressureLevel,
     recoveryStatus,
     steeringOutcome,
     phenoImpact,
-    phase: input.phase || "P1",
+    phase: recordedPhase || recordedStage || null,
     dryback: dryback == null ? null : { actualPercent: dryback },
     rootzone: {
       inputEC,
       runoffEC,
-      inputPH: input.inputPH || null,
-      runoffPH: input.runoffPH || null
+      inputPH,
+      runoffPH
     },
-    environment: { dli, vpd },
+    environment: {
+      dli,
+      ppfd,
+      vpd,
+      airTemperature,
+      relativeHumidity,
+      leafTemperature,
+      co2,
+      temperatureUnit: input.temperatureUnit || null,
+      irrigationTiming: input.irrigationTiming || null
+    },
     warnings: Array.from(new Set(warnings)),
     recommendations: [
       "Record consistent irrigation timing, shot size, dryback, runoff, DLI, VPD, and plant response.",
@@ -5459,17 +5699,17 @@ function calculateCropSteeringProject(input = {}) {
     notesForPhenoScore: warnings.length
       ? "Stress response should be considered in pheno scoring."
       : "No major steering warnings entered.",
-    tasksToCreate: [
-      {
-        title:
-          plantResponse === "negative" || pressureLevel === "excessive"
-            ? "Check plant recovery and reduce steering pressure"
-            : "Log crop steering response",
-        dueInDays: 1,
-        priority: warnings.length ? "high" : "medium"
-      }
+    phenoTags: Array.from(new Set(phenoTags)),
+    tasksToCreate,
+    missingInformation,
+    limitations: [
+      "A single steering entry cannot establish cultivar tolerance; compare repeated entries and final quality outcomes.",
+      "VPD, PPFD/DLI, EC, pH, and dryback readings depend on calibrated instruments, consistent placement, and repeatable sampling.",
+      "Pressure should not be increased while recovery is poor, measurements are missing, or stress remains unresolved."
     ],
-    logSummary: `${goal} steering at ${pressureLevel} pressure with ${plantResponse} plant response.`
+    methodIds: ["crop-steering", "soil-nutrients"],
+    sourceIds: [],
+    logSummary: `${steeringIntent} steering at ${pressureLevel} pressure with ${plantResponse} plant response.`
   };
 }
 

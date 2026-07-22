@@ -153,7 +153,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["medium", "dryback", "EC/pH", "DLI/VPD", "response"],
     ["optional techniques", "prerequisites", "stop conditions"],
     ["Do not escalate pressure with missing data or unresolved stress."],
-    ["crop-steering-project"]
+    ["crop-steering-project", "crop-steering-entry", "ph-ec-check"]
   ),
   method(
     "soil-nutrients",

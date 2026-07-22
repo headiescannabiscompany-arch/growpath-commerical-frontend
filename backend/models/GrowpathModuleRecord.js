@@ -34,6 +34,10 @@ const GrowpathModuleRecordSchema = new Schema(
     warnings: { type: [String], default: [] },
     recommendations: { type: [String], default: [] },
     limitations: { type: [String], default: [] },
+    methodIds: { type: [String], default: [] },
+    sourceIds: { type: [String], default: [] },
+    citations: { type: [Schema.Types.Mixed], default: [] },
+    disagreements: { type: [Schema.Types.Mixed], default: [] },
     tags: { type: [String], default: [] },
     tasksToCreate: { type: [Schema.Types.Mixed], default: [] },
     linkedTaskIds: { type: [String], default: [] },
@@ -77,7 +81,9 @@ GrowpathModuleRecordSchema.pre("validate", function normalize(next) {
       inputs: this.inputs || {},
       outputs: this.outputs || {},
       warnings: this.warnings || [],
-      recommendations: this.recommendations || []
+      recommendations: this.recommendations || [],
+      methodIds: this.methodIds || [],
+      sourceIds: this.sourceIds || []
     };
   }
   next();

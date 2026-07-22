@@ -17,6 +17,12 @@ Personal Tools presents these through one **Soil & Nutrient Mix Builders** entry
 
 Topdress planning is task-owned: users start it from Personal Tasks or a grow's Tasks workspace because its primary outputs are scheduled application, water-in, response and recheck tasks. Small pH/EC and VPD calculations remain available to AI, saved results and legacy deep links, but are not primary user-facing AI Tool cards. The Soil & Nutrient Batch Planner is Commercial-only because its purpose is production costing, bag counts, pull sheets, labor, packaging, inventory and margin.
 
+## pH / EC range interpretation
+
+The pH / EC Range Check is an interpretation and trend-recording workflow, not an exact adjuster-dose calculator. Preserve crop, medium, stage, EC unit, owner-entered target ranges, calibrated input/runoff readings, water source, alkalinity, calcium, magnesium, sodium, chloride, recent feed/topdress context, project linkage and limitations. Blank readings and context remain missing.
+
+High or low runoff EC and upward or downward pH drift are multi-cause signals. Discuss salt or dryback concentration, uptake versus supply, retention, alkalinity and carbonate buffering, media/root-zone activity, fertilizer effects, sampling method and meter calibration without naming one cause as proven. Do not calculate pH Up/Down dose unless product concentration, water volume and relevant buffering context are established in a dedicated dosing workflow.
+
 ## Commercial production batch calculation
 
 The Commercial Soil & Nutrient Batch Planner is deterministic and uses no AI credits for production math. Require an explicit batch volume, bag size, volume unit, purpose, traceable batch name, and at least one ingredient. Blank quantity, cost, label analysis, shrinkage, margin, lot, or inventory values remain unknown; never coerce them to zero or substitute demo values.

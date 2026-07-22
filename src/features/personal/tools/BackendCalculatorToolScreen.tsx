@@ -6,6 +6,7 @@ import FeedBanner from "@/components/feed/FeedBanner";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import {
   createGrowpathModuleRecord,
+  getGrowpathModuleRecord,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
@@ -508,9 +509,22 @@ export default function BackendCalculatorToolScreen({
       });
       if (modulePayload) {
         try {
-          const createdRecord = await createGrowpathModuleRecord(modulePayload);
-          setModuleRecord(createdRecord);
-          setFeedback("Calculated and saved as a ToolRun and module record.");
+          const linkedModuleRecordId = String(
+            response.toolRun?.linkedModuleRecordId || ""
+          ).trim();
+          if (linkedModuleRecordId) {
+            const existingRecord = await getGrowpathModuleRecord(linkedModuleRecordId);
+            setModuleRecord(existingRecord);
+            setFeedback(
+              existingRecord
+                ? "Calculated and saved as a ToolRun and module record."
+                : "Calculated and saved. The backend created the module record, but it could not be reloaded yet. Open Saved Runs before calculating again."
+            );
+          } else {
+            const createdRecord = await createGrowpathModuleRecord(modulePayload);
+            setModuleRecord(createdRecord);
+            setFeedback("Calculated and saved as a ToolRun and module record.");
+          }
         } catch (saveError: any) {
           setModuleRecord(null);
           setFeedback(

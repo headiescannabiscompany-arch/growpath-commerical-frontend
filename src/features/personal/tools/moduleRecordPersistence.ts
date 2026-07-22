@@ -125,6 +125,12 @@ export function buildModuleRecordInput({
     status: "active",
     growId: growId || inputs.growId || undefined,
     plantId: plantId || inputs.plantId || undefined,
+    phenoPlantId:
+      firstString(
+        inputs.phenoPlantId,
+        recordType === "crop_steering_entry" ? plantId || inputs.plantId : ""
+      ) || undefined,
+    geneticsId: firstString(inputs.geneticsId) || undefined,
     cropProfileId: cropProfileId || inputs.cropProfileId || undefined,
     cropIdentity: cropIdentity || inputs.cropIdentity || null,
     selectedPlantContext: selectedPlantContext || inputs.selectedPlantContext || null,

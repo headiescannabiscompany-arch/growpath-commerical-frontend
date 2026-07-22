@@ -5,6 +5,7 @@ import BackendCalculatorToolScreen from "../BackendCalculatorToolScreen";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockGetGrowpathModuleRecord = jest.fn();
 const mockUseEntitlements = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 
@@ -18,7 +19,8 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
+  getGrowpathModuleRecord: (...args: any[]) => mockGetGrowpathModuleRecord(...args)
 }));
 
 jest.mock("@/api/personalAssistant", () => ({
@@ -109,6 +111,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
       value: { hostname: "localhost", search: "" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-1" });
+    mockGetGrowpathModuleRecord.mockResolvedValue({ id: "module-backend-1" });
     mockRunCalculator.mockResolvedValue({
       outputs: { rootingProgress: "normal_wait", warnings: [] },
       toolRun: {
@@ -177,6 +180,57 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(
       await screen.findByText("Calculated and saved as a ToolRun and module record.")
     ).toBeTruthy();
+  });
+
+  it("reuses the backend-created module record instead of saving a duplicate", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockRunCalculator.mockResolvedValue({
+      outputs: { rootingProgress: "normal_wait", warnings: [] },
+      toolRun: {
+        id: "tool-run-1",
+        linkedModuleRecordId: "module-backend-1",
+        toolName: "clone-rooting"
+      }
+    });
+
+    renderCloneRootingTool();
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    await waitFor(() =>
+      expect(mockGetGrowpathModuleRecord).toHaveBeenCalledWith("module-backend-1")
+    );
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
+  });
+
+  it("does not create a duplicate when the backend record is briefly unavailable", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockGetGrowpathModuleRecord.mockResolvedValue(null);
+    mockRunCalculator.mockResolvedValue({
+      outputs: { rootingProgress: "normal_wait", warnings: [] },
+      toolRun: {
+        id: "tool-run-1",
+        linkedModuleRecordId: "module-backend-1",
+        toolName: "clone-rooting"
+      }
+    });
+
+    renderCloneRootingTool();
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    expect(
+      await screen.findByText(
+        "Calculated and saved. The backend created the module record, but it could not be reloaded yet. Open Saved Runs before calculating again."
+      )
+    ).toBeTruthy();
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
   });
 
   it("leaves empty AI values blank and counts only non-empty prefill fields", async () => {

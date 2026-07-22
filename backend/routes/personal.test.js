@@ -47,6 +47,10 @@ const mockToolRun = {
   updateOne: jest.fn()
 };
 
+const mockGrowpathModuleRecord = {
+  find: jest.fn()
+};
+
 const mockDiagnosis = {
   find: jest.fn(),
   exists: jest.fn(),
@@ -90,6 +94,7 @@ jest.mock("../models/GrowLog", () => mockGrowLog);
 jest.mock("../models/Plant", () => mockPlant);
 jest.mock("../models/Task", () => mockTask);
 jest.mock("../models/ToolRun", () => mockToolRun);
+jest.mock("../models/GrowpathModuleRecord", () => mockGrowpathModuleRecord);
 jest.mock("../models/Diagnosis", () => mockDiagnosis);
 jest.mock("../models/DiagnosisFeedback", () => mockDiagnosisFeedback);
 jest.mock("../models/HarvestBatch", () => mockHarvestBatch);
@@ -156,6 +161,7 @@ describe("Personal grow workspace routes", () => {
     mockToolRun.updateOne.mockResolvedValue({});
     mockDiagnosis.updateOne.mockResolvedValue({});
     mockPlantGrowthProfile.find.mockReturnValue(leanChain([]));
+    mockGrowpathModuleRecord.find.mockReturnValue(leanChain([]));
     app = createApp();
   });
 
@@ -842,6 +848,46 @@ describe("Personal grow workspace routes", () => {
         }
       ])
     );
+    mockGrowpathModuleRecord.find.mockReturnValue(
+      leanChain([
+        {
+          _id: "507f1f77bcf86cd799439021",
+          userId: TEST_USER,
+          growId: GROW_ID,
+          plantId: PLANT_ID,
+          recordType: "crop_steering_entry",
+          title: "P1 steering entry",
+          inputs: { projectId: "project-1" },
+          outputs: {
+            pressureLevel: "high",
+            recoveryStatus: "recovered",
+            logSummary: "Generative P1 entry recovered."
+          },
+          tags: ["recovery_strong"],
+          warnings: [],
+          recommendations: [],
+          createdAt: "2026-06-04T12:30:00.000Z"
+        },
+        {
+          _id: "507f1f77bcf86cd799439022",
+          userId: TEST_USER,
+          growId: GROW_ID,
+          plantId: PLANT_ID,
+          recordType: "ph_ec_check",
+          title: "pH / EC range check",
+          inputs: { projectId: "project-1" },
+          outputs: {
+            runoffECStatus: "high",
+            runoffPHStatus: "low",
+            logSummary: "Runoff pH and EC warning."
+          },
+          tags: ["ph-ec-check"],
+          warnings: ["Runoff EC high"],
+          recommendations: ["Retest"],
+          createdAt: "2026-06-04T12:20:00.000Z"
+        }
+      ])
+    );
     mockDiagnosis.find.mockReturnValue(
       leanChain([
         {
@@ -947,6 +993,12 @@ describe("Personal grow workspace routes", () => {
         "photo_added",
         "task_completed",
         "tool_run_created",
+        "crop_steering_entry_logged",
+        "high_pressure_steering_event",
+        "positive_recovery_logged",
+        "ph_ec_check_logged",
+        "runoff_ec_warning",
+        "runoff_ph_warning",
         "diagnosis_created",
         "diagnosis_feedback",
         "harvest_batch_created",
