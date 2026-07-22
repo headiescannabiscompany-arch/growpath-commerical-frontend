@@ -6,9 +6,11 @@
 - Production API URL: `https://api.growpathai.com`
 - Frontend workflow merge: `5122e4c643b7df2c29ff05e141779a0f3a1a2a69`
 - Frontend navigation merge: `1a4dff8d509af69eaaa04c6159a843c30988f233`
+- Frontend navigation-closure merge: `dfa6a08dfed68cca737cd902162d8c09bd5b40ac`
 - Frontend Render deploy: `dep-d9g50rl7vvec73ft6urg`
 - Backend merge: `15c05768a762bc22b1bada213b467f9971dc85ba`
 - Browser evidence timestamp: `2026-07-22T05:54:45.678Z`
+- Final card-click timestamp: `2026-07-22T10:31:59.715Z`
 - Account/workspace: `jcindc2012@gmail.com`, Commercial plan
 
 Both `GET https://api.growpathai.com/health` and
@@ -65,8 +67,12 @@ complete production record chain above.
 
 The follow-up repair forces this card to use a normal same-tab top-level web
 navigation (`target="_top"`) while retaining the Expo Router destination and
-native behavior. Its post-deploy card-click retest remains required before this
-navigation finding is closed.
+native behavior. After merge `dfa6a08dfed68cca737cd902162d8c09bd5b40ac`
+deployed, a fresh signed-in Commercial Tools page exposed exactly one accessible
+link with the exact batch-planner href. Activating that card transitioned to
+`/home/commercial/tools/soil-nutrient-batch`, and the resulting page contained
+the production-batch form and deterministic-calculation guidance. The navigation
+finding is closed.
 
 ## Evidence status
 
@@ -76,4 +82,4 @@ navigation finding is closed.
 - Commercial task creation and source links: passed in production and after reload.
 - Inventory non-mutation copy and behavior: passed in production.
 - AI-credit non-use: passed in production.
-- Commercial Tools card click: follow-up repair implemented; post-deploy retest pending.
+- Commercial Tools card click: passed in production after the follow-up deployment.
