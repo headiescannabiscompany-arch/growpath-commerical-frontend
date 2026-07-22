@@ -103,6 +103,21 @@ export default function StartGrowWizard() {
     }
   }
 
+  function returnToOrigin() {
+    if (typeof router.canGoBack === "function" && router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    const browserLocation = (globalThis as any).location;
+    if (browserLocation && typeof browserLocation.assign === "function") {
+      browserLocation.assign(returnToGrows);
+      return;
+    }
+
+    router.replace(returnToGrows as any);
+  }
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -206,7 +221,7 @@ export default function StartGrowWizard() {
             )}
           </Pressable>
           <Pressable
-            onPress={() => router.replace(returnToGrows as any)}
+            onPress={returnToOrigin}
             disabled={createGrow.isPending}
             accessibilityRole="button"
             accessibilityLabel={
