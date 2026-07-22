@@ -1053,7 +1053,9 @@ function calculatePhEcCheck(input = {}) {
     );
   }
   const waterSource = String(input.waterSource || "").toLowerCase();
-  if (waterSource === "ro") {
+  const isReverseOsmosisWater =
+    /(?:^|[^a-z0-9])(?:ro|r\/o)(?:$|[^a-z0-9])|reverse[\s-]+osmosis/.test(waterSource);
+  if (isReverseOsmosisWater) {
     warnings.push(
       "RO water has low buffering. Calcium/magnesium and alkalinity context matter."
     );
@@ -1062,7 +1064,7 @@ function calculatePhEcCheck(input = {}) {
       "RO water contributes little mineral buffering. Ca/Mg and alkalinity context matter."
     );
   }
-  if (/city|well|tap/.test(waterSource)) {
+  if (/\b(?:city|municipal|well|tap)\b/.test(waterSource)) {
     warnings.push(
       "City/well water may contain alkalinity, calcium, magnesium, sodium, chloride, or other minerals that affect pH/EC interpretation."
     );
