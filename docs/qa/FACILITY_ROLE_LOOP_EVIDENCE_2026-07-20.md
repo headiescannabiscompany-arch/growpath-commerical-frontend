@@ -118,6 +118,43 @@ adjustment, and cleanup loop at `https://growpathai.com/home/facility/inventory`
 This closes the production Owner inventory loop without leaving test inventory. It
 does not close the separate Manager, Staff, Viewer, or cross-role task chain.
 
+### Production Owner SOP and compliance loop - 2026-07-22
+
+The Owner completed a template-backed SOP run and the compliance deviation lifecycle
+on the production Facility.
+
+- The Owner created `[QA SOP 2026-07-22] Sanitation evidence check` with three explicit
+  checklist steps, started a template-backed run, reviewed all three steps as done,
+  and completed the run. The detail became mutation locked and survived a hard reload
+  with `3/3` reviewed steps and the completion timestamp intact.
+- The Compliance surface showed the template plus the run-created, three step-updated,
+  and run-completed audit events. Team was also reopened and still showed the active
+  Owner and Manager with Owner-only invitation and role-management controls.
+- The first deviation create attempt at `2026-07-22T23:22:09Z` exposed a production
+  service defect. Render recorded an unhandled Mongo duplicate-key failure for the
+  globally unique `DEV-2026-0001` reference and marked the API instance failed. The
+  UI reported a connection/session-check problem, the API returned 502 during the
+  restart, and no deviation record was saved.
+- Backend PR `#56`, merge `0f330650992b6085cd2a791ddf740717d1091172`, replaced the
+  Facility-local sequential reference with a globally collision-resistant public
+  reference and routed deviation list/create/resolve failures through the API error
+  boundary. Two database-backed suites passed locally (7 tests); the full GitHub test,
+  lint, dependency-audit, and ZAP API scan gates passed. Frontend PR `#150`, merge
+  `c0e4f4c382ade08d02b9ef55ca6bef6bc7f2efd4`, recorded the matching knowledge rule.
+- Render showed backend `0f330650` live at 7:42 PM ET. The Owner then created
+  `[QA compliance 2026-07-22] Verify controlled deviation write`, observed one open
+  deviation and its creation audit event, resolved it, and hard reloaded. The final
+  screen showed zero open deviations, one SOP template, 49 audit events, and both
+  readable deviation audit entries; API health remained HTTP 200 at
+  `2026-07-22T23:43:36Z`.
+- Genuine in-app Browser screenshot and DOM evidence were captured after the hard
+  reload on the two deployed merge SHAs above. The completed SOP run and resolved QA
+  deviation remain as labeled audit evidence; no open test deviation remains.
+
+This closes the production Owner SOP and compliance write/reload loop. Manager, Staff,
+Viewer, forced-authorization, invitation-acceptance, and shared-record completion
+remain separate acceptance items.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to
