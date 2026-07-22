@@ -337,19 +337,22 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       exported final-SHA video/screenshot, and independent-review checks stay open.
 - [ ] Commercial loop session recorded and reviewed.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
-      record counts reviewed; final post-completion Owner return and exported recording
-      remain open.
+      record counts reviewed. Production Owner created and assigned the shared QA task
+      on `93bb0217` and captured screenshot/DOM evidence at
+      `2026-07-22T22:17:21.853Z`; final post-completion Owner return remains open.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
-      permission controls passed; exported recording and production-role retest remain
-      open.
+      permission controls passed. The production shared QA task is assigned to the
+      existing Manager, but the Manager production credential was not supplied.
 - [ ] Facility Staff loop session recorded and reviewed. Grower completion and Scout
-      observation passed in staging; exported recording and production-role retest
-      remain open.
+      observation passed in staging. A production test-account invitation was sent and
+      email dispatch was reported, but acceptance still requires the recipient mailbox.
 - [ ] Facility Viewer loop session recorded and reviewed. Read-only tasks/team passed
       in staging; forced backend 403, exported recording, and production-role retest
       remain open.
 - [ ] Cross-role Facility chain completed on one shared record. Manager -> Grower ->
-      Scout/Viewer persistence passed in staging; Owner bookends and production rerun
-      remain open.
+      Scout/Viewer persistence passed in staging. The production Owner bookend now has
+      a real `OPEN` task assigned to Manager; invitation acceptance or separate
+      Manager/Staff/Viewer credentials are still required to finish the production
+      chain and Owner final-state review.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.

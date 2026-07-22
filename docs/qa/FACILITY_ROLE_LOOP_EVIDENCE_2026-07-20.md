@@ -55,6 +55,35 @@ CI evidence:
 - Frontend PR `#61`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29788947380`
 - Frontend PR `#62`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29789359878`
 
+## Production follow-up - 2026-07-22
+
+The production Facility Owner session was resumed against frontend merge
+`93bb0217bed041d26aed286b8aad1965da1ccd6e` at `https://growpathai.com`.
+This follow-up moved the production shared-record chain forward without claiming the
+missing role sessions.
+
+- The Owner reopened the Facility Team surface and confirmed two active members: one
+  Owner and one Manager. Owner-only invite and role-management controls were present.
+- The Owner sent the secondary test account a Manager invitation. The application
+  reported confirmed email dispatch, but the active-member count remained two until
+  acceptance, as expected.
+- The secondary account signed in successfully, but its workspace switcher continued
+  to show `Create Facility Account`; no in-app pending-invitation acceptance path was
+  exposed. The invitation therefore still requires the delivered recipient email.
+- The Owner created `[QA cross-role 2026-07-22] Verify shared task persistence`, due
+  2026-07-23, and assigned it to the existing Manager. The exact task detail reloaded
+  with status `OPEN`, the Manager assignment, and the Owner mutation controls intact.
+- Genuine in-app Browser screenshot and DOM evidence were captured at
+  `2026-07-22T22:17:21.853Z`. No task completion, role change, deletion, or operational
+  grow action was performed.
+
+The next production acceptance action is to open the delivered invitation in the
+secondary account mailbox or supply credentials for the existing Manager, Staff, and
+Viewer accounts. The same QA task must then be opened as Manager, completed by Staff,
+observed as read-only by Viewer, and reopened by Owner for final audit confirmation.
+The connected Gmail mailbox did not contain the recipient mailbox, and the installed
+Chrome session was unavailable, so those role results are not inferred.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to
@@ -66,6 +95,8 @@ CI evidence:
   production-retested.
 - Owner final review, forced backend authorization evidence for restricted mutations,
   mobile/accessibility passes, and final-SHA screenshots/video remain open.
+- Production Owner task creation and assignment now pass, but Manager/Staff/Viewer
+  production sessions remain blocked on invitation acceptance or separate credentials.
 - Public, valid Personal Free, Personal Pro, Commercial, and independent outside-user
   closure remain tracked separately. Email and Stripe delivery evidence still depends
   on production configuration and authorized test transactions.
