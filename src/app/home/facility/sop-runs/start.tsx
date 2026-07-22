@@ -38,6 +38,7 @@ export default function FacilitySopRunsStartRoute() {
     params.templateId ? String(params.templateId) : ""
   );
   const [notes, setNotes] = useState("");
+  const [oneOffSteps, setOneOffSteps] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -48,13 +49,30 @@ export default function FacilitySopRunsStartRoute() {
   function selectTemplate(template: SOPTemplate, idx: number) {
     const id = pickTemplateId(template, idx);
     setTemplateId(id);
+    setOneOffSteps("");
     if (!title.trim()) setTitle(`Run: ${String(template.title || "SOP Template")}`);
     setMsg(null);
   }
 
+  const parsedOneOffSteps = oneOffSteps
+    .split(/\r?\n/)
+    .map((step) => step.replace(/^[-*0-9.)\s]+/, "").trim())
+    .filter(Boolean);
+  const canStart = Boolean(
+    facilityId && title.trim() && (templateId || parsedOneOffSteps.length) && !saving
+  );
+
   const submit = async () => {
     if (!facilityId) {
       setMsg("Select a facility first.");
+      return;
+    }
+    if (!title.trim()) {
+      setMsg("Run title is required.");
+      return;
+    }
+    if (!templateId && !parsedOneOffSteps.length) {
+      setMsg("Choose an SOP template or add at least one one-off checklist step.");
       return;
     }
     if (saving) return;
@@ -62,9 +80,10 @@ export default function FacilitySopRunsStartRoute() {
     setMsg(null);
     try {
       const body = {
-        title: title.trim() || "Untitled SOP Run",
+        title: title.trim(),
         templateId: templateId.trim() || undefined,
-        notes: notes.trim() || undefined
+        notes: notes.trim() || undefined,
+        steps: templateId ? undefined : parsedOneOffSteps.map((step) => ({ title: step }))
       };
       const res = await apiRequest<CreateResponse>(endpoints.sopRuns(facilityId), {
         method: "POST",
@@ -92,8 +111,8 @@ export default function FacilitySopRunsStartRoute() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.h1}>Start SOP Run</Text>
         <Text style={styles.sub}>
-          Choose a preset or start a one-off run. Completed SOP runs become inspection
-          evidence in facility exports.
+          Choose an approved template, or enter one checklist step per line for a one-off
+          run. Completed checklist evidence becomes part of facility exports.
         </Text>
         <TextInput
           accessibilityLabel="SOP run title"
@@ -138,9 +157,20 @@ export default function FacilitySopRunsStartRoute() {
               );
             })
           ) : !isLoading ? (
-            <Text style={styles.muted}>
-              No SOP templates yet. You can still start a run.
-            </Text>
+            <View style={styles.emptyPanel}>
+              <Text style={styles.muted}>
+                No SOP templates yet. Add one in the SOP Library or enter one-off steps
+                below.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open SOP Library from start run"
+                onPress={() => router.push("/home/facility/sop-runs/presets")}
+                style={styles.libraryBtn}
+              >
+                <Text style={styles.libraryBtnText}>Open SOP Library</Text>
+              </Pressable>
+            </View>
           ) : null}
           {templateId ? (
             <Pressable
@@ -153,6 +183,16 @@ export default function FacilitySopRunsStartRoute() {
             </Pressable>
           ) : null}
         </View>
+        {!templateId ? (
+          <TextInput
+            accessibilityLabel="One-off SOP checklist steps"
+            style={[styles.input, styles.steps]}
+            placeholder={"One step per line\nInspect room\nRecord measurements"}
+            value={oneOffSteps}
+            onChangeText={setOneOffSteps}
+            multiline
+          />
+        ) : null}
         <TextInput
           accessibilityLabel="SOP run notes"
           style={[styles.input, styles.notes]}
@@ -164,8 +204,10 @@ export default function FacilitySopRunsStartRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Start SOP run"
+          accessibilityState={{ disabled: !canStart }}
+          disabled={!canStart}
           onPress={submit}
-          style={styles.btn}
+          style={[styles.btn, !canStart && styles.disabled]}
         >
           <Text style={styles.btnText}>{saving ? "Starting..." : "Start Run"}</Text>
         </Pressable>
@@ -208,6 +250,16 @@ const styles = StyleSheet.create({
   templateTitle: { color: "#111827", fontWeight: "900" },
   templateBody: { color: "#475569", fontSize: 12, lineHeight: 18, marginTop: 4 },
   muted: { color: "#64748b", fontWeight: "700" },
+  emptyPanel: { gap: 8 },
+  libraryBtn: {
+    alignSelf: "flex-start",
+    borderColor: "#cbd5e1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  libraryBtnText: { color: "#334155", fontWeight: "900" },
   clearBtn: {
     alignSelf: "flex-start",
     borderWidth: 1,
@@ -219,6 +271,7 @@ const styles = StyleSheet.create({
   },
   clearBtnText: { color: "#334155", fontWeight: "900" },
   notes: { minHeight: 90, textAlignVertical: "top" },
+  steps: { minHeight: 110, textAlignVertical: "top" },
   btn: {
     backgroundColor: "#16a34a",
     borderRadius: radius.card,
@@ -226,5 +279,6 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   btnText: { color: "#fff", fontWeight: "800" },
+  disabled: { opacity: 0.45 },
   msg: { color: "#b91c1c", fontWeight: "700" }
 });
