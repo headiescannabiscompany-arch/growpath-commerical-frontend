@@ -19,6 +19,10 @@ function addDaysKey(days: number) {
 }
 
 jest.mock("expo-router", () => ({
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    return React.cloneElement(children, { onPress: () => mockPush(href) });
+  },
   useRouter: () => mockRouter,
   useLocalSearchParams: () => ({})
 }));
@@ -67,6 +71,9 @@ jest.mock("@/features/facility/useFacilityRooms", () => ({
   useFacilityRooms: () => ({
     rooms: [
       { id: "clone-room", name: "Clone room" },
+      { id: "flower-1", name: "Flower room" },
+      { id: "flower-2", name: "Flower room 2" },
+      { id: "mix-room", name: "Mix room" },
       { id: "media-room", name: "Media room" },
       { id: "training-room", name: "Training room" }
     ],
@@ -152,7 +159,10 @@ describe("FacilityTasksRoute", () => {
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Open task Scout Flower Room"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/facility/tasks/task-1");
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/tasks/[id]",
+      params: { id: "task-1" }
+    });
   });
 
   it("creates source-linked facility tasks with room, proof, and approval context", async () => {
@@ -160,16 +170,21 @@ describe("FacilityTasksRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
-    expect(screen.getByText(/Source: sensor alert alert-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: flower-1/)).toBeTruthy();
+    expect(screen.getAllByText(/Source: sensor alert/)).toHaveLength(2);
+    expect(screen.queryByText(/alert-1/)).toBeNull();
+    expect(screen.getByText(/Assignee: Alex Grower/)).toBeTruthy();
+    expect(screen.queryByText(/user-1/)).toBeNull();
+    expect(screen.getAllByText(/Room: Flower room/)).toHaveLength(2);
     expect(screen.getByText("Review production batch")).toBeTruthy();
-    expect(screen.getByText(/Source: product batch batch-linked-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: mix-room/)).toBeTruthy();
+    expect(screen.getByText(/Source: product batch/)).toBeTruthy();
+    expect(screen.queryByText(/batch-linked-1/)).toBeNull();
+    expect(screen.getByText(/Room: Mix room/)).toBeTruthy();
     expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
-    expect(screen.getByText(/Source: sensor alert sensor-alert-linked-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: flower-2/)).toBeTruthy();
+    expect(screen.queryByText(/sensor-alert-linked-1/)).toBeNull();
+    expect(screen.getByText(/Room: Flower room 2/)).toBeTruthy();
     expect(screen.getByText("Prepare facility outreach campaign")).toBeTruthy();
-    expect(screen.getByText(/Source: feed campaign campaign-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Source: feed campaign/)).toBeTruthy();
+    expect(screen.queryByText(/campaign-linked-1/)).toBeNull();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
 
