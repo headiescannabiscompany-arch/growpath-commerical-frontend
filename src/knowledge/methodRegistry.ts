@@ -482,6 +482,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed non-submitting Facility AI readiness presets",
       "notification-backed Facility alerts with supported source and task actions",
       "named Facility task assignments, rooms, and record summaries",
+      "readable Facility inventory details with confirmed mistaken-record removal",
       "template-backed or owner-entered SOP checklists",
       "human-readable two-run SOP comparison selection",
       "review-complete and mutation-locked SOP evidence runs",
@@ -494,6 +495,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never hide a confirmed Facility task write behind a cached or stale queue response.",
       "Never make Facility outreach operators type raw course, live-event, or Forum identifiers when readable public records are available.",
       "Never make Facility task operators work from raw database fields, user IDs, room IDs, or JSON records.",
+      "Never expose raw Facility inventory envelopes or internal identifiers as the primary item detail, or leave authorized operators unable to remove a mistaken record.",
       "Never expose raw source-object IDs in Facility task queue summaries or route a task row anywhere except its selected task detail.",
       "Never invite saved account credentials into an AI prompt or parental-control PIN field.",
       "Never use an internal Facility identifier as the visible workspace name, operational context label, or downloaded evidence filename.",
@@ -507,7 +509,13 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
-    ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]
+    [
+      "facility-rooms",
+      "facility-grows",
+      "facility-tasks",
+      "facility-inventory",
+      "forum-qna"
+    ]
   )
 ];
 
