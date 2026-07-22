@@ -343,11 +343,18 @@ export function applyPlanCapabilities(
 
 export function resolveEntitlementsMode(
   ctx: any,
-  preferredMode: PreferredMode | null
+  preferredMode: PreferredMode | null,
+  effectivePlan: string | null = null
 ): EntitlementsMode {
   const baseMode = pickMode(ctx?.mode);
   const canFacility = hasFacilityAccess(ctx);
-  const canCommercial = hasCommercialAccess(ctx);
+  const normalizedPlan = String(effectivePlan || "")
+    .trim()
+    .toLowerCase();
+  const canCommercial =
+    hasCommercialAccess(ctx) ||
+    normalizedPlan === "commercial" ||
+    normalizedPlan === "facility";
 
   if (preferredMode === "facility" && canFacility) return "facility";
   if (preferredMode === "commercial" && canCommercial) return "commercial";
@@ -414,7 +421,7 @@ function applyServerCtx(
     effectiveCtx?.user?.subscriptionStatus ??
     user?.subscriptionStatus;
   const plan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
-  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode);
+  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode, plan);
   const mode = resolveWorkspaceMode(requestedPlan, resolvedMode, preferredMode);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);

@@ -251,6 +251,26 @@ describe("entitlement mode access", () => {
     ).toBe("commercial");
   });
 
+  it("grants preferred Commercial mode from an active paid Facility plan", () => {
+    expect(
+      resolveEntitlementsMode(
+        { mode: "facility", facilityId: "facility-1", facilityRole: "OWNER" },
+        "commercial",
+        "facility"
+      )
+    ).toBe("commercial");
+  });
+
+  it("rejects preferred Commercial mode after Facility access becomes inactive", () => {
+    expect(
+      resolveEntitlementsMode(
+        { mode: "facility", facilityId: "facility-1", facilityRole: "OWNER" },
+        "commercial",
+        "free"
+      )
+    ).toBe("facility");
+  });
+
   it("retains Facility mode from active facility context", () => {
     expect(
       resolveEntitlementsMode(
