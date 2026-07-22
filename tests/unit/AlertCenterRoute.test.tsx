@@ -617,7 +617,8 @@ describe("AlertCenterRoute", () => {
               read: false,
               data: {
                 facilityId: "facility-1",
-                taskId: "task-7"
+                taskId: "task-7",
+                assignedToUserId: "6a563b7f2fb9f669d2319f8a"
               },
               source: { model: "Task", id: "task-7" },
               createdAt: new Date().toISOString()
@@ -650,6 +651,12 @@ describe("AlertCenterRoute", () => {
     expect(screen.queryByLabelText("Assign alert")).toBeNull();
     expect(screen.queryByLabelText("Snooze alert")).toBeNull();
     expect(screen.queryByText("Ask AI")).toBeNull();
+    expect(screen.queryByText(/Assigned to 6a563b7f2fb9f669d2319f8a/)).toBeNull();
+    expect(
+      screen.getByText(
+        "Review live notification records, mark them read, or create source-linked follow-up tasks."
+      )
+    ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/tasks/task-7")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create task from alert"));

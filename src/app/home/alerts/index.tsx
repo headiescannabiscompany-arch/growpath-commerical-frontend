@@ -88,6 +88,26 @@ function idOf(alert: AlertRow) {
   return String(alert.id || alert._id || "");
 }
 
+function readableAssignee(alert: AlertRow) {
+  const assignedObject =
+    alert.assignedTo && typeof alert.assignedTo === "object" ? alert.assignedTo : {};
+  const preferred = [
+    alert.assignedToName,
+    alert.assigneeName,
+    alert.assignedToEmail,
+    alert.assigneeEmail,
+    assignedObject.displayName,
+    assignedObject.name,
+    assignedObject.email,
+    typeof alert.assignedTo === "string" ? alert.assignedTo : ""
+  ].find((value) => value !== undefined && value !== null && String(value).trim());
+  if (preferred && !/^\s*[a-f0-9]{24}\s*$/i.test(String(preferred))) {
+    return String(preferred).trim();
+  }
+  const identifier = String(alert.assignedToUserId || "").trim();
+  return identifier.includes("@") ? identifier : "";
+}
+
 function isResolved(alert: AlertRow) {
   return ["resolved", "dismissed"].includes(String(alert.status || "").toLowerCase());
 }
@@ -422,6 +442,7 @@ export default function AlertCenterRoute() {
     const href = sourceHref(alert);
     const aiHref = askAiHref(alert);
     const notificationBacked = Boolean(alert._notificationBacked);
+    const assignedToLabel = readableAssignee(alert);
     const isFocused = Boolean(
       focusedAlertId &&
       (focusedAlertId === idOf(alert) || focusedAlertId === String(alert.sourceId || ""))
@@ -450,10 +471,8 @@ export default function AlertCenterRoute() {
             .filter(Boolean)
             .join(" | ")}
         </Text>
-        {alert.assignedToUserId || alert.assignedTo ? (
-          <Text style={styles.meta}>
-            Assigned to {String(alert.assignedToUserId || alert.assignedTo)}
-          </Text>
+        {assignedToLabel ? (
+          <Text style={styles.meta}>Assigned to {assignedToLabel}</Text>
         ) : null}
         <View style={styles.actionRow}>
           {!notificationBacked ? (
@@ -545,8 +564,9 @@ export default function AlertCenterRoute() {
       <Text style={styles.kicker}>GrowPath alerts</Text>
       <Text style={styles.title}>Alert Center</Text>
       <Text style={styles.subtitle}>
-        Resolve, snooze, or turn alerts into source-linked tasks across storefront,
-        product, course, live, grow, sensor, and facility workflows.
+        {sourceMode === "notifications"
+          ? "Review live notification records, mark them read, or create source-linked follow-up tasks."
+          : "Resolve, snooze, or turn alerts into source-linked tasks across storefront, product, course, live, grow, sensor, and facility workflows."}
       </Text>
       <View style={styles.metricGrid}>
         {alertStats.map((item) => (
@@ -588,7 +608,7 @@ export default function AlertCenterRoute() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Assign created task to user id or email"
+          placeholder="Assign created task to team member email"
           value={assignee}
           onChangeText={setAssignee}
           accessibilityLabel="Alert task assignee"
