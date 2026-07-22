@@ -2354,7 +2354,28 @@ function calculateCloneRooting(input = {}) {
 }
 
 function calculateRunComparison(input = {}) {
-  const runs = Array.isArray(input.runs) ? input.runs : [];
+  const suppliedRuns = Array.isArray(input.runs) ? input.runs : [];
+  const legacySelections = suppliedRuns.length
+    ? []
+    : parseList(input.grows)
+        .map((grow, index) => {
+          const name = String(
+            typeof grow === "string" ? grow : grow?.name || grow?.label || ""
+          ).trim();
+          if (!name) return null;
+          return {
+            id: `legacy_selection_${index + 1}`,
+            growId: `legacy_selection_${index + 1}`,
+            name,
+            missingFields: [
+              "owned saved-history evidence was not loaded; reopen Run Comparison and select saved grows"
+            ],
+            evidenceInventory: {}
+          };
+        })
+        .filter(Boolean);
+  const runs = suppliedRuns.length ? suppliedRuns : legacySelections;
+  const legacySelectionOnly = !suppliedRuns.length && legacySelections.length >= 2;
   if (runs.length < 2) throw new Error("At least two saved grows are required");
   if (runs.length > 5) throw new Error("A maximum of five saved grows can be compared");
   const valueOrNull = (value) => {
@@ -2670,11 +2691,13 @@ function calculateRunComparison(input = {}) {
     }
   }
   const sharedMetricCount = comparedMetricKeys.size;
-  const evidenceStatus = sharedMetricCount
-    ? missingData.length
-      ? "limited_comparison"
-      : "measured_comparison"
-    : "insufficient_comparable_evidence";
+  const evidenceStatus = legacySelectionOnly
+    ? "selection_only_requires_history"
+    : sharedMetricCount
+      ? missingData.length
+        ? "limited_comparison"
+        : "measured_comparison"
+      : "insufficient_comparable_evidence";
   const confidence =
     sharedMetricCount >= 5 && sameCrop !== false
       ? "moderate"
@@ -2682,6 +2705,11 @@ function calculateRunComparison(input = {}) {
         ? "low_to_moderate"
         : "low";
   const limitations = [
+    ...(legacySelectionOnly
+      ? [
+          "Only grow labels were supplied. No owned logs, tasks, diagnoses, ToolRuns, module records or telemetry were loaded for comparison."
+        ]
+      : []),
     "This is an observational comparison of saved records and cannot establish causation.",
     "Missing records remain unknown and are not converted to zero.",
     "One comparison cannot establish a universal cultivar, environment, nutrition, irrigation or post-harvest method.",
@@ -2705,6 +2733,11 @@ function calculateRunComparison(input = {}) {
       : [])
   ];
   const recommendations = [
+    ...(legacySelectionOnly
+      ? [
+          "Open Run Comparison and select two to five saved grows so GrowPath can load owned history before reporting differences."
+        ]
+      : []),
     "Review the saved evidence inventory before adopting any next-run change.",
     "Repeat one controlled change at an equivalent stage and preserve the same measurement method.",
     "Record plant count, cultivar/line, yield with unit, final-quality rubric, issue severity, task completion, environment and dry/cure outcome for the next comparison.",
@@ -2802,18 +2835,23 @@ function calculateRunComparison(input = {}) {
     tasksToCreate,
     nextRunTasks: tasksToCreate,
     methodIds: ["run-comparison"],
-    sourceIds: ["growpath-method", "user-observation"],
-    evidenceUsed: [
-      "owned saved grow records",
-      "grow logs",
-      "tasks",
-      "ToolRuns and module records",
-      "diagnoses",
-      "non-synthetic telemetry when linked"
-    ],
+    sourceIds: legacySelectionOnly
+      ? ["growpath-method"]
+      : ["growpath-method", "user-observation"],
+    evidenceUsed: legacySelectionOnly
+      ? ["selected grow labels only; saved history was not loaded"]
+      : [
+          "owned saved grow records",
+          "grow logs",
+          "tasks",
+          "ToolRuns and module records",
+          "diagnoses",
+          "non-synthetic telemetry when linked"
+        ],
     warnings: limitations,
-    summary:
-      evidenceStatus === "insufficient_comparable_evidence"
+    summary: legacySelectionOnly
+      ? "The selection was saved, but no comparison was performed. Reopen Run Comparison and select saved grows to load owned evidence."
+      : evidenceStatus === "insufficient_comparable_evidence"
         ? "The selected grows were saved, but they do not yet share enough comparable evidence for a measured difference."
         : `${keyDifferences.length} recorded difference(s) were found across ${sharedMetricCount} comparable metric(s); associations are not proof of cause.`
   };

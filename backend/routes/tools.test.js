@@ -1058,6 +1058,14 @@ describe("Tools Router (tools.js)", () => {
           ]
         })
     );
+    const legacySelection = await authed(
+      request(app)
+        .post("/api/tools/run-comparison")
+        .send({
+          growId: "grow_1",
+          grows: ["Run 1", "Run 2"]
+        })
+    );
     const calendar = await authed(
       request(app)
         .post("/api/tools/auto-grow-calendar")
@@ -1112,6 +1120,14 @@ describe("Tools Router (tools.js)", () => {
       ])
     );
     expect(comparison.body.outputs.methodIds).toEqual(["run-comparison"]);
+    expect(legacySelection.status).toBe(201);
+    expect(legacySelection.body.outputs).toMatchObject({
+      evidenceStatus: "selection_only_requires_history",
+      objectiveLeader: null,
+      sourceIds: ["growpath-method"]
+    });
+    expect(legacySelection.body.outputs.bestRun).toBeUndefined();
+    expect(legacySelection.body.outputs.summary).toMatch(/no comparison was performed/i);
     expect(calendar.status).toBe(201);
     expect(calendar.body.outputs.stageTimeline).toMatchObject({
       startDate: "2026-07-01",
