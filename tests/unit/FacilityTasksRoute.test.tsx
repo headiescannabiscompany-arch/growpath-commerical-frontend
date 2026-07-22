@@ -219,6 +219,27 @@ describe("FacilityTasksRoute", () => {
     );
   });
 
+  it("keeps a created facility task visible when the immediate list response is stale", async () => {
+    mockGetFacilityTasks.mockResolvedValue([]);
+    mockCreateTask.mockResolvedValueOnce({
+      id: "task-created",
+      title: "Verify room persistence",
+      status: "OPEN"
+    });
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(mockGetFacilityTasks).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task title"),
+      "Verify room persistence"
+    );
+    fireEvent.press(screen.getByLabelText("Create facility task"));
+
+    await waitFor(() => expect(mockGetFacilityTasks).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("Verify room persistence")).toBeTruthy();
+  });
+
   it("creates facility tasks linked to feed campaigns", async () => {
     const screen = render(<FacilityTasksRoute />);
 

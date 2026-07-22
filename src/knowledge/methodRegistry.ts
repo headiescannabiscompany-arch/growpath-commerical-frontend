@@ -472,11 +472,13 @@ export const methodRegistry: GrowPathMethod[] = [
       "read-only integration state",
       "reviewed device mapping",
       "record-backed facility analytics",
+      "read-after-write reconciled facility task queues",
       "separate seed-readiness and post-seed QA evidence"
     ],
     [
       "A selected facility and authorization are required.",
       "Local previews require explicit preview intent; bare routes preserve real authenticated Facility sessions.",
+      "Never hide a confirmed Facility task write behind a cached or stale queue response.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
     ["facility-rooms", "facility-grows", "facility-tasks", "forum-qna"]

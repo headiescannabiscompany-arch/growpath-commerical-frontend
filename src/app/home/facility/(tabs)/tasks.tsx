@@ -84,6 +84,15 @@ function pickId(x: AnyRec): string {
   return String(x?.id ?? x?._id ?? x?.taskId ?? x?.uuid ?? "");
 }
 
+function mergeTaskQueue(fetched: AnyRec[], preserved: AnyRec[] = []) {
+  const fetchedIds = new Set(fetched.map(pickId).filter(Boolean));
+  const missingPreserved = preserved.filter((task) => {
+    const id = pickId(task);
+    return id && !fetchedIds.has(id);
+  });
+  return [...missingPreserved, ...fetched];
+}
+
 function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task");
 }
@@ -310,7 +319,7 @@ export default function FacilityTasksRoute() {
   }, [contextGrowId, contextRoomId]);
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
+    async (opts?: { refresh?: boolean; preserve?: AnyRec[] }) => {
       if (!facilityId) return;
 
       if (opts?.refresh) setRefreshing(true);
@@ -325,7 +334,7 @@ export default function FacilityTasksRoute() {
           }),
           canAssign ? listTeamMembers(facilityId) : Promise.resolve([])
         ]);
-        setItems(asArray(res));
+        setItems(mergeTaskQueue(asArray(res), opts?.preserve));
         setMembers(team);
       } catch (e) {
         handleApiError(e);
@@ -354,7 +363,7 @@ export default function FacilityTasksRoute() {
     setCreating(true);
     try {
       clearError();
-      await createFacilityTask(facilityId, {
+      const createdTask = await createFacilityTask(facilityId, {
         title,
         notes: newNotes.trim() || undefined,
         dueDate: newDueDate.trim() || undefined,
@@ -373,6 +382,13 @@ export default function FacilityTasksRoute() {
         requiresApproval: newRequiresApproval || undefined,
         scope: "facility"
       });
+      const preservedTask =
+        createdTask && typeof createdTask === "object" && pickId(createdTask)
+          ? (createdTask as AnyRec)
+          : null;
+      if (preservedTask) {
+        setItems((current) => mergeTaskQueue(current, [preservedTask]));
+      }
       setNewTitle("");
       setNewNotes("");
       setNewDueDate("");
@@ -385,7 +401,10 @@ export default function FacilityTasksRoute() {
       setNewGrowId(contextGrowId);
       setNewRequiresProof(false);
       setNewRequiresApproval(false);
-      await load({ refresh: true });
+      await load({
+        refresh: true,
+        preserve: preservedTask ? [preservedTask] : undefined
+      });
     } catch (e) {
       handleApiError(e);
     } finally {

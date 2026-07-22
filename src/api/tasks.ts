@@ -65,17 +65,16 @@ export async function getFacilityTasks(
   facilityId: string,
   filters: FacilityTaskFilters = {}
 ): Promise<Task[]> {
-  const query = Object.entries(filters)
-    .filter(([, value]) => value != null && String(value).trim())
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(String(value).trim())}`
-    )
-    .join("&");
-  const listRes = await apiRequest(
-    `${endpoints.tasks(facilityId)}${query ? `?${query}` : ""}`,
-    { method: "GET" }
+  const params = Object.fromEntries(
+    Object.entries(filters)
+      .filter(([, value]) => value != null && String(value).trim())
+      .map(([key, value]) => [key, String(value).trim()])
   );
+  const listRes = await apiRequest(endpoints.tasks(facilityId), {
+    method: "GET",
+    cache: "no-store",
+    params: withFreshnessParam(params)
+  });
   return normalizeTaskList(listRes);
 }
 

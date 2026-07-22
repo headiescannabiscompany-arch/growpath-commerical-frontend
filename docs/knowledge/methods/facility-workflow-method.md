@@ -12,6 +12,8 @@ Facility Forum reports may enter the shared platform moderation queue without ch
 
 Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, tasks, inventory, sensors, audit and compliance-style records. It is not the commercial storefront workspace and must not pretend to work without a selected facility.
 
+Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
+
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
 Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.

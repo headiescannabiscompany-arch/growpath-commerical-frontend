@@ -103,7 +103,9 @@ describe("facility workflow API wrappers", () => {
     });
 
     expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/facility/facility-1/tasks", {
-      method: "GET"
+      method: "GET",
+      cache: "no-store",
+      params: { _fresh: expect.any(String) }
     });
     expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/facility/facility-1/tasks", {
       method: "POST",
