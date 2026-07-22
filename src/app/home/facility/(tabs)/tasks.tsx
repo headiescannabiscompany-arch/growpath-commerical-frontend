@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
@@ -144,25 +144,59 @@ function sourceReference(x: AnyRec): string {
   return value ? String(value) : "";
 }
 
-function pickSubtitle(x: AnyRec): string {
+function memberId(member: TeamMember) {
+  const record = member as AnyRec;
+  return String(record?.userId ?? record?.id ?? record?._id ?? "");
+}
+
+function memberName(member: TeamMember) {
+  const record = member as AnyRec;
+  return String(
+    record?.name ??
+      record?.displayName ??
+      record?.user?.name ??
+      record?.email ??
+      "Team member"
+  );
+}
+
+function pickSubtitle(
+  x: AnyRec,
+  rooms: AnyRec[] = [],
+  members: TeamMember[] = []
+): string {
   const due = x?.dueAt ?? x?.dueDate ?? x?.due;
   const status = x?.status ?? x?.state;
-  const assignee = x?.assigneeName ?? x?.assignee ?? x?.assignedTo;
+  const assigneeReference = x?.assignedToUserId ?? x?.assignee ?? x?.assignedTo;
+  const assigneeId =
+    assigneeReference && typeof assigneeReference === "object"
+      ? pickId(assigneeReference)
+      : String(assigneeReference ?? "");
+  const assignedMember = members.find((member) => memberId(member) === assigneeId);
+  const assignee =
+    x?.assigneeName ??
+    x?.assignedTo?.name ??
+    x?.assignee?.name ??
+    (assignedMember
+      ? memberName(assignedMember)
+      : assigneeId
+        ? "Assigned team member"
+        : "");
   const sourceType = x?.sourceType;
-  const sourceObjectId = sourceReference(x);
   const roomId = x?.roomId ?? x?.linkedRoomId;
+  const room = rooms.find((candidate) => rowId(candidate) === String(roomId ?? ""));
   const proof = x?.requiresProof ? "Proof required" : "";
   const approval = x?.requiresApproval ? "Approval required" : "";
 
-  const a = due ? `Due: ${String(due)}` : "";
+  const a = due ? `Due: ${dateKey(due)}` : "";
   const b = status ? `Status: ${String(status)}` : "";
   const c = assignee ? `Assignee: ${String(assignee)}` : "";
   const d = sourceType
-    ? `Source: ${String(sourceType).replace(/_/g, " ")}${sourceObjectId ? ` ${String(sourceObjectId)}` : ""}`
-    : sourceObjectId
-      ? `Source: ${sourceObjectId}`
+    ? `Source: ${String(sourceType).replace(/_/g, " ")}`
+    : sourceReference(x)
+      ? "Source: linked record"
       : "";
-  const e = roomId ? `Room: ${String(roomId)}` : "";
+  const e = roomId ? `Room: ${room ? rowName(room, "Linked room") : "Linked room"}` : "";
 
   return [a, b, c, d, e, proof, approval].filter(Boolean).join(" -  ");
 }
@@ -845,17 +879,12 @@ export default function FacilityTasksRoute() {
           renderItem={({ item }) => {
             const id = pickId(item);
             const title = pickTitle(item);
-            const subtitle = pickSubtitle(item);
+            const subtitle = pickSubtitle(item, rooms, members);
 
-            return (
+            const row = (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole={id ? "link" : "button"}
                 accessibilityLabel={`Open task ${title}`}
-                onPress={() => {
-                  if (id) {
-                    router.push(`/home/facility/tasks/${encodeURIComponent(id)}` as any);
-                  }
-                }}
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
                 <View style={{ flex: 1 }}>
@@ -870,6 +899,17 @@ export default function FacilityTasksRoute() {
                 </View>
                 {id ? <Text style={styles.chev}>{">"}</Text> : null}
               </Pressable>
+            );
+
+            return id ? (
+              <Link
+                href={{ pathname: "/home/facility/tasks/[id]", params: { id } }}
+                asChild
+              >
+                {row}
+              </Link>
+            ) : (
+              row
             );
           }}
         />

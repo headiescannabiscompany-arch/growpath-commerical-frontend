@@ -14,7 +14,7 @@ Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, task
 
 Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
 
-Facility task detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Raw database fields, Facility IDs, user IDs, room IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
+Facility task queues and detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Queue rows link directly to the selected task through a stable, accessible route. Raw database fields, Facility IDs, user IDs, room IDs, source-object IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
 
 Facility AI prompts and parental-control PIN fields must opt out of account-credential autofill. The AI composer is ordinary user-authored text, and the parental PIN is a separate one-time-style control value; neither field may invite a browser or device password manager to insert a saved GrowPath email or password.
 
