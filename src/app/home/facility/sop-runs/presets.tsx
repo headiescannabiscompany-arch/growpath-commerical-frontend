@@ -37,6 +37,10 @@ export default function FacilitySopRunsPresetsRoute() {
       setMsg("Template title is required.");
       return;
     }
+    if (!content.trim()) {
+      setMsg("Add at least one procedure step, one per line.");
+      return;
+    }
     setMsg(null);
     try {
       await createTemplate({ title: title.trim(), content: content.trim() || undefined });
@@ -47,6 +51,7 @@ export default function FacilitySopRunsPresetsRoute() {
       setMsg(getErrorMessage(e, "Failed to create template"));
     }
   };
+  const canCreate = Boolean(title.trim() && content.trim() && !creating);
 
   return (
     <ScreenBoundary
@@ -80,8 +85,10 @@ export default function FacilitySopRunsPresetsRoute() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Create SOP preset"
+              accessibilityState={{ disabled: !canCreate }}
+              disabled={!canCreate}
               onPress={create}
-              style={styles.btn}
+              style={[styles.btn, !canCreate && styles.disabled]}
             >
               <Text style={styles.btnText}>
                 {creating ? "Saving..." : "Create Preset"}
@@ -94,6 +101,14 @@ export default function FacilitySopRunsPresetsRoute() {
         <FlatList
           data={templates}
           keyExtractor={pickId}
+          ListEmptyComponent={
+            !isLoading ? (
+              <Text style={styles.empty}>
+                No SOP templates yet. Add a title and one procedure step per line to
+                create the first reusable checklist.
+              </Text>
+            ) : null
+          }
           renderItem={({ item, index }) => {
             const id = pickId(item, index);
             const titleText = String(item?.title || "Untitled Template");
@@ -139,6 +154,8 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   btnText: { color: "#fff", fontWeight: "800" },
+  disabled: { opacity: 0.45 },
+  empty: { color: "#64748b", fontWeight: "700", paddingVertical: 18 },
   msg: { color: "#b91c1c", fontWeight: "700" },
   card: {
     borderWidth: 1,
