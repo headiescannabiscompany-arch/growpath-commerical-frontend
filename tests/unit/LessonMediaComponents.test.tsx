@@ -32,6 +32,24 @@ describe("lesson media authoring and playback", () => {
     );
   });
 
+  it("does not show invalid embed code as publish-ready media", () => {
+    const value = {
+      ...emptyLessonMediaDraft("youtube"),
+      originalUrl: '<iframe src="https://www.youtube.com/embed/QT7vv46368M"></iframe>'
+    };
+    const screen = render(
+      <LessonMediaSourceEditor value={value} onChange={jest.fn()} />
+    );
+
+    expect(
+      screen.getByText("Paste a video page URL, not iframe, embed, script, or HTML code.")
+    ).toBeTruthy();
+    expect(
+      screen.queryByText("Video source is ready for course publishing.")
+    ).toBeNull();
+    expect(screen.queryByLabelText("Current availability: Available")).toBeNull();
+  });
+
   it("requires learner consent before loading a third-party player", () => {
     const screen = render(
       <LessonMediaCard
