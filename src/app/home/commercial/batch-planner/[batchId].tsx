@@ -23,7 +23,12 @@ function batchTitle(batch: SoilNutrientBatch | null) {
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
-  const display = String(value || "").trim();
+  const display =
+    value == null || value === ""
+      ? ""
+      : typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value).trim();
   if (!display) return null;
   return (
     <View style={styles.detailRow}>
@@ -215,7 +220,51 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             value={[batch?.batchVolume, batch?.batchVolumeUnit].filter(Boolean).join(" ")}
           />
           <DetailRow label="Estimated cost" value={batch?.estimatedCost} />
+          <DetailRow
+            label="Cost evidence"
+            value={batch?.costEstimate?.status || "Unknown"}
+          />
+          <DetailRow label="Bag size" value={batch?.bagSize ?? "Unknown"} />
+          <DetailRow label="Bag count" value={batch?.bagCount ?? "Unknown"} />
+          <DetailRow
+            label="Label estimate"
+            value={batch?.guaranteedAnalysisEstimate?.status || "Unknown"}
+          />
+          <DetailRow label="Linked ToolRun" value={batch?.linkedToolRunId} />
         </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Calculation Evidence & Inventory Review</Text>
+        <Text style={styles.body}>
+          Missing evidence stays unknown. Inventory shown here is a review snapshot; the
+          batch calculation did not decrement stock or assign lots.
+        </Text>
+        <View style={styles.detailGrid}>
+          <DetailRow label="Label N-P2O5-K2O" value={batch?.guaranteedAnalysisEstimate} />
+          <DetailRow label="Known/complete cost" value={batch?.costEstimate} />
+          <DetailRow
+            label="Ingredient pulls"
+            value={batch?.ingredientPullSheet?.length ?? 0}
+          />
+          <DetailRow
+            label="Inventory shortages"
+            value={
+              batch?.inventoryReview?.filter((row) => row.status === "shortage").length ??
+              0
+            }
+          />
+        </View>
+        {(batch?.warnings || []).map((warning, index) => (
+          <Text key={`warning-${index}`} style={styles.body}>
+            Warning: {warning}
+          </Text>
+        ))}
+        {(batch?.missingInformation || []).map((item, index) => (
+          <Text key={`missing-${index}`} style={styles.muted}>
+            Missing: {item}
+          </Text>
+        ))}
       </AppCard>
 
       <AppCard>
