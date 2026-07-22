@@ -8,7 +8,7 @@ export type FacilityReport = {
   };
   compliance: {
     totalLogs: number;
-    missedLast7d: number;
+    missedLast7d: number | null;
     byType: Record<string, number>;
   };
   automation: {
