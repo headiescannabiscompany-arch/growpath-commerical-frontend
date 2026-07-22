@@ -118,9 +118,26 @@ export function formatMissedComplianceCount(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) ? value : "Not tracked";
 }
 
+export function facilityComplianceExportFilename(
+  facilityName: unknown,
+  facilityId?: string | null
+) {
+  const candidate = String(facilityName || "").trim();
+  const readableName =
+    candidate && candidate !== facilityId ? candidate : "selected-facility";
+  const slug = readableName
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `${slug || "selected-facility"}-compliance-export.json`;
+}
+
 export default function FacilityReportsTab() {
   const router = useRouter();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
   const handleApiError = useMemo(
@@ -173,7 +190,10 @@ export default function FacilityReportsTab() {
     try {
       clearError();
       const packet = await getFacilityComplianceExport(facilityId);
-      const filename = `facility-${facilityId}-compliance-export.json`;
+      const filename = facilityComplianceExportFilename(
+        selectedFacility?.name,
+        facilityId
+      );
       const json = JSON.stringify(packet, null, 2);
       const counts = packet.counts || {};
       const totalRecords = Object.values(counts).reduce(

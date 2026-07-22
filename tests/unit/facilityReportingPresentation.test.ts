@@ -2,7 +2,10 @@ import {
   formatFacilityAuditAction,
   formatFacilityAuditDetails
 } from "@/utils/facilityAuditPresentation";
-import { formatMissedComplianceCount } from "@/app/home/facility/(tabs)/reports";
+import {
+  facilityComplianceExportFilename,
+  formatMissedComplianceCount
+} from "@/app/home/facility/(tabs)/reports";
 
 describe("Facility reporting presentation", () => {
   it("summarizes structured audit details without exposing internal room ids", () => {
@@ -27,5 +30,20 @@ describe("Facility reporting presentation", () => {
     expect(formatMissedComplianceCount(null)).toBe("Not tracked");
     expect(formatMissedComplianceCount(undefined)).toBe("Not tracked");
     expect(formatMissedComplianceCount(0)).toBe(0);
+  });
+
+  it("uses a readable, filesystem-safe Facility name for compliance exports", () => {
+    expect(
+      facilityComplianceExportFilename(
+        "Triple Bag Genetics, llc",
+        "507f1f77bcf86cd799439011"
+      )
+    ).toBe("triple-bag-genetics-llc-compliance-export.json");
+    expect(
+      facilityComplianceExportFilename(
+        "507f1f77bcf86cd799439011",
+        "507f1f77bcf86cd799439011"
+      )
+    ).toBe("selected-facility-compliance-export.json");
   });
 });
