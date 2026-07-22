@@ -11,6 +11,7 @@ import {
   applyFacilityRoleCapabilities,
   applyPlanCapabilities,
   applyUniversalCapabilities,
+  entitlementApplicationFingerprint,
   getEffectivePlan,
   resolveDevEntitlementsPlan,
   resolveEntitlementsMode,
@@ -21,6 +22,15 @@ import {
 } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
+  it("reapplies unchanged server entitlements when the preferred workspace changes", () => {
+    const ctx = { mode: "facility", facilityId: "facility-1" };
+    const user = { id: "user-1" };
+
+    expect(entitlementApplicationFingerprint(ctx, user, "facility")).not.toBe(
+      entitlementApplicationFingerprint(ctx, user, "commercial")
+    );
+  });
+
   it("keeps resolved entitlements available during same-session refreshes", () => {
     expect(shouldBlockEntitlementBootstrap("loading", false)).toBe(true);
     expect(shouldBlockEntitlementBootstrap("loading", true)).toBe(false);
