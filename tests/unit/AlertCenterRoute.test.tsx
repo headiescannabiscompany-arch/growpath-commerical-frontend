@@ -600,4 +600,84 @@ describe("AlertCenterRoute", () => {
       )
     );
   });
+
+  it("uses real notification records when the legacy alert endpoint is unavailable", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/alerts" && options?.method === "GET") {
+        return Promise.reject(new Error("Route not found"));
+      }
+      if (path === "/api/notifications" && options?.method === "GET") {
+        return Promise.resolve({
+          notifications: [
+            {
+              id: "notification-1",
+              title: "Task assigned",
+              body: "Assigned: Verify Facility persistence",
+              channel: "in_app",
+              read: false,
+              data: {
+                facilityId: "facility-1",
+                taskId: "task-7"
+              },
+              source: { model: "Task", id: "task-7" },
+              createdAt: new Date().toISOString()
+            }
+          ]
+        });
+      }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-created" } });
+      }
+      if (
+        path === "/api/notifications/notification-1/read" &&
+        options?.method === "POST"
+      ) {
+        return Promise.resolve({ success: true });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<AlertCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Task assigned")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "Showing live notification-backed alerts. Mark Read and Create Task use your saved notification records."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Follow-up Task Schedule")).toBeTruthy();
+    expect(screen.queryByText("Unable to load alerts.")).toBeNull();
+    expect(screen.queryByLabelText("Assign alert")).toBeNull();
+    expect(screen.queryByLabelText("Snooze alert")).toBeNull();
+    expect(screen.queryByText("Ask AI")).toBeNull();
+    expect(screen.getByLabelText("Alert link /home/facility/tasks/task-7")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Create task from alert"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "facility",
+            sourceType: "notification",
+            sourceId: "notification-1",
+            linkedNotificationId: "notification-1",
+            notificationSourceType: "task",
+            notificationSourceId: "task-7",
+            linkedTaskId: "task-7"
+          })
+        })
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("Mark notification read"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/notifications/notification-1/read",
+        { method: "POST" }
+      )
+    );
+    expect(screen.getByText("Notification marked read.")).toBeTruthy();
+  });
 });
