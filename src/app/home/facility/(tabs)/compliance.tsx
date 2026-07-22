@@ -32,6 +32,12 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import {
+  formatFacilityAuditAction,
+  formatFacilityAuditDetails
+} from "@/utils/facilityAuditPresentation";
+
+export { formatFacilityAuditAction, formatFacilityAuditDetails };
 
 function rowId(row: any) {
   return String(row?._id || row?.id || row?.logId || "");
@@ -47,52 +53,6 @@ function canResolveRole(role: unknown) {
 
 function statusOf(row: any) {
   return String(row?.status || row?.state || "open").toLowerCase();
-}
-
-export function formatFacilityAuditAction(action: unknown) {
-  const normalized = String(action || "Audit event")
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .toLowerCase();
-  return normalized.replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-export function formatFacilityAuditDetails(action: unknown, details: unknown) {
-  let parsed = details;
-  if (typeof details === "string") {
-    const trimmed = details.trim();
-    if (!trimmed) return "";
-    try {
-      parsed = JSON.parse(trimmed);
-    } catch {
-      return trimmed;
-    }
-  }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return parsed ? String(parsed) : "";
-  }
-
-  const record = parsed as Record<string, unknown>;
-  const roomIds = Array.isArray(record.roomIds) ? record.roomIds.filter(Boolean) : [];
-  if (
-    roomIds.length &&
-    String(action || "")
-      .toUpperCase()
-      .includes("REORDER")
-  ) {
-    return `${roomIds.length} ${roomIds.length === 1 ? "room" : "rooms"} reordered.`;
-  }
-
-  const parts: string[] = [];
-  const title = String(record.title || record.name || "").trim();
-  const status = String(record.status || record.state || "").trim();
-  const role = String(record.role || "").trim();
-  if (title) parts.push(title);
-  if (status) parts.push(`Status: ${formatFacilityAuditAction(status)}`);
-  if (role) parts.push(`Role: ${formatFacilityAuditAction(role)}`);
-  return parts.length
-    ? parts.join(" · ")
-    : "Open the full audit log for recorded details.";
 }
 
 function openDeviation(row: Deviation) {

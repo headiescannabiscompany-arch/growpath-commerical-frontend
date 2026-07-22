@@ -7,6 +7,11 @@ import { useFacility } from "@/state/useFacility";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import {
+  formatFacilityAuditAction,
+  formatFacilityAuditDetails,
+  formatFacilityAuditTimestamp
+} from "@/utils/facilityAuditPresentation";
 
 type AuditLogListItem = AuditLog & {
   id?: string;
@@ -14,6 +19,8 @@ type AuditLogListItem = AuditLog & {
   logId?: string;
   type?: string;
   message?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 function pickId(x: AuditLogListItem, idx: number) {
@@ -67,9 +74,23 @@ export default function FacilityAuditLogsIndexRoute() {
         return (
           <View style={styles.card}>
             <Text style={styles.title}>
-              {String(item?.action || item?.type || "Event")}
+              {formatFacilityAuditAction(item?.action || item?.type)}
             </Text>
-            <Text style={styles.sub}>{String(item?.details || item?.message || "")}</Text>
+            <Text style={styles.sub}>
+              {formatFacilityAuditDetails(
+                item?.action || item?.type,
+                item?.details ?? item?.message
+              ) || "Facility event recorded."}
+            </Text>
+            {formatFacilityAuditTimestamp(
+              item?.timestamp || item?.createdAt || item?.updatedAt
+            ) ? (
+              <Text style={styles.meta}>
+                {formatFacilityAuditTimestamp(
+                  item?.timestamp || item?.createdAt || item?.updatedAt
+                )}
+              </Text>
+            ) : null}
             <Link
               href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
               style={styles.link}
@@ -98,6 +119,7 @@ const styles = StyleSheet.create({
   },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
+  meta: { color: "#64748B", fontSize: 12 },
   link: { color: "#2563eb", fontWeight: "700" },
   empty: { opacity: 0.7 }
 });
