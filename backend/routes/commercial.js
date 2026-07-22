@@ -3,6 +3,10 @@
 const express = require("express");
 
 const CommercialRecord = require("../models/CommercialRecord");
+const {
+  normalizeLessonMedia,
+  lessonMediaPublishBlockers
+} = require("../services/lessonMedia");
 
 const router = express.Router();
 
@@ -141,15 +145,64 @@ function createPayload(body) {
 }
 
 function normalizeLesson(body, fallback = {}) {
+  const normalizedMedia = normalizeLessonMedia(body?.mediaSource || {}, {
+    legacyUrl:
+      body?.videoUrl ||
+      body?.externalVideoUrl ||
+      fallback.videoUrl ||
+      fallback.externalVideoUrl ||
+      "",
+    fallback: fallback.mediaSource || {}
+  });
+  const mediaSource = normalizedMedia.mediaSource;
   return {
-    ...fallback,
-    id: fallback.id || `lesson-${Date.now()}`,
-    title: cleanString(body?.title || fallback.title || "Untitled lesson"),
-    body: cleanString(body?.body || body?.content || fallback.body || ""),
-    videoUrl: cleanString(body?.videoUrl || fallback.videoUrl || ""),
-    order: Number(body?.order || fallback.order || 1),
-    status: body?.status || fallback.status || "draft"
+    errors: normalizedMedia.errors,
+    lesson: {
+      ...fallback,
+      id: fallback.id || `lesson-${Date.now()}`,
+      title: cleanString(body?.title || fallback.title || "Untitled lesson"),
+      body: cleanString(body?.body || body?.content || fallback.body || ""),
+      content: cleanString(body?.content || body?.body || fallback.content || ""),
+      lessonType: cleanString(body?.lessonType || fallback.lessonType || "video"),
+      videoUrl: mediaSource?.canonicalUrl || "",
+      externalVideoUrl: mediaSource?.canonicalUrl || "",
+      mediaSource,
+      pdfUrl: cleanString(body?.pdfUrl || fallback.pdfUrl || ""),
+      audioUrl: cleanString(body?.audioUrl || fallback.audioUrl || ""),
+      imageUrls: Array.isArray(body?.imageUrls)
+        ? body.imageUrls.map(cleanString).filter(Boolean)
+        : fallback.imageUrls || [],
+      documentUrls: Array.isArray(body?.documentUrls)
+        ? body.documentUrls.map(cleanString).filter(Boolean)
+        : fallback.documentUrls || [],
+      relatedProductIds: Array.isArray(body?.relatedProductIds)
+        ? body.relatedProductIds.map(cleanString).filter(Boolean)
+        : fallback.relatedProductIds || [],
+      relatedLiveIds: Array.isArray(body?.relatedLiveIds)
+        ? body.relatedLiveIds.map(cleanString).filter(Boolean)
+        : fallback.relatedLiveIds || [],
+      forumThreadId: cleanString(body?.forumThreadId || fallback.forumThreadId || ""),
+      taskTemplate: body?.taskTemplate || fallback.taskTemplate || null,
+      growTags: Array.isArray(body?.growTags)
+        ? body.growTags.map(cleanString).filter(Boolean)
+        : fallback.growTags || [],
+      order: Number(body?.order || fallback.order || 1),
+      status: body?.status || fallback.status || "draft"
+    }
   };
+}
+
+function sendLessonMediaErrors(res, errors) {
+  return res.status(400).json({
+    success: false,
+    error: { code: "INVALID_LESSON_MEDIA", message: errors.join(" "), details: errors }
+  });
+}
+
+function courseMediaBlockers(course) {
+  return (Array.isArray(course?.lessons) ? course.lessons : []).flatMap((lesson, index) =>
+    lessonMediaPublishBlockers(lesson, index)
+  );
 }
 
 function topLevelFromPayload(recordType, payload) {
@@ -1314,9 +1367,11 @@ router.post("/courses/:id/lessons", async (req, res) => {
   );
   if (!course)
     return res.status(404).json({ success: false, message: "Course not found" });
-  const lesson = normalizeLesson(req.body || {}, {
+  const normalized = normalizeLesson(req.body || {}, {
     order: (course.lessons || []).length + 1
   });
+  if (normalized.errors.length) return sendLessonMediaErrors(res, normalized.errors);
+  const lesson = normalized.lesson;
   const lessons = [...(Array.isArray(course.lessons) ? course.lessons : []), lesson];
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId, "course"), _id: req.params.id },
@@ -1336,11 +1391,14 @@ router.patch("/courses/:id/lessons/:lessonId", async (req, res) => {
   );
   if (!course)
     return res.status(404).json({ success: false, message: "Course not found" });
-  const lessons = (course.lessons || []).map((lesson) =>
-    String(lesson.id) === String(req.params.lessonId)
-      ? normalizeLesson(req.body || {}, lesson)
-      : lesson
-  );
+  let lessonErrors = [];
+  const lessons = (course.lessons || []).map((lesson) => {
+    if (String(lesson.id) !== String(req.params.lessonId)) return lesson;
+    const normalized = normalizeLesson(req.body || {}, lesson);
+    lessonErrors = normalized.errors;
+    return normalized.lesson;
+  });
+  if (lessonErrors.length) return sendLessonMediaErrors(res, lessonErrors);
   const lesson = lessons.find((item) => String(item.id) === String(req.params.lessonId));
   if (!lesson)
     return res.status(404).json({ success: false, message: "Lesson not found" });
@@ -1378,6 +1436,24 @@ router.delete("/courses/:id/lessons/:lessonId", async (req, res) => {
 router.post("/courses/:id/publish", async (req, res) => {
   const userId = requireUser(req, res);
   if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({
+      ...baseQuery(userId, "course"),
+      _id: req.params.id
+    }).lean()
+  );
+  if (!course)
+    return res.status(404).json({ success: false, message: "Course not found" });
+  const blockers = courseMediaBlockers(course);
+  if (blockers.length)
+    return res.status(422).json({
+      success: false,
+      error: {
+        code: "LESSON_MEDIA_NOT_READY",
+        message: "Resolve lesson media accessibility and availability before publishing.",
+        details: blockers
+      }
+    });
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId, "course"), _id: req.params.id },
     { status: "published", "payload.status": "published", "payload.isPublished": true },
