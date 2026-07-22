@@ -494,7 +494,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never make Facility task operators work from raw database fields, user IDs, room IDs, or JSON records.",
       "Never expose raw source-object IDs in Facility task queue summaries or route a task row anywhere except its selected task detail.",
       "Never invite saved account credentials into an AI prompt or parental-control PIN field.",
-      "Never use an internal Facility identifier as the visible workspace name or operational context label.",
+      "Never use an internal Facility identifier as the visible workspace name, operational context label, or downloaded evidence filename.",
       "Never convert unavailable Facility compliance evidence to a zero or expose raw JSON, entity IDs, or identifier arrays in primary audit lists and summaries.",
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
