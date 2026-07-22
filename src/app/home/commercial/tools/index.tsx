@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -49,8 +49,6 @@ const TOOLS = [
 ] as const;
 
 export default function CommercialToolsIndex() {
-  const router = useRouter();
-
   return (
     <AppPage
       routeKey="commercial-tools"
@@ -70,14 +68,15 @@ export default function CommercialToolsIndex() {
           <AppCard key={tool.href} style={styles.card}>
             <Text style={styles.cardTitle}>{tool.title}</Text>
             <Text style={styles.cardDescription}>{tool.description}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${tool.title}`}
-              onPress={() => router.push(tool.href)}
-              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            >
-              <Text style={styles.buttonText}>Open tool</Text>
-            </Pressable>
+            <Link href={tool.href} asChild>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={`Open ${tool.title}`}
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+              >
+                <Text style={styles.buttonText}>Open tool</Text>
+              </Pressable>
+            </Link>
           </AppCard>
         ))}
       </View>

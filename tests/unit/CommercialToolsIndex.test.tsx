@@ -5,9 +5,16 @@ import CommercialToolsIndex from "@/app/home/commercial/tools";
 
 const mockPush = jest.fn();
 
-jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush })
-}));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ children, href }: any) =>
+      React.cloneElement(children, {
+        href,
+        onPress: () => mockPush(href)
+      })
+  };
+});
 
 jest.mock("@/components/TokenBalanceWidget", () => {
   const React = require("react");
