@@ -340,6 +340,36 @@ describe("Tools Router (tools.js)", () => {
     );
   });
 
+  test("does not classify municipal water through a filter as RO water", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app).post("/api/tools/ph-ec-check").send({
+        growId: "grow_1",
+        medium: "coco",
+        stage: "flower",
+        inputPH: 5.9,
+        runoffPH: 6.5,
+        inputEC: 1.6,
+        runoffEC: 2.5,
+        ecUnit: "mS/cm",
+        waterSource: "municipal water through carbon filter",
+        alkalinity: 140
+      })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs.riskCodes).not.toContain("low_buffering");
+    expect(res.body.outputs.warnings.join(" ")).not.toMatch(
+      /RO water has low buffering/i
+    );
+    expect(res.body.outputs.riskCodes).toContain("high_alkalinity");
+  });
+
   test("runs PPFD/DLI planner with stage-aware light stress warnings", async () => {
     mockToolRun.create.mockImplementation(async (payload) => ({
       _id: RUN_ID,
