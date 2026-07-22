@@ -3,6 +3,7 @@ import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-
 
 import { completeLesson } from "../api/courses";
 import ScreenContainer from "../components/ScreenContainer";
+import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
@@ -27,20 +28,7 @@ export default function LessonScreen({ route, navigation }) {
     <ScreenContainer scroll>
       <Text style={styles.title}>{lesson.title}</Text>
 
-      {lesson.videoUrl ? (
-        <TouchableOpacity
-          style={styles.videoLink}
-          onPress={() => Linking.openURL(lesson.videoUrl)}
-        >
-          <Text style={styles.videoIcon}>Play</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.videoTitle}>Watch Video Lesson</Text>
-            <Text numberOfLines={1} style={styles.videoSubtitle}>
-              {lesson.videoUrl}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ) : null}
+      <LessonMediaCard lesson={lesson} />
 
       {lesson.pdfUrl ? (
         <Text style={styles.link} onPress={() => Linking.openURL(lesson.pdfUrl)}>
@@ -78,17 +66,6 @@ export default function LessonScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  videoLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111827",
-    padding: 16,
-    borderRadius: radius.card,
-    marginBottom: 20
-  },
-  videoIcon: { color: "#fff", fontWeight: "800", marginRight: 12 },
-  videoTitle: { color: "#fff", fontWeight: "700", marginBottom: 4 },
-  videoSubtitle: { color: "rgba(255,255,255,0.7)", fontSize: 12 },
   link: { color: "#3498db", marginBottom: 20, fontWeight: "600" },
   content: { fontSize: 16, lineHeight: 22 },
   completeBtn: {

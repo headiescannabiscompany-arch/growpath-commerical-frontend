@@ -43,6 +43,16 @@ jest.mock("@/components/GrowInterestPicker", () => {
   return () => <View />;
 });
 
+jest.mock("@/components/learning/LessonMediaSourceEditor", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  return ({ onPickUpload }: any) => (
+    <Pressable onPress={onPickUpload}>
+      <Text>Choose video to upload</Text>
+    </Pressable>
+  );
+});
+
 jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images", Videos: "Videos" },
   launchImageLibraryAsync: (...args: any[]) => mockLaunchLibrary(...args)
@@ -54,7 +64,7 @@ jest.mock("expo-document-picker", () => ({
 
 describe("AddLessonScreen image uploads", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
     mockLaunchLibrary.mockResolvedValue({
       canceled: false,
       assets: [{ uri: "file:///tmp/lesson.jpg" }]
@@ -135,7 +145,7 @@ describe("AddLessonScreen image uploads", () => {
       />
     );
 
-    fireEvent.press(screen.getByText("Upload Video File"));
+    fireEvent.press(screen.getByText("Choose video to upload"));
     await waitFor(() => expect(mockLaunchLibrary).toHaveBeenCalled());
     fireEvent.press(screen.getByText("Upload PDF"));
     await waitFor(() => expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1));
@@ -162,6 +172,11 @@ describe("AddLessonScreen image uploads", () => {
       "course-1",
       expect.objectContaining({
         videoUrl: "/uploads/lesson.mp4",
+        mediaSource: expect.objectContaining({
+          sourceType: "growpath_upload",
+          canonicalUrl: "/uploads/lesson.mp4",
+          availabilityStatus: "available"
+        }),
         pdfUrl: "/uploads/lesson.pdf",
         audioUrl: "/uploads/lesson.mp3"
       })

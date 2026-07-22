@@ -385,6 +385,44 @@ export const methodRegistry: GrowPathMethod[] = [
     ["harvest-readiness", "dry-cure-guard"]
   ),
   method(
+    "course-media-workflow",
+    "Course Media Workflow",
+    ["course", "lesson", "education", "media"],
+    "course-media-workflow-method.md",
+    [
+      "choose source",
+      "normalize provider",
+      "review rights and availability",
+      "record accessibility fallback",
+      "publish",
+      "privacy-aware playback"
+    ],
+    [
+      "GrowPath upload or video-page URL",
+      "creator rights confirmation",
+      "timestamped availability check",
+      "captions or transcript status",
+      "learner-visible text summary"
+    ],
+    [
+      "normalized provider metadata",
+      "canonical URL and provider ID",
+      "Vimeo unlisted privacy hash when present",
+      "approved embed capability or link-only fallback",
+      "learner-visible availability and accessibility status",
+      "external provider link",
+      "GrowPath-only explicit completion state"
+    ],
+    [
+      "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
+      "Never imply GrowPath owns, hosts, continuously monitors, or verifies watch analytics for third-party media.",
+      "Never publish video without rights confirmation, a timestamped availability check, accessibility status, text summary, and external-link fallback.",
+      "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
+      "Provider playback never completes a GrowPath lesson automatically."
+    ],
+    ["course-builder", "course-player", "commercial-courses", "facility-training"]
+  ),
+  method(
     "commercial-workflow",
     "Commercial Workflow",
     ["commercial"],

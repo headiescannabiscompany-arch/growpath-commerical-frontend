@@ -1,12 +1,5 @@
 "use strict";
 
-const SOURCE_TYPES = new Set([
-  "growpath_upload",
-  "youtube",
-  "rumble",
-  "vimeo",
-  "other_url"
-]);
 const AVAILABILITY_STATUSES = new Set([
   "unchecked",
   "available",
@@ -49,6 +42,7 @@ function parseHttpUrl(value) {
   const text = cleanString(value);
   if (!text) return null;
   if (text.startsWith("/")) {
+    if (!text.startsWith("/uploads/")) return null;
     return { parsed: new URL(text, "https://growpathai.com"), relative: text };
   }
   try {
@@ -80,12 +74,21 @@ function youtubeVideoId(parsed) {
   return "";
 }
 
-function vimeoVideoId(parsed) {
+function vimeoVideoParts(parsed) {
   const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-  if (!new Set(["vimeo.com", "player.vimeo.com"]).has(host)) return "";
+  if (!new Set(["vimeo.com", "player.vimeo.com"]).has(host))
+    return { id: "", privacyHash: "" };
   const parts = parsed.pathname.split("/").filter(Boolean);
-  const candidate = parts[0] === "video" ? parts[1] : parts[0];
-  return /^\d+$/.test(candidate || "") ? candidate : "";
+  const idIndex = parts[0] === "video" ? 1 : 0;
+  const candidate = parts[idIndex];
+  return /^\d+$/.test(candidate || "")
+    ? {
+        id: candidate,
+        privacyHash: /^[a-z0-9]+$/i.test(parts[idIndex + 1] || "")
+          ? parts[idIndex + 1]
+          : cleanString(parsed.searchParams.get("h"))
+      }
+    : { id: "", privacyHash: "" };
 }
 
 function rumbleVideoId(parsed) {
@@ -95,25 +98,36 @@ function rumbleVideoId(parsed) {
   return /^v[a-z0-9]+/i.test(segment) ? segment : "";
 }
 
-function detectSource(parsed, relative, requestedType) {
+function detectSource(parsed, relative) {
   const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
   const firstPartyUpload =
     relative.startsWith("/uploads/") ||
     (new Set(["growpathai.com", "api.growpathai.com"]).has(host) &&
       parsed.pathname.startsWith("/uploads/"));
-  if (requestedType === "growpath_upload" || firstPartyUpload) {
+  if (firstPartyUpload) {
     return { sourceType: "growpath_upload", providerVideoId: "" };
   }
   const youtubeId = youtubeVideoId(parsed);
   if (youtubeId) return { sourceType: "youtube", providerVideoId: youtubeId };
-  const vimeoId = vimeoVideoId(parsed);
-  if (vimeoId) return { sourceType: "vimeo", providerVideoId: vimeoId };
+  const vimeo = vimeoVideoParts(parsed);
+  if (vimeo.id)
+    return {
+      sourceType: "vimeo",
+      providerVideoId: vimeo.id,
+      providerPrivacyHash: vimeo.privacyHash
+    };
   const rumbleId = rumbleVideoId(parsed);
   if (rumbleId) return { sourceType: "rumble", providerVideoId: rumbleId };
-  return { sourceType: "other_url", providerVideoId: "" };
+  return { sourceType: "other_url", providerVideoId: "", providerPrivacyHash: "" };
 }
 
-function providerFields(sourceType, parsed, relative, providerVideoId) {
+function providerFields(
+  sourceType,
+  parsed,
+  relative,
+  providerVideoId,
+  providerPrivacyHash
+) {
   if (sourceType === "youtube") {
     return {
       provider: "youtube",
@@ -126,11 +140,15 @@ function providerFields(sourceType, parsed, relative, providerVideoId) {
     };
   }
   if (sourceType === "vimeo") {
+    const privacySuffix = providerPrivacyHash ? `/${providerPrivacyHash}` : "";
+    const privacyQuery = providerPrivacyHash
+      ? `?h=${encodeURIComponent(providerPrivacyHash)}`
+      : "";
     return {
       provider: "vimeo",
       providerLabel: "Vimeo",
-      canonicalUrl: `https://vimeo.com/${providerVideoId}`,
-      embedUrl: `https://player.vimeo.com/video/${providerVideoId}`,
+      canonicalUrl: `https://vimeo.com/${providerVideoId}${privacySuffix}`,
+      embedUrl: `https://player.vimeo.com/video/${providerVideoId}${privacyQuery}`,
       embedCapability: "supported",
       thumbnailUrl: "",
       privacyMode: "click_to_load"
@@ -180,11 +198,6 @@ function normalizeLessonMedia(input = {}, options = {}) {
       fallback.canonicalUrl ||
       ""
   );
-  const requestedType = cleanEnum(
-    input.sourceType || fallback.sourceType,
-    SOURCE_TYPES,
-    "other_url"
-  );
   if (!originalUrl) {
     if (cleanString(input.sourceType || fallback.sourceType)) {
       return {
@@ -207,16 +220,13 @@ function normalizeLessonMedia(input = {}, options = {}) {
       errors: ["Video sources must use a valid HTTP(S) URL or GrowPath upload path."]
     };
   }
-  const detected = detectSource(
-    parsedResult.parsed,
-    parsedResult.relative,
-    requestedType
-  );
+  const detected = detectSource(parsedResult.parsed, parsedResult.relative);
   const provider = providerFields(
     detected.sourceType,
     parsedResult.parsed,
     parsedResult.relative,
-    detected.providerVideoId
+    detected.providerVideoId,
+    detected.providerPrivacyHash || ""
   );
   const availabilityStatus = cleanEnum(
     input.availabilityStatus || fallback.availabilityStatus,
@@ -247,6 +257,7 @@ function normalizeLessonMedia(input = {}, options = {}) {
       originalUrl,
       canonicalUrl,
       providerVideoId: detected.providerVideoId,
+      providerPrivacyHash: detected.providerPrivacyHash || "",
       title: cleanString(input.title || fallback.title),
       thumbnailUrl: cleanString(
         input.thumbnailUrl || fallback.thumbnailUrl || provider.thumbnailUrl

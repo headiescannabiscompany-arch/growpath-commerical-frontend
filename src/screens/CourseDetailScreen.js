@@ -39,11 +39,13 @@ import {
 } from "../api/coursePayments";
 import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import { listPersonalGrows } from "@/api/grows";
 import { createPersonalTask } from "@/api/tasks";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { lessonHasMedia } from "@/features/learning/lessonMedia";
 import { radius } from "../theme/theme";
 
 function rowId(row) {
@@ -824,7 +826,7 @@ export default function CourseDetailScreen({ route, navigation }) {
               <Text style={styles.badge}>Complete</Text>
             ) : null}
             <Text style={styles.meta}>
-              {lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""}{" "}
+              {lesson.content ? "Text" : ""} {lessonHasMedia(lesson) ? "Video" : ""}{" "}
               {lesson.pdfUrl ? "PDF" : ""} {lesson.audioUrl ? "Audio" : ""}
             </Text>
             <View style={styles.actions}>
@@ -1004,11 +1006,7 @@ export default function CourseDetailScreen({ route, navigation }) {
       {activeLesson ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{activeLesson.title || "Lesson"}</Text>
-          {activeLesson.videoUrl ? (
-            <Pressable onPress={() => Linking.openURL(activeLesson.videoUrl)}>
-              <Text style={styles.link}>Open video lesson</Text>
-            </Pressable>
-          ) : null}
+          <LessonMediaCard lesson={activeLesson} compact />
           {activeLesson.pdfUrl ? (
             <Pressable onPress={() => Linking.openURL(activeLesson.pdfUrl)}>
               <Text style={styles.link}>Open PDF lesson</Text>

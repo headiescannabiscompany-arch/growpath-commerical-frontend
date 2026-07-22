@@ -43,6 +43,34 @@ describe("lesson media normalization", () => {
     });
   });
 
+  test("preserves Vimeo unlisted privacy hashes", () => {
+    const result = normalizeLessonMedia({
+      originalUrl: "https://vimeo.com/123456789/a1b2c3d4",
+      availabilityStatus: "available",
+      allowEmbed: true
+    });
+
+    expect(result.mediaSource).toMatchObject({
+      sourceType: "vimeo",
+      providerVideoId: "123456789",
+      providerPrivacyHash: "a1b2c3d4",
+      canonicalUrl: "https://vimeo.com/123456789/a1b2c3d4",
+      embedUrl: "https://player.vimeo.com/video/123456789?h=a1b2c3d4"
+    });
+  });
+
+  test("does not relabel an external source as a GrowPath upload", () => {
+    const result = normalizeLessonMedia({
+      sourceType: "growpath_upload",
+      originalUrl: "https://youtu.be/QT7vv46368M"
+    });
+
+    expect(result.mediaSource).toMatchObject({
+      sourceType: "youtube",
+      provider: "youtube"
+    });
+  });
+
   test("rejects pasted iframe or script markup", () => {
     const result = normalizeLessonMedia({
       originalUrl: '<iframe src="https://www.youtube.com/embed/QT7vv46368M"></iframe>'

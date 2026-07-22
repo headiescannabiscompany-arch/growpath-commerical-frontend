@@ -248,6 +248,13 @@ describe("generic courses backend routes", () => {
 
     const published = await request(app).put(`/api/courses/${created.body.id}/publish`);
     expect(published.status).toBe(200);
+
+    const removed = await request(app)
+      .put(`/api/courses/lesson/${added.body.lesson.id}`)
+      .send({ videoUrl: "", externalVideoUrl: "", mediaSource: null });
+    expect(removed.status).toBe(200);
+    expect(removed.body.lesson.videoUrl).toBe("");
+    expect(removed.body.lesson.mediaSource).toBeNull();
   });
 
   test("course owner can update and delete lessons by lesson route", async () => {

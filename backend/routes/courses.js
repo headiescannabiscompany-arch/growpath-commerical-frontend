@@ -92,15 +92,22 @@ function coursePayload(body) {
 }
 
 function normalizeLesson(body, fallback = {}) {
-  const normalizedMedia = normalizeLessonMedia(body?.mediaSource || {}, {
-    legacyUrl:
-      body?.videoUrl ||
-      body?.externalVideoUrl ||
-      fallback.videoUrl ||
-      fallback.externalVideoUrl ||
-      "",
-    fallback: fallback.mediaSource || {}
-  });
+  const removeMedia =
+    Object.prototype.hasOwnProperty.call(body || {}, "mediaSource") &&
+    body.mediaSource === null &&
+    !body.videoUrl &&
+    !body.externalVideoUrl;
+  const normalizedMedia = removeMedia
+    ? { mediaSource: null, errors: [] }
+    : normalizeLessonMedia(body?.mediaSource || {}, {
+        legacyUrl:
+          body?.videoUrl ||
+          body?.externalVideoUrl ||
+          fallback.videoUrl ||
+          fallback.externalVideoUrl ||
+          "",
+        fallback: fallback.mediaSource || {}
+      });
   const mediaSource = normalizedMedia.mediaSource;
   return {
     errors: normalizedMedia.errors,

@@ -16,6 +16,7 @@ Before changing a tool, read the relevant method plus `source-reliability-regist
 | Harvest / post-harvest   | `methods/harvest-dry-cure-method.md`                                           |
 | Run comparison / history | `methods/run-comparison-method.md`                                             |
 | Commercial / facility    | `methods/commercial-workflow-method.md`, `methods/facility-workflow-method.md` |
+| Course media             | `methods/course-media-workflow-method.md`                                      |
 | Sensor/controller import | `methods/integration-workflow-method.md`                                       |
 
 The runtime counterparts live in `src/knowledge`. Method IDs and source IDs are stable API values. Add named sites to the registry only after recording trusted uses, exclusions, cross-check requirements, and review date.
