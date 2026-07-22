@@ -148,6 +148,13 @@ function askAiHref(alert: AlertRow) {
   return `/home/personal/ai?alertId=${id}&sourceType=${sourceType}`;
 }
 
+function taskCollectionHref(alert: AlertRow) {
+  const workspace = String(alert.workspaceType || "personal").toLowerCase();
+  if (workspace === "facility") return "/home/facility/tasks";
+  if (workspace === "commercial") return "/home/commercial/tasks";
+  return "/home/personal/tasks";
+}
+
 function sourceReference(alert: AlertRow) {
   const values = [
     alert.sourceId,
@@ -439,9 +446,12 @@ export default function AlertCenterRoute() {
   }
 
   function renderAlert(alert: AlertRow) {
-    const href = sourceHref(alert);
-    const aiHref = askAiHref(alert);
     const notificationBacked = Boolean(alert._notificationBacked);
+    const notificationTask =
+      notificationBacked && String(alert.sourceType || "").toLowerCase() === "task";
+    const href = notificationTask ? taskCollectionHref(alert) : sourceHref(alert);
+    const sourceActionLabel = notificationTask ? "Open Tasks" : "View Source";
+    const aiHref = askAiHref(alert);
     const assignedToLabel = readableAssignee(alert);
     const isFocused = Boolean(
       focusedAlertId &&
@@ -543,7 +553,7 @@ export default function AlertCenterRoute() {
           {href ? (
             <Link href={href as any} asChild>
               <Pressable accessibilityRole="link" style={styles.ghostButton}>
-                <Text style={styles.ghostText}>View Source</Text>
+                <Text style={styles.ghostText}>{sourceActionLabel}</Text>
               </Pressable>
             </Link>
           ) : null}
