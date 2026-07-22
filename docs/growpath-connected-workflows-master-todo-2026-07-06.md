@@ -84,6 +84,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Store normalized lesson-media metadata separately from the original URL: source type, provider video ID/canonical URL, title/thumbnail when available, embed capability, link-only fallback, availability-check status, creator rights confirmation, and last-checked time. Do not imply that GrowPath owns, hosts, or continuously monitors third-party media.
    - [x] Make third-party playback resilient and honest across web/mobile: use an approved embed only when the provider and content allow it, otherwise show an explicit Open on provider action; preserve lesson text/resources when media is unavailable; warn authors about private, deleted, age-restricted, region-restricted, or embedding-disabled content before publishing.
    - [x] Require an accessible lesson fallback for every video source: captions or transcript status, a text summary, and a learner-visible external-link fallback. Use privacy-aware click-to-load behavior where third-party embeds set tracking cookies, and distinguish GrowPath lesson progress from provider watch analytics that GrowPath cannot verify.
+   - Production evidence: `docs/qa/COURSE_MEDIA_PRODUCTION_EVIDENCE_2026-07-22.md`.
 
 8. Facility room creation
    - [x] Facility owners/managers can add rooms, greenhouses, outdoor beds, seedling rooms or veg racks, clone/tissue-culture/cold-storage spaces, and optional zones.
