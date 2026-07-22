@@ -72,6 +72,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never honor deterministic test identity headers as production authentication."
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "readable Facility inventory details with confirmed mistaken-record removal"
+    );
+    expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
+      "facility-workflow"
+    );
     expect(methodsForTool("course-player").map((entry) => entry.id)).toContain(
       "course-media-workflow"
     );

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -22,16 +24,10 @@ import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
-function renderKV(obj: AnyRec | null, key: string) {
-  if (!obj) return null;
-  const v = obj[key];
-  if (v === undefined || v === null || v === "") return null;
-  return (
-    <View style={styles.kv} key={key}>
-      <Text style={styles.k}>{key}</Text>
-      <Text style={styles.v}>{typeof v === "string" ? v : JSON.stringify(v)}</Text>
-    </View>
-  );
+function formatTimestamp(value: unknown) {
+  if (!value) return "Not recorded";
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? "Not recorded" : date.toLocaleString();
 }
 
 export default function InventoryItemDetailScreen() {
@@ -66,6 +62,8 @@ export default function InventoryItemDetailScreen() {
   const [editUnit, setEditUnit] = useState("");
   const [editReorderPoint, setEditReorderPoint] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [feedback, setFeedback] = useState("");
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
 
   const load = useCallback(
@@ -105,6 +103,7 @@ export default function InventoryItemDetailScreen() {
     setSaving(true);
     try {
       clearError();
+      setFeedback("");
       await apiRequest(endpoints.inventoryItem(facilityId, sku), {
         method: "PATCH",
         body: {
@@ -115,6 +114,7 @@ export default function InventoryItemDetailScreen() {
       setDelta("");
       setReason("");
       await load({ refresh: true });
+      setFeedback("Quantity updated.");
     } catch (e) {
       handleApiError(e);
     } finally {
@@ -151,11 +151,13 @@ export default function InventoryItemDetailScreen() {
     setSavingDetails(true);
     try {
       clearError();
+      setFeedback("");
       await apiRequest(endpoints.inventoryItem(facilityId, sku), {
         method: "PATCH",
         body
       });
       await load({ refresh: true });
+      setFeedback("Item details saved.");
     } catch (e) {
       handleApiError(e);
     } finally {
@@ -174,6 +176,44 @@ export default function InventoryItemDetailScreen() {
     load
   ]);
 
+  const removeItem = useCallback(async () => {
+    if (!facilityId || !itemId || !canWriteInventory) return;
+
+    setDeleting(true);
+    setFeedback("");
+    try {
+      clearError();
+      await apiRequest(endpoints.inventoryItem(facilityId, itemId), {
+        method: "DELETE"
+      });
+      router.replace("/home/facility/inventory");
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setDeleting(false);
+    }
+  }, [facilityId, itemId, canWriteInventory, clearError, handleApiError, router]);
+
+  const confirmRemoveItem = useCallback(() => {
+    if (!canWriteInventory || deleting) return;
+    const message =
+      "This removes the item from active facility inventory. This action cannot be undone.";
+
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      typeof window.confirm === "function"
+    ) {
+      if (window.confirm(`Remove inventory item?\n\n${message}`)) void removeItem();
+      return;
+    }
+
+    Alert.alert("Remove inventory item?", message, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove item", style: "destructive", onPress: removeItem }
+    ]);
+  }, [canWriteInventory, deleting, removeItem]);
+
   useEffect(() => {
     if (!facilityId) {
       router.replace("/home/facility/select");
@@ -190,7 +230,6 @@ export default function InventoryItemDetailScreen() {
     setEditReorderPoint(String(item.reorderPoint ?? 0));
   }, [item]);
 
-  const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
   const quantity = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
   const reorderPoint = Number(item?.reorderPoint ?? 0);
   const stockLabel =
@@ -217,8 +256,13 @@ export default function InventoryItemDetailScreen() {
       >
         {error ? <InlineError error={error} /> : null}
 
-        <Text style={styles.h1}>Inventory Item</Text>
-        <Text style={styles.muted}>id: {itemId || "(missing id param)"}</Text>
+        <Text style={styles.h1}>{item?.name || "Inventory Item"}</Text>
+
+        {feedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         {loading ? (
           <View style={styles.loading}>
@@ -249,6 +293,9 @@ export default function InventoryItemDetailScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Item details</Text>
+          <Text style={styles.muted}>
+            Keep the item name, stock-counting unit, and reorder point current.
+          </Text>
           {!canWriteInventory ? (
             <Text style={styles.lockedText}>
               Your facility role or plan does not allow inventory changes.
@@ -299,7 +346,8 @@ export default function InventoryItemDetailScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Adjust quantity</Text>
           <Text style={styles.muted}>
-            Use negative for decrement, positive for increment.
+            Enter a positive amount for received stock or a negative amount for stock
+            used, transferred, or corrected.
           </Text>
           {!canWriteInventory ? (
             <Text style={styles.lockedText}>
@@ -341,13 +389,51 @@ export default function InventoryItemDetailScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Details</Text>
+          <Text style={styles.cardTitle}>Record information</Text>
           {item ? (
-            <View style={{ marginTop: 8 }}>{keys.map((k) => renderKV(item, k))}</View>
+            <View style={styles.recordList}>
+              <View style={styles.recordRow}>
+                <Text style={styles.recordLabel}>SKU</Text>
+                <Text style={styles.recordValue}>{item.sku || "Not set"}</Text>
+              </View>
+              <View style={styles.recordRow}>
+                <Text style={styles.recordLabel}>Added</Text>
+                <Text style={styles.recordValue}>{formatTimestamp(item.createdAt)}</Text>
+              </View>
+              <View style={styles.recordRow}>
+                <Text style={styles.recordLabel}>Last updated</Text>
+                <Text style={styles.recordValue}>{formatTimestamp(item.updatedAt)}</Text>
+              </View>
+            </View>
           ) : (
-            <Text style={styles.muted}>No item payload returned.</Text>
+            <Text style={styles.muted}>Inventory information is unavailable.</Text>
           )}
         </View>
+
+        {item && canWriteInventory ? (
+          <View style={[styles.card, styles.dangerCard]}>
+            <Text style={styles.cardTitle}>Remove inventory item</Text>
+            <Text style={styles.muted}>
+              Use this only for a duplicate, test, or mistakenly created item. Quantity
+              changes belong in Adjust quantity above.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Remove inventory item"
+              onPress={confirmRemoveItem}
+              disabled={deleting}
+              style={({ pressed }) => [
+                styles.dangerButton,
+                deleting && styles.btnDisabled,
+                pressed && styles.pressed
+              ]}
+            >
+              <Text style={styles.dangerButtonText}>
+                {deleting ? "Removing..." : "Remove item"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
       </ScrollView>
     </ScreenBoundary>
   );
@@ -415,8 +501,25 @@ const styles = StyleSheet.create({
   btnText: { fontWeight: "900" },
   lockedText: { color: "#92400e", fontWeight: "800", marginBottom: 8 },
   pressed: { opacity: 0.85 },
-
-  kv: { marginBottom: 10 },
-  k: { fontSize: 12, opacity: 0.7, marginBottom: 3 },
-  v: { fontSize: 14 }
+  feedback: {
+    color: "#166534",
+    backgroundColor: "#dcfce7",
+    borderRadius: radius.card,
+    padding: 10,
+    fontWeight: "800",
+    marginBottom: 12
+  },
+  recordList: { gap: 10 },
+  recordRow: { gap: 2 },
+  recordLabel: { color: "#64748b", fontSize: 12, fontWeight: "800" },
+  recordValue: { color: "#0f172a", fontSize: 14, fontWeight: "700" },
+  dangerCard: { borderColor: "#fecaca", backgroundColor: "#fff7f7" },
+  dangerButton: {
+    marginTop: 12,
+    borderRadius: radius.card,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#991b1b"
+  },
+  dangerButtonText: { color: "white", fontWeight: "900" }
 });
