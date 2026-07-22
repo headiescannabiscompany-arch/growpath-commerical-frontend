@@ -24,6 +24,8 @@ const mockTask = {
   create: jest.fn()
 };
 
+const mockBuildRunComparisonHistory = jest.fn();
+
 const mockProductIngredient = {
   find: jest.fn(),
   findOne: jest.fn(),
@@ -48,6 +50,9 @@ jest.mock("../models/Task", () => mockTask);
 jest.mock("../models/NutrientRecipe", () => mockNutrientRecipeModel);
 jest.mock("../models/ProductIngredient", () => mockProductIngredient);
 jest.mock("../services/createAutomationEvent", () => jest.fn().mockResolvedValue({}));
+jest.mock("../services/runComparisonHistory", () => ({
+  buildRunComparisonHistory: (...args) => mockBuildRunComparisonHistory(...args)
+}));
 
 function createApp() {
   jest.isolateModules(() => {});
@@ -79,6 +84,43 @@ describe("Tools Router (tools.js)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGrow.exists.mockResolvedValue(true);
+    mockBuildRunComparisonHistory.mockResolvedValue({
+      growId: "grow_1",
+      growIds: ["grow_1", "grow_2"],
+      referenceGrowId: "grow_1",
+      scope: "whole_run",
+      objective: "yield",
+      comparisonTitle: "Saved history comparison",
+      evidenceSource: "owned_saved_grow_history",
+      runs: [
+        {
+          id: "grow_1",
+          growId: "grow_1",
+          name: "Reference grow",
+          crop: "Cannabis",
+          cultivar: "Shared line",
+          yieldAmount: 14,
+          yieldUnit: "oz",
+          qualityScore: 8,
+          qualityScale: "0-10",
+          evidenceInventory: { logs: 2, toolRuns: 3 },
+          missingFields: []
+        },
+        {
+          id: "grow_2",
+          growId: "grow_2",
+          name: "Comparison grow",
+          crop: "Cannabis",
+          cultivar: "Shared line",
+          yieldAmount: 18,
+          yieldUnit: "oz",
+          qualityScore: 7,
+          qualityScale: "0-10",
+          evidenceInventory: { logs: 3, toolRuns: 4 },
+          missingFields: []
+        }
+      ]
+    });
     app = createApp();
   });
 
@@ -923,6 +965,51 @@ describe("Tools Router (tools.js)", () => {
     );
   });
 
+  test("builds and saves a cautious report from owned saved histories", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const response = await authed(
+      request(app)
+        .post("/api/tools/run-comparison/from-grows")
+        .send({
+          growIds: ["grow_1", "grow_2"],
+          referenceGrowId: "grow_1",
+          scope: "whole_run",
+          objective: "yield"
+        })
+    );
+
+    expect(response.status).toBe(201);
+    expect(mockBuildRunComparisonHistory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: TEST_USER,
+        growIds: ["grow_1", "grow_2"],
+        referenceGrowId: "grow_1",
+        scope: "whole_run",
+        objective: "yield"
+      })
+    );
+    expect(response.body.outputs).toMatchObject({
+      evidenceStatus: "measured_comparison",
+      referenceRun: { growId: "grow_1", name: "Reference grow" },
+      objectiveLeader: { growId: "grow_2", recordedValue: 18, unit: "oz" },
+      methodIds: ["run-comparison"],
+      sourceIds: ["growpath-method", "user-observation"]
+    });
+    expect(response.body.outputs.bestRun).toBeUndefined();
+    expect(mockToolRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow_1",
+        toolName: "run_comparison",
+        inputs: expect.objectContaining({ growIds: ["grow_1", "grow_2"] })
+      })
+    );
+  });
+
   test("runs run comparison and auto grow calendar tools", async () => {
     mockGrow.exists.mockResolvedValue(true);
     mockToolRun.create.mockImplementation((payload) => ({
@@ -935,25 +1022,38 @@ describe("Tools Router (tools.js)", () => {
         .post("/api/tools/run-comparison")
         .send({
           growId: "grow_1",
+          referenceGrowId: "run_1",
+          objective: "yield",
           runs: [
             {
+              id: "run_1",
               name: "Run 1",
               cultivar: "Sour Diesel",
               yieldAmount: 14,
+              yieldUnit: "oz",
               qualityScore: 7,
+              qualityScale: "0-10",
               issueCount: 4,
-              days: 120,
-              averageVpd: 1.1
+              cycleDays: 120,
+              averageVpd: 1.1,
+              averageDli: 36,
+              taskCompletionRate: 75,
+              dryDays: 12
             },
             {
+              id: "run_2",
               name: "Run 2",
               cultivar: "Sour Diesel",
               yieldAmount: 18,
+              yieldUnit: "oz",
               qualityScore: 8,
+              qualityScale: "0-10",
               issueCount: 1,
-              days: 112,
+              cycleDays: 112,
               averageVpd: 1.3,
-              averageDli: 40
+              averageDli: 40,
+              taskCompletionRate: 90,
+              dryDays: 8
             }
           ]
         })
@@ -985,33 +1085,33 @@ describe("Tools Router (tools.js)", () => {
     );
 
     expect(comparison.status).toBe(201);
-    expect(comparison.body.outputs.bestRun).toMatchObject({ name: "Run 2" });
-    expect(comparison.body.outputs.differences.yieldSpread).toBe(4);
+    expect(comparison.body.outputs.bestRun).toBeUndefined();
+    expect(comparison.body.outputs.objectiveLeader).toMatchObject({
+      name: "Run 2",
+      recordedValue: 18,
+      unit: "oz"
+    });
     expect(comparison.body.outputs.structuredSummary).toMatchObject({
-      summaryStats: expect.objectContaining({
-        yieldDifference: 4,
-        issueCountDifference: 3
-      }),
+      sharedMetricCount: 8,
       sameCultivar: true
     });
     expect(comparison.body.outputs.keyDifferences).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ category: "yield" }),
-        expect.objectContaining({ category: "issues" })
+        expect.objectContaining({ category: "yieldAmount", delta: 4 }),
+        expect.objectContaining({ category: "issueCount", delta: -3 })
       ])
     );
     expect(comparison.body.outputs.likelyDrivers).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ driver: "Higher yield run" }),
-        expect.objectContaining({ driver: "Lower issue pressure" })
+        expect.objectContaining({
+          driver: "Environment changed alongside an outcome"
+        }),
+        expect.objectContaining({
+          driver: "Issue pressure changed alongside an outcome"
+        })
       ])
     );
-    expect(comparison.body.outputs.missingData).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ field: "taskCompletionRate" }),
-        expect.objectContaining({ field: "dryDays" })
-      ])
-    );
+    expect(comparison.body.outputs.methodIds).toEqual(["run-comparison"]);
     expect(calendar.status).toBe(201);
     expect(calendar.body.outputs.stageTimeline).toMatchObject({
       startDate: "2026-07-01",

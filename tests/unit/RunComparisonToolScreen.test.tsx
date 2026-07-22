@@ -3,9 +3,11 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import RunComparisonToolRoute from "@/app/home/personal/(tabs)/tools/run-comparison";
 
-const mockRunCalculator = jest.fn();
-const mockCreateGrowpathModuleRecord = jest.fn();
+const mockListPersonalGrows = jest.fn();
+const mockCompareSavedGrows = jest.fn();
+const mockSaveToolRunToLog = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+let mockPlan = "pro";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -19,145 +21,227 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
-    plan: "pro",
+    plan: mockPlan,
     mode: "personal",
-    can: () => true
+    can: () => mockPlan !== "free"
   })
 }));
 
-jest.mock("@/components/feed/FeedBanner", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-  return () => React.createElement(View, { testID: "feed-banner" });
-});
-
-jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
-  const React = require("react");
-  const { View } = require("react-native");
-  return {
-    ToolPlantContextPicker: () => React.createElement(View, { testID: "plant-picker" }),
-    useToolPlantContext: () => ({
-      plants: [],
-      plantId: "",
-      selectedPlant: null,
-      setPlantId: jest.fn(),
-      toolRunContext: { selectedPlantContext: null }
-    })
-  };
-});
-
-jest.mock("@/api/toolRuns", () => ({
-  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+jest.mock("@/utils/localPaidPreview", () => ({
+  hasLocalPaidPreviewOverride: () => false
 }));
 
-jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+jest.mock("@/components/feed/PersonalFeedPlacement", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return () => React.createElement(View, { testID: "feed-placement" });
+});
+
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+}));
+
+jest.mock("@/api/toolRuns", () => ({
+  compareSavedGrows: (...args: any[]) => mockCompareSavedGrows(...args),
+  saveToolRunToLog: (...args: any[]) => mockSaveToolRunToLog(...args)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
-  saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: jest.fn(),
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
 describe("RunComparisonToolRoute", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
-    mockRunCalculator.mockResolvedValue({
-      outputs: {
-        bestRun: { name: "Run 2" },
-        worstRun: { name: "Run 1" },
-        differences: {
-          yieldSpread: 4,
-          qualitySpread: 1
-        },
-        missingData: ["dry/cure notes", "smoke notes"],
-        structuredSummary: {
-          sameCultivar: false
-        }
+    jest.clearAllMocks();
+    mockPlan = "pro";
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Reference grow",
+        cropCommonName: "Cannabis",
+        cultivar: "Shared line",
+        status: "harvested"
       },
-      toolRun: { id: "toolrun-1", _id: "toolrun-1" }
+      {
+        id: "grow-2",
+        name: "Comparison grow",
+        cropCommonName: "Cannabis",
+        cultivar: "Shared line",
+        status: "harvested"
+      },
+      {
+        id: "grow-3",
+        name: "Different crop",
+        cropCommonName: "Tomato",
+        status: "harvested"
+      }
+    ]);
+    mockCompareSavedGrows.mockResolvedValue({
+      toolRun: { id: "toolrun-1", _id: "toolrun-1" },
+      outputs: {
+        comparisonTitle: "Reference vs comparison",
+        evidenceStatus: "limited_comparison",
+        providerLabel: "GrowPath saved-history comparison (deterministic, no AI credit)",
+        summary:
+          "Two recorded differences were found; associations are not proof of cause.",
+        confidence: "low_to_moderate",
+        methodIds: ["run-comparison"],
+        sourceIds: ["growpath-method", "user-observation"],
+        structuredSummary: { sharedMetricCount: 2 },
+        snapshots: [
+          {
+            growId: "grow-1",
+            name: "Reference grow",
+            crop: "Cannabis",
+            cultivar: "Shared line",
+            evidenceInventory: {
+              logs: 3,
+              tasks: 2,
+              toolRuns: 4,
+              diagnoses: 1,
+              telemetryPoints: 2,
+              excludedSyntheticTelemetryPoints: 1
+            },
+            taskCount: 2
+          },
+          {
+            growId: "grow-2",
+            name: "Comparison grow",
+            crop: "Cannabis",
+            cultivar: "Shared line",
+            evidenceInventory: {
+              logs: 4,
+              tasks: 2,
+              toolRuns: 5,
+              diagnoses: 0,
+              telemetryPoints: 2
+            },
+            taskCount: 2
+          }
+        ],
+        keyDifferences: [
+          {
+            category: "yieldAmount",
+            label: "Recorded yield",
+            referenceGrowId: "grow-1",
+            referenceRun: "Reference grow",
+            referenceValue: 14,
+            comparisonGrowId: "grow-2",
+            comparisonRun: "Comparison grow",
+            comparisonValue: 18,
+            delta: 4,
+            unit: "oz",
+            interpretation: "Comparison grow is 4 oz higher than the reference record.",
+            limitation: "This recorded difference does not establish what caused it."
+          }
+        ],
+        associatedDrivers: [
+          {
+            driver: "Environment changed alongside an outcome",
+            evidence: "Average recorded VPD changed by 0.2 kPa",
+            possibleAssociation: "Environment may be associated with the outcome.",
+            alternatives: ["cultivar", "nutrition"],
+            nextCheck: "Repeat one controlled change."
+          }
+        ],
+        missingData: [
+          {
+            growId: "grow-1",
+            growName: "Reference grow",
+            field: "recorded dry/cure duration",
+            reason: "No comparable saved evidence was found."
+          }
+        ],
+        limitations: [
+          "This is an observational comparison of saved records and cannot establish causation."
+        ],
+        recommendations: ["Review the saved evidence inventory."],
+        tasksToCreate: [
+          {
+            title: "Review run-comparison evidence gaps",
+            description: "Fill missing evidence.",
+            dueInDays: 1,
+            priority: "high",
+            sourceStage: "run_comparison_evidence_review"
+          }
+        ]
+      }
     });
-    mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
-    mockSaveToolRunAndCreateTasks.mockResolvedValue({
-      ok: true,
-      toolRunId: "toolrun-1",
-      taskIds: ["task-1", "task-2", "task-3", "task-4"]
-    });
+    mockSaveToolRunToLog.mockResolvedValue({ ok: true });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({ ok: true, taskIds: ["task-1"] });
   });
 
-  it("creates next-run tasks from run comparison output", async () => {
+  it("compares selected owned saved grows without demo rows and creates linked actions", async () => {
     const screen = render(<RunComparisonToolRoute />);
 
-    fireEvent.changeText(
-      screen.getByLabelText(
-        "Run-To-Run Comparison Runs as lines: name, cultivar, yield, quality 0-10, issue count, days, avg VPD, avg DLI, dry days"
-      ),
-      "Run 1, Sour Diesel, 14, 7, 3, 120, 1.1, 36, 12\nRun 2, Chem D, 18, 8, 1, 112, 1.3, 40, 8"
+    expect(screen.queryByText(/Run 1, Sour Diesel/)).toBeNull();
+    expect(screen.getByText("Compare saved evidence—not demo rows")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Comparison grow")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Compare saved grow Comparison grow"));
+    fireEvent.press(
+      screen.getByLabelText("Run comparison scope: Harvest / final outcome")
     );
-    fireEvent.press(screen.getByLabelText("Run Run-To-Run Comparison"));
+    fireEvent.press(screen.getByLabelText("Run comparison objective: Recorded yield"));
+    fireEvent.changeText(
+      screen.getByLabelText("Run comparison report title"),
+      "Reference vs comparison"
+    );
+    fireEvent.press(screen.getByLabelText("Compare saved grow histories"));
 
     await waitFor(() =>
-      expect(mockRunCalculator).toHaveBeenCalledWith(
-        "run-comparison",
-        expect.objectContaining({
-          growId: "grow-1",
-          runs: expect.arrayContaining([
-            expect.objectContaining({ name: "Run 1", cultivar: "Sour Diesel" }),
-            expect.objectContaining({ name: "Run 2", cultivar: "Chem D" })
-          ])
-        })
-      )
+      expect(mockCompareSavedGrows).toHaveBeenCalledWith({
+        growIds: ["grow-1", "grow-2"],
+        referenceGrowId: "grow-1",
+        scope: "harvest_final",
+        objective: "yield",
+        title: "Reference vs comparison",
+        notes: ""
+      })
     );
     await waitFor(() =>
       expect(screen.getByText("Run-To-Run Comparison result")).toBeTruthy()
     );
+    expect(screen.getByText("Recorded differences")).toBeTruthy();
+    expect(screen.getByText("Possible associations—not causes")).toBeTruthy();
+    expect(screen.getByText(/Excluded 1 synthetic telemetry/)).toBeTruthy();
 
-    fireEvent.press(screen.getByText("Create Next-Run Tasks"));
+    fireEvent.press(screen.getByText("Save Comparison to Grow Log"));
+    await waitFor(() =>
+      expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({ growId: "grow-1", linkedToolRunId: "toolrun-1" })
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Saved comparison to the reference grow log.")).toBeTruthy()
+    );
 
+    fireEvent.press(screen.getByText("Create Reviewed Next-Run Tasks"));
     await waitFor(() =>
       expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
         expect.objectContaining({
           growId: "grow-1",
           toolKey: "run-comparison",
           toolRunId: "toolrun-1",
-          output: expect.objectContaining({
-            bestRun: expect.objectContaining({ name: "Run 2" }),
-            missingData: expect.any(Array)
-          }),
           tasks: [
             expect.objectContaining({
-              title: "Record run comparison decisions",
+              title: "Review run-comparison evidence gaps",
+              priority: "high",
               allDay: true,
               calendarType: "run_comparison_followup",
-              sourceStage: "post_run_decision_review",
-              reminderPlan: {
-                label: "24 hours before",
-                channels: ["in_app"],
-                reminders: [{ offsetMinutes: -1440 }]
-              },
-              description: expect.stringContaining("Run 2")
-            }),
-            expect.objectContaining({
-              title: "Update next-run task template",
-              calendarType: "run_comparison_followup",
-              sourceStage: "next_run_template_update",
-              description: expect.stringContaining("VPD")
-            }),
-            expect.objectContaining({
-              title: "Fill missing comparison data",
-              priority: "high",
-              sourceStage: "comparison_data_backfill",
-              description: expect.stringContaining("missing yield")
-            }),
-            expect.objectContaining({
-              title: "Separate cultivar and environment effects",
-              sourceStage: "cultivar_environment_effect_review",
-              description: expect.stringContaining("genetics/pheno")
+              sourceStage: "run_comparison_evidence_review"
             })
           ]
         })
       )
     );
+  });
+
+  it("keeps the workflow locked for Personal Free", () => {
+    mockPlan = "free";
+    const screen = render(<RunComparisonToolRoute />);
+    expect(screen.getByText("Run-To-Run Comparison is a Pro tool")).toBeTruthy();
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
   });
 });
