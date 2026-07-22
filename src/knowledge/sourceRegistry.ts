@@ -16,6 +16,7 @@ export type SourceUseCase =
   | "legal_regulatory"
   | "device_api"
   | "post_harvest"
+  | "grow_history"
   | "propagation"
   | "tissue_culture"
   | "education";
@@ -300,7 +301,14 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     name: "GrowPathAI internal method",
     sourceType: "internal_growpath_method",
     reliabilityTier: "A",
-    trustedFor: ["diagnosis", "ipm", "soil_science", "nutrient_chemistry", "education"],
+    trustedFor: [
+      "diagnosis",
+      "ipm",
+      "soil_science",
+      "nutrient_chemistry",
+      "grow_history",
+      "education"
+    ],
     notTrustedFor: ["lab_result", "legal_regulatory"],
     notes:
       "Workflow authority, not a substitute for measurements, labels, laboratories or regulators.",
@@ -312,7 +320,7 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     name: "User observation or grow record",
     sourceType: "user_observation",
     reliabilityTier: "B",
-    trustedFor: ["diagnosis", "ipm", "consumer_review", "education"],
+    trustedFor: ["diagnosis", "ipm", "consumer_review", "grow_history", "education"],
     notTrustedFor: ["lab_result", "fertilizer_label", "legal_regulatory"],
     notes: "Primary evidence of what was observed; not automatic proof of cause.",
     requiresCrossCheck: true,

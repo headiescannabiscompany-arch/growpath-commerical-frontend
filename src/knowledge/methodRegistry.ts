@@ -287,6 +287,47 @@ export const methodRegistry: GrowPathMethod[] = [
     ["tissue-culture"]
   ),
   method(
+    "run-comparison",
+    "Run Comparison and Grow History",
+    ["run comparison", "grow history", "analytics"],
+    "run-comparison-method.md",
+    [
+      "select two to five owned grows",
+      "choose reference, objective and equivalent scope",
+      "inventory saved evidence",
+      "compare recorded values",
+      "separate differences from associated drivers",
+      "review missing data and alternatives",
+      "save report and optional next-run tasks"
+    ],
+    [
+      "owned grow IDs",
+      "reference grow",
+      "comparison objective",
+      "equivalent stage or whole-run scope",
+      "saved logs, tasks, ToolRuns, diagnoses, telemetry and outcomes"
+    ],
+    [
+      "evidence inventory by grow",
+      "normalized snapshots",
+      "recorded differences",
+      "associated-driver hypotheses with alternatives",
+      "missing information",
+      "confidence and limitations",
+      "method and source IDs",
+      "owner-reviewed follow-up tasks"
+    ],
+    [
+      "Do not use demo runs or silently convert missing values to zero.",
+      "Do not rank an overall best run with hidden weights.",
+      "Do not compare unlike stages without an explicit limitation.",
+      "Do not claim causation from an observational run comparison.",
+      "Exclude synthetic QA evidence from ordinary production conclusions unless it is explicitly selected and labeled.",
+      "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits."
+    ],
+    ["run-comparison"]
+  ),
+  method(
     "harvest-dry-cure",
     "Harvest, Dry and Cure",
     ["harvest", "post-harvest"],

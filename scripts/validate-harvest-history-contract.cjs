@@ -20,6 +20,7 @@ function requireText(label, contents, pattern, description) {
 
 const toolsRoute = read("backend/routes/tools.js");
 const calculators = read("backend/services/toolCalculators.js");
+const runComparisonHistory = read("backend/services/runComparisonHistory.js");
 const harvestModel = read("backend/models/HarvestBatch.js");
 const personalRoute = read("backend/routes/personal.js");
 const harvestApi = read("src/api/harvestBatches.ts");
@@ -34,6 +35,9 @@ const productionWebExport = read("scripts/export-production-web.cjs");
 const growOverview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
 const growTools = read("src/app/home/personal/(tabs)/grows/[growId]/tools.tsx");
 const growRouteUtils = read("src/features/grows/routeUtils.ts");
+const runComparisonWorkspace = read(
+  "src/features/personal/tools/RunComparisonWorkspace.tsx"
+);
 
 const screens = {
   harvest: read("src/app/home/personal/(tabs)/tools/harvest-readiness.tsx"),
@@ -44,6 +48,7 @@ const screens = {
 
 const tests = {
   backendTools: read("backend/routes/tools.test.js"),
+  backendRunComparison: read("backend/routes/tools.test.js"),
   personalBackend: read("backend/routes/personal.test.js"),
   harvestApi: read("tests/unit/harvestBatches-api.test.ts"),
   harvest: read("tests/unit/HarvestReadinessToolScreen.test.tsx"),
@@ -86,9 +91,16 @@ const tests = {
   ["dry/cure overdry risk", /calculateDryCureGuard[\s\S]*overdryRisk/],
   ["dry/cure dew point", /calculateDryCureGuard[\s\S]*dewPointF/],
   ["dry/cure tasks", /calculateDryCureGuard[\s\S]*taskSuggestions/],
-  ["run comparison best/worst", /calculateRunComparison[\s\S]*bestRun[\s\S]*worstRun/],
+  [
+    "run comparison objective without hidden overall score",
+    /calculateRunComparison[\s\S]*objectiveLeader[\s\S]*not an overall best-run ranking/
+  ],
   ["run comparison missing data", /calculateRunComparison[\s\S]*missingData/],
   ["run comparison next-run tasks", /calculateRunComparison[\s\S]*tasksToCreate/],
+  [
+    "run comparison causation limit",
+    /calculateRunComparison[\s\S]*cannot establish causation/
+  ],
   ["auto calendar stage timeline", /calculateAutoGrowCalendar[\s\S]*stageTimeline/],
   ["auto calendar task schedule", /calculateAutoGrowCalendar[\s\S]*taskSchedule/],
   [
@@ -98,6 +110,35 @@ const tests = {
 ].forEach(([description, pattern]) => {
   requireText("tool calculators", calculators, pattern, description);
 });
+
+[
+  ["owned saved-grow history loader", /buildRunComparisonHistory/],
+  [
+    "two-to-five grow selection",
+    /Select at least two saved grows[\s\S]*no more than five/
+  ],
+  ["saved logs and tasks", /GrowLog\.find[\s\S]*Task\.find/],
+  ["saved ToolRuns and diagnoses", /ToolRun\.find[\s\S]*Diagnosis\.find/],
+  [
+    "saved module records and telemetry",
+    /GrowpathModuleRecord\.find[\s\S]*TelemetrySource\.find/
+  ],
+  ["synthetic telemetry exclusion", /synthetic !== true/]
+].forEach(([description, pattern]) => {
+  requireText(
+    "run comparison history service",
+    runComparisonHistory,
+    pattern,
+    description
+  );
+});
+
+requireText(
+  "tools route",
+  toolsRoute,
+  /router\.post\("\/run-comparison\/from-grows"[\s\S]*buildRunComparisonHistory/,
+  "owned saved-grow comparison route"
+);
 
 [
   ["harvest batch model", /HarvestBatchSchema/],
@@ -193,9 +234,17 @@ const tests = {
     screens.dryCure,
     /dry_cure_condition_check[\s\S]*dry_cure_outcome_notes/
   ],
-  ["run comparison ToolRun screen", screens.runComparison, /tool="run-comparison"/],
-  ["run comparison next-run tasks", screens.runComparison, /Create Next-Run Tasks/],
-  ["run comparison schedule metadata", screens.runComparison, /run_comparison_followup/],
+  [
+    "run comparison shared saved-history workspace",
+    screens.runComparison,
+    /RunComparisonWorkspace/
+  ],
+  [
+    "run comparison next-run tasks",
+    runComparisonWorkspace,
+    /Create Reviewed Next-Run Tasks/
+  ],
+  ["run comparison schedule metadata", runComparisonWorkspace, /run_comparison_followup/],
   ["auto calendar ToolRun screen", screens.autoCalendar, /tool="auto-grow-calendar"/],
   ["auto calendar task action", screens.autoCalendar, /Create Calendar Tasks/],
   ["auto calendar schedule metadata", screens.autoCalendar, /grow_milestone/]
@@ -306,7 +355,12 @@ const tests = {
   [
     "run comparison UI tests",
     tests.runComparison,
-    /creates next-run tasks from run comparison output/
+    /compares selected owned saved grows without demo rows and creates linked actions/
+  ],
+  [
+    "saved-history run comparison backend test",
+    tests.backendRunComparison,
+    /builds and saves a cautious report from owned saved histories/
   ],
   [
     "auto calendar UI tests",

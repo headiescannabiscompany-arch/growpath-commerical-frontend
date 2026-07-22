@@ -76,10 +76,37 @@ export type CalculatorTool =
   | "crop-steering-project"
   | "pheno-hunt";
 
-export async function compareSavedGrows(growIds: string[]) {
+export type RunComparisonScope =
+  | "whole_run"
+  | "vegetative"
+  | "flowering_fruiting"
+  | "harvest_final"
+  | "post_harvest";
+
+export type RunComparisonObjective =
+  | "balanced_review"
+  | "yield"
+  | "final_quality"
+  | "issue_reduction"
+  | "task_execution"
+  | "cycle_time";
+
+export type SavedGrowComparisonInput = {
+  growIds: string[];
+  referenceGrowId?: string;
+  scope?: RunComparisonScope;
+  objective?: RunComparisonObjective;
+  title?: string;
+  notes?: string;
+};
+
+export async function compareSavedGrows(input: SavedGrowComparisonInput) {
   const response: any = await apiRequest("/api/tools/run-comparison/from-grows", {
     method: "POST",
-    body: { growIds, growId: growIds[0] }
+    body: {
+      ...input,
+      growId: input.referenceGrowId || input.growIds[0]
+    }
   });
   return {
     toolRun: normalizeToolRun(response?.toolRun || response?.data?.toolRun),

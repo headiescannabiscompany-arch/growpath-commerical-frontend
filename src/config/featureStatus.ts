@@ -663,13 +663,24 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     key: "tools.run_comparison",
     title: "Run-To-Run Comparison",
     description:
-      "Compare grows by yield, timing, issues, environment, feeding, quality, and keeper score.",
+      "Compare owned saved grow histories by evidence coverage, equivalent stages, recorded outcomes, and cautious associations.",
     area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/run-comparison",
     hubVisible: false,
+    acceptsGrowContext: true,
+    experience: {
+      mode: "calculated",
+      aiCredits: "never",
+      grow: "required",
+      audience: "general",
+      inputSummary:
+        "Two to five owned saved grows, one reference run, an equivalent scope, and a decision objective.",
+      outputSummary:
+        "Evidence inventory, comparable recorded differences, cautious associated drivers, missing information, and next-run tasks."
+    },
     internalNote:
-      "Approved beta comparison workflow; keep visible unless the user later decides it is too large."
+      "The canonical entry is the selected grow workspace; the deep tool route remains for saved links."
   },
   {
     key: "tools.auto_grow_calendar",

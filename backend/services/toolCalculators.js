@@ -2354,197 +2354,506 @@ function calculateCloneRooting(input = {}) {
 }
 
 function calculateRunComparison(input = {}) {
-  const runs = Array.isArray(input.runs) ? input.runs : [];
-  if (runs.length < 2) throw new Error("At least two runs are required for comparison");
-  const normalized = runs.map((run, index) => {
-    const yieldAmount = Number(run.yieldAmount ?? run.yield ?? 0);
-    const qualityScore = Number(run.qualityScore ?? 0);
-    const issueCount = Number(run.issueCount ?? 0);
-    const days = Number(run.days ?? run.totalDays ?? 0);
-    const taskCompletionRate =
-      run.taskCompletionRate == null ? null : Number(run.taskCompletionRate);
-    const averageVpd = run.averageVpd == null ? null : Number(run.averageVpd);
-    const averageDli = run.averageDli == null ? null : Number(run.averageDli);
-    const dryDays = run.dryDays == null ? null : Number(run.dryDays);
-    const score =
-      yieldAmount * 0.4 +
-      qualityScore * 8 -
-      issueCount * 4 -
-      Math.max(0, days - 120) * 0.2;
-    return {
-      id: String(run.id || run.growId || `run_${index + 1}`),
-      name: String(run.name || run.cultivar || `Run ${index + 1}`),
-      cultivar: run.cultivar || null,
-      yieldAmount,
-      qualityScore,
-      issueCount,
-      days,
-      taskCompletionRate: Number.isFinite(taskCompletionRate) ? taskCompletionRate : null,
-      averageVpd: Number.isFinite(averageVpd) ? averageVpd : null,
-      averageDli: Number.isFinite(averageDli) ? averageDli : null,
-      dryDays: Number.isFinite(dryDays) ? dryDays : null,
-      score: Number(score.toFixed(2)),
-      notes: String(run.notes || "")
-    };
-  });
-  const ranked = [...normalized].sort((a, b) => b.score - a.score);
-  const bestRun = ranked[0];
-  const worstRun = ranked[ranked.length - 1];
-  const differences = {
-    yieldSpread: Number(
-      (
-        Math.max(...normalized.map((r) => r.yieldAmount)) -
-        Math.min(...normalized.map((r) => r.yieldAmount))
-      ).toFixed(2)
-    ),
-    qualitySpread: Number(
-      (
-        Math.max(...normalized.map((r) => r.qualityScore)) -
-        Math.min(...normalized.map((r) => r.qualityScore))
-      ).toFixed(2)
-    ),
-    issueSpread:
-      Math.max(...normalized.map((r) => r.issueCount)) -
-      Math.min(...normalized.map((r) => r.issueCount))
+  const suppliedRuns = Array.isArray(input.runs) ? input.runs : [];
+  const legacySelections = suppliedRuns.length
+    ? []
+    : parseList(input.grows)
+        .map((grow, index) => {
+          const name = String(
+            typeof grow === "string" ? grow : grow?.name || grow?.label || ""
+          ).trim();
+          if (!name) return null;
+          return {
+            id: `legacy_selection_${index + 1}`,
+            growId: `legacy_selection_${index + 1}`,
+            name,
+            missingFields: [
+              "owned saved-history evidence was not loaded; reopen Run Comparison and select saved grows"
+            ],
+            evidenceInventory: {}
+          };
+        })
+        .filter(Boolean);
+  const runs = suppliedRuns.length ? suppliedRuns : legacySelections;
+  const legacySelectionOnly = !suppliedRuns.length && legacySelections.length >= 2;
+  if (runs.length < 2) throw new Error("At least two saved grows are required");
+  if (runs.length > 5) throw new Error("A maximum of five saved grows can be compared");
+  const valueOrNull = (value) => {
+    if (value == null || value === "") return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   };
-  const missingData = [];
-  const optionalFields = [
-    ["taskCompletionRate", "task completion"],
-    ["averageVpd", "environment/VPD"],
-    ["averageDli", "light/DLI"],
-    ["dryDays", "dry/cure timing"]
+  const textOrNull = (value) => String(value || "").trim() || null;
+  const normalized = runs.map((run, index) => ({
+    ...run,
+    id: String(run.id || run.growId || `run_${index + 1}`),
+    growId: String(run.growId || run.id || `run_${index + 1}`),
+    name: String(run.name || `Saved grow ${index + 1}`),
+    crop: textOrNull(run.crop),
+    cultivar: textOrNull(run.cultivar),
+    yieldAmount: valueOrNull(run.yieldAmount),
+    yieldUnit: textOrNull(run.yieldUnit),
+    qualityScore: valueOrNull(run.qualityScore),
+    qualityScale: textOrNull(run.qualityScale),
+    issueCount: valueOrNull(run.issueCount),
+    taskCompletionRate: valueOrNull(run.taskCompletionRate),
+    averageVpd: valueOrNull(run.averageVpd),
+    averageDli: valueOrNull(run.averageDli),
+    dryDays: valueOrNull(run.dryDays),
+    cycleDays: valueOrNull(run.cycleDays),
+    missingFields: Array.isArray(run.missingFields)
+      ? run.missingFields.map(String).filter(Boolean)
+      : [],
+    evidenceInventory:
+      run.evidenceInventory && typeof run.evidenceInventory === "object"
+        ? run.evidenceInventory
+        : {}
+  }));
+  const referenceRun =
+    normalized.find(
+      (run) => run.id === String(input.referenceGrowId || input.growId || "")
+    ) || normalized[0];
+  const comparisonRuns = normalized.filter((run) => run.id !== referenceRun.id);
+  const scope = [
+    "whole_run",
+    "vegetative",
+    "flowering_fruiting",
+    "harvest_final",
+    "post_harvest"
+  ].includes(String(input.scope || ""))
+    ? String(input.scope)
+    : "whole_run";
+  const objective = [
+    "balanced_review",
+    "yield",
+    "final_quality",
+    "issue_reduction",
+    "task_execution",
+    "cycle_time"
+  ].includes(String(input.objective || ""))
+    ? String(input.objective)
+    : "balanced_review";
+  const metricDefinitions = [
+    {
+      key: "yieldAmount",
+      label: "Recorded yield",
+      unitKey: "yieldUnit",
+      objective: "yield",
+      direction: "max"
+    },
+    {
+      key: "qualityScore",
+      label: "Recorded final-quality score",
+      unitKey: "qualityScale",
+      objective: "final_quality",
+      direction: "max"
+    },
+    {
+      key: "issueCount",
+      label: "Recorded diagnosis count",
+      unit: "diagnoses",
+      objective: "issue_reduction",
+      direction: "min"
+    },
+    {
+      key: "taskCompletionRate",
+      label: "Task completion",
+      unit: "%",
+      objective: "task_execution",
+      direction: "max"
+    },
+    {
+      key: "averageVpd",
+      label: "Average recorded VPD",
+      unit: "kPa"
+    },
+    {
+      key: "averageDli",
+      label: "Average recorded DLI",
+      unit: "mol/m2/day"
+    },
+    { key: "dryDays", label: "Recorded dry duration", unit: "days" },
+    {
+      key: "cycleDays",
+      label: "Recorded run duration",
+      unit: "days",
+      objective: "cycle_time",
+      direction: "min"
+    }
   ];
-  optionalFields.forEach(([field, label]) => {
-    const missingRuns = normalized
-      .filter((run) => run[field] == null)
-      .map((run) => run.name);
-    if (missingRuns.length) {
-      missingData.push({ field, label, missingRuns });
+  const keyDifferences = [];
+  const missingData = normalized.flatMap((run) =>
+    run.missingFields.map((field) => ({
+      growId: run.growId,
+      growName: run.name,
+      field,
+      reason: "No comparable saved evidence was found."
+    }))
+  );
+  const comparedMetricKeys = new Set();
+  comparisonRuns.forEach((run) => {
+    metricDefinitions.forEach((metric) => {
+      const referenceValue = referenceRun[metric.key];
+      const comparisonValue = run[metric.key];
+      if (referenceValue == null || comparisonValue == null) return;
+      const referenceUnit = metric.unitKey ? referenceRun[metric.unitKey] : metric.unit;
+      const comparisonUnit = metric.unitKey ? run[metric.unitKey] : metric.unit;
+      if (!referenceUnit || !comparisonUnit || referenceUnit !== comparisonUnit) {
+        missingData.push({
+          growId: run.growId,
+          growName: run.name,
+          field: metric.label,
+          reason: `Units or scoring scales do not match the reference run (${referenceUnit || "unknown"} vs ${comparisonUnit || "unknown"}).`
+        });
+        return;
+      }
+      const delta = Number((comparisonValue - referenceValue).toFixed(3));
+      comparedMetricKeys.add(metric.key);
+      keyDifferences.push({
+        category: metric.key,
+        label: metric.label,
+        referenceGrowId: referenceRun.growId,
+        referenceRun: referenceRun.name,
+        referenceValue,
+        comparisonGrowId: run.growId,
+        comparisonRun: run.name,
+        comparisonValue,
+        delta,
+        unit: referenceUnit,
+        interpretation:
+          delta === 0
+            ? "The saved values are the same."
+            : `${run.name} is ${Math.abs(delta)} ${referenceUnit} ${delta > 0 ? "higher" : "lower"} than the reference record.`,
+        limitation: "This recorded difference does not establish what caused it."
+      });
+    });
+  });
+  const knownCultivars = normalized.map((run) => run.cultivar).filter(Boolean);
+  const knownCrops = normalized.map((run) => run.crop).filter(Boolean);
+  const sameCultivar =
+    knownCultivars.length === normalized.length
+      ? knownCultivars.every((value) => value === knownCultivars[0])
+      : null;
+  const sameCrop =
+    knownCrops.length === normalized.length
+      ? knownCrops.every((value) => value === knownCrops[0])
+      : null;
+  const associatedDrivers = [];
+  comparisonRuns.forEach((run) => {
+    if (referenceRun.crop && run.crop && referenceRun.crop !== run.crop) {
+      associatedDrivers.push({
+        driver: "Different crops",
+        comparisonRun: run.name,
+        evidence: `${referenceRun.name} records ${referenceRun.crop}; ${run.name} records ${run.crop}.`,
+        possibleAssociation:
+          "Crop biology can explain outcome differences and limits process conclusions.",
+        alternatives: [
+          "cultivar or phenotype",
+          "plant count",
+          "space",
+          "record coverage"
+        ],
+        nextCheck:
+          "Compare within the same crop before changing a repeatable grow method.",
+        confidence: "high_for_difference_not_effect"
+      });
+    } else if (
+      referenceRun.cultivar &&
+      run.cultivar &&
+      referenceRun.cultivar !== run.cultivar
+    ) {
+      associatedDrivers.push({
+        driver: "Different cultivar or phenotype",
+        comparisonRun: run.name,
+        evidence: `${referenceRun.name} records ${referenceRun.cultivar}; ${run.name} records ${run.cultivar}.`,
+        possibleAssociation:
+          "Genetic or phenotype differences may be associated with yield, timing, issue and quality differences.",
+        alternatives: [
+          "environment",
+          "irrigation",
+          "nutrition",
+          "plant count",
+          "post-harvest handling"
+        ],
+        nextCheck: "Repeat the comparison with matched cultivar or clone-line evidence.",
+        confidence: "moderate"
+      });
+    }
+    const yieldDifference = keyDifferences.find(
+      (item) => item.category === "yieldAmount" && item.comparisonGrowId === run.growId
+    );
+    const qualityDifference = keyDifferences.find(
+      (item) => item.category === "qualityScore" && item.comparisonGrowId === run.growId
+    );
+    const environmentDifferences = keyDifferences.filter(
+      (item) =>
+        ["averageVpd", "averageDli"].includes(item.category) &&
+        item.comparisonGrowId === run.growId &&
+        item.delta !== 0
+    );
+    if ((yieldDifference || qualityDifference) && environmentDifferences.length) {
+      associatedDrivers.push({
+        driver: "Environment changed alongside an outcome",
+        comparisonRun: run.name,
+        evidence: environmentDifferences
+          .map((item) => `${item.label} changed by ${item.delta} ${item.unit}`)
+          .join("; "),
+        possibleAssociation:
+          "The recorded environment may be associated with the outcome difference, but the comparison cannot establish causation.",
+        alternatives: [
+          "cultivar or phenotype",
+          "plant count",
+          "nutrition",
+          "irrigation",
+          "issue pressure",
+          "record coverage"
+        ],
+        nextCheck:
+          "Compare equivalent stage windows and repeat one controlled change with the same cultivar and measurement method.",
+        confidence: "low"
+      });
+    }
+    const issueDifference = keyDifferences.find(
+      (item) => item.category === "issueCount" && item.comparisonGrowId === run.growId
+    );
+    if (
+      (yieldDifference || qualityDifference) &&
+      issueDifference &&
+      issueDifference.delta !== 0
+    ) {
+      associatedDrivers.push({
+        driver: "Issue pressure changed alongside an outcome",
+        comparisonRun: run.name,
+        evidence: `${issueDifference.label} changed by ${issueDifference.delta} ${issueDifference.unit}.`,
+        possibleAssociation:
+          "Recorded issue pressure may be associated with yield or final quality.",
+        alternatives: [
+          "diagnosis logging frequency",
+          "severity",
+          "cultivar",
+          "environment",
+          "treatment timing"
+        ],
+        nextCheck:
+          "Compare severity, duration, treatment and recovery records-not diagnosis count alone.",
+        confidence: "low_to_moderate"
+      });
+    }
+    const dryDifference = keyDifferences.find(
+      (item) => item.category === "dryDays" && item.comparisonGrowId === run.growId
+    );
+    if (qualityDifference && dryDifference && dryDifference.delta !== 0) {
+      associatedDrivers.push({
+        driver: "Post-harvest duration changed alongside final quality",
+        comparisonRun: run.name,
+        evidence: `Dry duration changed by ${dryDifference.delta} days while the saved quality score changed by ${qualityDifference.delta} ${qualityDifference.unit}.`,
+        possibleAssociation:
+          "Post-harvest handling may be associated with the quality difference, but elapsed time alone does not describe drying conditions or completion.",
+        alternatives: [
+          "temperature/RH",
+          "airflow",
+          "material density",
+          "harvest timing",
+          "cultivar"
+        ],
+        nextCheck:
+          "Compare measured dry/cure conditions, representative material checks and the same quality rubric.",
+        confidence: "low"
+      });
     }
   });
-  const sameCultivar = normalized.every(
-    (run) => run.cultivar && run.cultivar === normalized[0].cultivar
+  const objectiveMetric = metricDefinitions.find(
+    (metric) => metric.objective === objective
   );
-  const keyDifferences = [
+  let objectiveLeader = null;
+  if (objectiveMetric) {
+    const eligible = normalized.filter((run) => run[objectiveMetric.key] != null);
+    const unitValues = objectiveMetric.unitKey
+      ? [...new Set(eligible.map((run) => run[objectiveMetric.unitKey]).filter(Boolean))]
+      : [objectiveMetric.unit];
+    if (eligible.length === normalized.length && unitValues.length === 1) {
+      const sorted = [...eligible].sort((left, right) =>
+        objectiveMetric.direction === "min"
+          ? left[objectiveMetric.key] - right[objectiveMetric.key]
+          : right[objectiveMetric.key] - left[objectiveMetric.key]
+      );
+      objectiveLeader = {
+        growId: sorted[0].growId,
+        name: sorted[0].name,
+        objective,
+        metric: objectiveMetric.label,
+        recordedValue: sorted[0][objectiveMetric.key],
+        unit: unitValues[0],
+        label: `${objectiveMetric.direction === "min" ? "Lowest" : "Highest"} recorded ${objectiveMetric.label.toLowerCase()}`,
+        limitation:
+          "This is the selected objective only, not an overall best-run ranking."
+      };
+    }
+  }
+  const sharedMetricCount = comparedMetricKeys.size;
+  const evidenceStatus = legacySelectionOnly
+    ? "selection_only_requires_history"
+    : sharedMetricCount
+      ? missingData.length
+        ? "limited_comparison"
+        : "measured_comparison"
+      : "insufficient_comparable_evidence";
+  const confidence =
+    sharedMetricCount >= 5 && sameCrop !== false
+      ? "moderate"
+      : sharedMetricCount >= 2
+        ? "low_to_moderate"
+        : "low";
+  const limitations = [
+    ...(legacySelectionOnly
+      ? [
+          "Only grow labels were supplied. No owned logs, tasks, diagnoses, ToolRuns, module records or telemetry were loaded for comparison."
+        ]
+      : []),
+    "This is an observational comparison of saved records and cannot establish causation.",
+    "Missing records remain unknown and are not converted to zero.",
+    "One comparison cannot establish a universal cultivar, environment, nutrition, irrigation or post-harvest method.",
+    ...(scope === "whole_run"
+      ? [
+          "Whole-run averages can hide stage-specific differences; use an equivalent stage scope when records support it."
+        ]
+      : []),
+    ...(sameCrop === false
+      ? ["Different crops materially limit process conclusions."]
+      : []),
+    ...(sameCultivar === false
+      ? [
+          "Different cultivars or phenotypes are competing explanations for recorded differences."
+        ]
+      : []),
+    ...(missingData.length
+      ? [
+          "Confidence is limited by missing or non-comparable fields listed in the report."
+        ]
+      : [])
+  ];
+  const recommendations = [
+    ...(legacySelectionOnly
+      ? [
+          "Open Run Comparison and select two to five saved grows so GrowPath can load owned history before reporting differences."
+        ]
+      : []),
+    "Review the saved evidence inventory before adopting any next-run change.",
+    "Repeat one controlled change at an equivalent stage and preserve the same measurement method.",
+    "Record plant count, cultivar/line, yield with unit, final-quality rubric, issue severity, task completion, environment and dry/cure outcome for the next comparison.",
+    ...(objectiveLeader
+      ? [
+          `Use ${objectiveLeader.name} only as the recorded ${objective.replaceAll("_", " ")} reference-not an overall best run.`
+        ]
+      : [
+          "Choose an objective only after comparable outcome evidence exists for every selected run."
+        ])
+  ];
+  const tasksToCreate = [
     {
-      category: "yield",
-      difference: `Yield spread is ${differences.yieldSpread}.`,
-      likelyImpact:
-        differences.yieldSpread > 0
-          ? "Yield changed between selected runs."
-          : "No yield spread entered.",
-      confidence: "medium"
+      title: "Review run-comparison evidence gaps",
+      description:
+        "Fill the missing fields and confirm units, scales, cultivar/line and equivalent stage before changing the next run.",
+      dueInDays: 1,
+      priority: missingData.length ? "high" : "medium",
+      sourceStage: "run_comparison_evidence_review"
     },
     {
-      category: "quality",
-      difference: `Quality score spread is ${differences.qualitySpread}.`,
-      likelyImpact:
-        differences.qualitySpread > 0
-          ? "Final product quality changed between runs."
-          : "Quality scores are similar.",
-      confidence: "medium"
+      title: "Choose one controlled next-run change",
+      description:
+        "Turn one cautious association into a measured trial while keeping other important inputs stable.",
+      dueInDays: 3,
+      priority: "medium",
+      sourceStage: "run_comparison_controlled_change"
     },
     {
-      category: "issues",
-      difference: `Issue count spread is ${differences.issueSpread}.`,
-      likelyImpact:
-        differences.issueSpread > 2
-          ? "Issue pressure varied materially."
-          : "Issue pressure was similar.",
-      confidence: "medium"
+      title: "Schedule equivalent-stage outcome review",
+      description:
+        "Use the same measurement method and final-quality rubric at the comparable stage in the next run.",
+      dueInDays: 7,
+      priority: "medium",
+      sourceStage: "run_comparison_outcome_review"
     }
   ];
-  const likelyDrivers = [];
-  if (bestRun.yieldAmount > worstRun.yieldAmount) {
-    likelyDrivers.push({
-      driver: "Higher yield run",
-      evidence: `${bestRun.name} yielded ${bestRun.yieldAmount} versus ${worstRun.yieldAmount}.`,
-      possibleEffect:
-        "May be associated with better environment, cultivar fit, veg timing, nutrition, or fewer issues.",
-      confidence: "low_to_medium"
+  const evidenceTotals = normalized.reduce((totals, run) => {
+    Object.entries(run.evidenceInventory || {}).forEach(([key, value]) => {
+      if (typeof value === "number") totals[key] = (totals[key] || 0) + value;
     });
-  }
-  if (bestRun.issueCount < worstRun.issueCount) {
-    likelyDrivers.push({
-      driver: "Lower issue pressure",
-      evidence: `${bestRun.name} had ${bestRun.issueCount} issue(s) versus ${worstRun.issueCount}.`,
-      possibleEffect: "Fewer problems may have supported yield or quality.",
-      confidence: "medium"
-    });
-  }
-  if (!sameCultivar) {
-    likelyDrivers.push({
-      driver: "Cultivar/pheno differences",
-      evidence: "Runs do not all share the same cultivar field.",
-      possibleEffect: "Genetic differences may explain some performance variation.",
-      confidence: "medium"
-    });
-  }
-  const structuredSummary = {
-    growsCompared: normalized.map((run) => ({
-      id: run.id,
+    return totals;
+  }, {});
+  return {
+    comparisonTitle:
+      String(input.comparisonTitle || "").trim() ||
+      `Run comparison: ${normalized.map((run) => run.name).join(" vs ")}`,
+    evidenceStatus,
+    providerLabel: "GrowPath saved-history comparison (deterministic, no AI credit)",
+    aiCreditUse: { required: false, creditsUsed: 0, optionalExplanationAvailable: true },
+    aiSummary: {
+      status: "available_on_request",
+      message:
+        "Ask AI can explain this saved deterministic report using the same evidence, missing-data and causation limits."
+    },
+    scope,
+    objective,
+    referenceRun: {
+      growId: referenceRun.growId,
+      name: referenceRun.name,
+      crop: referenceRun.crop,
+      cultivar: referenceRun.cultivar
+    },
+    comparisonRuns: comparisonRuns.map((run) => ({
+      growId: run.growId,
       name: run.name,
+      crop: run.crop,
       cultivar: run.cultivar
     })),
-    summaryStats: {
-      yieldDifference: differences.yieldSpread,
-      qualityDifference: differences.qualitySpread,
-      issueCountDifference: differences.issueSpread,
-      confidence: missingData.length ? "limited_by_missing_data" : "medium"
+    objectiveLeader,
+    snapshots: normalized,
+    evidenceTotals,
+    structuredSummary: {
+      growsCompared: normalized.map((run) => ({
+        growId: run.growId,
+        name: run.name,
+        crop: run.crop,
+        cultivar: run.cultivar
+      })),
+      sameCrop,
+      sameCultivar,
+      scope,
+      objective,
+      sharedMetricCount,
+      confidence
     },
     keyDifferences,
+    associatedDrivers,
+    likelyDrivers: associatedDrivers,
     missingData,
-    sameCultivar
-  };
-  return {
-    comparedRuns: normalized,
-    bestRun,
-    worstRun,
-    differences,
-    structuredSummary,
-    keyDifferences,
-    likelyDrivers,
-    improvements: [
-      {
-        area: "overall score",
-        whatImproved: `${bestRun.name} ranks highest from entered yield, quality, issue, and timing data.`,
-        evidence: `Score ${bestRun.score}`
-      }
-    ],
-    regressions: [
-      {
-        area: "review run",
-        whatGotWorse: `${worstRun.name} ranks lowest from entered summary data.`,
-        evidence: `Score ${worstRun.score}`
-      }
-    ],
-    missingData,
-    patterns: [
-      differences.issueSpread > 2
-        ? "Issue pressure varied materially between runs."
-        : "Issue pressure was similar across selected runs.",
-      differences.yieldSpread > 0
-        ? "Yield changed between runs; compare plant count, veg length, cultivar, environment, and feed history."
-        : "Yield data did not show a spread."
-    ],
-    recommendationsForNextRun: [
-      `Use ${bestRun.name} as the baseline notes package for the next run.`,
-      "Compare logs, tool runs, diagnoses, environment, feed strength, dry/cure notes, and final quality before changing the plan."
-    ],
-    suggestedTasks: [
-      {
-        title: `Review ${bestRun.name} as next-run baseline`,
-        dueInDays: 1,
-        priority: "medium"
-      },
-      {
-        title: "Fill missing run comparison data",
-        dueInDays: 3,
-        priority: missingData.length ? "high" : "medium"
-      }
-    ],
-    uncertainty:
-      "This comparison uses entered summary data. Full history comparison improves when yield, logs, tasks, diagnoses, tool runs, and dry/cure outcomes are linked."
+    confidence,
+    limitations,
+    recommendations,
+    recommendationsForNextRun: recommendations,
+    tasksToCreate,
+    nextRunTasks: tasksToCreate,
+    methodIds: ["run-comparison"],
+    sourceIds: legacySelectionOnly
+      ? ["growpath-method"]
+      : ["growpath-method", "user-observation"],
+    evidenceUsed: legacySelectionOnly
+      ? ["selected grow labels only; saved history was not loaded"]
+      : [
+          "owned saved grow records",
+          "grow logs",
+          "tasks",
+          "ToolRuns and module records",
+          "diagnoses",
+          "non-synthetic telemetry when linked"
+        ],
+    warnings: limitations,
+    summary: legacySelectionOnly
+      ? "The selection was saved, but no comparison was performed. Reopen Run Comparison and select saved grows to load owned evidence."
+      : evidenceStatus === "insufficient_comparable_evidence"
+        ? "The selected grows were saved, but they do not yet share enough comparable evidence for a measured difference."
+        : `${keyDifferences.length} recorded difference(s) were found across ${sharedMetricCount} comparable metric(s); associations are not proof of cause.`
   };
 }
 
@@ -3218,7 +3527,7 @@ function calculateTissueCulture(input = {}) {
       ? "Keep the batch blocked from production/storage release until each listed blocker is reviewed and resolved by the responsible owner."
       : "Review the complete evidence packet and owner-approved SOP before release; this calculator does not release material automatically.",
     "Compare outcomes by genotype/source line, explant type, SOP version, media lot, transfer cycle, technician, vessel position, measured environment, and final surviving plants.",
-    "Treat published media, temperature, light, hormone, and timing values as protocol-specific contextâ€”not universal targets."
+    "Treat published media, temperature, light, hormone, and timing values as protocol-specific context-not universal targets."
   ]);
 
   const projectStatus = likelyFailureModes.some((item) => item.severity === "high")
