@@ -375,6 +375,11 @@ describe("CommercialFeedRoute", () => {
     expect(
       screen.getByText(/Facility feed campaigns are outreach placements/i)
     ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("No public course records are available yet.")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Linked course")).toBeNull();
+    expect(screen.getByLabelText("Show advanced destination references")).toBeTruthy();
   });
 
   it("lets personal users view campaigns without campaign creation controls", async () => {
@@ -457,6 +462,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Publish facility outreach").props.accessibilityState
         ?.disabled
     ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Show advanced destination references"));
     fireEvent.changeText(screen.getByLabelText("Linked course"), "course-ipm-1");
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign image URL"),
@@ -485,6 +491,100 @@ describe("CommercialFeedRoute", () => {
           imageUrl: "https://example.com/ipm-training.jpg"
         })
       })
+    );
+  });
+
+  it("selects named public Facility outreach destinations without exposing raw ids", async () => {
+    mockMode = "facility";
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/courses") {
+        return Promise.resolve({
+          courses: [
+            {
+              _id: "course-public-ipm-1",
+              title: "Integrated Pest Management Basics",
+              shortDescription: "Scouting and prevention training"
+            }
+          ]
+        });
+      }
+      if (path === "/api/lives") {
+        return Promise.resolve({
+          lives: [
+            {
+              id: "live-public-1",
+              title: "Weekly Facility Safety Review",
+              status: "scheduled"
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/courses/public") {
+        return Promise.resolve({
+          courses: [
+            {
+              id: "course-commercial-safety-1",
+              title: "Commercial Facility Safety",
+              status: "published"
+            }
+          ]
+        });
+      }
+      if (path === "/api/forum/feed/latest") {
+        return Promise.resolve({
+          posts: [
+            {
+              id: "thread-public-1",
+              title: "Ask an IPM Scout",
+              categoryName: "IPM"
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({ items: [] });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Integrated Pest Management Basics")).toBeTruthy()
+    );
+    expect(screen.getByText("Weekly Facility Safety Review")).toBeTruthy();
+    expect(screen.getByText("Commercial Facility Safety")).toBeTruthy();
+    expect(screen.getByText("Ask an IPM Scout")).toBeTruthy();
+    expect(screen.queryByText("course-public-ipm-1")).toBeNull();
+    expect(screen.queryByLabelText("Linked course")).toBeNull();
+
+    fireEvent.press(
+      screen.getByLabelText("Select Course Integrated Pest Management Basics")
+    );
+    expect(
+      screen.getByText("Selected course: Integrated Pest Management Basics")
+    ).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "IPM training");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign body"),
+      "Public facility training on scout records."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "https://example.com/ipm-training.jpg"
+    );
+    expect(screen.getByText("Ready to publish.")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Publish facility outreach"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ linkedCourseId: "course-public-ipm-1" })
+        })
+      )
     );
   });
 

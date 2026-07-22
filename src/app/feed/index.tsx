@@ -50,6 +50,18 @@ type CampaignKind =
   | "facility_outreach"
   | "general_campaign";
 
+type DestinationOption = {
+  id: string;
+  label: string;
+  detail?: string;
+};
+
+type DestinationOptions = {
+  courses: DestinationOption[];
+  lives: DestinationOption[];
+  forumThreads: DestinationOption[];
+};
+
 const COMMERCIAL_CAMPAIGN_KINDS: CampaignKind[] = [
   "product_ad",
   "course_ad",
@@ -265,6 +277,139 @@ function splitTags(value: string) {
     .filter(Boolean);
 }
 
+function recordsFromEnvelope(value: any, keys: string[]) {
+  if (Array.isArray(value)) return value;
+  for (const key of keys) {
+    if (Array.isArray(value?.[key])) return value[key];
+    if (Array.isArray(value?.data?.[key])) return value.data[key];
+  }
+  if (Array.isArray(value?.items)) return value.items;
+  if (Array.isArray(value?.data?.items)) return value.data.items;
+  if (Array.isArray(value?.data)) return value.data;
+  return [];
+}
+
+function destinationOptionsFromRecords(
+  value: any,
+  keys: string[],
+  idKeys: string[],
+  labelKeys: string[],
+  detailKeys: string[] = []
+): DestinationOption[] {
+  const seen = new Set<string>();
+  return recordsFromEnvelope(value, keys)
+    .map((record: any) => {
+      const id = idKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      const label = labelKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      const detail = detailKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      if (!id || !label || seen.has(id.trim())) return null;
+      seen.add(id.trim());
+      return {
+        id: id.trim(),
+        label: label.trim(),
+        detail: detail?.trim()
+      };
+    })
+    .filter((option: DestinationOption | null): option is DestinationOption =>
+      Boolean(option)
+    )
+    .slice(0, 12);
+}
+
+function mergeDestinationOptions(...lists: DestinationOption[][]) {
+  const options = new Map<string, DestinationOption>();
+  for (const option of lists.flat()) {
+    if (!options.has(option.id)) options.set(option.id, option);
+  }
+  return Array.from(options.values()).slice(0, 12);
+}
+
+function DestinationPickerGroup({
+  title,
+  kind,
+  options,
+  selectedId,
+  loading,
+  onChange
+}: {
+  title: string;
+  kind: string;
+  options: DestinationOption[];
+  selectedId: string;
+  loading: boolean;
+  onChange: (id: string) => void;
+}) {
+  const selected = options.find((option) => option.id === selectedId);
+  return (
+    <View style={styles.destinationGroup} accessibilityLabel={`${title} destinations`}>
+      <Text style={styles.destinationTitle}>{title}</Text>
+      {loading ? (
+        <View style={styles.destinationLoading}>
+          <ActivityIndicator size="small" />
+          <Text style={styles.linkBoxText}>Loading {kind.toLowerCase()} choices...</Text>
+        </View>
+      ) : options.length ? (
+        <View style={styles.destinationGrid}>
+          {options.map((option) => {
+            const isSelected = option.id === selectedId;
+            return (
+              <Pressable
+                key={option.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${isSelected ? "Remove" : "Select"} ${kind} ${option.label}`}
+                onPress={() => onChange(isSelected ? "" : option.id)}
+                style={[
+                  styles.destinationCard,
+                  isSelected ? styles.destinationCardSelected : null
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.destinationCardTitle,
+                    isSelected ? styles.destinationCardTitleSelected : null
+                  ]}
+                >
+                  {option.label}
+                </Text>
+                {option.detail ? (
+                  <Text
+                    style={[
+                      styles.destinationCardDetail,
+                      isSelected ? styles.destinationCardDetailSelected : null
+                    ]}
+                  >
+                    {option.detail}
+                  </Text>
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : (
+        <Text style={styles.emptyDestinationText}>
+          No public {kind.toLowerCase()} records are available yet.
+        </Text>
+      )}
+      {selected ? (
+        <Text style={styles.selectedDestinationText}>
+          Selected {kind.toLowerCase()}: {selected.label}
+        </Text>
+      ) : selectedId ? (
+        <Text style={styles.selectedDestinationText}>
+          A manual {kind.toLowerCase()} reference is selected.
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 function campaignDestination(post: CommercialFeedCampaign) {
   const storefrontSlug = campaignStorefrontSlug(post);
   if (post.linkedProductId) {
@@ -395,6 +540,14 @@ export default function CommercialFeedRoute() {
   const [feedback, setFeedback] = useState("");
   const [analytics, setAnalytics] = useState<FeedCampaignAnalytics | null>(null);
   const [hiddenCampaignIds, setHiddenCampaignIds] = useState<string[]>([]);
+  const [destinationOptions, setDestinationOptions] = useState<DestinationOptions>({
+    courses: [],
+    lives: [],
+    forumThreads: []
+  });
+  const [destinationOptionsLoading, setDestinationOptionsLoading] = useState(false);
+  const [destinationOptionsError, setDestinationOptionsError] = useState("");
+  const [showAdvancedReferences, setShowAdvancedReferences] = useState(false);
   const recordedImpressions = useRef(new Set<string>());
 
   useEffect(() => {
@@ -471,6 +624,78 @@ export default function CommercialFeedRoute() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadDestinationOptions = useCallback(async () => {
+    if (!canAccess || !canManageCampaigns || !isFacility) return;
+    setDestinationOptionsLoading(true);
+    setDestinationOptionsError("");
+    const [courseResult, commercialCourseResult, liveResult, forumResult] =
+      await Promise.allSettled([
+        apiRequest("/api/courses"),
+        apiRequest("/api/commercial/courses/public"),
+        apiRequest("/api/lives"),
+        apiRequest("/api/forum/feed/latest", { params: { page: 1 } })
+      ]);
+    const next = {
+      courses: mergeDestinationOptions(
+        courseResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              courseResult.value,
+              ["courses", "publishedCourses"],
+              ["id", "_id", "courseId", "slug"],
+              ["title", "name"],
+              ["shortDescription", "category", "status"]
+            )
+          : [],
+        commercialCourseResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              commercialCourseResult.value,
+              ["courses", "commercialCourses"],
+              ["id", "_id", "courseId", "slug"],
+              ["title", "name"],
+              ["shortDescription", "category", "status"]
+            )
+          : []
+      ),
+      lives:
+        liveResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              liveResult.value,
+              ["lives", "sessions", "liveEvents"],
+              ["id", "_id", "sessionId", "liveId"],
+              ["title", "name"],
+              ["scheduledStart", "startsAt", "status"]
+            )
+          : [],
+      forumThreads:
+        forumResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              forumResult.value,
+              ["posts", "threads", "forumPosts"],
+              ["id", "_id", "postId", "threadId"],
+              ["title", "subject"],
+              ["categoryName", "category", "createdAt"]
+            )
+          : []
+    };
+    setDestinationOptions(next);
+    const optionResults = [courseResult, commercialCourseResult, liveResult, forumResult];
+    const failedCount = optionResults.filter(
+      (result) => result.status === "rejected"
+    ).length;
+    if (failedCount) {
+      setDestinationOptionsError(
+        failedCount === optionResults.length
+          ? "Destination choices could not be loaded. Advanced references remain available."
+          : "Some destination choices could not be loaded. You can refresh or use an advanced reference."
+      );
+    }
+    setDestinationOptionsLoading(false);
+  }, [canAccess, canManageCampaigns, isFacility]);
+
+  useEffect(() => {
+    void loadDestinationOptions();
+  }, [loadDestinationOptions]);
 
   useEffect(() => {
     for (const campaign of items) {
@@ -815,69 +1040,151 @@ export default function CommercialFeedRoute() {
                 outreach can link education, lives, or Forum/Q&A, but cannot publish
                 direct sales campaigns.
               </Text>
-              {!isFacility ? (
+              {isFacility ? (
                 <>
-                  <TextInput
-                    value={linkedProductId}
-                    onChangeText={setLinkedProductId}
-                    style={styles.input}
-                    placeholder="Linked product ID or slug"
-                    autoCapitalize="none"
-                    accessibilityLabel="Linked product"
+                  <DestinationPickerGroup
+                    title="Public courses"
+                    kind="Course"
+                    options={destinationOptions.courses}
+                    selectedId={linkedCourseId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedCourseId}
                   />
-                  <TextInput
-                    value={linkedProductLineId}
-                    onChangeText={setLinkedProductLineId}
-                    style={styles.input}
-                    placeholder="Linked product line ID or slug"
-                    autoCapitalize="none"
-                    accessibilityLabel="Linked product line"
+                  <DestinationPickerGroup
+                    title="Public live events"
+                    kind="Live event"
+                    options={destinationOptions.lives}
+                    selectedId={linkedLiveId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedLiveId}
                   />
+                  <DestinationPickerGroup
+                    title="Forum/Q&A threads"
+                    kind="Forum thread"
+                    options={destinationOptions.forumThreads}
+                    selectedId={linkedForumThreadId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedForumThreadId}
+                  />
+                  {destinationOptionsError ? (
+                    <Text style={styles.warningText}>{destinationOptionsError}</Text>
+                  ) : null}
+                  <View style={styles.imageTools}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Refresh campaign destination choices"
+                      disabled={destinationOptionsLoading}
+                      onPress={loadDestinationOptions}
+                      style={[
+                        styles.secondaryButton,
+                        destinationOptionsLoading ? styles.disabled : null
+                      ]}
+                    >
+                      <Text style={styles.secondaryButtonText}>
+                        {destinationOptionsLoading
+                          ? "Loading choices..."
+                          : "Refresh choices"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${showAdvancedReferences ? "Hide" : "Show"} advanced destination references`}
+                      onPress={() => setShowAdvancedReferences((current) => !current)}
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryButtonText}>
+                        {showAdvancedReferences
+                          ? "Hide advanced references"
+                          : "Advanced references"}
+                      </Text>
+                    </Pressable>
+                  </View>
                 </>
               ) : null}
-              <TextInput
-                value={linkedCourseId}
-                onChangeText={setLinkedCourseId}
-                style={styles.input}
-                placeholder="Linked course ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked course"
-              />
-              <TextInput
-                value={linkedLiveId}
-                onChangeText={setLinkedLiveId}
-                style={styles.input}
-                placeholder="Linked live ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked live"
-              />
-              {!isFacility ? (
-                <TextInput
-                  value={linkedGrowId}
-                  onChangeText={setLinkedGrowId}
-                  style={styles.input}
-                  placeholder="Linked evidence run ID"
-                  autoCapitalize="none"
-                  accessibilityLabel="Linked evidence run"
-                />
-              ) : null}
-              <TextInput
-                value={linkedForumThreadId}
-                onChangeText={setLinkedForumThreadId}
-                style={styles.input}
-                placeholder="Linked Forum/Q&A thread ID"
-                autoCapitalize="none"
-                accessibilityLabel="Linked forum thread"
-              />
-              {!isFacility ? (
-                <TextInput
-                  value={storefrontSlug}
-                  onChangeText={setStorefrontSlug}
-                  style={styles.input}
-                  placeholder="Storefront slug"
-                  autoCapitalize="none"
-                  accessibilityLabel="Linked storefront slug"
-                />
+              {!isFacility || showAdvancedReferences ? (
+                <View
+                  style={
+                    isFacility
+                      ? styles.advancedReferenceBox
+                      : styles.manualReferenceFields
+                  }
+                >
+                  {isFacility ? (
+                    <>
+                      <Text style={styles.linkBoxTitle}>
+                        Advanced destination references
+                      </Text>
+                      <Text style={styles.linkBoxText}>
+                        Use these only when a valid published record is missing from the
+                        choices above. The campaign still links to the saved record.
+                      </Text>
+                    </>
+                  ) : null}
+                  {!isFacility ? (
+                    <>
+                      <TextInput
+                        value={linkedProductId}
+                        onChangeText={setLinkedProductId}
+                        style={styles.input}
+                        placeholder="Linked product ID or slug"
+                        autoCapitalize="none"
+                        accessibilityLabel="Linked product"
+                      />
+                      <TextInput
+                        value={linkedProductLineId}
+                        onChangeText={setLinkedProductLineId}
+                        style={styles.input}
+                        placeholder="Linked product line ID or slug"
+                        autoCapitalize="none"
+                        accessibilityLabel="Linked product line"
+                      />
+                    </>
+                  ) : null}
+                  <TextInput
+                    value={linkedCourseId}
+                    onChangeText={setLinkedCourseId}
+                    style={styles.input}
+                    placeholder="Linked course ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked course"
+                  />
+                  <TextInput
+                    value={linkedLiveId}
+                    onChangeText={setLinkedLiveId}
+                    style={styles.input}
+                    placeholder="Linked live ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked live"
+                  />
+                  {!isFacility ? (
+                    <TextInput
+                      value={linkedGrowId}
+                      onChangeText={setLinkedGrowId}
+                      style={styles.input}
+                      placeholder="Linked evidence run ID"
+                      autoCapitalize="none"
+                      accessibilityLabel="Linked evidence run"
+                    />
+                  ) : null}
+                  <TextInput
+                    value={linkedForumThreadId}
+                    onChangeText={setLinkedForumThreadId}
+                    style={styles.input}
+                    placeholder="Linked Forum/Q&A thread ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked forum thread"
+                  />
+                  {!isFacility ? (
+                    <TextInput
+                      value={storefrontSlug}
+                      onChangeText={setStorefrontSlug}
+                      style={styles.input}
+                      placeholder="Storefront slug"
+                      autoCapitalize="none"
+                      accessibilityLabel="Linked storefront slug"
+                    />
+                  ) : null}
+                </View>
               ) : null}
               <TextInput
                 value={imageUrl}
@@ -1344,6 +1651,35 @@ const styles = StyleSheet.create({
   },
   linkBoxTitle: { color: "#0F172A", fontWeight: "900" },
   linkBoxText: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
+  destinationGroup: { gap: 7, marginTop: 4 },
+  destinationTitle: { color: "#334155", fontSize: 13, fontWeight: "900" },
+  destinationLoading: { alignItems: "center", flexDirection: "row", gap: 8 },
+  destinationGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  destinationCard: {
+    backgroundColor: "white",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    minWidth: 180,
+    paddingHorizontal: 11,
+    paddingVertical: 9
+  },
+  destinationCardSelected: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
+  destinationCardTitle: { color: "#0F172A", fontWeight: "900" },
+  destinationCardTitleSelected: { color: "white" },
+  destinationCardDetail: { color: "#64748B", fontSize: 11, marginTop: 3 },
+  destinationCardDetailSelected: { color: "#CCFBF1" },
+  emptyDestinationText: { color: "#64748B", fontSize: 12, fontStyle: "italic" },
+  selectedDestinationText: { color: "#0F766E", fontSize: 12, fontWeight: "900" },
+  advancedReferenceBox: {
+    backgroundColor: "white",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 10
+  },
+  manualReferenceFields: { gap: 8 },
   imageTools: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   secondaryButton: {
     alignItems: "center",
