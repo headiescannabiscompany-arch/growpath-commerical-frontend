@@ -52,6 +52,7 @@ export type LinkedTaskDraft = {
   recurrence?: Record<string, any> | null;
   calendarType?: string | null;
   sourceStage?: string | null;
+  sourceType?: string | null;
 };
 type CreateTasksArgs = Omit<SaveAndOpenArgs, "router"> & {
   tasks: LinkedTaskDraft[];
@@ -207,7 +208,7 @@ export async function saveToolRunAndCreateTasks(
       recurrence: draft.recurrence,
       calendarType: draft.calendarType,
       sourceStage: draft.sourceStage,
-      sourceType: "tool_run",
+      sourceType: draft.sourceType || "tool_run",
       sourceObjectId: ensured.toolRunId,
       sourceToolRunId: ensured.toolRunId,
       linkedGrowId: growId,

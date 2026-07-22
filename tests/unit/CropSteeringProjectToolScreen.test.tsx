@@ -5,6 +5,7 @@ import CropSteeringProjectToolRoute from "@/app/home/personal/(tabs)/tools/crop-
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockListGrowpathModuleRecords = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -51,7 +52,8 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
+  listGrowpathModuleRecords: (...args: any[]) => mockListGrowpathModuleRecords(...args)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -88,6 +90,18 @@ describe("CropSteeringProjectToolRoute", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockListGrowpathModuleRecords.mockImplementation(async (params: any) =>
+      params.recordType === "crop_steering_project"
+        ? [
+            {
+              id: "project-1",
+              recordType: "crop_steering_project",
+              title: "Flower Room P1",
+              inputs: { steeringIntent: "generative", stage: "mid flower" }
+            }
+          ]
+        : []
+    );
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -102,6 +116,10 @@ describe("CropSteeringProjectToolRoute", () => {
       screen.getByLabelText("Crop Steering Projects Goal"),
       "generative"
     );
+    fireEvent.changeText(screen.getByLabelText("Crop Steering Projects Dryback %"), "28");
+    await waitFor(() =>
+      expect(screen.getByText("Selected project history")).toBeTruthy()
+    );
     fireEvent.press(screen.getByLabelText("Run Crop Steering Projects"));
 
     await waitFor(() =>
@@ -109,7 +127,9 @@ describe("CropSteeringProjectToolRoute", () => {
         "crop-steering-project",
         expect.objectContaining({
           growId: "grow-1",
-          steeringIntent: "generative"
+          steeringIntent: "generative",
+          projectId: "project-1",
+          drybackPercent: "28"
         })
       )
     );
@@ -135,6 +155,7 @@ describe("CropSteeringProjectToolRoute", () => {
               priority: "high",
               allDay: true,
               calendarType: "crop_steering_followup",
+              sourceType: "crop_steering",
               sourceStage: "P1",
               reminderPlan: expect.objectContaining({
                 channels: ["in_app"],
@@ -146,6 +167,7 @@ describe("CropSteeringProjectToolRoute", () => {
               title: "Compare runoff EC and pH",
               priority: "medium",
               calendarType: "crop_steering_followup",
+              sourceType: "crop_steering",
               sourceStage: "P1",
               description: expect.stringContaining("runoff")
             })
@@ -153,5 +175,51 @@ describe("CropSteeringProjectToolRoute", () => {
         })
       )
     );
+  });
+
+  it("creates and selects a durable crop steering project", async () => {
+    mockListGrowpathModuleRecords.mockResolvedValue([]);
+    mockCreateGrowpathModuleRecord.mockResolvedValueOnce({
+      id: "project-new",
+      recordType: "crop_steering_project",
+      title: "Recovery steering trial",
+      inputs: { steeringIntent: "recovery", stage: "veg", medium: "coco" }
+    });
+    const screen = render(<CropSteeringProjectToolRoute />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("No crop steering project is saved for this grow.")
+      ).toBeTruthy()
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Crop steering project name"),
+      "Recovery steering trial"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Crop steering project intent"),
+      "recovery"
+    );
+    fireEvent.changeText(screen.getByLabelText("Crop steering project stage"), "veg");
+    fireEvent.changeText(screen.getByLabelText("Crop steering project medium"), "coco");
+    fireEvent.press(screen.getByLabelText("Create crop steering project"));
+
+    await waitFor(() =>
+      expect(mockCreateGrowpathModuleRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recordType: "crop_steering_project",
+          title: "Recovery steering trial",
+          growId: "grow-1",
+          inputs: expect.objectContaining({
+            steeringIntent: "recovery",
+            stage: "veg",
+            medium: "coco"
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Crop steering project created and selected.")).toBeTruthy();
+    expect(screen.getByText("Selected project history")).toBeTruthy();
   });
 });

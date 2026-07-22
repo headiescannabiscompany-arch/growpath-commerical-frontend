@@ -122,6 +122,7 @@ export type PersonalPlant = Plant & {
     sizeMetrics?: Record<string, unknown>;
     timingAdjustments?: Record<string, unknown>;
     waterUseProfile?: Record<string, unknown>;
+    phenoTags?: string[];
     phenoLabel?: string;
     stressSensitivities?: string[];
     pestDiseaseSensitivities?: string[];

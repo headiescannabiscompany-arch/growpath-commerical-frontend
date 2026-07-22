@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocalSearchParams } from "expo-router";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -12,6 +13,10 @@ function n(value: string, fallback?: number) {
   if (!value.trim()) return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function param(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] || "" : value || "";
 }
 
 function normalizePriority(
@@ -29,7 +34,8 @@ function phEcCalendarMetadata(sourceStage: string) {
     reminderPlan: {
       channels: ["in_app"],
       reminders: [{ offsetMinutes: -12 * 60 }]
-    }
+    },
+    sourceType: "ph_ec_check"
   };
 }
 
@@ -87,26 +93,84 @@ function phEcTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
 }
 
 export default function PhEcToolScreen() {
+  const params = useLocalSearchParams<{
+    projectId?: string | string[];
+  }>();
+  const projectId = param(params.projectId);
   return (
     <BackendCalculatorToolScreen
       tool="ph-ec-check"
       toolKey="ph-ec-check"
       title="pH / EC Range Check"
-      subtitle="Compare input and runoff pH/EC against medium and stage ranges without pretending to dose pH up/down."
+      subtitle={
+        projectId
+          ? "Log a root-zone measurement inside the selected Crop Steering project. This interprets ranges and trends; it does not dose pH Up/Down."
+          : "Compare input and runoff pH/EC against medium and stage ranges without pretending to dose pH Up/Down."
+      }
       aiPrefill={{
         buttonLabel: "Fill pH / EC review from grow",
         clearUnfilled: true,
         buildMessage: () =>
-          `Prefill this pH/EC review from the selected grow/plant's actual medium or soil recipe, stage, water profile and alkalinity, nutrient recipe, calibrated meter records, recent input/runoff or reservoir readings, irrigation/feed events, drift history, and plant response. Return JSON only with exactly these string keys: medium, stage, inputPH, runoffPH, inputEC, runoffEC, ecUnit, waterSource, interpretationNotes. Every numeric reading and EC unit must come from a saved measurement; never estimate pH or EC from symptoms, images, product labels, or generic targets. Leave unknowns blank. In interpretationNotes separate measured drift from possible causes, include meter/calibration and sampling limitations, water alkalinity context, nutrient antagonism or salt-stacking considerations, and the next measurement needed. Do not recommend a pH-up/down dose.`
+          `Prefill this pH/EC review from the selected grow/plant's actual crop type, medium or soil recipe, stage, owner-entered target ranges, water profile and alkalinity/mineral report, nutrient recipe/topdress, calibrated meter records, recent input/runoff or reservoir readings, irrigation/feed events, drift history, and plant response. Return JSON only with exactly these string keys: cropType, medium, stage, inputPH, runoffPH, inputEC, runoffEC, ecUnit, targetPHMin, targetPHMax, targetECMin, targetECMax, waterSource, alkalinity, calcium, magnesium, sodium, chloride, recentFeedRecipeId, recentTopdressId, interpretationNotes. Every numeric reading and EC unit must come from a saved measurement; never estimate pH or EC from symptoms, images, product labels, or generic targets. Leave unknowns blank. In interpretationNotes separate measured drift from possible causes, include meter/calibration and sampling limitations, water alkalinity context, nutrient antagonism or salt-stacking considerations, and the next measurement needed. Do not recommend a pH-up/down dose.`
+      }}
+      validateValues={(values) => {
+        if (!values.medium.trim()) return "Enter the actual medium or substrate.";
+        if (!values.stage.trim()) return "Enter the crop stage.";
+        const hasEcReading = ["inputEC", "runoffEC"].some((key) =>
+          String(values[key] || "").trim()
+        );
+        if (hasEcReading && !values.ecUnit.trim()) {
+          return "Enter the EC unit used by the meter.";
+        }
+        for (const [label, minKey, maxKey] of [
+          ["pH", "targetPHMin", "targetPHMax"],
+          ["EC", "targetECMin", "targetECMax"]
+        ]) {
+          const minText = String(values[minKey] || "").trim();
+          const maxText = String(values[maxKey] || "").trim();
+          if (Boolean(minText) !== Boolean(maxText)) {
+            return `Enter both the ${label} target minimum and maximum, or leave both blank.`;
+          }
+          if (minText && Number(minText) >= Number(maxText)) {
+            return `The ${label} target minimum must be lower than its maximum.`;
+          }
+        }
+        if (
+          !["inputPH", "runoffPH", "inputEC", "runoffEC"].some((key) =>
+            String(values[key] || "").trim()
+          )
+        ) {
+          return "Enter at least one calibrated pH or EC measurement.";
+        }
+        return null;
       }}
       fields={[
-        { key: "medium", label: "Medium", defaultValue: "" },
-        { key: "stage", label: "Stage", defaultValue: "" },
+        {
+          key: "cropType",
+          label: "Crop type",
+          defaultValue: projectId ? "cannabis" : "",
+          section: "Crop and sampling context"
+        },
+        {
+          key: "medium",
+          label: "Medium",
+          defaultValue: "",
+          required: true,
+          section: "Crop and sampling context"
+        },
+        {
+          key: "stage",
+          label: "Stage",
+          defaultValue: "",
+          required: true,
+          section: "Crop and sampling context"
+        },
         {
           key: "inputPH",
           label: "Input pH",
           defaultValue: "",
-          keyboardType: "numeric"
+          keyboardType: "numeric",
+          section: "Measured input and runoff"
         },
         {
           key: "runoffPH",
@@ -126,8 +190,84 @@ export default function PhEcToolScreen() {
           defaultValue: "",
           keyboardType: "numeric"
         },
-        { key: "ecUnit", label: "EC unit", defaultValue: "" },
-        { key: "waterSource", label: "Water source", defaultValue: "" },
+        {
+          key: "ecUnit",
+          label: "EC unit",
+          defaultValue: "",
+          section: "Measured input and runoff"
+        },
+        {
+          key: "targetPHMin",
+          label: "Owner target pH minimum (optional)",
+          defaultValue: "",
+          keyboardType: "numeric",
+          section: "Owner targets (optional)"
+        },
+        {
+          key: "targetPHMax",
+          label: "Owner target pH maximum (optional)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "targetECMin",
+          label: "Owner target EC minimum (optional)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "targetECMax",
+          label: "Owner target EC maximum (optional)",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "waterSource",
+          label: "Water source",
+          defaultValue: "",
+          section: "Water report (optional)"
+        },
+        {
+          key: "alkalinity",
+          label: "Alkalinity mg/L as CaCO3",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "calcium",
+          label: "Calcium mg/L",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "magnesium",
+          label: "Magnesium mg/L",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "sodium",
+          label: "Sodium mg/L",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "chloride",
+          label: "Chloride mg/L",
+          defaultValue: "",
+          keyboardType: "numeric"
+        },
+        {
+          key: "recentFeedRecipeId",
+          label: "Recent feed recipe ID or name",
+          defaultValue: "",
+          section: "Recent inputs and notes"
+        },
+        {
+          key: "recentTopdressId",
+          label: "Recent topdress ID or name",
+          defaultValue: ""
+        },
         {
           key: "interpretationNotes",
           label: "Measurement context and questions (optional)",
@@ -138,6 +278,9 @@ export default function PhEcToolScreen() {
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
         ...plantContext.toolRunContext,
+        projectId: projectId || undefined,
+        cropType: values.cropType || undefined,
+        phenoPlantId: plantContext.plantId || undefined,
         medium: values.medium,
         stage: values.stage,
         inputPH: n(values.inputPH),
@@ -146,9 +289,30 @@ export default function PhEcToolScreen() {
         runoffEC: n(values.runoffEC),
         ecUnit: values.ecUnit,
         waterSource: values.waterSource,
+        targetPHRange:
+          n(values.targetPHMin) != null && n(values.targetPHMax) != null
+            ? { min: n(values.targetPHMin), max: n(values.targetPHMax) }
+            : undefined,
+        targetECRange:
+          n(values.targetECMin) != null && n(values.targetECMax) != null
+            ? { min: n(values.targetECMin), max: n(values.targetECMax) }
+            : undefined,
+        alkalinity: n(values.alkalinity),
+        calcium: n(values.calcium),
+        magnesium: n(values.magnesium),
+        sodium: n(values.sodium),
+        chloride: n(values.chloride),
+        recentFeedRecipeId: values.recentFeedRecipeId || undefined,
+        recentTopdressId: values.recentTopdressId || undefined,
         interpretationNotes: values.interpretationNotes || undefined
       })}
       buildMetrics={(outputs) => [
+        {
+          key: "assessment",
+          label: "Assessment",
+          value: outputs.assessmentStatus || "-"
+        },
+        { key: "risk", label: "Risk", value: outputs.riskLevel || "-" },
         { key: "input-ph", label: "Input pH", value: outputs.phStatus || "-" },
         { key: "runoff-ph", label: "Runoff pH", value: outputs.runoffPHStatus || "-" },
         { key: "input-ec", label: "Input EC", value: outputs.ecStatus || "-" },
@@ -159,6 +323,31 @@ export default function PhEcToolScreen() {
           label: "Risks",
           value: Array.isArray(outputs.possibleRisks) ? outputs.possibleRisks.length : "-"
         }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "high" as const,
+              message
+            }))
+          : []),
+        ...(Array.isArray(outputs.missingInformation) && outputs.missingInformation.length
+          ? [
+              {
+                key: "missing",
+                severity: "medium" as const,
+                message: `Missing context: ${outputs.missingInformation.join(", ")}.`
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.limitations)
+          ? outputs.limitations.map((message: string, index: number) => ({
+              key: `limitation-${index}`,
+              severity: "info" as const,
+              message
+            }))
+          : [])
       ]}
       defaultLogTitle={() => "pH / EC range check"}
       defaultTask={(outputs) => ({

@@ -8,7 +8,7 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useLocalSearchParams: () => ({ growId: "grow-1", projectId: "project-1" }),
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
@@ -91,7 +91,10 @@ describe("PhEcToolScreen", () => {
   it("creates pH and EC follow-up tasks from warning output", async () => {
     const screen = render(<PhEcToolScreen />);
 
+    fireEvent.changeText(screen.getByLabelText("pH / EC Range Check Medium"), "coco");
+    fireEvent.changeText(screen.getByLabelText("pH / EC Range Check Stage"), "flower");
     fireEvent.changeText(screen.getByLabelText("pH / EC Range Check Runoff EC"), "2.4");
+    fireEvent.changeText(screen.getByLabelText("pH / EC Range Check EC unit"), "mS/cm");
     fireEvent.press(screen.getByLabelText("Run pH / EC Range Check"));
 
     await waitFor(() =>
@@ -99,6 +102,10 @@ describe("PhEcToolScreen", () => {
         "ph-ec-check",
         expect.objectContaining({
           growId: "grow-1",
+          projectId: "project-1",
+          cropType: "cannabis",
+          medium: "coco",
+          stage: "flower",
           runoffEC: 2.4
         })
       )
@@ -125,6 +132,7 @@ describe("PhEcToolScreen", () => {
               priority: "high",
               allDay: true,
               calendarType: "ph_ec_followup",
+              sourceType: "ph_ec_check",
               sourceStage: "ph_ec_retest",
               reminderPlan: expect.objectContaining({
                 channels: ["in_app"],
@@ -136,11 +144,13 @@ describe("PhEcToolScreen", () => {
               title: "Log plant response to pH / EC trend",
               priority: "high",
               sourceStage: "ph_ec_plant_response",
+              sourceType: "ph_ec_check",
               description: expect.stringContaining("photos")
             }),
             expect.objectContaining({
               title: "Review source water and feed assumptions",
               sourceStage: "ph_ec_source_review",
+              sourceType: "ph_ec_check",
               description: expect.stringContaining("meter calibration")
             })
           ]

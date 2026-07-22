@@ -45,6 +45,7 @@ export interface ToolRun {
   linkedTaskId?: string | null;
   linkedDiagnosisId?: string | null;
   linkedRecipeId?: string | null;
+  linkedModuleRecordId?: string | null;
   immutableSnapshot?: Record<string, any> | null;
   createdAt?: string;
 }
