@@ -104,6 +104,8 @@ describe("FacilityRoomsTab", () => {
       expect(screen.getByText("Facility rooms & workspaces")).toBeTruthy()
     );
     expect(screen.getByText("Arrange room workspaces")).toBeTruthy();
+    expect(screen.getAllByText("Open grows >")).toHaveLength(2);
+    expect(screen.getByLabelText("Open grows for Veg Room")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Move Veg Room up"));
 
     await waitFor(() =>

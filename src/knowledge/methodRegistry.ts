@@ -501,6 +501,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never show assign, snooze, or AI controls for a notification-backed alert without a server-backed action and its exact source context.",
       "Never show a raw account identifier as the assignee on a Facility alert card.",
       "Never route a notification-backed task alert to a detail record that may have been deleted; open the current task collection instead.",
+      "Never leave a zero-grow Facility room at a backend-facing dead end or silently attach a room-scoped grow setup to every Facility room.",
       "Never convert unavailable Facility compliance evidence to a zero or expose raw JSON, entity IDs, or identifier arrays in primary audit lists and summaries.",
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
