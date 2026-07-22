@@ -63,7 +63,14 @@ function openDeviation(row: Deviation) {
 export default function FacilityComplianceTab() {
   const router = useRouter();
   const ent = useEntitlements();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
+
+  const facilityName = useMemo(() => {
+    const selectedName = String(selectedFacility?.name || "").trim();
+    return selectedName && selectedName !== facilityId
+      ? selectedName
+      : "Selected facility";
+  }, [facilityId, selectedFacility?.name]);
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -294,7 +301,7 @@ export default function FacilityComplianceTab() {
               Facility-scoped primitives for deviations, SOPs, verification, and audit
               events.
             </Text>
-            <Text style={styles.ownerLine}>Facility: {facilityId || "none"}</Text>
+            <Text style={styles.ownerLine}>Facility: {facilityName}</Text>
           </View>
           {loading ? <ActivityIndicator /> : null}
         </View>
