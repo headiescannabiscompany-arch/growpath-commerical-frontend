@@ -152,8 +152,8 @@ export default function LessonMediaSourceEditor({
     patch({ availabilityStatus, lastCheckedAt: new Date().toISOString() });
   }
 
-  const sourceUrl = media?.externalLinkFallback || value.originalUrl;
-  const sourceSelected = Boolean(sourceUrl || pendingUploadName);
+  const sourceUrl = media?.externalLinkFallback || "";
+  const sourceSelected = Boolean(media || pendingUploadName);
 
   return (
     <View style={styles.card} accessibilityLabel="Lesson video source editor">
@@ -360,7 +360,15 @@ export default function LessonMediaSourceEditor({
             value={value.textSummary}
           />
 
-          {publishIssues.length ? (
+          {!media ? (
+            <View style={styles.warningBox}>
+              <Text style={styles.warningTitle}>Upload validation happens on save</Text>
+              <Text style={styles.warningText}>
+                GrowPath will validate the uploaded video URL before this lesson can be
+                published.
+              </Text>
+            </View>
+          ) : publishIssues.length ? (
             <View style={styles.warningBox}>
               <Text style={styles.warningTitle}>Before this course can publish</Text>
               {publishIssues.map((issue) => (
