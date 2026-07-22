@@ -8,6 +8,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn();
+const mockAssign = jest.fn();
 let mockParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
@@ -79,6 +80,37 @@ describe("StartGrowWizard", () => {
     expect(mockBack).toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
     expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("uses the explicit room URL in a browser even when router history exists", async () => {
+    const originalLocation = (globalThis as any).location;
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: { assign: mockAssign }
+    });
+
+    try {
+      const screen = render(<StartGrowWizard />);
+
+      await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
+      fireEvent.press(screen.getByLabelText("Back to room grows"));
+
+      expect(mockAssign).toHaveBeenCalledWith(
+        "/home/facility/grows?roomId=room-1&roomName=Flower+Room"
+      );
+      expect(mockCanGoBack).not.toHaveBeenCalled();
+      expect(mockBack).not.toHaveBeenCalled();
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+    } finally {
+      if (originalLocation === undefined) {
+        delete (globalThis as any).location;
+      } else {
+        Object.defineProperty(globalThis, "location", {
+          configurable: true,
+          value: originalLocation
+        });
+      }
+    }
   });
 
   it("does not select every room when a room-scoped link is stale", async () => {
