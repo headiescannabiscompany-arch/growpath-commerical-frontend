@@ -483,6 +483,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "notification-backed Facility alerts with supported source and task actions",
       "named Facility task assignments, rooms, and record summaries",
       "readable Facility inventory details with confirmed mistaken-record removal",
+      "collision-resistant Facility deviation references with controlled write failures",
       "template-backed or owner-entered SOP checklists",
       "human-readable two-run SOP comparison selection",
       "review-complete and mutation-locked SOP evidence runs",
@@ -505,6 +506,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never route a notification-backed task alert to a detail record that may have been deleted; open the current task collection instead.",
       "Never leave a zero-grow Facility room at a backend-facing dead end or silently attach a room-scoped grow setup to every Facility room.",
       "Never convert unavailable Facility compliance evidence to a zero or expose raw JSON, entity IDs, or identifier arrays in primary audit lists and summaries.",
+      "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service.",
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."

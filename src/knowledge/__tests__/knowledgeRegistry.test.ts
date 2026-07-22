@@ -75,6 +75,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "readable Facility inventory details with confirmed mistaken-record removal"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "collision-resistant Facility deviation references with controlled write failures"
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
+    );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"
     );
