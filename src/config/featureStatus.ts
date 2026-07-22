@@ -528,14 +528,24 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     key: "tools.tissue_culture",
     title: "Tissue Culture",
     description:
-      "Track TC projects, explants, media, vessels, transfers, contamination, and acclimation.",
+      "Review cannabis/hemp tissue-culture batches from direct vessel counts, traceability, quality controls, measured outcomes, and storage or recovery evidence.",
     area: "lab_tc",
     status: "beta",
     href: "/home/personal/tools/tissue-culture",
     hubVisible: false,
     acceptsGrowContext: true,
+    experience: {
+      mode: "ai_assisted",
+      aiCredits: "optional",
+      grow: "required",
+      audience: "cannabis_context",
+      inputSummary:
+        "Required batch, lane, stage, timestamped inspection source, and total/condition vessel counts; optional lineage, SOP/media/sterilization, custody, quality-control, environment, protocol, acclimation, cost, storage, recovery, and photo evidence.",
+      outputSummary:
+        "Evidence status, validated percentages, visible-pattern limits, missing traceability, release blockers, protocol/acclimation/cost outcomes, storage separation, media provenance, and owner-timed tasks."
+    },
     internalNote:
-      "Approved beta TC protocol/task workflow wired to saved ToolRuns, records, and follow-up reminders."
+      "Approved beta cannabis/hemp lab workflow wired to an API-enforced grow gate, blank evidence-first inputs, saved ToolRuns/module records, optional one-credit photo prefill, explicit release blockers, and owner-timed follow-up."
   },
   {
     key: "tools.dry_cure_guard",

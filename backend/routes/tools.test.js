@@ -1060,15 +1060,18 @@ describe("Tools Router (tools.js)", () => {
         projectName: "TC mother backup",
         batchNumber: "TC-001",
         cropType: "cannabis",
+        workflowLane: "production",
+        inspectionStatus: "mixed",
+        observedAt: "2026-07-21T18:30:00.000Z",
+        observationSource: "Ailda direct count at rack TC-2",
         vessels: 20,
         contaminatedVessels: 5,
-        fungusVessels: 1,
+        fungalLikeVessels: 1,
         browningVessels: 2,
         stalledVessels: 1,
         rootedVessels: 6,
         acclimatedPlants: 3,
         stage: "initiation",
-        productionPhase: "production",
         transferCycle: 11,
         maxProductionTransfers: 12,
         technicianOwner: "Ailda",
@@ -1130,104 +1133,67 @@ describe("Tools Router (tools.js)", () => {
 
     expect(tc.status).toBe(201);
     expect(tc.body.outputs).toMatchObject({
-      projectStatus: "at_risk",
+      methodIds: ["tissue-culture"],
+      assessmentStatus: "partial_measured_batch_review",
+      projectStatus: "needs_attention",
+      workflowLane: "production",
+      stage: "initiation",
       contaminationRate: 25,
       fungusRate: 5,
       rootingRate: 30,
-      targetBands: expect.objectContaining({
-        fungusTargetPercent: 2,
-        fungusDangerPercent: 4.5,
-        overallTargetPercent: 10
-      }),
       productionControls: expect.objectContaining({
-        productionPhase: "production",
         transferCycle: 11,
         maxProductionTransfers: 12,
-        transfersRemaining: 1,
-        technicianOwner: "Ailda",
-        mediaType: "best fit box",
-        vesselType: "glass jar",
-        explantSizeTradeoff: expect.stringContaining("Larger explants")
-      }),
-      acclimationGuidance: expect.objectContaining({
-        greenhouseTransition: expect.stringContaining("Remove media")
+        transfersRemaining: 1
       }),
       vesselStatus: expect.objectContaining({
-        contaminatedVessels: 5,
-        fungusVessels: 1,
-        browningVessels: 2,
-        stalledVessels: 1
-      }),
-      successMetrics: expect.objectContaining({
-        totalExplantsStarted: 20,
-        contaminatedExplants: 5,
-        fungusExplants: 1,
-        oxidizedExplants: 2
+        total: 20,
+        contaminated: 5,
+        fungalLikeAppearance: 1,
+        browning: 2,
+        stalled: 1,
+        rooted: 6
       }),
       costTracking: expect.objectContaining({
         totalProjectCost: 120,
-        costPerVessel: 6,
-        costPerCleanVessel: 8,
-        costPerAcclimatedPlant: 40
-      }),
-      explantPreset: expect.objectContaining({
-        explantType: "node",
-        warning: expect.stringContaining("Cannabis TC response varies")
+        costPerSurvivingPlant: null
       }),
       diagnosisRecord: expect.objectContaining({
-        tags: expect.arrayContaining(["contamination", "oxidation"]),
-        taskSuggestions: expect.arrayContaining([
-          expect.objectContaining({ title: "Isolate or cull contaminated TC vessels" }),
-          expect.objectContaining({ title: "Review TC browning and oxidation pattern" })
-        ])
+        assessmentType: "visible_pattern_review_not_microorganism_identification"
       }),
-      complianceRecord: expect.objectContaining({
-        batchNumber: "TC-001",
-        mediaRecipe: "starter",
-        mediaCost: 40,
-        vesselSupplyCost: 30,
-        laborCost: 50,
-        stage: "initiation",
-        productionPhase: "production",
-        transferCycle: 11,
-        maxProductionTransfers: 12,
-        technicianOwner: "Ailda"
+      releaseReview: expect.objectContaining({
+        status: "blocked",
+        automaticRelease: false
       })
     });
+    expect(tc.body.outputs.sourceIds).toEqual(
+      expect.arrayContaining([
+        "usda-ars-hemp-tissue-culture-protocol-2025",
+        "frontiers-2021-drug-type-cannabis-tc"
+      ])
+    );
     expect(tc.body.outputs.diagnosisRecord.likelyFailureModes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          issue: "Likely contamination",
-          counterEvidence: expect.arrayContaining([
-            "15 vessel(s) are not marked contaminated"
-          ]),
-          taskSuggestions: expect.arrayContaining([
-            expect.objectContaining({
-              title: "Audit TC sterilization and media handling notes"
-            })
-          ])
+          key: "visible-contamination-pattern",
+          issue: expect.stringContaining("Visible contamination-like growth")
         }),
         expect.objectContaining({
-          issue: "Possible browning or oxidation",
-          counterEvidence: expect.arrayContaining([
-            "18 vessel(s) are not marked browning"
-          ])
+          key: "browning-or-oxidation",
+          issue: expect.stringContaining("Browning or oxidation")
         })
       ])
     );
     expect(tc.body.outputs.generatedCalendar).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ title: "Review TC batch issue notes" }),
-        expect.objectContaining({ title: "Refresh production line from mother block" }),
-        expect.objectContaining({ title: "Check for early contamination" })
+        expect.objectContaining({ title: "Confirm isolation and disposition: TC-001" }),
+        expect.objectContaining({ title: "Complete TC traceability: TC-001" })
       ])
     );
     expect(tc.body.outputs.warnings).toEqual(
       expect.arrayContaining([
-        "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes.",
-        "Fungus pressure is above the production danger band. Isolate affected vessels and review room/tool hygiene immediately.",
-        "Overall contamination is above the commercial target band. Audit transfer technique, media lots, vessel handling, and room workflow.",
-        "This production line is nearing its transfer-cycle limit. Plan a mother-block refresh before the next production turn."
+        expect.stringContaining("appearance does not identify the organism"),
+        expect.stringContaining("Release review is blocked")
       ])
     );
     expect(batch.status).toBe(201);
