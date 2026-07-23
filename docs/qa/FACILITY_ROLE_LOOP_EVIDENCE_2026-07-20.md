@@ -213,6 +213,23 @@ This closes the production Owner report-export and audit-detail review loop. The
 separate Manager, Staff, Viewer, forced-authorization, invitation-acceptance,
 cross-role completion, mobile/accessibility, and exported-video checks remain open.
 
+### Production membership inventory and removal confirmation - 2026-07-23
+
+The signed-in Owner reopened the production Team page after frontend merge
+`b2469b22326190ae7a0a8120b5c639b351466b62` was live.
+
+- The canonical Team list showed exactly three active real members: Owner, Manager,
+  and Staff. No Viewer was present.
+- The Manager row exposed one specifically named Remove control. Activating it opened
+  a native confirmation dialog; the dialog was dismissed.
+- After cancellation, the page still showed all three members and reported no browser
+  errors.
+- No invitation, role change, or member removal was submitted.
+
+This confirms the repaired web removal flow reaches a deliberate confirmation without
+changing membership when cancelled. One real Viewer invitation/acceptance and any
+owner-approved temporary-alias cleanup remain deferred to the final owner-input pass.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to
