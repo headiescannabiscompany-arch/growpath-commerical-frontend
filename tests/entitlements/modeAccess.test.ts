@@ -16,6 +16,7 @@ import {
   resolveDevEntitlementsPlan,
   resolveEntitlementsMode,
   resolveRequestedPlan,
+  resolveWorkspaceAccessPlan,
   resolveWorkspaceMode,
   shouldBlockEntitlementBootstrap,
   shouldApplyFacilityRoleCapabilities
@@ -303,6 +304,25 @@ describe("entitlement mode access", () => {
     expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("commercial", "facility")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("personal", "facility")).toBe(false);
+  });
+
+  it("uses the Facility subscription while preserving the member's personal plan", () => {
+    const ctx = {
+      facilityPlan: "facility",
+      facilitySubscriptionStatus: "active"
+    };
+
+    expect(resolveWorkspaceAccessPlan("personal", "pro", ctx)).toBe("pro");
+    expect(resolveWorkspaceAccessPlan("facility", "pro", ctx)).toBe("facility");
+  });
+
+  it("keeps Facility role capabilities locked when the Facility subscription is inactive", () => {
+    expect(
+      resolveWorkspaceAccessPlan("facility", "pro", {
+        facilityPlan: "facility",
+        facilitySubscriptionStatus: "canceled"
+      })
+    ).toBe("free");
   });
 
   it("keeps STAFF facility writes limited to tasks and grow logs", () => {

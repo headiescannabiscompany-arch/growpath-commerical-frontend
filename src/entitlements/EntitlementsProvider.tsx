@@ -191,6 +191,21 @@ export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
   return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
 }
 
+export function resolveWorkspaceAccessPlan(
+  mode: EntitlementsMode,
+  accountPlan: string,
+  ctx: any
+) {
+  if (mode !== "facility") return accountPlan;
+  if (ctx?.facilityPlan === undefined && ctx?.facilitySubscriptionStatus === undefined) {
+    return accountPlan;
+  }
+  return getEffectivePlan(
+    ctx?.facilityPlan ?? "free",
+    ctx?.facilitySubscriptionStatus ?? "inactive"
+  );
+}
+
 export function shouldBlockEntitlementBootstrap(
   meStatus: "idle" | "loading" | "ready" | "error",
   hasResolvedEntitlements: boolean
@@ -420,9 +435,10 @@ function applyServerCtx(
     effectiveCtx?.subscriptionStatus ??
     effectiveCtx?.user?.subscriptionStatus ??
     user?.subscriptionStatus;
-  const plan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
-  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode, plan);
+  const accountPlan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
+  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode, accountPlan);
   const mode = resolveWorkspaceMode(requestedPlan, resolvedMode, preferredMode);
+  const plan = devPlan ?? resolveWorkspaceAccessPlan(mode, accountPlan, effectiveCtx);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
 

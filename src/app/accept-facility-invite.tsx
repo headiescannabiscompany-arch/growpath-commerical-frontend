@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,11 +12,17 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
+import { useFacility } from "@/facility/FacilityProvider";
+import { useAccountMode } from "@/state/useAccountMode";
 import { radius } from "@/theme/theme";
 
 export default function AcceptFacilityInviteScreen() {
   const router = useRouter();
   const auth = useAuth();
+  const entitlements = useEntitlements();
+  const facilityStore = useFacility();
+  const { setMode } = useAccountMode();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [displayName, setDisplayName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -24,6 +30,27 @@ export default function AcceptFacilityInviteScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [acceptedFacilityId, setAcceptedFacilityId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (
+      !acceptedFacilityId ||
+      auth.meStatus !== "ready" ||
+      !entitlements.ready ||
+      entitlements.mode !== "facility" ||
+      String(entitlements.facilityId || "") !== acceptedFacilityId
+    ) {
+      return;
+    }
+    router.replace("/home/facility");
+  }, [
+    acceptedFacilityId,
+    auth.meStatus,
+    entitlements.facilityId,
+    entitlements.mode,
+    entitlements.ready,
+    router
+  ]);
 
   const canSubmit = useMemo(
     () =>
@@ -37,13 +64,25 @@ export default function AcceptFacilityInviteScreen() {
     if (!canSubmit) return;
     setSubmitting(true);
     setMessage("");
+    let sessionHandoffStarted = false;
     try {
       const result: any = await apiRequest("/api/auth/accept-facility-invite", {
         method: "POST",
         body: { token, displayName, password, dateOfBirth }
       });
+      const facilityId = String(result?.facilityId || "").trim();
+      if (!facilityId) {
+        throw new Error("The invitation was accepted without a Facility workspace.");
+      }
+      await entitlements.setPreferredMode?.("facility");
+      setMode("facility");
+      facilityStore.selectFacility({
+        id: facilityId,
+        name: String(result?.facilityName || "Selected facility")
+      });
       await auth.login(String(result.email), password);
-      router.replace("/home/facility");
+      setAcceptedFacilityId(facilityId);
+      sessionHandoffStarted = true;
     } catch (error: any) {
       setMessage(
         error?.data?.error?.message ||
@@ -51,7 +90,7 @@ export default function AcceptFacilityInviteScreen() {
           "Unable to accept this invitation."
       );
     } finally {
-      setSubmitting(false);
+      if (!sessionHandoffStarted) setSubmitting(false);
     }
   }
 
@@ -63,6 +102,11 @@ export default function AcceptFacilityInviteScreen() {
           Create a password for your GrowPathAI login. If this email already has an
           account, enter its existing password.
         </Text>
+        {acceptedFacilityId ? (
+          <Text accessibilityLiveRegion="polite" style={styles.helper}>
+            Invitation accepted. Opening the Facility workspace…
+          </Text>
+        ) : null}
         <TextInput
           style={styles.input}
           value={displayName}

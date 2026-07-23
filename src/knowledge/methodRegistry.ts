@@ -472,6 +472,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "read-only integration state",
       "reviewed device mapping",
       "record-backed facility analytics",
+      "read-after-write Facility invitation session handoff",
+      "Facility-subscription-backed member role capabilities",
       "title-based public outreach destination selection with advanced reference fallback",
       "read-after-write reconciled facility task queues",
       "stable accessible Facility task queue links",
@@ -494,6 +496,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "A selected facility and authorization are required.",
+      "A confirmed Facility invitation must refresh canonical membership and enter the selected Facility without replacing the human's primary account.",
       "Local previews require explicit preview intent; bare routes preserve real authenticated Facility sessions.",
       "Never hide a confirmed Facility task write behind a cached or stale queue response.",
       "Never make Facility outreach operators type raw course, live-event, or Forum identifiers when readable public records are available.",
