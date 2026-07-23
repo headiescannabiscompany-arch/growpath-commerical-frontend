@@ -53,6 +53,11 @@ inspection recorded above.
   refund, and dispute evidence require live Stripe configuration and test authority.
 - Owner-supplied knowledge sources, reliability tiers, approved uses, exclusions,
   cross-check rules, and review dates remain owner input and were not fabricated.
+- Deferred owner input: real Facility Viewer invitation acceptance, the post-accept
+  automatic Facility handoff/read-only-role retest, and owner-approved removal of the
+  temporary Facility Staff/Viewer aliases are parked for the final owner-input pass.
+  Frontend `ac58eb4c` and backend `41d50b69` are live; the Owner Team page retained
+  five active members after reload with no browser console errors.
 - Full all-route visual/accessibility acceptance and final-SHA screenshot/video evidence
   remain open.
 
