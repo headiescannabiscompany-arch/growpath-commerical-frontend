@@ -58,6 +58,7 @@ function priceInputValue(product: Product | null) {
 }
 
 function parsePrice(value: string) {
+  if (!value.trim()) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
@@ -405,9 +406,19 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             label="Product line"
             value={product?.productLineId || product?.linkedProductLineId}
           />
-          <DetailRow label="Currency" value={product?.currency} />
+          <DetailRow
+            label="Currency"
+            value={productPrice(product) > 0 ? product?.currency : "TBD"}
+          />
           <DetailRow label="Image" value={productImage(product)} />
-          <DetailRow label="Price" value={product?.price ? `$${product.price}` : ""} />
+          <DetailRow
+            label="Price"
+            value={
+              productPrice(product) > 0
+                ? `$${(productPrice(product) / 100).toFixed(2)}`
+                : "TBD"
+            }
+          />
           <DetailRow
             label="Size / weight"
             value={(product as any)?.unitSize || specs.unitSize}

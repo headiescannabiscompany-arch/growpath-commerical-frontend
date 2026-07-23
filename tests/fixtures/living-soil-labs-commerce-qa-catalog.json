@@ -9,24 +9,55 @@
   },
   "ownerConfirmedFacts": {
     "reviewedAt": "2026-07-23",
+    "tagline": "Rooted in Science. Grown by Nature.",
+    "launchStatus": "prelaunch_placeholder",
+    "websiteUrl": null,
+    "priceStatus": "tbd",
+    "buyerPaysShipping": true,
+    "checkoutEnabled": false,
     "soilAndNutrientInventory": {
       "productTypes": ["soil", "dry_nutrient_mix"],
       "inventoryCount": 0,
       "inventoryState": "out_of_stock"
     },
-    "merchandiseInventoryStatus": "unconfigured"
+    "merchandiseInventory": {
+      "productTypes": ["merchandise"],
+      "inventoryCount": 0,
+      "inventoryState": "out_of_stock"
+    }
   },
   "brand": {
     "name": "Living Soil Labs",
     "slug": "living-soil-labs",
+    "tagline": "Rooted in Science. Grown by Nature.",
+    "description": "Living Soil Labs is a pre-launch soil and nutrient brand focused on thoughtful growing-media and amendment concepts. This placeholder storefront documents products that are still being developed and reviewed; nothing is currently available for sale.",
+    "descriptionStatus": "assistant_draft_pending_owner_edit",
+    "launchStatus": "prelaunch_placeholder",
+    "websiteUrl": null,
     "recordStatus": "draft",
     "storefrontStatus": "draft",
     "publishReady": false,
-    "ownerApprovalStatus": "pending_owner_confirmation",
+    "ownerApprovalStatus": "approved_for_placeholder_only",
+    "checkoutEnabled": false,
+    "priceDisplay": "TBD",
+    "shippingPayer": "buyer",
+    "bannerAsset": {
+      "assetId": "lsl-storefront-banner-placeholder-2026-07-23",
+      "sourceId": "living_soil_labs_owner_media",
+      "creator": "Owner-supplied AI-generated asset",
+      "rightsStatus": "approved",
+      "intendedUseApproved": true,
+      "localPath": "assets/brands/living-soil-labs/storefront-banner-placeholder.png",
+      "sha256": "64c29db33476e5b4331d7fc6b649c0a3d346c84b1ca351fa25f0b46497794784",
+      "productIds": [],
+      "variantIds": [],
+      "reviewedAt": "2026-07-23",
+      "limitations": ["pre-launch placeholder only", "not product or inventory evidence"]
+    },
     "currency": null,
     "taxConfigurationStatus": "pending_owner_configuration",
-    "shippingConfigurationStatus": "pending_owner_configuration",
-    "checkoutProcessorStatus": "pending_test_configuration"
+    "shippingConfigurationStatus": "buyer_pays_pending_rates_and_weights",
+    "checkoutProcessorStatus": "disabled_prelaunch"
   },
   "applicationModule": {
     "name": "Soil & Nutrient Batch Planner",
@@ -88,7 +119,7 @@
     {
       "sourceId": "living_soil_labs_owner_record",
       "runtimeSourceRegistryId": null,
-      "status": "pending_owner_record",
+      "status": "partial_owner_record",
       "trustedFor": [
         "brand ownership",
         "owned formula identity",
@@ -134,8 +165,8 @@
     {
       "sourceId": "living_soil_labs_owner_media",
       "runtimeSourceRegistryId": null,
-      "status": "pending_assets",
-      "trustedFor": ["owned product and merchandise appearance"],
+      "status": "approved_placeholder_use",
+      "trustedFor": ["owner-approved placeholder brand appearance"],
       "notTrustedFor": ["guaranteed analysis", "performance", "shipping weight"],
       "requirements": [
         "creator or ownership permission",
@@ -193,7 +224,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Penny Saver Soil is a pre-launch growing-media concept intended to explore a practical, value-conscious soil option. The final formula, ingredient list, laboratory evidence, package specifications, and directions have not been approved. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -257,7 +288,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Living Soil is a pre-launch growing-media concept centered on thoughtful structure, organic matter, aeration, and biological stewardship. The final formula, ingredient list, laboratory evidence, package specifications, and directions have not been approved. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -321,7 +352,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "No-Till Soil is a pre-launch growing-media concept for growers interested in reusable-container and low-disturbance planning. The final formula, ingredient list, laboratory evidence, package specifications, and directions have not been approved. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -388,7 +419,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Starter is a pre-launch dry nutrient mix concept identified internally by the proposed 3-3-3 planning ratio. That ratio is not a verified guaranteed analysis. The formula, label, ingredients, directions, warnings, and package specifications remain pending review. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -483,7 +514,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Veg is a pre-launch dry nutrient mix concept identified internally by the proposed 3-1-2 planning ratio. That ratio is not a verified guaranteed analysis and does not replace GrowPath's 3-1-1 method preset. The formula, label, ingredients, directions, warnings, and package specifications remain pending review. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -564,7 +595,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Pre-Flower is a pre-launch dry nutrient mix concept identified internally by the proposed 1-3-2 planning ratio. That ratio is not a verified guaranteed analysis or an approved GrowPath method preset. The formula, label, ingredients, directions, warnings, and package specifications remain pending review. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -645,7 +676,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Flower is a pre-launch dry nutrient mix concept identified internally by the proposed 2-6-4 planning ratio. That ratio is not a verified guaranteed analysis or proof of product performance. The formula, label, ingredients, directions, warnings, and package specifications remain pending review. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -726,7 +757,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "Ripen is a pre-launch dry nutrient mix concept identified internally by the proposed 0.5-3-3 planning ratio. That ratio is not a verified guaranteed analysis, and no use timing or need has been approved for this product. The formula, label, ingredients, directions, warnings, and package specifications remain pending review. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -804,7 +835,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "A pre-launch Living Soil Labs shirt concept featuring the sprout-and-roots emblem and brand wordmark. The pictured garment is an AI-generated concept mockup, not manufactured inventory. Fabric, fit, colors, decoration method, price, and launch date remain TBD. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -813,8 +844,35 @@
         "formulaRecordId": null,
         "verifiedLabelSourceIds": [],
         "verifiedLabSourceIds": [],
-        "imageAssets": [],
-        "reviewedAt": null
+        "imageAssets": [
+          {
+            "assetId": "lsl-shirt-concept-2026-07-23",
+            "sourceId": "living_soil_labs_owner_media",
+            "creator": "GrowPathAI image generation from owner-supplied brand reference",
+            "rightsStatus": "approved",
+            "intendedUseApproved": true,
+            "localPath": "assets/brands/living-soil-labs/shirt-concept-not-for-sale.png",
+            "sha256": "f8c8a83916f1d63982ee54ae1d20e56dc26e1ec51defc791604ca70d0ef0f1c9",
+            "productIds": ["lsl-shirt"],
+            "variantIds": [
+              "lsl-shirt-s",
+              "lsl-shirt-m",
+              "lsl-shirt-l",
+              "lsl-shirt-xl",
+              "lsl-shirt-2xl",
+              "lsl-shirt-3xl",
+              "lsl-shirt-4xl",
+              "lsl-shirt-5xl"
+            ],
+            "reviewedAt": "2026-07-23",
+            "limitations": [
+              "AI-generated concept mockup",
+              "not manufactured product evidence",
+              "not for sale"
+            ]
+          }
+        ],
+        "reviewedAt": "2026-07-23"
       },
       "variants": [
         {
@@ -827,9 +885,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-m",
@@ -841,9 +899,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-l",
@@ -855,9 +913,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-xl",
@@ -869,9 +927,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-2xl",
@@ -883,9 +941,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-3xl",
@@ -897,9 +955,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-4xl",
@@ -911,9 +969,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         },
         {
           "variantId": "lsl-shirt-5xl",
@@ -925,9 +983,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-shirt-concept-2026-07-23"]
         }
       ]
     },
@@ -938,7 +996,7 @@
       "status": "draft",
       "storefrontStatus": "hidden_pending_evidence",
       "publishReady": false,
-      "description": null,
+      "description": "A pre-launch Living Soil Labs adjustable hat concept featuring an embroidered sprout-and-roots emblem and brand wordmark. The pictured hat is an AI-generated concept mockup, not manufactured inventory. Materials, fit, colors, embroidery specifications, price, and launch date remain TBD. Draft copy pending owner edit; not available for sale.",
       "directions": null,
       "warnings": [],
       "claims": [],
@@ -947,8 +1005,26 @@
         "formulaRecordId": null,
         "verifiedLabelSourceIds": [],
         "verifiedLabSourceIds": [],
-        "imageAssets": [],
-        "reviewedAt": null
+        "imageAssets": [
+          {
+            "assetId": "lsl-hat-concept-2026-07-23",
+            "sourceId": "living_soil_labs_owner_media",
+            "creator": "GrowPathAI image generation from owner-supplied brand reference",
+            "rightsStatus": "approved",
+            "intendedUseApproved": true,
+            "localPath": "assets/brands/living-soil-labs/hat-concept-not-for-sale.png",
+            "sha256": "cad4ad51ac6ecb88dfab22fb05435b2f3b9f3f1bc818efc03ded183b6decf619",
+            "productIds": ["lsl-embroidered-hat"],
+            "variantIds": ["lsl-embroidered-hat-adjustable"],
+            "reviewedAt": "2026-07-23",
+            "limitations": [
+              "AI-generated concept mockup",
+              "not manufactured product evidence",
+              "not for sale"
+            ]
+          }
+        ],
+        "reviewedAt": "2026-07-23"
       },
       "variants": [
         {
@@ -961,9 +1037,9 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
-          "imageAssetIds": []
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
+          "imageAssetIds": ["lsl-hat-concept-2026-07-23"]
         }
       ]
     }

@@ -304,6 +304,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
 52. Living Soil Labs commercial-commerce QA pack
    - [x] Define ten hidden product drafts and 39 variants covering the three soil products, five proposed dry mixes, 1 lb Starter trial, S-5XL shirt, and adjustable embroidered hat.
    - [x] Add planning and strict validation for product-label/formula evidence, method-preset separation, media rights, pricing/weight/inventory completeness, and twelve storefront/order scenarios.
+   - [x] Record the owner-confirmed pre-launch placeholder state: tagline, no website, buyer-paid shipping, TBD prices, disabled checkout, zero stock across all 39 variants, editable draft descriptions, an owner-supplied banner, and clearly labeled shirt/hat concept mockups.
    - [ ] Seed Penny Saver Soil, Living Soil, and No-Till Soil product/variant drafts plus proposed dry-mix, sample, shirt, and embroidered-hat fixtures.
    - [ ] Require verified label/guaranteed-analysis evidence before proposed 3-3-3, 3-1-2, 1-3-2, 2-6-4, or 0.5-3-3 product claims become published test facts; do not silently replace the approved GrowPath method presets.
    - [ ] Exercise inventory, out-of-stock, weights, images, labels, directions, cart, checkout, orders, discounts, taxes, shipping, cancellation, refund, and order-history states.
