@@ -230,20 +230,52 @@ This confirms the repaired web removal flow reaches a deliberate confirmation wi
 changing membership when cancelled. One real Viewer invitation/acceptance and any
 owner-approved temporary-alias cleanup remain deferred to the final owner-input pass.
 
+### Production Manager and Staff chain - 2026-07-23
+
+The real production Manager and Staff accounts completed their portions of the shared
+Facility chain on frontend `b2469b22326190ae7a0a8120b5c639b351466b62`.
+The same task record was used throughout:
+`6a6140ec67a6aeadb8f4a0c9`, titled
+`[QA cross-role 2026-07-22] Verify shared task persistence`.
+
+- A fresh Manager sign-in opened the post-login workspace chooser with Personal,
+  Commercial, and Facility available. Selecting Facility opened the correct shared
+  workspace with the Manager navigation boundary.
+- Manager Team access showed all three real members and allowed work assignment while
+  hiding Owner-only invitation, role-change, and removal controls.
+- The task appeared in the Manager's assigned queue as `OPEN`. The Manager reassigned
+  it to the real Staff member. Reload preserved the Staff assignment.
+- A fresh Staff sign-in opened the post-login workspace chooser. Selecting Facility
+  exposed Tasks without Team or Compliance navigation. The assigned filter showed the
+  same `OPEN` task.
+- Staff could not assign or delete the task. Staff completed it at
+  `2026-07-23T14:07:53.862Z`; reload retained `Status: Completed` and the reopen action.
+- The Owner then signed in through the same chooser, selected Facility, and found zero
+  open tasks. The completed filter reopened the exact task with the Staff assignee and
+  completion timestamp.
+- Compliance reported 61 audit events. Audit
+  `6a621f41ee3a85e9e35aaff3` retained the Manager's assignee change at
+  `2026-07-23T14:03:45.348Z`; audit `6a622039ee3a85e9e35ab0bc` retained the Staff
+  status change from `OPEN` to `DONE`.
+
+No operational grow, room, inventory, SOP, or membership record was created, changed,
+or removed. This closes the real production Manager and Staff role loops plus the
+Owner final-state bookend. The Viewer observation and forced read-only authorization
+proof remain deferred pending one real Viewer account.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to
   the staging API. Visible DOM state and persisted backend records were reviewed, but
   a raw screen-recording/video file was not exported.
-- The final frontend SHA is confirmed live on Render and the production app still
-  enforced the Facility-mode boundary for an existing Personal session. Production
-  Facility credentials were not available, so the exact role chain is not claimed as
-  production-retested.
-- Owner final review of the cross-role task, forced backend authorization evidence for
-  restricted mutations, mobile/accessibility passes, and exported final-SHA video
-  remain open. Final-SHA screenshots now cover the Owner report and audit-detail loop.
-- Production Owner task creation and assignment now pass, but Manager/Staff/Viewer
-  production sessions remain blocked on invitation acceptance or separate credentials.
+- The real Owner, Manager, and Staff production sessions and shared-record handoff were
+  retested on frontend `b2469b22`. Viewer remains the only missing production role.
+- Forced Viewer backend authorization evidence, mobile/accessibility passes, and
+  exported final-SHA video remain open. Final-SHA screenshots cover the Owner report
+  and audit-detail loop.
+- Production Owner creation/final review, Manager reassignment, and Staff
+  completion/reload now pass. The Viewer session remains blocked on one real account
+  and invitation acceptance.
 - Public, valid Personal Free, Personal Pro, Commercial, and independent outside-user
   closure remain tracked separately. Email and Stripe delivery evidence still depends
   on production configuration and authorized test transactions.

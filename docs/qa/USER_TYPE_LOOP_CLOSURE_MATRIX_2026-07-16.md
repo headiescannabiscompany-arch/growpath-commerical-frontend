@@ -385,24 +385,27 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       showed exactly the three real Owner, Manager, and Staff members. The repaired
       Remove control opened its confirmation; cancelling preserved all three members
       with no browser errors on deployed frontend `b2469b22`.
-- [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
-      permission controls passed. The owner confirmed that a real Manager account is
-      already an active member of the production Facility; its production login,
-      workspace-choice, and shared-record role loop still require final evidence.
-- [ ] Facility Staff loop session recorded and reviewed. Grower completion and Scout
-      observation passed in staging. The owner confirmed that a real Staff account is
-      already an active member of the production Facility; its production login,
-      workspace-choice, completion, and reload loop still require final evidence.
+- [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
+      permission controls passed. On production frontend `b2469b22`, the real Manager
+      completed fresh login, workspace choice, Facility entry, restricted Team review,
+      assigned-queue review, and the same-record Staff handoff. Reload preserved the
+      assignment, and immutable audit `6a621f41ee3a85e9e35aaff3` recorded it.
+- [x] Facility Staff loop session recorded and reviewed. Grower completion and Scout
+      observation passed in staging. On production frontend `b2469b22`, the real Staff
+      account completed fresh login, workspace choice, restricted Facility navigation,
+      assigned-queue review, exact task completion, and reload persistence. Immutable
+      audit `6a622039ee3a85e9e35ab0bc` recorded `OPEN` to `DONE`.
 - [ ] Facility Viewer loop session recorded and reviewed. Read-only tasks/team passed
       in staging. The invitation-session repair is deployed on frontend `ac58eb4c`
       and backend `41d50b69`; the Owner Team page retained five active members after
       a hard reload with no console errors. Forced backend 403, exported recording,
       and the real Viewer production-role retest remain open.
 - [ ] Cross-role Facility chain completed on one shared record. Manager -> Grower ->
-      Scout/Viewer persistence passed in staging. The production Owner bookend now has
-      a real `OPEN` task assigned to Manager. Real Manager and Staff accounts already
-      exist; their production role loops, one real Viewer account, and Owner final-state
-      review remain to finish the production chain.
+      Scout/Viewer persistence passed in staging. Production task
+      `6a6140ec67a6aeadb8f4a0c9` now passed Owner creation, Manager reassignment, Staff
+      completion/reload, and Owner final-state/audit review. One real Viewer account
+      and its read-only observation/forced-authorization evidence remain to finish the
+      production chain.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
 
