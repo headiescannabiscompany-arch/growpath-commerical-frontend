@@ -298,7 +298,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
       </View>
       <View style={styles.hero}>
         <Text style={styles.eyebrow}>{copy.eyebrow}</Text>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           {copy.title}
         </Text>
         <Text style={styles.intro}>{copy.intro}</Text>
@@ -314,7 +314,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
       <View style={styles.grid}>
         {copy.sections.map((section) => (
           <View key={section.title} style={styles.card}>
-            <Text accessibilityRole="header" style={styles.cardTitle}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               {section.title}
             </Text>
             <Text style={styles.cardBody}>{section.body}</Text>

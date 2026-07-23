@@ -102,8 +102,9 @@ function ForumPostImage({ photo, index }: { photo: string; index: number }) {
 export default function ForumRoute() {
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
-  const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
+  const canPost = isSignedIn && entitlements.can(CAPABILITY_KEYS.FORUM_POST);
 
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,7 @@ export default function ForumRoute() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!canView) {
+      if (!canView || !isSignedIn) {
         setLoading(false);
         return;
       }
@@ -143,7 +144,7 @@ export default function ForumRoute() {
         setRefreshing(false);
       }
     },
-    [auth.user?.growInterests?.crops, canView]
+    [auth.user?.growInterests?.crops, canView, isSignedIn]
   );
 
   useEffect(() => {
@@ -228,36 +229,62 @@ export default function ForumRoute() {
         </View>
       ) : null}
 
+      {!isSignedIn ? (
+        <View style={styles.publicAccessCard}>
+          <Text style={styles.cardTitle}>Sign in to browse Forum / Q&A</Text>
+          <Text style={styles.cardText}>
+            Public visitors can learn what the GrowPath Forum covers here. Sign in or
+            create a free account to browse discussions, follow grow interests, ask
+            questions, or reply.
+          </Text>
+          <View style={styles.publicActionRow}>
+            <Link href="/login" style={styles.publicPrimaryLink}>
+              Sign in
+            </Link>
+            <Link href="/register" style={styles.publicSecondaryLink}>
+              Create free account
+            </Link>
+          </View>
+        </View>
+      ) : null}
+
       <View style={styles.feedHeader}>
         <Text style={styles.feedTitle}>Forum Feed</Text>
         <Text style={styles.feedSubtitle}>
-          Latest discussions from growers, tagged by grow interests.
+          {isSignedIn
+            ? "Latest discussions from growers, tagged by grow interests."
+            : "Discussions stay behind account sign-in so participation, moderation, and workspace context remain attributable."}
         </Text>
-        <View style={styles.scopeRow}>
-          {(["for-you", "all"] as const).map((scope) => (
-            <Pressable
-              key={scope}
-              onPress={() => setFeedScope(scope)}
-              style={[styles.scopeBtn, feedScope === scope && styles.scopeBtnActive]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: feedScope === scope }}
-              accessibilityLabel={
-                scope === "for-you"
-                  ? "Show forum posts for my grow interests"
-                  : "Show all forum posts"
-              }
-            >
-              <Text
-                style={[styles.scopeText, feedScope === scope && styles.scopeTextActive]}
+        {isSignedIn ? (
+          <View style={styles.scopeRow}>
+            {(["for-you", "all"] as const).map((scope) => (
+              <Pressable
+                key={scope}
+                onPress={() => setFeedScope(scope)}
+                style={[styles.scopeBtn, feedScope === scope && styles.scopeBtnActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: feedScope === scope }}
+                accessibilityLabel={
+                  scope === "for-you"
+                    ? "Show forum posts for my grow interests"
+                    : "Show all forum posts"
+                }
               >
-                {scope === "for-you" ? "For You" : "All Discussions"}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+                <Text
+                  style={[
+                    styles.scopeText,
+                    feedScope === scope && styles.scopeTextActive
+                  ]}
+                >
+                  {scope === "for-you" ? "For You" : "All Discussions"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </View>
 
-      {feedback ? (
+      {isSignedIn && feedback ? (
         <View style={styles.errorCard}>
           <Text style={styles.cardTitle}>Forum could not load</Text>
           <Text style={styles.cardText}>{feedback}</Text>
@@ -277,12 +304,12 @@ export default function ForumRoute() {
           <Text style={styles.cardText}>This account does not have `FORUM_VIEW`.</Text>
         </View>
       ) : null}
-      {loading ? (
+      {isSignedIn && loading ? (
         <View style={styles.card}>
           <ActivityIndicator />
         </View>
       ) : null}
-      {!loading && canView && !feedback && !visiblePosts.length ? (
+      {isSignedIn && !loading && canView && !feedback && !visiblePosts.length ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             {posts.length ? "No matching discussions" : "No posts yet"}
@@ -375,6 +402,36 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   cardText: { color: "#475569", lineHeight: 20 },
+  publicAccessCard: {
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    padding: 14,
+    backgroundColor: "#F0FDF4",
+    gap: 8
+  },
+  publicActionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  publicPrimaryLink: {
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    color: "#FFFFFF",
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    textDecorationLine: "none"
+  },
+  publicSecondaryLink: {
+    borderColor: "#166534",
+    borderWidth: 1,
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    textDecorationLine: "none"
+  },
   photoRow: {
     alignItems: "center",
     gap: 8,

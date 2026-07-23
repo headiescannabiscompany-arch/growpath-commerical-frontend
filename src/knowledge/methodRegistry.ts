@@ -413,7 +413,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "external provider link",
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
-      "learner preview without authoring controls"
+      "learner preview without authoring controls",
+      "signed-out published catalog without owned-course or authoring controls"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
@@ -421,6 +422,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never publish video without rights confirmation, a timestamped availability check, accessibility status, text summary, and external-link fallback.",
       "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
+      "Never request owned courses or expose authoring, invite, analytics, publish, unpublish, enrollment, purchase, or progress controls before authentication.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],
     ["course-builder", "course-player", "commercial-courses", "facility-training"]
@@ -442,6 +444,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "bounded Personal home campaign density that preserves the grow workspace",
       "owner-scoped production batches linked to ToolRuns and Commercial tasks",
       "published-course discovery limited to published storefronts and explicit public fields",
+      "signed-out course discovery limited to published learner-facing catalog fields",
+      "signed-out Forum boundary with sign-in and registration actions instead of a protected-feed error",
       "direct draft-course detail limited to the authenticated author or platform administrator",
       "explicit eligible workspace preference preserved across plan-backed modes",
       "post-login workspace choice for every multi-workspace identity",
@@ -452,6 +456,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never cross workspace scope or invent product claims.",
       "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
       "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
+      "Never expose course authoring controls or request owned-course records for an anonymous visitor.",
+      "Never call the protected Forum feed for a signed-out visitor, invent a public thread list, or present an authorization failure as an empty Forum.",
       "Never treat knowledge of a draft course ID as permission to read, enroll, check out, discuss, or review it.",
       "Never honor deterministic test identity headers as production authentication.",
       "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",

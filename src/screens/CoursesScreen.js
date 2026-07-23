@@ -82,6 +82,13 @@ function coursePriceLabel(course) {
   return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
 }
 
+function isPublishedCourse(course) {
+  return Boolean(
+    course?.isPublished ||
+    ["published", "active", "public"].includes(String(course?.status || "").toLowerCase())
+  );
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -94,7 +101,9 @@ export default function CoursesScreen({ navigation } = {}) {
   const ent = useEntitlements();
   const auth = useAuth();
   const access = getLearningAccess(ent);
-  const canInvite = !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
+  const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
+  const canCreateCourses = isSignedIn && access.canCreateCourses;
+  const canInvite = isSignedIn && !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -118,7 +127,7 @@ export default function CoursesScreen({ navigation } = {}) {
       try {
         const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
           apiRequest("/api/courses"),
-          access.canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([]),
+          canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([]),
           apiRequest("/api/commercial/courses/public")
         ]);
         if (
@@ -140,9 +149,10 @@ export default function CoursesScreen({ navigation } = {}) {
             ? normalizeList(commercialResult.value)
             : []
         );
+        const publicationScoped = isSignedIn ? list : list.filter(isPublishedCourse);
         const filtered = access.canSeePaidCourses
-          ? list
-          : list.filter(
+          ? publicationScoped
+          : publicationScoped.filter(
               (c) => Number(c?.priceCents || 0) === 0 && Number(c?.price || 0) === 0
             );
         if (alive) setCourses(filtered);
@@ -158,7 +168,7 @@ export default function CoursesScreen({ navigation } = {}) {
     return () => {
       alive = false;
     };
-  }, [access.canCreateCourses, access.canSeePaidCourses, access.canViewCourses]);
+  }, [access.canSeePaidCourses, access.canViewCourses, canCreateCourses, isSignedIn]);
 
   useEffect(() => {
     if (!requestedCourseId || selectedCourse || courses.length === 0) return;
@@ -248,6 +258,34 @@ export default function CoursesScreen({ navigation } = {}) {
       </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
 
+      {!isSignedIn ? (
+        <View style={styles.publicCard}>
+          <Text style={styles.cardTitle}>Published course catalog</Text>
+          <Text style={styles.meta}>
+            Browse courses that their creators have published. Sign in or create a free
+            account before authoring, enrolling, purchasing, or saving learner progress.
+          </Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Sign in for courses"
+              onPress={() => router.push("/login")}
+              style={styles.btn}
+            >
+              <Text style={styles.btnText}>Sign in</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Create a free account for courses"
+              onPress={() => router.push("/register")}
+              style={styles.btn}
+            >
+              <Text style={styles.secondaryBtnText}>Create free account</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
       {!access.canViewCourses ? (
         <View style={styles.lockedCard}>
           <Text style={styles.cardTitle}>Courses unavailable</Text>
@@ -265,7 +303,9 @@ export default function CoursesScreen({ navigation } = {}) {
       {err ? <Text style={styles.error}>{err}</Text> : null}
 
       {!loading && !err && courses.length === 0 ? (
-        <Text style={styles.meta}>No courses found</Text>
+        <Text style={styles.meta}>
+          {isSignedIn ? "No courses found" : "No published courses yet"}
+        </Text>
       ) : null}
 
       {courses.map((item, idx) => (
@@ -279,9 +319,7 @@ export default function CoursesScreen({ navigation } = {}) {
             {String(item?.title || item?.name || "Untitled")}
           </Text>
           <Text style={styles.statusText}>
-            {item?.isPublished || ["published", "active", "public"].includes(item?.status)
-              ? "Published"
-              : "Draft"}
+            {isPublishedCourse(item) ? "Published" : "Draft"}
           </Text>
           <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
           {courseInterestTags(item).length ? (
@@ -299,7 +337,7 @@ export default function CoursesScreen({ navigation } = {}) {
           {hasAnalytics ? (
             <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
           ) : null}
-          {access.canPublishCourses && item?.isPublished ? (
+          {isSignedIn && access.canPublishCourses && item?.isPublished ? (
             <Pressable accessibilityRole="button" style={styles.smallBtn}>
               <Text style={styles.smallBtnText}>Unpublish</Text>
             </Pressable>
@@ -312,7 +350,7 @@ export default function CoursesScreen({ navigation } = {}) {
         </Pressable>
       ))}
 
-      {access.canCreateCourses ? (
+      {canCreateCourses ? (
         <>
           <View style={styles.builderCard}>
             <Text style={styles.cardTitle}>Course Builder Workflow</Text>
@@ -336,7 +374,7 @@ export default function CoursesScreen({ navigation } = {}) {
         </>
       ) : null}
 
-      {access.canCreateCourses ? (
+      {canCreateCourses ? (
         <Pressable
           accessibilityRole="button"
           disabled={paidLimitReached && access.canSellPaidCourses}
@@ -397,6 +435,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0FDF4",
     marginTop: 10
   },
+  publicCard: {
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    padding: 12,
+    backgroundColor: "#F0FDF4",
+    marginBottom: 10
+  },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   btnDisabled: { opacity: 0.5 },
   btnText: {
     backgroundColor: "#166534",
@@ -406,6 +453,17 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingHorizontal: 14,
     paddingVertical: 10,
+    alignSelf: "flex-start"
+  },
+  secondaryBtnText: {
+    borderColor: "#166534",
+    borderWidth: 1,
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     alignSelf: "flex-start"
   },
   link: { color: "#166534", fontWeight: "800", marginTop: 8 },

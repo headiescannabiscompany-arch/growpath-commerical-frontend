@@ -71,7 +71,9 @@ jest.mock("@/entitlements", () => ({
     mode: "personal",
     limits: { maxPaidCourses: 1, maxLessonsPerCourse: 12 },
     can: (capability: string) =>
-      capability === "COURSES_VIEW" || capability === "COURSES_SELL_PAID"
+      capability === "COURSES_VIEW" ||
+      capability === "COURSES_CREATE" ||
+      capability === "COURSES_SELL_PAID"
   })
 }));
 
