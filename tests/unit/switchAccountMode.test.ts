@@ -28,7 +28,7 @@ describe("switchAccountMode", () => {
     expect(calls).toEqual(["preferred", "mode", "route"]);
   });
 
-  it("does nothing when the requested mode is already current", async () => {
+  it("continues into a workspace when the requested mode is already current", async () => {
     const setPreferredMode = jest.fn();
     const setMode = jest.fn();
     const router = { replace: jest.fn() };
@@ -40,8 +40,8 @@ describe("switchAccountMode", () => {
       setPreferredMode
     });
 
-    expect(setPreferredMode).not.toHaveBeenCalled();
+    expect(setPreferredMode).toHaveBeenCalledWith("facility");
     expect(setMode).not.toHaveBeenCalled();
-    expect(router.replace).not.toHaveBeenCalled();
+    expect(router.replace).toHaveBeenCalledWith("/home/facility");
   });
 });

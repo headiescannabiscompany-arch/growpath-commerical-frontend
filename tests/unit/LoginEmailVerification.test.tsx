@@ -128,7 +128,7 @@ describe("LoginScreen email verification", () => {
     });
   });
 
-  it("normalizes email and routes to the app after a successful login", async () => {
+  it("normalizes email and routes to workspace choice after a successful login", async () => {
     mockLogin.mockResolvedValueOnce({ ok: true });
 
     const screen = render(<LoginScreen />);
@@ -139,7 +139,7 @@ describe("LoginScreen email verification", () => {
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith("grower@example.com", "password123");
-      expect(mockReplace).toHaveBeenCalledWith("/");
+      expect(mockReplace).toHaveBeenCalledWith("/account/workspace");
     });
   });
 

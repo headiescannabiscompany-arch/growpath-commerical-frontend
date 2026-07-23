@@ -66,6 +66,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "explicit eligible workspace preference preserved across plan-backed modes"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "post-login workspace choice for every multi-workspace identity"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     );
@@ -77,6 +80,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "cross-platform confirmed Facility member removal with preserved history"
+    );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "individual-versus-Facility workspace choice after sign-in"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "collision-resistant Facility deviation references with controlled write failures"
@@ -98,6 +104,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never rely on native-only Alert callbacks for web member-removal confirmation or remove the last owner."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never replace an individual account with Facility membership or bypass the post-login choice when both workspaces are eligible."
     );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"
