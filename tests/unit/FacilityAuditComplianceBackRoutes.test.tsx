@@ -65,7 +65,10 @@ describe("facility audit and compliance nested back behavior", () => {
           action: "Room update",
           details: "Flower Room 1 changed",
           entity: "room",
-          entityId: "room-1"
+          entityId: "room-1",
+          timestamp: "2026-07-22T19:00:00.000Z",
+          userName: "Facility Owner",
+          role: "OWNER"
         }
       ],
       isLoading: false,
@@ -85,6 +88,12 @@ describe("facility audit and compliance nested back behavior", () => {
 
     expect(screen.getByText("Shared Back /home/facility/audit-logs")).toBeTruthy();
     expect(screen.getByText("Audit Log Detail")).toBeTruthy();
+    expect(screen.getByText("Room Update")).toBeTruthy();
+    expect(screen.getByText("Flower Room 1 changed")).toBeTruthy();
+    expect(screen.getByText("Facility Owner")).toBeTruthy();
+    expect(screen.getByText("Owner")).toBeTruthy();
+    expect(screen.getByText("Immutable audit record")).toBeTruthy();
+    expect(screen.queryByText("id: audit-1")).toBeNull();
     expect(screen.getByText("View all for this entity")).toBeTruthy();
   });
 

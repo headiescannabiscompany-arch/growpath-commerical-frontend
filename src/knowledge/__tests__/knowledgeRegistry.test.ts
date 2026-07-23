@@ -81,11 +81,17 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "export readiness separated by open, resolved, and cancelled deviation status"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "readable audit-detail evidence context before immutable raw payloads"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never treat a resolved or cancelled Facility deviation as an open cleanup blocker."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never make a Facility operator interpret raw audit JSON before showing the readable action, summary, time, and available actor context."
     );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"
