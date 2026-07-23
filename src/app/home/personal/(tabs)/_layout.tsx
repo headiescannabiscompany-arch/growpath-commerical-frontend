@@ -28,6 +28,9 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        tabBarActiveTintColor: "#0056B3",
+        tabBarInactiveTintColor: "#475569",
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
         tabBarStyle: hideTabBar ? { display: "none" } : undefined
       }}
     >

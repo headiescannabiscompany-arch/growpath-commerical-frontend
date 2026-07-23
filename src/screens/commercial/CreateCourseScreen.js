@@ -605,7 +605,9 @@ export default function CreateCourseScreen({ navigation }) {
     <ScreenContainer scroll>
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Create Course</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Create Course
+          </Text>
           <TouchableOpacity
             onPress={backToCourses}
             accessibilityRole="button"
@@ -632,7 +634,9 @@ export default function CreateCourseScreen({ navigation }) {
           </View>
         ) : null}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>1. Course basics</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            1. Course basics
+          </Text>
           <Text style={styles.label}>Course title</Text>
           <TextInput
             value={title}
@@ -727,7 +731,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>2. Curriculum / lessons</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            2. Curriculum / lessons
+          </Text>
           <Text style={styles.helpText}>
             Put each lesson, assignment, checklist, or section on its own line.
           </Text>
@@ -825,7 +831,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>3. Documents / media</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            3. Documents / media
+          </Text>
           <TextInput
             value={documentPlan}
             onChangeText={setDocumentPlan}
@@ -912,7 +920,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>4. Live sessions</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            4. Live sessions
+          </Text>
           <Text style={styles.helpText}>
             Schedule a real Twitch live. The course event appears in GrowPath Schedule;
             learners can RSVP, receive notification context, and create a dated task
@@ -920,7 +930,7 @@ export default function CreateCourseScreen({ navigation }) {
           </Text>
           <View style={styles.integrationCard}>
             <Text style={styles.workflowTitle}>Twitch, calendar, and reminders</Text>
-            <Text style={styles.helpText}>
+            <Text style={[styles.helpText, styles.integrationHelpText]}>
               {!twitchConnection
                 ? "Checking Twitch connection..."
                 : !twitchConnection.configured
@@ -1132,7 +1142,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>5. Links</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            5. Links
+          </Text>
           <TextInput
             value={linkedProductIds}
             onChangeText={setLinkedProductIds}
@@ -1163,7 +1175,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>6. Pricing / access</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            6. Pricing / access
+          </Text>
           {!access.canSellPaidCourses ? (
             <Text style={styles.helpText}>
               Paid pricing should be available on every plan. Refresh the account or
@@ -1237,7 +1251,9 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>7. Preview / publish</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            7. Preview / publish
+          </Text>
           <Text style={styles.helpText}>
             This saves a draft. Use course detail to review, add uploaded assets, preview,
             and publish when the course is ready.
@@ -1248,6 +1264,8 @@ export default function CreateCourseScreen({ navigation }) {
         <TouchableOpacity
           onPress={submitCourse}
           disabled={!canSubmit}
+          accessibilityRole="button"
+          accessibilityLabel="Create course draft"
           style={[styles.button, !canSubmit && styles.buttonDisabled]}
         >
           <Text style={styles.buttonText}>
@@ -1273,6 +1291,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: radius.card,
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -1281,6 +1300,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: "#15803d",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingVertical: 12,
     alignItems: "center"
   },
@@ -1290,6 +1311,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#15803d",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingVertical: 10,
     alignItems: "center"
   },
@@ -1313,6 +1336,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#15803d",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 10,
     paddingVertical: 8
   },
@@ -1373,6 +1398,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800"
   },
+  integrationHelpText: { color: "#475569" },
   linkRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   readyText: { color: "#166534", fontSize: 12, fontWeight: "800" },
   pricingModeRow: { flexDirection: "row", gap: 8 },
@@ -1380,6 +1406,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 18,
     paddingVertical: 10,
     backgroundColor: "#ffffff"
