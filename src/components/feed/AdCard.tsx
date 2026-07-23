@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#EA580C"
+    color: "#C2410C"
   },
   labelRow: {
     alignItems: "center",
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#EA580C"
+    color: "#C2410C"
   }
 });

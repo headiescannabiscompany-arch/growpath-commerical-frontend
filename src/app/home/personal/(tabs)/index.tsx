@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   headerTitle: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: "#64748B" },
+  headerSubtitle: { fontSize: 14, color: "#475569" },
   section: { gap: 10 },
   sectionTitle: { fontSize: 18, fontWeight: "700", color: "#0F172A" },
   commandCard: {
@@ -543,6 +543,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#166534",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 11,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -554,6 +556,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#CBD5E1",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 9,
     paddingVertical: 6,
     backgroundColor: "#FFFFFF"

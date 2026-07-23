@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { render, waitFor } from "@testing-library/react-native";
 
 import PersonalHomeRoute from "@/app/home/personal/(tabs)";
@@ -152,6 +153,10 @@ describe("PersonalHomeRoute", () => {
     await waitFor(() => expect(screen.getByText("Blue Dream Run")).toBeTruthy());
 
     expect(screen.getByText("Personal workspace")).toBeTruthy();
+    expect(
+      StyleSheet.flatten(screen.getByText("grower@example.com | pro plan").props.style)
+        .color
+    ).toBe("#475569");
     expect(screen.getByText("Personal command center")).toBeTruthy();
     expect(screen.getByText("Stage")).toBeTruthy();
     expect(screen.getAllByText("Open tasks").length).toBeGreaterThan(0);

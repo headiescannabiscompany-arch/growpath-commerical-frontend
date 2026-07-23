@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { render, waitFor } from "@testing-library/react-native";
 
 import AdCard from "@/components/feed/AdCard";
@@ -46,5 +47,11 @@ describe("AdCard", () => {
     expect(screen.getByLabelText("Selected Campaign ad image").props.source).toEqual({
       uri: "https://example.com/campaign-banner.jpg"
     });
+    expect(
+      StyleSheet.flatten(screen.getByText("Promoted campaign").props.style).color
+    ).toBe("#C2410C");
+    expect(StyleSheet.flatten(screen.getByText("Open →").props.style).color).toBe(
+      "#C2410C"
+    );
   });
 });

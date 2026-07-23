@@ -144,6 +144,7 @@ describe("CreateCourseScreen", () => {
   it("shows the full course builder workflow", () => {
     const screen = render(<CreateCourseScreen />);
 
+    expect(screen.getByRole("header", { name: "Create Course" })).toBeTruthy();
     expect(screen.getByText("Back to Courses")).toBeTruthy();
     expect(screen.getAllByText(/1\. Course basics/).length).toBeGreaterThan(0);
     expect(screen.getByText("2. Curriculum / lessons")).toBeTruthy();
