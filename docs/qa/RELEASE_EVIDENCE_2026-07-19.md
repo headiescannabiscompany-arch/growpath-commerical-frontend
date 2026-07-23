@@ -44,8 +44,9 @@ inspection recorded above.
 ## Open acceptance blocks
 
 - Personal Free requires a correctly entitled Free test account.
-- Facility Manager, Staff, and Viewer require separate credentials; the shared-record
-  cross-role chain cannot be completed with the Owner credential alone.
+- The owner confirmed real Manager and Staff production members already exist. Their
+  production login/workspace-choice role loops remain unrecorded, and one real Viewer
+  account is still required before the shared-record chain can close.
 - Independent outside-user loop and submitted feedback still require an outside user.
 - Production verification/reset email requires the live email configuration, verified
   Resend domain, and delivery logs.
@@ -53,7 +54,7 @@ inspection recorded above.
   refund, and dispute evidence require live Stripe configuration and test authority.
 - Owner-supplied knowledge sources, reliability tiers, approved uses, exclusions,
   cross-check rules, and review dates remain owner input and were not fabricated.
-- Deferred owner input: real Facility Viewer invitation acceptance, the post-accept
+- Deferred owner input: one real Facility Viewer invitation acceptance, the post-accept
   automatic Facility handoff/read-only-role retest, and owner-approved removal of the
   temporary Facility Staff/Viewer aliases are parked for the final owner-input pass.
   Frontend `ac58eb4c` and backend `41d50b69` are live; the Owner Team page retained

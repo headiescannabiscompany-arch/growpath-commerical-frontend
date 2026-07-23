@@ -383,11 +383,13 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       The first-click filename hydration race then passed on final frontend `90499dfa`
       and backend `55104d54` at 8:49 PM ET.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
-      permission controls passed. The production shared QA task is assigned to the
-      existing Manager, but the Manager production credential was not supplied.
+      permission controls passed. The owner confirmed that a real Manager account is
+      already an active member of the production Facility; its production login,
+      workspace-choice, and shared-record role loop still require final evidence.
 - [ ] Facility Staff loop session recorded and reviewed. Grower completion and Scout
-      observation passed in staging. A production test-account invitation was sent and
-      email dispatch was reported, but acceptance still requires the recipient mailbox.
+      observation passed in staging. The owner confirmed that a real Staff account is
+      already an active member of the production Facility; its production login,
+      workspace-choice, completion, and reload loop still require final evidence.
 - [ ] Facility Viewer loop session recorded and reviewed. Read-only tasks/team passed
       in staging. The invitation-session repair is deployed on frontend `ac58eb4c`
       and backend `41d50b69`; the Owner Team page retained five active members after
@@ -395,16 +397,17 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       and the real Viewer production-role retest remain open.
 - [ ] Cross-role Facility chain completed on one shared record. Manager -> Grower ->
       Scout/Viewer persistence passed in staging. The production Owner bookend now has
-      a real `OPEN` task assigned to Manager; invitation acceptance or separate
-      Manager/Staff/Viewer credentials are still required to finish the production
-      chain and Owner final-state review.
+      a real `OPEN` task assigned to Manager. Real Manager and Staff accounts already
+      exist; their production role loops, one real Viewer account, and Owner final-state
+      review remain to finish the production chain.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
 
 ## Deferred owner-input pass
 
-- [deferred-owner-input] The real Facility Viewer must complete the outstanding
-  invitation from the recipient mailbox and provide any required account details.
+- [deferred-owner-input] Owner, Manager, and Staff already have real production
+  accounts. One real Facility Viewer account must complete the outstanding invitation
+  from its recipient mailbox and provide any required account details.
   After acceptance, rerun the automatic Facility handoff/read-only-role checks and
   ask the owner before removing the temporary Staff/Viewer aliases. Keep this parked
   until the final owner-input pass; it does not block other actionable verification.

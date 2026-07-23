@@ -2,16 +2,18 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
-import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import type { AccountMode } from "@/state/useAccountMode";
 import { useModeSwitcher } from "@/features/mode/useModeSwitcher";
+import { availableWorkspaceModes } from "@/features/mode/workspaceOptions";
 import { radius } from "@/theme/theme";
 
 type Props = {
   showFacility?: boolean;
   showCommercial?: boolean;
   showSingle?: boolean;
+  availableOnly?: boolean;
 };
 
 type WorkspaceCard = {
@@ -29,32 +31,19 @@ const MODE_LABELS: Record<AccountMode, string> = {
   facility: "Facility"
 };
 
-function canUseCommercial(entitlements: ReturnType<typeof useEntitlements>) {
-  return (
-    entitlements.mode === "commercial" ||
-    entitlements.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME) === true
-  );
-}
-
-function canUseFacility(entitlements: ReturnType<typeof useEntitlements>) {
-  return (
-    entitlements.mode === "facility" ||
-    Boolean(entitlements.facilityId || entitlements.facilityRole) ||
-    entitlements.can?.(CAPABILITY_KEYS.FACILITY_ACCESS) === true
-  );
-}
-
 export function ModeSwitcher({
   showFacility = true,
   showCommercial = true,
-  showSingle = true
+  showSingle = true,
+  availableOnly = false
 }: Props) {
   const router = useRouter();
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { mode, switchTo } = useModeSwitcher();
-  const commercialAccess = canUseCommercial(entitlements);
-  const facilityAccess = canUseFacility(entitlements);
+  const availableModes = availableWorkspaceModes(entitlements);
+  const commercialAccess = availableModes.includes("commercial");
+  const facilityAccess = availableModes.includes("facility");
 
   const cards: WorkspaceCard[] = [
     showSingle
@@ -91,7 +80,9 @@ export function ModeSwitcher({
           createHref: "/offers"
         }
       : null
-  ].filter(Boolean) as WorkspaceCard[];
+  ].filter((card): card is WorkspaceCard =>
+    Boolean(card && (!availableOnly || card.access))
+  );
 
   function handlePress(card: WorkspaceCard) {
     if (card.access) {

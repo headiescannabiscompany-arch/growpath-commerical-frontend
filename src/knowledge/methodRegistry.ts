@@ -443,6 +443,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "published-course discovery limited to published storefronts and explicit public fields",
       "direct draft-course detail limited to the authenticated author or platform administrator",
       "explicit eligible workspace preference preserved across plan-backed modes",
+      "post-login workspace choice for every multi-workspace identity",
       "workspace preference reapplied before restricted-route access decisions",
       "workspace selection and routing use the same effective paid-plan capabilities"
     ],
@@ -474,6 +475,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed facility analytics",
       "read-after-write Facility invitation session handoff",
       "Facility-subscription-backed member role capabilities",
+      "individual-versus-Facility workspace choice after sign-in",
       "cross-platform confirmed Facility member removal with preserved history",
       "title-based public outreach destination selection with advanced reference fallback",
       "read-after-write reconciled facility task queues",
@@ -498,6 +500,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "A selected facility and authorization are required.",
       "A confirmed Facility invitation must refresh canonical membership and enter the selected Facility without replacing the human's primary account.",
+      "Never replace an individual account with Facility membership or bypass the post-login choice when both workspaces are eligible.",
       "Never rely on native-only Alert callbacks for web member-removal confirmation or remove the last owner.",
       "Local previews require explicit preview intent; bare routes preserve real authenticated Facility sessions.",
       "Never hide a confirmed Facility task write behind a cached or stale queue response.",

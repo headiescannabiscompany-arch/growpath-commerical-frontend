@@ -13,10 +13,9 @@ export type SwitchModeDeps = {
  */
 export async function switchAccountMode(nextMode: AccountMode, deps: SwitchModeDeps) {
   const { currentMode, setMode, router } = deps;
-  if (nextMode === currentMode) return;
 
   await deps.setPreferredMode?.(nextMode);
-  setMode(nextMode);
+  if (nextMode !== currentMode) setMode(nextMode);
 
   const href =
     nextMode === "facility"

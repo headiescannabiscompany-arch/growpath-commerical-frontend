@@ -43,7 +43,7 @@ export default function LoginScreen() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       await auth.login(normalizedEmail, password);
-      router.replace("/");
+      router.replace("/account/workspace");
     } catch (e: any) {
       if (e instanceof ApiError) {
         setErrMsg(loginErrorMessage(e));
