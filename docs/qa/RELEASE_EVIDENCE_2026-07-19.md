@@ -44,9 +44,10 @@ inspection recorded above.
 ## Open acceptance blocks
 
 - Personal Free requires a correctly entitled Free test account.
-- The owner confirmed real Manager and Staff production members already exist. Their
-  production login/workspace-choice role loops remain unrecorded, and one real Viewer
-  account is still required before the shared-record chain can close.
+- Real Manager and Staff production login, workspace choice, restricted role surfaces,
+  shared-task reassignment/completion, reload persistence, and Owner final audit review
+  passed on frontend `b2469b22`. One real Viewer account is still required before the
+  shared-record chain can close.
 - Independent outside-user loop and submitted feedback still require an outside user.
 - Production verification/reset email requires the live email configuration, verified
   Resend domain, and delivery logs.
