@@ -411,11 +411,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  async function loadMeForToken() {
+  async function loadMeForToken(options: { force?: boolean } = {}) {
     setMeStatus("loading");
     setMeError(null);
     try {
-      const me = await apiMe();
+      const me = await apiMe(options);
       setUser((current) => mergeAuthUser(current, me.user));
       setCtx(me.ctx ?? null);
       setMeStatus("ready");
@@ -544,7 +544,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await persistToken(loginRes.token);
       setToken(loginRes.token);
       setUser(loginRes.user);
-      await loadMeForToken();
+      await loadMeForToken({ force: true });
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
       throw err;
@@ -583,7 +583,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function retryMe() {
     if (!token) return;
-    await loadMeForToken();
+    await loadMeForToken({ force: true });
   }
 
   const value = useMemo<AuthState>(

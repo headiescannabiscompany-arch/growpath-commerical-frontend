@@ -60,6 +60,65 @@ describe("apiMe contract normalization", () => {
     expect(me.ctx.facilityId).toBe("f1");
   });
 
+  it("bypasses the short session cache when a canonical refresh is forced", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({
+        user: { id: "u-cache", email: "cache@example.com" },
+        ctx: { mode: "personal", capabilities: {}, limits: {} }
+      })
+      .mockResolvedValueOnce({
+        user: { id: "u-cache", email: "cache@example.com" },
+        ctx: {
+          mode: "personal",
+          capabilities: {},
+          limits: {},
+          facilityId: "facility-new",
+          facilityRole: "STAFF"
+        }
+      });
+
+    await apiMe();
+    const refreshed = await apiMe({ force: true });
+
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(refreshed.ctx.facilityId).toBe("facility-new");
+  });
+
+  it("does not let an older in-flight session response overwrite a forced refresh", async () => {
+    let resolveStale: ((value: any) => void) | undefined;
+    mockApiRequest
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveStale = resolve;
+          })
+      )
+      .mockResolvedValueOnce({
+        user: { id: "u-race", email: "race@example.com" },
+        ctx: {
+          mode: "personal",
+          capabilities: {},
+          limits: {},
+          facilityId: "facility-current",
+          facilityRole: "STAFF"
+        }
+      });
+
+    const staleRequest = apiMe();
+    await Promise.resolve();
+    const refreshed = await apiMe({ force: true });
+    resolveStale?.({
+      user: { id: "u-race", email: "race@example.com" },
+      ctx: { mode: "personal", capabilities: {}, limits: {} }
+    });
+    await staleRequest;
+    const cached = await apiMe();
+
+    expect(refreshed.ctx.facilityId).toBe("facility-current");
+    expect(cached.ctx.facilityId).toBe("facility-current");
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+  });
+
   it("throws on invalid shape", async () => {
     mockApiRequest.mockResolvedValue({ success: true, data: {} });
 
