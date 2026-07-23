@@ -189,6 +189,25 @@ same production Facility.
   Genuine in-app Browser screenshots captured the report at 8:19:51 PM ET and the
   audit detail on the exact deployed pair. API health returned HTTP 200 at
   `2026-07-23T00:21:29Z`.
+- A final fresh-route retest on evidence merge `4ba10b534ba43ffacbc96760407125e9cb5586cd`
+  exposed a hydration race: an immediate first export used the generic
+  `facility-compliance-export.json` filename, while a retry after the selected Facility
+  finished hydrating used the correct readable name. The packet contents and readiness
+  remained accurate in both attempts.
+- Backend PR `#58`, merge `55104d54b2065779a426fc8e9b46a09b8b63b023`, made the
+  readable Facility name and safe download filename part of the export contract.
+  Frontend PR `#155`, merge `90499dfae1a27d5d1cf3ec1061f541c8a3efa407`, now prefers
+  that authoritative packet name over still-hydrating local context. The backend
+  database suite passed locally (2 tests), the frontend reporting suite passed locally
+  (4 tests), and both repositories' complete CI gates passed, including the backend
+  API security scan.
+- Render deployed frontend `90499dfa` as `dep-d9gm6onavr4c73d9p0h0` at 8:43 PM ET and
+  backend `55104d54` as `dep-d9gm9gmq1p3s73burq80` at 8:48 PM ET. At 8:49:19 PM ET,
+  the exact fresh-route/immediate-first-click sequence produced
+  `triple-bag-genetics-llc-compliance-export.json`, 71 records, `Ready`, and 1 total /
+  0 open / 1 resolved / 0 cancelled deviation without waiting for local Facility
+  hydration. A genuine in-app Browser screenshot captured the final result, and API
+  health returned HTTP 200 at `2026-07-23T00:50:00Z`.
 
 This closes the production Owner report-export and audit-detail review loop. The
 separate Manager, Staff, Viewer, forced-authorization, invitation-acceptance,
