@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -83,6 +84,7 @@ export default function FacilityTeamTab() {
   const [inviting, setInviting] = useState(false);
   const [inviteFeedback, setInviteFeedback] = useState("");
   const [busyMemberId, setBusyMemberId] = useState("");
+  const [memberFeedback, setMemberFeedback] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -151,13 +153,15 @@ export default function FacilityTeamTab() {
   );
 
   const removeMember = useCallback(
-    async (userId: string) => {
+    async (userId: string, label: string) => {
       if (!facilityId || !isOwner || !userId) return;
       setBusyMemberId(userId);
       try {
         setError(null);
+        setMemberFeedback("");
         await removeTeamMember(facilityId, userId);
         await load({ refresh: true });
+        setMemberFeedback(`${label} no longer has access to this facility.`);
       } catch (e) {
         setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
@@ -169,14 +173,27 @@ export default function FacilityTeamTab() {
 
   const confirmRemoveMember = useCallback(
     (userId: string, label: string) => {
-      Alert.alert(
-        "Remove facility member?",
-        `${label} will lose access to this facility. Their historical task and audit records remain.`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Remove", style: "destructive", onPress: () => removeMember(userId) }
-        ]
-      );
+      const message = `${label} will lose access to this facility. Their historical task and audit records remain.`;
+
+      if (
+        Platform.OS === "web" &&
+        typeof window !== "undefined" &&
+        typeof window.confirm === "function"
+      ) {
+        if (window.confirm(`Remove facility member?\n\n${message}`)) {
+          void removeMember(userId, label);
+        }
+        return;
+      }
+
+      Alert.alert("Remove facility member?", message, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => removeMember(userId, label)
+        }
+      ]);
     },
     [removeMember]
   );
@@ -198,6 +215,11 @@ export default function FacilityTeamTab() {
     <ScreenBoundary title="Team" showBack backFallbackHref="/home/facility/dashboard">
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
+        {memberFeedback ? (
+          <Text style={styles.feedback} accessibilityLiveRegion="polite">
+            {memberFeedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <Text style={styles.h1}>Facility Team</Text>
@@ -305,6 +327,14 @@ export default function FacilityTeamTab() {
             const subtitle = pickSubtitle(item);
             const memberRole = String(item?.role || "").toUpperCase();
             const canManageMember = isOwner && memberRole !== "OWNER" && memberId;
+            const memberEmail = String(item?.email || "").trim();
+            const removalLabel = [
+              title,
+              memberEmail && memberEmail !== title ? memberEmail : "",
+              memberRole ? memberRole.toLowerCase() : ""
+            ]
+              .filter(Boolean)
+              .join(" - ");
 
             return (
               <View style={styles.row}>
@@ -354,13 +384,10 @@ export default function FacilityTeamTab() {
                     {canManageMember ? (
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel={`Remove ${title} from facility`}
+                        accessibilityLabel={`Remove ${removalLabel} from facility`}
                         disabled={busyMemberId === memberId}
                         onPress={() =>
-                          confirmRemoveMember(
-                            memberId,
-                            String(item.name || item.email || "This member")
-                          )
+                          confirmRemoveMember(memberId, removalLabel || "This member")
                         }
                         style={[styles.smallButton, styles.removeButton]}
                       >
