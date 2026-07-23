@@ -341,7 +341,7 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [x] Review the connected `support@growpathai.com` mailbox and add all three owner notes submitted on 2026-07-21 without inventing missing requirements.
    - [x] Tighten the Personal home/feed layout so promotional campaigns do not narrow or overpower the grow command center. Free home now has one top and one bottom placement; paid home has one top placement; the supplemental side rail and home middle placement are removed.
    - [x] Make Forum/Q&A more approachable and interaction-led while keeping promotional Feed/Campaigns separate from discussion. Personal Community now leads with a question/share composer, renders author/date/media/tag/like/reply context as individual discussion cards, keeps groups and notifications secondary, demotes commercial discovery, and interleaves compact clearly labeled campaign placements instead of stacking large ads after the forum.
-   - [ ] Deepen Courses/Lives authoring and learner UX, including the existing shared calendar, Twitch connection, notification flow, and provider-aware YouTube/Rumble/URL media options.
+   - [x] Deepen Courses/Lives authoring and learner UX: the initial Course Builder now uses the same provider-aware GrowPath upload, YouTube, Rumble, Vimeo, and Other URL contract as Add/Edit Lesson; it exposes real Twitch OAuth/EventSub status plus shared Schedule and Notification Center entry points; created live sessions preserve calendar, RSVP, reminder, and notification context; and learner course/live surfaces make that connected workflow visible.
    - [ ] Run production desktop/mobile and accessibility review for each deep dive, fix findings, and attach final-SHA evidence.
 
 ## Immediate Execution Slice

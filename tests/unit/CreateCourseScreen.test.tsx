@@ -12,8 +12,22 @@ const mockUploadCourseMedia = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockGetDocumentAsync = jest.fn();
+const mockGetTwitchConnection = jest.fn();
+const mockBeginTwitchConnection = jest.fn();
+const mockValidateTwitchConnection = jest.fn();
+const CONNECTED_TWITCH = {
+  configured: true,
+  connection: {
+    status: "connected",
+    broadcasterId: "broadcaster-1",
+    broadcasterLogin: "growpath",
+    broadcasterName: "GrowPath",
+    eventSubStatus: "connected"
+  }
+};
 
 jest.mock("expo-router", () => ({
+  Link: ({ children }: any) => children,
   useRouter: () => ({ replace: mockReplace })
 }));
 
@@ -23,6 +37,12 @@ jest.mock("@/api/courses", () => ({
 
 jest.mock("@/api/uploads", () => ({
   uploadCourseMedia: (...args: any[]) => mockUploadCourseMedia(...args)
+}));
+
+jest.mock("@/api/twitch", () => ({
+  getTwitchConnection: (...args: any[]) => mockGetTwitchConnection(...args),
+  beginTwitchConnection: (...args: any[]) => mockBeginTwitchConnection(...args),
+  validateTwitchConnection: (...args: any[]) => mockValidateTwitchConnection(...args)
 }));
 
 jest.mock("@/utils/photoUploads", () => ({
@@ -86,6 +106,12 @@ describe("CreateCourseScreen", () => {
     jest.resetAllMocks();
     jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
     mockCreateCourse.mockResolvedValue({ id: "course-new", title: "Living Soil 101" });
+    mockGetTwitchConnection.mockReturnValue(new Promise(() => {}));
+    mockBeginTwitchConnection.mockResolvedValue({
+      configured: true,
+      authorizationUrl: "https://id.twitch.tv/oauth2/authorize"
+    });
+    mockValidateTwitchConnection.mockResolvedValue({ ok: true });
     mockPersistImageUri.mockImplementation(async (uri) =>
       uri ? "uploaded-cover.jpg" : null
     );
@@ -131,11 +157,18 @@ describe("CreateCourseScreen", () => {
     expect(screen.getByText("Upload Documents")).toBeTruthy();
     expect(screen.getByText("Upload Video / Audio")).toBeTruthy();
     expect(screen.getByText("Upload Images")).toBeTruthy();
+    expect(screen.getByText("Twitch, calendar, and reminders")).toBeTruthy();
+    expect(screen.getByText("Open Schedule")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
   });
 
   it("creates structured draft payloads for lessons, documents, lives, and links", async () => {
+    mockGetTwitchConnection.mockResolvedValue(CONNECTED_TWITCH);
     const screen = render(<CreateCourseScreen />);
 
+    await waitFor(() =>
+      expect(screen.getByText("Connected as GrowPath. EventSub connected.")).toBeTruthy()
+    );
     fireEvent.changeText(screen.getByLabelText("Course title"), "Living Soil 101");
     fireEvent.changeText(
       screen.getByLabelText("Course summary"),
@@ -218,8 +251,18 @@ describe("CreateCourseScreen", () => {
             scheduledEnd: "2026-07-20T20:00:00-04:00",
             platform: "twitch",
             twitchChannel: "growpath",
+            twitchChannelId: "broadcaster-1",
+            twitchConnectionStatus: "connected",
+            eventSubStatus: "connected",
             meetingUrl: "https://www.twitch.tv/growpath",
             createLearnerTask: true,
+            calendarType: "course_live_session",
+            notificationPlan: expect.arrayContaining([
+              "new_live_scheduled",
+              "1h_before",
+              "live_now",
+              "replay_available"
+            ]),
             status: "scheduled"
           })
         ],
@@ -241,6 +284,130 @@ describe("CreateCourseScreen", () => {
       pathname: "/home/personal/courses",
       params: { courseId: "course-new" }
     });
+  });
+
+  it("uses the shared provider-aware video workflow in the initial course builder", async () => {
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Provider Course");
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Provider-aware lesson"
+    );
+    fireEvent.press(screen.getByLabelText("Edit video source for Provider-aware lesson"));
+    fireEvent.changeText(
+      screen.getByLabelText("Lesson video page URL"),
+      "https://www.youtube.com/watch?v=CUIifOqeS1Q"
+    );
+    fireEvent.press(screen.getByLabelText("Current availability: Available"));
+    fireEvent.press(
+      screen.getByLabelText("Confirm rights or permission for lesson video")
+    );
+    fireEvent.press(screen.getByLabelText("Captions: Provided"));
+    fireEvent.changeText(
+      screen.getByLabelText("Learner-visible lesson video summary"),
+      "Learners can follow the provider-aware lesson without loading the video."
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lessons: [
+          expect.objectContaining({
+            title: "Provider-aware lesson",
+            videoUrl: "https://www.youtube.com/watch?v=CUIifOqeS1Q",
+            externalVideoUrl: "https://www.youtube.com/watch?v=CUIifOqeS1Q",
+            mediaSource: expect.objectContaining({
+              sourceType: "youtube",
+              providerLabel: "YouTube",
+              creatorRightsConfirmed: true,
+              availabilityStatus: "available",
+              captionsStatus: "provided",
+              externalLinkFallback: "https://www.youtube.com/watch?v=CUIifOqeS1Q"
+            })
+          })
+        ]
+      })
+    );
+  });
+
+  it("rejects unsafe lesson video markup before creating the course", () => {
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Safe Media Course");
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Unsafe lesson"
+    );
+    fireEvent.press(screen.getByLabelText("Edit video source for Unsafe lesson"));
+    fireEvent.changeText(
+      screen.getByLabelText("Lesson video page URL"),
+      '<iframe src="https://example.com/video"></iframe>'
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      "Video source needs attention: Unsafe lesson",
+      expect.stringContaining("not iframe, embed, script, or HTML code")
+    );
+    expect(mockCreateCourse).not.toHaveBeenCalled();
+  });
+
+  it("uploads a GrowPath lesson video from the initial course builder", async () => {
+    mockGetDocumentAsync.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/lesson-video.mp4",
+          name: "lesson-video.mp4",
+          mimeType: "video/mp4",
+          size: 8096
+        }
+      ]
+    });
+    mockUploadCourseMedia.mockReset();
+    mockUploadCourseMedia.mockResolvedValue({ url: "/uploads/lesson-video.mp4" });
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Upload Lesson Course");
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Uploaded lesson"
+    );
+    fireEvent.press(screen.getByLabelText("Edit video source for Uploaded lesson"));
+    fireEvent.press(screen.getByLabelText("Video provider: GrowPath upload"));
+    fireEvent.press(screen.getByLabelText("Choose GrowPath lesson video upload"));
+    await waitFor(() =>
+      expect(screen.getByText("Selected: lesson-video.mp4")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() =>
+      expect(mockUploadCourseMedia).toHaveBeenCalledWith(
+        expect.objectContaining({ uri: "file:///tmp/lesson-video.mp4" })
+      )
+    );
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lessons: [
+          expect.objectContaining({
+            videoUrl: "/uploads/lesson-video.mp4",
+            mediaSource: expect.objectContaining({
+              sourceType: "growpath_upload",
+              providerLabel: "GrowPath upload",
+              canonicalUrl: "/uploads/lesson-video.mp4"
+            })
+          })
+        ],
+        authoringPlan: expect.objectContaining({
+          limits: expect.objectContaining({
+            selectedMedia: 1,
+            videoStorage: "selected_for_upload"
+          })
+        })
+      })
+    );
   });
 
   it("creates a paid draft with a visible USD fee", async () => {

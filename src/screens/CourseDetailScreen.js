@@ -919,6 +919,28 @@ export default function CourseDetailScreen({ route, navigation }) {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Scheduled live sessions</Text>
+        <Text style={styles.meta}>
+          Course lives stay connected to GrowPath Schedule, RSVP status, Notification
+          Center context, and optional My Tasks reminders.
+        </Text>
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open GrowPath Schedule for course lives"
+            onPress={() => router.push("/home/schedule")}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Open Schedule</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Notification Center for course lives"
+            onPress={() => router.push("/home/notifications")}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Notifications</Text>
+          </Pressable>
+        </View>
         {liveSessions.map((session, index) => {
           const sessionKey =
             rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
@@ -934,12 +956,23 @@ export default function CourseDetailScreen({ route, navigation }) {
             ? `https://www.twitch.tv/${twitchChannel}/schedule`
             : "";
           const isRsvped = liveRsvpIds.includes(sessionKey);
+          const reminderLabel = String(session?.reminderPlan?.label || "1 hour before");
+          const notificationCount = Array.isArray(session?.notificationPlan)
+            ? session.notificationPlan.length
+            : 0;
           return (
             <View key={sessionKey} style={styles.row}>
               <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
               <Text style={styles.meta}>
                 {session?.scheduledStart || "Date not scheduled"}
                 {session?.timezone ? ` · ${session.timezone}` : ""}
+              </Text>
+              <Text style={styles.meta}>
+                Reminder: {reminderLabel}
+                {notificationCount
+                  ? ` · ${notificationCount} notification checkpoints`
+                  : " · RSVP notification context"}
+                {isRsvped ? " · Going" : ""}
               </Text>
               <View style={styles.actions}>
                 <Pressable

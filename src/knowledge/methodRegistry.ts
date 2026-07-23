@@ -414,7 +414,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
-      "signed-out published catalog without owned-course or authoring controls"
+      "signed-out published catalog without owned-course or authoring controls",
+      "one provider-aware media contract shared by initial course creation and later lesson editing"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",

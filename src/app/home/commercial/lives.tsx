@@ -399,6 +399,8 @@ export default function CommercialLivesRoute() {
             <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
+            <ActionLink href="/home/schedule" label="Shared Schedule" />
+            <ActionLink href="/home/notifications" label="Notifications" />
           </View>
         </View>
       }
