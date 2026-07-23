@@ -48,6 +48,20 @@ function main() {
     "Commerce fixtures must remain namespace-scoped to test/staging.",
     errors
   );
+  requireCondition(
+    fixture.ownerConfirmedFacts?.reviewedAt === "2026-07-23" &&
+      sameValues(
+        fixture.ownerConfirmedFacts?.soilAndNutrientInventory?.productTypes,
+        ["soil", "dry_nutrient_mix"]
+      ) &&
+      fixture.ownerConfirmedFacts?.soilAndNutrientInventory?.inventoryCount ===
+        0 &&
+      fixture.ownerConfirmedFacts?.soilAndNutrientInventory?.inventoryState ===
+        "out_of_stock" &&
+      fixture.ownerConfirmedFacts?.merchandiseInventoryStatus === "unconfigured",
+    "Owner-confirmed zero soil/nutrient inventory is missing or incorrect.",
+    errors
+  );
 
   const brand = fixture.brand || {};
   requireCondition(
@@ -294,6 +308,21 @@ function main() {
         `Variant ${variant.variantId} has an invalid inventory state.`,
         errors
       );
+      if (["soil", "dry_nutrient_mix"].includes(product.productType)) {
+        requireCondition(
+          variant.inventoryCount === 0 &&
+            variant.inventoryState === "out_of_stock",
+          `Variant ${variant.variantId} must preserve owner-confirmed zero inventory.`,
+          errors
+        );
+      } else if (product.productType === "merchandise") {
+        requireCondition(
+          variant.inventoryCount === null &&
+            variant.inventoryState === "unconfigured",
+          `Variant ${variant.variantId} merchandise inventory must remain unconfigured.`,
+          errors
+        );
+      }
 
       if (!hasText(variant.sku)) blockers.push(`Variant ${variant.variantId} lacks SKU.`);
       if (!(Number.isInteger(variant.priceCents) && variant.priceCents >= 0)) {
