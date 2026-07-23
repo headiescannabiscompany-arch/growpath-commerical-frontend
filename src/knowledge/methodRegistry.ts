@@ -439,6 +439,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "forum alerts",
       "moderation audit",
       "owner-scoped event analytics",
+      "bounded Personal home campaign density that preserves the grow workspace",
       "owner-scoped production batches linked to ToolRuns and Commercial tasks",
       "published-course discovery limited to published storefronts and explicit public fields",
       "direct draft-course detail limited to the authenticated author or platform administrator",

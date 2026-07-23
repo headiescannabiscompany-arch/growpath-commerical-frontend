@@ -69,6 +69,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "post-login workspace choice for every multi-workspace identity"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "bounded Personal home campaign density that preserves the grow workspace"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     );
