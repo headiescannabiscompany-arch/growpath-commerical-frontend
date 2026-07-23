@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 
 const TOOLS = [
@@ -41,6 +42,7 @@ const LIBRARY = [
 
 export default function FacilityAiToolsRoute() {
   const router = useRouter();
+  const { selectedId: facilityId, selected: facility } = useFacility();
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Facility Grow Intelligence</Text>
@@ -48,7 +50,11 @@ export default function FacilityAiToolsRoute() {
         Shared AI and calculation capabilities. Lifecycle work stays attached to its room,
         grow, batch, or production record.
       </Text>
-      <TokenBalanceWidget />
+      <TokenBalanceWidget
+        workspaceType="facility"
+        facilityId={String(facilityId || "")}
+        workspaceName={String(facility?.name || "Selected Facility")}
+      />
       <View style={styles.grid}>
         {TOOLS.map(([title, description, href]) => (
           <View key={href} style={styles.card}>

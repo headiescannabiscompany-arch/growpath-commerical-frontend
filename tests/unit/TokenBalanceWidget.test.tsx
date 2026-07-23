@@ -5,9 +5,10 @@ import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { publishTokenBalanceChange } from "@/utils/tokenBalanceEvents";
 
 const mockGetTokenBalance = jest.fn();
+const mockPush = jest.fn();
 let mockAuthState: any;
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn() })
+  useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -15,7 +16,7 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 
 jest.mock("@/api/tokens", () => ({
-  getTokenBalance: () => mockGetTokenBalance()
+  getTokenBalance: (...args: any[]) => mockGetTokenBalance(...args)
 }));
 
 describe("TokenBalanceWidget", () => {
@@ -23,6 +24,7 @@ describe("TokenBalanceWidget", () => {
 
   beforeEach(() => {
     mockGetTokenBalance.mockReset();
+    mockPush.mockReset();
     mockGetTokenBalance.mockRejectedValue(new Error("offline"));
     mockAuthState = {
       token: "authenticated-token",
@@ -191,5 +193,60 @@ describe("TokenBalanceWidget", () => {
     );
     expect(mockAuthState.retryMe).toHaveBeenCalledTimes(1);
     expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads and labels the selected Facility balance instead of the member balance", async () => {
+    mockAuthState = {
+      token: "facility-member-token",
+      user: { plan: "pro", subscriptionStatus: "active" },
+      ctx: {
+        plan: "pro",
+        subscriptionStatus: "active",
+        facilityPlan: "facility",
+        facilitySubscriptionStatus: "active"
+      },
+      retryMe: jest.fn()
+    };
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 1997,
+      maxTokens: 2000,
+      plan: "facility",
+      subscriptionStatus: "active",
+      allowanceSource: "facility_plan",
+      creditOwner: "facility"
+    });
+
+    const screen = render(
+      <TokenBalanceWidget
+        workspaceType="facility"
+        facilityId="facility-123"
+        workspaceName="Headies Facility"
+      />
+    );
+
+    await waitFor(() => expect(screen.getByText("1997 / 2000")).toBeTruthy());
+    expect(screen.getByText("Facility AI Credits")).toBeTruthy();
+    expect(screen.getByText("Balance owner: Headies Facility.")).toBeTruthy();
+    expect(mockGetTokenBalance).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        params: {
+          workspaceType: "facility",
+          facilityId: "facility-123"
+        }
+      })
+    );
+  });
+
+  it("never falls back to an individual balance when no Facility is selected", async () => {
+    const screen = render(<TokenBalanceWidget workspaceType="facility" />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Select a Facility to view and use its AI-credit balance.")
+      ).toBeTruthy()
+    );
+    expect(screen.getByText("0 / -")).toBeTruthy();
+    expect(mockGetTokenBalance).not.toHaveBeenCalled();
   });
 });

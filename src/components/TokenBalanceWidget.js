@@ -10,11 +10,25 @@ import { subscribeToTokenBalanceChange } from "../utils/tokenBalanceEvents";
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 /**
- * @param {{ onPress?: () => void, interactive?: boolean }} props
+ * @param {{
+ *   onPress?: () => void,
+ *   interactive?: boolean,
+ *   workspaceType?: "personal" | "commercial" | "facility",
+ *   facilityId?: string,
+ *   workspaceName?: string
+ * }} props
  */
-export default function TokenBalanceWidget({ onPress = undefined, interactive = true }) {
+export default function TokenBalanceWidget({
+  onPress = undefined,
+  interactive = true,
+  workspaceType = "personal",
+  facilityId = "",
+  workspaceName = ""
+}) {
   const router = useRouter();
   const auth = useAuth();
+  const facilityScoped = workspaceType === "facility";
+  const normalizedFacilityId = String(facilityId || "").trim();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -28,13 +42,25 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     auth?.ctx?.plan || "",
     auth?.ctx?.subscriptionStatus || ""
   ].join("|");
+  const scopeStateKey = [
+    workspaceType,
+    normalizedFacilityId,
+    workspaceName,
+    auth?.ctx?.facilityPlan || "",
+    auth?.ctx?.facilitySubscriptionStatus || ""
+  ].join("|");
   const authToken = String(auth?.token || "");
+  const stalePaidRetryKey = `${authToken}|${scopeStateKey}`;
   const retryMe = auth?.retryMe;
   const subscriptionStatus = String(
-    auth?.user?.subscriptionStatus || auth?.ctx?.subscriptionStatus || ""
+    facilityScoped
+      ? auth?.ctx?.facilitySubscriptionStatus || ""
+      : auth?.user?.subscriptionStatus || auth?.ctx?.subscriptionStatus || ""
   ).toLowerCase();
   const requestedPlan = String(
-    auth?.ctx?.requestedPlan || auth?.ctx?.plan || auth?.user?.plan || "free"
+    facilityScoped
+      ? auth?.ctx?.facilityPlan || "facility"
+      : auth?.ctx?.requestedPlan || auth?.ctx?.plan || auth?.user?.plan || "free"
   ).toLowerCase();
   const hasPaidAccess =
     ["active", "trial", "trialing"].includes(subscriptionStatus) &&
@@ -52,19 +78,41 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     let alive = true;
 
     async function load() {
+      if (facilityScoped && !normalizedFacilityId) {
+        setBalance(null);
+        setLoadFailed(false);
+        setAllowanceMismatch(false);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setLoadFailed(false);
       setAllowanceMismatch(false);
+      setBalance(null);
       try {
-        let res = await getTokenBalance(undefined, { timeoutMs: 8000 });
+        const requestOptions = {
+          timeoutMs: 8000,
+          ...(facilityScoped
+            ? {
+                params: {
+                  workspaceType: "facility",
+                  facilityId: normalizedFacilityId
+                }
+              }
+            : {})
+        };
+        let res = await getTokenBalance(undefined, requestOptions);
         let nextBalance = res?.data ?? res;
         const hasStaleFreeAllowance =
           hasPaidAccess && Number(nextBalance?.maxTokens) <= 5;
 
-        if (hasStaleFreeAllowance && stalePaidRetryTokenRef.current !== authToken) {
-          stalePaidRetryTokenRef.current = authToken;
+        if (
+          hasStaleFreeAllowance &&
+          stalePaidRetryTokenRef.current !== stalePaidRetryKey
+        ) {
+          stalePaidRetryTokenRef.current = stalePaidRetryKey;
           await retryMe?.();
-          res = await getTokenBalance(undefined, { timeoutMs: 8000 });
+          res = await getTokenBalance(undefined, requestOptions);
           nextBalance = res?.data ?? res;
         }
 
@@ -84,7 +132,17 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
     return () => {
       alive = false;
     };
-  }, [accountStateKey, authToken, hasPaidAccess, refreshVersion, retryMe]);
+  }, [
+    accountStateKey,
+    authToken,
+    facilityScoped,
+    hasPaidAccess,
+    normalizedFacilityId,
+    refreshVersion,
+    retryMe,
+    scopeStateKey,
+    stalePaidRetryKey
+  ]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
     const rawMax = Number(balance?.maxTokens);
@@ -117,31 +175,38 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
 
   const refillCopy = loadFailed
     ? "Live balance is unavailable. No estimated balance is being shown."
-    : balance?.refillDescription || "Your configured allowance refreshes weekly.";
+    : facilityScoped && !normalizedFacilityId
+      ? "Select a Facility to view and use its AI-credit balance."
+      : balance?.refillDescription || "Your configured allowance refreshes weekly.";
   const usageCopy =
     "AI credits pay for real model work. Rule-based calculators and fallbacks are free; Plant Diagnose uses 3 credits and provider-backed text help uses 1.";
   const verifiedPlanCopy = balance?.plan
-    ? `Server plan: ${String(balance.plan).toUpperCase()} (${balance.subscriptionStatus || "unknown status"}); ${maxTokens ?? "-"} weekly credits from ${balance.allowanceSource || "plan"}.`
+    ? `${facilityScoped ? "Facility" : "Server"} plan: ${String(balance.plan).toUpperCase()} (${balance.subscriptionStatus || "unknown status"}); ${maxTokens ?? "-"} weekly credits from ${balance.allowanceSource || "plan"}.`
     : null;
   const weeklyUsageCopy = balance?.usage
     ? `Used this week: ${Number(balance.usage.creditsUsed || 0)} credits across ${Number(balance.usage.billedRequests || 0)} billed requests; ${Number(balance.usage.creditsRefunded || 0)} credits refunded.`
     : null;
 
   const Container = interactive ? TouchableOpacity : View;
+  const detailsHref = facilityScoped
+    ? normalizedFacilityId
+      ? `/ai/how-it-works?workspaceType=facility&facilityId=${encodeURIComponent(normalizedFacilityId)}`
+      : "/ai/how-it-works?workspaceType=facility"
+    : "/ai/how-it-works";
 
   return (
     <Container
       style={[styles.container, isLow && styles.containerLow]}
-      {...(interactive
-        ? { onPress: onPress || (() => router.push("/ai/how-it-works")) }
-        : {})}
+      {...(interactive ? { onPress: onPress || (() => router.push(detailsHref)) } : {})}
     >
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>AI</Text>
         </View>
         <View style={styles.headerContent}>
-          <Text style={styles.label}>AI Credits</Text>
+          <Text style={styles.label}>
+            {facilityScoped ? "Facility AI Credits" : "AI Credits"}
+          </Text>
           <Text style={styles.balance}>
             {aiTokens} / {maxTokens ?? "-"}
           </Text>
@@ -158,6 +223,9 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
         {verifiedPlanCopy ? (
           <Text style={styles.description}>{verifiedPlanCopy}</Text>
         ) : null}
+        {facilityScoped && workspaceName ? (
+          <Text style={styles.description}>Balance owner: {workspaceName}.</Text>
+        ) : null}
         {weeklyUsageCopy ? (
           <Text style={styles.description}>{weeklyUsageCopy}</Text>
         ) : null}
@@ -167,8 +235,9 @@ export default function TokenBalanceWidget({ onPress = undefined, interactive = 
         <Text style={styles.description}>{refillCopy}</Text>
         {allowanceMismatch ? (
           <Text style={styles.syncWarning}>
-            Your paid or trial plan is active, but the server is still reporting the free
-            5-credit allowance. Refresh plan status before using AI credits.
+            {facilityScoped ? "The Facility" : "Your paid or trial plan"} is active, but
+            the server is still reporting the free 5-credit allowance. Refresh plan status
+            before using AI credits.
           </Text>
         ) : null}
         {balance?.usage && !balance.usage.reconciled ? (
