@@ -314,7 +314,17 @@ describe("Forum and feed separation copy", () => {
 
   it("opens community forum previews through the shared forum detail route", async () => {
     mockListForumPosts.mockResolvedValue([
-      { id: "thread-community-help", title: "Community help", body: "Need advice" }
+      {
+        id: "thread-community-help",
+        title: "Community help",
+        body: "Need advice",
+        author: { displayName: "GrowPath Gardener" },
+        createdAt: "2026-07-21T12:00:00Z",
+        growInterests: ["Living Soil"],
+        photoUrls: ["/uploads/community-help.jpg"],
+        likeCount: 4,
+        commentCount: 2
+      }
     ]);
 
     const screen = render(<CommunityTab />);
@@ -322,6 +332,14 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() =>
       expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy()
     );
+    expect(screen.getByText("Start a Discussion")).toBeTruthy();
+    expect(screen.getByText("Latest discussions")).toBeTruthy();
+    expect(screen.getByText("GrowPath Gardener")).toBeTruthy();
+    expect(screen.getByText("Living Soil")).toBeTruthy();
+    expect(screen.getByText("4 likes")).toBeTruthy();
+    expect(screen.getByText("2 replies")).toBeTruthy();
+    expect(screen.getByLabelText("Community help photo 1")).toBeTruthy();
+    expect(screen.getByText("Explore beyond the Forum")).toBeTruthy();
     expect(screen.getByLabelText("Public Storefronts")).toBeTruthy();
     expect(screen.getByLabelText("Chronological Feed")).toBeTruthy();
     expect(screen.getByLabelText("Marketplace & Offers")).toBeTruthy();

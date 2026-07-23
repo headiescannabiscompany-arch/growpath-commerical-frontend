@@ -14,6 +14,7 @@ type FeedBannerProps = {
   railMode?: FeedRailMode;
   routeKey?: string;
   growInterests?: string[];
+  compact?: boolean;
 };
 
 const LABELS: Record<FeedBannerPlacement, string> = {
@@ -29,7 +30,8 @@ export default function FeedBanner({
   plan,
   railMode = "standard",
   routeKey,
-  growInterests
+  growInterests,
+  compact = false
 }: FeedBannerProps) {
   if (!slots || slots <= 0) return null;
 
@@ -37,7 +39,7 @@ export default function FeedBanner({
     <View
       accessibilityRole="summary"
       accessibilityLabel={`${LABELS[placement]} placement`}
-      style={styles.banner}
+      style={[styles.banner, compact ? styles.bannerCompact : null]}
     >
       <Text style={styles.label}>{LABELS[placement]}</Text>
       {plan === "free" && placement === "top" ? (
@@ -54,6 +56,7 @@ export default function FeedBanner({
         placement={placement}
         routeKey={routeKey}
         growInterests={growInterests}
+        compact={compact}
       />
     </View>
   );
@@ -67,6 +70,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7FBF5",
     padding: 12,
     gap: 10
+  },
+  bannerCompact: {
+    padding: 9,
+    gap: 7
   },
   label: {
     color: "#166534",

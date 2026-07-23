@@ -283,6 +283,12 @@ export default function ForumRoute() {
           </View>
         ) : null}
       </View>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_forum"
+        longContent
+        compact
+      />
 
       {isSignedIn && feedback ? (
         <View style={styles.errorCard}>
@@ -322,66 +328,75 @@ export default function ForumRoute() {
         </View>
       ) : null}
 
-      {visiblePosts.map((post) => {
+      {visiblePosts.map((post, index) => {
         const id = postId(post);
         const photos = photosOf(post);
         return (
-          <Link
-            key={id || titleOf(post)}
-            href={{ pathname: "/forum/post", params: { id } }}
-            asChild
-          >
-            <Pressable
-              style={styles.card}
-              accessibilityRole="link"
-              accessibilityLabel={`Open forum post ${titleOf(post)}`}
-            >
-              <Text style={styles.meta}>
-                {authorOf(post)}
-                {timeOf(post) ? ` | ${timeOf(post)}` : ""}
-              </Text>
-              <Text style={styles.cardTitle}>{titleOf(post)}</Text>
-              {bodyOf(post) ? (
-                <Text style={styles.cardText} numberOfLines={3}>
-                  {bodyOf(post)}
+          <React.Fragment key={id || titleOf(post)}>
+            <Link href={{ pathname: "/forum/post", params: { id } }} asChild>
+              <Pressable
+                style={styles.card}
+                accessibilityRole="link"
+                accessibilityLabel={`Open forum post ${titleOf(post)}`}
+              >
+                <Text style={styles.meta}>
+                  {authorOf(post)}
+                  {timeOf(post) ? ` | ${timeOf(post)}` : ""}
                 </Text>
-              ) : (
-                <Text style={styles.emptyImageText}>No text preview available</Text>
-              )}
-              {photos.length ? (
-                <View style={styles.photoRow}>
-                  {photos.slice(0, 3).map((photo, index) => (
-                    <ForumPostImage
-                      key={`${photo}-${index}`}
-                      photo={photo}
-                      index={index}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <Text style={styles.emptyImageText}>No image attached</Text>
-              )}
-              {tagsOf(post).length ? (
-                <View style={styles.tagRow}>
-                  {tagsOf(post).map((tag) => (
-                    <Text key={String(tag)} style={styles.tag}>
-                      {String(tag)}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-              <Text style={styles.meta}>
-                {post.likeCount || 0} likes |{" "}
-                {(post as any).commentCount ?? (post.comments || []).length} replies
-              </Text>
-              <Text style={styles.openText}>Open discussion</Text>
-            </Pressable>
-          </Link>
+                <Text style={styles.cardTitle}>{titleOf(post)}</Text>
+                {bodyOf(post) ? (
+                  <Text style={styles.cardText} numberOfLines={3}>
+                    {bodyOf(post)}
+                  </Text>
+                ) : (
+                  <Text style={styles.emptyImageText}>No text preview available</Text>
+                )}
+                {photos.length ? (
+                  <View style={styles.photoRow}>
+                    {photos.slice(0, 3).map((photo, photoIndex) => (
+                      <ForumPostImage
+                        key={`${photo}-${photoIndex}`}
+                        photo={photo}
+                        index={photoIndex}
+                      />
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.emptyImageText}>No image attached</Text>
+                )}
+                {tagsOf(post).length ? (
+                  <View style={styles.tagRow}>
+                    {tagsOf(post).map((tag) => (
+                      <Text key={String(tag)} style={styles.tag}>
+                        {String(tag)}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+                <Text style={styles.meta}>
+                  {post.likeCount || 0} likes |{" "}
+                  {(post as any).commentCount ?? (post.comments || []).length} replies
+                </Text>
+                <Text style={styles.openText}>Open discussion</Text>
+              </Pressable>
+            </Link>
+            {index === 3 ? (
+              <PersonalFeedPlacement
+                placement="middle"
+                routeKey="personal_forum"
+                longContent
+                compact
+              />
+            ) : null}
+          </React.Fragment>
         );
       })}
-      <PersonalFeedPlacement placement="top" routeKey="personal_forum" longContent />
-      <PersonalFeedPlacement placement="middle" routeKey="personal_forum" longContent />
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_forum" longContent />
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_forum"
+        longContent
+        compact
+      />
     </ScrollView>
   );
 }
