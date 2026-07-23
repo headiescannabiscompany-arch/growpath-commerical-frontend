@@ -24,7 +24,7 @@ export function getLearningAccess(entitlements: EntitlementsLike | null | undefi
     canViewCourses,
     canSeePaidCourses:
       has(entitlements, CAPABILITY_KEYS.SEE_PAID_COURSES) || canSellPaidCourses,
-    canCreateCourses: canViewCourses || has(entitlements, CAPABILITY_KEYS.COURSES_CREATE),
+    canCreateCourses: has(entitlements, CAPABILITY_KEYS.COURSES_CREATE),
     canSellPaidCourses,
     canPublishCourses: has(entitlements, CAPABILITY_KEYS.PUBLISH_COURSES),
     canViewCourseAnalytics: has(entitlements, CAPABILITY_KEYS.COURSES_ANALYTICS),

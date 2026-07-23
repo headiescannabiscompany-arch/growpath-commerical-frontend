@@ -14,6 +14,19 @@ describe("PublicLandingPage", () => {
     expect(JSON.stringify(screen.toJSON())).toContain("AI disclaimer");
   });
 
+  it("uses one level-one page heading followed by level-two section headings", () => {
+    const screen = render(<PublicLandingPage page="home" />);
+
+    expect(
+      screen.getByText("One connected path from grow setup to harvest").props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    for (const title of ["Personal growers", "Commercial creators", "Facilities"]) {
+      expect(screen.getByText(title).props["aria-level"]).toBe(2);
+    }
+  });
+
   it("describes course publishing without a creator-support application", () => {
     const pricing = PUBLIC_PAGE_COPY.pricing;
 

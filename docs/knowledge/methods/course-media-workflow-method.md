@@ -22,6 +22,8 @@ The author must open the source before recording availability. Record available,
 
 Draft courses, lessons, media metadata, summaries, documents, and authoring fields are owner-only records. Public catalogs and direct course-detail routes may return them only after publication; an authenticated author or platform administrator may preview the author's own draft. That learner preview must render learner-facing course and lesson content, provider playback/fallback, and accessibility status without exposing authoring controls. Anonymous and unrelated authenticated requests must receive the same not-found response so a guessed or shared draft ID cannot disclose unpublished content.
 
+The signed-out course catalog is discovery-only. It may request published public catalogs and show sign-in or registration actions, but it must not request an owned-course collection or expose Course Builder, create, invite, analytics, publish, unpublish, enrollment, purchase, or learner-progress controls before authentication.
+
 ## Playback and fallback
 
 Use first-party playback for GrowPath uploads. Use a normalized YouTube or Vimeo player only when the author recorded the source as available and explicitly allowed embedding. Preserve Vimeo unlisted privacy hashes in both canonical and player URLs. Keep Rumble and unknown providers link-only until a stable reviewed provider contract exists.

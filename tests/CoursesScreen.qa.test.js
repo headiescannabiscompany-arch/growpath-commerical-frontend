@@ -29,9 +29,13 @@ import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
 let mockGrowInterests = {};
+let mockAuthState = {
+  isAuthed: true,
+  user: { id: "course-user", growInterests: mockGrowInterests }
+};
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "course-user", growInterests: mockGrowInterests } })
+  useAuth: () => mockAuthState
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -91,6 +95,10 @@ const mockCourses = [
 beforeEach(() => {
   mockUseEntitlements.mockReset();
   mockGrowInterests = {};
+  mockAuthState = {
+    isAuthed: true,
+    user: { id: "course-user", growInterests: mockGrowInterests }
+  };
   inviteOk = true;
   global.fetch = jest.fn(async (url) => {
     const u = String(url || "");
@@ -135,9 +143,9 @@ describe("CoursesScreen QA (capability-driven)", () => {
       expect.arrayContaining(["Vegetables", "Outdoor"])
     );
     expect(matchesCourseInterests(tomatoCourse, ["Vegetables", "Indoor"])).toBe(true);
-    expect(matchesCourseInterests(tomatoCourse, ["Fruit Trees & Bushes", "Outdoor"])).toBe(
-      false
-    );
+    expect(
+      matchesCourseInterests(tomatoCourse, ["Fruit Trees & Bushes", "Outdoor"])
+    ).toBe(false);
   });
 
   it("shows only free courses if cannot see paid courses", async () => {
@@ -168,6 +176,37 @@ describe("CoursesScreen QA (capability-driven)", () => {
     });
   });
 
+  it("keeps signed-out course discovery published-only and removes authoring controls", async () => {
+    mockAuthState = { isAuthed: false, user: null };
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: { maxPaidCourses: 1 },
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COURSES_CREATE" ||
+        cap === "COURSES_SELL_PAID" ||
+        cap === "PUBLISH_COURSES"
+    });
+
+    const { getByText, getByLabelText, queryByText } = await renderWithNav();
+
+    await waitFor(() => expect(getByText("Free Course")).toBeTruthy());
+    expect(queryByText("Pro Course")).toBeNull();
+    expect(getByText("Published course catalog")).toBeTruthy();
+    expect(getByLabelText("Sign in for courses")).toBeTruthy();
+    expect(getByLabelText("Create a free account for courses")).toBeTruthy();
+    expect(queryByText("Course Builder Workflow")).toBeNull();
+    expect(queryByText("Create Course")).toBeNull();
+    expect(queryByText("Unpublish")).toBeNull();
+    expect(
+      global.fetch.mock.calls.some(([url]) =>
+        String(url || "").includes("/api/courses/mine")
+      )
+    ).toBe(false);
+  });
+
   it("shows course creation controls for a free creator with paid-course limits", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
@@ -189,12 +228,13 @@ describe("CoursesScreen QA (capability-driven)", () => {
     });
   });
 
-  it("lets free course viewers create and sell paid courses within limits", async () => {
+  it("lets free course creators sell paid courses within limits", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
       limits: { maxPaidCourses: 1 },
-      can: (cap) => cap === "COURSES_VIEW" || cap === "COURSES_SELL_PAID"
+      can: (cap) =>
+        cap === "COURSES_VIEW" || cap === "COURSES_CREATE" || cap === "COURSES_SELL_PAID"
     });
     const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {

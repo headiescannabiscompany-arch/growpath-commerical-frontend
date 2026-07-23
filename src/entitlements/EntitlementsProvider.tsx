@@ -534,11 +534,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         capabilities: {
           [CAPABILITY_KEYS.COURSES_VIEW]: true,
           [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
-          [CAPABILITY_KEYS.COURSES_CREATE]: true,
-          [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
-          [CAPABILITY_KEYS.PUBLISH_COURSES]: true,
-          [CAPABILITY_KEYS.FORUM_VIEW]: true,
-          [CAPABILITY_KEYS.FORUM_POST]: false
+          [CAPABILITY_KEYS.FORUM_VIEW]: true
         },
         limits: applyDefaultCourseLimits({}, "free")
       });

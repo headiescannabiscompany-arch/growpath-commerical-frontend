@@ -13,6 +13,14 @@ const mockListNotifications = jest.fn();
 const mockCreateForumPost = jest.fn();
 const mockReplace = jest.fn();
 let mockGrowInterests: Record<string, string[]> = {};
+let mockAuthState: any = {
+  isAuthed: true,
+  user: {
+    id: "user-1",
+    email: "grower@growpathai.com",
+    growInterests: mockGrowInterests
+  }
+};
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -58,13 +66,13 @@ jest.mock("@/api/communitySocial", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({
-    user: {
-      id: "user-1",
-      email: "grower@growpathai.com",
-      growInterests: mockGrowInterests
-    }
-  })
+  useAuth: () =>
+    mockAuthState.isAuthed === false
+      ? mockAuthState
+      : {
+          ...mockAuthState,
+          user: { ...mockAuthState.user, growInterests: mockGrowInterests }
+        }
 }));
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -118,6 +126,14 @@ describe("Forum and feed separation copy", () => {
     mockListNotifications.mockResolvedValue([]);
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
     mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
+    mockAuthState = {
+      isAuthed: true,
+      user: {
+        id: "user-1",
+        email: "grower@growpathai.com",
+        growInterests: mockGrowInterests
+      }
+    };
   });
 
   it("frames the forum as discussion while feed placements stay campaigns", async () => {
@@ -140,6 +156,22 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Network down")).toBeTruthy();
     expect(screen.getByLabelText("Retry loading forum posts")).toBeTruthy();
     expect(screen.queryByText("No posts yet.")).toBeNull();
+  });
+
+  it("shows a truthful signed-out Forum gate without calling the protected feed", async () => {
+    mockAuthState = { isAuthed: false, user: null };
+
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Sign in to browse Forum / Q&A")).toBeTruthy()
+    );
+    expect(mockListForumPosts).not.toHaveBeenCalled();
+    expect(screen.getByTestId("link-/login")).toBeTruthy();
+    expect(screen.getByTestId("link-/register")).toBeTruthy();
+    expect(screen.queryByText("Forum could not load")).toBeNull();
+    expect(screen.queryByText("Not authenticated")).toBeNull();
+    expect(screen.queryByLabelText("Show forum posts for my grow interests")).toBeNull();
   });
 
   it("keeps the new forum post composer out of Feed / Campaigns", () => {

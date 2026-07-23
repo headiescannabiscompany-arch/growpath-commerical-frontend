@@ -22,6 +22,10 @@ After sign-in, an account with more than one eligible workspace must receive an 
 
 Public commercial-course discovery may expose a course only when both the course and its owning storefront are published. Return an explicit public-field projection with storefront identity and public course content; do not expose owner IDs, commercial account IDs, drafts, arbitrary authoring fields, or private workspace records. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API.
 
+Signed-out course discovery stays learner-facing and published-only. Anonymous visitors may browse the public catalogs and receive sign-in or registration actions, but they must not see authoring, owned-course, invite, analytics, publish, or unpublish controls.
+
+The Forum feed currently requires an authenticated account so participation, moderation identity, grow-interest filtering, and workspace context remain attributable. The signed-out `/forum` route must explain that boundary and provide sign-in and registration actions without calling the protected feed or presenting `Not authenticated` as a broken public page. Do not invent a public thread list or label an authorization failure as an empty Forum.
+
 The shared course-detail boundary must also enforce publication. A direct `/api/courses/:id` request may show an unpublished course only to its authenticated author or a platform administrator; anonymous users and other accounts receive not found. Enrollment, checkout, questions, answers, reviews, and public recommendations must resolve published courses rather than treating knowledge of a draft ID as access.
 
 Production authentication must ignore deterministic test identity headers such as `x-test-user-id`; those headers exist only inside the automated test environment. All production owner, Commercial, payment, authoring, and private-record access requires a verified normal authentication token.
