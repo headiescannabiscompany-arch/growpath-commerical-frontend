@@ -154,6 +154,7 @@ function formPublishBlockers(form: ProductForm) {
 }
 
 function parsePrice(value: string) {
+  if (!value.trim()) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
@@ -224,6 +225,7 @@ export default function CommercialProductsRoute({
 
   async function submitProduct() {
     if (!form.name.trim()) return;
+    const price = parsePrice(form.price);
     setSaving(true);
     setError(null);
     try {
@@ -234,8 +236,8 @@ export default function CommercialProductsRoute({
         shortDescription: form.shortDescription.trim(),
         description: form.shortDescription.trim(),
         imageUrl: imageUrl || undefined,
-        price: parsePrice(form.price),
-        currency: form.currency.trim() || "USD",
+        price,
+        currency: price === undefined ? undefined : form.currency.trim() || "USD",
         sku: form.sku.trim(),
         unitSize: form.unitSize.trim() || undefined,
         growInterests: splitList(form.growInterests),
@@ -671,6 +673,7 @@ export default function CommercialProductsRoute({
             {products.map((product) => {
               const id = productId(product);
               const missing = productMissingSetup(product);
+              const priceCents = productPrice(product);
               return (
                 <View key={id} style={styles.productRow}>
                   {productImage(product) ? (
@@ -691,6 +694,11 @@ export default function CommercialProductsRoute({
                         product.sku && `SKU ${product.sku}`,
                         ((product as any).unitSize || product.specs?.unitSize) &&
                           `Size ${(product as any).unitSize || product.specs?.unitSize}`,
+                        priceCents > 0
+                          ? `Price $${(priceCents / 100).toFixed(2)} ${String(
+                              product.currency || "USD"
+                            ).toUpperCase()}`
+                          : "Price TBD",
                         product.status || "draft",
                         (product as any).externalPurchaseUrl ? "external link" : null
                       ]

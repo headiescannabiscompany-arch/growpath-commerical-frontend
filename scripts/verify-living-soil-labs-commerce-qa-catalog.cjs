@@ -3,6 +3,7 @@
 "use strict";
 
 const fs = require("fs");
+const crypto = require("crypto");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -24,6 +25,25 @@ function hasText(value) {
 
 function sameValues(actual, expected) {
   return JSON.stringify(actual) === JSON.stringify(expected);
+}
+
+function assetFileMatches(asset) {
+  const localPath = String(asset?.localPath || "");
+  if (!/^assets\/brands\/living-soil-labs\/[^/]+\.png$/i.test(localPath)) {
+    return false;
+  }
+  const absolutePath = path.resolve(ROOT, localPath);
+  if (
+    !absolutePath.startsWith(`${ROOT}${path.sep}`) ||
+    !fs.existsSync(absolutePath)
+  ) {
+    return false;
+  }
+  const actualSha256 = crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(absolutePath))
+    .digest("hex");
+  return actualSha256 === String(asset.sha256 || "").toLowerCase();
 }
 
 function main() {
@@ -50,6 +70,13 @@ function main() {
   );
   requireCondition(
     fixture.ownerConfirmedFacts?.reviewedAt === "2026-07-23" &&
+      fixture.ownerConfirmedFacts?.tagline ===
+        "Rooted in Science. Grown by Nature." &&
+      fixture.ownerConfirmedFacts?.launchStatus === "prelaunch_placeholder" &&
+      fixture.ownerConfirmedFacts?.websiteUrl === null &&
+      fixture.ownerConfirmedFacts?.priceStatus === "tbd" &&
+      fixture.ownerConfirmedFacts?.buyerPaysShipping === true &&
+      fixture.ownerConfirmedFacts?.checkoutEnabled === false &&
       sameValues(
         fixture.ownerConfirmedFacts?.soilAndNutrientInventory?.productTypes,
         ["soil", "dry_nutrient_mix"]
@@ -58,8 +85,14 @@ function main() {
         0 &&
       fixture.ownerConfirmedFacts?.soilAndNutrientInventory?.inventoryState ===
         "out_of_stock" &&
-      fixture.ownerConfirmedFacts?.merchandiseInventoryStatus === "unconfigured",
-    "Owner-confirmed zero soil/nutrient inventory is missing or incorrect.",
+      sameValues(
+        fixture.ownerConfirmedFacts?.merchandiseInventory?.productTypes,
+        ["merchandise"]
+      ) &&
+      fixture.ownerConfirmedFacts?.merchandiseInventory?.inventoryCount === 0 &&
+      fixture.ownerConfirmedFacts?.merchandiseInventory?.inventoryState ===
+        "out_of_stock",
+    "Owner-confirmed pre-launch, shipping, price, or zero-inventory facts are missing or incorrect.",
     errors
   );
 
@@ -67,6 +100,18 @@ function main() {
   requireCondition(
     brand.name === "Living Soil Labs" && brand.slug === "living-soil-labs",
     "Living Soil Labs brand identity is incorrect.",
+    errors
+  );
+  requireCondition(
+    brand.tagline === "Rooted in Science. Grown by Nature." &&
+      brand.launchStatus === "prelaunch_placeholder" &&
+      brand.websiteUrl === null &&
+      brand.checkoutEnabled === false &&
+      brand.priceDisplay === "TBD" &&
+      brand.shippingPayer === "buyer" &&
+      brand.descriptionStatus === "assistant_draft_pending_owner_edit" &&
+      hasText(brand.description),
+    "Living Soil Labs placeholder brand facts are incorrect.",
     errors
   );
   requireCondition(
@@ -171,6 +216,19 @@ function main() {
     }
   }
 
+  const brandAssets = [brand.bannerAsset].filter(Boolean);
+  for (const asset of brandAssets) {
+    requireCondition(
+      sourceIds.has(asset.sourceId) &&
+        asset.rightsStatus === "approved" &&
+        asset.intendedUseApproved === true &&
+        assetFileMatches(asset) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(asset.reviewedAt || ""),
+      `Brand asset ${asset.assetId || "<missing>"} lacks approved rights, a matching file hash, or review date.`,
+      errors
+    );
+  }
+
   const products = fixture.productDrafts || [];
   const productIds = products.map((product) => product.productId);
   const productNames = products.map((product) => product.name);
@@ -206,7 +264,7 @@ function main() {
   const requiredImageAssetFields = fixture.requiredImageAssetFields || [];
   const variantIds = new Set();
   const allVariants = [];
-  const allAssets = [];
+  const allAssets = [...brandAssets];
   const allowedInventoryStates = new Set([
     "in_stock",
     "low_stock",
@@ -280,10 +338,9 @@ function main() {
         sourceIds.has(asset.sourceId) &&
           asset.rightsStatus === "approved" &&
           asset.intendedUseApproved === true &&
-          /^tests\/fixtures\/media\/living-soil-labs\//.test(asset.localPath || "") &&
-          /^[a-f0-9]{64}$/i.test(asset.sha256 || "") &&
+          assetFileMatches(asset) &&
           /^\d{4}-\d{2}-\d{2}$/.test(asset.reviewedAt || ""),
-        `Image asset ${assetLabel} lacks approved rights, path, hash, or review date.`,
+        `Image asset ${assetLabel} lacks approved rights, a matching file hash, or review date.`,
         errors
       );
     }
@@ -308,21 +365,17 @@ function main() {
         `Variant ${variant.variantId} has an invalid inventory state.`,
         errors
       );
-      if (["soil", "dry_nutrient_mix"].includes(product.productType)) {
-        requireCondition(
-          variant.inventoryCount === 0 &&
-            variant.inventoryState === "out_of_stock",
-          `Variant ${variant.variantId} must preserve owner-confirmed zero inventory.`,
-          errors
-        );
-      } else if (product.productType === "merchandise") {
-        requireCondition(
-          variant.inventoryCount === null &&
-            variant.inventoryState === "unconfigured",
-          `Variant ${variant.variantId} merchandise inventory must remain unconfigured.`,
-          errors
-        );
-      }
+      requireCondition(
+        variant.inventoryCount === 0 &&
+          variant.inventoryState === "out_of_stock",
+        `Variant ${variant.variantId} must preserve owner-confirmed zero inventory.`,
+        errors
+      );
+      requireCondition(
+        variant.priceCents === null && variant.currency === null,
+        `Variant ${variant.variantId} must keep its pre-launch price as unknown/TBD.`,
+        errors
+      );
 
       if (!hasText(variant.sku)) blockers.push(`Variant ${variant.variantId} lacks SKU.`);
       if (!(Number.isInteger(variant.priceCents) && variant.priceCents >= 0)) {

@@ -634,7 +634,15 @@ export default function Storefront({
 
   async function createProduct() {
     if (!canEdit || !productDraft.name.trim()) return;
-    const priceNumber = Number(productDraft.price);
+    const priceNumber = productDraft.price.trim()
+      ? Number(productDraft.price)
+      : undefined;
+    const price =
+      typeof priceNumber === "number" &&
+      Number.isFinite(priceNumber) &&
+      priceNumber >= 0
+        ? priceNumber
+        : undefined;
     setSavingProduct(true);
     setFeedback("");
     try {
@@ -649,8 +657,9 @@ export default function Storefront({
           unitSize: productDraft.unitSize.trim() || undefined,
           shortDescription: productDraft.shortDescription.trim() || undefined,
           description: productDraft.description.trim() || undefined,
-          price: Number.isFinite(priceNumber) ? priceNumber : 0,
-          currency: productDraft.currency.trim() || "usd",
+          price,
+          currency:
+            price === undefined ? undefined : productDraft.currency.trim() || "usd",
           status: productDraft.status === "published" ? "published" : "draft",
           inventoryItemId: productDraft.inventoryItemId.trim() || undefined,
           imageUrl: productDraft.imageUrl.trim() || undefined,
@@ -1453,7 +1462,7 @@ export default function Storefront({
             value={productDraft.price}
             onChangeText={(price) => setProductDraft((draft) => ({ ...draft, price }))}
             accessibilityLabel="Product price dollars"
-            placeholder="Price, e.g. 25"
+            placeholder="Price (optional; blank means TBD)"
             keyboardType="numeric"
             style={styles.input}
           />
@@ -1724,9 +1733,12 @@ export default function Storefront({
                         </Text>
                       </View>
                       <Text style={styles.muted}>
-                        ${dollars(priceCents)}{" "}
-                        {String(product.currency || "usd").toUpperCase()} |{" "}
-                        {product.category || "No category"}
+                        {priceCents > 0
+                          ? `$${dollars(priceCents)} ${String(
+                              product.currency || "usd"
+                            ).toUpperCase()}`
+                          : "Price TBD"}{" "}
+                        | {product.category || "No category"}
                       </Text>
                       {product.shortDescription || product.description ? (
                         <Text style={styles.muted} numberOfLines={2}>

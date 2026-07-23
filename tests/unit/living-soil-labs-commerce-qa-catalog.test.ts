@@ -123,32 +123,35 @@ describe("Living Soil Labs commerce QA catalog", () => {
     ).toBe("does_not_replace_method_preset_veg_3-1-1");
   });
 
-  it("records owner-confirmed zero mix inventory without inventing merchandise inventory", () => {
+  it("keeps every pre-launch variant out of stock with price unknown/TBD", () => {
     const catalog = loadCatalog();
-    const soilAndNutrientVariants = catalog.productDrafts
-      .filter((product: any) =>
-        ["soil", "dry_nutrient_mix"].includes(product.productType)
-      )
-      .flatMap((product: any) => product.variants);
-    const merchandiseVariants = catalog.productDrafts
-      .filter((product: any) => product.productType === "merchandise")
-      .flatMap((product: any) => product.variants);
+    const variants = catalog.productDrafts.flatMap((product: any) => product.variants);
 
     for (const product of catalog.productDrafts) {
       expect(product.claims).toEqual([]);
       expect(product.evidence.ownerApproved).toBe(false);
-      expect(product.evidence.imageAssets).toEqual([]);
+      expect(product.description).toMatch(/not available for sale/i);
     }
     expect(catalog.ownerConfirmedFacts).toEqual({
       reviewedAt: "2026-07-23",
+      tagline: "Rooted in Science. Grown by Nature.",
+      launchStatus: "prelaunch_placeholder",
+      websiteUrl: null,
+      priceStatus: "tbd",
+      buyerPaysShipping: true,
+      checkoutEnabled: false,
       soilAndNutrientInventory: {
         productTypes: ["soil", "dry_nutrient_mix"],
         inventoryCount: 0,
         inventoryState: "out_of_stock"
       },
-      merchandiseInventoryStatus: "unconfigured"
+      merchandiseInventory: {
+        productTypes: ["merchandise"],
+        inventoryCount: 0,
+        inventoryState: "out_of_stock"
+      }
     });
-    for (const variant of soilAndNutrientVariants) {
+    for (const variant of variants) {
       expect(variant).toMatchObject({
         sku: null,
         priceCents: null,
@@ -156,21 +159,68 @@ describe("Living Soil Labs commerce QA catalog", () => {
         shippingWeight: null,
         shippingWeightUnit: null,
         inventoryCount: 0,
-        inventoryState: "out_of_stock",
-        imageAssetIds: []
+        inventoryState: "out_of_stock"
       });
     }
-    for (const variant of merchandiseVariants) {
-      expect(variant).toMatchObject({
-        sku: null,
-        priceCents: null,
-        currency: null,
-        shippingWeight: null,
-        shippingWeightUnit: null,
-        inventoryCount: null,
-        inventoryState: "unconfigured",
-        imageAssetIds: []
-      });
+  });
+
+  it("records the pre-launch brand and placeholder media without treating mockups as stock", () => {
+    const catalog = loadCatalog();
+    const byId = Object.fromEntries(
+      catalog.productDrafts.map((product: any) => [product.productId, product])
+    );
+    const shirtAsset = byId["lsl-shirt"].evidence.imageAssets[0];
+    const hatAsset = byId["lsl-embroidered-hat"].evidence.imageAssets[0];
+
+    expect(catalog.brand).toMatchObject({
+      name: "Living Soil Labs",
+      slug: "living-soil-labs",
+      tagline: "Rooted in Science. Grown by Nature.",
+      descriptionStatus: "assistant_draft_pending_owner_edit",
+      launchStatus: "prelaunch_placeholder",
+      websiteUrl: null,
+      storefrontStatus: "draft",
+      publishReady: false,
+      checkoutEnabled: false,
+      priceDisplay: "TBD",
+      shippingPayer: "buyer"
+    });
+    expect(shirtAsset).toMatchObject({
+      assetId: "lsl-shirt-concept-2026-07-23",
+      rightsStatus: "approved",
+      intendedUseApproved: true,
+      localPath: "assets/brands/living-soil-labs/shirt-concept-not-for-sale.png"
+    });
+    expect(hatAsset).toMatchObject({
+      assetId: "lsl-hat-concept-2026-07-23",
+      rightsStatus: "approved",
+      intendedUseApproved: true,
+      localPath: "assets/brands/living-soil-labs/hat-concept-not-for-sale.png"
+    });
+    expect(
+      byId["lsl-shirt"].variants.every(
+        (variant: any) =>
+          variant.inventoryCount === 0 &&
+          variant.inventoryState === "out_of_stock" &&
+          variant.imageAssetIds.includes(shirtAsset.assetId)
+      )
+    ).toBe(true);
+    expect(
+      byId["lsl-embroidered-hat"].variants.every(
+        (variant: any) =>
+          variant.inventoryCount === 0 &&
+          variant.inventoryState === "out_of_stock" &&
+          variant.imageAssetIds.includes(hatAsset.assetId)
+      )
+    ).toBe(true);
+    for (const asset of [catalog.brand.bannerAsset, shirtAsset, hatAsset]) {
+      expect(fs.existsSync(path.join(process.cwd(), asset.localPath))).toBe(true);
+      expect(asset.limitations).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/placeholder|mockup/i),
+          expect.stringMatching(/not/i)
+        ])
+      );
     }
   });
 

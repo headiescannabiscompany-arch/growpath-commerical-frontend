@@ -1895,6 +1895,32 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("keeps a blank draft product price unset instead of converting it to zero", async () => {
+    const screen = render(<CommercialProductsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Base")).toBeTruthy());
+    expect(screen.getByText(/Price TBD/)).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product name"),
+      "Prelaunch Placeholder"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({ method: "POST" })
+      )
+    );
+    const createCall = mockApiRequest.mock.calls.find(
+      ([requestPath, options]) =>
+        requestPath === "/api/commercial/products" && options?.method === "POST"
+    );
+    expect(createCall?.[1]?.body?.price).toBeUndefined();
+    expect(createCall?.[1]?.body?.currency).toBeUndefined();
+  });
+
   it("opens and updates commercial product detail with effectiveness snapshot", async () => {
     const screen = render(<CommercialProductDetailRoute />);
 

@@ -111,7 +111,6 @@ function apiResponseFor(path: string, options?: any) {
           status: "draft",
           imageUrl: "https://example.com/soil.jpg",
           shortDescription: "Base soil blend for veg.",
-          price: 29,
           category: "soil_mix",
           linkedRecipeId: "recipe-1"
         },
@@ -307,6 +306,7 @@ describe("Storefront route", () => {
       screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByText("Price TBD | soil_mix")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Missing grow interests")).toBeTruthy();
@@ -529,6 +529,12 @@ describe("Storefront route", () => {
         })
       )
     );
+    const createCall = mockApiRequest.mock.calls.find(
+      ([requestPath, options]) =>
+        requestPath === "/api/commercial/products" && options?.method === "POST"
+    );
+    expect(createCall?.[1]?.body?.price).toBeUndefined();
+    expect(createCall?.[1]?.body?.currency).toBeUndefined();
   });
 
   it("redirects the legacy root storefront route to the commercial workspace", () => {
