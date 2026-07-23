@@ -381,7 +381,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       deviation readiness, readable audit detail, hard reload, screenshot, and health
       checks also passed on frontend `0e5073ce` and backend `3742d661` by 8:21 PM ET.
       The first-click filename hydration race then passed on final frontend `90499dfa`
-      and backend `55104d54` at 8:49 PM ET.
+      and backend `55104d54` at 8:49 PM ET. On 2026-07-23, the live Owner Team page
+      showed exactly the three real Owner, Manager, and Staff members. The repaired
+      Remove control opened its confirmation; cancelling preserved all three members
+      with no browser errors on deployed frontend `b2469b22`.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. The owner confirmed that a real Manager account is
       already an active member of the production Facility; its production login,
