@@ -142,7 +142,7 @@ export async function listCommercialFeedCampaigns(
     limit?: number;
     placement?: FeedCampaignPlacement;
   } = {}
-) {
+): Promise<{ items: CommercialFeedCampaign[]; nextCursor: string | null }> {
   const res: any = await apiRequest("/api/commercial/feed", {
     // Feed discovery is optional public/customer-facing content. A 401 here can
     // mean the Feed route is unavailable for this workspace; it must not clear
@@ -158,7 +158,9 @@ export async function listCommercialFeedCampaigns(
       ...(params.placement ? { placement: params.placement } : {})
     }
   });
-  const items = Array.isArray(res?.items) ? res.items.map(normalizeCampaign) : [];
+  const items: CommercialFeedCampaign[] = Array.isArray(res?.items)
+    ? res.items.map(normalizeCampaign)
+    : [];
   return {
     items,
     nextCursor: res?.nextCursor ? String(res.nextCursor) : null

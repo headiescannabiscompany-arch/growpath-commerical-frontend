@@ -10,6 +10,7 @@ type PersonalFeedPlacementProps = {
   placement: FeedBannerPlacement;
   routeKey?: string;
   longContent?: boolean;
+  compact?: boolean;
 };
 
 const useFeedAuth = AuthContext.useOptionalAuth || AuthContext.useAuth;
@@ -17,7 +18,8 @@ const useFeedAuth = AuthContext.useOptionalAuth || AuthContext.useAuth;
 export default function PersonalFeedPlacement({
   placement,
   routeKey,
-  longContent = false
+  longContent = false,
+  compact = false
 }: PersonalFeedPlacementProps) {
   const entitlements = useEntitlements();
   const auth = useFeedAuth();
@@ -40,6 +42,7 @@ export default function PersonalFeedPlacement({
       railMode={policy.railMode}
       routeKey={routeKey}
       growInterests={flattenGrowInterests(auth?.user?.growInterests || {})}
+      compact={compact}
     />
   );
 }

@@ -15,6 +15,7 @@ type FeedRailProps = {
   placement?: "top" | "middle" | "bottom";
   routeKey?: string;
   growInterests?: string[];
+  compact?: boolean;
 };
 
 export type FeedSlotKey =
@@ -362,7 +363,8 @@ export default function FeedRail({
   railMode = "standard",
   placement = "top",
   routeKey = "page",
-  growInterests = []
+  growInterests = [],
+  compact = false
 }: FeedRailProps) {
   const [campaignAds, setCampaignAds] = useState<AdItem[]>([]);
   const slotKey = resolveFeedSlotKey(routeKey, placement);
@@ -441,6 +443,7 @@ export default function FeedRail({
               storefrontSlug={adItem.storefrontSlug}
               imageUrl={adItem.imageUrl}
               strategyLabel={adItem.strategyLabel}
+              compact={compact}
             />
           );
         }
@@ -467,6 +470,7 @@ export default function FeedRail({
             storefrontSlug={adItem.storefrontSlug}
             imageUrl={adItem.imageUrl}
             strategyLabel={adItem.strategyLabel}
+            compact={compact}
           />
         );
       })}
