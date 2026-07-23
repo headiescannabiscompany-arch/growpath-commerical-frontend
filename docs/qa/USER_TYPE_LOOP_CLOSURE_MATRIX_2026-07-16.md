@@ -119,6 +119,22 @@ control, or can bypass its backend authorization boundary.
   session screenshots are chat evidence only; no final-SHA screenshot or video file
   is claimed. Full release evidence and remaining blocks are recorded in
   `docs/qa/RELEASE_EVIDENCE_2026-07-19.md`.
+- 2026-07-23 12:46-12:53 PM EDT signed-out production follow-up: frontend PR `#166`
+  merged as `388896541124f2148623f17e61b93f1449716068`; GitHub Frontend CI run
+  `30026384259` and Production Build Preflight run `30026384303` passed, and Render
+  deployment `dep-d9h49kepbkes73e4028g` was live at `https://growpathai.com`.
+  Landing, Features, and Pricing each exposed exactly one level-1 heading followed by
+  3, 3, and 4 level-2 section headings respectively. Signed-out Courses displayed the
+  published catalog boundary and sign-in/register actions, returned no published
+  courses in the current production data, and exposed no Course Builder, Create
+  Course, Unpublish, or Draft control. Signed-out Forum displayed its sign-in/register
+  boundary without `Not authenticated`, Retry, For You, All Discussions, or a
+  protected-feed empty state. Genuine Browser screenshots are retained as
+  `growpath-public-courses-3888965.jpg` and
+  `growpath-public-forum-3888965.jpg` in the task visualization directory. This closes
+  the public discovery/auth-boundary repair only; registration/email verification,
+  password reset, checkout entry, Support delivery, mobile coverage, video, and
+  independent outside-user validation remain open.
 
 - 2026-07-20 Facility staging follow-up: the governed Facility pack was exercised in
   the in-app Browser across Owner, Manager, Staff Grower, Staff Scout, and Viewer
