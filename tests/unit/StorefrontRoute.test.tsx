@@ -258,7 +258,11 @@ describe("Storefront route", () => {
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("Storefront Launch Actions")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/products/new")).toBeTruthy();
-    expect(screen.getByTestId("link-/home/commercial/courses")).toBeTruthy();
+    expect(
+      screen.getByTestId(
+        "link-/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront"
+      )
+    ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
     expect(screen.getAllByTestId("link-/home/commercial/feed").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/orders")).toBeTruthy();
