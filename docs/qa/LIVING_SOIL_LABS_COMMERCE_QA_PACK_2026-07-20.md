@@ -2,7 +2,7 @@
 
 Date: 2026-07-20
 
-Status: Draft catalog, source gate, and commerce-scenario contract implemented. Owner evidence and seed-ready commercial values remain pending.
+Status: Draft catalog, source gate, and commerce-scenario contract implemented. Current soil and nutrient inventory is owner-confirmed; other owner evidence and seed-ready commercial values remain pending.
 
 Machine-readable catalog: `tests/fixtures/living-soil-labs-commerce-qa-catalog.json`
 
@@ -33,7 +33,7 @@ Each remains hidden and unpublished until an owner-approved formula record and v
 
 The product proposals do not modify the GrowPath soil/nutrient method presets. In particular, proposed Veg 3-1-2 does not replace the current 3-1-1 method preset, and Pre-Flower 1-3-2 does not become a method preset merely because it is listed as a product draft. Matching ratios such as 3-3-3, 2-6-4, or 0.5-3-3 still require product-specific label/formula evidence.
 
-No prices, SKUs, currencies, shipping weights, inventory counts, product descriptions, directions, images, tax settings, or checkout configuration were fabricated. Strict validation retains each missing field as a blocker.
+On 2026-07-23, the owner confirmed that every soil and dry nutrient mix variant currently has zero available units. Those 30 variants are explicitly recorded as `inventoryCount: 0` and `inventoryState: "out_of_stock"`. Merchandise inventory remains unconfigured. No prices, SKUs, currencies, shipping weights, merchandise inventory counts, product descriptions, directions, images, tax settings, or checkout configuration were fabricated. Strict validation retains each genuinely missing field as a blocker.
 
 ## Commerce coverage
 
@@ -56,7 +56,8 @@ The application feature remains **Soil & Nutrient Batch Planner** inside Commerc
 - formula versions and official product labels;
 - batch-specific laboratory evidence where used;
 - approved product descriptions, directions, and warnings;
-- product and variant SKUs, prices, measured shipping weights, and inventory;
+- product and variant SKUs, prices, and measured shipping weights;
+- shirt and hat inventory;
 - owned or licensed product and merchandise images with rights records;
 - test tax, shipping, discount, and checkout configuration.
 
@@ -67,4 +68,4 @@ npm.cmd run verify:living-soil-labs-commerce-qa-catalog:planning
 npm.cmd run verify:living-soil-labs-commerce-qa-catalog
 ```
 
-Planning mode validates the product/variant allocation, method-preset boundary, source contract, and commerce scenarios. Strict mode must fail until every owner, formula, label, media, price, weight, inventory, tax, shipping, and checkout requirement is reviewed and configured.
+Planning mode validates the product/variant allocation, owner-confirmed zero soil/nutrient inventory, method-preset boundary, source contract, and commerce scenarios. Strict mode must fail until every remaining owner, formula, label, media, price, weight, merchandise inventory, tax, shipping, and checkout requirement is reviewed and configured.

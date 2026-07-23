@@ -123,16 +123,44 @@ describe("Living Soil Labs commerce QA catalog", () => {
     ).toBe("does_not_replace_method_preset_veg_3-1-1");
   });
 
-  it("does not invent price, weight, inventory, images, or publication claims", () => {
+  it("records owner-confirmed zero mix inventory without inventing merchandise inventory", () => {
     const catalog = loadCatalog();
-    const variants = catalog.productDrafts.flatMap((product: any) => product.variants);
+    const soilAndNutrientVariants = catalog.productDrafts
+      .filter((product: any) =>
+        ["soil", "dry_nutrient_mix"].includes(product.productType)
+      )
+      .flatMap((product: any) => product.variants);
+    const merchandiseVariants = catalog.productDrafts
+      .filter((product: any) => product.productType === "merchandise")
+      .flatMap((product: any) => product.variants);
 
     for (const product of catalog.productDrafts) {
       expect(product.claims).toEqual([]);
       expect(product.evidence.ownerApproved).toBe(false);
       expect(product.evidence.imageAssets).toEqual([]);
     }
-    for (const variant of variants) {
+    expect(catalog.ownerConfirmedFacts).toEqual({
+      reviewedAt: "2026-07-23",
+      soilAndNutrientInventory: {
+        productTypes: ["soil", "dry_nutrient_mix"],
+        inventoryCount: 0,
+        inventoryState: "out_of_stock"
+      },
+      merchandiseInventoryStatus: "unconfigured"
+    });
+    for (const variant of soilAndNutrientVariants) {
+      expect(variant).toMatchObject({
+        sku: null,
+        priceCents: null,
+        currency: null,
+        shippingWeight: null,
+        shippingWeightUnit: null,
+        inventoryCount: 0,
+        inventoryState: "out_of_stock",
+        imageAssetIds: []
+      });
+    }
+    for (const variant of merchandiseVariants) {
       expect(variant).toMatchObject({
         sku: null,
         priceCents: null,

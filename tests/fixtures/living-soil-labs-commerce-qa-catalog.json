@@ -7,6 +7,15 @@
     "productionAllowed": false,
     "qaSeedNamespaceRequired": true
   },
+  "ownerConfirmedFacts": {
+    "reviewedAt": "2026-07-23",
+    "soilAndNutrientInventory": {
+      "productTypes": ["soil", "dry_nutrient_mix"],
+      "inventoryCount": 0,
+      "inventoryState": "out_of_stock"
+    },
+    "merchandiseInventoryStatus": "unconfigured"
+  },
   "brand": {
     "name": "Living Soil Labs",
     "slug": "living-soil-labs",
@@ -207,8 +216,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -221,8 +230,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -235,8 +244,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -271,8 +280,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -285,8 +294,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -299,8 +308,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -335,8 +344,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -349,8 +358,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -363,8 +372,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -402,8 +411,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -416,8 +425,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -430,8 +439,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -444,8 +453,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -458,8 +467,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -497,8 +506,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -511,8 +520,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -525,8 +534,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -539,8 +548,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -578,8 +587,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -592,8 +601,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -606,8 +615,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -620,8 +629,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -659,8 +668,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -673,8 +682,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -687,8 +696,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -701,8 +710,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
@@ -740,8 +749,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -754,8 +763,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -768,8 +777,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         },
         {
@@ -782,8 +791,8 @@
           "currency": null,
           "shippingWeight": null,
           "shippingWeightUnit": null,
-          "inventoryCount": null,
-          "inventoryState": "unconfigured",
+          "inventoryCount": 0,
+          "inventoryState": "out_of_stock",
           "imageAssetIds": []
         }
       ]
