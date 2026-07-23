@@ -5,6 +5,7 @@ import {
 import {
   buildReadinessSummary,
   facilityComplianceExportFilename,
+  facilityComplianceExportFilenameFromSources,
   formatMissedComplianceCount
 } from "@/app/home/facility/(tabs)/reports";
 
@@ -46,6 +47,13 @@ describe("Facility reporting presentation", () => {
         "507f1f77bcf86cd799439011"
       )
     ).toBe("selected-facility-compliance-export.json");
+    expect(
+      facilityComplianceExportFilenameFromSources(
+        "Triple Bag Genetics, llc",
+        "Facility",
+        "507f1f77bcf86cd799439011"
+      )
+    ).toBe("triple-bag-genetics-llc-compliance-export.json");
   });
 
   it("keeps resolved deviations as evidence without treating them as open cleanup", () => {

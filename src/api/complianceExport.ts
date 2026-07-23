@@ -4,6 +4,7 @@ export type FacilityComplianceExport = {
   success: boolean;
   exportType: "facility_compliance_packet";
   facilityId: string;
+  facilityName?: string;
   generatedAt: string;
   requestedBy?: string | null;
   filters: {

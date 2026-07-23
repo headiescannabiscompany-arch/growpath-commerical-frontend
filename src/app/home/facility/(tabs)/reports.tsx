@@ -146,6 +146,15 @@ export function facilityComplianceExportFilename(
   return `${slug || "selected-facility"}-compliance-export.json`;
 }
 
+export function facilityComplianceExportFilenameFromSources(
+  packetFacilityName: unknown,
+  selectedFacilityName: unknown,
+  facilityId?: string | null
+) {
+  const packetName = String(packetFacilityName || "").trim();
+  return facilityComplianceExportFilename(packetName || selectedFacilityName, facilityId);
+}
+
 export default function FacilityReportsTab() {
   const router = useRouter();
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
@@ -201,7 +210,8 @@ export default function FacilityReportsTab() {
     try {
       clearError();
       const packet = await getFacilityComplianceExport(facilityId);
-      const filename = facilityComplianceExportFilename(
+      const filename = facilityComplianceExportFilenameFromSources(
+        packet.facilityName,
         selectedFacility?.name,
         facilityId
       );
