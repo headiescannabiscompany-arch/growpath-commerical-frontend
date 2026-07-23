@@ -155,6 +155,45 @@ This closes the production Owner SOP and compliance write/reload loop. Manager, 
 Viewer, forced-authorization, invitation-acceptance, and shared-record completion
 remain separate acceptance items.
 
+### Production Owner report export and audit-detail loop - 2026-07-22
+
+The Owner next reviewed the Facility report packet and immutable audit history on the
+same production Facility.
+
+- The initial production export contained 71 stored records, including 49 audit logs,
+  one completed three-step SOP run, and one resolved deviation. The packet incorrectly
+  reported `Inspection readiness: Needs cleanup` because the frontend treated the
+  total deviation count as if every deviation were still open.
+- Backend PR `#57`, merge `3742d661f639cbb4795f41f6a713e4901a3f5246`, added total,
+  open, resolved, and cancelled deviation counts to the compliance export. Its focused
+  database-backed export suite passed locally (2 tests), and GitHub runs `29968147060`
+  and `29968147092` passed the database test, full suite, lint, dependency audit,
+  application startup, OpenAPI preparation, and ZAP API scan.
+- Frontend PR `#153`, merge `0e5073ce50dc266f16c53b476f1294a748d6da0a`, made report
+  readiness depend on the open-deviation count, exposed all four deviation states,
+  and replaced raw-first audit detail with readable action, time, actor, and immutable
+  record sections. Three focused suites passed locally (15 tests), and frontend CI run
+  `29968274255` passed Expo dependency verification, Expo Doctor, audit, lint, delivery
+  guard, and the full test run.
+- Render deployed frontend `0e5073ce` as `dep-d9glpa6rnols73dst8t0` at 8:14 PM ET and
+  backend `3742d661` as `dep-d9glqp58nd3s73du6tog` at 8:17 PM ET. The signed-in Owner
+  session recovered after the backend handoff without clearing authentication.
+- At 8:18 PM ET, the fresh production export retained the readable
+  `triple-bag-genetics-llc-compliance-export.json` filename and all 71 records, then
+  correctly reported `Inspection readiness: Ready`, 1 total deviation, 0 open,
+  1 resolved, and 0 cancelled. A second direct-route load and export at 8:18:45 PM ET
+  returned the same result.
+- The audit list retained 49 readable events. A direct-route reload of the resolved
+  deviation detail showed the readable action, recorded time, actor fallback, immutable
+  record explanation, and raw payload without leading with an unlabeled identifier.
+  Genuine in-app Browser screenshots captured the report at 8:19:51 PM ET and the
+  audit detail on the exact deployed pair. API health returned HTTP 200 at
+  `2026-07-23T00:21:29Z`.
+
+This closes the production Owner report-export and audit-detail review loop. The
+separate Manager, Staff, Viewer, forced-authorization, invitation-acceptance,
+cross-role completion, mobile/accessibility, and exported-video checks remain open.
+
 ## Evidence limitations and remaining acceptance
 
 - The role sessions used the in-app Browser against the local frontend connected to
@@ -164,8 +203,9 @@ remain separate acceptance items.
   enforced the Facility-mode boundary for an existing Personal session. Production
   Facility credentials were not available, so the exact role chain is not claimed as
   production-retested.
-- Owner final review, forced backend authorization evidence for restricted mutations,
-  mobile/accessibility passes, and final-SHA screenshots/video remain open.
+- Owner final review of the cross-role task, forced backend authorization evidence for
+  restricted mutations, mobile/accessibility passes, and exported final-SHA video
+  remain open. Final-SHA screenshots now cover the Owner report and audit-detail loop.
 - Production Owner task creation and assignment now pass, but Manager/Staff/Viewer
   production sessions remain blocked on invitation acceptance or separate credentials.
 - Public, valid Personal Free, Personal Pro, Commercial, and independent outside-user
