@@ -54,7 +54,25 @@ jest.mock("@/api/courses", () => ({
       documents: [{ title: "Worksheet", storageUrl: "https://example.com/work.pdf" }],
       mediaAssets: [],
       forumThreadId: "thread-1",
-      linkedProductIds: ["product-1"]
+      linkedProductIds: ["product-1"],
+      liveSessions: [
+        {
+          id: "live-1",
+          title: "Living Soil Q&A",
+          scheduledStart: "2026-07-30T19:00:00-04:00",
+          timezone: "America/New_York",
+          twitchChannel: "growpath",
+          reminderPlan: { label: "1 hour before", channels: ["in_app"] },
+          notificationPlan: [
+            "new_live_scheduled",
+            "24h_before",
+            "1h_before",
+            "15m_before",
+            "live_now",
+            "replay_available"
+          ]
+        }
+      ]
     }),
   getCourseLearnerNotes: () =>
     Promise.resolve({
@@ -93,6 +111,12 @@ describe("CourseDetailScreen learner player", () => {
     expect(screen.getByText("Open Discussion")).toBeTruthy();
     expect(screen.getByText("View Product product-1")).toBeTruthy();
     expect(screen.getByText("Ask AI About This Course")).toBeTruthy();
+    expect(screen.getByText("Living Soil Q&A")).toBeTruthy();
+    expect(screen.getByText(/6 notification checkpoints/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open GrowPath Schedule for course lives"));
+    expect(mockPush).toHaveBeenCalledWith("/home/schedule");
+    fireEvent.press(screen.getByLabelText("Open Notification Center for course lives"));
+    expect(mockPush).toHaveBeenCalledWith("/home/notifications");
 
     fireEvent.press(screen.getByText("Open Lesson"));
     await waitFor(() => expect(screen.getByDisplayValue("Existing note")).toBeTruthy());

@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import {
   Alert,
   Image,
+  Linking,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -14,11 +16,21 @@ import {
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
+import {
+  beginTwitchConnection,
+  getTwitchConnection,
+  validateTwitchConnection
+} from "@/api/twitch";
 import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
+import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import {
+  emptyLessonMediaDraft,
+  prepareLessonMediaSubmission
+} from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
 import { persistImageUri, persistImageUris, resolveImageUri } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "@/utils/growInterests";
@@ -36,12 +48,14 @@ function splitPlanLines(input) {
     .filter(Boolean);
 }
 
-function buildLessons(input) {
+function buildLessons(input, mediaSubmissions = []) {
   return splitPlanLines(input).map((title, index) => ({
     title,
     description: "",
     body: "",
-    videoUrl: "",
+    videoUrl: mediaSubmissions[index]?.videoUrl || "",
+    externalVideoUrl: mediaSubmissions[index]?.externalVideoUrl || "",
+    mediaSource: mediaSubmissions[index]?.mediaSource || undefined,
     uploadedVideoId: "",
     documentIds: [],
     imageIds: [],
@@ -147,6 +161,9 @@ export default function CreateCourseScreen({ navigation }) {
     [growInterestSelections.crops]
   );
   const [curriculumPlan, setCurriculumPlan] = useState("");
+  const [lessonMediaDrafts, setLessonMediaDrafts] = useState([]);
+  const [lessonVideoFiles, setLessonVideoFiles] = useState([]);
+  const [activeLessonMediaIndex, setActiveLessonMediaIndex] = useState(null);
   const [quizPlan, setQuizPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
   const [documentFiles, setDocumentFiles] = useState([]);
@@ -161,6 +178,9 @@ export default function CreateCourseScreen({ navigation }) {
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
   );
   const [twitchChannel, setTwitchChannel] = useState("");
+  const [twitchConnection, setTwitchConnection] = useState(null);
+  const [twitchBusy, setTwitchBusy] = useState(false);
+  const [twitchMessage, setTwitchMessage] = useState("");
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
   const [linkedForumThreadIds, setLinkedForumThreadIds] = useState("");
@@ -169,13 +189,146 @@ export default function CreateCourseScreen({ navigation }) {
   const [submitting, setSubmitting] = useState(false);
 
   const priceCents = useMemo(() => toPriceCents(price.trim()), [price]);
+  const plannedLessonTitles = useMemo(
+    () => splitPlanLines(curriculumPlan),
+    [curriculumPlan]
+  );
   const canSubmit = access.canCreateCourses && title.trim().length >= 3 && !submitting;
+
+  useEffect(() => {
+    let active = true;
+    setTwitchBusy(true);
+    getTwitchConnection()
+      .then((status) => {
+        if (!active) return;
+        const next = status || { configured: false };
+        setTwitchConnection(next);
+        if (next.connection?.status === "connected") {
+          setTwitchChannel(
+            (current) => current || next.connection?.broadcasterLogin || ""
+          );
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setTwitchMessage(
+            String(error?.message || error || "Unable to load Twitch connection status.")
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setTwitchBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function backToCourses() {
     if (navigation?.goBack) {
       navigation.goBack();
     } else if (router?.replace) {
       router.replace(backTarget);
+    }
+  }
+
+  function lessonMediaDraftAt(index) {
+    return lessonMediaDrafts[index] || emptyLessonMediaDraft("youtube");
+  }
+
+  function updateLessonMediaDraft(index, next) {
+    setLessonMediaDrafts((current) => {
+      const updated = [...current];
+      updated[index] = next;
+      return updated;
+    });
+  }
+
+  function removeLessonVideo(index) {
+    setLessonMediaDrafts((current) => {
+      const updated = [...current];
+      updated[index] = emptyLessonMediaDraft("youtube");
+      return updated;
+    });
+    setLessonVideoFiles((current) => {
+      const updated = [...current];
+      updated[index] = null;
+      return updated;
+    });
+  }
+
+  async function pickLessonVideo(index) {
+    if (!access.canCreateCourses || submitting) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["video/*"],
+        multiple: false
+      });
+      const asset = firstDocumentAsset(result);
+      if (!asset) return;
+      setLessonVideoFiles((current) => {
+        const updated = [...current];
+        updated[index] = asset;
+        return updated;
+      });
+      updateLessonMediaDraft(index, {
+        ...lessonMediaDraftAt(index),
+        sourceType: "growpath_upload",
+        originalUrl: "",
+        availabilityStatus: "unchecked",
+        lastCheckedAt: ""
+      });
+    } catch (error) {
+      Alert.alert(
+        "Upload failed",
+        String(error?.message || error || "Unable to choose the lesson video.")
+      );
+    }
+  }
+
+  async function refreshTwitchConnection(validate = true) {
+    setTwitchBusy(true);
+    setTwitchMessage("");
+    try {
+      if (validate && twitchConnection?.connection?.status === "connected") {
+        await validateTwitchConnection();
+      }
+      const status = (await getTwitchConnection()) || { configured: false };
+      setTwitchConnection(status);
+      if (status.connection?.status === "connected") {
+        setTwitchChannel(
+          (current) => current || status.connection?.broadcasterLogin || ""
+        );
+        if (validate) setTwitchMessage("Twitch connection refreshed.");
+      }
+    } catch (error) {
+      setTwitchMessage(
+        String(error?.message || error || "Unable to load Twitch connection status.")
+      );
+    } finally {
+      setTwitchBusy(false);
+    }
+  }
+
+  async function connectTwitch() {
+    setTwitchBusy(true);
+    setTwitchMessage("");
+    try {
+      const result = await beginTwitchConnection();
+      if (!result?.configured || !result?.authorizationUrl) {
+        setTwitchMessage(result?.message || "Twitch OAuth is not configured.");
+        return;
+      }
+      await Linking.openURL(result.authorizationUrl);
+      setTwitchMessage(
+        "Finish authorization in Twitch, return here, then choose Refresh Twitch."
+      );
+    } catch (error) {
+      setTwitchMessage(
+        String(error?.message || error || "Unable to start Twitch authorization.")
+      );
+    } finally {
+      setTwitchBusy(false);
     }
   }
 
@@ -291,9 +444,46 @@ export default function CreateCourseScreen({ navigation }) {
       return;
     }
 
+    const lessonMediaPreviews = plannedLessonTitles.map((_lessonTitle, index) => {
+      if (lessonVideoFiles[index]) return null;
+      return prepareLessonMediaSubmission(
+        lessonMediaDraftAt(index),
+        lessonMediaDraftAt(index).originalUrl
+      );
+    });
+    const invalidLessonMediaIndex = lessonMediaPreviews.findIndex(
+      (preview) => preview?.errors.length
+    );
+    if (invalidLessonMediaIndex >= 0) {
+      setActiveLessonMediaIndex(invalidLessonMediaIndex);
+      Alert.alert(
+        `Video source needs attention: ${plannedLessonTitles[invalidLessonMediaIndex]}`,
+        lessonMediaPreviews[invalidLessonMediaIndex].errors.join(" ")
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const lessons = buildLessons(curriculumPlan);
+      const lessonMediaSubmissions = await Promise.all(
+        plannedLessonTitles.map(async (_lessonTitle, index) => {
+          const draft = lessonMediaDraftAt(index);
+          const videoFile = lessonVideoFiles[index];
+          if (!videoFile) return lessonMediaPreviews[index];
+          const uploadedVideo = await uploadCourseMedia(videoFile);
+          return prepareLessonMediaSubmission(
+            {
+              ...draft,
+              sourceType: "growpath_upload",
+              availabilityStatus: "available",
+              lastCheckedAt: new Date().toISOString(),
+              allowEmbed: false
+            },
+            uploadedVideo?.url
+          );
+        })
+      );
+      const lessons = buildLessons(curriculumPlan, lessonMediaSubmissions);
       const quizzes = buildQuizzes(quizPlan);
       const uploadedDocuments = await Promise.all(
         documentFiles.map(async (asset) =>
@@ -377,10 +567,15 @@ export default function CreateCourseScreen({ navigation }) {
             lessonLimit: access.maxLessonsPerCourse,
             storage: "plan_limit",
             selectedDocuments: documentFiles.length,
-            selectedMedia: mediaFiles.length + mediaImages.length,
-            videoStorage: mediaAssets.filter((asset) => asset.type === "video").length
-              ? "selected_for_upload"
-              : "plan_limit",
+            selectedMedia:
+              mediaFiles.length +
+              mediaImages.length +
+              lessonVideoFiles.filter(Boolean).length,
+            videoStorage:
+              mediaAssets.filter((asset) => asset.type === "video").length ||
+              lessonVideoFiles.some(Boolean)
+                ? "selected_for_upload"
+                : "plan_limit",
             liveSessionsPerMonth: "plan_limit"
           }
         }
@@ -545,6 +740,75 @@ export default function CreateCourseScreen({ navigation }) {
             style={[styles.input, styles.multiline]}
             accessibilityLabel="Course curriculum lessons"
           />
+          {plannedLessonTitles.length ? (
+            <View style={styles.lessonPlanner}>
+              <View>
+                <Text style={styles.workflowTitle}>Lesson media plan</Text>
+                <Text style={styles.helpText}>
+                  Add an optional provider-aware video to any planned lesson now. You can
+                  also finish or replace it later from Add/Edit Lesson.
+                </Text>
+              </View>
+              {plannedLessonTitles.map((lessonTitle, index) => {
+                const draft = lessonMediaDraftAt(index);
+                const prepared = prepareLessonMediaSubmission(draft);
+                const providerLabel = lessonVideoFiles[index]
+                  ? "GrowPath upload selected"
+                  : prepared.mediaSource?.providerLabel || "No video selected";
+                return (
+                  <View key={`${lessonTitle}-${index}`} style={styles.lessonPlanCard}>
+                    <View style={styles.lessonPlanCopy}>
+                      <Text style={styles.lessonNumber}>Lesson {index + 1}</Text>
+                      <Text style={styles.workflowTitle}>{lessonTitle}</Text>
+                      <Text style={styles.helpText}>{providerLabel}</Text>
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Edit video source for ${lessonTitle}`}
+                      disabled={!access.canCreateCourses || submitting}
+                      onPress={() =>
+                        setActiveLessonMediaIndex((current) =>
+                          current === index ? null : index
+                        )
+                      }
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryButtonText}>
+                        {activeLessonMediaIndex === index
+                          ? "Close Video Setup"
+                          : "Add / Review Video"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                );
+              })}
+              {activeLessonMediaIndex !== null &&
+              plannedLessonTitles[activeLessonMediaIndex] ? (
+                <LessonMediaSourceEditor
+                  value={lessonMediaDraftAt(activeLessonMediaIndex)}
+                  onChange={(next) =>
+                    updateLessonMediaDraft(activeLessonMediaIndex, next)
+                  }
+                  disabled={!access.canCreateCourses || submitting}
+                  onPickUpload={() => pickLessonVideo(activeLessonMediaIndex)}
+                  pendingUploadName={
+                    lessonVideoFiles[activeLessonMediaIndex]
+                      ? fileNameOf(
+                          lessonVideoFiles[activeLessonMediaIndex],
+                          "lesson-video"
+                        )
+                      : ""
+                  }
+                  onRemove={() => removeLessonVideo(activeLessonMediaIndex)}
+                />
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.helpText}>
+              Add lesson titles above to configure YouTube, Rumble, Vimeo, GrowPath
+              uploads, or another video URL.
+            </Text>
+          )}
           <Text style={styles.label}>Quiz outline</Text>
           <Text style={styles.helpText}>
             Put one question per line. Add answer choices after vertical bars.
@@ -650,9 +914,91 @@ export default function CreateCourseScreen({ navigation }) {
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>4. Live sessions</Text>
           <Text style={styles.helpText}>
-            Schedule a real Twitch live. Learners can open the channel and create a dated
-            reminder in My Tasks.
+            Schedule a real Twitch live. The course event appears in GrowPath Schedule;
+            learners can RSVP, receive notification context, and create a dated task
+            reminder.
           </Text>
+          <View style={styles.integrationCard}>
+            <Text style={styles.workflowTitle}>Twitch, calendar, and reminders</Text>
+            <Text style={styles.helpText}>
+              {!twitchConnection
+                ? "Checking Twitch connection..."
+                : !twitchConnection.configured
+                  ? "Twitch OAuth is not configured on this deployment. You can keep a draft, but do not describe the channel as connected."
+                  : twitchConnection.connection?.status === "connected"
+                    ? `Connected as ${
+                        twitchConnection.connection.broadcasterName ||
+                        twitchConnection.connection.broadcasterLogin
+                      }. EventSub ${
+                        twitchConnection.connection.eventSubStatus || "not connected"
+                      }.`
+                    : `Twitch ${
+                        twitchConnection.connection?.status || "is not connected"
+                      }.`}
+            </Text>
+            {twitchMessage ? (
+              <Text style={styles.integrationMessage}>{twitchMessage}</Text>
+            ) : null}
+            <View style={styles.linkRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Connect Twitch for course lives"
+                disabled={twitchBusy || twitchConnection?.configured === false}
+                onPress={connectTwitch}
+                style={[
+                  styles.uploadButton,
+                  (twitchBusy || twitchConnection?.configured === false) &&
+                    styles.buttonDisabled
+                ]}
+              >
+                <Text style={styles.uploadButtonText}>
+                  {twitchBusy
+                    ? "Checking Twitch..."
+                    : twitchConnection?.connection?.status === "connected"
+                      ? "Reconnect Twitch"
+                      : "Connect Twitch"}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Refresh Twitch for course lives"
+                disabled={twitchBusy}
+                onPress={() => refreshTwitchConnection(true)}
+                style={[styles.secondaryButton, twitchBusy && styles.buttonDisabled]}
+              >
+                <Text style={styles.secondaryButtonText}>Refresh Twitch</Text>
+              </Pressable>
+              <Link href="/home/schedule" asChild>
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel="Open shared GrowPath Schedule"
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Open Schedule</Text>
+                </Pressable>
+              </Link>
+              <Link href="/home/notifications" asChild>
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel="Open GrowPath Notification Center"
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Notifications</Text>
+                </Pressable>
+              </Link>
+              {entitlements.mode === "commercial" ? (
+                <Link href="/home/commercial/lives" asChild>
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Open advanced commercial live setup"
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Advanced Live Setup</Text>
+                  </Pressable>
+                </Link>
+              ) : null}
+            </View>
+          </View>
           <Text style={styles.label}>Session title</Text>
           <TextInput
             value={liveTitle}
@@ -720,12 +1066,30 @@ export default function CreateCourseScreen({ navigation }) {
                   timezone: liveTimezone.trim() || "UTC",
                   platform: "twitch",
                   twitchChannel: channel,
+                  twitchChannelId: twitchConnection?.connection?.broadcasterId || "",
+                  twitchConnectionStatus:
+                    twitchConnection?.connection?.status || "manual",
+                  eventSubStatus:
+                    twitchConnection?.connection?.eventSubStatus || "not_connected",
                   meetingUrl: `https://www.twitch.tv/${channel}`,
                   watchUrl: `https://www.twitch.tv/${channel}`,
                   replayVideoId: "",
                   status: "scheduled",
                   createLearnerTask: true,
-                  reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+                  calendarType: "course_live_session",
+                  notificationPlan: [
+                    "new_live_scheduled",
+                    "24h_before",
+                    "1h_before",
+                    "15m_before",
+                    "live_now",
+                    "replay_available"
+                  ],
+                  reminderPlan: {
+                    label: "1 hour before",
+                    channels: ["in_app"],
+                    notificationCenter: true
+                  }
                 }
               ]);
               setLiveTitle("");
@@ -747,6 +1111,13 @@ export default function CreateCourseScreen({ navigation }) {
                 {session.scheduledStart} · {session.timezone}
               </Text>
               <Text style={styles.helpText}>{session.meetingUrl}</Text>
+              <Text style={styles.readyText}>
+                Shared calendar · RSVP · Notification Center · 1-hour task reminder
+              </Text>
+              <Text style={styles.helpText}>
+                Twitch {session.twitchConnectionStatus} · EventSub{" "}
+                {session.eventSubStatus}
+              </Text>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel={`Remove live session ${session.title}`}
@@ -923,7 +1294,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   uploadButtonText: { color: "#166534", fontWeight: "800" },
-  uploadRow: { flexDirection: "row", gap: 8 },
+  uploadRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   uploadRowButton: { flex: 1 },
   coverPreview: {
     width: "100%",
@@ -962,6 +1333,48 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0fdf4"
   },
   workflowTitle: { color: "#166534", fontWeight: "900" },
+  lessonPlanner: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#cbd5e1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  lessonPlanCard: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#e2e8f0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "space-between",
+    padding: 10
+  },
+  lessonPlanCopy: { flex: 1, minWidth: 190 },
+  lessonNumber: {
+    color: "#64748b",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  integrationCard: {
+    backgroundColor: "#eff6ff",
+    borderColor: "#bfdbfe",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  integrationMessage: {
+    color: "#1e3a8a",
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  linkRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  readyText: { color: "#166534", fontSize: 12, fontWeight: "800" },
   pricingModeRow: { flexDirection: "row", gap: 8 },
   pricingModeButton: {
     borderWidth: 1,

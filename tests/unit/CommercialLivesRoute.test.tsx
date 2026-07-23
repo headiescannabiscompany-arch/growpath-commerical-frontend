@@ -104,6 +104,8 @@ describe("CommercialLivesRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
 
+    expect(screen.getByText("Shared Schedule")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
     expect(screen.getByText("GrowPath | EventSub connected")).toBeTruthy();
     expect(screen.getByLabelText("Disconnect Twitch")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Connect Twitch with OAuth"));
