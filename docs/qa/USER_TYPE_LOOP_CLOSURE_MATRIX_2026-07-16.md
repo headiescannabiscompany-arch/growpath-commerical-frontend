@@ -156,6 +156,12 @@ control, or can bypass its backend authorization boundary.
   `dep-d9glpa6rnols73dst8t0`, and the signed-in Owner hard-reload retest showed
   `Ready`, 1 total / 0 open / 1 resolved / 0 cancelled deviation, 49 readable audit
   events, readable immutable detail, genuine screenshots, and HTTP 200 API health.
+  A later immediate first export exposed a separate Facility-name hydration race.
+  Backend PR `#58`, merge `55104d54`, made the readable name authoritative in the
+  packet; frontend PR `#155`, merge `90499dfa`, consumed it before local hydration.
+  Render deployments `dep-d9gm9gmq1p3s73burq80` and `dep-d9gm6onavr4c73d9p0h0`
+  were live when the fresh-route first click produced the correct Facility-specific
+  filename at 8:49:19 PM ET; screenshot evidence and HTTP 200 health followed.
 
 ### Personal Free backbone audit
 
@@ -374,6 +380,8 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       `c0e4f4c3` by `2026-07-22T23:43:36Z`. The 71-record report export, corrected
       deviation readiness, readable audit detail, hard reload, screenshot, and health
       checks also passed on frontend `0e5073ce` and backend `3742d661` by 8:21 PM ET.
+      The first-click filename hydration race then passed on final frontend `90499dfa`
+      and backend `55104d54` at 8:49 PM ET.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. The production shared QA task is assigned to the
       existing Manager, but the Manager production credential was not supplied.
