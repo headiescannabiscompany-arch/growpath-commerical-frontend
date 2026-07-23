@@ -67,6 +67,8 @@ const EMPTY_FORM: CourseForm = {
   taskChecklist: ""
 };
 
+const FULL_COURSE_BUILDER_HREF = "/courses/create?from=%2Fhome%2Fcommercial%2Fcourses";
+
 function splitList(value: string) {
   return value
     .split(/[\n,]+/)
@@ -343,7 +345,7 @@ export default function CommercialCoursesRoute() {
           </View>
           <View style={styles.headerActions}>
             <ActionLink href="/courses" label="Open Course Catalog" />
-            <ActionLink href="/home/commercial/courses" label="Create Course" />
+            <ActionLink href={FULL_COURSE_BUILDER_HREF} label="Create Course" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/products" label="Products" />
           </View>
@@ -374,10 +376,19 @@ export default function CommercialCoursesRoute() {
         {loading ? <Text style={styles.muted}>Loading commercial courses...</Text> : null}
         {feedback ? <Text style={styles.successText}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
+        <View style={styles.actions}>
+          <ActionLink href={FULL_COURSE_BUILDER_HREF} label="Open Full Course Builder" />
+        </View>
       </AppCard>
 
       <AppCard>
         <Text style={styles.cardTitle}>Create commercial course</Text>
+        <Text style={styles.body}>
+          For provider-aware GrowPath uploads, YouTube, Rumble, Vimeo, other video links,
+          Twitch lives, shared Schedule, and Notification Center reminders, use the Full
+          Course Builder. This quick form remains available for a lightweight commercial
+          draft.
+        </Text>
         <TextInput
           value={form.title}
           onChangeText={(title) => setForm((prev) => ({ ...prev, title }))}

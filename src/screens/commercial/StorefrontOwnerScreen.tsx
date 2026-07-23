@@ -858,7 +858,10 @@ export default function Storefront({
           </View>
           <View style={styles.objectActions}>
             <ObjectActionLink href="/home/commercial/products/new" label="Add Product" />
-            <ObjectActionLink href="/home/commercial/courses" label="Create Course" />
+            <ObjectActionLink
+              href="/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront"
+              label="Create Course"
+            />
             <ObjectActionLink href="/home/commercial/lives" label="Schedule Live" />
             <ObjectActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ObjectActionLink href="/home/commercial/orders" label="Orders" />
