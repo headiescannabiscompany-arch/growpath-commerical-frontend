@@ -148,6 +148,14 @@ control, or can bypass its backend authorization boundary.
   recorded the durable policy. After the backend was live, deviation create, resolve,
   audit persistence, hard reload, and HTTP 200 health all passed by
   `2026-07-22T23:43:36Z`. No open QA deviation remained.
+- 2026-07-22 production Facility report/audit follow-up: a 71-record compliance export
+  initially treated one resolved deviation as unresolved cleanup. Backend PR `#57`,
+  merge `3742d661`, added deviation-state totals; frontend PR `#153`, merge `0e5073ce`,
+  based readiness on open deviations and made audit details readable before the raw
+  payload. Both CI pipelines passed, Render deployed `dep-d9glqp58nd3s73du6tog` and
+  `dep-d9glpa6rnols73dst8t0`, and the signed-in Owner hard-reload retest showed
+  `Ready`, 1 total / 0 open / 1 resolved / 0 cancelled deviation, 49 readable audit
+  events, readable immutable detail, genuine screenshots, and HTTP 200 API health.
 
 ### Personal Free backbone audit
 
@@ -363,7 +371,9 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       post-completion Owner task return remains open. The production template-backed
       SOP completion, lock/reload, compliance deviation create/resolve, audit, and
       post-fix API-health loop passed on backend `0f330650` and frontend policy merge
-      `c0e4f4c3` by `2026-07-22T23:43:36Z`.
+      `c0e4f4c3` by `2026-07-22T23:43:36Z`. The 71-record report export, corrected
+      deviation readiness, readable audit detail, hard reload, screenshot, and health
+      checks also passed on frontend `0e5073ce` and backend `3742d661` by 8:21 PM ET.
 - [ ] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. The production shared QA task is assigned to the
       existing Manager, but the Manager production credential was not supplied.
