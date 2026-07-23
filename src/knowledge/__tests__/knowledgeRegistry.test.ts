@@ -76,6 +76,9 @@ describe("GrowPath knowledge registries", () => {
       "readable Facility inventory details with confirmed mistaken-record removal"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "cross-platform confirmed Facility member removal with preserved history"
+    );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "collision-resistant Facility deviation references with controlled write failures"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
@@ -92,6 +95,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never make a Facility operator interpret raw audit JSON before showing the readable action, summary, time, and available actor context."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never rely on native-only Alert callbacks for web member-removal confirmation or remove the last owner."
     );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"
