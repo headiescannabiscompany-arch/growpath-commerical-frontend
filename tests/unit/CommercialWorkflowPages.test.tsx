@@ -1062,6 +1062,13 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Product education")).toBeTruthy();
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);
+    expect(screen.getByText("Open Full Course Builder")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getAllByProps({
+        href: "/courses/create?from=%2Fhome%2Fcommercial%2Fcourses"
+      }).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/provider-aware GrowPath uploads/)).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
