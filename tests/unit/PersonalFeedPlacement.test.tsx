@@ -85,7 +85,7 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.queryByLabelText("Recommended campaigns placement")).toBeNull();
   });
 
-  it("renders promo campaign placements for the main personal landing page", () => {
+  it("limits the free main personal landing page to top and bottom promotions", () => {
     render(
       <>
         <PersonalFeedPlacement placement="top" routeKey="home" longContent />
@@ -95,8 +95,8 @@ describe("PersonalFeedPlacement", () => {
     );
 
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
-    expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
+    expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
-    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(2);
   });
 });

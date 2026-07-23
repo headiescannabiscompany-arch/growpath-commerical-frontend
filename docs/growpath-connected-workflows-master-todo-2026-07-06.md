@@ -337,6 +337,13 @@ Facility currently has the strongest visual appeal and sense of operational poli
    - [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
      - The 2026-07-20 Facility evidence record now contains SHAs, URLs, namespace, timestamps, role/account suffixes, checks, findings, CI, and deployment status. Screenshot/video, cleanup, production-role rerun, and final acceptance are intentionally still open.
 
+56. Owner support-email deep dives
+   - [x] Review the connected `support@growpathai.com` mailbox and add all three owner notes submitted on 2026-07-21 without inventing missing requirements.
+   - [x] Tighten the Personal home/feed layout so promotional campaigns do not narrow or overpower the grow command center. Free home now has one top and one bottom placement; paid home has one top placement; the supplemental side rail and home middle placement are removed.
+   - [ ] Make Forum/Q&A more approachable and interaction-led while keeping promotional Feed/Campaigns separate from discussion.
+   - [ ] Deepen Courses/Lives authoring and learner UX, including the existing shared calendar, Twitch connection, notification flow, and provider-aware YouTube/Rumble/URL media options.
+   - [ ] Run production desktop/mobile and accessibility review for each deep dive, fix findings, and attach final-SHA evidence.
+
 ## Immediate Execution Slice
 
 Start here:
