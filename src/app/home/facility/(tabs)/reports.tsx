@@ -60,18 +60,29 @@ type ExportSummary = {
     pendingSteps: number;
     runsMissingSteps: number;
   };
+  deviationEvidence?: {
+    totalDeviations: number;
+    openDeviations: number;
+    resolvedDeviations: number;
+    cancelledDeviations: number;
+  };
 };
 
-function buildReadinessSummary(
+export function buildReadinessSummary(
   counts: Record<string, number>,
-  sopEvidence: ExportSummary["sopEvidence"]
+  sopEvidence: ExportSummary["sopEvidence"],
+  deviationEvidence?: ExportSummary["deviationEvidence"]
 ): ExportSummary["readiness"] {
   const issues: string[] = [];
-  const deviations = Number(counts.deviations || 0);
+  const openDeviations = Number(
+    deviationEvidence?.openDeviations ?? counts.deviations ?? 0
+  );
   const pendingSteps = Number(sopEvidence?.pendingSteps || 0);
   const runsMissingSteps = Number(sopEvidence?.runsMissingSteps || 0);
 
-  if (deviations > 0) issues.push(`${deviations} deviation record(s) in packet`);
+  if (openDeviations > 0) {
+    issues.push(`${openDeviations} open deviation record(s) in packet`);
+  }
   if (pendingSteps > 0) issues.push(`${pendingSteps} SOP checklist step(s) pending`);
   if (runsMissingSteps > 0) {
     issues.push(`${runsMissingSteps} SOP run(s) missing checklist evidence`);
@@ -206,8 +217,13 @@ export default function FacilityReportsTab() {
         generatedAt: packet.generatedAt,
         totalRecords,
         counts,
-        readiness: buildReadinessSummary(counts, packet.evidenceSummary?.sopRuns),
-        sopEvidence: packet.evidenceSummary?.sopRuns
+        readiness: buildReadinessSummary(
+          counts,
+          packet.evidenceSummary?.sopRuns,
+          packet.evidenceSummary?.deviations
+        ),
+        sopEvidence: packet.evidenceSummary?.sopRuns,
+        deviationEvidence: packet.evidenceSummary?.deviations
       });
 
       if (typeof document !== "undefined") {
@@ -365,6 +381,29 @@ export default function FacilityReportsTab() {
                     label="Missing steps"
                     value={exportSummary.sopEvidence.runsMissingSteps}
                     detail="runs without checklist evidence"
+                  />
+                </View>
+              </View>
+            ) : null}
+            {exportSummary.deviationEvidence ? (
+              <View style={styles.evidencePanel}>
+                <Text style={styles.evidenceTitle}>Deviation evidence status</Text>
+                <View style={styles.grid}>
+                  <StatTile
+                    label="Total deviations"
+                    value={exportSummary.deviationEvidence.totalDeviations}
+                  />
+                  <StatTile
+                    label="Open deviations"
+                    value={exportSummary.deviationEvidence.openDeviations}
+                  />
+                  <StatTile
+                    label="Resolved deviations"
+                    value={exportSummary.deviationEvidence.resolvedDeviations}
+                  />
+                  <StatTile
+                    label="Cancelled deviations"
+                    value={exportSummary.deviationEvidence.cancelledDeviations}
                   />
                 </View>
               </View>

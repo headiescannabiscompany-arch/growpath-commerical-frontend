@@ -23,6 +23,12 @@ export type FacilityComplianceExport = {
       pendingSteps: number;
       runsMissingSteps: number;
     };
+    deviations?: {
+      totalDeviations: number;
+      openDeviations: number;
+      resolvedDeviations: number;
+      cancelledDeviations: number;
+    };
   };
   collections: Record<string, unknown>;
 };

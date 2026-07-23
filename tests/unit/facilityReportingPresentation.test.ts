@@ -3,6 +3,7 @@ import {
   formatFacilityAuditDetails
 } from "@/utils/facilityAuditPresentation";
 import {
+  buildReadinessSummary,
   facilityComplianceExportFilename,
   formatMissedComplianceCount
 } from "@/app/home/facility/(tabs)/reports";
@@ -45,5 +46,32 @@ describe("Facility reporting presentation", () => {
         "507f1f77bcf86cd799439011"
       )
     ).toBe("selected-facility-compliance-export.json");
+  });
+
+  it("keeps resolved deviations as evidence without treating them as open cleanup", () => {
+    const summary = buildReadinessSummary(
+      { deviations: 1, auditLogs: 49, sopRuns: 1 },
+      {
+        totalRuns: 1,
+        completedRuns: 1,
+        inProgressRuns: 0,
+        totalSteps: 3,
+        doneSteps: 3,
+        skippedSteps: 0,
+        pendingSteps: 0,
+        runsMissingSteps: 0
+      },
+      {
+        totalDeviations: 1,
+        openDeviations: 0,
+        resolvedDeviations: 1,
+        cancelledDeviations: 0
+      }
+    );
+
+    expect(summary.status).toBe("Ready");
+    expect(summary.issues).toContain(
+      "Packet has audit, SOP, and compliance evidence coverage."
+    );
   });
 });
