@@ -4,6 +4,11 @@ import { render, waitFor } from "@testing-library/react-native";
 import TokenInfoScreen from "@/screens/TokenInfoScreen";
 
 const mockGetTokenBalance = jest.fn();
+let mockSearchParams: Record<string, string> = {};
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockSearchParams
+}));
 
 jest.mock("@/api/tokens", () => ({
   getTokenBalance: (...args: any[]) => mockGetTokenBalance(...args)
@@ -19,6 +24,8 @@ jest.mock("@/components/ScreenContainer", () => {
 
 describe("TokenInfoScreen action costs", () => {
   beforeEach(() => {
+    mockSearchParams = {};
+    mockGetTokenBalance.mockReset();
     mockGetTokenBalance.mockResolvedValue({
       aiTokens: 5,
       maxTokens: 5,
@@ -44,5 +51,32 @@ describe("TokenInfoScreen action costs", () => {
     expect(screen.getAllByText(/\$0\.002 of metered usage value/)).toHaveLength(2);
     expect(screen.getByText(/\$0\.02 of metered usage value/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("5 / 5")).toBeTruthy());
+  });
+
+  it("loads the selected Facility balance when opened from Facility mode", async () => {
+    mockSearchParams = {
+      workspaceType: "facility",
+      facilityId: "facility-123"
+    };
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 1999,
+      maxTokens: 2000,
+      plan: "facility",
+      subscriptionStatus: "active"
+    });
+
+    const screen = render(<TokenInfoScreen />);
+
+    await waitFor(() => expect(screen.getByText("1999 / 2000")).toBeTruthy());
+    expect(screen.getByText("Selected Facility's live AI-credit balance")).toBeTruthy();
+    expect(mockGetTokenBalance).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        params: {
+          workspaceType: "facility",
+          facilityId: "facility-123"
+        }
+      })
+    );
   });
 });

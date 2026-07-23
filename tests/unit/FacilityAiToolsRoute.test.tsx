@@ -3,7 +3,19 @@ import { render } from "@testing-library/react-native";
 
 import FacilityAiToolsRoute from "@/app/home/facility/(tabs)/ai-tools";
 
-jest.mock("@/components/TokenBalanceWidget", () => () => null);
+const mockTokenBalanceWidget = jest.fn((_props: any) => null);
+
+jest.mock(
+  "@/components/TokenBalanceWidget",
+  () => (props: any) => mockTokenBalanceWidget(props)
+);
+
+jest.mock("@/state/useFacility", () => ({
+  useFacility: () => ({
+    selectedId: "facility-headies",
+    selected: { id: "facility-headies", name: "Headies Facility" }
+  })
+}));
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -21,5 +33,12 @@ describe("FacilityAiToolsRoute", () => {
     expect(screen.getByText("Facility Grow Intelligence")).toBeTruthy();
     expect(screen.getByText("Ask AI")).toBeTruthy();
     expect(screen.getByText("Tool Library")).toBeTruthy();
+    expect(mockTokenBalanceWidget).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceType: "facility",
+        facilityId: "facility-headies",
+        workspaceName: "Headies Facility"
+      })
+    );
   });
 });

@@ -483,6 +483,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed facility analytics",
       "read-after-write Facility invitation session handoff",
       "Facility-subscription-backed member role capabilities",
+      "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
       "individual-versus-Facility workspace choice after sign-in",
       "cross-platform confirmed Facility member removal with preserved history",
       "title-based public outreach destination selection with advanced reference fallback",
@@ -507,6 +508,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "A selected facility and authorization are required.",
+      "Facility AI must use the selected authorized Facility subscription balance for display, reservation, refund, and usage history; never fall back to a member's individual balance.",
       "A confirmed Facility invitation must refresh canonical membership and enter the selected Facility without replacing the human's primary account.",
       "Never replace an individual account with Facility membership or bypass the post-login choice when both workspaces are eligible.",
       "Never rely on native-only Alert callbacks for web member-removal confirmation or remove the last owner.",

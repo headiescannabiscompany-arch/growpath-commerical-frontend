@@ -94,7 +94,7 @@ function ProfileAction({
 export default function FacilityProfileRoute() {
   const router = useRouter();
   const auth = useAuth();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -256,7 +256,14 @@ export default function FacilityProfileRoute() {
 
         <View style={styles.card}>
           <Text style={styles.h1}>AI usage</Text>
-          <TokenBalanceWidget interactive={false} />
+          <TokenBalanceWidget
+            interactive={false}
+            workspaceType="facility"
+            facilityId={String(facilityId || "")}
+            workspaceName={String(
+              facility?.name || selectedFacility?.name || "Selected Facility"
+            )}
+          />
         </View>
 
         <CannabisContentControls />

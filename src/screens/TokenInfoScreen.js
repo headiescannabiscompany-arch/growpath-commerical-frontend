@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { getTokenBalance } from "../api/tokens";
 import ScreenContainer from "../components/ScreenContainer";
@@ -37,13 +38,37 @@ const ACTION_COSTS = [
 ];
 
 export default function TokenInfoScreen() {
+  const params = useLocalSearchParams();
+  const facilityScoped = String(params?.workspaceType || "").toLowerCase() === "facility";
+  const facilityId = facilityScoped ? String(params?.facilityId || "").trim() : "";
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    getTokenBalance(undefined, { timeoutMs: 8000 })
+    if (facilityScoped && !facilityId) {
+      setBalance(null);
+      setLoadFailed(false);
+      setLoading(false);
+      return () => {
+        alive = false;
+      };
+    }
+    setLoading(true);
+    setLoadFailed(false);
+    setBalance(null);
+    getTokenBalance(undefined, {
+      timeoutMs: 8000,
+      ...(facilityScoped
+        ? {
+            params: {
+              workspaceType: "facility",
+              facilityId
+            }
+          }
+        : {})
+    })
       .then((response) => {
         if (alive) setBalance(response?.data ?? response);
       })
@@ -56,7 +81,7 @@ export default function TokenInfoScreen() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [facilityId, facilityScoped]);
 
   const values = useMemo(() => {
     const current = Number(balance?.aiTokens);
@@ -84,7 +109,11 @@ export default function TokenInfoScreen() {
         </Text>
 
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Your live AI-credit balance</Text>
+          <Text style={styles.balanceLabel}>
+            {facilityScoped
+              ? "Selected Facility's live AI-credit balance"
+              : "Your live AI-credit balance"}
+          </Text>
           <Text style={styles.balanceValue}>
             {loading
               ? "Checking..."
@@ -98,7 +127,10 @@ export default function TokenInfoScreen() {
           <Text style={styles.helpText}>
             {loadFailed
               ? "GrowPathAI could not verify your balance, so it is not showing a guessed plan allowance."
-              : balance?.refillDescription || "Configured AI allowances refresh weekly."}
+              : facilityScoped && !facilityId
+                ? "Select a Facility before viewing or using Facility AI credits."
+                : balance?.refillDescription ||
+                  "Configured AI allowances refresh weekly."}
           </Text>
           {balance?.nextRefresh ? (
             <Text style={styles.helpText}>
