@@ -40,7 +40,7 @@ Production authentication must ignore deterministic test identity headers such a
 
 Commercial lesson video follows the shared `course-media-workflow` method. Require provider normalization, rights and availability review, an accessible text fallback, privacy-aware third-party playback, and a provider link before publishing; do not equate provider viewing with GrowPath lesson progress.
 
-An unavailable or unconfigured third-party integration status must appear as clear setup guidance. Do not expose raw transport codes such as `NOT_FOUND` as workflow content, and do not describe Twitch, EventSub, Stripe, email, or another integration as connected without verified configuration state.
+An unavailable or unconfigured third-party integration status must appear as clear setup guidance. Do not expose raw transport codes such as `NOT_FOUND` as workflow content, and do not describe Twitch, EventSub, Stripe, email, or another integration as connected without verified configuration state. Commercial Live authoring treats EventSub status as connection-derived, read-only state; an author cannot type a connected status. Live visibility uses a named single-choice group with readable labels and an exposed checked state.
 
 The Soil & Nutrient Batch Planner is a Commercial production tool. Surface its cost, bag-count, pull-sheet, labor, packaging, margin, inventory, formula, batch/lot, product, and trial workflow only inside the Commercial workspace; do not list it in Personal tools.
 

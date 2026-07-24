@@ -114,8 +114,19 @@ describe("CommercialLivesRoute", () => {
 
     expect(screen.getByText("Shared Schedule")).toBeTruthy();
     expect(screen.getByText("Notifications")).toBeTruthy();
-    expect(screen.getByText("GrowPath | EventSub connected")).toBeTruthy();
+    expect(screen.getByText("GrowPath · EventSub Connected")).toBeTruthy();
     expect(screen.getByLabelText("Disconnect Twitch")).toBeTruthy();
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial live visibility to Public"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
+    expect(
+      screen.queryByRole("textbox", {
+        name: "Commercial live Twitch EventSub status"
+      })
+    ).toBeNull();
+    expect(screen.getByLabelText("Commercial live Twitch EventSub status")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Connect Twitch with OAuth"));
     await waitFor(() =>
       expect(Linking.openURL).toHaveBeenCalledWith(
@@ -131,7 +142,7 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText(/Forum\/Q&A thread-1/)).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText(/Channel ID 12345/)).toBeTruthy();
-    expect(screen.getAllByText(/EventSub connected/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/EventSub Connected/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Embed https:\/\/player.twitch.tv\/\?channel=growpath/)
     ).toBeTruthy();
@@ -206,10 +217,6 @@ describe("CommercialLivesRoute", () => {
       "https://player.twitch.tv/?channel=livingsoillabs"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial live Twitch EventSub status"),
-      "connected"
-    );
-    fireEvent.changeText(
       screen.getByLabelText("Commercial live scheduled start"),
       "2026-07-17T21:00:00Z"
     );
@@ -243,7 +250,14 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live replay URL"),
       "https://twitch.tv/videos/veg"
     );
-    fireEvent.press(screen.getByLabelText("Set commercial live visibility enrolled"));
+    fireEvent.press(
+      screen.getByLabelText("Set commercial live visibility to Enrolled learners")
+    );
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial live visibility to Enrolled learners"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     fireEvent.press(screen.getByLabelText("Schedule commercial live"));
 
     await waitFor(() =>

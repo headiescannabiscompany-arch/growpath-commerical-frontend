@@ -77,6 +77,18 @@ const EMPTY_FORM: LiveForm = {
   replayUrl: ""
 };
 
+const LIVE_VISIBILITY_OPTIONS: Array<{
+  value: NonNullable<CommercialLiveEvent["visibility"]>;
+  label: string;
+}> = [
+  { value: "public", label: "Public" },
+  { value: "followers", label: "Followers only" },
+  { value: "enrolled", label: "Enrolled learners" },
+  { value: "paid", label: "Paid access" },
+  { value: "private", label: "Private" },
+  { value: "unlisted", label: "Unlisted" }
+];
+
 const notificationPlan = [
   "new_live_scheduled",
   "24h_before",
@@ -85,6 +97,16 @@ const notificationPlan = [
   "live_now",
   "replay_available"
 ];
+
+function formatLiveLabel(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+  return normalized
+    ? normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase()
+    : "Not connected";
+}
 
 function liveId(live: CommercialLiveEvent) {
   return live.id || live._id || live.title || "live";
@@ -169,7 +191,11 @@ export default function CommercialLivesRoute() {
   const [connectingTwitch, setConnectingTwitch] = useState(false);
 
   const counts = useMemo(() => splitStatus(lives), [lives]);
-  const formWarnings = liveSetupWarnings({ ...form, notificationPlan });
+  const formWarnings = liveSetupWarnings({
+    ...form,
+    growInterests: splitList(form.growInterests),
+    notificationPlan
+  });
   const scheduleBlocked = Boolean(form.scheduledStart.trim() && formWarnings.length);
 
   async function loadLives() {
@@ -415,8 +441,8 @@ export default function CommercialLivesRoute() {
           {!twitchConnection?.configured
             ? "Twitch OAuth is not configured on this deployment."
             : twitchConnection.connection?.status === "connected"
-              ? `${twitchConnection.connection.broadcasterName || twitchConnection.connection.broadcasterLogin} | EventSub ${twitchConnection.connection.eventSubStatus || "not_connected"}`
-              : `Twitch ${twitchConnection.connection?.status || "not connected"}`}
+              ? `${twitchConnection.connection.broadcasterName || twitchConnection.connection.broadcasterLogin} · EventSub ${formatLiveLabel(twitchConnection.connection.eventSubStatus)}`
+              : `Twitch ${formatLiveLabel(twitchConnection.connection?.status)}`}
         </Text>
         {twitchConnection?.connection?.lastError ? (
           <Text style={styles.warningText}>{twitchConnection.connection.lastError}</Text>
@@ -576,16 +602,19 @@ export default function CommercialLivesRoute() {
             style={styles.input}
             autoCapitalize="none"
           />
-          <TextInput
-            value={form.eventSubStatus}
-            onChangeText={(eventSubStatus) =>
-              setForm((prev) => ({ ...prev, eventSubStatus }))
-            }
+          <View
             accessibilityLabel="Commercial live Twitch EventSub status"
-            placeholder="EventSub status"
-            style={styles.input}
-            autoCapitalize="none"
-          />
+            style={styles.integrationStatus}
+          >
+            <Text style={styles.label}>Twitch EventSub status</Text>
+            <Text style={styles.integrationStatusValue}>
+              {formatLiveLabel(form.eventSubStatus)}
+            </Text>
+            <Text style={styles.notice}>
+              Managed by the verified Twitch connection. Connect or refresh Twitch to
+              update this status.
+            </Text>
+          </View>
           <View style={styles.fullWidth}>
             <SchedulePicker
               dueDate={form.scheduledStart}
@@ -682,27 +711,31 @@ export default function CommercialLivesRoute() {
           />
         </View>
         <Text style={styles.label}>Visibility</Text>
-        <View style={styles.actions}>
-          {(
-            ["public", "followers", "enrolled", "paid", "private", "unlisted"] as const
-          ).map((visibility) => (
+        <View
+          style={styles.actions}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Commercial live visibility"
+        >
+          {LIVE_VISIBILITY_OPTIONS.map(({ value, label }) => (
             <Pressable
-              key={visibility}
-              accessibilityRole="button"
-              accessibilityLabel={`Set commercial live visibility ${visibility}`}
-              onPress={() => setForm((prev) => ({ ...prev, visibility }))}
+              key={value}
+              accessibilityRole="radio"
+              accessibilityLabel={`Set commercial live visibility to ${label}`}
+              aria-checked={form.visibility === value}
+              accessibilityState={{ checked: form.visibility === value }}
+              onPress={() => setForm((prev) => ({ ...prev, visibility: value }))}
               style={[
                 styles.action,
-                form.visibility === visibility ? styles.actionSelected : null
+                form.visibility === value ? styles.actionSelected : null
               ]}
             >
               <Text
                 style={[
                   styles.actionText,
-                  form.visibility === visibility ? styles.actionTextSelected : null
+                  form.visibility === value ? styles.actionTextSelected : null
                 ]}
               >
-                {visibility}
+                {label}
               </Text>
             </Pressable>
           ))}
@@ -760,15 +793,16 @@ export default function CommercialLivesRoute() {
                     ) : null}
                     <Text style={styles.liveMeta}>
                       {[
-                        live.status || "scheduled",
-                        live.visibility || "public",
+                        formatLiveLabel(live.status || "scheduled"),
+                        formatLiveLabel(live.visibility || "public"),
                         live.scheduledStart,
                         live.twitchChannelName && `Twitch: ${live.twitchChannelName}`,
                         live.twitchChannelId && `Channel ID ${live.twitchChannelId}`,
-                        live.eventSubStatus && `EventSub ${live.eventSubStatus}`
+                        live.eventSubStatus &&
+                          `EventSub ${formatLiveLabel(live.eventSubStatus)}`
                       ]
                         .filter(Boolean)
-                        .join(" | ")}
+                        .join(" · ")}
                     </Text>
                     {live.description ? (
                       <Text style={styles.body}>{live.description}</Text>
@@ -885,6 +919,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 12,
     paddingVertical: 10
+  },
+  integrationStatus: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  integrationStatusValue: {
+    color: "#0F172A",
+    fontSize: 14,
+    fontWeight: "900",
+    marginTop: 4
   },
   textArea: { minHeight: 92, textAlignVertical: "top" },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

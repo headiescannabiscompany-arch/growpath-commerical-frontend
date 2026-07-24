@@ -459,7 +459,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "direct-entry and hard-reload support for workspace choice and switching",
       "workspace preference reapplied before restricted-route access decisions",
       "workspace selection and routing use the same effective paid-plan capabilities",
-      "clear not-configured guidance for unavailable third-party integrations"
+      "clear not-configured guidance for unavailable third-party integrations",
+      "connection-derived read-only EventSub status and checked Commercial Live visibility controls"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -475,6 +476,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never honor deterministic test identity headers as production authentication.",
       "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",
       "Never pass reserved public route words or malformed record IDs into database ID queries.",
+      "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
