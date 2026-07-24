@@ -92,17 +92,10 @@ export default function CommercialProfileRoute() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  const publicStoreUrl = useMemo(
-    () => (form.slug.trim() ? `/store/${form.slug.trim()}` : "/store/your-brand-slug"),
-    [form.slug]
-  );
-  const publicProductUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/store/${form.slug.trim()}/products/product-id`
-        : "/store/your-brand-slug/products/product-id",
-    [form.slug]
-  );
+  const publicStoreUrl = useMemo(() => {
+    const slug = form.slug.trim();
+    return slug ? `/store/${encodeURIComponent(slug)}` : "";
+  }, [form.slug]);
 
   async function loadProfile() {
     setLoading(true);
@@ -301,8 +294,15 @@ export default function CommercialProfileRoute() {
           everywhere so customers always land on the same brand experience.
         </Text>
         <View style={styles.urlList}>
-          <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
-          <Text style={styles.urlText}>Public product detail: {publicProductUrl}</Text>
+          <Text style={styles.urlText}>
+            Public storefront: {publicStoreUrl || "Add a public slug to create this URL."}
+          </Text>
+          <Text style={styles.urlText}>
+            Public product detail:{" "}
+            {publicStoreUrl
+              ? `Save and publish a product to create its URL under ${publicStoreUrl}.`
+              : "Add a public slug and save a product to create this URL."}
+          </Text>
           <Text style={styles.urlText}>
             Similar storefronts and return-to-feed actions stay available from public
             pages.

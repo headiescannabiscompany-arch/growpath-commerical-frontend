@@ -773,7 +773,8 @@ export default function CommercialProductsRoute({
           product detail to external purchase or support.
         </Text>
         <Text style={styles.bullet}>
-          Public product detail route: /store/your-brand-slug/products/product-id
+          Public product detail URLs use the saved storefront slug and the saved product
+          ID.
         </Text>
         <Text style={styles.bullet}>
           Support product photos, description, price, external purchase link, usage

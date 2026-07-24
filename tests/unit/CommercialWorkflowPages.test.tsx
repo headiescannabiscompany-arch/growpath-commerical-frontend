@@ -1685,6 +1685,12 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
+        "Public product detail URLs use the saved storefront slug and the saved product ID."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/your-brand-slug/)).toBeNull();
+    expect(
+      screen.getByText(
         "Storefront should expose featured products; legacy brand profile remains secondary"
       )
     ).toBeTruthy();
