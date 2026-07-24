@@ -216,7 +216,22 @@ function storefrontPublishBlockers(args: {
   return blockers;
 }
 
-function PublicPreviewLink({ href, label }: { href: string; label: string }) {
+function PublicPreviewLink({ href, label }: { href?: string; label: string }) {
+  if (!href) {
+    return (
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`${label} unavailable. Add a public slug first.`}
+        accessibilityState={{ disabled: true }}
+        disabled
+        style={[styles.previewButton, styles.disabled]}
+      >
+        <Text style={styles.previewButtonText}>{label}</Text>
+        <Text style={styles.previewDisabledText}>Add public slug first</Text>
+      </Pressable>
+    );
+  }
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="link" style={styles.previewButton}>
@@ -388,8 +403,8 @@ export default function Storefront({
     });
   }, [storefront]);
 
-  const publicSlug = storeDraft.slug.trim() || "your-brand";
-  const publicStorePath = `/store/${publicSlug}`;
+  const publicSlug = storeDraft.slug.trim();
+  const publicStorePath = publicSlug ? `/store/${encodeURIComponent(publicSlug)}` : "";
   const publishedProducts = useMemo(
     () => products.filter((product) => productIsPublished(product)),
     [products]
@@ -638,9 +653,7 @@ export default function Storefront({
       ? Number(productDraft.price)
       : undefined;
     const price =
-      typeof priceNumber === "number" &&
-      Number.isFinite(priceNumber) &&
-      priceNumber >= 0
+      typeof priceNumber === "number" && Number.isFinite(priceNumber) && priceNumber >= 0
         ? priceNumber
         : undefined;
     setSavingProduct(true);
@@ -910,10 +923,14 @@ export default function Storefront({
                       )}`}
                       label="Open Line"
                     />
-                    <ObjectActionLink
-                      href={`${publicStorePath}?line=${encodeURIComponent(
-                        String(line.id ?? line._id ?? line.name)
-                      )}`}
+                    <PublicPreviewLink
+                      href={
+                        publicStorePath
+                          ? `${publicStorePath}?line=${encodeURIComponent(
+                              String(line.id ?? line._id ?? line.name)
+                            )}`
+                          : undefined
+                      }
                       label="View as User"
                     />
                   </View>
@@ -1200,7 +1217,9 @@ export default function Storefront({
           <View style={styles.publicLinkBox}>
             <Text style={styles.publicLinkLabel}>Public store</Text>
             <Text selectable style={styles.publicLinkText}>
-              {currentPublicUrl(publicStorePath)}
+              {publicStorePath
+                ? currentPublicUrl(publicStorePath)
+                : "Add a public slug to create the public store URL."}
             </Text>
           </View>
           <View style={styles.previewActions}>
@@ -1318,8 +1337,14 @@ export default function Storefront({
                           label="Open Campaigns"
                         />
                         {campaignProductLineId(campaign) ? (
-                          <ObjectActionLink
-                            href={`${publicStorePath}?line=${encodeURIComponent(campaignProductLineId(campaign))}`}
+                          <PublicPreviewLink
+                            href={
+                              publicStorePath
+                                ? `${publicStorePath}?line=${encodeURIComponent(
+                                    campaignProductLineId(campaign)
+                                  )}`
+                                : undefined
+                            }
                             label="Browse Line"
                           />
                         ) : null}
@@ -1927,6 +1952,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   previewButtonText: { color: "white", fontWeight: "900" },
+  previewDisabledText: {
+    color: "#E2E8F0",
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 2
+  },
   objectActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   objectAction: {
     alignItems: "center",
