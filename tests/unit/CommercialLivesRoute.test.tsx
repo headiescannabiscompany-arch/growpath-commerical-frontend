@@ -19,7 +19,15 @@ jest.mock("expo-router", () => {
 });
 
 jest.mock("@/components/InlineError", () => ({
-  InlineError: () => null
+  InlineError: ({ error }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      Text,
+      null,
+      `${error?.code || "ERROR"} ${error?.message || ""}`
+    );
+  }
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -296,5 +304,36 @@ describe("CommercialLivesRoute", () => {
       "/api/commercial/lives",
       expect.objectContaining({ method: "POST" })
     );
+  });
+
+  it("treats a missing Twitch status route as unavailable setup guidance", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/lives" && !options) {
+        return Promise.resolve({ lives: [] });
+      }
+      if (path === "/api/twitch/status") {
+        return Promise.reject(
+          Object.assign(new Error("Not found"), {
+            code: "NOT_FOUND",
+            status: 404
+          })
+        );
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialLivesRoute />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Twitch OAuth is not configured on this deployment.")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText(/NOT_FOUND/)).toBeNull();
+    expect(screen.queryByText(/^Not found$/)).toBeNull();
+    expect(
+      screen.getByLabelText("Connect Twitch with OAuth").props.accessibilityState
+        ?.disabled
+    ).toBe(true);
   });
 });

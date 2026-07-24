@@ -15,8 +15,15 @@ export type TwitchConnectionStatus = {
   } | null;
 };
 
-export function getTwitchConnection(): Promise<TwitchConnectionStatus> {
-  return apiRequest("/api/twitch/status");
+export async function getTwitchConnection(): Promise<TwitchConnectionStatus> {
+  try {
+    return await apiRequest("/api/twitch/status");
+  } catch (error: any) {
+    if (error?.status === 404 || error?.code === "NOT_FOUND") {
+      return { configured: false, connection: null };
+    }
+    throw error;
+  }
 }
 
 export function beginTwitchConnection(): Promise<{
