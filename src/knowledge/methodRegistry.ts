@@ -452,6 +452,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "direct draft-course detail limited to the authenticated author or platform administrator",
       "explicit eligible workspace preference preserved across plan-backed modes",
       "post-login workspace choice for every multi-workspace identity",
+      "direct-entry and hard-reload support for workspace choice and switching",
       "workspace preference reapplied before restricted-route access decisions",
       "workspace selection and routing use the same effective paid-plan capabilities",
       "clear not-configured guidance for unavailable third-party integrations"
@@ -492,6 +493,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
       "legacy missing-balance materialization from an effective owner Facility entitlement",
       "individual-versus-Facility workspace choice after sign-in",
+      "direct-entry and hard-reload support for workspace choice and switching",
       "cross-platform confirmed Facility member removal with preserved history",
       "title-based public outreach destination selection with advanced reference fallback",
       "read-after-write reconciled facility task queues",
