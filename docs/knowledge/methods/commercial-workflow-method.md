@@ -4,7 +4,7 @@ Feed campaign performance comes from recorded impressions, destination clicks, e
 
 Feed campaign placement must preserve the primary job of each page. The Personal home command center uses no supplemental side rail: Free may show one clearly labeled promotion near the top and one after the workspace content, while paid plans show at most one clearly labeled promotion near the top. Never place a middle campaign on Personal home or let campaign density narrow or displace the grow, alert, task, and journal workspace.
 
-Commercial Feed/Campaigns authoring uses one page-level heading. Campaign types, placements, filters, and publish actions must be exposed as named button controls with selected or disabled state so keyboard and assistive-technology users receive the same review and publishing workflow.
+Commercial Feed/Campaigns authoring uses one page-level heading. Campaign types and filters must be named single-choice controls, placements must be named multi-select controls, and publish must be a named button. Expose checked or disabled state so keyboard and assistive-technology users receive the same review and publishing workflow.
 
 Commercial analytics must be owner-scoped and event-backed. Attribute public storefront, product, course, and live activity through a published storefront; combine it with recorded Feed events, course engagement, live RSVPs, and paid internal orders. Preserve order currency, sanitize event labels and grow interests, and never infer a view, click, conversion, RSVP, order, or revenue value from another event.
 
