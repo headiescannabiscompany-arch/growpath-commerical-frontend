@@ -1,16 +1,21 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { usePathname } from "expo-router";
 
 import ReportBugButton from "@/components/ReportBugButton";
 
+export function getReportBugButtonLabel(width: number) {
+  return width < 600 ? "Bug" : "Report Bug";
+}
+
 export default function GlobalReportBugButton() {
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
   if (pathname === "/support") return null;
   return (
     <View pointerEvents="box-none" style={styles.layer}>
       <View style={styles.button}>
-        <ReportBugButton label="Report Bug" />
+        <ReportBugButton label={getReportBugButtonLabel(width)} />
       </View>
     </View>
   );
