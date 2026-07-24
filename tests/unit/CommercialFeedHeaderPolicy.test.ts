@@ -6,13 +6,18 @@ function read(relativePath: string) {
 }
 
 describe("Commercial Feed header policy", () => {
-  it("uses the page heading without a duplicate tab header", () => {
+  it("uses page headings without duplicate tab headers", () => {
     const layout = read("src/app/home/commercial/_layout.tsx");
     const feed = read("src/app/feed/index.tsx");
+    const orders = read("src/screens/commercial/OrdersScreen.tsx");
 
     expect(layout).toContain(
       'options={{ title: "Feed / Campaigns", headerShown: false }}'
     );
+    expect(layout).toMatch(
+      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?headerShown: false/
+    );
     expect(feed).toContain('accessibilityRole="header"');
+    expect(orders).toContain('accessibilityRole="header"');
   });
 });

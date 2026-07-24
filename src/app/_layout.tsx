@@ -2,6 +2,7 @@ import { initUnauthorizedHandler } from "@/auth/initUnauthorized";
 import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { View } from "react-native";
+import { enableScreens } from "react-native-screens";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../auth/AuthContext";
 import { SessionProvider } from "../session/SessionProvider";
@@ -12,6 +13,7 @@ import GlobalReportBugButton from "../components/GlobalReportBugButton";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 
+enableScreens(true);
 initUnauthorizedHandler();
 initMonitoring();
 

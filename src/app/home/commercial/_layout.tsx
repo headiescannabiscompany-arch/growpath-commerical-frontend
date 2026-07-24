@@ -87,7 +87,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="orders"
-        options={{ title: "Orders", href: compactTabs ? null : undefined }}
+        options={{
+          title: "Orders",
+          href: compactTabs ? null : undefined,
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="inventory"
