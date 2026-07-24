@@ -4,9 +4,13 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   createSoilNutrientBatch,
+  fetchProducts,
   fetchProductLines,
+  fetchProductTrialEvidenceRuns,
   fetchSoilNutrientBatches,
+  CommercialProduct,
   ProductLine,
+  ProductTrialEvidenceRun,
   SoilNutrientBatch
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
@@ -55,10 +59,6 @@ function batchId(batch: SoilNutrientBatch) {
   return batch.id || batch._id || batch.batchCode || batch.batchName || "batch";
 }
 
-function productLineId(line: ProductLine) {
-  return String(line.id || line._id || line.name || "").trim();
-}
-
 function numberOrUndefined(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -74,14 +74,92 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+type RecordChoice = {
+  id: string;
+  label: string;
+};
+
+function recordChoice(
+  record: Record<string, any>,
+  index: number,
+  labelKeys: string[],
+  fallback: string
+): RecordChoice | null {
+  const id = String(record.id ?? record._id ?? "").trim();
+  if (!id) return null;
+  const label =
+    labelKeys.map((key) => String(record[key] ?? "").trim()).find(Boolean) ||
+    `${fallback} ${index + 1}`;
+  return { id, label };
+}
+
+function RecordPicker({
+  choices,
+  createHref,
+  createLabel,
+  label,
+  onChange,
+  selectedId
+}: {
+  choices: RecordChoice[];
+  createHref: string;
+  createLabel: string;
+  label: string;
+  onChange: (id: string) => void;
+  selectedId: string;
+}) {
+  return (
+    <View style={styles.recordPicker}>
+      <Text style={styles.selectorLabel}>{label}</Text>
+      {choices.length ? (
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={`${label} choices`}
+          style={styles.selectorActions}
+        >
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityLabel={`${label}: Not linked yet`}
+            accessibilityState={{ checked: !selectedId }}
+            onPress={() => onChange("")}
+            style={[styles.action, !selectedId && styles.selectedAction]}
+          >
+            <Text style={styles.actionText}>Not linked yet</Text>
+          </Pressable>
+          {choices.slice(0, 8).map((item) => (
+            <Pressable
+              key={`${label}-${item.id}`}
+              accessibilityRole="radio"
+              accessibilityLabel={`${label}: ${item.label}`}
+              accessibilityState={{ checked: selectedId === item.id }}
+              onPress={() => onChange(item.id)}
+              style={[styles.action, selectedId === item.id && styles.selectedAction]}
+            >
+              <Text style={styles.actionText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyPicker}>
+          <Text style={styles.muted}>No saved {label.toLowerCase()} records yet.</Text>
+          <ActionLink href={createHref} label={createLabel} />
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function CommercialBatchPlannerRoute() {
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
+  const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [form, setForm] = useState<BatchForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
 
   const readyCount = useMemo(
     () =>
@@ -97,12 +175,16 @@ export default function CommercialBatchPlannerRoute() {
     setLoading(true);
     setError(null);
     try {
-      const [nextBatches, nextLines] = await Promise.all([
+      const [nextBatches, nextProducts, nextLines, nextEvidenceRuns] = await Promise.all([
         fetchSoilNutrientBatches(),
-        fetchProductLines()
+        fetchProducts(),
+        fetchProductLines(),
+        fetchProductTrialEvidenceRuns()
       ]);
       setBatches(nextBatches);
+      setProducts(nextProducts);
       setProductLines(nextLines);
+      setEvidenceRuns(nextEvidenceRuns);
     } catch (err) {
       setError(err);
     } finally {
@@ -113,6 +195,18 @@ export default function CommercialBatchPlannerRoute() {
   useEffect(() => {
     loadBatches();
   }, []);
+
+  const productChoices = products
+    .map((record, index) => recordChoice(record, index, ["name"], "Product"))
+    .filter((item): item is RecordChoice => !!item);
+  const productLineChoices = productLines
+    .map((record, index) => recordChoice(record, index, ["name"], "Product line"))
+    .filter((item): item is RecordChoice => !!item);
+  const evidenceRunChoices = evidenceRuns
+    .map((record, index) =>
+      recordChoice(record, index, ["name", "growName", "cultivar"], "Evidence run")
+    )
+    .filter((item): item is RecordChoice => !!item);
 
   async function submitBatch() {
     if (!form.batchName.trim()) return;
@@ -273,54 +367,76 @@ export default function CommercialBatchPlannerRoute() {
             placeholder="Formula version"
             style={styles.input}
           />
-          <TextInput
-            value={form.productId}
-            onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            accessibilityLabel="Commercial batch product id"
-            placeholder="Linked product ID"
-            style={styles.input}
+          <RecordPicker
+            label="Batch product"
+            choices={productChoices}
+            selectedId={form.productId}
+            onChange={(productId) => setForm((prev) => ({ ...prev, productId }))}
+            createHref="/home/commercial/products/new"
+            createLabel="Create Product"
           />
-          <TextInput
-            value={form.productLineId}
-            onChangeText={(productLineId) =>
-              setForm((prev) => ({ ...prev, productLineId }))
+          <RecordPicker
+            label="Batch product line"
+            choices={productLineChoices}
+            selectedId={form.productLineId}
+            onChange={(productLineId) => setForm((prev) => ({ ...prev, productLineId }))}
+            createHref="/home/commercial/product-lines"
+            createLabel="Create Product Line"
+          />
+          <RecordPicker
+            label="Batch evidence run"
+            choices={evidenceRunChoices}
+            selectedId={form.trialGrowId}
+            onChange={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
+            createHref="/home/commercial/evidence-runs/new"
+            createLabel="Create Evidence Run"
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              showAdvancedRecordIds
+                ? "Hide advanced batch record ID fields"
+                : "Show advanced batch record ID fields"
             }
-            accessibilityLabel="Commercial batch product line id"
-            placeholder="Linked product line ID, or choose below"
-            style={styles.input}
-          />
-          {productLines.length ? (
-            <View style={styles.lineSelector}>
-              <Text style={styles.selectorLabel}>Choose Product Line</Text>
-              <View style={styles.selectorActions}>
-                {productLines.slice(0, 4).map((line) => {
-                  const id = productLineId(line);
-                  const name = line.name || "Product line";
-                  return (
-                    <Pressable
-                      key={`batch-line-${id || name}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Use batch product line ${name}`}
-                      onPress={() => setForm((prev) => ({ ...prev, productLineId: id }))}
-                      style={[
-                        styles.action,
-                        form.productLineId === id && styles.selectedAction
-                      ]}
-                    >
-                      <Text style={styles.actionText}>{name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
+            accessibilityState={{ expanded: showAdvancedRecordIds }}
+            onPress={() => setShowAdvancedRecordIds((current) => !current)}
+            style={styles.advancedToggle}
+          >
+            <Text style={styles.advancedToggleText}>
+              {showAdvancedRecordIds
+                ? "Hide advanced record IDs"
+                : "Use advanced record IDs"}
+            </Text>
+          </Pressable>
+          {showAdvancedRecordIds ? (
+            <>
+              <TextInput
+                value={form.productId}
+                onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
+                accessibilityLabel="Commercial batch product id"
+                placeholder="Linked product ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.productLineId}
+                onChangeText={(productLineId) =>
+                  setForm((prev) => ({ ...prev, productLineId }))
+                }
+                accessibilityLabel="Commercial batch product line id"
+                placeholder="Linked product line ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.trialGrowId}
+                onChangeText={(trialGrowId) =>
+                  setForm((prev) => ({ ...prev, trialGrowId }))
+                }
+                accessibilityLabel="Commercial batch evidence run id"
+                placeholder="Linked evidence run ID"
+                style={styles.input}
+              />
+            </>
           ) : null}
-          <TextInput
-            value={form.trialGrowId}
-            onChangeText={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
-            accessibilityLabel="Commercial batch evidence run id"
-            placeholder="Linked evidence run ID"
-            style={styles.input}
-          />
           <TextInput
             value={form.batchVolume}
             onChangeText={(batchVolume) => setForm((prev) => ({ ...prev, batchVolume }))}
@@ -677,13 +793,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
-  lineSelector: {
+  recordPicker: {
     borderColor: "#BBF7D0",
     borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 220,
     padding: 9
+  },
+  emptyPicker: {
+    alignItems: "flex-start",
+    gap: 8
   },
   selectorLabel: {
     color: "#166534",
@@ -692,6 +812,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  advancedToggle: {
+    alignSelf: "flex-start",
+    minWidth: 220,
+    paddingHorizontal: 4,
+    paddingVertical: 8
+  },
+  advancedToggleText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    textDecorationLine: "underline"
+  },
   bullet: {
     color: "#334155",
     fontSize: 13,
