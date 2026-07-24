@@ -21,24 +21,50 @@ describe("workspace bottom-tab order", () => {
     expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
   });
 
-  it("keeps the five Commercial compact destinations in task-first order", () => {
+  it("keeps Commercial compact navigation task-first without hiding workspaces", () => {
     const contents = source("src/app/home/commercial/_layout.tsx");
-    expectOrder(contents, ["index", "storefront/index", "products/index", "feed"]);
-    expect(contents.indexOf('name="profile"')).toBeGreaterThan(
-      contents.indexOf('name="analytics"')
+    const more = source("src/app/home/commercial/more.tsx");
+    expectOrder(contents, [
+      "index",
+      "storefront/index",
+      "products/index",
+      "feed",
+      "courses",
+      "lives",
+      "orders",
+      "analytics",
+      "profile",
+      "tools/index",
+      "more"
+    ]);
+    expect(contents).toContain("const compactSecondaryHref");
+    expect(contents).toContain(
+      'options={{ title: "Courses", href: compactSecondaryHref("courses") }}'
     );
     expect(contents).toContain(
-      'options={{ title: "Courses", href: compactTabs ? null : undefined }}'
-    );
-    expect(contents).toContain(
-      'options={{ title: "Lives", href: compactTabs ? null : undefined }}'
+      'options={{ title: "Lives", href: compactSecondaryHref("lives") }}'
     );
     expect(contents).toMatch(
-      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: compactTabs \? null : undefined,[\s\S]*?headerShown: false/
+      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: compactSecondaryHref\("orders"\),[\s\S]*?headerShown: false/
     );
     expect(contents).toMatch(
-      /name="analytics"\s+options=\{\{[\s\S]*?title: "Analytics",[\s\S]*?href: compactTabs \? null : undefined,[\s\S]*?headerShown: false/
+      /name="analytics"\s+options=\{\{[\s\S]*?title: "Analytics",[\s\S]*?href: compactSecondaryHref\("analytics"\),[\s\S]*?headerShown: false/
     );
+    expect(contents).toContain('name="more"');
+    expect(contents).toContain("href: compactTabs ? undefined : null");
+    [
+      "/home/commercial/courses",
+      "/home/commercial/lives",
+      "/home/commercial/community",
+      "/home/commercial/orders",
+      "/home/commercial/analytics",
+      "/home/commercial/product-lines",
+      "/home/commercial/batch-planner",
+      "/home/commercial/trials",
+      "/home/commercial/inventory",
+      "/home/commercial/profile",
+      "/home/commercial/tools"
+    ].forEach((href) => expect(more).toContain(`href: "${href}"`));
     expect(contents).toContain(
       'name="tools/library" options={{ href: null, title: "Tool Library" }}'
     );
