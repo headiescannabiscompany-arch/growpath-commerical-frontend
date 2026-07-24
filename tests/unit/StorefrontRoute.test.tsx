@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import Storefront from "@/app/home/commercial/storefront";
 import StorefrontEdit from "@/app/home/commercial/storefront/edit";
@@ -259,9 +259,7 @@ describe("Storefront route", () => {
     expect(screen.getByText("Storefront Launch Actions")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/products/new")).toBeTruthy();
     expect(
-      screen.getByTestId(
-        "link-/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront"
-      )
+      screen.getByTestId("link-/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront")
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
     expect(screen.getAllByTestId("link-/home/commercial/feed").length).toBeGreaterThan(0);
@@ -539,6 +537,63 @@ describe("Storefront route", () => {
     );
     expect(createCall?.[1]?.body?.price).toBeUndefined();
     expect(createCall?.[1]?.body?.currency).toBeUndefined();
+  });
+
+  it("disables public preview links until a real slug exists", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (options) return apiResponseFor(path, options);
+      if (path === "/api/commercial/storefront") {
+        return Promise.resolve({
+          storefront: {
+            id: "store-empty",
+            name: "",
+            slug: "",
+            isPublished: false
+          }
+        });
+      }
+      if (path === "/api/commercial/products") {
+        return Promise.resolve({ products: [] });
+      }
+      if (path === "/api/commercial/product-lines") {
+        return Promise.resolve({ productLines: [] });
+      }
+      if (path === "/api/commercial/courses") {
+        return Promise.resolve({ courses: [] });
+      }
+      if (path === "/api/commercial/lives") {
+        return Promise.resolve({ lives: [] });
+      }
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({ items: [] });
+      }
+      if (path === "/api/commercial/inventory") {
+        return Promise.resolve({ inventory: [] });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<Storefront />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Add a public slug to create the public store URL.")
+      ).toBeTruthy()
+    );
+
+    expect(screen.queryByTestId("link-/store/your-brand")).toBeNull();
+    expect(screen.queryByText("https://growpathai.com/store/your-brand")).toBeNull();
+    expect(
+      screen.getByLabelText("View as User unavailable. Add a public slug first.").props
+        .accessibilityState?.disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("View Public Store unavailable. Add a public slug first.")
+        .props.accessibilityState?.disabled
+    ).toBe(true);
   });
 
   it("redirects the legacy root storefront route to the commercial workspace", () => {
