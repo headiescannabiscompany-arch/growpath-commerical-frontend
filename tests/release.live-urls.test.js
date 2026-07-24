@@ -161,6 +161,8 @@ describe("live URL verifier", () => {
       "communities",
       "personal-grow-deep-link",
       "delete-account",
+      "workspace-choice",
+      "workspace-switch",
       "api-health",
       "api-ready",
       "api-health-api"
@@ -171,7 +173,20 @@ describe("live URL verifier", () => {
       .trim()
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
-    expect(fetchLog).toHaveLength(9);
+    expect(fetchLog).toHaveLength(11);
     expect(fetchLog.every((entry) => entry.method === "HEAD")).toBe(true);
+  });
+
+  it("keeps both workspace selectors in the production fallback export", () => {
+    const exportScript = fs.readFileSync(
+      path.join(root, "scripts", "export-production-web.cjs"),
+      "utf8"
+    );
+    const fallbackBlock = exportScript.match(
+      /const fallbackRoutes = \[([\s\S]*?)\];/
+    )?.[1];
+
+    expect(fallbackBlock).toContain('"account/workspace"');
+    expect(fallbackBlock).toContain('"account/mode"');
   });
 });

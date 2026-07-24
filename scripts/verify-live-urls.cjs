@@ -57,6 +57,14 @@ function expectedUrls() {
         "https://growpathai.com/account/delete"
       )
     },
+    {
+      name: "workspace-choice",
+      url: "https://growpathai.com/account/workspace"
+    },
+    {
+      name: "workspace-switch",
+      url: "https://growpathai.com/account/mode"
+    },
     { name: "api-health", url: `${apiBase}/health` },
     { name: "api-ready", url: `${apiBase}/ready` },
     { name: "api-health-api", url: `${apiBase}/api/health` }

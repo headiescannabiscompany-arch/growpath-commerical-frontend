@@ -24,6 +24,8 @@ When one authenticated account is entitled to multiple workspaces, an explicit s
 
 After sign-in, an account with more than one eligible workspace must receive an explicit workspace choice before entering a workspace. The choice must distinguish the human's individual Personal account from Commercial and shared Facility workspaces, use the same effective entitlements as later switching, and allow the already-current preference to continue into its workspace. Single-workspace accounts may continue directly. Keep a persistent Switch Workspace action available after entry.
 
+`/account/workspace` and `/account/mode` are production direct-entry and hard-reload routes. The production export and hosting fallback must serve the application for both routes instead of returning an HTTP 404.
+
 Public commercial-course discovery may expose a course only when both the course and its owning storefront are published. Return an explicit public-field projection with storefront identity and public course content; do not expose owner IDs, commercial account IDs, drafts, arbitrary authoring fields, or private workspace records. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API.
 
 Signed-out course discovery stays learner-facing and published-only. Anonymous visitors may browse the public catalogs and receive sign-in or registration actions, but they must not see authoring, owned-course, invite, analytics, publish, or unpublish controls.

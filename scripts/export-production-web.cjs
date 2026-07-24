@@ -98,6 +98,8 @@ const fallbackRoutes = [
   "terms",
   "support",
   "account/delete",
+  "account/mode",
+  "account/workspace",
   "ai/how-it-works",
   "facilities",
   "onboarding",
@@ -648,6 +650,8 @@ const robotsTxt = [
   "Disallow: /reset-password",
   "Disallow: /verify-email",
   "Disallow: /account/delete",
+  "Disallow: /account/mode",
+  "Disallow: /account/workspace",
   `Sitemap: ${siteUrl}/sitemap.xml`,
   ""
 ].join("\n");

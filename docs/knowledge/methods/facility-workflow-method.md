@@ -26,6 +26,8 @@ For a legacy active Facility with no Facility subscription record, the backend m
 
 Facility membership does not replace the human's individual account. After ordinary sign-in, a human with both individual and Facility access must choose which workspace to enter, even when one choice matches the saved current preference. The same eligible choices remain available later through Switch Workspace; changing workspaces must not require another account or another login.
 
+`/account/workspace` and `/account/mode` are production direct-entry and hard-reload routes. The production export and hosting fallback must serve the application for both routes instead of returning an HTTP 404.
+
 Facility member removal is a consequential owner action and must use a functional confirmation on every supported platform. Web must not rely on native-only `Alert` button callbacks. Identify the exact target by readable name, email, and role when available, execute the removal only after explicit confirmation, refresh the canonical team list, and retain historical task and audit records. Never allow an owner to remove the last owner membership.
 
 Facility task queues and detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Queue rows link directly to the selected task through a stable, accessible route. Raw database fields, Facility IDs, user IDs, room IDs, source-object IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
