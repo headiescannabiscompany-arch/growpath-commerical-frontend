@@ -424,6 +424,12 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       checkout, orders, leads, analytics, public-user acceptance, and final
       screenshot/video evidence remain open. See
       `docs/qa/COMMERCIAL_STOREFRONT_EMPTY_STATE_EVIDENCE_2026-07-24.md`.
+      Commercial Analytics heading hierarchy then passed on frontend merge
+      `4c8865d4b88831288b93108657b89e2638c6f51f`: authenticated production
+      inspection returned exactly one level-one page title and 14 level-two
+      sections. Real analytics-event attribution and final screenshot/video
+      evidence remain open; see
+      `docs/qa/COMMERCIAL_ANALYTICS_HEADING_EVIDENCE_2026-07-24.md`.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed. Production Owner created and assigned the shared QA task
       on `93bb0217` and captured screenshot/DOM evidence at
