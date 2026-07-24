@@ -61,6 +61,46 @@ SHA and URL.
 Two Browser screenshot attempts timed out during capture. No screenshot or video
 artifact is claimed by this record.
 
+## Products and Profile follow-up
+
+- Frontend PR: `#186`
+- Frontend merge SHA: `950f70f048112da2140c46c143620e044b362ec5`
+- Render deployment: `dep-d9hfgeks728c73c03rbg`
+- Render live timestamp: 2026-07-24 at 1:31 AM EDT
+- Live retest timestamp: `2026-07-24T01:32:13-04:00`
+- Account and workspace: `jcindc2003@yahoo.com`, Commercial
+- Routes:
+  - `https://growpathai.com/home/commercial/products?release=950f70f048112da2140c46c143620e044b362ec5&verify=products-url-guidance-live`
+  - `https://growpathai.com/home/commercial/profile?release=950f70f048112da2140c46c143620e044b362ec5&verify=profile-url-guidance-live`
+
+The next live review found `/store/your-brand-slug/products/product-id` rendered as
+if it were a usable public product route. The same placeholder family also appeared
+on Commercial Profile before the real storefront loaded.
+
+PR `#186` removed those invented paths across both surfaces. Products now explains
+that public detail URLs use the saved storefront slug and saved product ID. Profile
+shows no storefront path until a real slug loads and explains that a saved,
+published product is required before a detail URL exists.
+
+Focused local verification passed 2 suites and 30 tests. Strict targeted ESLint and
+`git diff --check` passed. GitHub Frontend CI run `30069417156` passed the complete
+frontend gate. Render then listed exact merge `950f70f048112da2140c46c143620e044b362ec5`
+live as `dep-d9hfgeks728c73c03rbg`.
+
+The signed-in production Browser retest confirmed:
+
+- Products still truthfully reports zero products.
+- Products renders
+  `Public product detail URLs use the saved storefront slug and the saved product ID.`
+- Profile renders `Public storefront: Add a public slug to create this URL.`
+- Profile renders
+  `Public product detail: Add a public slug and save a product to create this URL.`
+- Neither page contains `your-brand-slug` or `/products/product-id`.
+
+Evidence types completed for this follow-up: local automated tests, GitHub CI,
+Render deployment record, and signed-in production in-app Browser DOM inspection.
+No screenshot or video artifact is claimed for the follow-up.
+
 ## Remaining Commercial work
 
 The owner-supplied brand name, real public slug, logo, banner, description, grow
