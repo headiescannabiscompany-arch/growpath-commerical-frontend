@@ -383,7 +383,15 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       saved provenance/writeback, complete-photo billing, other
       failed-provider refund, lifecycle, broader accessibility,
       exported final-SHA video/screenshot, and independent-review checks stay open.
-- [ ] Commercial loop session recorded and reviewed.
+- [ ] Commercial loop session recorded and reviewed. The signed-in storefront
+      zero-setup state was reviewed on 2026-07-24. Frontend PR `#184`, merge
+      `140e8ec4fa2d19b0bcf14995fae32e2bb9fbaf09`, and Render deployment
+      `dep-d9hf82j7uimc73dljipg` removed active `/store/your-brand` placeholders.
+      The deployed page now disables View as User and View Public Store until a
+      real slug exists and explains the missing requirement. Full authoring,
+      publishing, checkout, orders, leads, analytics, public-user acceptance,
+      and final screenshot/video evidence remain open. See
+      `docs/qa/COMMERCIAL_STOREFRONT_EMPTY_STATE_EVIDENCE_2026-07-24.md`.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed. Production Owner created and assigned the shared QA task
       on `93bb0217` and captured screenshot/DOM evidence at
