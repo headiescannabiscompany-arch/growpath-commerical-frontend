@@ -978,6 +978,8 @@ export default function CommercialFeedRoute() {
               <Pressable
                 key={option}
                 onPress={() => setCampaignKind(option)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: campaignKind === option }}
                 accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
                 style={[styles.chip, campaignKind === option && styles.chipSelected]}
               >
@@ -1289,6 +1291,8 @@ export default function CommercialFeedRoute() {
                     return (
                       <Pressable
                         key={option}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
                         onPress={() =>
                           setPlacements((current) =>
                             selected
@@ -1365,6 +1369,8 @@ export default function CommercialFeedRoute() {
           <Pressable
             onPress={createCampaign}
             disabled={!canPublishCampaign}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canPublishCampaign }}
             accessibilityLabel={
               isFacility ? "Publish facility outreach" : "Publish feed campaign"
             }
@@ -1425,6 +1431,8 @@ export default function CommercialFeedRoute() {
             <Pressable
               key={option}
               onPress={() => setFilterType(option)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: filterType === option }}
               accessibilityLabel={`Filter feed by ${option}`}
               style={[styles.chip, filterType === option && styles.chipSelected]}
             >

@@ -95,6 +95,26 @@ describe("CommercialFeedRoute", () => {
 
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
     expect(
+      screen.getByRole("button", {
+        name: "Select Product ad campaign type"
+      }).props.accessibilityState?.selected
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", {
+        name: "Remove All Feed placements placement"
+      }).props.accessibilityState?.selected
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", {
+        name: "Filter feed by all"
+      }).props.accessibilityState?.selected
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", {
+        name: "Publish feed campaign"
+      })
+    ).toBeTruthy();
+    expect(
       screen.getByPlaceholderText(
         "Campaign message, offer, announcement, or educational promotion"
       )
