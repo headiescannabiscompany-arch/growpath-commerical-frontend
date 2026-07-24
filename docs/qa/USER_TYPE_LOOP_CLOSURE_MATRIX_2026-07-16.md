@@ -388,9 +388,13 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       `140e8ec4fa2d19b0bcf14995fae32e2bb9fbaf09`, and Render deployment
       `dep-d9hf82j7uimc73dljipg` removed active `/store/your-brand` placeholders.
       The deployed page now disables View as User and View Public Store until a
-      real slug exists and explains the missing requirement. Full authoring,
-      publishing, checkout, orders, leads, analytics, public-user acceptance,
-      and final screenshot/video evidence remain open. See
+      real slug exists and explains the missing requirement. Products and Profile
+      follow-up PR `#186`, merge `950f70f048112da2140c46c143620e044b362ec5`,
+      and Render deployment `dep-d9hfgeks728c73c03rbg` then removed the remaining
+      `your-brand-slug` and `/products/product-id` placeholder paths while
+      preserving the truthful zero-product state. Full authoring, publishing,
+      checkout, orders, leads, analytics, public-user acceptance, and final
+      screenshot/video evidence remain open. See
       `docs/qa/COMMERCIAL_STOREFRONT_EMPTY_STATE_EVIDENCE_2026-07-24.md`.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed. Production Owner created and assigned the shared QA task
