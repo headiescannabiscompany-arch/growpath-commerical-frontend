@@ -144,15 +144,25 @@ describe("CreateCourseScreen", () => {
   it("shows the full course builder workflow", () => {
     const screen = render(<CreateCourseScreen />);
 
-    expect(screen.getByRole("header", { name: "Create Course" })).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Create Course" }).props["aria-level"]
+    ).toBe(1);
     expect(screen.getByText("Back to Courses")).toBeTruthy();
-    expect(screen.getAllByText(/1\. Course basics/).length).toBeGreaterThan(0);
-    expect(screen.getByText("2. Curriculum / lessons")).toBeTruthy();
-    expect(screen.getByText("3. Documents / media")).toBeTruthy();
-    expect(screen.getByText("4. Live sessions")).toBeTruthy();
-    expect(screen.getByText("5. Links")).toBeTruthy();
-    expect(screen.getByText("6. Pricing / access")).toBeTruthy();
-    expect(screen.getByText("7. Preview / publish")).toBeTruthy();
+    [
+      "1. Course basics",
+      "2. Curriculum / lessons",
+      "3. Documents / media",
+      "4. Live sessions",
+      "5. Links",
+      "6. Pricing / access",
+      "7. Preview / publish"
+    ].forEach((name) => {
+      expect(screen.getByRole("header", { name }).props["aria-level"]).toBe(2);
+    });
+    expect(
+      screen.getByRole("radio", { name: "Make course free" }).props.accessibilityState
+        ?.checked
+    ).toBe(true);
     expect(screen.getByText("Lessons: 0 / plan limit")).toBeTruthy();
     expect(screen.getByText("Upload Cover Image")).toBeTruthy();
     expect(screen.getByText("Upload Documents")).toBeTruthy();
@@ -416,6 +426,10 @@ describe("CreateCourseScreen", () => {
 
     fireEvent.changeText(screen.getByLabelText("Course title"), "Paid Soil Course");
     fireEvent.press(screen.getByLabelText("Set a paid course fee"));
+    expect(
+      screen.getByRole("radio", { name: "Set a paid course fee" }).props
+        .accessibilityState?.checked
+    ).toBe(true);
     fireEvent.changeText(screen.getByLabelText("Course price USD"), "19.00");
 
     expect(screen.getByText("Learners will see: $19.00")).toBeTruthy();

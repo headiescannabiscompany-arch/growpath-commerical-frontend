@@ -1069,6 +1069,11 @@ describe("commercial workflow pages", () => {
       }).length
     ).toBeGreaterThan(0);
     expect(screen.getByText(/provider-aware GrowPath uploads/)).toBeTruthy();
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial course access to Free"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
@@ -1082,6 +1087,9 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
+    expect(
+      screen.getAllByText(/Product education .* Beginner .* Free .* Draft/).length
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
     expect(screen.getByText(/1 quizzes/)).toBeTruthy();
     expect(screen.getAllByText("Learner Preview").length).toBeGreaterThan(0);
@@ -1200,7 +1208,12 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course task checklist"),
       "Watch lesson\nComplete product checklist"
     );
-    fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
+    fireEvent.press(screen.getByLabelText("Set commercial course access to Paid"));
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial course access to Paid"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     expect(screen.getAllByText(/connect Stripe product/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/connect Stripe price/).length).toBeGreaterThan(0);
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");

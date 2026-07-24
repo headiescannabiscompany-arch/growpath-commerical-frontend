@@ -415,7 +415,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
       "signed-out published catalog without owned-course or authoring controls",
-      "one provider-aware media contract shared by initial course creation and later lesson editing"
+      "one provider-aware media contract shared by initial course creation and later lesson editing",
+      "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
@@ -424,6 +425,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
       "Never request owned courses or expose authoring, invite, analytics, publish, unpublish, enrollment, purchase, or progress controls before authentication.",
+      "Never expose duplicate course-authoring back actions, multiple page-level headings, unchecked pricing or access choices, or raw stored values as course labels.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],
     ["course-builder", "course-player", "commercial-courses", "facility-training"]

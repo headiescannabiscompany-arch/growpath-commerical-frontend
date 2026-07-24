@@ -13,7 +13,7 @@ export default function CreateCourseRoute() {
       showBack
       backFallbackHref={from || "/home/personal/courses"}
     >
-      <CreateCourseScreen />
+      <CreateCourseScreen showBackToCourses={false} />
     </ScreenBoundary>
   );
 }
