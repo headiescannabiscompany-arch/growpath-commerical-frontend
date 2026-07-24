@@ -2179,6 +2179,18 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0)
     );
+    expect(
+      screen
+        .getAllByRole("header", { name: "Product Lines" })
+        .map((heading) => heading.props["aria-level"])
+    ).toEqual([1, 2]);
+    [
+      "Create Product Line",
+      "Line-level public page context",
+      "Brand-type examples"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getByText(/Product family workflow:/)).toBeTruthy();
     expect(screen.getByText("Line-level public page context")).toBeTruthy();
     expect(screen.getByText("Brand-type examples")).toBeTruthy();
@@ -2189,6 +2201,9 @@ describe("commercial workflow pages", () => {
     expect(() => screen.UNSAFE_getByProps({ href: "/storefront" })).toThrow();
 
     await waitFor(() => expect(screen.getByText("Living Soil Line")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Living Soil Line" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Product line name"), "Bloom Line");
