@@ -439,6 +439,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "linked workflow",
       "limitations",
       "tasks",
+      "single-heading campaign authoring with named stateful controls",
       "forum alerts",
       "moderation audit",
       "owner-scoped event analytics",
@@ -456,6 +457,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never cross workspace scope or invent product claims.",
+      "Never expose campaign types, placements, filters, or publish actions as generic unnamed controls.",
       "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
       "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
       "Never expose course authoring controls or request owned-course records for an anonymous visitor.",
