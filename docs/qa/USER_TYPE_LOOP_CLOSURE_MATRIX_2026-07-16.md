@@ -197,6 +197,15 @@ control, or can bypass its backend authorization boundary.
   choices, and readable existing-course metadata. Three genuine final-SHA
   screenshots are retained in `docs/qa/evidence`; no course was mutated. See
   `docs/qa/COMMERCIAL_COURSE_AUTHORING_ACCESSIBILITY_EVIDENCE_2026-07-24.md`.
+- 2026-07-24 Commercial Lives production follow-up: EventSub status was editable and
+  visibility used raw lower-case buttons without selected state. Frontend PR `#192`
+  merged as `4b374c25e8fef0032548d08d68d003aae93dcae2` after GitHub CI run
+  `30072260129` passed. At `2026-07-24T02:33:01-04:00`, the signed-in Browser
+  retest showed connection-derived read-only `Not connected` status, a checked Public
+  visibility radio, five other readable visibility choices, and zero lives. Two
+  genuine final-SHA screenshots are retained in `docs/qa/evidence`; no Twitch or live
+  record was mutated. See
+  `docs/qa/COMMERCIAL_LIVES_INTEGRATION_SEMANTICS_EVIDENCE_2026-07-24.md`.
 
 ### Personal Free backbone audit
 
