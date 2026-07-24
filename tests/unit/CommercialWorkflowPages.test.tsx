@@ -2734,8 +2734,21 @@ describe("commercial workflow pages", () => {
   it("manages product trial evidence runs as private evidence source for public claims", async () => {
     const screen = render(<CommercialEvidenceRunsRoute />);
 
-    expect(screen.getByText("Product Trial Evidence Runs")).toBeTruthy();
-    expect(screen.getAllByText("Product trial evidence layer").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("header", { name: "Product Trial Evidence Runs" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Evidence run overview",
+      "Create Product Trial Evidence Run",
+      "Current product trial evidence runs",
+      "Advanced planning tools",
+      "Evidence-to-claim guardrails",
+      "Trial setup checklist"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
@@ -2752,6 +2765,9 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Use evidence run product line Living Soil Line")
     ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Bloom Formula Trial" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(

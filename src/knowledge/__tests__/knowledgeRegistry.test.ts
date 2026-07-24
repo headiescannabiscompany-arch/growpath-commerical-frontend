@@ -100,6 +100,9 @@ describe("GrowPath knowledge registries", () => {
       "one level-one Product Trials heading with level-two workflow sections and level-three saved-trial headings"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "one level-one Product Trial Evidence Runs heading with distinct level-two workflow sections and level-three saved-run headings"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "one level-one Commercial Inventory Support heading with level-two workflow sections and level-three saved-record headings"
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
@@ -113,6 +116,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Product Trials."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never expose a duplicate navigator title or reuse one generic section label for different Product Trial Evidence Run jobs."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Commercial Inventory Support."

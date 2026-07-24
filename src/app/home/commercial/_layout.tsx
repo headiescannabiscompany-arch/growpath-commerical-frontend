@@ -164,7 +164,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="evidence-runs/index"
-        options={{ href: null, title: "Product Trial Evidence Runs" }}
+        options={{
+          href: null,
+          title: "Product Trial Evidence Runs",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="evidence-runs/new"

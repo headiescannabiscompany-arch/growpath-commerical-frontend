@@ -160,7 +160,9 @@ export default function CommercialGrowsRoute({
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Product Trial Evidence Runs</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Product Trial Evidence Runs
+            </Text>
             <Text style={styles.subtitle}>
               Commercial accounts use grow records only when they support product trials,
               formula tests, demos, and evidence-backed public reporting.
@@ -183,7 +185,9 @@ export default function CommercialGrowsRoute({
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence run overview
+        </Text>
         <Text style={styles.body}>
           Use evidence runs to track plants, logs, tasks, photos, diagnosis, crop
           steering, dry/cure, and run-to-run comparisons. Commercial metadata links the
@@ -210,7 +214,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Trial Evidence Run</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create Product Trial Evidence Run
+        </Text>
         <Text style={styles.body}>
           Start with trial anchors, then add brand and product context: product line,
           product, batch, formula version, purpose, and public-share intent.
@@ -372,12 +378,16 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current product trial evidence runs</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Current product trial evidence runs
+        </Text>
         {grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (
               <View key={growId(grow)} style={styles.growRow}>
-                <Text style={styles.growTitle}>{grow.name || grow.growName}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.growTitle}>
+                  {grow.name || grow.growName}
+                </Text>
                 <Text style={styles.growMeta}>
                   {[
                     grow.purpose,
@@ -419,7 +429,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Advanced planning tools</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Advanced planning tools
+        </Text>
         <Text style={styles.body}>
           Commercial users should not lose Pro grow behavior. Evidence runs remain the
           evidence anchor for plant records, logs, tool runs, tasks, photos, and reports
@@ -431,7 +443,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence-to-claim guardrails
+        </Text>
         <Text style={styles.body}>
           Evidence runs add product, batch, formula, and public-report context on top of
           the connected run workspace. The private evidence-run record remains the source
@@ -455,7 +469,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Trial setup checklist</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Trial setup checklist
+        </Text>
         <Text style={styles.body}>
           A commercial trial should start with enough context to compare results later.
           Missing setup context makes public claims weaker.

@@ -14,6 +14,7 @@ describe("Commercial page header policy", () => {
     const batchPlanner = read("src/app/home/commercial/batch-planner.tsx");
     const productTrials = read("src/app/home/commercial/trials.tsx");
     const inventorySupport = read("src/app/home/commercial/inventory.tsx");
+    const evidenceRuns = read("src/app/home/commercial/grows/index.tsx");
 
     expect(layout).toMatch(
       /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/
@@ -32,6 +33,9 @@ describe("Commercial page header policy", () => {
     );
     expect(layout).toMatch(
       /name="inventory"\s+options=\{\{[\s\S]*?title: "Inventory Support",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
+      /name="evidence-runs\/index"\s+options=\{\{[\s\S]*?title: "Product Trial Evidence Runs",[\s\S]*?headerShown: false/
     );
     expect(feed).toContain('accessibilityRole="header"');
     expect(orders).toContain('accessibilityRole="header"');
@@ -54,5 +58,11 @@ describe("Commercial page header policy", () => {
     expect(inventorySupport).toContain("Stock overview");
     expect(inventorySupport).toContain("Inventory support scope");
     expect(inventorySupport).toContain("Inventory records");
+    expect(evidenceRuns).toContain('accessibilityRole="header"');
+    expect(evidenceRuns).toContain("aria-level={1}");
+    expect(evidenceRuns).toContain("aria-level={2}");
+    expect(evidenceRuns).toContain("aria-level={3}");
+    expect(evidenceRuns).toContain("Evidence run overview");
+    expect(evidenceRuns).toContain("Evidence-to-claim guardrails");
   });
 });
