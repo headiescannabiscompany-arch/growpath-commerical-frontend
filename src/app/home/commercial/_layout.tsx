@@ -99,7 +99,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Analytics", href: compactTabs ? null : undefined }}
+        options={{
+          title: "Analytics",
+          href: compactTabs ? null : undefined,
+          headerShown: false
+        }}
       />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="tools/index" options={{ title: "Tools" }} />

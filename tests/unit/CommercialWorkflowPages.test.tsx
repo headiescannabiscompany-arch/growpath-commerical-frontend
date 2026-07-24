@@ -2840,7 +2840,11 @@ describe("commercial workflow pages", () => {
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
     const screen = render(<CommercialAnalyticsRoute />);
 
-    expect(screen.getByText("Commercial Analytics")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Commercial Analytics" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Overview Metrics" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Refresh commercial analytics" })
+    ).toBeTruthy();
     expect(screen.getByText("Simple metrics first")).toBeTruthy();
     expect(screen.getByText("Ad and marketing click counts")).toBeTruthy();
     expect(screen.getByText("External checkout reality")).toBeTruthy();
@@ -2887,5 +2891,30 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Veg Mix")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Shop Veg Mix")).toBeTruthy();
+  });
+
+  it("explains a truthful empty analytics state and lets the owner refresh", async () => {
+    const baseline = mockApiRequest.getMockImplementation();
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/analytics/overview") {
+        return Promise.resolve({ overview: {} });
+      }
+      return baseline?.(path, options);
+    });
+    const screen = render(<CommercialAnalyticsRoute />);
+
+    expect(await screen.findByText("No recorded activity yet")).toBeTruthy();
+    expect(
+      screen.getByText(/Draft setup and owner workspace previews are not counted/i)
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Refresh commercial analytics" }));
+    await waitFor(() =>
+      expect(
+        mockApiRequest.mock.calls.filter(
+          ([path]) => path === "/api/commercial/analytics/overview"
+        )
+      ).toHaveLength(2)
+    );
   });
 });
