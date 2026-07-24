@@ -101,7 +101,7 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="inventory"
-        options={{ title: "Inventory Support", href: null }}
+        options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="analytics"

@@ -146,7 +146,9 @@ export default function CommercialInventoryRoute() {
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Commercial Inventory Support</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            Commercial Inventory Support
+          </Text>
           <View style={styles.headerActions}>
             <Text style={styles.muted}>{items.length} items</Text>
             {canCreate ? (
@@ -170,6 +172,9 @@ export default function CommercialInventoryRoute() {
           </View>
         ) : null}
 
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Stock overview
+        </Text>
         <View style={styles.summaryCard}>
           <View>
             <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
@@ -190,7 +195,9 @@ export default function CommercialInventoryRoute() {
         </View>
 
         <View style={styles.guideCard}>
-          <Text style={styles.guideTitle}>Inventory support scope</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.guideTitle}>
+            Inventory support scope
+          </Text>
           <Text style={styles.guideText}>
             Track stock behind products, batches/lots, ingredients, packaging, genetics,
             equipment, courses, services, and retail items. Product records still hold
@@ -198,6 +205,9 @@ export default function CommercialInventoryRoute() {
           </Text>
         </View>
 
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Inventory records
+        </Text>
         <FlatList
           data={sorted}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
@@ -239,7 +249,12 @@ export default function CommercialInventoryRoute() {
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
                 <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.rowTitle}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (
@@ -278,6 +293,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
   headerRow: { gap: 4 },
   h1: { fontSize: 22, fontWeight: "900" },
+  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
   muted: { opacity: 0.7 },
 
   headerActions: {

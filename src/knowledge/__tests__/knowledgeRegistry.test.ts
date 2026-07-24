@@ -99,6 +99,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "one level-one Product Trials heading with level-two workflow sections and level-three saved-trial headings"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "one level-one Commercial Inventory Support heading with level-two workflow sections and level-three saved-record headings"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never let compact campaign rails shrink, cover, intercept, or displace Commercial workspace controls."
     );
@@ -110,6 +113,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Product Trials."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never expose a duplicate navigator title or a flat generic-text outline on Commercial Inventory Support."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
