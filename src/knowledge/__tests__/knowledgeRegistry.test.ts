@@ -76,6 +76,9 @@ describe("GrowPath knowledge registries", () => {
       "canonical Forum Directory group discovery and accessible group creation"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "accessible inline Forum reply expansion and text reply composition on canonical post previews"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "capability-gated Commercial inventory creation exposed as a named actionable control"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -125,6 +128,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never require copied database IDs or raw public-share status codes as the primary Product Trial Evidence Run creation workflow."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never require a page transition merely to read or write an ordinary Forum text reply from a canonical post preview."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Commercial Inventory Support."

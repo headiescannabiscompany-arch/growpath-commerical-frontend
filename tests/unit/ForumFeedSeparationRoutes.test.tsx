@@ -10,6 +10,8 @@ import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 const mockListForumPosts = jest.fn();
 const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
+const mockListForumComments = jest.fn();
+const mockAddForumComment = jest.fn();
 const mockCreateForumPost = jest.fn();
 const mockCreateGuild = jest.fn();
 const mockReplace = jest.fn();
@@ -58,6 +60,8 @@ jest.mock("@/api/communitySocial", () => ({
   listForumPosts: (...args: any[]) => mockListForumPosts(...args),
   listGuilds: (...args: any[]) => mockListGuilds(...args),
   listNotifications: (...args: any[]) => mockListNotifications(...args),
+  listForumComments: (...args: any[]) => mockListForumComments(...args),
+  addForumComment: (...args: any[]) => mockAddForumComment(...args),
   markAllNotificationsRead: jest.fn(),
   markNotificationRead: jest.fn(),
   joinGuild: jest.fn(),
@@ -126,6 +130,8 @@ describe("Forum and feed separation copy", () => {
     mockListForumPosts.mockResolvedValue([]);
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
+    mockListForumComments.mockResolvedValue([]);
+    mockAddForumComment.mockResolvedValue({ id: "comment-new" });
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
     mockCreateGuild.mockResolvedValue({ id: "group-new" });
     mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
@@ -311,21 +317,45 @@ describe("Forum and feed separation copy", () => {
         title: "Leaf help",
         body: "What changed?",
         growInterests: ["Cannabis", "Indoor"],
+        commentCount: 2,
         attachments: [{ url: "/uploads/forum-leaf.jpg" }]
+      }
+    ]);
+    mockListForumComments.mockResolvedValue([
+      {
+        id: "comment-leaf",
+        text: "Check the leaf underside and compare again tomorrow.",
+        author: { name: "Soil Helper" }
       }
     ]);
 
     const screen = render(<ForumRoute />);
 
-    await waitFor(() =>
-      expect(screen.getByTestId("link-/forum/post?id=thread-grow-help")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("Leaf help")).toBeTruthy());
+    expect(screen.queryByTestId("link-/forum/post?id=thread-grow-help")).toBeNull();
     expect(screen.getByText("Cannabis")).toBeTruthy();
     expect(screen.getByText("Indoor")).toBeTruthy();
     const photo = screen.getByLabelText("Expand forum post photo 1");
     expect(photo).toBeTruthy();
     fireEvent.press(photo);
     expect(screen.getByLabelText("Close expanded forum photo")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Show 2 replies for Leaf help"));
+    await waitFor(() =>
+      expect(mockListForumComments).toHaveBeenCalledWith("thread-grow-help")
+    );
+    expect(
+      screen.getByText("Check the leaf underside and compare again tomorrow.")
+    ).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-grow-help")).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText("Reply to Leaf help"), "I will compare.");
+    fireEvent.press(screen.getByLabelText("Post reply to Leaf help"));
+    await waitFor(() =>
+      expect(mockAddForumComment).toHaveBeenCalledWith(
+        "thread-grow-help",
+        "I will compare."
+      )
+    );
   });
 
   it("defaults to matching grow interests while keeping an all-discussions escape hatch", async () => {
@@ -361,24 +391,36 @@ describe("Forum and feed separation copy", () => {
         commentCount: 2
       }
     ]);
+    mockListForumComments.mockResolvedValue([
+      {
+        id: "community-comment",
+        text: "Add the latest environment readings.",
+        author: { name: "GrowPath Helper" }
+      }
+    ]);
 
     const screen = render(<CommunityTab />);
 
-    await waitFor(() =>
-      expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("Community help")).toBeTruthy());
+    expect(screen.queryByTestId("link-/forum/post?id=thread-community-help")).toBeNull();
     expect(screen.getByText("Start a Discussion")).toBeTruthy();
     expect(screen.getByText("Latest discussions")).toBeTruthy();
     expect(screen.getByText("GrowPath Gardener")).toBeTruthy();
     expect(screen.getByText("Living Soil")).toBeTruthy();
     expect(screen.getByText("4 likes")).toBeTruthy();
-    expect(screen.getByText("2 replies")).toBeTruthy();
+    expect(screen.getByText("Show 2 replies")).toBeTruthy();
     expect(screen.getByLabelText("Community help photo 1")).toBeTruthy();
     expect(screen.getByText("Explore beyond the Forum")).toBeTruthy();
     expect(screen.getByLabelText("Public Storefronts")).toBeTruthy();
     expect(screen.getByLabelText("Chronological Feed")).toBeTruthy();
     expect(screen.getByLabelText("Marketplace & Offers")).toBeTruthy();
     expect(screen.getByLabelText("Browse Discovery Directory")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Show 2 replies for Community help"));
+    await waitFor(() =>
+      expect(mockListForumComments).toHaveBeenCalledWith("thread-community-help")
+    );
+    expect(screen.getByText("Add the latest environment readings.")).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy();
   });
 
   it("uses forum group wording for personal membership fallbacks", async () => {

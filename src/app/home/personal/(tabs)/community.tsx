@@ -25,6 +25,7 @@ import {
   type SocialPost
 } from "@/api/communitySocial";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
@@ -334,7 +335,8 @@ export default function CommunityTab() {
             <View>
               <Text style={styles.feedTitle}>Latest discussions</Text>
               <Text style={styles.feedSubtitle}>
-                Open a post to like, reply, report, or save useful advice to a grow.
+                Expand replies below a post, or open its full page for likes, reports,
+                media replies, and grow actions.
               </Text>
             </View>
             <Link href="/forum" asChild>
@@ -356,61 +358,59 @@ export default function CommunityTab() {
             const replyCount = post.commentCount ?? post.comments?.length ?? 0;
             return (
               <React.Fragment key={id || title}>
-                <Link href={{ pathname: "/forum/post", params: { id } }} asChild>
-                  <Pressable
-                    style={styles.postCard}
-                    accessibilityRole="link"
-                    accessibilityLabel={`Open forum discussion ${title}`}
-                  >
-                    <View style={styles.authorRow}>
-                      <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>{authorInitials(author)}</Text>
-                      </View>
-                      <View style={styles.authorCopy}>
-                        <Text style={styles.authorName}>{author}</Text>
-                        <Text style={styles.rowMeta}>{postTime(post)}</Text>
-                      </View>
+                <View style={styles.postCard}>
+                  <View style={styles.authorRow}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>{authorInitials(author)}</Text>
                     </View>
-                    <Text style={styles.postTitle}>{title}</Text>
-                    {body && body !== title ? (
-                      <Text style={styles.postBody} numberOfLines={4}>
-                        {body}
-                      </Text>
-                    ) : null}
-                    {photos.length ? (
-                      <View style={styles.mediaGrid}>
-                        {photos.map((photo, photoIndex) => (
-                          <Image
-                            key={`${photo}-${photoIndex}`}
-                            source={{ uri: photo }}
-                            style={[
-                              styles.postImage,
-                              photos.length > 1 ? styles.postImageMultiple : null
-                            ]}
-                            resizeMode="cover"
-                            accessibilityLabel={`${title} photo ${photoIndex + 1}`}
-                          />
-                        ))}
-                      </View>
-                    ) : null}
-                    {tags.length ? (
-                      <View style={styles.tagRow}>
-                        {tags.map((tag) => (
-                          <Text key={tag} style={styles.tag}>
-                            {tag}
-                          </Text>
-                        ))}
-                      </View>
-                    ) : null}
-                    <View style={styles.engagementRow}>
-                      <Text style={styles.engagementText}>
-                        {post.likeCount || post.likes?.length || 0} likes
-                      </Text>
-                      <Text style={styles.engagementText}>{replyCount} replies</Text>
-                      <Text style={styles.openDiscussion}>Open discussion</Text>
+                    <View style={styles.authorCopy}>
+                      <Text style={styles.authorName}>{author}</Text>
+                      <Text style={styles.rowMeta}>{postTime(post)}</Text>
                     </View>
-                  </Pressable>
-                </Link>
+                  </View>
+                  <Text style={styles.postTitle}>{title}</Text>
+                  {body && body !== title ? (
+                    <Text style={styles.postBody} numberOfLines={4}>
+                      {body}
+                    </Text>
+                  ) : null}
+                  {photos.length ? (
+                    <View style={styles.mediaGrid}>
+                      {photos.map((photo, photoIndex) => (
+                        <Image
+                          key={`${photo}-${photoIndex}`}
+                          source={{ uri: photo }}
+                          style={[
+                            styles.postImage,
+                            photos.length > 1 ? styles.postImageMultiple : null
+                          ]}
+                          resizeMode="cover"
+                          accessibilityLabel={`${title} photo ${photoIndex + 1}`}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                  {tags.length ? (
+                    <View style={styles.tagRow}>
+                      {tags.map((tag) => (
+                        <Text key={tag} style={styles.tag}>
+                          {tag}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  <View style={styles.engagementRow}>
+                    <Text style={styles.engagementText}>
+                      {post.likeCount || post.likes?.length || 0} likes
+                    </Text>
+                  </View>
+                  <InlineForumDiscussion
+                    canReply={canPost}
+                    replyCount={replyCount}
+                    threadId={id}
+                    title={title}
+                  />
+                </View>
                 {index === 1 ? (
                   <PersonalFeedPlacement
                     placement="top"
@@ -673,12 +673,6 @@ const styles = StyleSheet.create({
     paddingTop: 10
   },
   engagementText: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  openDiscussion: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginLeft: "auto"
-  },
   emptyCard: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",

@@ -14,6 +14,7 @@ import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
+import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -333,53 +334,49 @@ export default function ForumRoute() {
         const photos = photosOf(post);
         return (
           <React.Fragment key={id || titleOf(post)}>
-            <Link href={{ pathname: "/forum/post", params: { id } }} asChild>
-              <Pressable
-                style={styles.card}
-                accessibilityRole="link"
-                accessibilityLabel={`Open forum post ${titleOf(post)}`}
-              >
-                <Text style={styles.meta}>
-                  {authorOf(post)}
-                  {timeOf(post) ? ` | ${timeOf(post)}` : ""}
+            <View style={styles.card}>
+              <Text style={styles.meta}>
+                {authorOf(post)}
+                {timeOf(post) ? ` | ${timeOf(post)}` : ""}
+              </Text>
+              <Text style={styles.cardTitle}>{titleOf(post)}</Text>
+              {bodyOf(post) ? (
+                <Text style={styles.cardText} numberOfLines={3}>
+                  {bodyOf(post)}
                 </Text>
-                <Text style={styles.cardTitle}>{titleOf(post)}</Text>
-                {bodyOf(post) ? (
-                  <Text style={styles.cardText} numberOfLines={3}>
-                    {bodyOf(post)}
-                  </Text>
-                ) : (
-                  <Text style={styles.emptyImageText}>No text preview available</Text>
-                )}
-                {photos.length ? (
-                  <View style={styles.photoRow}>
-                    {photos.slice(0, 3).map((photo, photoIndex) => (
-                      <ForumPostImage
-                        key={`${photo}-${photoIndex}`}
-                        photo={photo}
-                        index={photoIndex}
-                      />
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={styles.emptyImageText}>No image attached</Text>
-                )}
-                {tagsOf(post).length ? (
-                  <View style={styles.tagRow}>
-                    {tagsOf(post).map((tag) => (
-                      <Text key={String(tag)} style={styles.tag}>
-                        {String(tag)}
-                      </Text>
-                    ))}
-                  </View>
-                ) : null}
-                <Text style={styles.meta}>
-                  {post.likeCount || 0} likes |{" "}
-                  {(post as any).commentCount ?? (post.comments || []).length} replies
-                </Text>
-                <Text style={styles.openText}>Open discussion</Text>
-              </Pressable>
-            </Link>
+              ) : (
+                <Text style={styles.emptyImageText}>No text preview available</Text>
+              )}
+              {photos.length ? (
+                <View style={styles.photoRow}>
+                  {photos.slice(0, 3).map((photo, photoIndex) => (
+                    <ForumPostImage
+                      key={`${photo}-${photoIndex}`}
+                      photo={photo}
+                      index={photoIndex}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyImageText}>No image attached</Text>
+              )}
+              {tagsOf(post).length ? (
+                <View style={styles.tagRow}>
+                  {tagsOf(post).map((tag) => (
+                    <Text key={String(tag)} style={styles.tag}>
+                      {String(tag)}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              <Text style={styles.meta}>{post.likeCount || 0} likes</Text>
+              <InlineForumDiscussion
+                canReply={canPost}
+                replyCount={(post as any).commentCount ?? (post.comments || []).length}
+                threadId={id}
+                title={titleOf(post)}
+              />
+            </View>
             {index === 3 ? (
               <PersonalFeedPlacement
                 placement="middle"
@@ -516,7 +513,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 8
   },
-  openText: { color: "#166534", fontWeight: "900", marginTop: 4 },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
   primaryBtn: {
     alignSelf: "flex-start",

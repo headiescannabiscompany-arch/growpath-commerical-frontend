@@ -32,6 +32,8 @@ Commercial analytics must be owner-scoped and event-backed. Attribute public sto
 
 Commercial Forum participation uses the shared discussion engine and a server-verified brand identity. Preserve links to products, courses, lessons, lives, storefronts, evidence runs, tasks, and alerts, but keep promotional outreach in Feed campaigns.
 
+Canonical Forum post previews must provide an accessible collapsed comments control that lazy-loads replies and a compact reply composer directly below the selected post. Keep the dedicated discussion URL available inside the expanded panel for direct links, media replies, moderation, grow-log, task, and other advanced context, and reuse the same inline-discussion component on canonical signed-in Forum preview surfaces. Never require a page transition merely to read or write an ordinary text reply.
+
 The canonical Forum Directory must support both group discovery and group creation. Group creation requires a name and description, accepts reviewed topic labels, makes public-versus-private discoverability an explicit named choice, and reports success or API failure in context; do not strand creation in a legacy compatibility screen.
 
 Product Q&A, course discussion, and live Q&A are Forum categories attached to their source records. They support questions and threaded help; campaign creative, offers, and reach belong in Feed/Campaigns.
