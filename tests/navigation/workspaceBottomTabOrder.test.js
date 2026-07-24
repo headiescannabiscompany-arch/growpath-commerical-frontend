@@ -75,10 +75,11 @@ describe("workspace bottom-tab order", () => {
     const contents = source("src/app/home/commercial/_layout.tsx");
 
     expect(contents).toContain('tabBarLabelPosition: "beside-icon"');
-    expect(contents).not.toContain("tabBarIcon: () => null");
-    expect(contents).toContain(
-      'tabBarLabelStyle: { fontSize: compactTabs ? 11 : 12, fontWeight: "700" }'
-    );
+    expect(contents).toContain("tabBarIcon: () => null");
+    expect(contents).toContain('tabBarIconStyle: { display: "none" }');
+    expect(contents).toContain("fontSize: compactTabs ? 11 : 12");
+    expect(contents).toContain("marginStart: 0");
+    expect(contents).toContain("marginEnd: 0");
   });
 
   it("keeps the five Facility compact destinations in task-first order", () => {
