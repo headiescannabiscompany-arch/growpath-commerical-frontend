@@ -2525,14 +2525,18 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Product Lines")).toBeTruthy();
     expect(screen.getByText("Create Product Draft")).toBeTruthy();
     expect(
-      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
-    ).toBeTruthy();
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/products/new" }).length
+    ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
-    expect(screen.getByLabelText("Use batch product line Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Batch product: Living Soil Base")).toBeTruthy();
+    expect(screen.getByLabelText("Batch product line: Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Batch evidence run: Bloom Formula Trial")).toBeTruthy();
+    expect(screen.queryByLabelText("Commercial batch product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced batch record ID fields"));
+    expect(screen.getByLabelText("Commercial batch product id")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText(/trial trial-1/)).toBeTruthy();
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -2541,15 +2545,9 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(screen.getByLabelText("Commercial batch code"), "BB-001");
     fireEvent.changeText(screen.getByLabelText("Commercial batch purpose"), "flower");
     fireEvent.changeText(screen.getByLabelText("Commercial batch formula version"), "v3");
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial batch product id"),
-      "product-2"
-    );
-    fireEvent.press(screen.getByLabelText("Use batch product line Living Soil Line"));
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial batch evidence run id"),
-      "grow-2"
-    );
+    fireEvent.press(screen.getByLabelText("Batch product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Batch product line: Living Soil Line"));
+    fireEvent.press(screen.getByLabelText("Batch evidence run: Bloom Formula Trial"));
     fireEvent.changeText(screen.getByLabelText("Commercial batch volume"), "40");
     fireEvent.changeText(screen.getByLabelText("Commercial batch estimated cost"), "250");
     fireEvent.changeText(
@@ -2576,10 +2574,10 @@ describe("commercial workflow pages", () => {
             batchCode: "BB-001",
             purpose: "flower",
             formulaVersion: "v3",
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
-            linkedTrialId: "grow-2",
-            trialGrowId: "grow-2",
+            linkedTrialId: "grow-1",
+            trialGrowId: "grow-1",
             batchVolume: 40,
             estimatedCost: 250,
             guaranteedAnalysisNotes: "3-1-1 label target",
