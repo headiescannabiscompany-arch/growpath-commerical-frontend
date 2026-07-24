@@ -40,13 +40,19 @@ Date: 2026-07-24
   - GitHub pull-request creation was unavailable through the connector, GraphQL,
     and REST; the validated one-commit branch was fast-forwarded to `main`
     without force after confirming its parent was the then-current `main`.
+- Product Trials heading hierarchy:
+  - source and main commit `aab88d1be5a52485d90580855e7ff40fabd9166c`
+  - Render deployment `dep-d9hs5a77f7vs738e0blg`
+  - GitHub pull-request creation remained unavailable; the full branch CI
+    passed before the one-commit branch was fast-forwarded to the unchanged
+    `main` without force.
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`777280e23a6b018b1829544bc33a9b6aaf1856d9`
+`aab88d1be5a52485d90580855e7ff40fabd9166c`
 
-Latest production retest timestamp: `2026-07-24T15:44:26-04:00`
+Latest production retest timestamp: `2026-07-24T15:57:20-04:00`
 
 ## Session and evidence type
 
@@ -93,12 +99,18 @@ line was created.
 ### Product Trials
 
 Production route:
-`https://growpathai.com/home/commercial/trials?release=45e8be13a8d931526e837b81455cd30b68a05283&verify=product-trial-pickers-live`
+`https://growpathai.com/home/commercial/trials?release=aab88d1be5a52485d90580855e7ff40fabd9166c&verify=product-trials-headings-live`
 
 The zero-record account exposed the correct next action for every readable choice:
 Create Product, Create Product Line, Create Product Batch, and Create Evidence
 Run. The advanced control exposed the four direct ID fields without submitting a
 trial.
+
+The final production DOM exposed exactly one level-one `Product Trials` page
+heading and five level-two workflow headings: Create Product Trial, Product
+Trials, Evidence collection loop, Claim guard, and Publishable result. The
+account had no saved trials, so no level-three record heading was present and no
+trial was created.
 
 ### Product Batches
 
@@ -178,6 +190,15 @@ Support route and expanded the intended fields.
 - Main commit `777280e23a6b018b1829544bc33a9b6aaf1856d9` Frontend CI run
   `30121234078` passed.
 - The same commit's Production Build Preflight run `30121234081` passed.
+- Product Batches evidence commit `d3aca0da588a0ac991ea0dac0af53671e6bd1994`
+  Frontend CI run `30121578916` passed.
+- The Product Trials-focused Commercial/header/knowledge run passed 36 tests;
+  targeted ESLint completed with no errors, Prettier passed, the visual-polish
+  contract passed, and `git diff --check` passed.
+- Product Trials branch CI run `30121714451` passed.
+- Main commit `aab88d1be5a52485d90580855e7ff40fabd9166c` Frontend CI run
+  `30121888930` passed.
+- The same commit's Production Build Preflight run `30121888897` passed.
 
 ## Remaining acceptance work
 
