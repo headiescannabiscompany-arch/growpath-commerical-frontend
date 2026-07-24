@@ -47,7 +47,7 @@ const EMPTY_FORM: CourseForm = {
   description: "",
   thumbnailUrl: "",
   bannerUrl: "",
-  category: "product_education",
+  category: "Product education",
   growInterests: "",
   skillLevel: "",
   access: "free",
@@ -66,6 +66,27 @@ const EMPTY_FORM: CourseForm = {
   quizOutline: "",
   taskChecklist: ""
 };
+
+const COURSE_ACCESS_OPTIONS: Array<{
+  value: CourseForm["access"];
+  label: string;
+}> = [
+  { value: "free", label: "Free" },
+  { value: "paid", label: "Paid" },
+  { value: "followers", label: "Followers only" },
+  { value: "customers", label: "Customers only" },
+  { value: "private", label: "Private" }
+];
+
+function formatCourseLabel(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+  return normalized
+    ? normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase()
+    : "";
+}
 
 const FULL_COURSE_BUILDER_HREF = "/courses/create?from=%2Fhome%2Fcommercial%2Fcourses";
 
@@ -228,7 +249,7 @@ export default function CommercialCoursesRoute() {
         description: form.description.trim(),
         thumbnailUrl: thumbnailUrl || undefined,
         bannerUrl: bannerUrl || undefined,
-        category: form.category.trim() || "product_education",
+        category: form.category.trim() || "Product education",
         growInterests: splitList(form.growInterests),
         skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
@@ -647,33 +668,31 @@ export default function CommercialCoursesRoute() {
           placeholder="Course tasks/checklist, one per line"
           style={[styles.input, styles.textArea]}
         />
-        <View style={styles.actions}>
-          {(
-            [
-              "free",
-              "paid",
-              "followers",
-              "customers",
-              "private"
-            ] as CourseForm["access"][]
-          ).map((access) => (
+        <View
+          style={styles.actions}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Commercial course access"
+        >
+          {COURSE_ACCESS_OPTIONS.map(({ value, label }) => (
             <Pressable
-              key={access}
-              accessibilityRole="button"
-              accessibilityLabel={`Set commercial course access ${access}`}
-              onPress={() => setForm((prev) => ({ ...prev, access }))}
+              key={value}
+              accessibilityRole="radio"
+              accessibilityLabel={`Set commercial course access to ${label}`}
+              aria-checked={form.access === value}
+              accessibilityState={{ checked: form.access === value }}
+              onPress={() => setForm((prev) => ({ ...prev, access: value }))}
               style={[
                 styles.action,
-                form.access === access ? styles.actionSelected : null
+                form.access === value ? styles.actionSelected : null
               ]}
             >
               <Text
                 style={[
                   styles.actionText,
-                  form.access === access ? styles.actionTextSelected : null
+                  form.access === value ? styles.actionTextSelected : null
                 ]}
               >
-                {access}
+                {label}
               </Text>
             </Pressable>
           ))}
@@ -721,19 +740,19 @@ export default function CommercialCoursesRoute() {
                     </Text>
                     <Text style={styles.courseMeta}>
                       {[
-                        course.category,
-                        course.skillLevel,
-                        course.access || "free",
-                        course.status || "draft",
+                        formatCourseLabel(course.category),
+                        formatCourseLabel(course.skillLevel),
+                        formatCourseLabel(course.access || "free"),
+                        formatCourseLabel(course.status || "draft"),
                         course.growInterests?.length
-                          ? `Interests ${course.growInterests.join(", ")}`
+                          ? `Interests: ${course.growInterests.join(", ")}`
                           : null,
                         course.linkedLiveIds?.length
-                          ? `Lives ${course.linkedLiveIds.join(", ")}`
+                          ? `Lives: ${course.linkedLiveIds.join(", ")}`
                           : null
                       ]
                         .filter(Boolean)
-                        .join(" | ")}
+                        .join(" · ")}
                     </Text>
                     {course.modules?.length ||
                     course.lessons?.length ||

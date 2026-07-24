@@ -2,6 +2,8 @@
 
 Course video is a lesson resource, not proof that GrowPath owns, hosts, continuously monitors, or can measure viewing at a third-party provider. The authoring contract is shared by Personal, Commercial, and Facility educators.
 
+Course authoring uses one page-level heading, ordered level-two builder steps, one route-level Back action, and named pricing or access radio groups with an exposed checked state. Do not make keyboard or assistive-technology users choose between duplicate Back controls, navigate a flat list of page-level headings, or infer the selected course price or access mode from color alone. User-facing course cards and access choices use readable labels rather than raw stored values.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

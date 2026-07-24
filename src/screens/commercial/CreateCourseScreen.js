@@ -137,7 +137,10 @@ function uploadedMediaRecord(asset, uploaded, kind) {
   };
 }
 
-export default function CreateCourseScreen({ navigation }) {
+export default function CreateCourseScreen({
+  navigation = null,
+  showBackToCourses = true
+}) {
   const router = useRouter();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
@@ -605,17 +608,19 @@ export default function CreateCourseScreen({ navigation }) {
     <ScreenContainer scroll>
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Create Course
           </Text>
-          <TouchableOpacity
-            onPress={backToCourses}
-            accessibilityRole="button"
-            accessibilityLabel="Back to Courses"
-            style={styles.secondaryButton}
-          >
-            <Text style={styles.secondaryButtonText}>Back to Courses</Text>
-          </TouchableOpacity>
+          {showBackToCourses ? (
+            <TouchableOpacity
+              onPress={backToCourses}
+              accessibilityRole="button"
+              accessibilityLabel="Back to Courses"
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Back to Courses</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
         <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
         <View style={styles.workflowCard}>
@@ -634,7 +639,7 @@ export default function CreateCourseScreen({ navigation }) {
           </View>
         ) : null}
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             1. Course basics
           </Text>
           <Text style={styles.label}>Course title</Text>
@@ -731,7 +736,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             2. Curriculum / lessons
           </Text>
           <Text style={styles.helpText}>
@@ -831,7 +836,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             3. Documents / media
           </Text>
           <TextInput
@@ -920,7 +925,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             4. Live sessions
           </Text>
           <Text style={styles.helpText}>
@@ -1142,7 +1147,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             5. Links
           </Text>
           <TextInput
@@ -1175,7 +1180,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             6. Pricing / access
           </Text>
           {!access.canSellPaidCourses ? (
@@ -1184,7 +1189,11 @@ export default function CreateCourseScreen({ navigation }) {
               contact support@growpathai.com if it remains unavailable.
             </Text>
           ) : null}
-          <View style={styles.pricingModeRow}>
+          <View
+            style={styles.pricingModeRow}
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Course pricing"
+          >
             <TouchableOpacity
               onPress={() => {
                 setPricingMode("free");
@@ -1192,7 +1201,8 @@ export default function CreateCourseScreen({ navigation }) {
               }}
               disabled={!access.canCreateCourses || submitting}
               accessibilityRole="radio"
-              accessibilityState={{ selected: pricingMode === "free" }}
+              aria-checked={pricingMode === "free"}
+              accessibilityState={{ checked: pricingMode === "free" }}
               accessibilityLabel="Make course free"
               style={[
                 styles.pricingModeButton,
@@ -1207,7 +1217,8 @@ export default function CreateCourseScreen({ navigation }) {
                 !access.canCreateCourses || !access.canSellPaidCourses || submitting
               }
               accessibilityRole="radio"
-              accessibilityState={{ selected: pricingMode === "paid" }}
+              aria-checked={pricingMode === "paid"}
+              accessibilityState={{ checked: pricingMode === "paid" }}
               accessibilityLabel="Set a paid course fee"
               style={[
                 styles.pricingModeButton,
@@ -1251,7 +1262,7 @@ export default function CreateCourseScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             7. Preview / publish
           </Text>
           <Text style={styles.helpText}>
