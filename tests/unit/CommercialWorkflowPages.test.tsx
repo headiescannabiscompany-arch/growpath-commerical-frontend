@@ -2859,8 +2859,28 @@ describe("commercial workflow pages", () => {
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
     const screen = render(<CommercialAnalyticsRoute />);
 
-    expect(screen.getByRole("header", { name: "Commercial Analytics" })).toBeTruthy();
-    expect(screen.getByRole("header", { name: "Overview Metrics" })).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Commercial Analytics" }).props["aria-level"]
+    ).toBe(1);
+    [
+      "Overview Metrics",
+      "Click and View Breakdown",
+      "Top ads / campaigns",
+      "Top products",
+      "Top storefronts",
+      "Top links",
+      "Courses",
+      "Lives",
+      "Paid orders",
+      "Grow interests",
+      "Simple metrics first",
+      "Ad and marketing click counts",
+      "External checkout reality",
+      "Trial and content outcomes"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
+    expect(screen.getAllByRole("header")).toHaveLength(15);
     expect(
       screen.getByRole("button", { name: "Refresh commercial analytics" })
     ).toBeTruthy();
