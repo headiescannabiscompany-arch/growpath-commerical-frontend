@@ -51,13 +51,18 @@ Date: 2026-07-24
   - Render deployment `dep-d9hsb7jeo5us738e8f5g`
   - The full branch CI passed before the one-commit branch was fast-forwarded
     to the unchanged `main` without force.
+- Product Trial Evidence Runs heading hierarchy:
+  - source and main commit `1e36fd94672f6fc355d2b65776317dee1afc5486`
+  - Render deployment `dep-d9hsgt3eo5us738edlmg`
+  - The full branch CI passed before the one-commit branch was fast-forwarded
+    to the unchanged `main` without force.
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`9d8236884453d789491bb565bfe0566f002926a8`
+`1e36fd94672f6fc355d2b65776317dee1afc5486`
 
-Latest production retest timestamp: `2026-07-24T16:09:52-04:00`
+Latest production retest timestamp: `2026-07-24T16:29:05-04:00`
 
 ## Session and evidence type
 
@@ -163,6 +168,41 @@ The final pointer retest stayed on the Inventory Support route and exposed Custo
 item type, Linked product ID, Linked ingredient ID, Linked genetics ID, and
 Linked product trial evidence run ID. No record was submitted.
 
+### Product Trial Evidence Runs
+
+Production route:
+`https://growpathai.com/home/commercial/evidence-runs?release=1e36fd94672f6fc355d2b65776317dee1afc5486&verify=evidence-runs-headings-live`
+
+The final production DOM exposed exactly one level-one
+`Product Trial Evidence Runs` page heading and six distinct level-two workflow
+headings: Evidence run overview, Create Product Trial Evidence Run, Current
+product trial evidence runs, Advanced planning tools, Evidence-to-claim
+guardrails, and Trial setup checklist. The account had no saved evidence runs,
+so no level-three record heading was present and no evidence-run record was
+created.
+
+The correction also replaced the duplicate generic `Advanced` and `How it works`
+section names with workflow-specific labels while leaving the underlying
+evidence policy and record model unchanged.
+
+## Deployment service correction
+
+Render contained two services watching the same repository and `main` branch:
+
+- `growpath-frontend` (`srv-d8ulmu3eo5us73e2otmg`) is the production Static
+  Site. Its `EXPO_PUBLIC_API_URL` was verified as
+  `https://api.growpathai.com`, and commit
+  `1e36fd94672f6fc355d2b65776317dee1afc5486` deployed successfully as
+  `dep-d9hsgt3eo5us738edlmg`.
+- `growpath-commerical-frontend` (`srv-d8uljiraml3c73dnj3f0`) is an obsolete
+  duplicate Node Web Service. It was independently rebuilding every commit with
+  malformed `EXPO_PUBLIC_API_URL=https://` and generating false failed-deploy
+  results.
+
+Automatic deploys were turned off for the obsolete duplicate at
+`2026-07-24T16:29:05-04:00`. The service was not deleted, and the production
+Static Site was not modified.
+
 ## Finding and correction
 
 Before PR `#202`, the 673-pixel compact layout applied row-oriented flex sizing
@@ -222,6 +262,16 @@ Support route and expanded the intended fields.
 - Main commit `9d8236884453d789491bb565bfe0566f002926a8` Frontend CI run
   `30122755475` passed.
 - The same commit's Production Build Preflight run `30122755447` passed.
+- Inventory Support evidence commit
+  `86fee61e6585d758a26f3269e1086308cc347492` Frontend CI run
+  `30123115549` passed.
+- The Product Trial Evidence Runs-focused Commercial/header/knowledge run passed
+  36 tests; targeted ESLint completed with no errors, Prettier passed, the
+  visual-polish contract passed, and `git diff --check` passed.
+- Product Trial Evidence Runs branch CI run `30123296683` passed.
+- Main commit `1e36fd94672f6fc355d2b65776317dee1afc5486` Frontend CI run
+  `30123550929` passed.
+- The same commit's Production Build Preflight run `30123551244` passed.
 
 ## Remaining acceptance work
 
