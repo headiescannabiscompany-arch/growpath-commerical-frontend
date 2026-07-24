@@ -46,13 +46,18 @@ Date: 2026-07-24
   - GitHub pull-request creation remained unavailable; the full branch CI
     passed before the one-commit branch was fast-forwarded to the unchanged
     `main` without force.
+- Inventory Support heading hierarchy:
+  - source and main commit `9d8236884453d789491bb565bfe0566f002926a8`
+  - Render deployment `dep-d9hsb7jeo5us738e8f5g`
+  - The full branch CI passed before the one-commit branch was fast-forwarded
+    to the unchanged `main` without force.
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`aab88d1be5a52485d90580855e7ff40fabd9166c`
+`9d8236884453d789491bb565bfe0566f002926a8`
 
-Latest production retest timestamp: `2026-07-24T15:57:20-04:00`
+Latest production retest timestamp: `2026-07-24T16:09:52-04:00`
 
 ## Session and evidence type
 
@@ -133,6 +138,15 @@ no level-three record heading was present and no batch was created.
 The inventory list exposed the authorized create entry point as the named button
 `Create inventory support record`.
 
+Inventory list route:
+`https://growpathai.com/home/commercial/inventory?release=9d8236884453d789491bb565bfe0566f002926a8&verify=inventory-headings-live`
+
+The final inventory-list DOM exposed exactly one level-one
+`Commercial Inventory Support` page heading and three level-two workflow
+headings: Stock overview, Inventory support scope, and Inventory records. The
+account had no saved inventory records, so no level-three record heading was
+present and no record was created.
+
 Final production route:
 `https://growpathai.com/home/commercial/inventory/new?release=1b998f992dbe0f6c17ef3b4f09db71842b26cbcb&verify=inventory-create-overlap-fix-live`
 
@@ -199,6 +213,15 @@ Support route and expanded the intended fields.
 - Main commit `aab88d1be5a52485d90580855e7ff40fabd9166c` Frontend CI run
   `30121888930` passed.
 - The same commit's Production Build Preflight run `30121888897` passed.
+- Product Trials evidence commit `ad4c42579126125d29751c9c5f8e84dbadf51af1`
+  Frontend CI run `30122238532` passed.
+- The Inventory Support-focused Commercial/header/knowledge run passed 36
+  tests; targeted ESLint completed with no errors, Prettier passed, the
+  visual-polish contract passed, and `git diff --check` passed.
+- Inventory Support branch CI run `30122469759` passed.
+- Main commit `9d8236884453d789491bb565bfe0566f002926a8` Frontend CI run
+  `30122755475` passed.
+- The same commit's Production Build Preflight run `30122755447` passed.
 
 ## Remaining acceptance work
 
