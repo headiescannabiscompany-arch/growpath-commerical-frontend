@@ -13,8 +13,9 @@ export type UseModeSwitcherResult = {
 
 export function useModeSwitcher(): UseModeSwitcherResult {
   const router = useRouter();
-  const { mode, setMode } = useAccountMode();
+  const { setMode } = useAccountMode();
   const entitlements = useEntitlements();
+  const mode = entitlements.mode as AccountMode;
 
   const switchTo = useMemo(() => {
     return (next: AccountMode) =>
