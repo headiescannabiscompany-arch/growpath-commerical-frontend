@@ -281,7 +281,9 @@ export default function CommercialBatchPlannerRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Soil & Nutrient Batch Planner</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Soil & Nutrient Batch Planner
+            </Text>
             <Text style={styles.subtitle}>
               Commercial batch planning scales recipes with purpose, guaranteed analysis,
               release timing, cost, inventory pull sheets, product links, and evidence run
@@ -300,7 +302,9 @@ export default function CommercialBatchPlannerRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial batch fields</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Commercial batch fields
+        </Text>
         <Text style={styles.body}>
           Track formula versions, guaranteed analysis, release timing, inventory, cost,
           and the products or trials connected to each batch.
@@ -324,7 +328,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create commercial batch</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create commercial batch
+        </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Fill commercial batch from saved records"
@@ -522,12 +528,16 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current batches</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Current batches
+        </Text>
         {batches.length ? (
           <View style={styles.list}>
             {batches.map((batch) => (
               <View key={batchId(batch)} style={styles.batchRow}>
-                <Text style={styles.batchTitle}>{batch.batchName || batch.name}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.batchTitle}>
+                  {batch.batchName || batch.name}
+                </Text>
                 <Text style={styles.batchMeta}>
                   {[
                     batch.batchCode,
@@ -572,7 +582,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>From formula to product</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          From formula to product
+        </Text>
         <Text style={styles.body}>
           Commercial batch planning should turn a purpose-built recipe into a
           product-ready formula only after the formula has batch records, cost context,
@@ -602,7 +614,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Effectiveness loop</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Effectiveness loop
+        </Text>
         <Text style={styles.body}>
           A soil or nutrient product is not done at recipe math. Link batches to trial
           evidence runs and track seedling safety, veg vigor, pH/EC stability,
@@ -621,7 +635,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Naming rule</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Naming rule
+        </Text>
         <Text style={styles.body}>
           The app module is Soil & Nutrient Batch Planner. Living Soil Labs is an example
           commercial brand, not the feature name.

@@ -12,6 +12,8 @@ At compact widths, shared page content and campaign rails must remain in normal 
 
 Commercial Product Lines must use one level-one page heading, level-two headings for authoring, saved lines, and guidance sections, and level-three headings for individual saved lines. Hide the duplicate navigator header when the page provides that hierarchy.
 
+The Soil & Nutrient Batch Planner must use one level-one page heading, level-two headings for metrics, authoring, saved batches, and guidance sections, and level-three headings for individual saved batches. Keep Product Batches as the navigation destination label, preserve the user-facing planner name on the page, and hide the duplicate navigator header.
+
 Commercial Inventory Support must expose authorized write entry points as named actionable controls. The create action must identify that it creates an inventory support record, preserve the Commercial inventory-write capability check, and route to the canonical `/home/commercial/inventory/new` form; do not render a visually clickable but semantically generic control.
 
 Commercial Product Trial creation must prefer readable, owner-scoped choices from saved Products, Product Lines, Product Batches, and Product Trial Evidence Runs. Show the record name and selected state, provide the appropriate create action when a record type is empty, and keep direct record-ID entry behind an explicitly labeled advanced control. Never require an ordinary Commercial user to find or paste database IDs for the primary trial-linking workflow.

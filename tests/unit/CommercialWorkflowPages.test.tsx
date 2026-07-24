@@ -2533,7 +2533,21 @@ describe("commercial workflow pages", () => {
   it("manages commercial batches as formula-to-product-to-trial workflow", async () => {
     const screen = render(<CommercialBatchPlannerRoute />);
 
-    expect(screen.getByText("Soil & Nutrient Batch Planner")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Soil & Nutrient Batch Planner" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Commercial batch fields",
+      "Create commercial batch",
+      "Current batches",
+      "From formula to product",
+      "Effectiveness loop",
+      "Naming rule"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getByText("From formula to product")).toBeTruthy();
     expect(screen.getByText("Effectiveness loop")).toBeTruthy();
     expect(screen.getByText("Naming rule")).toBeTruthy();
@@ -2553,6 +2567,9 @@ describe("commercial workflow pages", () => {
     fireEvent.press(screen.getByLabelText("Show advanced batch record ID fields"));
     expect(screen.getByLabelText("Commercial batch product id")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Seedling Soil Batch" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText(/trial trial-1/)).toBeTruthy();
     expect(screen.getByText("Open Detail")).toBeTruthy();
 

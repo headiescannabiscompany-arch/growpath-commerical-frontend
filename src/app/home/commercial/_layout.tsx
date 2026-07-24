@@ -130,7 +130,7 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"
-        options={{ title: "Product Batches", href: null }}
+        options={{ title: "Product Batches", href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="product-lines"
