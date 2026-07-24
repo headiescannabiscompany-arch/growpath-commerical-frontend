@@ -6,6 +6,8 @@ Feed campaign placement must preserve the primary job of each page. The Personal
 
 Commercial Feed/Campaigns authoring uses one page-level heading. Campaign types and filters must be named single-choice controls, placements must be named multi-select controls, and publish must be a named button. Expose checked or disabled state so keyboard and assistive-technology users receive the same review and publishing workflow.
 
+Commercial tab navigation must expose only the active screen to web keyboard and assistive-technology navigation. Initialize screen detachment at the application root so inactive tab routes are removed from layout and focus order instead of relying on `aria-hidden` around still-focusable descendants. When a route renders its own page heading, hide the duplicate navigator header and keep exactly one level-one heading.
+
 Commercial analytics must be owner-scoped and event-backed. Attribute public storefront, product, course, and live activity through a published storefront; combine it with recorded Feed events, course engagement, live RSVPs, and paid internal orders. Preserve order currency, sanitize event labels and grow interests, and never infer a view, click, conversion, RSVP, order, or revenue value from another event.
 
 Commercial Forum participation uses the shared discussion engine and a server-verified brand identity. Preserve links to products, courses, lessons, lives, storefronts, evidence runs, tasks, and alerts, but keep promotional outreach in Feed campaigns.

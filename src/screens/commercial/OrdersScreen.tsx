@@ -328,7 +328,9 @@ export default function Orders() {
       routeKey="commercial-orders"
       header={
         <View>
-          <Text style={styles.headerTitle}>Orders</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>
+            Orders
+          </Text>
           <Text style={styles.headerSubtitle}>
             Track internal storefront purchases when checkout is enabled. If products use
             external purchase links, use analytics and inquiries instead of treating this

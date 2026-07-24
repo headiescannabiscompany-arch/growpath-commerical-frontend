@@ -1290,7 +1290,7 @@ export default function CommercialFeedRoute() {
                 </Text>
                 <View
                   style={styles.chipRow}
-                  accessibilityRole="group"
+                  role="group"
                   accessibilityLabel="Campaign placements"
                 >
                   {PLACEMENT_OPTIONS.filter(

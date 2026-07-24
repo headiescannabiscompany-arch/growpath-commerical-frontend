@@ -104,6 +104,7 @@ describe("CommercialFeedRoute", () => {
         name: "Remove All Feed placements placement"
       }).props.accessibilityState?.checked
     ).toBe(true);
+    expect(screen.getByLabelText("Campaign placements").props.role).toBe("group");
     expect(
       screen.getByRole("radio", {
         name: "Filter feed by all"

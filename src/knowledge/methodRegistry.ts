@@ -440,6 +440,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "limitations",
       "tasks",
       "single-heading campaign authoring with named stateful controls",
+      "inactive Commercial tab screens detached from web layout and focus order",
       "forum alerts",
       "moderation audit",
       "owner-scoped event analytics",
@@ -458,6 +459,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Never cross workspace scope or invent product claims.",
       "Never expose campaign types, placements, filters, or publish actions as generic unnamed controls.",
+      "Never leave focusable controls from an inactive Commercial tab in the web keyboard order.",
       "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
       "Never expose drafts, owner/account IDs, arbitrary authoring fields, or private records through public commercial-course discovery.",
       "Never expose course authoring controls or request owned-course records for an anonymous visitor.",
