@@ -80,17 +80,12 @@ export default function CommercialInventoryRoute() {
   const ent = useEntitlements();
   const canCreate = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
 
-  const apiErr: any = useApiErrorHandler();
-  const resolved = useMemo(() => {
-    const error = apiErr?.error ?? apiErr?.[0] ?? null;
-    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
-    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
-    return { error, handleApiError, clearError };
-  }, [apiErr]);
+  const mapApiError = useApiErrorHandler();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<any>(null);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -98,7 +93,7 @@ export default function CommercialInventoryRoute() {
       else setLoading(true);
 
       try {
-        resolved.clearError();
+        setError(null);
 
         // Commercial inventory endpoints vary by backend; try known shapes, then fall back safely.
         const path =
@@ -109,13 +104,13 @@ export default function CommercialInventoryRoute() {
         const res = await apiRequest(path, { method: "GET" });
         setItems(asArray(res));
       } catch (e) {
-        resolved.handleApiError(e);
+        setError(mapApiError(e));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [resolved]
+    [mapApiError]
   );
 
   useEffect(() => {
@@ -148,7 +143,7 @@ export default function CommercialInventoryRoute() {
   return (
     <ScreenBoundary title="Inventory Support">
       <View style={styles.container}>
-        {resolved.error ? <InlineError error={resolved.error} /> : null}
+        {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
           <Text style={styles.h1}>Commercial Inventory Support</Text>
@@ -156,6 +151,9 @@ export default function CommercialInventoryRoute() {
             <Text style={styles.muted}>{items.length} items</Text>
             {canCreate ? (
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Create inventory support record"
+                accessibilityHint="Opens the form for a new Commercial inventory support record"
                 onPress={() => router.push("/home/commercial/inventory/new")}
                 style={styles.createBtn}
               >
