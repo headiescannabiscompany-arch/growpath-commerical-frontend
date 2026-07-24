@@ -2303,8 +2303,17 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
-    expect(screen.getByLabelText("Use trial product line Living Soil Line")).toBeTruthy();
+    expect(screen.getByText("Trial product")).toBeTruthy();
+    expect(screen.getByText("Trial product line")).toBeTruthy();
+    expect(screen.getByText("Trial batch")).toBeTruthy();
+    expect(screen.getByText("Trial evidence run")).toBeTruthy();
+    expect(screen.getByLabelText("Trial product: Living Soil Base")).toBeTruthy();
+    expect(screen.getByLabelText("Trial product line: Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Trial batch: Seedling Soil Batch")).toBeTruthy();
+    expect(screen.getByLabelText("Trial evidence run: Bloom Formula Trial")).toBeTruthy();
+    expect(screen.queryByLabelText("Trial product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced trial record ID fields"));
+    expect(screen.getByLabelText("Trial product id")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -2318,10 +2327,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial purpose"),
       "flower_performance"
     );
-    fireEvent.changeText(screen.getByLabelText("Trial product id"), "product-2");
-    fireEvent.press(screen.getByLabelText("Use trial product line Living Soil Line"));
-    fireEvent.changeText(screen.getByLabelText("Trial batch id"), "batch-1");
-    fireEvent.changeText(screen.getByLabelText("Trial evidence run id"), "grow-1");
+    fireEvent.press(screen.getByLabelText("Trial product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Trial product line: Living Soil Line"));
+    fireEvent.press(screen.getByLabelText("Trial batch: Seedling Soil Batch"));
+    fireEvent.press(screen.getByLabelText("Trial evidence run: Bloom Formula Trial"));
     fireEvent.changeText(screen.getByLabelText("Trial plant count"), "8");
     fireEvent.press(screen.getByLabelText("Create product trial"));
 
@@ -2333,7 +2342,7 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             trialName: "Bloom Trial",
             purpose: "flower_performance",
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
             batchId: "batch-1",
             growId: "grow-1",

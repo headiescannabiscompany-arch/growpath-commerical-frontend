@@ -78,6 +78,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "capability-gated Commercial inventory creation exposed as a named actionable control"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     );
