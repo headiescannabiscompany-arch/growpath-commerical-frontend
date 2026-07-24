@@ -973,13 +973,18 @@ export default function CommercialFeedRoute() {
             live, storefront, or support Q&A thread. Keep threaded conversation in
             Forum/Q&A.
           </Text>
-          <View style={styles.chipRow}>
+          <View
+            style={styles.chipRow}
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Campaign type"
+          >
             {allowedCampaignKinds.map((option) => (
               <Pressable
                 key={option}
                 onPress={() => setCampaignKind(option)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: campaignKind === option }}
+                accessibilityRole="radio"
+                aria-checked={campaignKind === option}
+                accessibilityState={{ checked: campaignKind === option }}
                 accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
                 style={[styles.chip, campaignKind === option && styles.chipSelected]}
               >
@@ -1283,7 +1288,11 @@ export default function CommercialFeedRoute() {
                   Grow interests above tune relevance. Select where this campaign is
                   eligible to appear; All Feed placements keeps it broadly eligible.
                 </Text>
-                <View style={styles.chipRow}>
+                <View
+                  style={styles.chipRow}
+                  accessibilityRole="group"
+                  accessibilityLabel="Campaign placements"
+                >
                   {PLACEMENT_OPTIONS.filter(
                     (option) => !isFacility || option !== "commercial"
                   ).map((option) => {
@@ -1291,8 +1300,9 @@ export default function CommercialFeedRoute() {
                     return (
                       <Pressable
                         key={option}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected }}
+                        accessibilityRole="checkbox"
+                        aria-checked={selected}
+                        accessibilityState={{ checked: selected }}
                         onPress={() =>
                           setPlacements((current) =>
                             selected
@@ -1426,13 +1436,18 @@ export default function CommercialFeedRoute() {
 
       <View style={styles.filters}>
         <Text style={styles.filterLabel}>Filter</Text>
-        <View style={styles.chipRow}>
+        <View
+          style={styles.chipRow}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Campaign filters"
+        >
           {["all", ...COMMERCIAL_TYPES].map((option) => (
             <Pressable
               key={option}
               onPress={() => setFilterType(option)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: filterType === option }}
+              accessibilityRole="radio"
+              aria-checked={filterType === option}
+              accessibilityState={{ checked: filterType === option }}
               accessibilityLabel={`Filter feed by ${option}`}
               style={[styles.chip, filterType === option && styles.chipSelected]}
             >
