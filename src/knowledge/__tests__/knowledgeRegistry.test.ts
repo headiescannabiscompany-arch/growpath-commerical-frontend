@@ -85,6 +85,9 @@ describe("GrowPath knowledge registries", () => {
       "readable owner-scoped Product Batch record pickers with an explicit advanced ID fallback"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "readable owner-scoped Product Trial Evidence Run record pickers and named share status choices with an explicit advanced ID fallback"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "named Inventory Support item types and readable Product or Evidence Run pickers with an explicit advanced fallback"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -119,6 +122,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or reuse one generic section label for different Product Trial Evidence Run jobs."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never require copied database IDs or raw public-share status codes as the primary Product Trial Evidence Run creation workflow."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Commercial Inventory Support."

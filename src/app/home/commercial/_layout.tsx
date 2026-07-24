@@ -163,7 +163,11 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="grows/new"
-        options={{ href: null, title: "Create Product Trial Evidence Run" }}
+        options={{
+          href: null,
+          title: "Create Product Trial Evidence Run",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="grows/[growId]"
@@ -179,7 +183,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="evidence-runs/new"
-        options={{ href: null, title: "Create Product Trial Evidence Run" }}
+        options={{
+          href: null,
+          title: "Create Product Trial Evidence Run",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="evidence-runs/[id]"

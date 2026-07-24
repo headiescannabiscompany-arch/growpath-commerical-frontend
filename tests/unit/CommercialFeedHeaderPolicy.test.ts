@@ -37,6 +37,9 @@ describe("Commercial page header policy", () => {
     expect(layout).toMatch(
       /name="evidence-runs\/index"\s+options=\{\{[\s\S]*?title: "Product Trial Evidence Runs",[\s\S]*?headerShown: false/
     );
+    expect(layout).toMatch(
+      /name="evidence-runs\/new"\s+options=\{\{[\s\S]*?title: "Create Product Trial Evidence Run",[\s\S]*?headerShown: false/
+    );
     expect(feed).toContain('accessibilityRole="header"');
     expect(orders).toContain('accessibilityRole="header"');
     expect(productLines).toContain('accessibilityRole="header"');

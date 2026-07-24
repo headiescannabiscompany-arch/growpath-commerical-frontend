@@ -2760,10 +2760,29 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(screen.getByText("Evidence run product")).toBeTruthy();
+    expect(screen.getByText("Evidence run product line")).toBeTruthy();
+    expect(screen.getByText("Evidence run product batch")).toBeTruthy();
+    expect(screen.getByLabelText("Evidence run product: Living Soil Base")).toBeTruthy();
     expect(
-      screen.getByLabelText("Use evidence run product line Living Soil Line")
+      screen.getByLabelText("Evidence run product line: Living Soil Line")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Evidence run product batch: Seedling Soil Batch")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Public share status: Evidence building").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(screen.queryByLabelText("Product trial evidence run product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced evidence run record ID fields"));
+    expect(screen.getByLabelText("Product trial evidence run product id")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Product trial evidence run product line id")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Product trial evidence run batch id")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Hide advanced evidence run record ID fields"));
+    expect(screen.queryByLabelText("Product trial evidence run product id")).toBeNull();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
     expect(
       screen.getByRole("header", { name: "Bloom Formula Trial" }).props["aria-level"]
@@ -2794,16 +2813,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial evidence run plant count"),
       "12"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run product id"),
-      "product-2"
-    );
+    fireEvent.press(screen.getByLabelText("Evidence run product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Evidence run product line: Living Soil Line"));
     fireEvent.press(
-      screen.getByLabelText("Use evidence run product line Living Soil Line")
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run batch id"),
-      "batch-2"
+      screen.getByLabelText("Evidence run product batch: Seedling Soil Batch")
     );
     fireEvent.changeText(
       screen.getByLabelText("Product trial evidence run formula version"),
@@ -2813,6 +2826,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial evidence run measurement plan"),
       "Weekly vigor and pH checks"
     );
+    fireEvent.press(screen.getByLabelText("Public share status: Public ready"));
     fireEvent.press(screen.getByLabelText("Create product trial evidence run"));
 
     await waitFor(() =>
@@ -2827,11 +2841,12 @@ describe("commercial workflow pages", () => {
             cultivar: "Cherokee Purple",
             medium: "raised_bed",
             plantCount: 12,
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
-            batchId: "batch-2",
+            batchId: "batch-1",
             formulaVersion: "v2",
             measurementPlan: "Weekly vigor and pH checks",
+            publicShareStatus: "public_ready",
             status: "active"
           })
         })
@@ -2926,6 +2941,29 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Product trial evidence run name")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
+  });
+
+  it("offers creation paths when an evidence run has no records to link", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ grows: [] })
+      .mockResolvedValueOnce({ products: [] })
+      .mockResolvedValueOnce({ productLines: [] })
+      .mockResolvedValueOnce({ batches: [] });
+
+    const screen = render(<NewCommercialEvidenceRunRoute />);
+
+    await waitFor(() => expect(screen.getByText("No saved products yet.")).toBeTruthy());
+    expect(screen.getByText("No saved product lines yet.")).toBeTruthy();
+    expect(screen.getByText("No saved product batches yet.")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/product-lines" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/batch-planner" }).length
+    ).toBeGreaterThan(0);
   });
 
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
