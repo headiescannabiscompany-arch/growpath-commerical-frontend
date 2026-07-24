@@ -84,6 +84,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "readable owner-scoped Product Batch record pickers with an explicit advanced ID fallback"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "named Inventory Support item types and readable Product or Evidence Run pickers with an explicit advanced fallback"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
     );
