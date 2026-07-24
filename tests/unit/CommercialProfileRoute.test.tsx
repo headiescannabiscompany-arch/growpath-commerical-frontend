@@ -87,13 +87,16 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Public storefront discovery")).toBeTruthy();
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
-    expect(screen.getByText("Public storefront: /store/your-brand-slug")).toBeTruthy();
+    expect(
+      screen.getByText("Public storefront: Add a public slug to create this URL.")
+    ).toBeTruthy();
     expect(screen.queryByText(/Legacy brand profile:/)).toBeNull();
     expect(
       screen.getByText(
-        "Public product detail: /store/your-brand-slug/products/product-id"
+        "Public product detail: Add a public slug and save a product to create this URL."
       )
     ).toBeTruthy();
+    expect(screen.queryByText(/your-brand-slug/)).toBeNull();
     expect(screen.queryByText(/Public storefront alias:/)).toBeNull();
     expect(screen.queryByText(/Public product alias:/)).toBeNull();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
@@ -102,6 +105,11 @@ describe("CommercialProfileRoute", () => {
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Public product detail: Save and publish a product to create its URL under /store/living-soil-labs."
+      )
+    ).toBeTruthy();
     expect(screen.queryByText(/Legacy brand profile:/)).toBeNull();
 
     fireEvent.changeText(
