@@ -33,8 +33,8 @@ describe("workspace bottom-tab order", () => {
     expect(contents).toContain(
       'options={{ title: "Lives", href: compactTabs ? null : undefined }}'
     );
-    expect(contents).toContain(
-      'options={{ title: "Orders", href: compactTabs ? null : undefined }}'
+    expect(contents).toMatch(
+      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: compactTabs \? null : undefined,[\s\S]*?headerShown: false/
     );
     expect(contents).toContain(
       'name="tools/library" options={{ href: null, title: "Tool Library" }}'
