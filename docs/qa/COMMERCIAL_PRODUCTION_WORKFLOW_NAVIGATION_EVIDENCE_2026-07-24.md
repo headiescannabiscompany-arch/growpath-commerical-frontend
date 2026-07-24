@@ -56,6 +56,11 @@ Date: 2026-07-24
   - Render deployment `dep-d9hsgt3eo5us738edlmg`
   - The full branch CI passed before the one-commit branch was fast-forwarded
     to the unchanged `main` without force.
+- Product Trial Evidence Run readable record choices:
+  - source and main commit `18223504d437b51dd1bdf7c4949c568c18496f15`
+  - Render deployment `dep-d9ht571oagis73anfi40`
+  - The full branch CI passed before the one-commit branch was fast-forwarded
+    to the unchanged `main` without force.
 - Commercial bottom-tab clipping correction:
   - initial geometry commit `fa1014eba88c7eeb84768304540903cfa0185064`
   - final placeholder cleanup and main commit
@@ -67,9 +72,9 @@ Date: 2026-07-24
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`4778c51b911cf6fbfb0704ffdb9e61f8071c75f7`
+`18223504d437b51dd1bdf7c4949c568c18496f15`
 
-Latest production retest timestamp: `2026-07-24T16:49:00-04:00`
+Latest production retest timestamp: `2026-07-24T17:06:42-04:00`
 
 ## Session and evidence type
 
@@ -78,10 +83,13 @@ Latest production retest timestamp: `2026-07-24T16:49:00-04:00`
 - Compact Browser viewport: 673 by 880 CSS pixels.
 - Bottom-tab follow-up viewport: 1280 by 720 CSS pixels.
 - Render Dashboard inspection tied each release to its exact commit and deployment.
+- Genuine in-app Browser viewport screenshots were captured and reviewed for
+  the final-SHA Evidence Run creation page, including its visible empty-state
+  record choices and named public-share controls.
 - No product line, product, batch, trial, evidence run, inventory record, order,
   lead, campaign, course, live, or analytics event was submitted or created.
 
-No screenshot or video file is claimed by this record.
+No standalone video file is claimed by this record.
 
 ## Production checks
 
@@ -213,6 +221,30 @@ The correction also replaced the duplicate generic `Advanced` and `How it works`
 section names with workflow-specific labels while leaving the underlying
 evidence policy and record model unchanged.
 
+The creation workflow was then retested at:
+`https://growpathai.com/home/commercial/evidence-runs/new?release=18223504&verify=readable-picker-live`
+
+The final signed-in production page exposed:
+
+- exactly one level-one `Product Trial Evidence Runs` heading, with the
+  navigator title hidden;
+- readable Evidence run product, Evidence run product line, and Evidence run
+  product batch sections;
+- truthful zero-record messages plus Create Product, Create Product Line, and
+  Create Product Batch paths;
+- no product, product-line, or batch ID fields in the ordinary workflow;
+- a named `Use advanced record IDs` control that exposed the three ID fields
+  only when intentionally opened, then hid them again;
+- readable Private, Evidence building, and Public ready radio choices with
+  explanatory text; and
+- a disabled create action until the required evidence-run name is present.
+
+The account had zero saved Products, Product Lines, Product Batches, and
+Evidence Runs. No record or analytics event was created. The in-app Browser
+captured and reviewed a genuine viewport screenshot of this exact deployed URL
+and commit with the record-choice cards, advanced fallback, and public-share
+choices visible.
+
 ## Deployment service correction
 
 Render contained two services watching the same repository and `main` branch:
@@ -308,6 +340,16 @@ Support route and expanded the intended fields.
 - Main commit `4778c51b911cf6fbfb0704ffdb9e61f8071c75f7` Frontend CI run
   `30125209677` passed.
 - The same commit's Production Build Preflight run `30125209584` passed.
+- The readable Evidence Run linking change passed 36 focused Commercial and
+  knowledge tests plus 19 navigation/header tests, for 55 distinct local
+  regression checks. Targeted ESLint, Prettier, the visual-polish contract, the
+  business-production contract, corruption scans, and `git diff --check`
+  passed.
+- Product Trial Evidence Run readable-linking branch CI run `30126014921`
+  passed.
+- Main commit `18223504d437b51dd1bdf7c4949c568c18496f15` Frontend CI run
+  `30126238810` passed.
+- The same commit's Production Build Preflight run `30126238740` passed.
 
 ## Remaining acceptance work
 
@@ -319,7 +361,8 @@ Support route and expanded the intended fields.
   evidence where applicable.
 - Complete desktop, true mobile-device, keyboard/focus, font-scaling, contrast,
   and screen-reader review.
-- Capture genuine final-SHA screenshots and video.
+- Capture the remaining final-SHA workspace screenshots and video; the Evidence
+  Run creation viewport now has a genuine final-SHA in-app Browser screenshot.
 - Complete independent outside-user acceptance.
 - Keep the requested inline Forum discussion accordion in the documented
   post-Commercial follow-up; it is not claimed complete here.
