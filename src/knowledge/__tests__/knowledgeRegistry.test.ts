@@ -90,8 +90,14 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "compact shared-page content and campaign rails retained in non-overlapping document flow"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "one level-one Product Lines heading with level-two workflow sections and level-three saved-line headings"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never let compact campaign rails shrink, cover, intercept, or displace Commercial workspace controls."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never expose a duplicate navigator title or a flat generic-text outline on Product Lines."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
