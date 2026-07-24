@@ -1,7 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 import PublicLandingPage, {
-  PUBLIC_PAGE_COPY
+  PUBLIC_PAGE_COPY,
+  usesCompactPublicLayout
 } from "@/components/marketing/PublicLandingPage";
 
 describe("PublicLandingPage", () => {
@@ -10,8 +11,15 @@ describe("PublicLandingPage", () => {
 
     expect(screen.getByText("Facility → Room → Grow → Plant")).toBeTruthy();
     expect(screen.getByText("Roles that match responsibility")).toBeTruthy();
+    expect(JSON.stringify(screen.toJSON())).toContain("Store");
     expect(JSON.stringify(screen.toJSON())).toContain("Create free account");
     expect(JSON.stringify(screen.toJSON())).toContain("AI disclaimer");
+  });
+
+  it("uses the compact public layout only below the mobile breakpoint", () => {
+    expect(usesCompactPublicLayout(320)).toBe(true);
+    expect(usesCompactPublicLayout(599)).toBe(true);
+    expect(usesCompactPublicLayout(600)).toBe(false);
   });
 
   it("uses one level-one page heading followed by level-two section headings", () => {

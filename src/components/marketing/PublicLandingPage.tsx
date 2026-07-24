@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 export type PublicPageKey =
   | "home"
@@ -270,20 +270,36 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
   }
 };
 
+export function usesCompactPublicLayout(width: number) {
+  return width < 600;
+}
+
 export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
   const copy = PUBLIC_PAGE_COPY[page];
+  const { width } = useWindowDimensions();
+  const isCompact = usesCompactPublicLayout(width);
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <View style={styles.nav}>
+    <ScrollView
+      style={styles.page}
+      contentContainerStyle={
+        isCompact ? [styles.content, styles.contentCompact] : styles.content
+      }
+    >
+      <View style={isCompact ? [styles.nav, styles.navCompact] : styles.nav}>
         <Link href="/" style={styles.brand}>
           GrowPathAI
         </Link>
-        <View style={styles.navLinks}>
+        <View
+          style={isCompact ? [styles.navLinks, styles.navLinksCompact] : styles.navLinks}
+        >
           <Link href="/features" style={styles.link}>
             Features
           </Link>
           <Link href="/pricing" style={styles.link}>
             Pricing
+          </Link>
+          <Link href="/store" style={styles.link}>
+            Store
           </Link>
           <Link href="/courses" style={styles.link}>
             Courses
@@ -296,17 +312,37 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           </Link>
         </View>
       </View>
-      <View style={styles.hero}>
-        <Text style={styles.eyebrow}>{copy.eyebrow}</Text>
-        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+      <View style={isCompact ? [styles.hero, styles.heroCompact] : styles.hero}>
+        <Text
+          style={isCompact ? [styles.eyebrow, styles.eyebrowCompact] : styles.eyebrow}
+        >
+          {copy.eyebrow}
+        </Text>
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={isCompact ? [styles.title, styles.titleCompact] : styles.title}
+        >
           {copy.title}
         </Text>
-        <Text style={styles.intro}>{copy.intro}</Text>
-        <View style={styles.actions}>
-          <Link href="/register" style={styles.primary}>
+        <Text style={isCompact ? [styles.intro, styles.introCompact] : styles.intro}>
+          {copy.intro}
+        </Text>
+        <View
+          style={isCompact ? [styles.actions, styles.actionsCompact] : styles.actions}
+        >
+          <Link
+            href="/register"
+            style={isCompact ? [styles.primary, styles.actionCompact] : styles.primary}
+          >
             Create free account
           </Link>
-          <Link href="/features" style={styles.secondary}>
+          <Link
+            href="/features"
+            style={
+              isCompact ? [styles.secondary, styles.actionCompact] : styles.secondary
+            }
+          >
             Explore features
           </Link>
         </View>
@@ -345,12 +381,19 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#f5f8f4" },
   content: { width: "100%", maxWidth: 1120, alignSelf: "center", padding: 24, gap: 28 },
+  contentCompact: { padding: 16, gap: 20 },
   nav: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 16
+  },
+  navCompact: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    gap: 12
   },
   brand: {
     color: "#173f2a",
@@ -359,14 +402,17 @@ const styles = StyleSheet.create({
     textDecorationLine: "none"
   },
   navLinks: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
+  navLinksCompact: { width: "100%", gap: 12 },
   link: { color: "#285d3d", fontWeight: "700", textDecorationLine: "none" },
   hero: { backgroundColor: "#e1eee2", borderRadius: 24, padding: 32, gap: 14 },
+  heroCompact: { borderRadius: 18, padding: 20, gap: 12 },
   eyebrow: {
     color: "#2f6b45",
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1
   },
+  eyebrowCompact: { fontSize: 13, lineHeight: 19 },
   title: {
     color: "#123221",
     fontSize: 42,
@@ -374,8 +420,11 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     maxWidth: 820
   },
+  titleCompact: { fontSize: 32, lineHeight: 38, maxWidth: "100%" },
   intro: { color: "#294636", fontSize: 19, lineHeight: 29, maxWidth: 840 },
+  introCompact: { fontSize: 17, lineHeight: 26 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8 },
+  actionsCompact: { flexDirection: "column", alignItems: "stretch" },
   primary: {
     backgroundColor: "#1f6a3b",
     color: "#fff",
@@ -385,6 +434,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textDecorationLine: "none"
   },
+  actionCompact: { width: "100%", textAlign: "center" },
   secondary: {
     borderColor: "#1f6a3b",
     borderWidth: 1,
