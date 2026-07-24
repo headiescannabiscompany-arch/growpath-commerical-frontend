@@ -41,6 +41,16 @@ const COMMERCIAL_TYPES: CommercialFeedCampaignType[] = [
   "drop",
   "education"
 ];
+const CAMPAIGN_FILTERS: Array<{
+  value: "all" | CommercialFeedCampaignType;
+  label: string;
+}> = [
+  { value: "all", label: "All campaigns" },
+  { value: "update", label: "Updates" },
+  { value: "listing", label: "Product listings" },
+  { value: "drop", label: "Launches & live events" },
+  { value: "education", label: "Education" }
+];
 const FACILITY_TYPES: CommercialFeedCampaignType[] = ["education"];
 type CampaignKind =
   | "product_ad"
@@ -1363,10 +1373,11 @@ export default function CommercialFeedRoute() {
               grow interest{splitTags(growInterests).length === 1 ? "" : "s"}
             </Text>
             <Text style={styles.linkBoxText}>
-              CTA: {ctaLabel.trim() || externalLinkLabel.trim() || "Open"} · Status:{" "}
+              CTA: {ctaLabel.trim() || externalLinkLabel.trim() || "Open"} · Will publish
+              as:{" "}
               {campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
-                ? "scheduled"
-                : "active"}
+                ? "Scheduled"
+                : "Active"}
             </Text>
             {readinessWarnings.length ? (
               <Text style={styles.warningText}>
@@ -1441,23 +1452,20 @@ export default function CommercialFeedRoute() {
           accessibilityRole="radiogroup"
           accessibilityLabel="Campaign filters"
         >
-          {["all", ...COMMERCIAL_TYPES].map((option) => (
+          {CAMPAIGN_FILTERS.map(({ value, label }) => (
             <Pressable
-              key={option}
-              onPress={() => setFilterType(option)}
+              key={value}
+              onPress={() => setFilterType(value)}
               accessibilityRole="radio"
-              aria-checked={filterType === option}
-              accessibilityState={{ checked: filterType === option }}
-              accessibilityLabel={`Filter feed by ${option}`}
-              style={[styles.chip, filterType === option && styles.chipSelected]}
+              aria-checked={filterType === value}
+              accessibilityState={{ checked: filterType === value }}
+              accessibilityLabel={`Filter campaigns by ${label}`}
+              style={[styles.chip, filterType === value && styles.chipSelected]}
             >
               <Text
-                style={[
-                  styles.chipText,
-                  filterType === option && styles.chipTextSelected
-                ]}
+                style={[styles.chipText, filterType === value && styles.chipTextSelected]}
               >
-                {option}
+                {label}
               </Text>
             </Pressable>
           ))}
