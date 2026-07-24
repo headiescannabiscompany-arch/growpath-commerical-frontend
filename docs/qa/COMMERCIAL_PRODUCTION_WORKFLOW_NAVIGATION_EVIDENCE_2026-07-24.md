@@ -29,13 +29,18 @@ Date: 2026-07-24
   - source commit `bc8ad2510f083420bcc6461b5fd6ab1a66c306f4`
   - merge `1b998f992dbe0f6c17ef3b4f09db71842b26cbcb`
   - Render deployment `dep-d9hr7684n6ts73eui1i0`
+- Product Lines heading hierarchy:
+  - PR `#204`
+  - source commit `63fec2aae62ba2ca9f69faa77416d7ce29bc143a`
+  - merge `e19854836e2adaf6b3d379ca9ee11842cfe72e50`
+  - Render deployment `dep-d9hrg9bbc2fs739qvldg`
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`1b998f992dbe0f6c17ef3b4f09db71842b26cbcb`
+`e19854836e2adaf6b3d379ca9ee11842cfe72e50`
 
-Latest production retest timestamp: `2026-07-24T14:52:27-04:00`
+Latest production retest timestamp: `2026-07-24T15:12:50-04:00`
 
 ## Session and evidence type
 
@@ -62,6 +67,22 @@ The live `More` destination exposed:
 
 The compact tab list retained Dashboard, Storefront, Products, Feed, and More.
 Product Lines also opened successfully in the same signed-in Commercial session.
+
+### Product Lines
+
+Production route:
+`https://growpathai.com/home/commercial/product-lines?release=e19854836e2adaf6b3d379ca9ee11842cfe72e50&verify=product-lines-headings-live`
+
+Before PR `#204`, the route exposed the navigator's `Product Lines` heading and
+a second visual page title as generic text. Create Product Line, the saved-line
+list, Line-level public page context, and Brand-type examples were also generic
+text, leaving the page without a useful section outline.
+
+The final production DOM exposed exactly one level-one `Product Lines` page
+heading and four level-two workflow headings: Create Product Line, Product Lines,
+Line-level public page context, and Brand-type examples. The account had no
+saved product lines, so no level-three record heading was present and no product
+line was created.
 
 ### Product Trials
 
@@ -132,6 +153,11 @@ Support route and expanded the intended fields.
 - Merge `1b998f992dbe0f6c17ef3b4f09db71842b26cbcb` Frontend CI run
   `30118385912` passed.
 - The same merge's Production Build Preflight run `30118385687` passed.
+- The Product Lines-focused Commercial/header/knowledge run passed 36 tests.
+- PR `#204` Frontend CI run `30119419615` passed.
+- Merge `e19854836e2adaf6b3d379ca9ee11842cfe72e50` Frontend CI run
+  `30119646653` passed.
+- The same merge's Production Build Preflight run `30119646643` passed.
 
 ## Remaining acceptance work
 
