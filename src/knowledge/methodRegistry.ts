@@ -451,7 +451,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicit eligible workspace preference preserved across plan-backed modes",
       "post-login workspace choice for every multi-workspace identity",
       "workspace preference reapplied before restricted-route access decisions",
-      "workspace selection and routing use the same effective paid-plan capabilities"
+      "workspace selection and routing use the same effective paid-plan capabilities",
+      "clear not-configured guidance for unavailable third-party integrations"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -462,7 +463,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never treat knowledge of a draft course ID as permission to read, enroll, check out, discuss, or review it.",
       "Never honor deterministic test identity headers as production authentication.",
       "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",
-      "Never pass reserved public route words or malformed record IDs into database ID queries."
+      "Never pass reserved public route words or malformed record IDs into database ID queries.",
+      "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),
