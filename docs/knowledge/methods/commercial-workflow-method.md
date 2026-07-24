@@ -14,6 +14,8 @@ Commercial Product Trial creation must prefer readable, owner-scoped choices fro
 
 Commercial Product Batch creation must use the same readable linking pattern for saved Products, Product Lines, and Product Trial Evidence Runs. Preserve optional unlinked states and correct empty-state creation paths, and keep direct record-ID entry behind an explicitly labeled advanced control. Never make copied database IDs the primary path for connecting a production batch to its Commercial records.
 
+Commercial Inventory Support creation must offer named item-type choices and readable, owner-scoped selectors for saved Products and Product Trial Evidence Runs. When a selectable record type is empty, route to its canonical creation page; keep custom types and direct product, ingredient, genetics, and evidence-run IDs behind an explicitly labeled advanced control. Never make opaque record IDs or undocumented type values the default inventory setup workflow.
+
 Commercial analytics must be owner-scoped and event-backed. Attribute public storefront, product, course, and live activity through a published storefront; combine it with recorded Feed events, course engagement, live RSVPs, and paid internal orders. Preserve order currency, sanitize event labels and grow interests, and never infer a view, click, conversion, RSVP, order, or revenue value from another event. Keep one level-one Commercial Analytics page heading and expose each metrics, breakdown, and guidance section as a level-two heading.
 
 Commercial Forum participation uses the shared discussion engine and a server-verified brand identity. Preserve links to products, courses, lessons, lives, storefronts, evidence runs, tasks, and alerts, but keep promotional outreach in Feed campaigns.
