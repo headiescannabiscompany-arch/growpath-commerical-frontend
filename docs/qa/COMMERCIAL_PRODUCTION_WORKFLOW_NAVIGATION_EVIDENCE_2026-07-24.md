@@ -56,19 +56,27 @@ Date: 2026-07-24
   - Render deployment `dep-d9hsgt3eo5us738edlmg`
   - The full branch CI passed before the one-commit branch was fast-forwarded
     to the unchanged `main` without force.
+- Commercial bottom-tab clipping correction:
+  - initial geometry commit `fa1014eba88c7eeb84768304540903cfa0185064`
+  - final placeholder cleanup and main commit
+    `4778c51b911cf6fbfb0704ffdb9e61f8071c75f7`
+  - Render deployment `dep-d9hstb6rnols73dhtg60`
+  - Both full branch CI passes completed before each commit was fast-forwarded
+    to the unchanged `main` without force.
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`1e36fd94672f6fc355d2b65776317dee1afc5486`
+`4778c51b911cf6fbfb0704ffdb9e61f8071c75f7`
 
-Latest production retest timestamp: `2026-07-24T16:29:05-04:00`
+Latest production retest timestamp: `2026-07-24T16:49:00-04:00`
 
 ## Session and evidence type
 
 - Existing authenticated Commercial workspace session in the in-app Browser.
 - Production DOM inspection and direct, non-destructive control activation.
 - Compact Browser viewport: 673 by 880 CSS pixels.
+- Bottom-tab follow-up viewport: 1280 by 720 CSS pixels.
 - Render Dashboard inspection tied each release to its exact commit and deployment.
 - No product line, product, batch, trial, evidence run, inventory record, order,
   lead, campaign, course, live, or analytics event was submitted or created.
@@ -89,6 +97,26 @@ The live `More` destination exposed:
 
 The compact tab list retained Dashboard, Storefront, Products, Feed, and More.
 Product Lines also opened successfully in the same signed-in Commercial session.
+
+### Bottom tab clipping
+
+Final production route:
+`https://growpathai.com/home/commercial/trials?release=4778c51b&verify=bottom-menu-final-live`
+
+At 1280 by 720 CSS pixels, the original production bar reserved a 28-pixel empty
+icon row above each text label. The 10-pixel labels then occupied approximately
+`y=704.8` through `y=715.2` inside the bar ending at `y=720.1`, which made the
+menu appear cut off against the bottom edge.
+
+The final production DOM measured a 48.3-pixel tab bar from approximately
+`y=671.9` through `y=720.1`. Every Dashboard-through-Tools label measured 24
+pixels high and was centered from approximately `y=684.0` through `y=708.0`.
+Each icon container was `display: none` with zero width and height. The visible
+tab text contained only the intended labels, with no fallback icon symbols.
+
+The in-app Browser's full-page screenshot command timed out repeatedly during
+this final check. No screenshot file is claimed for this correction; the
+production DOM geometry and accessible tab names are the retained evidence.
 
 ### Product Lines
 
@@ -272,6 +300,14 @@ Support route and expanded the intended fields.
 - Main commit `1e36fd94672f6fc355d2b65776317dee1afc5486` Frontend CI run
   `30123550929` passed.
 - The same commit's Production Build Preflight run `30123551244` passed.
+- The initial bottom-tab branch CI run `30124444783` passed.
+- Main commit `fa1014eba88c7eeb84768304540903cfa0185064` Frontend CI run
+  `30124648820` passed.
+- The same commit's Production Build Preflight run `30124648750` passed.
+- The final bottom-tab branch CI run `30124968921` passed.
+- Main commit `4778c51b911cf6fbfb0704ffdb9e61f8071c75f7` Frontend CI run
+  `30125209677` passed.
+- The same commit's Production Build Preflight run `30125209584` passed.
 
 ## Remaining acceptance work
 
