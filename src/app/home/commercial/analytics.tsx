@@ -61,7 +61,7 @@ function BreakdownList({
 }) {
   return (
     <View style={styles.breakdownBox}>
-      <Text accessibilityRole="header" style={styles.breakdownTitle}>
+      <Text accessibilityRole="header" aria-level={2} style={styles.breakdownTitle}>
         {title}
       </Text>
       {rows.length ? (
@@ -172,7 +172,7 @@ export default function CommercialAnalyticsRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Commercial Analytics
           </Text>
           <Text style={styles.subtitle}>
@@ -192,7 +192,7 @@ export default function CommercialAnalyticsRoute() {
 
       <AppCard>
         <View style={styles.cardHeader}>
-          <Text accessibilityRole="header" style={styles.cardTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Overview Metrics
           </Text>
           <Pressable
@@ -285,7 +285,7 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text accessibilityRole="header" style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Click and View Breakdown
         </Text>
         <Text style={styles.body}>
@@ -338,7 +338,7 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text accessibilityRole="header" style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Simple metrics first
         </Text>
         <Text style={styles.body}>
@@ -365,7 +365,7 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text accessibilityRole="header" style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Ad and marketing click counts
         </Text>
         <Text style={styles.body}>
@@ -387,7 +387,7 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text accessibilityRole="header" style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           External checkout reality
         </Text>
         <Text style={styles.body}>
@@ -415,7 +415,7 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text accessibilityRole="header" style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Trial and content outcomes
         </Text>
         <Text style={styles.body}>
