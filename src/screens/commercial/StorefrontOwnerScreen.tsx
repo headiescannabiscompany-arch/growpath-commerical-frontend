@@ -25,6 +25,7 @@ import { persistImageUri } from "@/utils/photoUploads";
 import { currentPublicUrl } from "@/utils/publicLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { radius } from "@/theme/theme";
+import { requestCurrentCoordinates } from "@/utils/locationSearch";
 
 type AnyRec = Record<string, any>;
 
@@ -90,7 +91,10 @@ function productIsPublished(product: AnyRec) {
   );
 }
 
-function productCheckoutReady(product: AnyRec) {
+function productCheckoutReady(product: AnyRec, dispensary = false) {
+  if (dispensary) {
+    return hasText(product.externalPurchaseUrl) || product.pickupAvailable === true;
+  }
   return hasText(product.externalPurchaseUrl) || hasText(product.stripePriceId);
 }
 
@@ -109,7 +113,7 @@ function storefrontStripeReady(storefront: AnyRec | null) {
   );
 }
 
-function productMissingSetup(product: AnyRec) {
+function productMissingSetup(product: AnyRec, dispensary = false) {
   const missing: string[] = [];
   if (!productImage(product)) missing.push("image");
   if (!hasText(product.shortDescription) && !hasText(product.description)) {
@@ -121,8 +125,10 @@ function productMissingSetup(product: AnyRec) {
   if (!hasText(product.unitSize) && !hasText(product.specs?.unitSize)) {
     missing.push("size/weight");
   }
-  if (productPrice(product) <= 0) missing.push("price");
-  if (!productCheckoutReady(product)) missing.push("checkout link");
+  if (!dispensary && productPrice(product) <= 0) missing.push("price");
+  if (!productCheckoutReady(product, dispensary)) {
+    missing.push(dispensary ? "website or pickup handoff" : "checkout link");
+  }
   if (!productIsPublished(product)) missing.push("published status");
   return missing;
 }
@@ -205,6 +211,16 @@ function storefrontPublishBlockers(args: {
   if (!hasText(args.draft.bannerUrl)) blockers.push("add banner");
   if (!hasText(args.draft.description)) blockers.push("add description");
   if (!hasText(args.draft.growInterestsText)) blockers.push("add grow interests");
+  if (args.draft.storefrontType === "dispensary") {
+    if (!hasText(args.draft.city)) blockers.push("add dispensary city");
+    if (!hasText(args.draft.stateCode)) blockers.push("add dispensary state");
+    if (!hasText(args.draft.latitude) || !hasText(args.draft.longitude)) {
+      blockers.push("add dispensary location for distance search");
+    }
+    if (!hasText(args.draft.websiteUrl) && args.draft.pickupAvailable !== true) {
+      blockers.push("add dispensary website or pickup handoff");
+    }
+  }
   if (
     !args.publishedProducts.length &&
     !args.courses.length &&
@@ -293,14 +309,22 @@ export default function Storefront({
   const [creatingSetupTasks, setCreatingSetupTasks] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [uploadingImageField, setUploadingImageField] = useState("");
+  const [locatingStorefront, setLocatingStorefront] = useState(false);
 
   const [storeDraft, setStoreDraft] = useState({
     name: "",
     slug: "",
+    storefrontType: "general",
     description: "",
+    city: "",
+    stateCode: "",
+    latitude: "",
+    longitude: "",
     logoUrl: "",
     bannerUrl: "",
     websiteUrl: "",
+    pickupAvailable: false,
+    pickupInstructions: "",
     supportEmail: "",
     socialLinksText: "",
     growInterestsText: "",
@@ -320,6 +344,9 @@ export default function Storefront({
     inventoryItemId: "",
     imageUrl: "",
     externalPurchaseUrl: "",
+    regulatedCannabis: false,
+    pickupAvailable: false,
+    pickupInstructions: "",
     stripeProductId: "",
     stripePriceId: "",
     npk: "",
@@ -386,10 +413,27 @@ export default function Storefront({
     setStoreDraft({
       name: String(storefront.name ?? ""),
       slug: String(storefront.slug ?? ""),
+      storefrontType:
+        String(storefront.storefrontType ?? storefront.businessType ?? "general") ===
+        "dispensary"
+          ? "dispensary"
+          : "general",
       description: String(storefront.description ?? ""),
+      city: String(storefront.city ?? ""),
+      stateCode: String(storefront.stateCode ?? storefront.state ?? ""),
+      latitude:
+        storefront.latitude === null || storefront.latitude === undefined
+          ? ""
+          : String(storefront.latitude),
+      longitude:
+        storefront.longitude === null || storefront.longitude === undefined
+          ? ""
+          : String(storefront.longitude),
       logoUrl: String(storefront.logoUrl ?? ""),
       bannerUrl: String(storefront.bannerUrl ?? ""),
       websiteUrl: String(storefront.websiteUrl ?? ""),
+      pickupAvailable: Boolean(storefront.pickupAvailable),
+      pickupInstructions: String(storefront.pickupInstructions ?? ""),
       supportEmail: String(storefront.supportEmail ?? ""),
       socialLinksText: Array.isArray(storefront.socialLinks)
         ? storefront.socialLinks
@@ -404,6 +448,7 @@ export default function Storefront({
   }, [storefront]);
 
   const publicSlug = storeDraft.slug.trim();
+  const isDispensary = storeDraft.storefrontType === "dispensary";
   const publicStorePath = publicSlug ? `/store/${encodeURIComponent(publicSlug)}` : "";
   const publishedProducts = useMemo(
     () => products.filter((product) => productIsPublished(product)),
@@ -416,9 +461,9 @@ export default function Storefront({
     () =>
       products.map((product) => ({
         id: productId(product),
-        missing: productMissingSetup(product)
+        missing: productMissingSetup(product, isDispensary)
       })),
-    [products]
+    [isDispensary, products]
   );
   const warningCount = productWarnings.reduce(
     (sum, item) => sum + item.missing.length,
@@ -457,6 +502,27 @@ export default function Storefront({
         helper:
           "Storefront discovery, campaign targeting, course recommendations, and analytics have real grow-interest data."
       },
+      ...(isDispensary
+        ? [
+            {
+              label: "Dispensary location",
+              complete:
+                hasText(storeDraft.city) &&
+                hasText(storeDraft.stateCode) &&
+                hasText(storeDraft.latitude) &&
+                hasText(storeDraft.longitude),
+              helper:
+                "City, state, and map coordinates allow state and distance discovery."
+            },
+            {
+              label: "Dispensary handoff",
+              complete:
+                hasText(storeDraft.websiteUrl) || storeDraft.pickupAvailable === true,
+              helper:
+                "Customers have a dispensary website or truthful in-store pickup path without GrowPath checkout."
+            }
+          ]
+        : []),
       {
         label: "Published storefront",
         complete: storeDraft.isPublished,
@@ -473,16 +539,22 @@ export default function Storefront({
         helper: "At least one product is ready for public display."
       },
       {
-        label: "Product checkout path",
-        complete: products.some(productCheckoutReady),
-        helper: "At least one product has an external checkout or Stripe price."
+        label: isDispensary ? "Product handoff path" : "Product checkout path",
+        complete: products.some((product) => productCheckoutReady(product, isDispensary)),
+        helper: isDispensary
+          ? "At least one inventory listing links to the dispensary website or offers in-store pickup."
+          : "At least one product has an external checkout or Stripe price."
       },
-      {
-        label: "Stripe connection",
-        complete: storefrontStripeReady(storefront),
-        helper:
-          "Connect Stripe from Profile & Billing before relying on in-app checkout, paid courses, or storefront payouts."
-      },
+      ...(!isDispensary
+        ? [
+            {
+              label: "Stripe connection",
+              complete: storefrontStripeReady(storefront),
+              helper:
+                "Connect Stripe from Profile & Billing before relying on in-app checkout, paid courses, or storefront payouts."
+            }
+          ]
+        : []),
       {
         label: "Published course",
         complete: storefrontCourses.length > 0,
@@ -502,6 +574,7 @@ export default function Storefront({
     [
       products,
       publishedProducts.length,
+      isDispensary,
       storefront,
       storeDraft,
       storefrontCampaigns.length,
@@ -531,6 +604,13 @@ export default function Storefront({
         method: storefront ? "PATCH" : "POST",
         body: {
           ...storefrontPayload,
+          stateCode: storefrontPayload.stateCode.trim().toUpperCase(),
+          latitude: storefrontPayload.latitude.trim()
+            ? Number(storefrontPayload.latitude)
+            : null,
+          longitude: storefrontPayload.longitude.trim()
+            ? Number(storefrontPayload.longitude)
+            : null,
           growInterests: splitTextList(growInterestsText)
         }
       });
@@ -540,6 +620,28 @@ export default function Storefront({
       handleApiError(e);
     } finally {
       setSavingStorefront(false);
+    }
+  }
+
+  async function useStorefrontLocation() {
+    if (!canEdit || locatingStorefront) return;
+    setLocatingStorefront(true);
+    setFeedback("");
+    try {
+      const coordinates = await requestCurrentCoordinates();
+      setStoreDraft((draft) => ({
+        ...draft,
+        latitude: String(coordinates.latitude),
+        longitude: String(coordinates.longitude)
+      }));
+      setFeedback("Location added. Confirm the city and state before publishing.");
+    } catch (error: any) {
+      setFeedback(
+        error?.message ||
+          "Current location is unavailable. Enter the dispensary coordinates manually."
+      );
+    } finally {
+      setLocatingStorefront(false);
     }
   }
 
@@ -677,8 +779,18 @@ export default function Storefront({
           inventoryItemId: productDraft.inventoryItemId.trim() || undefined,
           imageUrl: productDraft.imageUrl.trim() || undefined,
           externalPurchaseUrl: productDraft.externalPurchaseUrl.trim() || undefined,
-          stripeProductId: productDraft.stripeProductId.trim() || undefined,
-          stripePriceId: productDraft.stripePriceId.trim() || undefined,
+          regulatedCannabis: productDraft.regulatedCannabis,
+          pickupAvailable: isDispensary && productDraft.pickupAvailable,
+          pickupInstructions:
+            isDispensary && productDraft.pickupInstructions.trim()
+              ? productDraft.pickupInstructions.trim()
+              : undefined,
+          stripeProductId: isDispensary
+            ? undefined
+            : productDraft.stripeProductId.trim() || undefined,
+          stripePriceId: isDispensary
+            ? undefined
+            : productDraft.stripePriceId.trim() || undefined,
           npk: productDraft.npk.trim() || undefined,
           labelNpk: productDraft.npk.trim() || undefined,
           guaranteedAnalysis: productDraft.guaranteedAnalysis.trim() || undefined,
@@ -721,6 +833,9 @@ export default function Storefront({
         inventoryItemId: "",
         imageUrl: "",
         externalPurchaseUrl: "",
+        regulatedCannabis: false,
+        pickupAvailable: false,
+        pickupInstructions: "",
         stripeProductId: "",
         stripePriceId: "",
         npk: "",
@@ -1040,6 +1155,133 @@ export default function Storefront({
             autoCapitalize="none"
             style={styles.input}
           />
+          <Text style={styles.fieldLabel}>Storefront type</Text>
+          <View style={styles.objectActions}>
+            {[
+              { value: "general", label: "General Commercial Storefront" },
+              { value: "dispensary", label: "Dispensary" }
+            ].map((option) => (
+              <Pressable
+                key={option.value}
+                accessibilityRole="button"
+                accessibilityLabel={`Storefront type ${option.label}`}
+                accessibilityState={{
+                  selected: storeDraft.storefrontType === option.value
+                }}
+                onPress={() =>
+                  setStoreDraft((draft) => ({
+                    ...draft,
+                    storefrontType: option.value
+                  }))
+                }
+                style={[
+                  styles.secondaryButton,
+                  storeDraft.storefrontType === option.value && styles.selectedButton
+                ]}
+              >
+                <Text style={styles.secondaryText}>{option.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {isDispensary ? (
+            <View style={styles.dispensaryPanel}>
+              <Text style={styles.warningTitle}>Dispensary discovery and handoff</Text>
+              <Text style={styles.muted}>
+                Published dispensaries can show linked inventory and be found by state or
+                distance. GrowPath will not provide cannabis checkout.
+              </Text>
+              <View style={styles.linkGrid}>
+                <TextInput
+                  value={storeDraft.city}
+                  onChangeText={(city) => setStoreDraft((draft) => ({ ...draft, city }))}
+                  accessibilityLabel="Dispensary city"
+                  placeholder="City"
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={storeDraft.stateCode}
+                  onChangeText={(stateCode) =>
+                    setStoreDraft((draft) => ({
+                      ...draft,
+                      stateCode: stateCode.toUpperCase()
+                    }))
+                  }
+                  accessibilityLabel="Dispensary state"
+                  placeholder="State code, e.g. MA"
+                  autoCapitalize="characters"
+                  maxLength={2}
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={storeDraft.latitude}
+                  onChangeText={(latitude) =>
+                    setStoreDraft((draft) => ({ ...draft, latitude }))
+                  }
+                  accessibilityLabel="Dispensary latitude"
+                  placeholder="Latitude"
+                  keyboardType="numeric"
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={storeDraft.longitude}
+                  onChangeText={(longitude) =>
+                    setStoreDraft((draft) => ({ ...draft, longitude }))
+                  }
+                  accessibilityLabel="Dispensary longitude"
+                  placeholder="Longitude"
+                  keyboardType="numeric"
+                  style={[styles.input, styles.linkInput]}
+                />
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Use current location for dispensary"
+                disabled={locatingStorefront || !canEdit}
+                onPress={() => void useStorefrontLocation()}
+                style={[
+                  styles.secondaryButton,
+                  (locatingStorefront || !canEdit) && styles.disabled
+                ]}
+              >
+                <Text style={styles.secondaryText}>
+                  {locatingStorefront ? "Locating..." : "Use Current Location"}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Dispensary offers in-store pickup"
+                accessibilityState={{ checked: storeDraft.pickupAvailable }}
+                onPress={() =>
+                  setStoreDraft((draft) => ({
+                    ...draft,
+                    pickupAvailable: !draft.pickupAvailable
+                  }))
+                }
+                style={[
+                  styles.secondaryButton,
+                  storeDraft.pickupAvailable && styles.selectedButton
+                ]}
+              >
+                <Text style={styles.secondaryText}>
+                  {storeDraft.pickupAvailable
+                    ? "In-store Pickup Available"
+                    : "No Pickup Option Published"}
+                </Text>
+              </Pressable>
+              {storeDraft.pickupAvailable ? (
+                <TextInput
+                  value={storeDraft.pickupInstructions}
+                  onChangeText={(pickupInstructions) =>
+                    setStoreDraft((draft) => ({ ...draft, pickupInstructions }))
+                  }
+                  accessibilityLabel="Dispensary pickup instructions"
+                  placeholder="Pickup hours, ID reminder, or where to check in"
+                  multiline
+                  style={[styles.input, styles.notesInput]}
+                />
+              ) : null}
+            </View>
+          ) : null}
           <TextInput
             value={storeDraft.description}
             onChangeText={(description) =>
@@ -1510,30 +1752,104 @@ export default function Storefront({
               setProductDraft((draft) => ({ ...draft, externalPurchaseUrl }))
             }
             accessibilityLabel="Product external purchase URL"
-            placeholder="External purchase URL"
-            autoCapitalize="none"
-            style={styles.input}
-          />
-          <TextInput
-            value={productDraft.stripeProductId}
-            onChangeText={(stripeProductId) =>
-              setProductDraft((draft) => ({ ...draft, stripeProductId }))
+            placeholder={
+              isDispensary ? "Dispensary menu or product URL" : "External purchase URL"
             }
-            accessibilityLabel="Product Stripe product ID"
-            placeholder="Stripe product ID"
             autoCapitalize="none"
             style={styles.input}
           />
-          <TextInput
-            value={productDraft.stripePriceId}
-            onChangeText={(stripePriceId) =>
-              setProductDraft((draft) => ({ ...draft, stripePriceId }))
-            }
-            accessibilityLabel="Product Stripe price ID"
-            placeholder="Stripe price ID"
-            autoCapitalize="none"
-            style={styles.input}
-          />
+          {isDispensary ? (
+            <View style={styles.dispensaryPanel}>
+              <Text style={styles.muted}>
+                Dispensary inventory never uses GrowPath checkout. Link to your public
+                menu or publish truthful pickup availability.
+              </Text>
+              <View style={styles.objectActions}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Product is regulated cannabis"
+                  accessibilityState={{
+                    checked: productDraft.regulatedCannabis
+                  }}
+                  onPress={() =>
+                    setProductDraft((draft) => ({
+                      ...draft,
+                      regulatedCannabis: !draft.regulatedCannabis
+                    }))
+                  }
+                  style={[
+                    styles.secondaryButton,
+                    productDraft.regulatedCannabis && styles.selectedButton
+                  ]}
+                >
+                  <Text style={styles.secondaryText}>
+                    {productDraft.regulatedCannabis
+                      ? "Regulated Cannabis Item"
+                      : "Non-cannabis Item"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Product available for in-store pickup"
+                  accessibilityState={{ checked: productDraft.pickupAvailable }}
+                  onPress={() =>
+                    setProductDraft((draft) => ({
+                      ...draft,
+                      pickupAvailable: !draft.pickupAvailable
+                    }))
+                  }
+                  style={[
+                    styles.secondaryButton,
+                    productDraft.pickupAvailable && styles.selectedButton
+                  ]}
+                >
+                  <Text style={styles.secondaryText}>
+                    {productDraft.pickupAvailable
+                      ? "Pickup Available"
+                      : "Pickup Not Published"}
+                  </Text>
+                </Pressable>
+              </View>
+              {productDraft.pickupAvailable ? (
+                <TextInput
+                  value={productDraft.pickupInstructions}
+                  onChangeText={(pickupInstructions) =>
+                    setProductDraft((draft) => ({
+                      ...draft,
+                      pickupInstructions
+                    }))
+                  }
+                  accessibilityLabel="Product pickup instructions"
+                  placeholder="Optional product-specific pickup note"
+                  multiline
+                  style={[styles.input, styles.notesInput]}
+                />
+              ) : null}
+            </View>
+          ) : (
+            <>
+              <TextInput
+                value={productDraft.stripeProductId}
+                onChangeText={(stripeProductId) =>
+                  setProductDraft((draft) => ({ ...draft, stripeProductId }))
+                }
+                accessibilityLabel="Product Stripe product ID"
+                placeholder="Stripe product ID"
+                autoCapitalize="none"
+                style={styles.input}
+              />
+              <TextInput
+                value={productDraft.stripePriceId}
+                onChangeText={(stripePriceId) =>
+                  setProductDraft((draft) => ({ ...draft, stripePriceId }))
+                }
+                accessibilityLabel="Product Stripe price ID"
+                placeholder="Stripe price ID"
+                autoCapitalize="none"
+                style={styles.input}
+              />
+            </>
+          )}
           <TextInput
             value={productDraft.inventoryItemId}
             onChangeText={(inventoryItemId) =>
@@ -1728,14 +2044,15 @@ export default function Storefront({
           <Text style={styles.cardTitle}>Products</Text>
           {products.length === 0 ? (
             <Text style={styles.muted}>
-              No products yet. Create the first product with an image, description, price,
-              and checkout path so it can become a storefront card.
+              {isDispensary
+                ? "No inventory listings yet. Create the first public item with an image, description, linked inventory, and website or pickup handoff."
+                : "No products yet. Create the first product with an image, description, price, and checkout path so it can become a storefront card."}
             </Text>
           ) : (
             <View style={styles.productList}>
               {products.map((product) => {
                 const image = productImage(product);
-                const missing = productMissingSetup(product);
+                const missing = productMissingSetup(product, isDispensary);
                 const priceCents = productPrice(product);
                 return (
                   <View key={productId(product)} style={styles.productRow}>
@@ -1782,8 +2099,12 @@ export default function Storefront({
                           Linked inventory: {String(product.inventoryItemId)}
                         </Text>
                       ) : null}
-                      {productCheckoutReady(product) ? (
-                        <Text style={styles.goodText}>Checkout path added</Text>
+                      {productCheckoutReady(product, isDispensary) ? (
+                        <Text style={styles.goodText}>
+                          {isDispensary
+                            ? "Website or pickup handoff added"
+                            : "Checkout path added"}
+                        </Text>
                       ) : null}
                       {product.linkedRecipeId ||
                       product.linkedBatchId ||
@@ -1973,6 +2294,22 @@ const styles = StyleSheet.create({
   objectActionText: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
   discoveryActions: { gap: 6, marginTop: 10 },
   discoveryAction: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  dispensaryPanel: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    marginBottom: 10,
+    marginTop: 10,
+    padding: 12
+  },
+  fieldLabel: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 4
+  },
   linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   linkInput: { flexBasis: "48%", flexGrow: 1 },
   logoPreview: {

@@ -232,6 +232,23 @@ describe("API Wrappers Unit Tests", () => {
     ).toBe(true);
   });
 
+  it("Commercial API: public dispensary search supports state and distance", async () => {
+    await storefrontApi.searchPublicStorefronts({
+      storefrontType: "dispensary",
+      stateCode: "MA",
+      latitude: 42.3601,
+      longitude: -71.0589,
+      radiusMiles: 25,
+      limit: 25
+    });
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith(
+        "/api/commercial/storefront/public?storefrontType=dispensary&state=MA&latitude=42.3601&longitude=-71.0589&radiusMiles=25&limit=25"
+      )
+    ).toBe(true);
+  });
+
   it("Commercial API: products use canonical commercial endpoints", async () => {
     await productsApi.fetchProducts();
     expect(fetchCalls[0].url.endsWith("/api/commercial/products")).toBe(true);

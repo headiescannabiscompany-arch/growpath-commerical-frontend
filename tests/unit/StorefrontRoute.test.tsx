@@ -539,6 +539,83 @@ describe("Storefront route", () => {
     expect(createCall?.[1]?.body?.currency).toBeUndefined();
   });
 
+  it("configures a dispensary for location discovery and external or pickup handoff", async () => {
+    const screen = render(<Storefront />);
+
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
+
+    expect(screen.getByText(/GrowPath will not provide cannabis checkout/)).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Dispensary city"), "Boston");
+    fireEvent.changeText(screen.getByLabelText("Dispensary state"), "ma");
+    fireEvent.changeText(screen.getByLabelText("Dispensary latitude"), "42.3601");
+    fireEvent.changeText(screen.getByLabelText("Dispensary longitude"), "-71.0589");
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront website URL"),
+      "https://dispensary.example.com/menu"
+    );
+    fireEvent.press(screen.getByLabelText("Dispensary offers in-store pickup"));
+    fireEvent.changeText(
+      screen.getByLabelText("Dispensary pickup instructions"),
+      "Bring a valid government-issued ID."
+    );
+    fireEvent.press(screen.getByLabelText("Save storefront settings"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/storefront",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            storefrontType: "dispensary",
+            city: "Boston",
+            stateCode: "MA",
+            latitude: 42.3601,
+            longitude: -71.0589,
+            websiteUrl: "https://dispensary.example.com/menu",
+            pickupAvailable: true,
+            pickupInstructions: "Bring a valid government-issued ID."
+          })
+        })
+      )
+    );
+
+    expect(screen.queryByLabelText("Product Stripe price ID")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Licensed Flower");
+    fireEvent.changeText(screen.getByLabelText("Product category"), "cannabis");
+    fireEvent.changeText(
+      screen.getByLabelText("Product external purchase URL"),
+      "https://dispensary.example.com/menu/flower"
+    );
+    fireEvent.press(screen.getByLabelText("Product is regulated cannabis"));
+    fireEvent.press(screen.getByLabelText("Product available for in-store pickup"));
+    fireEvent.changeText(
+      screen.getByLabelText("Product pickup instructions"),
+      "Pickup during posted store hours."
+    );
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            name: "Licensed Flower",
+            regulatedCannabis: true,
+            externalPurchaseUrl: "https://dispensary.example.com/menu/flower",
+            pickupAvailable: true,
+            pickupInstructions: "Pickup during posted store hours.",
+            stripeProductId: undefined,
+            stripePriceId: undefined
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Product handoff path")).toBeTruthy();
+    expect(screen.queryByText("Stripe connection")).toBeNull();
+  });
+
   it("disables public preview links until a real slug exists", async () => {
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (options) return apiResponseFor(path, options);
