@@ -12,6 +12,7 @@ describe("Commercial page header policy", () => {
     const orders = read("src/screens/commercial/OrdersScreen.tsx");
     const productLines = read("src/app/home/commercial/product-lines.tsx");
     const batchPlanner = read("src/app/home/commercial/batch-planner.tsx");
+    const productTrials = read("src/app/home/commercial/trials.tsx");
 
     expect(layout).toMatch(
       /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/
@@ -25,6 +26,9 @@ describe("Commercial page header policy", () => {
     expect(layout).toMatch(
       /name="batch-planner"\s+options=\{\{[\s\S]*?title: "Product Batches",[\s\S]*?headerShown: false/
     );
+    expect(layout).toMatch(
+      /name="trials"\s+options=\{\{[\s\S]*?title: "Product Trials",[\s\S]*?headerShown: false/
+    );
     expect(feed).toContain('accessibilityRole="header"');
     expect(orders).toContain('accessibilityRole="header"');
     expect(productLines).toContain('accessibilityRole="header"');
@@ -35,5 +39,9 @@ describe("Commercial page header policy", () => {
     expect(batchPlanner).toContain("aria-level={1}");
     expect(batchPlanner).toContain("aria-level={2}");
     expect(batchPlanner).toContain("aria-level={3}");
+    expect(productTrials).toContain('accessibilityRole="header"');
+    expect(productTrials).toContain("aria-level={1}");
+    expect(productTrials).toContain("aria-level={2}");
+    expect(productTrials).toContain("aria-level={3}");
   });
 });

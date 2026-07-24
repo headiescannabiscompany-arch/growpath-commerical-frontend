@@ -2305,6 +2305,19 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0)
     );
+    expect(
+      screen
+        .getAllByRole("header", { name: "Product Trials" })
+        .map((heading) => heading.props["aria-level"])
+    ).toEqual([1, 2]);
+    [
+      "Create Product Trial",
+      "Evidence collection loop",
+      "Claim guard",
+      "Publishable result"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getByText("Evidence collection loop")).toBeTruthy();
     expect(screen.getByText("Claim guard")).toBeTruthy();
     expect(screen.getByText("Publishable result")).toBeTruthy();
@@ -2331,6 +2344,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByLabelText("Trial product id")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Seedling Safety" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
     expect(screen.getByText("Open Evidence Run")).toBeTruthy();
     expect(

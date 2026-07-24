@@ -136,7 +136,10 @@ export default function CommercialTabsLayout() {
         name="product-lines"
         options={{ title: "Product Lines", href: null, headerShown: false }}
       />
-      <Tabs.Screen name="trials" options={{ title: "Product Trials", href: null }} />
+      <Tabs.Screen
+        name="trials"
+        options={{ title: "Product Trials", href: null, headerShown: false }}
+      />
       <Tabs.Screen name="tasks" options={{ title: "Tasks", href: null }} />
       <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
       <Tabs.Screen name="community" options={{ title: "Forum / Q&A", href: null }} />

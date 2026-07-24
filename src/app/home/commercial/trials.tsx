@@ -243,7 +243,9 @@ export default function CommercialTrialsRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text style={styles.title}>Product Trials</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Product Trials
+          </Text>
           <Text style={styles.subtitle}>
             Track product effectiveness over time by linking products, formulas, batches,
             and product trial evidence runs.
@@ -272,7 +274,9 @@ export default function CommercialTrialsRoute() {
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Trial</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create Product Trial
+        </Text>
         <Text style={styles.body}>
           Trial record: connect CommercialProduct, ProductLine, SoilNutrientBatch, Recipe,
           and an underlying evidence run before using the result as public proof.
@@ -424,7 +428,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product Trials</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Product Trials
+        </Text>
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
@@ -436,7 +442,7 @@ export default function CommercialTrialsRoute() {
               const evidenceRunId = linkedEvidenceRunId(trial);
               return (
                 <View key={idOf(trial, index)} style={styles.row}>
-                  <Text style={styles.rowTitle}>
+                  <Text accessibilityRole="header" aria-level={3} style={styles.rowTitle}>
                     {trial.trialName || trial.name || "Untitled trial"}
                   </Text>
                   <Text style={styles.muted}>
@@ -492,7 +498,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Evidence collection loop</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence collection loop
+        </Text>
         <Text style={styles.body}>
           A trial should collect structured data through the same evidence-run operating
           system used by Pro users, then attach those records to the product/product line
@@ -516,7 +524,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Claim guard</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Claim guard
+        </Text>
         <Text style={styles.body}>
           Commercial trial summaries must not overclaim. Separate observed results,
           cautious interpretation, missing data, and marketing-safe public copy.
@@ -536,7 +546,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Publishable result</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Publishable result
+        </Text>
         <Text style={styles.body}>
           When a trial has enough evidence, create a feed campaign, storefront proof
           point, course lesson, or Forum/Q&A support answer from the trial summary.
