@@ -187,6 +187,16 @@ control, or can bypass its backend authorization boundary.
   filters, intact blockers, a disabled publish button, and zero campaigns. A genuine
   final-SHA screenshot is retained in `docs/qa/evidence`; no campaign was created.
   See `docs/qa/COMMERCIAL_FEED_DRAFT_SEMANTICS_EVIDENCE_2026-07-24.md`.
+- 2026-07-24 Commercial Courses production follow-up: the full builder exposed eight
+  page-level headings, two Back actions, and pricing radios without checked state;
+  the Commercial quick form also exposed unselected raw access/category/status
+  values. Frontend PR `#190` merged as
+  `4244afc592bf6655c2bbfd3c6902540b18132cc5` after GitHub CI run `30071405520`
+  passed. At `2026-07-24T02:17:08-04:00`, the signed-in Browser retest showed one
+  level-one heading, seven level-two steps, one Back action, checked pricing/access
+  choices, and readable existing-course metadata. Three genuine final-SHA
+  screenshots are retained in `docs/qa/evidence`; no course was mutated. See
+  `docs/qa/COMMERCIAL_COURSE_AUTHORING_ACCESSIBILITY_EVIDENCE_2026-07-24.md`.
 
 ### Personal Free backbone audit
 
