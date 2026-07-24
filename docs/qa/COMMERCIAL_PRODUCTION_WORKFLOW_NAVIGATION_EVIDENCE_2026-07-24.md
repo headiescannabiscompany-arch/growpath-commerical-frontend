@@ -364,5 +364,6 @@ Support route and expanded the intended fields.
 - Capture the remaining final-SHA workspace screenshots and video; the Evidence
   Run creation viewport now has a genuine final-SHA in-app Browser screenshot.
 - Complete independent outside-user acceptance.
-- Keep the requested inline Forum discussion accordion in the documented
-  post-Commercial follow-up; it is not claimed complete here.
+- The requested inline Forum discussion accordion was completed afterward on
+  frontend commit `021ab90d47f72e161a6c2488e3eb38f2cfbb8abf`; see
+  `docs/qa/FORUM_INLINE_DISCUSSION_PRODUCTION_EVIDENCE_2026-07-24.md`.
