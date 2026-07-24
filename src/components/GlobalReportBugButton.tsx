@@ -4,18 +4,19 @@ import { usePathname } from "expo-router";
 
 import ReportBugButton from "@/components/ReportBugButton";
 
-export function getReportBugButtonLabel(width: number) {
-  return width < 600 ? "Bug" : "Report Bug";
+export function shouldDockReportBugButton(width: number) {
+  return width < 600;
 }
 
 export default function GlobalReportBugButton() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const isDocked = shouldDockReportBugButton(width);
   if (pathname === "/support") return null;
   return (
-    <View pointerEvents="box-none" style={styles.layer}>
-      <View style={styles.button}>
-        <ReportBugButton label={getReportBugButtonLabel(width)} />
+    <View pointerEvents="box-none" style={isDocked ? styles.mobileDock : styles.layer}>
+      <View style={isDocked ? styles.mobileButton : styles.button}>
+        <ReportBugButton label="Report Bug" />
       </View>
     </View>
   );
@@ -31,5 +32,22 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 12,
     bottom: 76
+  },
+  mobileDock: {
+    position: "relative",
+    zIndex: 10000,
+    elevation: 10000,
+    flexShrink: 0,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#F4F7FB",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#D8DEE8"
+  },
+  mobileButton: {
+    alignSelf: "flex-end"
   }
 });
