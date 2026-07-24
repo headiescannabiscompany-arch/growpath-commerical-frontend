@@ -9,6 +9,8 @@ export default function CommercialTabsLayout() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const compactTabs = width < 760;
+  const compactSecondaryHref = (route: string) =>
+    compactTabs && pathname !== `/home/commercial/${route}` ? null : undefined;
   const hideTabBar =
     pathname.includes("/inventory-create") ||
     pathname.includes("/inventory/new") ||
@@ -75,21 +77,25 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="products/index" options={{ title: "Products" }} />
       <Tabs.Screen
         name="feed"
-        options={{ title: "Feed / Campaigns", headerShown: false }}
+        options={{
+          title: "Feed / Campaigns",
+          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="courses"
-        options={{ title: "Courses", href: compactTabs ? null : undefined }}
+        options={{ title: "Courses", href: compactSecondaryHref("courses") }}
       />
       <Tabs.Screen
         name="lives"
-        options={{ title: "Lives", href: compactTabs ? null : undefined }}
+        options={{ title: "Lives", href: compactSecondaryHref("lives") }}
       />
       <Tabs.Screen
         name="orders"
         options={{
           title: "Orders",
-          href: compactTabs ? null : undefined,
+          href: compactSecondaryHref("orders"),
           headerShown: false
         }}
       />
@@ -101,12 +107,26 @@ export default function CommercialTabsLayout() {
         name="analytics"
         options={{
           title: "Analytics",
-          href: compactTabs ? null : undefined,
+          href: compactSecondaryHref("analytics"),
           headerShown: false
         }}
       />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-      <Tabs.Screen name="tools/index" options={{ title: "Tools" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", href: compactSecondaryHref("profile") }}
+      />
+      <Tabs.Screen
+        name="tools/index"
+        options={{ title: "Tools", href: compactSecondaryHref("tools") }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: "More",
+          href: compactTabs ? undefined : null,
+          headerShown: false
+        }}
+      />
       <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"

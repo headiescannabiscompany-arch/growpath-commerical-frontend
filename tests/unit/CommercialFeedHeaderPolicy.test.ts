@@ -11,8 +11,8 @@ describe("Commercial Feed header policy", () => {
     const feed = read("src/app/feed/index.tsx");
     const orders = read("src/screens/commercial/OrdersScreen.tsx");
 
-    expect(layout).toContain(
-      'options={{ title: "Feed / Campaigns", headerShown: false }}'
+    expect(layout).toMatch(
+      /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/
     );
     expect(layout).toMatch(
       /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?headerShown: false/

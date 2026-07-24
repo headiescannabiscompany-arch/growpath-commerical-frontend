@@ -8,6 +8,7 @@ import CommercialCommunityRoute from "@/app/home/commercial/community";
 import CommercialCoursesRoute from "@/app/home/commercial/courses";
 import CommercialCourseDetailRoute from "@/app/home/commercial/courses/[courseId]";
 import CommercialMarketingRoute from "@/app/home/commercial/marketing";
+import CommercialMoreRoute from "@/app/home/commercial/more";
 import CommercialOrdersRoute from "@/app/home/commercial/orders";
 import CommercialProductLinesRoute from "@/app/home/commercial/product-lines";
 import CommercialProductLineDetailRoute from "@/app/home/commercial/product-lines/[lineId]";
@@ -2909,6 +2910,39 @@ describe("commercial workflow pages", () => {
     expect(screen.getByLabelText("Selected commercial order order-1")).toBeTruthy();
     expect(screen.getByText("Casey Grower | casey@example.com")).toBeTruthy();
     expect(screen.getAllByText("$84.00").length).toBeGreaterThan(0);
+  });
+
+  it("keeps every secondary Commercial workspace reachable from compact navigation", () => {
+    const screen = render(<CommercialMoreRoute />);
+
+    expect(
+      screen.getByRole("header", { name: "More Commercial Workspaces" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Learning and engagement",
+      "Sales and measurement",
+      "Products and production",
+      "Workspace"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
+    [
+      "Courses",
+      "Lives",
+      "Forum / Q&A",
+      "Orders",
+      "Analytics",
+      "Product Lines",
+      "Product Batches",
+      "Product Trials",
+      "Inventory Support",
+      "Profile",
+      "Tools"
+    ].forEach((destination) => {
+      expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();
+    });
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {
