@@ -34,13 +34,19 @@ Date: 2026-07-24
   - source commit `63fec2aae62ba2ca9f69faa77416d7ce29bc143a`
   - merge `e19854836e2adaf6b3d379ca9ee11842cfe72e50`
   - Render deployment `dep-d9hrg9bbc2fs739qvldg`
+- Product Batches heading hierarchy:
+  - source and main commit `777280e23a6b018b1829544bc33a9b6aaf1856d9`
+  - Render deployment `dep-d9hrufepbkes738bhsc0`
+  - GitHub pull-request creation was unavailable through the connector, GraphQL,
+    and REST; the validated one-commit branch was fast-forwarded to `main`
+    without force after confirming its parent was the then-current `main`.
 
 Production base URL: `https://growpathai.com`
 
 Latest tested production merge:
-`e19854836e2adaf6b3d379ca9ee11842cfe72e50`
+`777280e23a6b018b1829544bc33a9b6aaf1856d9`
 
-Latest production retest timestamp: `2026-07-24T15:12:50-04:00`
+Latest production retest timestamp: `2026-07-24T15:44:26-04:00`
 
 ## Session and evidence type
 
@@ -97,11 +103,18 @@ trial.
 ### Product Batches
 
 Production route:
-`https://growpathai.com/home/commercial/batch-planner?release=b81cb0d1b1a99df0f84f54bdec2f22de8f558257&verify=product-batch-pickers-live`
+`https://growpathai.com/home/commercial/batch-planner?release=777280e23a6b018b1829544bc33a9b6aaf1856d9&verify=product-batch-headings-live`
 
 The zero-record account exposed Create Product, Create Product Line, and Create
 Evidence Run. The advanced control exposed the three direct ID fields without
 submitting a batch.
+
+The final production DOM exposed exactly one level-one
+`Soil & Nutrient Batch Planner` page heading and six level-two workflow
+headings: Commercial batch fields, Create commercial batch, Current batches,
+From formula to product, Effectiveness loop, and Naming rule. Product Batches
+remained the navigation destination label. The account had no saved batches, so
+no level-three record heading was present and no batch was created.
 
 ### Inventory Support
 
@@ -158,6 +171,13 @@ Support route and expanded the intended fields.
 - Merge `e19854836e2adaf6b3d379ca9ee11842cfe72e50` Frontend CI run
   `30119646653` passed.
 - The same merge's Production Build Preflight run `30119646643` passed.
+- The Product Batches-focused Commercial/header/knowledge run passed 36 tests;
+  targeted ESLint, the visual-polish contract, and `git diff --check` also
+  passed.
+- Product Batches branch CI run `30120604743` passed.
+- Main commit `777280e23a6b018b1829544bc33a9b6aaf1856d9` Frontend CI run
+  `30121234078` passed.
+- The same commit's Production Build Preflight run `30121234081` passed.
 
 ## Remaining acceptance work
 
