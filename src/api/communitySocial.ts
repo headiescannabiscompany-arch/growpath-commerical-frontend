@@ -42,6 +42,8 @@ export type Guild = {
   _id?: string;
   name?: string;
   description?: string;
+  topics?: string[];
+  isPublic?: boolean;
   memberCount?: number;
   joined?: boolean;
   isMember?: boolean;
@@ -182,6 +184,24 @@ export async function reportForumPost(
 export async function listGuilds(): Promise<Guild[]> {
   const response = await communityRequest(apiRoutes.GUILDS.LIST, { method: "GET" });
   return rows<Guild>(response, ["guilds", "items"]);
+}
+
+export async function createGuild(data: {
+  name: string;
+  description: string;
+  topics?: string[];
+  isPublic?: boolean;
+}): Promise<Guild> {
+  const response = await communityRequest(apiRoutes.GUILDS.CREATE, {
+    method: "POST",
+    body: {
+      name: data.name.trim(),
+      description: data.description.trim(),
+      topics: (data.topics || []).map((topic) => topic.trim()).filter(Boolean),
+      isPublic: data.isPublic !== false
+    }
+  });
+  return response?.created ?? response?.guild ?? response?.data?.guild ?? response;
 }
 
 export async function joinGuild(id: string) {

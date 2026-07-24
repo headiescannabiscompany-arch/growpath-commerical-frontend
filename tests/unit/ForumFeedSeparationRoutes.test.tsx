@@ -11,6 +11,7 @@ const mockListForumPosts = jest.fn();
 const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
 const mockCreateForumPost = jest.fn();
+const mockCreateGuild = jest.fn();
 const mockReplace = jest.fn();
 let mockGrowInterests: Record<string, string[]> = {};
 let mockAuthState: any = {
@@ -61,6 +62,7 @@ jest.mock("@/api/communitySocial", () => ({
   markNotificationRead: jest.fn(),
   joinGuild: jest.fn(),
   leaveGuild: jest.fn(),
+  createGuild: (...args: any[]) => mockCreateGuild(...args),
   createForumPost: (...args: any[]) => mockCreateForumPost(...args),
   postId: (post: any) => post.id || post._id || post.title
 }));
@@ -125,6 +127,7 @@ describe("Forum and feed separation copy", () => {
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
+    mockCreateGuild.mockResolvedValue({ id: "group-new" });
     mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
     mockAuthState = {
       isAuthed: true,
@@ -267,6 +270,38 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
     expect(screen.getByText("Forum group")).toBeTruthy();
     expect(screen.queryByText("Guild")).toBeNull();
+  });
+
+  it("creates a forum group from the canonical directory", async () => {
+    const screen = render(<CommunitiesDirectoryRoute />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Create forum group"));
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group name"),
+      "Living Soil Builders"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group description"),
+      "Compare soil-building methods and evidence."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group topics"),
+      "living soil, compost, amendments"
+    );
+    fireEvent.press(screen.getByLabelText("Private forum group"));
+    fireEvent.press(screen.getByLabelText("Save new forum group"));
+
+    await waitFor(() =>
+      expect(mockCreateGuild).toHaveBeenCalledWith({
+        name: "Living Soil Builders",
+        description: "Compare soil-building methods and evidence.",
+        topics: ["living soil", "compost", "amendments"],
+        isPublic: false
+      })
+    );
+    expect(mockListGuilds.mock.calls.length).toBeGreaterThan(1);
+    expect(screen.getByText(/Living Soil Builders was created/)).toBeTruthy();
   });
 
   it("opens personal forum list posts through the shared forum detail route", async () => {

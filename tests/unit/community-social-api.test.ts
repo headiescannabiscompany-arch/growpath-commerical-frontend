@@ -82,4 +82,30 @@ describe("community social API", () => {
       invalidateOn401: false
     });
   });
+
+  it("creates a normalized Forum group through the canonical guild endpoint", async () => {
+    const { createGuild } = require("@/api/communitySocial");
+    mockApiRequest.mockResolvedValueOnce({
+      guild: { id: "group-1", name: "Living Soil Builders", isPublic: false }
+    });
+
+    const result = await createGuild({
+      name: "  Living Soil Builders  ",
+      description: "  Compare soil-building methods and evidence.  ",
+      topics: [" living soil ", "", " compost "],
+      isPublic: false
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/guilds", {
+      method: "POST",
+      invalidateOn401: false,
+      body: {
+        name: "Living Soil Builders",
+        description: "Compare soil-building methods and evidence.",
+        topics: ["living soil", "compost"],
+        isPublic: false
+      }
+    });
+    expect(result).toMatchObject({ id: "group-1", isPublic: false });
+  });
 });

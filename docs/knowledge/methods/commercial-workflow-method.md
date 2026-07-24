@@ -12,6 +12,8 @@ Commercial analytics must be owner-scoped and event-backed. Attribute public sto
 
 Commercial Forum participation uses the shared discussion engine and a server-verified brand identity. Preserve links to products, courses, lessons, lives, storefronts, evidence runs, tasks, and alerts, but keep promotional outreach in Feed campaigns.
 
+The canonical Forum Directory must support both group discovery and group creation. Group creation requires a name and description, accepts reviewed topic labels, makes public-versus-private discoverability an explicit named choice, and reports success or API failure in context; do not strand creation in a legacy compatibility screen.
+
 Product Q&A, course discussion, and live Q&A are Forum categories attached to their source records. They support questions and threaded help; campaign creative, offers, and reach belong in Feed/Campaigns.
 
 Forum replies, mentions, and unanswered product/course/live questions create source-linked in-app alerts. Thread or comment task creation must preserve exact Forum and commercial-object context. Forum AI may suggest titles, categories, tags, summaries, and tasks, but must label its provider/fallback and require review before writes.
