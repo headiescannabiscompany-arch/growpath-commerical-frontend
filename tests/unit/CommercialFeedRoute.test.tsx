@@ -107,9 +107,15 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByLabelText("Campaign placements").props.role).toBe("group");
     expect(
       screen.getByRole("radio", {
-        name: "Filter feed by all"
+        name: "Filter campaigns by All campaigns"
       }).props.accessibilityState?.checked
     ).toBe(true);
+    expect(screen.getByText("All campaigns")).toBeTruthy();
+    expect(screen.getByText("Updates")).toBeTruthy();
+    expect(screen.getByText("Product listings")).toBeTruthy();
+    expect(screen.getByText("Launches & live events")).toBeTruthy();
+    expect(screen.getByText("Education")).toBeTruthy();
+    expect(screen.getByText(/CTA: Open .* Will publish as: Active/)).toBeTruthy();
     expect(
       screen.getByRole("button", {
         name: "Publish feed campaign"
@@ -321,11 +327,11 @@ describe("CommercialFeedRoute", () => {
     fireEvent.changeText(screen.getByLabelText("External link URL"), "not-a-url");
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign schedule start"),
-      "2026-07-25T12:00:00Z"
+      "2099-07-25T12:00:00Z"
     );
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign schedule end"),
-      "2026-07-24T12:00:00Z"
+      "2099-07-24T12:00:00Z"
     );
 
     expect(
@@ -344,10 +350,11 @@ describe("CommercialFeedRoute", () => {
     );
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign schedule end"),
-      "2026-07-26T12:00:00Z"
+      "2099-07-26T12:00:00Z"
     );
 
     expect(screen.getByText("Ready to publish.")).toBeTruthy();
+    expect(screen.getByText(/Will publish as: Scheduled/)).toBeTruthy();
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(false);
