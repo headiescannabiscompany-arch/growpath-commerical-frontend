@@ -167,21 +167,34 @@ export default function AnalyticsScreen() {
   const [overview, setOverview] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [summaryWarning, setSummaryWarning] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
+    setSummaryWarning("");
     try {
-      const [grows, logs, plants, tasks, toolRuns, personalOverview] = await Promise.all([
-        listPersonalGrows(),
-        listPersonalLogs(),
-        listPersonalPlants(),
-        listPersonalTasks(),
-        listToolRuns(),
+      const [recordsResult, overviewResult] = await Promise.allSettled([
+        Promise.all([
+          listPersonalGrows(),
+          listPersonalLogs(),
+          listPersonalPlants(),
+          listPersonalTasks(),
+          listToolRuns()
+        ]),
         fetchPersonalAnalyticsOverview()
       ]);
+      if (recordsResult.status === "rejected") throw recordsResult.reason;
+      const [grows, logs, plants, tasks, toolRuns] = recordsResult.value;
       setRows({ grows, logs, plants, tasks, toolRuns });
-      setOverview(personalOverview || {});
+      if (overviewResult.status === "fulfilled") {
+        setOverview(overviewResult.value || {});
+      } else {
+        setOverview({});
+        setSummaryWarning(
+          "The server summary is unavailable. Showing analytics calculated from your loaded records."
+        );
+      }
     } catch (err) {
       setError(err?.message || "Unable to refresh analytics.");
     } finally {
@@ -197,23 +210,65 @@ export default function AnalyticsScreen() {
   const { model } = analytics;
   const planLabel = entitlements.plan || "free";
   const modeLabel = entitlements.mode || "personal";
+  const hasRecordedActivity =
+    rows.grows.length +
+      rows.logs.length +
+      rows.plants.length +
+      rows.tasks.length +
+      rows.toolRuns.length >
+    0;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Analytics</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Grow Analytics
+          </Text>
           <Text style={styles.subtitle}>
-            {modeLabel} mode | {planLabel} plan
+            {modeLabel} workspace · {planLabel} plan
           </Text>
         </View>
-        <Pressable style={styles.refreshButton} onPress={load} disabled={loading}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh grow analytics"
+          style={[styles.refreshButton, loading && styles.disabledButton]}
+          onPress={load}
+          disabled={loading}
+        >
           <Text style={styles.refreshText}>{loading ? "Refreshing" : "Refresh"}</Text>
         </Pressable>
       </View>
 
       {loading ? <ActivityIndicator style={styles.loading} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <View accessibilityRole="alert" style={styles.errorBox}>
+          <Text style={styles.error}>{error}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry grow analytics"
+            onPress={load}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {summaryWarning ? (
+        <View accessibilityRole="alert" style={styles.warningBox}>
+          <Text style={styles.warningText}>{summaryWarning}</Text>
+        </View>
+      ) : null}
+      {!loading && !error && !hasRecordedActivity ? (
+        <View accessibilityRole="summary" style={styles.emptyNotice}>
+          <Text style={styles.emptyNoticeTitle}>No recorded grow activity yet</Text>
+          <Text style={styles.emptyNoticeBody}>
+            Add a grow, journal entry, task, plant, or saved tool run to begin building
+            analytics. Missing measurements remain unknown rather than becoming inferred
+            scores.
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.grid}>
         <Metric label="Active grows" value={model.stats.activeGrowCount} />
@@ -235,11 +290,16 @@ export default function AnalyticsScreen() {
           value={overview.activity?.runComparisons ?? analytics.runComparisons.length}
         />
         <Metric label="Open tasks" value={analytics.openTasks.length} />
-        <Metric label="Task completion" value={`${analytics.completionRate}%`} />
+        <Metric
+          label="Task completion"
+          value={`${overview.taskCompletion?.rate ?? analytics.completionRate}%`}
+        />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Last 7 Days</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Last 7 Days
+        </Text>
         <View style={styles.row}>
           <Text style={styles.rowLabel}>Journal entries</Text>
           <Text style={styles.rowValue}>{analytics.recentLogs.length}</Text>
@@ -259,7 +319,9 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Measured History</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Measured History
+        </Text>
         <View style={styles.row}>
           <Text style={styles.rowLabel}>Logs with environment measurements</Text>
           <Text style={styles.rowValue}>
@@ -280,7 +342,9 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Grow Activity</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Grow Activity
+        </Text>
         {topEntries(analytics.logCountsByGrow).length ? (
           topEntries(analytics.logCountsByGrow).map(([name, count]) => (
             <View key={name} style={styles.row}>
@@ -294,7 +358,9 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Plant Stages</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Plant Stages
+        </Text>
         {topEntries(analytics.stageCounts).length ? (
           topEntries(analytics.stageCounts).map(([stage, count]) => (
             <View key={stage} style={styles.row}>
@@ -308,7 +374,9 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Tool Mix</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Tool Mix
+        </Text>
         {topEntries(analytics.toolCounts).length ? (
           topEntries(analytics.toolCounts).map(([tool, count]) => (
             <View key={tool} style={styles.row}>
@@ -324,7 +392,9 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Needs Attention</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Needs Attention
+        </Text>
         {analytics.overdueTasks.slice(0, 4).map((task) => (
           <View key={rowId(task, task.title)} style={styles.attentionRow}>
             <Text style={styles.featureTitle}>{task.title || "Untitled task"}</Text>
@@ -351,7 +421,11 @@ export default function AnalyticsScreen() {
 
 function Metric({ label, value }) {
   return (
-    <View style={styles.metric}>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${String(value)}`}
+      style={styles.metric}
+    >
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
@@ -391,12 +465,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   refreshText: { color: "#166534", fontWeight: "800" },
+  disabledButton: { opacity: 0.65 },
   loading: { marginBottom: 12 },
+  errorBox: {
+    alignItems: "flex-start",
+    backgroundColor: "#FEF2F2",
+    borderColor: "#FCA5A5",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 10,
+    marginBottom: 12,
+    padding: 12
+  },
   error: {
     color: "#B91C1C",
-    fontWeight: "700",
-    marginBottom: 12
+    fontWeight: "700"
   },
+  retryButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#B91C1C",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 7
+  },
+  retryText: { color: "#B91C1C", fontWeight: "800" },
+  warningBox: {
+    backgroundColor: "#FFFBEB",
+    borderColor: "#FCD34D",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 12
+  },
+  warningText: { color: "#92400E", fontWeight: "700", lineHeight: 19 },
+  emptyNotice: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 16,
+    padding: 14
+  },
+  emptyNoticeTitle: { color: "#166534", fontSize: 15, fontWeight: "900" },
+  emptyNoticeBody: { color: "#365E3D", lineHeight: 19, marginTop: 4 },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",

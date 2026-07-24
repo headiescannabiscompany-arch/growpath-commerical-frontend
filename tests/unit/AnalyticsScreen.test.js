@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AnalyticsScreen from "@/screens/AnalyticsScreen";
 
@@ -121,9 +121,12 @@ describe("AnalyticsScreen", () => {
 
     await waitFor(() => expect(screen.getByText("Flower Room")).toBeTruthy());
 
-    expect(screen.getByText("personal mode | pro plan")).toBeTruthy();
-    expect(screen.getByText("Last 7 Days")).toBeTruthy();
-    expect(screen.getByText("Grow Activity")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Grow Analytics" })).toBeTruthy();
+    expect(screen.getByText("personal workspace · pro plan")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Last 7 Days" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Grow Activity" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Refresh grow analytics" })).toBeTruthy();
+    expect(screen.getByLabelText("Grow consistency: 50%")).toBeTruthy();
     expect(screen.getByText("Grow consistency")).toBeTruthy();
     expect(screen.getByText("Environment records")).toBeTruthy();
     expect(screen.getByText("Run comparisons")).toBeTruthy();
@@ -134,5 +137,23 @@ describe("AnalyticsScreen", () => {
     expect(screen.getByText("dew point guard")).toBeTruthy();
     expect(screen.getByText("Water plant")).toBeTruthy();
     expect(screen.getByText("No journal entry in the last 10 days.")).toBeTruthy();
+  });
+
+  it("keeps record-backed analytics usable when the supplemental summary fails", async () => {
+    mockFetchPersonalAnalyticsOverview.mockRejectedValueOnce(
+      new Error("Summary temporarily unavailable")
+    );
+    const screen = render(<AnalyticsScreen />);
+
+    await waitFor(() => expect(screen.getByText("Flower Room")).toBeTruthy());
+    expect(
+      screen.getByText(/server summary is unavailable.*loaded records/i)
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Active grows: 2")).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Refresh grow analytics" }));
+    await waitFor(() =>
+      expect(mockFetchPersonalAnalyticsOverview).toHaveBeenCalledTimes(2)
+    );
   });
 });

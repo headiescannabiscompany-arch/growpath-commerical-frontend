@@ -1,10 +1,31 @@
 import { apiRequest } from "./apiRequest";
 
 export type PersonalAnalyticsOverview = {
-  consistency?: { activeGrows?: number; recentlyLoggedGrows?: number; rate?: number };
-  activity?: { journalEntries?: number; toolRuns?: number; runComparisons?: number };
-  environmentHistory?: { sourceCount?: number; pointCount?: number };
-  taskCompletion?: { total?: number; completed?: number; rate?: number };
+  consistency?: {
+    activeGrows?: number;
+    recentlyLoggedGrows?: number;
+    rate?: number;
+    windowDays?: number;
+  };
+  activity?: {
+    journalEntries?: number;
+    toolRuns?: number;
+    runComparisons?: number;
+    recentJournalEntries?: number;
+    recentToolRuns?: number;
+  };
+  environmentHistory?: {
+    sourceCount?: number;
+    pointCount?: number;
+    journalMeasurementCount?: number;
+  };
+  taskCompletion?: {
+    total?: number;
+    completed?: number;
+    open?: number;
+    overdue?: number;
+    rate?: number;
+  };
 };
 
 export async function fetchPersonalAnalyticsOverview(): Promise<PersonalAnalyticsOverview> {
