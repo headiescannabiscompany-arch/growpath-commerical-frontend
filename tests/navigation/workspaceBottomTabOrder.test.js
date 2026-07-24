@@ -71,6 +71,16 @@ describe("workspace bottom-tab order", () => {
     expect(contents).toContain('name="tasks" options={{ title: "Tasks", href: null }}');
   });
 
+  it("centers Commercial text-only tabs without reserving an empty icon row", () => {
+    const contents = source("src/app/home/commercial/_layout.tsx");
+
+    expect(contents).toContain('tabBarLabelPosition: "beside-icon"');
+    expect(contents).not.toContain("tabBarIcon: () => null");
+    expect(contents).toContain(
+      'tabBarLabelStyle: { fontSize: compactTabs ? 11 : 12, fontWeight: "700" }'
+    );
+  });
+
   it("keeps the five Facility compact destinations in task-first order", () => {
     const contents = source("src/app/home/facility/(tabs)/_layout.tsx");
     expectOrder(contents, ["dashboard", "rooms", "tasks", "ai-ask", "profile"]);

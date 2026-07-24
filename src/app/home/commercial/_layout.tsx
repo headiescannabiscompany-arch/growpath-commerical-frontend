@@ -52,8 +52,8 @@ export default function CommercialTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
-        tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
+        tabBarLabelPosition: "beside-icon",
+        tabBarLabelStyle: { fontSize: compactTabs ? 11 : 12, fontWeight: "700" },
         tabBarStyle
       }}
     >
