@@ -178,6 +178,15 @@ control, or can bypass its backend authorization boundary.
   Render deployments `dep-d9gm9gmq1p3s73burq80` and `dep-d9gm6onavr4c73d9p0h0`
   were live when the fresh-route first click produced the correct Facility-specific
   filename at 8:49:19 PM ET; screenshot evidence and HTTP 200 health followed.
+- 2026-07-24 Commercial Feed production follow-up: the zero-campaign editor called
+  its blocked, unpublished draft `active` and exposed raw campaign type values as
+  filters. Frontend PR `#188` merged as
+  `91125db7a10efadebe94723586c533241c111ab5` after GitHub CI run `30070372681`
+  passed. At `2026-07-24T01:54:46-04:00`, the signed-in Commercial Browser retest
+  showed truthful `Will publish as` wording, five readable and accessible campaign
+  filters, intact blockers, a disabled publish button, and zero campaigns. A genuine
+  final-SHA screenshot is retained in `docs/qa/evidence`; no campaign was created.
+  See `docs/qa/COMMERCIAL_FEED_DRAFT_SEMANTICS_EVIDENCE_2026-07-24.md`.
 
 ### Personal Free backbone audit
 
