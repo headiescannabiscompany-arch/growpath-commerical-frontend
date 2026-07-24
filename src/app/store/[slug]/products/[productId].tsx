@@ -21,8 +21,13 @@ import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
 import {
+  isDispensaryStorefront,
   isRegulatedCannabisProduct,
-  publicProductCanCheckout
+  publicInventorySummary,
+  publicProductCanCheckout,
+  publicProductExternalUrl,
+  publicProductPickupAvailable,
+  publicProductPickupInstructions
 } from "@/utils/regulatedCommerce";
 
 function asArray(value: any) {
@@ -49,19 +54,22 @@ function campaignHref(campaign: any) {
   return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
 }
 
-function productCanCheckout(product: any) {
-  return publicProductCanCheckout(product);
+function productCanCheckout(product: any, storefront?: any) {
+  return publicProductCanCheckout(product, storefront);
 }
 
 function lineKey(line: any) {
   return String(line?.id || line?._id || line?.lineId || line?.slug || "");
 }
 
-function money(product: any) {
+function money(product: any, storefront?: any) {
   const cents = Number(product?.priceCents || 0);
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
   const price = Number(product?.price || 0);
-  return price > 0 ? `$${price.toFixed(2)}` : "Free";
+  if (price > 0) return `$${price.toFixed(2)}`;
+  return isDispensaryStorefront(storefront) || isRegulatedCannabisProduct(product)
+    ? "Check dispensary for price"
+    : "Free";
 }
 
 function normalize(value: string) {
@@ -340,10 +348,12 @@ export default function PublicProductRoute() {
     }
   }
 
-  const externalUrl =
-    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
-  const canCheckout = productCanCheckout(product);
+  const externalUrl = publicProductExternalUrl(product, storefront);
+  const canCheckout = productCanCheckout(product, storefront);
   const licensedTransferOnly = isRegulatedCannabisProduct(product);
+  const dispensaryStorefront = isDispensaryStorefront(storefront);
+  const pickupAvailable = publicProductPickupAvailable(product, storefront);
+  const pickupInstructions = publicProductPickupInstructions(product, storefront);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
   const links = publicLinks(storefront);
   const specs = product?.specs || {};
@@ -402,13 +412,27 @@ export default function PublicProductRoute() {
                 Interests: {publicGrowInterests(product).join(", ")}
               </Text>
             ) : null}
-            <Text style={styles.price}>{money(product)}</Text>
+            <Text style={styles.price}>{money(product, storefront)}</Text>
+            {dispensaryStorefront ? (
+              <Text style={styles.inventory}>{publicInventorySummary(product)}</Text>
+            ) : null}
 
-            {licensedTransferOnly ? (
+            {licensedTransferOnly && dispensaryStorefront ? (
+              <Text style={styles.warning}>
+                GrowPath does not verify licensing or process cannabis checkout. Confirm
+                availability, eligibility, and pickup requirements with the dispensary.
+              </Text>
+            ) : licensedTransferOnly ? (
               <Text style={styles.warning}>
                 Catalog only. Cannabis sales are not available through public checkout.
                 Licensed commercial recipients must complete verification and transfer
                 paperwork directly with the facility.
+              </Text>
+            ) : null}
+            {pickupAvailable ? (
+              <Text style={styles.pickup}>
+                In-store pickup available
+                {pickupInstructions ? ` · ${pickupInstructions}` : ""}
               </Text>
             ) : null}
 
@@ -425,7 +449,7 @@ export default function PublicProductRoute() {
                   </Text>
                 </Pressable>
               ) : null}
-              {externalUrl && !licensedTransferOnly ? (
+              {externalUrl && (!licensedTransferOnly || dispensaryStorefront) ? (
                 <Pressable
                   accessibilityLabel={`Open external product ${product?.name || "product"}`}
                   style={styles.secondaryButton}
@@ -442,10 +466,15 @@ export default function PublicProductRoute() {
                     void openUrl(String(externalUrl));
                   }}
                 >
-                  <Text style={styles.secondaryButtonText}>External Link</Text>
+                  <Text style={styles.secondaryButtonText}>
+                    {dispensaryStorefront ? "Dispensary Website" : "External Link"}
+                  </Text>
                 </Pressable>
               ) : null}
-              {!licensedTransferOnly && !canCheckout && !externalUrl ? (
+              {!licensedTransferOnly &&
+              !dispensaryStorefront &&
+              !canCheckout &&
+              !externalUrl ? (
                 <Text style={styles.meta}>
                   Checkout is not available for this product.
                 </Text>
@@ -811,6 +840,8 @@ const styles = StyleSheet.create({
   bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
   meta: { color: "#64748B", lineHeight: 19 },
   interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
+  inventory: { color: "#166534", fontSize: 14, fontWeight: "900", marginTop: 4 },
+  pickup: { color: "#166534", fontWeight: "800", lineHeight: 20 },
   price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
   warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
   specGrid: { gap: 8 },

@@ -61,6 +61,9 @@ describe("GrowPath knowledge registries", () => {
       "published-course discovery limited to published storefronts and explicit public fields"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "explicit dispensary discovery by state or user-authorized distance with published linked inventory and external-site or in-store-pickup handoff"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "direct draft-course detail limited to the authenticated author or platform administrator"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -137,6 +140,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never pass reserved public route words or malformed record IDs into database ID queries."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never include dispensaries in default horticulture discovery or offer GrowPath checkout, payment, delivery, shipping, or reservation for a dispensary item."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never invent dispensary availability or imply pickup completion; use published linked inventory and a dispensary-provided website or pickup instructions."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never honor deterministic test identity headers as production authentication."

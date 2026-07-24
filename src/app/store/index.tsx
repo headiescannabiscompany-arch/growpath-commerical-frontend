@@ -7,6 +7,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { PublicCoordinates, requestCurrentCoordinates } from "@/utils/locationSearch";
 
 function asArray(payload: any) {
   if (Array.isArray(payload)) return payload;
@@ -30,6 +31,13 @@ function rowSlug(row: any) {
   );
 }
 
+function dispensaryLocation(row: any) {
+  return [row?.city, row?.stateCode || row?.state]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
 export default function StoreIndex() {
   const entitlements = useEntitlements();
   const router = useRouter();
@@ -42,8 +50,14 @@ export default function StoreIndex() {
   const [slug, setSlug] = useState("");
   const [brandQuery, setBrandQuery] = useState(queryParam);
   const [brands, setBrands] = useState<any[]>([]);
+  const [dispensaries, setDispensaries] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchingDispensaries, setSearchingDispensaries] = useState(false);
   const [directoryMessage, setDirectoryMessage] = useState("");
+  const [dispensaryMessage, setDispensaryMessage] = useState("");
+  const [dispensaryState, setDispensaryState] = useState("");
+  const [radiusMiles, setRadiusMiles] = useState(25);
+  const [coordinates, setCoordinates] = useState<PublicCoordinates | null>(null);
   const cleanSlug = slug.trim();
 
   const loadBrands = useCallback(async (options?: { q?: string; similarTo?: string }) => {
@@ -81,6 +95,58 @@ export default function StoreIndex() {
 
   function searchBrands() {
     void loadBrands({ q: brandQuery });
+  }
+
+  const loadDispensaries = useCallback(
+    async (nextCoordinates: PublicCoordinates | null = coordinates) => {
+      const stateCode = dispensaryState.trim().toUpperCase();
+      if (!stateCode && !nextCoordinates) {
+        setDispensaryMessage(
+          "Enter a state or allow current-location access to search nearby."
+        );
+        return;
+      }
+      setSearchingDispensaries(true);
+      setDispensaryMessage("");
+      try {
+        const payload = await searchPublicStorefronts({
+          storefrontType: "dispensary",
+          stateCode: stateCode || undefined,
+          latitude: nextCoordinates?.latitude,
+          longitude: nextCoordinates?.longitude,
+          radiusMiles: nextCoordinates ? radiusMiles : undefined,
+          limit: 25
+        });
+        const rows = asArray(payload);
+        setDispensaries(rows);
+        if (!rows.length) {
+          setDispensaryMessage(
+            "No published dispensaries match this state or distance yet."
+          );
+        }
+      } catch (error: any) {
+        setDispensaryMessage(error?.message || "Unable to search public dispensaries.");
+      } finally {
+        setSearchingDispensaries(false);
+      }
+    },
+    [coordinates, dispensaryState, radiusMiles]
+  );
+
+  async function searchFromCurrentLocation() {
+    setSearchingDispensaries(true);
+    setDispensaryMessage("Requesting your current location...");
+    try {
+      const nextCoordinates = await requestCurrentCoordinates();
+      setCoordinates(nextCoordinates);
+      await loadDispensaries(nextCoordinates);
+    } catch (error: any) {
+      setDispensaryMessage(
+        error?.message ||
+          "Location access is unavailable. Search dispensaries by state instead."
+      );
+      setSearchingDispensaries(false);
+    }
   }
 
   return (
@@ -194,6 +260,120 @@ export default function StoreIndex() {
         })}
       </AppCard>
 
+      <AppCard>
+        <Text style={styles.cardTitle}>Find Dispensaries</Text>
+        <Text style={styles.cardText}>
+          Search dispensary inventory by state or distance from your current location.
+          GrowPath does not sell cannabis or take payment. A dispensary can direct you to
+          its own website or provide in-store pickup information.
+        </Text>
+        <Text style={styles.privacyNote}>
+          Current location is used for this search and is not saved to your profile.
+        </Text>
+        <TextInput
+          accessibilityLabel="Dispensary state"
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={2}
+          onChangeText={(value) => setDispensaryState(value.toUpperCase())}
+          placeholder="State code, e.g. MA"
+          style={styles.input}
+          value={dispensaryState}
+        />
+        <Text style={styles.fieldLabel}>Distance from current location</Text>
+        <View style={styles.buttonRow}>
+          {[10, 25, 50, 100].map((miles) => (
+            <Pressable
+              key={miles}
+              accessibilityRole="button"
+              accessibilityLabel={`Search within ${miles} miles`}
+              onPress={() => setRadiusMiles(miles)}
+              style={[
+                styles.radiusButton,
+                radiusMiles === miles && styles.radiusButtonSelected
+              ]}
+            >
+              <Text
+                style={[
+                  styles.radiusButtonText,
+                  radiusMiles === miles && styles.radiusButtonTextSelected
+                ]}
+              >
+                {miles} mi
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={styles.buttonRow}>
+          <Pressable
+            accessibilityRole="button"
+            disabled={!dispensaryState.trim() || searchingDispensaries}
+            onPress={() => void loadDispensaries(null)}
+            style={[
+              styles.primaryButton,
+              (!dispensaryState.trim() || searchingDispensaries) && styles.disabled
+            ]}
+          >
+            <Text style={styles.primaryButtonText}>
+              {searchingDispensaries ? "Searching..." : "Search by State"}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Use my location to find dispensaries"
+            disabled={searchingDispensaries}
+            onPress={() => void searchFromCurrentLocation()}
+            style={[styles.secondaryButton, searchingDispensaries && styles.disabled]}
+          >
+            <Text style={styles.secondaryButtonText}>Use My Location</Text>
+          </Pressable>
+        </View>
+        {coordinates ? (
+          <Text style={styles.meta}>
+            Searching within {radiusMiles} miles of your current location
+            {dispensaryState.trim()
+              ? ` and in ${dispensaryState.trim().toUpperCase()}`
+              : ""}
+            .
+          </Text>
+        ) : null}
+        {dispensaryMessage ? <Text style={styles.meta}>{dispensaryMessage}</Text> : null}
+        {dispensaries.map((dispensary) => {
+          const publicSlug = rowSlug(dispensary);
+          const location = dispensaryLocation(dispensary);
+          const distance = Number(dispensary?.distanceMiles);
+          return (
+            <View
+              key={publicSlug || dispensary?.id || dispensary?.name}
+              style={styles.brandRow}
+            >
+              <View style={styles.brandBody}>
+                <Text style={styles.brandName}>
+                  {dispensary?.businessName || dispensary?.name || "Licensed dispensary"}
+                </Text>
+                {location ? <Text style={styles.meta}>{location}</Text> : null}
+                {Number.isFinite(distance) ? (
+                  <Text style={styles.distance}>{distance.toFixed(1)} miles away</Text>
+                ) : null}
+                {dispensary?.description ? (
+                  <Text style={styles.meta}>{dispensary.description}</Text>
+                ) : null}
+                <Text style={styles.handoff}>
+                  Inventory only · dispensary website or in-store pickup
+                </Text>
+              </View>
+              {publicSlug ? (
+                <Link href={`/store/${encodeURIComponent(publicSlug)}` as any} asChild>
+                  <Pressable style={styles.primaryButton}>
+                    <Text style={styles.primaryButtonText}>View Inventory</Text>
+                  </Pressable>
+                </Link>
+              ) : null}
+            </View>
+          );
+        })}
+      </AppCard>
+
       {entitlements.mode === "commercial" ? (
         <AppCard>
           <Text style={styles.cardTitle}>Commercial storefront</Text>
@@ -260,6 +440,21 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.55
   },
+  distance: {
+    color: "#166534",
+    fontWeight: "800"
+  },
+  fieldLabel: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 8
+  },
+  handoff: {
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "800"
+  },
   input: {
     borderColor: "#CBD5E1",
     borderRadius: radius.card,
@@ -276,9 +471,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 11
   },
+  privacyNote: {
+    color: "#64748B",
+    fontSize: 12,
+    marginBottom: 10
+  },
   primaryButtonText: {
     color: "#FFFFFF",
     fontWeight: "800"
+  },
+  radiusButton: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  radiusButtonSelected: {
+    backgroundColor: "#DCFCE7",
+    borderColor: "#166534"
+  },
+  radiusButtonText: {
+    color: "#475569",
+    fontWeight: "800"
+  },
+  radiusButtonTextSelected: {
+    color: "#166534"
   },
   secondaryButton: {
     alignItems: "center",

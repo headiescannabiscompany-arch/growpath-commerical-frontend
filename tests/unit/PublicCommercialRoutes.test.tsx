@@ -310,6 +310,49 @@ describe("public commercial routes", () => {
     );
   });
 
+  it("shows dispensary inventory with website and pickup handoff but no checkout", async () => {
+    mockFetchPublicStorefront.mockResolvedValue({
+      ...publicPayload,
+      storefront: {
+        name: "Example Dispensary",
+        description: "Licensed adult-use dispensary.",
+        storefrontType: "dispensary",
+        city: "Boston",
+        stateCode: "MA",
+        websiteUrl: "https://dispensary.example.com/menu",
+        pickupAvailable: true,
+        pickupInstructions: "Bring a valid government-issued ID."
+      },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          category: "cannabis",
+          regulatedCannabis: true,
+          stripePriceId: "price_must_not_be_used",
+          inventoryItem: { quantity: 8, unit: "jars" },
+          externalPurchaseUrl: "https://dispensary.example.com/menu/flower",
+          pickupAvailable: true
+        }
+      ]
+    });
+    const screen = render(<PublicStorefrontRoute />);
+
+    await waitFor(() => expect(screen.getByText("Example Dispensary")).toBeTruthy());
+    expect(screen.getByText("Boston, MA")).toBeTruthy();
+    expect(screen.getByText("8 jars available")).toBeTruthy();
+    expect(
+      screen.getByText("In-store pickup available · Bring a valid government-issued ID.")
+    ).toBeTruthy();
+    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(screen.queryByLabelText("Buy Licensed Flower")).toBeNull();
+    expect(
+      screen.getByText(
+        "No GrowPath checkout · use the dispensary website or in-store pickup"
+      )
+    ).toBeTruthy();
+  });
+
   it("loads the /storefront/:slug public alias through the same storefront route", async () => {
     const screen = render(<PublicStorefrontAliasRoute />);
 
@@ -461,6 +504,45 @@ describe("public commercial routes", () => {
       screen.getByLabelText("Open external product External Clone Pack")
     ).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
+  });
+
+  it("keeps dispensary product detail external and inventory-only", async () => {
+    mockRouteParams = {
+      slug: "example-dispensary",
+      productId: "flower-1",
+      courseId: "course-1"
+    };
+    mockFetchPublicStorefront.mockResolvedValue({
+      storefront: {
+        name: "Example Dispensary",
+        storefrontType: "dispensary",
+        websiteUrl: "https://dispensary.example.com/menu",
+        pickupAvailable: true,
+        pickupInstructions: "Pickup during posted store hours."
+      },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          category: "cannabis",
+          regulatedCannabis: true,
+          stripePriceId: "price_must_not_be_used",
+          inventoryCount: 4
+        }
+      ]
+    });
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("example-dispensary")
+    );
+    expect(screen.getByText("4 units available")).toBeTruthy();
+    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(
+      screen.getByText("In-store pickup available · Pickup during posted store hours.")
+    ).toBeTruthy();
+    expect(screen.queryByText("Buy")).toBeNull();
+    expect(screen.getByText(/GrowPath does not verify licensing/)).toBeTruthy();
   });
 
   it("loads a public storefront course detail with checkout and connected context", async () => {
