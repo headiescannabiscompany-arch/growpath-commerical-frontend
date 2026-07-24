@@ -400,7 +400,12 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       and backend `55104d54` at 8:49 PM ET. On 2026-07-23, the live Owner Team page
       showed exactly the three real Owner, Manager, and Staff members. The repaired
       Remove control opened its confirmation; cancelling preserved all three members
-      with no browser errors on deployed frontend `b2469b22`.
+      with no browser errors on deployed frontend `b2469b22`. On 2026-07-24, direct
+      entry and hard reload of `/account/workspace` and `/account/mode` returned HTTP
+      200 on deployed frontend `bf46e0c0`; the real multi-workspace identity received
+      separate Personal, Commercial, and Facility choices, and selecting Commercial
+      reached the real Commercial dashboard with no captured browser-console errors.
+      See `docs/qa/WORKSPACE_SELECTION_PRODUCTION_EVIDENCE_2026-07-24.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
       completed fresh login, workspace choice, Facility entry, restricted Team review,
