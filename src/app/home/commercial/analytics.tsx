@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
 
@@ -38,7 +38,11 @@ function MetricCard({
   helper: string;
 }) {
   return (
-    <View style={styles.metricCard}>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${value.toLocaleString()}. ${helper}`}
+      style={styles.metricCard}
+    >
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value.toLocaleString()}</Text>
       <Text style={styles.metricHelper}>{helper}</Text>
@@ -57,7 +61,9 @@ function BreakdownList({
 }) {
   return (
     <View style={styles.breakdownBox}>
-      <Text style={styles.breakdownTitle}>{title}</Text>
+      <Text accessibilityRole="header" style={styles.breakdownTitle}>
+        {title}
+      </Text>
       {rows.length ? (
         rows.slice(0, 5).map((row) => (
           <View key={row.key || row.label} style={styles.breakdownRow}>
@@ -86,11 +92,24 @@ function BreakdownList({
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
-      <Pressable style={styles.outlineButton}>
+      <Pressable accessibilityRole="link" style={styles.outlineButton}>
         <Text style={styles.outlineText}>{label}</Text>
       </Pressable>
     </Link>
   );
+}
+
+function formatCurrency(cents: number, currency: string) {
+  try {
+    return (Number(cents || 0) / 100).toLocaleString(undefined, {
+      style: "currency",
+      currency
+    });
+  } catch {
+    return `${String(currency || "USD").toUpperCase()} ${(
+      Number(cents || 0) / 100
+    ).toFixed(2)}`;
+  }
 }
 
 export default function CommercialAnalyticsRoute() {
@@ -98,27 +117,23 @@ export default function CommercialAnalyticsRoute() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
-  useEffect(() => {
-    let mounted = true;
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    fetchCommercialAnalyticsOverview()
-      .then((overview) => {
-        if (mounted) setMetrics(overview || {});
-      })
-      .catch((err) => {
-        if (mounted) {
-          setError(err);
-          setMetrics({});
-        }
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
+    try {
+      const overview = await fetchCommercialAnalyticsOverview();
+      setMetrics(overview || {});
+    } catch (err) {
+      setError(err);
+      setMetrics({});
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const normalized = useMemo(
     () => ({
@@ -141,6 +156,14 @@ export default function CommercialAnalyticsRoute() {
     }),
     [metrics]
   );
+  const hasRecordedActivity = useMemo(
+    () =>
+      Object.values(normalized).some((value) => Number(value || 0) > 0) ||
+      Object.values(metrics.breakdowns || {}).some(
+        (rows) => Array.isArray(rows) && rows.length > 0
+      ),
+    [metrics.breakdowns, normalized]
+  );
 
   return (
     <AppPage
@@ -149,11 +172,13 @@ export default function CommercialAnalyticsRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text style={styles.title}>Commercial Analytics</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Commercial Analytics
+          </Text>
           <Text style={styles.subtitle}>
             Start with useful counts: ad clicks, marketing link clicks, storefront views,
-            product views, campaign clicks, course starts, forum replies, inventory
-            alerts, and active/completed trials.
+            product views, campaign activity, course starts, live engagement, paid orders,
+            and active/completed trials.
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
@@ -163,13 +188,34 @@ export default function CommercialAnalyticsRoute() {
         </View>
       }
     >
-      {error ? <InlineError error={error} /> : null}
+      {error ? <InlineError error={error} onRetry={() => void load()} /> : null}
 
       <AppCard>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Overview Metrics</Text>
-          {loading ? <ActivityIndicator /> : null}
+          <Text accessibilityRole="header" style={styles.cardTitle}>
+            Overview Metrics
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh commercial analytics"
+            disabled={loading}
+            onPress={() => void load()}
+            style={[styles.refreshButton, loading && styles.disabledButton]}
+          >
+            {loading ? <ActivityIndicator color="#166534" /> : null}
+            <Text style={styles.refreshText}>{loading ? "Loading" : "Refresh"}</Text>
+          </Pressable>
         </View>
+        {!loading && !error && !hasRecordedActivity ? (
+          <View accessibilityRole="summary" style={styles.emptyNotice}>
+            <Text style={styles.emptyNoticeTitle}>No recorded activity yet</Text>
+            <Text style={styles.emptyNoticeBody}>
+              Analytics begins when a published storefront receives visits or explicit
+              campaign, course, live, trial, or paid-order activity is recorded. Draft
+              setup and owner workspace previews are not counted.
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.metricGrid}>
           <MetricCard
             label="Ad clicks"
@@ -224,7 +270,7 @@ export default function CommercialAnalyticsRoute() {
           <MetricCard
             label="Live views"
             value={normalized.liveViews}
-            helper={`${normalized.liveRsvps.toLocaleString()} current RSVPs`}
+            helper={`${normalized.liveRsvps.toLocaleString()} recorded RSVP actions`}
           />
           <MetricCard
             label="Paid orders"
@@ -232,19 +278,16 @@ export default function CommercialAnalyticsRoute() {
             helper={`${Object.entries(
               metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
             )
-              .map(([currency, cents]) =>
-                (Number(cents || 0) / 100).toLocaleString(undefined, {
-                  style: "currency",
-                  currency
-                })
-              )
+              .map(([currency, cents]) => formatCurrency(Number(cents || 0), currency))
               .join(" + ")} recorded revenue`}
           />
         </View>
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Click and View Breakdown</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
+          Click and View Breakdown
+        </Text>
         <Text style={styles.body}>
           See which ads, products, storefronts, and outbound links are driving activity.
           Public profile, store, and product page visits are attributed back to the
@@ -295,7 +338,9 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Simple metrics first</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
+          Simple metrics first
+        </Text>
         <Text style={styles.body}>
           Analytics should stay event-backed and practical. Start with product, campaigns,
           course, trial, ad-click, and external-link events before adding advanced
@@ -320,7 +365,9 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Ad and marketing click counts</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
+          Ad and marketing click counts
+        </Text>
         <Text style={styles.body}>
           Commercial users should be able to see how many clicks their ads and promotional
           links get, even when the ad itself is managed outside GrowPath.
@@ -340,7 +387,9 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>External checkout reality</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
+          External checkout reality
+        </Text>
         <Text style={styles.body}>
           If a product uses an external purchase URL, GrowPath should track product views,
           outbound clicks, inquiries, and follow-up content. Do not call those internal
@@ -366,7 +415,9 @@ export default function CommercialAnalyticsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Trial and content outcomes</Text>
+        <Text accessibilityRole="header" style={styles.cardTitle}>
+          Trial and content outcomes
+        </Text>
         <Text style={styles.body}>
           Analytics should connect commercial content to product trial evidence, courses,
           support, and storefront behavior before adding advanced reporting.
@@ -415,6 +466,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between"
   },
+  refreshButton: {
+    alignItems: "center",
+    borderColor: "#166534",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    minHeight: 36,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  refreshText: { color: "#166534", fontSize: 12, fontWeight: "900" },
+  disabledButton: { opacity: 0.65 },
+  emptyNotice: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 12,
+    padding: 12
+  },
+  emptyNoticeTitle: { color: "#166534", fontSize: 14, fontWeight: "900" },
+  emptyNoticeBody: { color: "#365E3D", fontSize: 13, lineHeight: 19, marginTop: 4 },
   cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   body: { color: "#475569", lineHeight: 20, marginTop: 8 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
