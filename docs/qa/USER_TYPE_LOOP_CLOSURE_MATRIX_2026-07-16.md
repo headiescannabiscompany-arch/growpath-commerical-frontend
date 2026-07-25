@@ -450,6 +450,13 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       sections. Real analytics-event attribution and final screenshot/video
       evidence remain open; see
       `docs/qa/COMMERCIAL_ANALYTICS_HEADING_EVIDENCE_2026-07-24.md`.
+      On 2026-07-25, an authenticated non-destructive desktop/mobile route pass
+      found and fixed Commercial More card clipping at 391 pixels. Frontend merge
+      `c4df86f12b16ed6fc3ddbd0dcfb806ebcffe3019` passed both post-merge workflows;
+      the live retest returned one page heading, zero out-of-bounds action controls,
+      zero console errors/warnings, and a genuine final-SHA screenshot without
+      creating data. See
+      `docs/qa/FACILITY_COMMERCIAL_NONDESTRUCTIVE_AUDIT_EVIDENCE_2026-07-25.md`.
 - [ ] Facility Owner loop session recorded and reviewed. Staging entry and shared
       record counts reviewed. Production Owner created and assigned the shared QA task
       on `93bb0217` and captured screenshot/DOM evidence at
@@ -472,6 +479,12 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       separate Personal, Commercial, and Facility choices, and selecting Commercial
       reached the real Commercial dashboard with no captured browser-console errors.
       See `docs/qa/WORKSPACE_SELECTION_PRODUCTION_EVIDENCE_2026-07-24.md`.
+      On 2026-07-25, a non-destructive Facility desktop/mobile route pass found
+      that Audit Logs had no semantic page heading. Frontend merge
+      `c4df86f12b16ed6fc3ddbd0dcfb806ebcffe3019` restored one level-one heading in
+      loaded and status states; the live 391-pixel retest had zero overflow and
+      console errors/warnings and captured a genuine final-SHA screenshot. See
+      `docs/qa/FACILITY_COMMERCIAL_NONDESTRUCTIVE_AUDIT_EVIDENCE_2026-07-25.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
       completed fresh login, workspace choice, Facility entry, restricted Team review,
