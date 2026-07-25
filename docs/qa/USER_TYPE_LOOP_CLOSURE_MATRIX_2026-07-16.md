@@ -216,8 +216,8 @@ control, or can bypass its backend authorization boundary.
 - Feeding Schedule Planner now uses the mounted ToolRun API, costs 0 AI credits, does
   not convert blank optional EC/pH readings to zero, and can reuse its saved run when
   creating a log or task.
-- The launch Free allowance remains 10 credits per week: 10 completed Ask AI answers,
-  or 3 completed photo diagnoses plus 1 Ask AI answer. This is a conversion hypothesis,
+- The launch Free allowance is 5 credits per week: 5 completed Ask AI answers, or 1
+  completed photo diagnosis plus 2 Ask AI answers. This is a conversion hypothesis,
   not yet a validated optimum.
 - During live testing, record weekly credit exhaustion, action mix, failed/refunded
   calls, upgrade-view rate after demonstrated value, and upgrade conversion. Do not

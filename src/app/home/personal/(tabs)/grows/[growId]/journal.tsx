@@ -131,9 +131,7 @@ export default function GrowJournalScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title} accessibilityRole="header">
-        Journal
-      </Text>
+      <Text style={styles.title}>Journal</Text>
       <Text style={styles.subtitle}>
         Timeline of logs, tool results, and tasks for this grow.
       </Text>

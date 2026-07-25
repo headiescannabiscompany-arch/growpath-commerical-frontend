@@ -572,9 +572,7 @@ export default function GrowTasksScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
     >
-      <Text style={styles.title} accessibilityRole="header">
-        Tasks
-      </Text>
+      <Text style={styles.title}>Tasks</Text>
       <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
       <PersonalFeedPlacement
         placement="top"

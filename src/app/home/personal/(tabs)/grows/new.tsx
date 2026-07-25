@@ -167,12 +167,14 @@ export default function NewGrowScreen() {
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
   const canCreateGrow =
-    hasCreateCapability || (!checkingLimit && maxGrows > existingGrowCount);
+    hasCreateCapability &&
+    !checkingLimit &&
+    (maxGrows <= 0 || existingGrowCount < maxGrows);
 
   React.useEffect(() => {
     let alive = true;
     async function loadLimit() {
-      if (hasCreateCapability) {
+      if (!hasCreateCapability) {
         if (alive) {
           setExistingGrowCount(0);
           setCheckingLimit(false);
@@ -409,7 +411,7 @@ export default function NewGrowScreen() {
     );
   }
 
-  if (checkingLimit && !hasCreateCapability) {
+  if (checkingLimit && hasCreateCapability) {
     return (
       <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
         <ScrollView
@@ -418,7 +420,7 @@ export default function NewGrowScreen() {
         >
           <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
           <ActivityIndicator />
-          <Text style={{ color: "#475569" }}>Checking free grow limit...</Text>
+          <Text style={{ color: "#475569" }}>Checking grow limit...</Text>
         </ScrollView>
       </ScreenBoundary>
     );
@@ -428,8 +430,12 @@ export default function NewGrowScreen() {
     return (
       <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
         <LockedScreen
-          title="Create grows with Pro"
-          message="Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
+          title={maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached"}
+          message={
+            maxGrows === 1
+              ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
+              : `This plan includes up to ${maxGrows} active grows. Upgrade to create more.`
+          }
           actionLabel="Back to grows"
           onAction={() => router.replace("/home/personal/grows" as any)}
         />

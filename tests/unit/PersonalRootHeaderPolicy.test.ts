@@ -62,4 +62,22 @@ describe("Personal root header policy", () => {
     expect(newLog).toContain('accessibilityRole="header"');
     expect(logDetail).toContain('accessibilityRole="header"');
   });
+
+  test.each([
+    ["journal", "Journal"],
+    ["tasks", "Tasks"]
+  ])(
+    "uses the nested %s navigator title without a duplicate page heading",
+    (route, title) => {
+      const growLayout = read("src/app/home/personal/(tabs)/grows/[growId]/_layout.tsx");
+      const source = read(`src/app/home/personal/(tabs)/grows/[growId]/${route}.tsx`);
+
+      expect(growLayout).toContain(
+        `<Stack.Screen name="${route}" options={{ title: "${title}" }} />`
+      );
+      expect(source).not.toContain(
+        `<Text style={styles.title} accessibilityRole="header">`
+      );
+    }
+  );
 });
