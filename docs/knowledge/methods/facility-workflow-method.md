@@ -60,6 +60,8 @@ The Facility SOP Library may provide setpoint-free standard starter templates fo
 
 Facility SOP documents are supporting references, not substitutes for executable evidence. Accept only bounded PDF, Word, text, or scanned JPG/PNG uploads from an authorized Facility owner or manager; store the asset against the selected Facility, verify attachment ownership again when saving the template, and prevent cross-Facility reuse. Every active template still requires at least one explicit checklist step. Revising a template creates a new active version while preserving the prior version for historical runs and audit evidence; retiring a template hides it from new runs without deleting its history.
 
+Retirement must be available from the active SOP Library to an authorized owner or manager and must use an explicit cross-platform confirmation. Name the exact SOP, explain that it will be removed from new runs, and preserve prior versions, completed runs, attachments, and audit evidence. Do not label this operation as deletion.
+
 Personal and Commercial AI may reuse the same starter structure only as a clearly labeled
 review-only recommendation. Those workspaces do not gain Facility approval, assignment,
 upload, versioning, run-evidence, retirement, or audit controls. A recommended draft may

@@ -13,6 +13,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockCreateTemplate = jest.fn();
 const mockUpdateTemplate = jest.fn();
+const mockDeleteTemplate = jest.fn();
 const mockUploadSopDocument = jest.fn();
 const mockRefetchTemplates = jest.fn();
 let mockParams: Record<string, string> = {};
@@ -83,8 +84,10 @@ jest.mock("@/hooks/useSopTemplates", () => ({
     isLoading: false,
     createTemplate: (...args: any[]) => mockCreateTemplate(...args),
     updateTemplate: (...args: any[]) => mockUpdateTemplate(...args),
+    deleteTemplate: (...args: any[]) => mockDeleteTemplate(...args),
     creating: false,
     updating: false,
+    deleting: false,
     refetch: (...args: any[]) => mockRefetchTemplates(...args)
   })
 }));
@@ -97,11 +100,13 @@ describe("facility SOP run nested back behavior", () => {
     mockReplace.mockReset();
     mockCreateTemplate.mockReset();
     mockUpdateTemplate.mockReset();
+    mockDeleteTemplate.mockReset();
     mockUploadSopDocument.mockReset();
     mockRefetchTemplates.mockReset();
     jest.mocked(DocumentPicker.getDocumentAsync).mockReset();
     mockCreateTemplate.mockResolvedValue({ id: "template-created" });
     mockUpdateTemplate.mockResolvedValue({ id: "template-revised" });
+    mockDeleteTemplate.mockResolvedValue({ retired: { isActive: false } });
     mockUploadSopDocument.mockResolvedValue({
       assetId: "asset-1",
       url: "/uploads/room-opening.pdf",
@@ -368,6 +373,34 @@ describe("facility SOP run nested back behavior", () => {
         ]
       })
     );
+  });
+
+  it("requires explicit confirmation before retiring an SOP without deleting history", async () => {
+    const screen = render(<FacilitySopRunsPresetsRoute />);
+
+    fireEvent.press(screen.getByLabelText("Retire SOP Daily room check"));
+
+    expect(screen.getByText("Retire Daily room check?")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "This removes the SOP from new runs. Historical versions, completed runs, attachments, and audit evidence are preserved."
+      )
+    ).toBeTruthy();
+    expect(mockDeleteTemplate).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Cancel retirement Daily room check"));
+    expect(screen.queryByText("Retire Daily room check?")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Retire SOP Daily room check"));
+    fireEvent.press(screen.getByLabelText("Confirm retire SOP Daily room check"));
+
+    await waitFor(() => expect(mockDeleteTemplate).toHaveBeenCalledWith("template-1"));
+    expect(mockRefetchTemplates).toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        'Retired "Daily room check". Historical versions and completed runs remain available as evidence.'
+      )
+    ).toBeTruthy();
   });
 
   it("creates a one-off SOP run only after checklist steps are entered", async () => {

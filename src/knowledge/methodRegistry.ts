@@ -593,6 +593,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never let the shared starter baseline inject a Facility plan, rating scale, approved limit, deviation process, label, or Facility role into a non-Facility recommendation.",
       "Never allow an uploaded SOP document to replace the executable checklist, cross Facility boundaries, or be attached without owner/manager review.",
       "Never overwrite or hard-delete the prior SOP version when a Facility procedure is revised or retired.",
+      "Never hide SOP retirement from an authorized owner or manager, label it as deletion, or retire an SOP without naming it and confirming that new runs stop while historical evidence remains.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
