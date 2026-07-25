@@ -43,6 +43,16 @@ function durationSeconds(asset: ImagePicker.ImagePickerAsset) {
   return duration > 1000 ? duration / 1000 : duration;
 }
 
+function readableDuration(seconds: number) {
+  const wholeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(wholeSeconds / 60);
+  const remainder = wholeSeconds % 60;
+  if (!minutes) return `${remainder} seconds`;
+  return `${minutes} minute${minutes === 1 ? "" : "s"}${
+    remainder ? ` ${remainder} seconds` : ""
+  }`;
+}
+
 function toLocalAsset(
   asset: ImagePicker.ImagePickerAsset,
   purpose: EvidencePurpose,
@@ -243,7 +253,7 @@ export default function MediaEvidencePicker({
     );
     if ((local.durationSeconds || 0) > maxVideoSeconds) {
       local.uploadStatus = "failed";
-      local.error = `Video must be ${maxVideoSeconds} seconds or shorter.`;
+      local.error = `Video must be ${readableDuration(maxVideoSeconds)} or shorter.`;
       commit([...assets, local]);
       return;
     }
@@ -301,8 +311,9 @@ export default function MediaEvidencePicker({
       </Text>
       {allowVideo && extractFramesFromVideo ? (
         <Text style={styles.help}>
-          A video is kept as private evidence. GrowPath extracts up to{" "}
-          {Math.min(maxExtractedVideoFrames, maxPhotos)} still frames for image review;
+          A video is kept as private evidence. GrowPath samples up to{" "}
+          {Math.min(maxExtractedVideoFrames, maxPhotos)} timestamped still frames across
+          the video for image review. It keeps only sharp, glare-free gland-head evidence;
           the AI does not guess from motion or rebuild detail hidden by blur or glare.
         </Text>
       ) : null}

@@ -17,7 +17,7 @@ type ExtractVideoFramesInput = {
 
 function frameTimes(durationSeconds: number, maxFrames: number) {
   const duration = Math.max(0, Number(durationSeconds) || 0);
-  const frameCount = Math.max(1, Math.min(8, Math.floor(maxFrames)));
+  const frameCount = Math.max(1, Math.min(12, Math.floor(maxFrames)));
   if (!duration) return [];
   return Array.from({ length: frameCount }, (_, index) => {
     const fraction = (index + 1) / (frameCount + 1);

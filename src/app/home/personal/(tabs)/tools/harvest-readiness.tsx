@@ -139,8 +139,8 @@ function HarvestPhotoAnalyzer({
         maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
         allowVideo
         extractFramesFromVideo
-        maxExtractedVideoFrames={6}
-        maxVideoSeconds={20}
+        maxExtractedVideoFrames={12}
+        maxVideoSeconds={599}
         purpose="harvest"
         aiUsable
         sourceContext={{ growId: growId || undefined, plantId: plantId || undefined }}

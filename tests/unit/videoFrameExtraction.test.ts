@@ -9,7 +9,10 @@ describe("video frame extraction", () => {
     expect(times).toEqual([...times].sort((left, right) => left - right));
   });
 
-  it("caps candidate frames at eight", () => {
-    expect(videoFrameExtractionInternals.frameTimes(20, 20)).toHaveLength(8);
+  it("caps candidate frames at twelve for longer evidence videos", () => {
+    const times = videoFrameExtractionInternals.frameTimes(599, 20);
+    expect(times).toHaveLength(12);
+    expect(times[0]).toBeGreaterThan(0);
+    expect(times[times.length - 1]).toBeLessThan(599);
   });
 });
