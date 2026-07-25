@@ -313,7 +313,7 @@ describe("facility SOP run nested back behavior", () => {
 
     expect(screen.getByDisplayValue("Daily Room Opening Check")).toBeTruthy();
     expect(screen.getByLabelText("SOP checklist steps").props.value).toContain(
-      "Compare recorded conditions with the facility-approved limits"
+      "Compare recorded conditions with the reviewed limits"
     );
     expect(
       screen.getByLabelText("Confirm SOP facility review").props.accessibilityState
