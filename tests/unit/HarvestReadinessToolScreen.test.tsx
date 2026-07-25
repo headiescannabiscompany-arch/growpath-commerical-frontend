@@ -175,9 +175,29 @@ describe("HarvestReadinessToolRoute", () => {
       evidence: ["Mostly opaque gland heads"],
       recommendation: "Confirm across additional bud sites.",
       limitations: [],
+      qualityChecks: {
+        focus: "usable",
+        glare: "localized",
+        lighting: "neutral",
+        headVisibility: "sufficient",
+        roleCoverage: "complete"
+      },
+      imageFindings: [
+        {
+          imageIndex: 1,
+          role: "top_macro",
+          usableForDistribution: true,
+          trichomeRichRegion: "center calyx",
+          excludedReason: "",
+          focus: "sharp",
+          glare: "localized",
+          visibleHeadDetail: "sufficient"
+        }
+      ],
       provider: "openai",
       providerLabel: "OpenAI trichome image review",
       providerModel: "gpt-4o-mini",
+      imageDetail: "high",
       imagesAnalyzed: 4,
       evidenceUsed: [
         "64b000000000000000000001",
@@ -257,6 +277,10 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByDisplayValue("12")).toBeTruthy();
     expect(screen.getByText("Qualified macro evidence")).toBeTruthy();
     expect(screen.getByText("Confirm across additional bud sites.")).toBeTruthy();
+    expect(screen.getByText("Set quality checks")).toBeTruthy();
+    expect(screen.getByText("Per-photo zoom review")).toBeTruthy();
+    expect(screen.getByText(/best region: center calyx/i)).toBeTruthy();
+    expect(screen.getByText(/Provider image detail: high/i)).toBeTruthy();
     expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
     expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
     expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();

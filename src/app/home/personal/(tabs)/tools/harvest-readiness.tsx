@@ -24,6 +24,7 @@ const HARVEST_PHOTO_CHECKLIST = [
   "Focus on intact trichome gland heads on bud calyxes, not pistils or sugar-leaf edges.",
   "Use neutral white light; avoid purple LEDs, glare, blur, digital zoom, and heavy compression.",
   "Include one wider bud-context photo so each macro sample has a clear location.",
+  "A short video can supply candidate still frames, but each extracted frame must independently pass the same focus, glare, and bud-site checks.",
   "Photo count is not coverage: even 12 wide photos cannot replace three true macros where individual intact gland heads are visible."
 ];
 
@@ -59,6 +60,9 @@ function HarvestPhotoAnalyzer({
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
   const photoCount = evidence.images.length;
+  const photoEvidenceAssetIds = evidence.media
+    .filter((item) => item.type === "photo")
+    .map((item) => item.id);
 
   function updateEvidence(next: EvidenceAsset[]) {
     onEvidenceAssetsChange(next);
@@ -79,7 +83,7 @@ function HarvestPhotoAnalyzer({
     try {
       const result = await analyzeTrichomePhotos({
         growId,
-        evidenceAssetIds: evidence.evidenceAssetIds,
+        evidenceAssetIds: photoEvidenceAssetIds,
         sampleLocation: "mixed_bud_sites",
         notes: notes.trim() || undefined
       });
@@ -133,6 +137,10 @@ function HarvestPhotoAnalyzer({
       </View>
       <MediaEvidencePicker
         maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+        allowVideo
+        extractFramesFromVideo
+        maxExtractedVideoFrames={6}
+        maxVideoSeconds={20}
         purpose="harvest"
         aiUsable
         sourceContext={{ growId: growId || undefined, plantId: plantId || undefined }}
@@ -143,7 +151,7 @@ function HarvestPhotoAnalyzer({
         accessibilityLabel="Harvest photo notes"
         value={notes}
         onChangeText={setNotes}
-        placeholder="Optional: lens, lighting, sample location"
+        placeholder="Optional but helpful: Photo 1 top macro, Photo 2 middle macro, Photo 3 lower macro, Photo 4 context; include lens/magnification and lighting"
         style={photoStyles.input}
       />
       <Pressable
@@ -156,7 +164,7 @@ function HarvestPhotoAnalyzer({
         ]}
       >
         <Text style={photoStyles.buttonText}>
-          {busy ? "Inspecting Photos..." : "Analyze Photo Set (1 AI Credit)"}
+          {busy ? "Inspecting Photos..." : "Analyze Photos / Frames (1 AI Credit)"}
         </Text>
       </Pressable>
       {!growId ? (
@@ -195,6 +203,11 @@ function HarvestPhotoAnalyzer({
             Inspected by {analysis.providerLabel} ({analysis.providerModel}) · Photos:{" "}
             {analysis.imagesAnalyzed}
           </Text>
+          {analysis.imageDetail ? (
+            <Text style={photoStyles.feedback}>
+              Provider image detail: {analysis.imageDetail}
+            </Text>
+          ) : null}
           <Text style={photoStyles.feedback}>
             AI credit: {analysis.aiCreditsUsed} charged
             {typeof analysis.aiTokensRemaining === "number"
@@ -210,6 +223,43 @@ function HarvestPhotoAnalyzer({
               {Math.round(Number(analysis.amber) * 100)}% amber,{" "}
               {Math.round(Number(analysis.clear) * 100)}% clear.
             </Text>
+          ) : null}
+          {analysis.qualityChecks ? (
+            <View style={photoStyles.qualityChecks}>
+              <Text style={photoStyles.checklistTitle}>Set quality checks</Text>
+              <Text style={photoStyles.feedback}>
+                Focus: {analysis.qualityChecks.focus} · Glare:{" "}
+                {analysis.qualityChecks.glare} · Lighting:{" "}
+                {analysis.qualityChecks.lighting}
+              </Text>
+              <Text style={photoStyles.feedback}>
+                Visible head detail: {analysis.qualityChecks.headVisibility} · Site
+                coverage: {analysis.qualityChecks.roleCoverage}
+              </Text>
+            </View>
+          ) : null}
+          {analysis.imageFindings?.length ? (
+            <View style={photoStyles.qualityChecks}>
+              <Text style={photoStyles.checklistTitle}>Per-photo zoom review</Text>
+              {analysis.imageFindings.map((finding) => (
+                <Text
+                  key={`${finding.imageIndex}-${finding.role}`}
+                  style={
+                    finding.usableForDistribution
+                      ? photoStyles.feedback
+                      : photoStyles.warning
+                  }
+                >
+                  Photo {finding.imageIndex}: {finding.role.replaceAll("_", " ")} ·{" "}
+                  {finding.focus} focus · {finding.glare} glare ·{" "}
+                  {finding.visibleHeadDetail} head detail
+                  {finding.trichomeRichRegion
+                    ? ` · best region: ${finding.trichomeRichRegion}`
+                    : ""}
+                  {finding.excludedReason ? ` · excluded: ${finding.excludedReason}` : ""}
+                </Text>
+              ))}
+            </View>
           ) : null}
           {analysis.recommendation ? (
             <Text style={photoStyles.recommendation}>{analysis.recommendation}</Text>
@@ -747,5 +797,13 @@ const photoStyles = StyleSheet.create({
     paddingTop: 10
   },
   analysisTitle: { color: "#14532D", fontSize: 15, fontWeight: "800" },
+  qualityChecks: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 4,
+    padding: 10
+  },
   recommendation: { color: "#1E293B", fontWeight: "700", lineHeight: 19 }
 });

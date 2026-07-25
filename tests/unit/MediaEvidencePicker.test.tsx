@@ -8,6 +8,7 @@ const mockPermission = jest.fn();
 const mockPicker = jest.fn();
 const mockUpload = jest.fn();
 const mockCreate = jest.fn();
+const mockExtractVideoFrames = jest.fn();
 
 jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images", Videos: "Videos" },
@@ -21,6 +22,10 @@ jest.mock("@/api/uploads", () => ({
 
 jest.mock("@/api/evidence", () => ({
   createEvidenceAsset: (...args: any[]) => mockCreate(...args)
+}));
+
+jest.mock("@/features/personal/harvest/videoFrameExtraction", () => ({
+  extractVideoFrameCandidates: (...args: any[]) => mockExtractVideoFrames(...args)
 }));
 
 describe("MediaEvidencePicker", () => {
@@ -178,6 +183,97 @@ describe("MediaEvidencePicker", () => {
       expect(screen.getByText("Video must be 30 seconds or shorter.")).toBeTruthy()
     );
     expect(mockUpload).not.toHaveBeenCalled();
+  });
+
+  it("keeps a harvest video private and uploads extracted still frames for AI review", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///macro-scan.mov",
+          type: "video",
+          mimeType: "video/quicktime",
+          fileName: "macro-scan.mov",
+          duration: 12000
+        }
+      ]
+    });
+    mockExtractVideoFrames.mockResolvedValue([
+      {
+        uri: "file:///frame-1.jpg",
+        fileName: "frame-1.jpg",
+        mimeType: "image/jpeg",
+        width: 1600,
+        height: 1200,
+        timeSeconds: 2
+      },
+      {
+        uri: "file:///frame-2.jpg",
+        fileName: "frame-2.jpg",
+        mimeType: "image/jpeg",
+        width: 1600,
+        height: 1200,
+        timeSeconds: 8
+      }
+    ]);
+    mockUpload
+      .mockResolvedValueOnce({
+        url: "/uploads/macro-scan.mov",
+        mimeType: "video/quicktime"
+      })
+      .mockResolvedValueOnce({
+        url: "/uploads/frame-1.jpg",
+        mimeType: "image/jpeg"
+      })
+      .mockResolvedValueOnce({
+        url: "/uploads/frame-2.jpg",
+        mimeType: "image/jpeg"
+      });
+    mockCreate.mockImplementation(async (input) => ({
+      ...input,
+      id: `saved-${input.fileName}`,
+      _id: `saved-${input.fileName}`
+    }));
+    const screen = render(
+      <MediaEvidencePicker
+        aiUsable
+        allowVideo
+        extractFramesFromVideo
+        maxExtractedVideoFrames={6}
+        maxVideoSeconds={20}
+        purpose="harvest"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence video"));
+
+    await waitFor(() =>
+      expect(mockExtractVideoFrames).toHaveBeenCalledWith({
+        uri: "file:///macro-scan.mov",
+        durationSeconds: 12,
+        maxFrames: 6
+      })
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/2 still frames extracted/i)).toBeTruthy()
+    );
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assetType: "video",
+        aiUsable: false,
+        durableUrl: "/uploads/macro-scan.mov"
+      })
+    );
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assetType: "photo",
+        source: "generated",
+        aiUsable: true,
+        originalUri: "/uploads/frame-1.jpg",
+        durableUrl: "/uploads/frame-1.jpg"
+      })
+    );
+    expect(screen.getByText(/AI does not guess from motion/i)).toBeTruthy();
   });
 
   it("keeps failed uploads visible and removable", async () => {
