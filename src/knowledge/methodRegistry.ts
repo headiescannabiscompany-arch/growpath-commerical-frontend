@@ -510,6 +510,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never honor deterministic test identity headers as production authentication.",
       "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",
       "Never present a Commercial AI procedure draft as an approved Facility SOP, invent its setpoints, chemical rates, or legal requirements, or save it without separate confirmation.",
+      "Never inject a Facility plan, rating scale, approved limit, deviation process, label, or Facility role into a Personal or Commercial procedure recommendation unless selected records explicitly provide it.",
       "Never pass reserved public route words or malformed record IDs into database ID queries.",
       "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state."
@@ -589,6 +590,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
       "Never auto-install a standard SOP starter as Facility policy or present it as legal compliance, treatment direction, release criteria, or facility approval.",
       "Never let a Personal or Commercial SOP recommendation imply Facility approval, assignment, uploads, versioning, run evidence, retirement, or audit status.",
+      "Never let the shared starter baseline inject a Facility plan, rating scale, approved limit, deviation process, label, or Facility role into a non-Facility recommendation.",
       "Never allow an uploaded SOP document to replace the executable checklist, cross Facility boundaries, or be attached without owner/manager review.",
       "Never overwrite or hard-delete the prior SOP version when a Facility procedure is revised or retired.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
