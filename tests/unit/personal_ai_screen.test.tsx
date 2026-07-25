@@ -247,6 +247,82 @@ describe("personal AI screen", () => {
     expect(screen.getByText("AI suggested task created.")).toBeTruthy();
   });
 
+  it("offers Commercial SOP starters and requires review before creating a grow task", async () => {
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      intent: "sop_recommendation",
+      reply: "I found one review-only procedure draft.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: [],
+      sopRecommendations: [
+        {
+          key: "ipm_scouting_escalation",
+          sourceVersion: 1,
+          title: "IPM Scouting and Escalation",
+          category: "ipm",
+          summary: "A repeatable visual scouting record.",
+          whyRecommended: "It matches the scouting request and selected grow.",
+          checklist: [
+            "Confirm the inspection scope.",
+            "Separate observations from suspected causes."
+          ],
+          safetyNotes: "Do not diagnose from one sign or apply a treatment.",
+          missingInformation: ["Confirm the reviewer and escalation threshold."],
+          reviewStatus: "review_required"
+        }
+      ]
+    });
+
+    const screen = render(<AiScreen workspaceType="commercial" />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Draft IPM Scouting and Escalation"));
+    const composer = screen.getByPlaceholderText("Type here...");
+    expect(composer.props.value).toContain("review-only SOP/checklist draft");
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Send"));
+    await waitFor(() =>
+      expect(screen.getByText("Review-only procedure drafts")).toBeTruthy()
+    );
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceType: "commercial",
+        context: expect.objectContaining({
+          sopStarterLibrary: expect.arrayContaining([
+            expect.objectContaining({ key: "ipm_scouting_escalation" })
+          ])
+        })
+      })
+    );
+    expect(screen.getByText(/starting points, not approved Facility SOPs/i)).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByLabelText("Review IPM Scouting and Escalation as a task")
+    );
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        "Review the drafted task below. Nothing is saved until you confirm it."
+      )
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Confirm create_task"));
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          title: "Review: IPM Scouting and Escalation",
+          description: expect.stringContaining(
+            "Separate observations from suspected causes."
+          ),
+          sourceObjectId: "sop-starter:ipm_scouting_escalation:v1"
+        })
+      )
+    );
+  });
+
   it("loads the Facility inspection-readiness preset and its evidence context", async () => {
     mockSearchParams = { preset: "compliance" };
     mockAskPersonalAssistant.mockResolvedValue({
@@ -266,6 +342,7 @@ describe("personal AI screen", () => {
     expect(screen.getByText("SOP runs: 0")).toBeTruthy();
     expect(screen.queryByText("Build your first grow")).toBeNull();
     expect(screen.queryByText(/Crop context:/)).toBeNull();
+    expect(screen.queryByText("AI procedure recommendations")).toBeNull();
 
     const composer = screen.getByPlaceholderText("Add notes for Inspection Readiness");
     expect(composer.props.value).toContain(

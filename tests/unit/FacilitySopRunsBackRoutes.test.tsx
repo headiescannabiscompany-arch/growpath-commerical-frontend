@@ -1,4 +1,5 @@
 import React from "react";
+import * as DocumentPicker from "expo-document-picker";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilitySopRunDetailRoute from "@/app/home/facility/sop-runs/[id]";
@@ -11,8 +12,14 @@ const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockCreateTemplate = jest.fn();
+const mockUpdateTemplate = jest.fn();
+const mockUploadSopDocument = jest.fn();
 const mockRefetchTemplates = jest.fn();
 let mockParams: Record<string, string> = {};
+
+jest.mock("expo-document-picker", () => ({
+  getDocumentAsync: jest.fn()
+}));
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
@@ -64,6 +71,10 @@ jest.mock("@/api/endpoints", () => ({
   }
 }));
 
+jest.mock("@/api/uploads", () => ({
+  uploadSopDocument: (...args: any[]) => mockUploadSopDocument(...args)
+}));
+
 jest.mock("@/hooks/useSopTemplates", () => ({
   useSopTemplates: () => ({
     templates: [
@@ -71,7 +82,9 @@ jest.mock("@/hooks/useSopTemplates", () => ({
     ],
     isLoading: false,
     createTemplate: (...args: any[]) => mockCreateTemplate(...args),
+    updateTemplate: (...args: any[]) => mockUpdateTemplate(...args),
     creating: false,
+    updating: false,
     refetch: (...args: any[]) => mockRefetchTemplates(...args)
   })
 }));
@@ -83,8 +96,19 @@ describe("facility SOP run nested back behavior", () => {
     mockPush.mockReset();
     mockReplace.mockReset();
     mockCreateTemplate.mockReset();
+    mockUpdateTemplate.mockReset();
+    mockUploadSopDocument.mockReset();
     mockRefetchTemplates.mockReset();
+    jest.mocked(DocumentPicker.getDocumentAsync).mockReset();
     mockCreateTemplate.mockResolvedValue({ id: "template-created" });
+    mockUpdateTemplate.mockResolvedValue({ id: "template-revised" });
+    mockUploadSopDocument.mockResolvedValue({
+      assetId: "asset-1",
+      url: "/uploads/room-opening.pdf",
+      filename: "room-opening.pdf",
+      mimeType: "application/pdf",
+      bytes: 1024
+    });
     mockRefetchTemplates.mockResolvedValue(undefined);
     mockApiRequest.mockImplementation((path: string) => {
       if (path.endsWith("/sop-runs/run-1")) {
@@ -251,23 +275,97 @@ describe("facility SOP run nested back behavior", () => {
     });
   });
 
-  it("requires procedure content before creating a reusable SOP template", async () => {
+  it("requires procedure content and explicit review before creating an SOP", async () => {
     const screen = render(<FacilitySopRunsPresetsRoute />);
-    const createButton = screen.getByLabelText("Create SOP preset");
+    const createButton = screen.getByLabelText("Save facility SOP");
 
     expect(createButton.props.accessibilityState).toEqual({ disabled: true });
-    fireEvent.changeText(screen.getByLabelText("SOP preset title"), "Room opening");
+    fireEvent.changeText(screen.getByLabelText("SOP title"), "Room opening");
     expect(createButton.props.accessibilityState).toEqual({ disabled: true });
     fireEvent.changeText(
-      screen.getByLabelText("SOP preset content"),
+      screen.getByLabelText("SOP checklist steps"),
       "Inspect room\nRecord temperature"
     );
+    expect(createButton.props.accessibilityState).toEqual({ disabled: true });
+    fireEvent.press(screen.getByLabelText("Confirm SOP facility review"));
     fireEvent.press(createButton);
 
     await waitFor(() =>
-      expect(mockCreateTemplate).toHaveBeenCalledWith({
-        title: "Room opening",
-        content: "Inspect room\nRecord temperature"
+      expect(mockCreateTemplate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Room opening",
+          content: "Inspect room\nRecord temperature",
+          checklist: [
+            { step: "Inspect room", required: true, requiresPhoto: false },
+            { step: "Record temperature", required: true, requiresPhoto: false }
+          ],
+          reviewConfirmed: true,
+          attachments: []
+        })
+      )
+    );
+  });
+
+  it("loads a standard SOP for review instead of silently installing it", () => {
+    const screen = render(<FacilitySopRunsPresetsRoute />);
+
+    fireEvent.press(screen.getByLabelText("Use Daily Room Opening Check starter"));
+
+    expect(screen.getByDisplayValue("Daily Room Opening Check")).toBeTruthy();
+    expect(screen.getByLabelText("SOP checklist steps").props.value).toContain(
+      "Compare recorded conditions with the facility-approved limits"
+    );
+    expect(
+      screen.getByLabelText("Confirm SOP facility review").props.accessibilityState
+    ).toEqual({ checked: false });
+    expect(
+      screen.getByText(/Starter loaded. Review every step, adjust it for this facility/i)
+    ).toBeTruthy();
+  });
+
+  it("uploads a selected SOP document before saving the reviewed template", async () => {
+    jest.mocked(DocumentPicker.getDocumentAsync).mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/room-opening.pdf",
+          name: "room-opening.pdf",
+          mimeType: "application/pdf",
+          size: 1024,
+          lastModified: 0
+        }
+      ]
+    });
+    const screen = render(<FacilitySopRunsPresetsRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("SOP title"), "Uploaded room SOP");
+    fireEvent.changeText(
+      screen.getByLabelText("SOP checklist steps"),
+      "Review attached SOP\nRecord completion"
+    );
+    fireEvent.press(screen.getByLabelText("Choose SOP document"));
+    await waitFor(() =>
+      expect(screen.getByText(/room-opening.pdf · ready to upload/i)).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Confirm SOP facility review"));
+    fireEvent.press(screen.getByLabelText("Save facility SOP"));
+
+    await waitFor(() =>
+      expect(mockUploadSopDocument).toHaveBeenCalledWith("facility-1", {
+        uri: "file:///tmp/room-opening.pdf",
+        name: "room-opening.pdf",
+        mimeType: "application/pdf",
+        size: 1024
+      })
+    );
+    expect(mockCreateTemplate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [
+          expect.objectContaining({
+            assetId: "asset-1",
+            filename: "room-opening.pdf"
+          })
+        ]
       })
     );
   });

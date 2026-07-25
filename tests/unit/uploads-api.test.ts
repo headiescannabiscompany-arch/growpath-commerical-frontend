@@ -29,4 +29,38 @@ describe("uploads API", () => {
     });
     expect(result).toEqual({ url: "/uploads/lesson.pdf" });
   });
+
+  it("uploads an SOP document to the selected Facility endpoint", async () => {
+    mockApiRequest.mockResolvedValue({
+      success: true,
+      asset: {
+        assetId: "asset-1",
+        url: "/uploads/room-opening.pdf",
+        filename: "room-opening.pdf",
+        mimeType: "application/pdf",
+        bytes: 1024
+      }
+    });
+    const { uploadSopDocument } = require("@/api/uploads");
+
+    const result = await uploadSopDocument("facility-1", {
+      uri: "file:///tmp/room-opening.pdf",
+      name: "room-opening.pdf",
+      mimeType: "application/pdf"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/facilities/facility-1/sop-documents",
+      {
+        method: "POST",
+        body: expect.any(FormData)
+      }
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        assetId: "asset-1",
+        filename: "room-opening.pdf"
+      })
+    );
+  });
 });

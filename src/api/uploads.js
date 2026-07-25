@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import { apiRequest } from "./apiRequest";
+import { endpoints } from "./endpoints";
 import { uriToBlob } from "./uriToBlob";
 
 // CONTRACT:
@@ -27,6 +28,21 @@ function guessCourseMediaMime(filename) {
   if (ext === "mp3") return "audio/mpeg";
   if (ext === "m4a") return "audio/mp4";
   if (ext === "wav") return "audio/wav";
+  return "application/octet-stream";
+}
+
+function guessSopDocumentMime(filename) {
+  const m = (filename || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  const ext = m?.[1] || "";
+  if (ext === "pdf") return "application/pdf";
+  if (ext === "doc") return "application/msword";
+  if (ext === "docx")
+    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if (ext === "txt") return "text/plain";
+  if (ext === "md") return "text/markdown";
+  if (ext === "rtf") return "application/rtf";
+  if (ext === "png") return "image/png";
+  if (ext === "jpeg" || ext === "jpg") return "image/jpeg";
   return "application/octet-stream";
 }
 
@@ -123,4 +139,30 @@ export async function uploadEvidenceMedia(input) {
     field === "image" ? "/api/uploads/image" : "/api/uploads/evidence-media",
     { method: "POST", body: formData }
   );
+}
+
+export async function uploadSopDocument(facilityId, input) {
+  if (!facilityId) throw new Error("uploadSopDocument: facilityId is required");
+  const file = normalizeUploadInput(input, "sop-document");
+  if (!file.uri) throw new Error("uploadSopDocument: uri is required");
+
+  const formData = new FormData();
+  const type = file.type || guessSopDocumentMime(file.name);
+
+  if (Platform.OS === "web") {
+    const blob = await uriToBlob(file.uri);
+    formData.append("document", blob, file.name);
+  } else {
+    formData.append("document", {
+      uri: file.uri,
+      name: file.name,
+      type
+    });
+  }
+
+  const response = await apiRequest(endpoints.sopDocuments(facilityId), {
+    method: "POST",
+    body: formData
+  });
+  return response?.asset || response;
 }

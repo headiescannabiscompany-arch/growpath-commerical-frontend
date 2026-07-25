@@ -76,4 +76,11 @@ Integration auto-build is allowed only for an owned product trial or a Commercia
 
 Imported telemetry may support an explicitly linked product-trial evidence window. Course examples require review and de-identification before publication; sensor readings alone do not establish product performance, causation, or a publishable claim.
 
+Commercial AI may recommend review-only operating procedure or checklist drafts from the
+shared approved starter library. A recommendation must identify its starter version,
+explain why it fits the selected records, preserve missing inputs as unknown, and require
+human review before it can become a grow task. It is not a formally approved SOP and must
+not imply Facility assignment, document control, version history, execution evidence,
+audit status, or legal compliance.
+
 Connect formula → verified ingredients → batch/lot → trial grow → long-term outcome → product claims/content. Keep commercial data scoped to the commercial workspace. AI may retrieve records but cannot invent analysis, lots, cost, inventory, trials or performance claims.

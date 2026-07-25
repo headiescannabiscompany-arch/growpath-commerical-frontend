@@ -12,6 +12,19 @@ export type AssistantProposedWrite = {
   payload: Record<string, any>;
 };
 
+export type AssistantSopRecommendation = {
+  key: string;
+  sourceVersion: number;
+  title: string;
+  category: string;
+  summary: string;
+  whyRecommended: string;
+  checklist: string[];
+  safetyNotes?: string;
+  missingInformation: string[];
+  reviewStatus: "review_required";
+};
+
 export type PersonalAssistantResponse = {
   success: boolean;
   intent?: string;
@@ -20,6 +33,7 @@ export type PersonalAssistantResponse = {
   contextSummary?: Record<string, any>;
   referencedData?: AssistantReference[];
   proposedWrites?: AssistantProposedWrite[];
+  sopRecommendations?: AssistantSopRecommendation[];
   provider?: string;
   providerLabel?: string;
   conversationId?: string;

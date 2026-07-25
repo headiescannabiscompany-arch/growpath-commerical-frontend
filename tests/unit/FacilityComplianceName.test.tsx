@@ -1,5 +1,5 @@
 import React from "react";
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 
 import FacilityComplianceTab from "@/app/home/facility/(tabs)/compliance";
 
@@ -62,6 +62,8 @@ jest.mock("@/api/audit", () => ({
 describe("Facility Compliance facility label", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEntitlementState.can.mockReturnValue(true);
+    mockEntitlementState.facilityRole = "OWNER";
     mockFacilityState = {
       selectedId: "507f1f77bcf86cd799439011",
       selected: {
@@ -97,5 +99,16 @@ describe("Facility Compliance facility label", () => {
 
     expect(screen.getByText("Facility: Selected facility")).toBeTruthy();
     expect(screen.queryByText(/507f1f77bcf86cd799439011/)).toBeNull();
+  });
+
+  it("routes SOP authoring through the reviewed SOP Library", async () => {
+    const screen = render(<FacilityComplianceTab />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByLabelText("Create SOP template")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Open SOP Library"));
+    expect(mockRouter.push).toHaveBeenCalledWith("/home/facility/sop-runs/presets");
   });
 });
