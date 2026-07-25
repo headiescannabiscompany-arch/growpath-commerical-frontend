@@ -389,7 +389,16 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
   saved provenance, and connected writeback remain open. See
   `docs/qa/HARVEST_READINESS_PRODUCTION_EVIDENCE_2026-07-21.md`.
 
-- [ ] Public / signed-out loop session recorded and reviewed.
+- [x] Public / signed-out loop session recorded and reviewed. The final
+      production pass intentionally signed out the authenticated Commercial
+      account, reviewed the public home, Store, Courses, and Forum boundaries,
+      fixed the clipped 320-pixel navigation and fragmented hero heading, added
+      Store to public navigation, followed that link into the signed-out
+      storefront and dispensary search, and restored the same Commercial
+      session afterward. Frontend merge
+      `111a0701d0f1b12645ac18da1350d3289e8618e7` was live as Render deployment
+      `dep-d9hvnnepbkes73ba5ohg`; see
+      `docs/qa/PUBLIC_SIGNED_OUT_LOOP_EVIDENCE_2026-07-24.md`.
 - [ ] Personal Free loop session recorded and reviewed.
 - [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
