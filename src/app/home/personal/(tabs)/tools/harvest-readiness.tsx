@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -11,8 +11,9 @@ import {
   type DryCureRecordInput
 } from "@/api/harvestBatches";
 import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
-import { providerEvidencePayload } from "@/api/evidence";
+import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -50,19 +51,91 @@ function HarvestPhotoAnalyzer({
   growId: string;
   plantId: string;
   evidenceAssets: EvidenceAsset[];
-  onEvidenceAssetsChange: (assets: EvidenceAsset[]) => void;
+  onEvidenceAssetsChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   initialAnalysis: TrichomeVisionResult | null;
   onAnalysis: (result: TrichomeVisionResult | null) => void;
 }) {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [restoreFeedback, setRestoreFeedback] = useState("");
+  const [restoringEvidence, setRestoringEvidence] = useState(false);
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
   const photoCount = evidence.images.length;
   const photoEvidenceAssetIds = evidence.media
     .filter((item) => item.type === "photo")
     .map((item) => item.id);
+
+  useEffect(() => {
+    let active = true;
+    setAnalysis(null);
+    onAnalysis(null);
+    setRestoreFeedback("");
+
+    if (!growId) {
+      onEvidenceAssetsChange([]);
+      setRestoringEvidence(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    setRestoringEvidence(true);
+    listEvidenceAssets({ growId })
+      .then((assets: EvidenceAsset[]) => {
+        if (!active) return;
+        const savedPhotos = assets
+          .filter(
+            (asset: EvidenceAsset) =>
+              asset.purpose === "harvest" &&
+              asset.assetType === "photo" &&
+              asset.uploadStatus === "uploaded" &&
+              Boolean(asset.durableUrl)
+          )
+          .slice(0, PLANT_REVIEW_PHOTO_LIMIT);
+        const savedVideo = assets.find(
+          (asset: EvidenceAsset) =>
+            asset.purpose === "harvest" &&
+            asset.assetType === "video" &&
+            asset.uploadStatus === "uploaded" &&
+            Boolean(asset.durableUrl)
+        );
+        const restored = savedVideo ? [...savedPhotos, savedVideo] : savedPhotos;
+
+        onEvidenceAssetsChange((current) => {
+          const currentForGrow = current.filter(
+            (asset) => String(asset.growId || "") === growId
+          );
+          const merged = new Map<string, EvidenceAsset>();
+          for (const asset of [...restored, ...currentForGrow]) {
+            merged.set(String(asset._id || asset.id), asset);
+          }
+          return Array.from(merged.values());
+        });
+        if (restored.length) {
+          setRestoreFeedback(
+            `Restored ${savedPhotos.length} saved harvest photo${
+              savedPhotos.length === 1 ? "" : "s"
+            }${savedVideo ? " and 1 source video" : ""} for this grow.`
+          );
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setRestoreFeedback(
+            "Saved harvest evidence could not be restored. You can still choose photos already in this grow or add new evidence."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setRestoringEvidence(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [growId, onAnalysis, onEvidenceAssetsChange]);
 
   function updateEvidence(next: EvidenceAsset[]) {
     onEvidenceAssetsChange(next);
@@ -76,8 +149,19 @@ function HarvestPhotoAnalyzer({
     );
   }
 
+  const addSavedGrowEvidence: React.Dispatch<React.SetStateAction<EvidenceAsset[]>> = (
+    update
+  ) => {
+    onEvidenceAssetsChange(update);
+    setAnalysis(null);
+    onAnalysis(null);
+    setFeedback(
+      "Saved grow photo added. Confirm it is a sharp macro or context view before analysis."
+    );
+  };
+
   async function analyze() {
-    if (!growId || photoCount < MIN_HARVEST_PHOTOS || busy) return;
+    if (!growId || photoCount < MIN_HARVEST_PHOTOS || busy || restoringEvidence) return;
     setBusy(true);
     setFeedback("");
     try {
@@ -135,6 +219,19 @@ function HarvestPhotoAnalyzer({
           </Text>
         ))}
       </View>
+      <SavedGrowPhotoEvidencePicker
+        growId={growId}
+        plantId={plantId}
+        purpose="harvest"
+        value={evidenceAssets}
+        onChange={addSavedGrowEvidence}
+        maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+      />
+      {restoringEvidence ? (
+        <Text style={photoStyles.feedback}>Restoring saved harvest evidence...</Text>
+      ) : restoreFeedback ? (
+        <Text style={photoStyles.feedback}>{restoreFeedback}</Text>
+      ) : null}
       <MediaEvidencePicker
         maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
         allowVideo
@@ -157,10 +254,11 @@ function HarvestPhotoAnalyzer({
       <Pressable
         accessibilityLabel="Analyze harvest trichome photo"
         onPress={analyze}
-        disabled={busy || !growId || photoCount < MIN_HARVEST_PHOTOS}
+        disabled={busy || restoringEvidence || !growId || photoCount < MIN_HARVEST_PHOTOS}
         style={[
           photoStyles.button,
-          (busy || !growId || photoCount < MIN_HARVEST_PHOTOS) && photoStyles.disabled
+          (busy || restoringEvidence || !growId || photoCount < MIN_HARVEST_PHOTOS) &&
+            photoStyles.disabled
         ]}
       >
         <Text style={photoStyles.buttonText}>

@@ -15,7 +15,7 @@ import { resolveImageUri } from "@/utils/photoUploads";
 type Props = {
   growId: string;
   plantId?: string;
-  purpose: Extract<EvidencePurpose, "diagnosis" | "ipm">;
+  purpose: Extract<EvidencePurpose, "diagnosis" | "ipm" | "harvest">;
   value: EvidenceAsset[];
   onChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   maxPhotos?: number;
@@ -98,7 +98,12 @@ export default function SavedGrowPhotoEvidencePicker({
 
   if (!growId) return null;
 
-  const workflowLabel = purpose === "ipm" ? "IPM scout" : "diagnosis";
+  const workflowLabel =
+    purpose === "ipm"
+      ? "IPM scout"
+      : purpose === "harvest"
+        ? "harvest readiness"
+        : "diagnosis";
   const photoCount = value.filter((asset) => asset.assetType === "photo").length;
 
   return (
@@ -136,7 +141,11 @@ export default function SavedGrowPhotoEvidencePicker({
                   accessibilityRole="button"
                   accessibilityLabel={`Use saved photo ${candidate.title}, item ${
                     index + 1
-                  }${purpose === "ipm" ? ` for ${workflowLabel}` : ""}`}
+                  }${
+                    purpose === "ipm" || purpose === "harvest"
+                      ? ` for ${workflowLabel}`
+                      : ""
+                  }`}
                   accessibilityState={{
                     disabled: selected || busy || limitReached,
                     selected

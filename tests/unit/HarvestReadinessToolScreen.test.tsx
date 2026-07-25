@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, renderAsync, waitFor } from "@testing-library/react-native";
 
 import HarvestReadinessToolRoute from "@/app/home/personal/(tabs)/tools/harvest-readiness";
 
@@ -10,6 +10,8 @@ const mockGetHarvestBatch = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
 const mockListPersonalGrows = jest.fn();
+const mockListEvidenceAssets = jest.fn();
+const mockSavedGrowPhotoEvidencePicker = jest.fn();
 let mockRouteParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("@/components/media/MediaEvidencePicker", () => {
@@ -22,6 +24,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     originalUri: `file:///trichomes-${index}.jpg`,
     durableUrl: `/uploads/trichomes-${index}.jpg`,
     mimeType: "image/jpeg",
+    growId: "grow-1",
     source: "library",
     purpose: "harvest",
     uploadStatus: "uploaded",
@@ -49,6 +52,23 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         React.createElement(Text, null, "Add Complete Photo Set")
       )
     );
+});
+
+jest.mock("@/components/media/SavedGrowPhotoEvidencePicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return (props: any) => {
+    mockSavedGrowPhotoEvidencePicker(props);
+    return React.createElement(View, { accessibilityLabel: "Saved grow photo evidence" });
+  };
+});
+
+jest.mock("@/api/evidence", () => {
+  const actual = jest.requireActual("@/api/evidence");
+  return {
+    ...actual,
+    listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args)
+  };
 });
 
 jest.mock("expo-router", () => ({
@@ -117,11 +137,16 @@ jest.mock("@/api/harvestVision", () => ({
   analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
 }));
 
+async function renderHarvestReadinessTool() {
+  return renderAsync(<HarvestReadinessToolRoute />);
+}
+
 describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockRouteParams = { growId: "grow-1" };
     mockListPersonalGrows.mockImplementation(() => new Promise(() => {}));
+    mockListEvidenceAssets.mockResolvedValue([]);
     mockRunCalculator.mockResolvedValue({
       outputs: {
         readinessStatus: "approaching_window",
@@ -218,7 +243,7 @@ describe("HarvestReadinessToolRoute", () => {
       { id: "grow-1", name: "Flower Tent" },
       { id: "grow-2", name: "Second Run" }
     ]);
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     await waitFor(() => expect(screen.getByText("Flower Tent")).toBeTruthy());
     expect(screen.getByText("Select a grow before analyzing a photo.")).toBeTruthy();
@@ -229,8 +254,8 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
-  it("shows actionable photo requirements before the user chooses media", () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+  it("shows actionable photo requirements before the user chooses media", async () => {
+    const screen = await renderHarvestReadinessTool();
 
     expect(screen.getByText("Photo checklist before analysis")).toBeTruthy();
     expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
@@ -240,10 +265,60 @@ describe("HarvestReadinessToolRoute", () => {
       screen.getByText(/even 12 wide photos cannot replace three true macros/i)
     ).toBeTruthy();
     expect(screen.getByText(/No trichome evidence is ready/i)).toBeTruthy();
+    expect(mockSavedGrowPhotoEvidencePicker).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        purpose: "harvest",
+        maxPhotos: 12
+      })
+    );
   });
 
-  it("blocks an incomplete photo set without spending a credit", () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+  it("restores durable harvest evidence after a page or account-session reload", async () => {
+    mockListEvidenceAssets.mockResolvedValue(
+      [1, 2, 3, 4].map((index) => ({
+        id: `restored-${index}`,
+        _id: `64c00000000000000000000${index}`,
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: `/uploads/restored-${index}.jpg`,
+        durableUrl: `/uploads/restored-${index}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }))
+    );
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Restored 4 saved harvest photos for this grow.")
+      ).toBeTruthy()
+    );
+    expect(mockListEvidenceAssets).toHaveBeenCalledWith({ growId: "grow-1" });
+
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          evidenceAssetIds: [
+            "64c000000000000000000001",
+            "64c000000000000000000002",
+            "64c000000000000000000003",
+            "64c000000000000000000004"
+          ]
+        })
+      )
+    );
+  });
+
+  it("blocks an incomplete photo set without spending a credit", async () => {
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add one harvest evidence photo"));
 
@@ -254,7 +329,7 @@ describe("HarvestReadinessToolRoute", () => {
   });
 
   it("analyzes a complete evidence set before filling trichome percentages", async () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
@@ -309,7 +384,7 @@ describe("HarvestReadinessToolRoute", () => {
       aiTokensRemaining: 57,
       creditStatus: "charged"
     });
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
@@ -336,7 +411,7 @@ describe("HarvestReadinessToolRoute", () => {
     mockAnalyzeTrichomePhotos.mockRejectedValue(
       new Error("The photo-analysis service is unavailable.")
     );
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
@@ -361,7 +436,7 @@ describe("HarvestReadinessToolRoute", () => {
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.changeText(
       screen.getByLabelText("Harvest Readiness Estimate Flower day"),
@@ -439,7 +514,7 @@ describe("HarvestReadinessToolRoute", () => {
   });
 
   it("saves harvest readiness review to a harvest batch record", async () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
     fireEvent.changeText(
       screen.getByLabelText("Harvest Readiness Estimate Flower day"),
