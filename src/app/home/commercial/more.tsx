@@ -152,7 +152,10 @@ const styles = StyleSheet.create({
     borderColor: "#CBD5E1",
     borderRadius: radius.card,
     borderWidth: 1,
+    flexBasis: 220,
     flexGrow: 1,
+    flexShrink: 1,
+    maxWidth: "100%",
     minHeight: 120,
     minWidth: 220,
     padding: 14
@@ -165,6 +168,7 @@ const styles = StyleSheet.create({
   },
   destinationDescription: {
     color: "#475569",
+    flexShrink: 1,
     fontSize: 13,
     lineHeight: 19,
     marginTop: 5

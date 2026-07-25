@@ -31,6 +31,23 @@ function getErrorMessage(e: unknown, fallback: string) {
   return normalizeApiError(e).message || fallback;
 }
 
+function AuditLogsHeading() {
+  return (
+    <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+      Audit Logs
+    </Text>
+  );
+}
+
+function AuditLogsStatus({ message }: { message: string }) {
+  return (
+    <View style={styles.container}>
+      <AuditLogsHeading />
+      <Text>{message}</Text>
+    </View>
+  );
+}
+
 export default function FacilityAuditLogsIndexRoute() {
   const { selectedId } = useFacility();
   const { logs, isLoading, isRefreshing, error, refetch } = useAuditLogs(selectedId);
@@ -39,23 +56,11 @@ export default function FacilityAuditLogsIndexRoute() {
     [logs]
   );
 
-  if (!selectedId)
-    return (
-      <View style={styles.container}>
-        <Text>Select a facility first.</Text>
-      </View>
-    );
-  if (isLoading)
-    return (
-      <View style={styles.container}>
-        <Text>Loading audit logs...</Text>
-      </View>
-    );
+  if (!selectedId) return <AuditLogsStatus message="Select a facility first." />;
+  if (isLoading) return <AuditLogsStatus message="Loading audit logs..." />;
   if (error)
     return (
-      <View style={styles.container}>
-        <Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text>
-      </View>
+      <AuditLogsStatus message={getErrorMessage(error, "Failed to load audit logs.")} />
     );
 
   return (
@@ -67,7 +72,7 @@ export default function FacilityAuditLogsIndexRoute() {
       refreshing={Boolean(isRefreshing)}
       data={items}
       keyExtractor={pickId}
-      ListHeaderComponent={<Text style={styles.h1}>Audit Logs</Text>}
+      ListHeaderComponent={<AuditLogsHeading />}
       ListEmptyComponent={<Text style={styles.empty}>No audit logs yet.</Text>}
       renderItem={({ item, index }) => {
         const id = pickId(item, index);

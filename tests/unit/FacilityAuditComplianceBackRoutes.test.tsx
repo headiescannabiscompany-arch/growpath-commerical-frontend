@@ -138,12 +138,32 @@ describe("facility audit and compliance nested back behavior", () => {
 
     const screen = render(<FacilityAuditLogsIndexRoute />);
 
+    expect(screen.getByRole("header", { name: "Audit Logs" }).props["aria-level"]).toBe(
+      1
+    );
     expect(screen.getByText("Rooms Reordered")).toBeTruthy();
     expect(screen.getByText("3 rooms reordered.")).toBeTruthy();
     expect(screen.getByText("QA room check | Status: Open")).toBeTruthy();
     expect(screen.queryByText(/roomIds/)).toBeNull();
     expect(screen.queryByText(/6a563c662fb9f669d231a012/)).toBeNull();
     expect(screen.getAllByText("Open Detail")).toHaveLength(2);
+  });
+
+  it("keeps the Audit Logs page heading while the list loads", () => {
+    mockUseAuditLogs.mockReturnValue({
+      logs: [],
+      isLoading: true,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn()
+    });
+
+    const screen = render(<FacilityAuditLogsIndexRoute />);
+
+    expect(screen.getByRole("header", { name: "Audit Logs" }).props["aria-level"]).toBe(
+      1
+    );
+    expect(screen.getByText("Loading audit logs...")).toBeTruthy();
   });
 
   it("uses the shared back fallback on compliance report detail", () => {
