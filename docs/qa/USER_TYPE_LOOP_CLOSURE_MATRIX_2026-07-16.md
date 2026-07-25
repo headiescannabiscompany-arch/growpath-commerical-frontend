@@ -499,8 +499,14 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       deployed source version 2; the live corrective response was
       workspace-neutral, preserved missing information, kept task creation
       blocked without a grow, and charged exactly one additional credit
-      (`1999 -> 1998`, 2 billed requests, 0 refunds). Viewer, deliberate
-      write/task-confirmation, and screenshot evidence remain open; see
+      (`1999 -> 1998`, 2 billed requests, 0 refunds). The Owner then completed
+      a deliberate supporting-document upload/create/reload/revise/reload/retire
+      cleanup loop. Frontend PRs `#221`/`#222` and backend PR `#75` fixed the
+      active-Library retirement and lifecycle-audit findings; the final
+      production retest preserved readable create-version-1,
+      revise-version-2, and retire-version-2 events with exact timestamps and
+      audit ids across a hard reload. Viewer, grow-task confirmation, and
+      screenshot evidence remain open; see
       `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
