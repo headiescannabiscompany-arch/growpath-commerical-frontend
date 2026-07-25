@@ -68,7 +68,16 @@ export default function GrowsListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
-  const canCreateGrow = hasCreateCapability || (!loading && maxGrows > grows.length);
+  const canCreateGrow =
+    hasCreateCapability &&
+    !loading &&
+    !error &&
+    (maxGrows <= 0 || grows.length < maxGrows);
+  const limitTitle = maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached";
+  const limitMessage =
+    maxGrows === 1
+      ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
+      : `This plan includes up to ${maxGrows} active grows. Upgrade to create more.`;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -120,7 +129,16 @@ export default function GrowsListScreen() {
           {error ? (
             <Text style={[styles.panelText, { marginTop: 8 }]}>{error}</Text>
           ) : null}
-          {canCreateGrow ? (
+          {error ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Try loading grows again"
+              onPress={() => void load()}
+              style={styles.cta}
+            >
+              <Text style={styles.ctaText}>Try again</Text>
+            </Pressable>
+          ) : canCreateGrow ? (
             <Link href="/home/personal/grows/new" asChild>
               <Pressable testID="btn-create-first-grow" style={styles.cta}>
                 <Text style={styles.ctaText}>+ New Grow</Text>
@@ -128,11 +146,8 @@ export default function GrowsListScreen() {
             </Link>
           ) : (
             <View style={styles.panel}>
-              <Text style={styles.panelTitle}>Create grows with Pro</Text>
-              <Text style={styles.panelText}>
-                Free accounts can browse the workspace and tools. Upgrade to create and
-                save personal grow records.
-              </Text>
+              <Text style={styles.panelTitle}>{limitTitle}</Text>
+              <Text style={styles.panelText}>{limitMessage}</Text>
             </View>
           )}
         </View>
@@ -189,11 +204,8 @@ export default function GrowsListScreen() {
             </Link>
           ) : (
             <View style={styles.panel}>
-              <Text style={styles.panelTitle}>Create grows with Pro</Text>
-              <Text style={styles.panelText}>
-                Free accounts can browse saved grows. Upgrade to create and save personal
-                grow records.
-              </Text>
+              <Text style={styles.panelTitle}>{limitTitle}</Text>
+              <Text style={styles.panelText}>{limitMessage}</Text>
             </View>
           )}
         </View>

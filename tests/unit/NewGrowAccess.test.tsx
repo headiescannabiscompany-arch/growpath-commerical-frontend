@@ -94,30 +94,27 @@ describe("NewGrowScreen access", () => {
   });
 
   it("locks grow creation after the free one-grow limit is used", async () => {
-    mockEntitlementsCan.mockImplementation(
-      (capability) => capability !== "GROWS_PERSONAL_WRITE"
-    );
+    mockEntitlementsCan.mockReturnValue(true);
     mockLimits = { maxGrows: 1 };
     mockListPersonalGrows.mockResolvedValue([{ id: "grow-1" }]);
 
     render(<NewGrowScreen />);
 
-    await waitFor(() => expect(screen.getByText("Create grows with Pro")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Free grow limit reached")).toBeTruthy());
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     expect(
       screen.getByText(
-        "Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
+        "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
       )
     ).toBeTruthy();
+    expect(mockListPersonalGrows).toHaveBeenCalled();
     fireEvent.press(screen.getByText("Back to grows"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows");
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
   it("lets free personal users create their first grow within the limit", async () => {
-    mockEntitlementsCan.mockImplementation(
-      (capability) => capability !== "GROWS_PERSONAL_WRITE"
-    );
+    mockEntitlementsCan.mockReturnValue(true);
     mockLimits = { maxGrows: 1 };
     mockListPersonalGrows.mockResolvedValue([]);
 
@@ -146,7 +143,9 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
-    expect(screen.getByText("Grow Planner / Auto Calendar")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("Grow Planner / Auto Calendar")).toBeTruthy()
+    );
     expect(screen.getByLabelText("Plant count")).toBeTruthy();
     expect(screen.getByLabelText("Veg length (weeks)")).toBeTruthy();
     expect(screen.getByLabelText("Expected flower days")).toBeTruthy();
