@@ -76,6 +76,20 @@
         "capture blur, partial, mixed, artificial, dead-leaf, and no-plant cases",
         "strip private metadata before fixture use"
       ]
+    },
+    {
+      "sourceId": "crime_pays_botany_youtube",
+      "sourceUrl": "https://www.youtube.com/@CrimePaysButBotanyDoesnt",
+      "status": "external_lead_only_pending_creator_permission",
+      "allowedLicenseFilter": ["OWNER_PERMISSION"],
+      "runtimeSourceRegistryId": "crime-pays-but-botany-doesnt",
+      "requirements": [
+        "use only for candidate morphology vocabulary, family-pattern questions, ecology context, and acquisition-quality QA",
+        "obtain creator permission before copying or retaining video, audio, frames, transcripts, or thumbnails",
+        "do not treat host identifications, titles, captions, or comments as gold labels",
+        "cross-check every candidate taxon and distinguishing rule against Tier A botanical keys, government plant records, herbarium evidence, or university extension",
+        "never use copied media for model training"
+      ]
     }
   ],
   "groupTargets": {
