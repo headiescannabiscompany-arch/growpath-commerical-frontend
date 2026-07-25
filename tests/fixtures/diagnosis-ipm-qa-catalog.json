@@ -57,6 +57,24 @@
     "worstCaseUse": "rights-reviewed negative controls for pre-upload rejection and actionable retake guidance",
     "useForModelTraining": false
   },
+  "anonymizedManualReconnaissance": {
+    "reviewedAt": "2026-07-25",
+    "collectionMode": "manual visible-UI sampling",
+    "relevantGroupCount": 3,
+    "automatedCollectionUsed": false,
+    "personalIdentifiersRetained": false,
+    "postUrlsRetained": false,
+    "mediaRetained": false,
+    "creatorPermissionObtained": false,
+    "goldCaseRecordsAdded": 0,
+    "negativeControlMediaRecordsAdded": 0,
+    "observedPatterns": [
+      "diagnosis target visible only as a small region inside a wider frame",
+      "multiple organism sizes or incidental subjects in the same IPM frame",
+      "high photo count without the required macro detail or role coverage",
+      "globally clear image that is diagnostically limited because the target is not isolated"
+    ]
+  },
   "photoEvidencePolicy": {
     "maxPhotosPerDiagnosisIpmOrHarvestWorkflow": 12,
     "minimumPhotosForDiagnosisOrIpm": 1,

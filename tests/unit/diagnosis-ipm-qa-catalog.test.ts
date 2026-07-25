@@ -178,6 +178,31 @@ describe("diagnosis/IPM QA catalog", () => {
     );
   });
 
+  it("records only anonymized patterns from the manual Facebook reconnaissance", () => {
+    const catalog = loadCatalog();
+
+    expect(catalog.anonymizedManualReconnaissance).toMatchObject({
+      reviewedAt: "2026-07-25",
+      collectionMode: "manual visible-UI sampling",
+      relevantGroupCount: 3,
+      automatedCollectionUsed: false,
+      personalIdentifiersRetained: false,
+      postUrlsRetained: false,
+      mediaRetained: false,
+      creatorPermissionObtained: false,
+      goldCaseRecordsAdded: 0,
+      negativeControlMediaRecordsAdded: 0
+    });
+    expect(catalog.anonymizedManualReconnaissance.observedPatterns).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/target visible only/i),
+        expect.stringMatching(/multiple organism/i),
+        expect.stringMatching(/high photo count/i),
+        expect.stringMatching(/diagnostically limited/i)
+      ])
+    );
+  });
+
   it("prohibits invented pesticide directions", () => {
     const catalog = loadCatalog();
 

@@ -205,9 +205,10 @@ export default function MediaEvidencePicker({
             </Text>
           ))}
           <Text style={styles.guidanceNote}>
-            GrowPath can reject obviously tiny or invalid files before upload. Blur,
-            focus, lighting, glare, and whether every required view is present are
-            confirmed during image review.
+            Photo count alone does not prove complete evidence. GrowPath can reject
+            obviously tiny or invalid files before upload. Blur, focus, lighting, glare,
+            target detail, and whether every required view is present are confirmed during
+            image review.
           </Text>
         </View>
       ) : null}

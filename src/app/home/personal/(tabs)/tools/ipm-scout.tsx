@@ -259,7 +259,7 @@ export default function IpmScoutToolRoute() {
         notReadyMessage:
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
         buildMessage: () =>
-          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. Leave every unknown value as an empty string; except for pestSeen, do not fill fields with placeholders such as "not determined", "not performed", "not provided", "not applicable", or "none documented". plantsChecked, plantsAffected, and stickyTrapCount must stay empty because a photo is not a completed scout count. evidence must list only visible or recorded facts. additionalInformation must name plausible alternatives and the exact leaf-top, leaf-underside, macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
+          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. When several organisms, objects, or possible targets appear, enumerate their defensible visible traits separately and do not assume the largest or most obvious subject is the intended pest. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. Leave every unknown value as an empty string; except for pestSeen, do not fill fields with placeholders such as "not determined", "not performed", "not provided", "not applicable", or "none documented". plantsChecked, plantsAffected, and stickyTrapCount must stay empty because a photo is not a completed scout count. evidence must list only visible or recorded facts. additionalInformation must ask the user to mark or describe the intended target when it is ambiguous, name plausible alternatives, and request the exact leaf-top, leaf-underside, dedicated target macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
         normalizeFieldValue: normalizeIpmPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
@@ -306,7 +306,9 @@ export default function IpmScoutToolRoute() {
             undersides, and a macro of the organism or sign. Include a dated sticky trap
             or short video when movement matters. Up to {PLANT_REVIEW_PHOTO_LIMIT} photos
             can cover zoomed-out context, several plants, both leaf surfaces, and macro
-            details. The result will say whether photo pixels were actually analyzed.
+            details. If several organisms or objects appear, say which one GrowPath should
+            inspect and add a dedicated macro of that target. The result will say whether
+            photo pixels were actually analyzed.
           </Text>
           <SavedGrowPhotoEvidencePicker
             growId={growId}
@@ -453,7 +455,7 @@ export default function IpmScoutToolRoute() {
           defaultValue: "",
           multiline: true,
           placeholder:
-            "What changed, what you suspect, and what decision you need to make"
+            "Which organism or spot in the photo is the target, what changed, what you suspect, and what decision you need to make"
         }
       ]}
       buildPayload={(

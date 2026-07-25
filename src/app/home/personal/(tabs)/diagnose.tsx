@@ -796,7 +796,7 @@ export default function DiagnoseRoute({
           value={notes}
           onChangeText={setNotes}
           multiline
-          placeholder="Describe location, spread, recent watering/feed, pH/EC, and environmental changes."
+          placeholder="Describe the exact photo area, leaf, bud, or other target; location, spread, recent watering/feed, pH/EC, and environmental changes."
           accessibilityLabel="Diagnosis notes"
         />
 
@@ -1003,7 +1003,9 @@ export default function DiagnoseRoute({
           <Text style={styles.photoReady}>
             Photo analysis is connected. You can add up to {PLANT_REVIEW_PHOTO_LIMIT}{" "}
             photos. Include a zoomed-out whole plant, the symptom pattern, sharp close-ups
-            of both leaf surfaces, and a macro or root-zone view when relevant.
+            of both leaf surfaces, and a macro or root-zone view when relevant. If the
+            symptom is a small part of a wider photo, describe the exact target and add a
+            close-up of that area.
           </Text>
         ) : (
           <Text style={styles.photoWarning}>

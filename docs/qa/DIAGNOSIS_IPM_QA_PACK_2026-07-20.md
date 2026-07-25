@@ -45,6 +45,19 @@ Every image in a reviewed case needs source and media URLs, creator, license, at
 
 Diagnosis, IPM Scout, and Harvest Readiness accept up to 12 photos. This ceiling allows a zoomed-out overview, pattern/distribution, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone or trap evidence, and additional top/middle/lower bud sites. Obvious tiny or invalid files are rejected before upload. Blur, glare, colored light, bad focus, digital zoom, missing views, and irrelevant subjects are review-time findings that must return the reason and exact replacement view.
 
+## Manual social reconnaissance — 2026-07-25
+
+Three relevant Facebook grow groups were sampled manually through the visible signed-in interface. No automated collection was used. No names, post URLs, comments, screenshots, group media, or other personal identifiers were retained, and no creator permission was obtained. Consequently, this review added zero gold-case records and zero negative-control media records.
+
+Only anonymized interaction patterns were retained:
+
+- a symptom could be visible only as a small region inside an otherwise sharp wide frame, requiring the user to identify the target and add a close view;
+- one IPM frame could contain multiple organisms or incidental subjects, so the reviewer must describe visible subjects separately and cannot assume the largest one is the target;
+- a high photo count could still omit every required macro or evidence role; 12 wide views do not establish harvest macro coverage;
+- an image could be globally clear but diagnostically limited because it did not isolate the relevant symptom.
+
+These observations informed interface guidance and QA assertions only. They are not diagnoses, expected labels, retained cases, or training data. Any future post or image must still receive creator permission, de-identification, outcome confirmation, image-level rights review, and Tier A cross-checking before it can become an evaluation record.
+
 ## What remains
 
 - collect at least 504 rights-reviewed images for the 252 multi-image case records;

@@ -23,7 +23,8 @@ const HARVEST_PHOTO_CHECKLIST = [
   "Use at least 3 sharp macro photos from top, middle, and lower bud sites.",
   "Focus on intact trichome gland heads on bud calyxes, not pistils or sugar-leaf edges.",
   "Use neutral white light; avoid purple LEDs, glare, blur, digital zoom, and heavy compression.",
-  "Include one wider bud-context photo so each macro sample has a clear location."
+  "Include one wider bud-context photo so each macro sample has a clear location.",
+  "Photo count is not coverage: even 12 wide photos cannot replace three true macros where individual intact gland heads are visible."
 ];
 
 function harvestPhotoRecoveryMessage(detail?: string) {
@@ -119,7 +120,8 @@ function HarvestPhotoAnalyzer({
         review costs 1 AI credit only after a complete four-photo set is submitted. A
         provider failure is refunded automatically. Photo review never makes the harvest
         decision by itself. You can add up to {PLANT_REVIEW_PHOTO_LIMIT} photos when extra
-        top, middle, lower, or zoomed-out samples are needed.
+        top, middle, lower, or zoomed-out samples are needed, but the extra photo count
+        does not replace the required macro roles.
       </Text>
       <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
         <Text style={photoStyles.checklistTitle}>Photo checklist before analysis</Text>

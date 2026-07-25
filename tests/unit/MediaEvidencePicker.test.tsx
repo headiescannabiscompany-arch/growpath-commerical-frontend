@@ -244,6 +244,12 @@ describe("MediaEvidencePicker", () => {
     expect(screen.getByText("0/12 photos")).toBeTruthy();
     expect(screen.getByText(/One zoomed-out plant or scout-zone photo/i)).toBeTruthy();
     expect(screen.getByText(/Sharp leaf-top and leaf-underside photos/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Photo count alone does not prove complete evidence/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/name the intended target and add a dedicated macro/i)
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Add evidence photos"));
 
