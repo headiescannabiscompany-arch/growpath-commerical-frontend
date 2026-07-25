@@ -78,6 +78,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "media with analysis status",
       "explicitly selected existing grow media with grow/plant/log provenance",
       "up to 12 role-diverse review photos with zoomed-out context and focused detail",
+      "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -109,6 +110,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Use rights-reviewed community cases only as QA/evaluation leads or photo-quality negative controls; require confirmed outcomes and Tier A cross-checks before they influence diagnosis or IPM logic.",
       "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Preserve optional source videos as private non-AI evidence and analyze only up to 12 extracted timestamped still frames; never claim direct video or motion analysis.",
       "Do not send existing private grow media to diagnosis or IPM until the user explicitly selects each photo and its grow/plant/log provenance is preserved.",
       "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",

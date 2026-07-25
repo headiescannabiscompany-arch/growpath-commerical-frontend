@@ -123,9 +123,11 @@ export default function SpeciesCropIdToolRoute() {
           </Text>
           <MediaEvidencePicker
             aiUsable
-            maxPhotos={10}
+            maxPhotos={12}
             allowVideo
-            maxVideoSeconds={30}
+            extractFramesFromVideo
+            maxExtractedVideoFrames={12}
+            maxVideoSeconds={599}
             purpose="other"
             sourceContext={{ growId: growId || undefined }}
             value={evidenceAssets}

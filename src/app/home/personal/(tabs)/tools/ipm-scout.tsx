@@ -322,7 +322,9 @@ export default function IpmScoutToolRoute() {
             aiUsable
             maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
             allowVideo
-            maxVideoSeconds={30}
+            extractFramesFromVideo
+            maxExtractedVideoFrames={PLANT_REVIEW_PHOTO_LIMIT}
+            maxVideoSeconds={599}
             purpose="ipm"
             sourceContext={{
               growId: growId || undefined,
