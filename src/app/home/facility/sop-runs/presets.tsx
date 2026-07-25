@@ -85,8 +85,10 @@ export default function FacilitySopRunsPresetsRoute() {
     isLoading,
     createTemplate,
     updateTemplate,
+    deleteTemplate,
     creating,
     updating,
+    deleting,
     refetch
   } = useSopTemplates(facilityId);
 
@@ -102,6 +104,10 @@ export default function FacilitySopRunsPresetsRoute() {
   const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>([]);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [retireTarget, setRetireTarget] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const saving = creating || updating || uploading;
@@ -262,6 +268,22 @@ export default function FacilitySopRunsPresetsRoute() {
       setMessage(getErrorMessage(error, "Failed to save SOP"));
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function retireTemplate() {
+    if (!facilityId || !retireTarget || deleting) return;
+    setMessage(null);
+    try {
+      await deleteTemplate(retireTarget.id);
+      await refetch();
+      if (editingId === retireTarget.id) resetForm();
+      setMessage(
+        `Retired "${retireTarget.title}". Historical versions and completed runs remain available as evidence.`
+      );
+      setRetireTarget(null);
+    } catch (error: unknown) {
+      setMessage(getErrorMessage(error, "Failed to retire SOP"));
     }
   }
 
@@ -597,16 +619,63 @@ export default function FacilitySopRunsPresetsRoute() {
                   Start run
                 </Link>
                 {canManage ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Revise SOP ${titleText}`}
-                    onPress={() => editTemplate(item, index)}
-                    style={styles.textButton}
-                  >
-                    <Text style={styles.textButtonText}>Revise</Text>
-                  </Pressable>
+                  <>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Revise SOP ${titleText}`}
+                      onPress={() => editTemplate(item, index)}
+                      style={styles.textButton}
+                    >
+                      <Text style={styles.textButtonText}>Revise</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Retire SOP ${titleText}`}
+                      accessibilityState={{ disabled: deleting }}
+                      disabled={deleting}
+                      onPress={() => setRetireTarget({ id, title: titleText })}
+                      style={[styles.retireButton, deleting && styles.disabled]}
+                    >
+                      <Text style={styles.retireButtonText}>Retire</Text>
+                    </Pressable>
+                  </>
                 ) : null}
               </View>
+              {retireTarget?.id === id ? (
+                <View
+                  accessibilityLabel={`Retire confirmation ${titleText}`}
+                  style={styles.retireConfirm}
+                >
+                  <Text style={styles.retireTitle}>Retire {titleText}?</Text>
+                  <Text style={styles.retireCopy}>
+                    This removes the SOP from new runs. Historical versions, completed
+                    runs, attachments, and audit evidence are preserved.
+                  </Text>
+                  <View style={styles.savedActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Cancel retirement ${titleText}`}
+                      disabled={deleting}
+                      onPress={() => setRetireTarget(null)}
+                      style={[styles.textButton, deleting && styles.disabled]}
+                    >
+                      <Text style={styles.textButtonText}>Cancel</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Confirm retire SOP ${titleText}`}
+                      accessibilityState={{ disabled: deleting }}
+                      disabled={deleting}
+                      onPress={retireTemplate}
+                      style={[styles.retireConfirmButton, deleting && styles.disabled]}
+                    >
+                      <Text style={styles.retireConfirmButtonText}>
+                        {deleting ? "Retiring..." : "Confirm retirement"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
             </View>
           );
         }}
@@ -703,6 +772,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   },
   textButtonText: { color: "#334155", fontWeight: "900" },
+  retireButton: {
+    borderWidth: 1,
+    borderColor: "#b91c1c",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#fff"
+  },
+  retireButtonText: { color: "#991b1b", fontWeight: "900" },
+  retireConfirm: {
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    borderRadius: radius.card,
+    padding: 11,
+    gap: 8,
+    backgroundColor: "#fef2f2"
+  },
+  retireTitle: { color: "#7f1d1d", fontWeight: "900" },
+  retireCopy: { color: "#991b1b", fontWeight: "700", lineHeight: 19 },
+  retireConfirmButton: {
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#b91c1c"
+  },
+  retireConfirmButtonText: { color: "#fff", fontWeight: "900" },
   disabled: { opacity: 0.45 },
   reviewRow: {
     alignItems: "flex-start",
