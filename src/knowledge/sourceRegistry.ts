@@ -20,7 +20,10 @@ export type SourceUseCase =
   | "propagation"
   | "tissue_culture"
   | "course_media"
-  | "education";
+  | "education"
+  | "qa_evaluation"
+  | "photo_quality_guidance"
+  | "platform_data_access";
 
 export type SourceType =
   | "university_extension"
@@ -62,6 +65,19 @@ const horticulture = [
 ] as SourceUseCase[];
 
 export const sourceRegistry: SourceRegistryEntry[] = [
+  {
+    id: "meta-automated-data-collection-terms",
+    name: "Meta Automated Data Collection Terms and Facebook Terms",
+    domain: "facebook.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for Meta's permission boundary: automated collection is prohibited without prior express authorization. It does not grant content rights, creator permission, private-group access, or permission to use collected content for GrowPath QA or training.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-07-25"
+  },
   {
     id: "youtube-player-documentation",
     name: "YouTube Embedded Players and API documentation",
@@ -306,6 +322,32 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     notes: "Anecdotal pattern/lead source. Preserve context and cross-check.",
     requiresCrossCheck: true,
     lastReviewedAt: "2026-07-18"
+  },
+  {
+    id: "facebook-grower-groups",
+    name: "Facebook grower posts and groups",
+    domain: "facebook.com",
+    sourceType: "forum",
+    reliabilityTier: "C",
+    trustedFor: ["qa_evaluation", "photo_quality_guidance"],
+    notTrustedFor: [
+      "diagnosis",
+      "ipm",
+      "legal_regulatory",
+      "fertilizer_label",
+      "cultivar_parentage",
+      "lab_result"
+    ],
+    notes:
+      "Candidate question language, evidence leads, and photo-quality failure examples only. Do not scrape or collect automatically without Meta authorization. Do not use private-group content without group access plus creator permission. A post, comment consensus, like count, or image caption is not a confirmed diagnosis. Copy or retain media only after image-level rights, intended-use, privacy, and de-identification review; never use this source for model training.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "meta-automated-data-collection-terms",
+      "uc-ipm",
+      "usda-aphis",
+      "growpath-method"
+    ],
+    lastReviewedAt: "2026-07-25"
   },
   {
     id: "seo-affiliate-blog",

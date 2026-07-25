@@ -119,6 +119,48 @@ function main() {
     errors
   );
 
+  const social = fixture.socialContentPolicy || {};
+  for (const key of [
+    "automatedCollectionRequiresPlatformAuthorization",
+    "privateGroupContentRequiresGroupAccessAndCreatorPermission",
+    "deidentificationRequired",
+    "engagementIsNotGroundTruth",
+    "confirmedOutcomeRequiredForGoldCase",
+    "tierACrossCheckRequiredForDiagnosticLabel"
+  ]) {
+    requireCondition(
+      social[key] === true,
+      `socialContentPolicy.${key} must be true.`,
+      errors
+    );
+  }
+  requireCondition(
+    social.useForModelTraining === false,
+    "Social QA content must never be model-training data.",
+    errors
+  );
+
+  const photoPolicy = fixture.photoEvidencePolicy || {};
+  requireCondition(
+    photoPolicy.maxPhotosPerDiagnosisIpmOrHarvestWorkflow === 12,
+    "Diagnosis, IPM, and Harvest review must allow up to 12 photos.",
+    errors
+  );
+  requireCondition(
+    photoPolicy.minimumPhotosForHarvestProviderReview === 4,
+    "Harvest provider review must still require at least four role-diverse photos.",
+    errors
+  );
+  requireCondition(
+    Array.isArray(photoPolicy.reviewTimeChecks) &&
+      photoPolicy.reviewTimeChecks.includes("blur or missed focus") &&
+      photoPolicy.reviewTimeChecks.includes(
+        "missing zoomed-out context or distribution view"
+      ),
+    "Photo-quality review and missing-context checks are incomplete.",
+    errors
+  );
+
   const expectedGroupNames = [
     "diseases",
     "pestsAndBeneficialLookalikes",
@@ -233,7 +275,8 @@ function main() {
       "growpath_owner_media",
       "plantvillage",
       "extension_ipm_media",
-      "commissioned_mimic_cases"
+      "commissioned_mimic_cases",
+      "facebook_grower_groups"
     ].every((sourceId) => sourceIds.has(sourceId)),
     "Diagnosis/IPM source plan is incomplete.",
     errors

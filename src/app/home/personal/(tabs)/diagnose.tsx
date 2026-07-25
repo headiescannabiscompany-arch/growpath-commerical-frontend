@@ -23,6 +23,7 @@ import {
   normalizeDiagnosisResponse,
   type NormalizedDiagnosis
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
+import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -980,13 +981,13 @@ export default function DiagnoseRoute({
             purpose="diagnosis"
             value={evidenceAssets}
             onChange={setEvidenceAssets}
-            maxPhotos={10}
+            maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
           />
         ) : null}
 
         <MediaEvidencePicker
           aiUsable
-          maxPhotos={10}
+          maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
           allowVideo
           maxVideoSeconds={30}
           purpose="diagnosis"
@@ -1000,8 +1001,9 @@ export default function DiagnoseRoute({
         </Text>
         {photoAnalysisReady ? (
           <Text style={styles.photoReady}>
-            Photo analysis is connected. Include the whole plant, the symptom pattern, and
-            sharp close-ups of both leaf surfaces.
+            Photo analysis is connected. You can add up to {PLANT_REVIEW_PHOTO_LIMIT}{" "}
+            photos. Include a zoomed-out whole plant, the symptom pattern, sharp close-ups
+            of both leaf surfaces, and a macro or root-zone view when relevant.
           </Text>
         ) : (
           <Text style={styles.photoWarning}>

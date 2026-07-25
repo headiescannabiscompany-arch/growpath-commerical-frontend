@@ -19,6 +19,7 @@ import {
   type GrowpathModuleUserDecision
 } from "@/api/growpathModules";
 import { updateToolRun, type ToolRun } from "@/api/toolRuns";
+import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 
 export function normalizeIpmPrefillField({
   fieldKey,
@@ -303,8 +304,9 @@ export default function IpmScoutToolRoute() {
           <Text style={styles.evidenceGuidance}>
             Best set: one whole-plant photo, the damage pattern, sharp leaf tops and
             undersides, and a macro of the organism or sign. Include a dated sticky trap
-            or short video when movement matters. The result will say whether photo pixels
-            were actually analyzed.
+            or short video when movement matters. Up to {PLANT_REVIEW_PHOTO_LIMIT} photos
+            can cover zoomed-out context, several plants, both leaf surfaces, and macro
+            details. The result will say whether photo pixels were actually analyzed.
           </Text>
           <SavedGrowPhotoEvidencePicker
             growId={growId}
@@ -312,11 +314,11 @@ export default function IpmScoutToolRoute() {
             purpose="ipm"
             value={evidenceAssets}
             onChange={setEvidenceAssets}
-            maxPhotos={10}
+            maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
           />
           <MediaEvidencePicker
             aiUsable
-            maxPhotos={10}
+            maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
             allowVideo
             maxVideoSeconds={30}
             purpose="ipm"

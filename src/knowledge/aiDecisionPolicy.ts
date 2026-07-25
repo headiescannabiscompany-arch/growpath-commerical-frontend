@@ -31,6 +31,7 @@ export const aiDecisionPolicy = {
   rules: [
     "Never invent measurements, labels, lab values, provenance, identifiers, dates, costs or user actions.",
     "Separate observation, calculation, inference and user claim.",
+    "Treat social posts as authorized QA leads only, never diagnostic ground truth or model-training data.",
     "Expose rule/GPT disagreement and fallback provider labels.",
     "Require user confirmation before writes and consequential decisions."
   ]

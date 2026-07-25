@@ -194,4 +194,65 @@ describe("MediaEvidencePicker", () => {
     fireEvent.press(screen.getByText("Remove"));
     expect(screen.queryByText("Upload failed")).toBeNull();
   });
+
+  it("rejects an obviously tiny diagnosis photo before upload or AI use", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tiny-leaf.jpg",
+          type: "image",
+          mimeType: "image/jpeg",
+          width: 240,
+          height: 180,
+          fileSize: 30 * 1024
+        }
+      ]
+    });
+    const screen = render(
+      <MediaEvidencePicker aiUsable purpose="diagnosis" maxPhotos={12} />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/This photo is too small for dependable plant review/i)
+      ).toBeTruthy()
+    );
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("shows role-diverse retake guidance and metadata warnings", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///Screenshot leaf.png",
+          type: "image",
+          mimeType: "image/png",
+          fileName: "Screenshot leaf.png",
+          width: 800,
+          height: 600,
+          fileSize: 70 * 1024
+        }
+      ]
+    });
+    const screen = render(<MediaEvidencePicker aiUsable purpose="ipm" maxPhotos={12} />);
+
+    expect(screen.getByText("0/12 photos")).toBeTruthy();
+    expect(screen.getByText(/One zoomed-out plant or scout-zone photo/i)).toBeTruthy();
+    expect(screen.getByText(/Sharp leaf-top and leaf-underside photos/i)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+
+    await waitFor(() =>
+      expect(screen.getByText(/Photo check: Resolution is limited/i)).toBeTruthy()
+    );
+    expect(
+      screen.getByText(/Photo check: Screenshots often remove detail/i)
+    ).toBeTruthy();
+    expect(mockUpload).toHaveBeenCalledTimes(1);
+  });
 });

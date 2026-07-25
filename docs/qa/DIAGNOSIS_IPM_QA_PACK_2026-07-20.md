@@ -36,10 +36,14 @@ IPM Scout must send the same reviewed evidence envelope to the GrowPath primary 
 - GrowPath/owner or commissioned media is preferred because conditions, outcomes, and rights can be recorded together.
 - PlantVillage is a candidate only. Repository availability or an “open access” description is not proof that every image is licensed for GrowPathAI commercial inference QA.
 - Extension and government sources may support diagnostic signs, confirmation methods, and IPM principles, but page authority does not automatically grant permission to copy page media.
+- Facebook grower posts and groups may supply candidate question language, case-recruitment leads, and poor-photo negative controls only. Do not automate collection without Meta authorization. Private-group access also requires the relevant group access and creator permission before retaining content. Remove usernames, faces, comments, locations, and unrelated personal data.
+- A highly useful social case becomes a gold evaluation case only after image-level rights review, a separately confirmed outcome, and Tier A diagnostic cross-checking. Likes, captions, comments, and consensus are never the expected label. A poor but rights-reviewed case may test rejection and exact retake guidance. Neither category is training data.
 - No case may invent a pesticide product, rate, interval, compatibility, or legal-use claim. Product guidance requires current label, crop/site, jurisdiction, worker/harvest interval, and beneficial-organism review.
 - The pack is for QA of inference behavior, never model training.
 
 Every image in a reviewed case needs source and media URLs, creator, license, attribution, retrieval and rights-review dates, intended-use approval, and handling mode. A copied fixture also requires a scoped local path and SHA-256 hash.
+
+Diagnosis, IPM Scout, and Harvest Readiness accept up to 12 photos. This ceiling allows a zoomed-out overview, pattern/distribution, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone or trap evidence, and additional top/middle/lower bud sites. Obvious tiny or invalid files are rejected before upload. Blur, glare, colored light, bad focus, digital zoom, missing views, and irrelevant subjects are review-time findings that must return the reason and exact replacement view.
 
 ## What remains
 
