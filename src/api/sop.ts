@@ -8,9 +8,33 @@ export type SOPTemplate = {
   content?: string;
   description?: string;
   category?: string;
+  checklist?: SOPChecklistStep[];
+  safetyNotes?: string;
+  estimatedDurationMinutes?: number | null;
+  sourceKey?: string | null;
+  sourceVersion?: number | null;
+  attachments?: SOPAttachment[];
+  reviewedAt?: string | null;
   isActive?: boolean;
   version?: number;
+  supersedes?: string | null;
   createdAt?: string;
+  updatedAt?: string;
+};
+
+export type SOPChecklistStep = {
+  step: string;
+  required?: boolean;
+  requiresPhoto?: boolean;
+};
+
+export type SOPAttachment = {
+  assetId: string;
+  url: string;
+  filename: string;
+  mimeType?: string;
+  bytes?: number;
+  uploadedAt?: string | null;
 };
 
 function normalizeSOPList(value: any): SOPTemplate[] {

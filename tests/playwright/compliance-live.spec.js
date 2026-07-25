@@ -65,21 +65,17 @@ test.describe("Compliance Features - Live API Integration", () => {
     ).toBeVisible();
   });
 
-  test("creates new SOP template when the control is exposed", async ({ page }) => {
+  test("opens the reviewed SOP Library without creating a production record", async ({
+    page
+  }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
     await openFacilityCompliance(page);
 
-    const createBtn = page.getByRole("button", { name: /Create SOP template/i }).first();
-    await expect(createBtn).toBeVisible();
-
-    const sopName = `SOP ${Date.now()}`;
-    await page
-      .getByPlaceholder(/SOP title|SOP|Title|Name|Planting Procedure/i)
-      .first()
-      .fill(sopName);
-    await createBtn.click();
-
-    await expect(page.getByText(new RegExp(sopName))).toBeVisible({ timeout: 5000 });
+    const libraryButton = page.getByRole("button", { name: /Open SOP Library/i }).first();
+    await expect(libraryButton).toBeVisible();
+    await libraryButton.click();
+    await expect(page).toHaveURL(/\/home\/facility\/sop-runs\/presets/);
+    await expect(page.getByRole("heading", { name: "SOP Library" })).toBeVisible();
   });
 });

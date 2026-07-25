@@ -81,6 +81,7 @@ export const endpoints = {
   sopTemplates: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-templates`,
   sopTemplate: (facilityId: string, id: string) =>
     `${BASE}/facilities/${facilityId}/sop-templates/${id}`,
+  sopDocuments: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-documents`,
 
   // SOP runs
   sopRuns: (facilityId: string) => facilityPath(facilityId, "/sop-runs"),

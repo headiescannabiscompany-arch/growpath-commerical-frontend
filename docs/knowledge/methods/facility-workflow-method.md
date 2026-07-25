@@ -56,6 +56,16 @@ The primary Audit Logs list and entity-history list must use the same readable a
 
 Facility SOP runs require a visible title and checklist evidence source: either an approved selected template or at least one owner-entered one-off step. Empty runs cannot become inspection evidence. Every step must be reviewed as done or skipped before completion, and completed runs are locked against checklist mutation. Run details and comparisons must present readable evidence summaries and step differences; raw database identifiers and JSON envelopes belong in controlled audit exports, not the primary Facility workflow. Run comparison must use two distinct user-selected saved runs and human-readable titles; owners and staff must never need to copy or type internal run identifiers.
 
+The Facility SOP Library may provide setpoint-free standard starter templates for common operational checks. A starter is an editable baseline, not an automatically installed policy, legal-compliance claim, treatment direction, or facility approval. An owner or manager must review and customize its title, category, checklist, safety/escalation notes, responsibilities, and attachments before saving it as the active Facility version. Never insert crop measurements, chemical rates, jurisdiction rules, release criteria, or unseen conditions into a starter.
+
+Facility SOP documents are supporting references, not substitutes for executable evidence. Accept only bounded PDF, Word, text, or scanned JPG/PNG uploads from an authorized Facility owner or manager; store the asset against the selected Facility, verify attachment ownership again when saving the template, and prevent cross-Facility reuse. Every active template still requires at least one explicit checklist step. Revising a template creates a new active version while preserving the prior version for historical runs and audit evidence; retiring a template hides it from new runs without deleting its history.
+
+Personal and Commercial AI may reuse the same starter structure only as a clearly labeled
+review-only recommendation. Those workspaces do not gain Facility approval, assignment,
+upload, versioning, run-evidence, retirement, or audit controls. A recommended draft may
+become a grow review task only after explicit user confirmation; it cannot create or alter
+a Facility SOP.
+
 Sensor and controller integrations begin read-only. Store provider credentials only in encrypted backend fields and expose only configured/encrypted state, never secret values. Each connection must declare provider capabilities, connection status, structured errors, and last-sync state; an adapter is incomplete until it implements connection testing, device discovery, and data pulling. Control/setpoint writes require a separately reviewed future permission scope.
 
 Import setup is a reviewed sequence: select provider, save encrypted credentials, test the connection, fetch provider structure, preview devices and metrics, edit room/zone mappings, then confirm. Only Facility owners and managers may confirm Facility mappings. Confirmation records the proposed structure; it does not itself create rooms, zones, alerts, dashboards, or controller actions.

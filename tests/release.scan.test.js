@@ -10,8 +10,10 @@ function copyReleaseFixture(tempRoot) {
   fs.cpSync(root, tempRoot, {
     recursive: true,
     filter: (source) => {
-      const topLevel = path.relative(root, source).split(path.sep)[0];
-      return !["node_modules", "tmp", ".git"].includes(topLevel);
+      const relative = path.relative(root, source);
+      if (!relative) return true;
+      const topLevel = relative.split(path.sep)[0];
+      return ["app.json", "eas.json", "scripts", "src"].includes(topLevel);
     }
   });
 }

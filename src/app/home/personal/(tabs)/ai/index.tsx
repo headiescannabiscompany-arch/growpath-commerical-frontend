@@ -22,9 +22,14 @@ import type { EvidenceAsset } from "@/types/evidence";
 import {
   askPersonalAssistant,
   type AssistantProposedWrite,
-  type AssistantReference
+  type AssistantReference,
+  type AssistantSopRecommendation
 } from "@/api/personalAssistant";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import {
+  STANDARD_SOP_LIBRARY,
+  type StandardSopTemplate
+} from "@/features/sops/standardSopLibrary";
 import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
@@ -62,6 +67,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#FFF7ED"
   },
+  sopCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#C4B5FD",
+    borderRadius: radius.card,
+    marginBottom: 10,
+    backgroundColor: "#F5F3FF"
+  },
+  sopChoice: {
+    borderWidth: 1,
+    borderColor: "#A78BFA",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  sopChoiceText: { color: "#5B21B6", fontWeight: "700", fontSize: 12 },
   actionButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
@@ -113,6 +134,13 @@ const styles = StyleSheet.create({
 
 type Msg = { role: "user" | "assistant"; text: string };
 type AssistantAction = { label: string; href: string };
+
+const GENERIC_SOP_PROMPT =
+  "Recommend up to three review-only SOP or checklist drafts that fit my selected grow and recorded work. Explain why each is relevant, separate recorded facts from missing information, and do not invent setpoints, chemical rates, legal requirements, or completed actions.";
+
+function sopPrompt(template: StandardSopTemplate) {
+  return `Recommend a review-only SOP/checklist draft based on the "${template.title}" starter (source key ${template.key}, version ${template.version}) and my selected records. Explain why it fits, preserve missing information as unknown, and do not invent setpoints, chemical rates, legal requirements, or completed actions.`;
+}
 
 interface ContextData {
   growCount: number;
@@ -432,6 +460,9 @@ export default function AiScreen({
   const [actions, setActions] = useState<AssistantAction[]>([]);
   const [references, setReferences] = useState<AssistantReference[]>([]);
   const [proposedWrites, setProposedWrites] = useState<AssistantProposedWrite[]>([]);
+  const [sopRecommendations, setSopRecommendations] = useState<
+    AssistantSopRecommendation[]
+  >([]);
   const [selectedGrowId, setSelectedGrowId] = useState(initialGrowId);
   const [sending, setSending] = useState(false);
   const [writeFeedback, setWriteFeedback] = useState("");
@@ -452,6 +483,7 @@ export default function AiScreen({
     setActions([]);
     setReferences([]);
     setProposedWrites([]);
+    setSopRecommendations([]);
     setWriteFeedback("");
     setConversationId("");
     setProviderLabel("");
@@ -599,6 +631,13 @@ export default function AiScreen({
       environmentHistory: (context?.environmentHistory || []).slice(-100),
       recipes: scoped(context?.recipes || []).slice(0, 20),
       phenoScores: [],
+      sopStarterLibrary:
+        workspaceType === "facility"
+          ? []
+          : STANDARD_SOP_LIBRARY.map((template) => ({
+              key: template.key,
+              sourceVersion: template.version
+            })),
       facilityPreset: facilityPreset?.key || null,
       facilityCompliance: context?.facilityCompliance
         ? {
@@ -630,10 +669,52 @@ export default function AiScreen({
     setActions(Array.isArray(res.actions) ? res.actions : []);
     setReferences(Array.isArray(res.referencedData) ? res.referencedData : []);
     setProposedWrites(Array.isArray(res.proposedWrites) ? res.proposedWrites : []);
+    setSopRecommendations(
+      Array.isArray(res.sopRecommendations) ? res.sopRecommendations : []
+    );
     setConversationId(res.conversationId || conversationId);
     setProviderLabel(res.providerLabel || "Limited context answer");
     setEvidenceAssets([]);
     return res.reply;
+  }
+
+  function reviewSopAsTask(recommendation: AssistantSopRecommendation) {
+    const task: AssistantProposedWrite = {
+      type: "create_task",
+      payload: {
+        growId: selectedGrowId || null,
+        title: `Review: ${recommendation.title}`,
+        description: [
+          "Review-only SOP/checklist draft. Adapt and approve it before use.",
+          recommendation.whyRecommended
+            ? `Why recommended: ${recommendation.whyRecommended}`
+            : "",
+          recommendation.safetyNotes
+            ? `Safety boundary: ${recommendation.safetyNotes}`
+            : "",
+          "",
+          "Checklist:",
+          ...recommendation.checklist.map((step, index) => `${index + 1}. ${step}`),
+          "",
+          "Missing information to resolve:",
+          ...recommendation.missingInformation.map((item) => `- ${item}`)
+        ]
+          .filter((line) => line !== "")
+          .join("\n"),
+        priority: "medium",
+        sourceType: "ai_assistant",
+        sourceObjectId: `sop-starter:${recommendation.key}:v${recommendation.sourceVersion}`
+      }
+    };
+    setProposedWrites((current) => [
+      task,
+      ...current.filter(
+        (item) => item.payload?.sourceObjectId !== task.payload.sourceObjectId
+      )
+    ]);
+    setWriteFeedback(
+      "Review the drafted task below. Nothing is saved until you confirm it."
+    );
   }
 
   async function confirmWrite(write: AssistantProposedWrite) {
@@ -708,6 +789,7 @@ export default function AiScreen({
     try {
       setReferences([]);
       setProposedWrites([]);
+      setSopRecommendations([]);
       const reply = await askBackend(text);
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
@@ -850,6 +932,43 @@ export default function AiScreen({
             )}
           </View>
         )}
+        {workspaceType !== "facility" ? (
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              AI procedure recommendations
+            </Text>
+            <Text style={styles.contextText}>
+              Ask AI for a review-only SOP or checklist draft based on the selected grow
+              and recorded evidence. Formal approval, assignment, uploads, and version
+              history remain Facility controls.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Draft recommended procedures"
+              onPress={() => setDraft(GENERIC_SOP_PROMPT)}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionButtonText}>Recommend procedures</Text>
+            </Pressable>
+            <View style={styles.growPicker}>
+              {STANDARD_SOP_LIBRARY.map((template) => (
+                <Pressable
+                  key={template.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Draft ${template.title}`}
+                  onPress={() => setDraft(sopPrompt(template))}
+                  style={styles.sopChoice}
+                >
+                  <Text style={styles.sopChoiceText}>{template.title}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={[styles.contextText, { marginTop: 8 }]}>
+              Choosing a starter only fills the request. Review it before sending; no AI
+              credit or record write occurs until you take the next action.
+            </Text>
+          </View>
+        ) : null}
         {messages.map((m, idx) => (
           <View key={idx} style={styles.msg}>
             <Text style={styles.msgRole}>{m.role.toUpperCase()}</Text>
@@ -857,6 +976,63 @@ export default function AiScreen({
           </View>
         ))}
         {providerLabel ? <Text style={styles.hint}>{providerLabel}</Text> : null}
+        {sopRecommendations.length ? (
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              Review-only procedure drafts
+            </Text>
+            <Text style={styles.contextText}>
+              These are starting points, not approved Facility SOPs or legal compliance
+              findings.
+            </Text>
+            {sopRecommendations.map((recommendation) => (
+              <View key={recommendation.key} style={{ marginTop: 12 }}>
+                <Text style={[styles.contextText, styles.contextTitle]}>
+                  {recommendation.title}
+                </Text>
+                <Text style={styles.contextText}>{recommendation.summary}</Text>
+                <Text style={styles.contextText}>
+                  Why: {recommendation.whyRecommended}
+                </Text>
+                {recommendation.checklist.map((step, index) => (
+                  <Text key={`${recommendation.key}-${index}`} style={styles.contextText}>
+                    {index + 1}. {step}
+                  </Text>
+                ))}
+                {recommendation.safetyNotes ? (
+                  <Text style={styles.contextText}>
+                    Safety boundary: {recommendation.safetyNotes}
+                  </Text>
+                ) : null}
+                <Text style={[styles.contextText, styles.contextTitle]}>
+                  Resolve before use
+                </Text>
+                {recommendation.missingInformation.map((item, index) => (
+                  <Text
+                    key={`${recommendation.key}-missing-${index}`}
+                    style={styles.contextText}
+                  >
+                    - {item}
+                  </Text>
+                ))}
+                {selectedGrowId ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Review ${recommendation.title} as a task`}
+                    onPress={() => reviewSopAsTask(recommendation)}
+                    style={styles.actionButton}
+                  >
+                    <Text style={styles.actionButtonText}>Review as grow task</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.contextText}>
+                    Select a grow to turn this draft into a confirmable review task.
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        ) : null}
         <PersonalFeedPlacement placement="middle" routeKey="personal_ai" longContent />
         {actions.length ? (
           <View style={styles.actionCard}>

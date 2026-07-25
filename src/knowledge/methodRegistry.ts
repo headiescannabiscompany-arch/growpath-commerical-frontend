@@ -475,6 +475,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "direct-entry and hard-reload support for workspace choice and switching",
       "workspace preference reapplied before restricted-route access decisions",
       "workspace selection and routing use the same effective paid-plan capabilities",
+      "review-only SOP/checklist recommendations with starter version, rationale, missing information, and separately confirmed grow-task conversion",
       "clear not-configured guidance for unavailable third-party integrations",
       "connection-derived read-only EventSub status and checked Commercial Live visibility controls"
     ],
@@ -508,6 +509,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never treat knowledge of a draft course ID as permission to read, enroll, check out, discuss, or review it.",
       "Never honor deterministic test identity headers as production authentication.",
       "Never silently replace an explicitly selected eligible workspace with the account's primary billing mode.",
+      "Never present a Commercial AI procedure draft as an approved Facility SOP, invent its setpoints, chemical rates, or legal requirements, or save it without separate confirmation.",
       "Never pass reserved public route words or malformed record IDs into database ID queries.",
       "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state."
@@ -551,6 +553,10 @@ export const methodRegistry: GrowPathMethod[] = [
       "readable Facility inventory details with confirmed mistaken-record removal",
       "collision-resistant Facility deviation references with controlled write failures",
       "template-backed or owner-entered SOP checklists",
+      "owner-reviewed setpoint-free standard SOP starters",
+      "Personal and Commercial AI reuse limited to review-only starter recommendations",
+      "Facility-scoped SOP document attachments that supplement an executable checklist",
+      "version-preserving SOP revisions and non-destructive retirement",
       "human-readable two-run SOP comparison selection",
       "review-complete and mutation-locked SOP evidence runs",
       "readable SOP evidence summaries and step differences",
@@ -581,6 +587,10 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never treat a resolved or cancelled Facility deviation as an open cleanup blocker.",
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service.",
       "Never create an empty SOP run or require a user to type internal run IDs for comparison.",
+      "Never auto-install a standard SOP starter as Facility policy or present it as legal compliance, treatment direction, release criteria, or facility approval.",
+      "Never let a Personal or Commercial SOP recommendation imply Facility approval, assignment, uploads, versioning, run evidence, retirement, or audit status.",
+      "Never allow an uploaded SOP document to replace the executable checklist, cross Facility boundaries, or be attached without owner/manager review.",
+      "Never overwrite or hard-delete the prior SOP version when a Facility procedure is revised or retired.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],

@@ -24,7 +24,7 @@ import {
   rejectVerification,
   type VerificationRecord
 } from "@/api/verification";
-import { createSOPTemplate, getSOPTemplates, type SOPTemplate } from "@/api/sop";
+import { getSOPTemplates, type SOPTemplate } from "@/api/sop";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -95,8 +95,6 @@ export default function FacilityComplianceTab() {
   const [deviationTitle, setDeviationTitle] = useState("");
   const [deviationSeverity, setDeviationSeverity] = useState("minor");
   const [deviationDescription, setDeviationDescription] = useState("");
-  const [sopTitle, setSopTitle] = useState("");
-  const [sopContent, setSopContent] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
   const canReadCompliance = Boolean(ent?.can?.(CAPABILITY_KEYS.COMPLIANCE_READ));
@@ -201,32 +199,6 @@ export default function FacilityComplianceTab() {
         `Deviation ${id} resolved in facility ${facilityId}`
       );
       setFeedback("Deviation resolved.");
-      await load({ refresh: true });
-    } catch (e) {
-      handleApiError(e);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function addSop() {
-    if (!facilityId || !canWriteCompliance || !sopTitle.trim()) return;
-    setSaving(true);
-    setFeedback("");
-    try {
-      const created = await createSOPTemplate(facilityId, {
-        title: sopTitle.trim(),
-        content: sopContent.trim() || "Procedure pending.",
-        version: 1,
-        facilityId
-      });
-      await writeAudit(
-        "COMPLIANCE_SOP_CREATED",
-        `SOP ${rowId(created) || sopTitle.trim()} created in facility ${facilityId}`
-      );
-      setSopTitle("");
-      setSopContent("");
-      setFeedback("SOP template created.");
       await load({ refresh: true });
     } catch (e) {
       handleApiError(e);
@@ -513,32 +485,18 @@ export default function FacilityComplianceTab() {
               <Text style={styles.cardTitle}>SOP Templates</Text>
               {canWriteCompliance ? (
                 <View style={styles.form}>
-                  <TextInput
-                    accessibilityLabel="SOP title"
-                    value={sopTitle}
-                    onChangeText={setSopTitle}
-                    style={styles.input}
-                    placeholder="SOP title"
-                  />
-                  <TextInput
-                    accessibilityLabel="SOP procedure summary"
-                    value={sopContent}
-                    onChangeText={setSopContent}
-                    style={[styles.input, styles.multiline]}
-                    multiline
-                    placeholder="Procedure summary"
-                  />
+                  <Text style={styles.muted}>
+                    Create and revise SOPs in the Library so every active version has an
+                    executable checklist, explicit review, and Facility-scoped supporting
+                    documents.
+                  </Text>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Create SOP template"
-                    onPress={addSop}
-                    disabled={saving || !sopTitle.trim()}
-                    style={[
-                      styles.primaryBtn,
-                      (saving || !sopTitle.trim()) && styles.disabled
-                    ]}
+                    accessibilityLabel="Open SOP Library"
+                    onPress={() => router.push("/home/facility/sop-runs/presets" as any)}
+                    style={styles.primaryBtn}
                   >
-                    <Text style={styles.primaryText}>Create SOP</Text>
+                    <Text style={styles.primaryText}>Open SOP Library</Text>
                   </Pressable>
                 </View>
               ) : null}

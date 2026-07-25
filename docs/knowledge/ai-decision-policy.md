@@ -16,3 +16,13 @@ AI is a synthesis and retrieval layer, not blind authority.
 8. Require user confirmation before writes or consequential decisions.
 
 Diagnosis uses ETGU plus GPT verification and an agreement/conflict state. Runtime answers should expose `methodIds`, `sourceIds`, `evidenceUsed`, `missingInformation`, `limitations` and `providerLabel`.
+
+Personal and Commercial AI may recommend a review-only SOP or checklist draft from the
+approved starter library and selected records. The answer must expose the starter version,
+why it was recommended, executable draft steps, missing information, and the review
+boundary. It must not call the draft an approved SOP, invent measurements, setpoints,
+chemical rates, legal requirements, or completed actions, or imply that Personal or
+Commercial has Facility approval, assignment, document, versioning, or audit controls.
+Turning a recommendation into a grow task requires a separate confirmation. Formal SOP
+approval, uploads, version history, assignment, execution evidence, and retirement remain
+Facility-scoped.
