@@ -172,6 +172,12 @@ describe("plant-identification QA catalog", () => {
         expect.objectContaining({
           sourceId: "commissioned_failure_cases",
           status: "preferred_pending_capture"
+        }),
+        expect.objectContaining({
+          sourceId: "crime_pays_botany_youtube",
+          status: "external_lead_only_pending_creator_permission",
+          allowedLicenseFilter: ["OWNER_PERMISSION"],
+          runtimeSourceRegistryId: "crime-pays-but-botany-doesnt"
         })
       ])
     );

@@ -78,6 +78,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "media with analysis status",
       "explicitly selected existing grow media with grow/plant/log provenance",
       "up to 12 role-diverse review photos with zoomed-out context and focused detail",
+      "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -109,6 +110,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Use rights-reviewed community cases only as QA/evaluation leads or photo-quality negative controls; require confirmed outcomes and Tier A cross-checks before they influence diagnosis or IPM logic.",
       "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Preserve optional source videos as private non-AI evidence and analyze only up to 12 extracted timestamped still frames; never claim direct video or motion analysis.",
       "Do not send existing private grow media to diagnosis or IPM until the user explicitly selects each photo and its grow/plant/log provenance is preserved.",
       "Do not drop attached photo evidence or prior crop-identity provenance during follow-up analysis, treat a supplied crop name as explicit confirmation, or coerce blank measurements to zero.",
       "A structured GPT IPM second opinion does not independently inspect photo or video pixels.",
@@ -348,7 +350,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "three macro bud-site photos plus one wider context photo",
       "up to 12 role-diverse photos when additional representative bud sites are needed",
-      "one optional private source video up to 20 seconds with up to six extracted still frames",
+      "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "maturity",
       "telemetry",
       "sensory",
@@ -384,7 +386,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
       "Reject obviously tiny or invalid files before upload, but use actionable retake guidance rather than pretending metadata alone can detect blur, glare, lighting, or missing sample roles.",
       "Use provider high-detail image review, but never claim digital zoom restored pixels hidden by blur, compression, or clipped glare; exclude obscured heads and report each image's usable region or exclusion reason.",
-      "Preserve an optional short source video as non-AI evidence and analyze only its extracted still frames. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks.",
+      "Preserve an optional source video shorter than 10 minutes as non-AI evidence and analyze only up to 12 timestamped candidate still frames spanning its timeline. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks. Exclude glare-obscured apparent cloudiness; classify clear, cloudy, or amber only from separate sharp, glare-free visible gland heads under neutral light.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",

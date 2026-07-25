@@ -160,7 +160,11 @@ async function openNewGrowForm(page: any) {
 
 async function submitGrow(page: any, name: string) {
   await page.getByTestId("input-grow-name").fill(name);
-  await page.getByTestId("input-grow-anchor-date").fill("2026-02-27");
+  await page.getByTestId("input-grow-anchor-date").click();
+  await page.getByLabel("Anchor date year").selectOption("2026");
+  await page.getByLabel("Anchor date month").selectOption("2");
+  await page.getByLabel("Anchor date day 2026-02-27").click();
+  await page.getByLabel("Anchor date use selected date").click();
   const submit = page.getByText("Create grow").last();
   await expect(submit).toBeVisible();
   await submit.click();

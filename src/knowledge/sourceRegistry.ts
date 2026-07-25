@@ -23,7 +23,8 @@ export type SourceUseCase =
   | "education"
   | "qa_evaluation"
   | "photo_quality_guidance"
-  | "platform_data_access";
+  | "platform_data_access"
+  | "plant_identification";
 
 export type SourceType =
   | "university_extension"
@@ -61,7 +62,8 @@ const horticulture = [
   "nutrient_chemistry",
   "water_quality",
   "propagation",
-  "education"
+  "education",
+  "plant_identification"
 ] as SourceUseCase[];
 
 export const sourceRegistry: SourceRegistryEntry[] = [
@@ -90,6 +92,33 @@ export const sourceRegistry: SourceRegistryEntry[] = [
       "Provider authority for player URL behavior and provider-side data-sharing constraints; not evidence that an individual video is available, embeddable, licensed, captioned, or suitable.",
     requiresCrossCheck: true,
     lastReviewedAt: "2026-07-22"
+  },
+  {
+    id: "crime-pays-but-botany-doesnt",
+    name: "Crime Pays But Botany Doesn't",
+    domain: "youtube.com",
+    sourceType: "grower_media",
+    reliabilityTier: "C",
+    trustedFor: ["education", "qa_evaluation", "photo_quality_guidance"],
+    notTrustedFor: ["plant_identification", "diagnosis", "ipm", "legal_regulatory"],
+    notes:
+      "Educational and QA context for field observation vocabulary, plant-family pattern recognition, morphology, ecology, and candidate discriminating questions. Do not copy or retain videos, audio, frames, transcripts, or thumbnails without creator permission. A host identification is not GrowPath ground truth and cannot solely support species confirmation, diagnosis, treatment, toxicity, edibility, or legal status.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["usda-plants-database", "extension-penn-state"],
+    lastReviewedAt: "2026-07-25"
+  },
+  {
+    id: "usda-plants-database",
+    name: "USDA NRCS PLANTS Database",
+    domain: "plants.usda.gov",
+    sourceType: "government",
+    reliabilityTier: "A",
+    trustedFor: ["plant_identification", "education"],
+    notTrustedFor: ["diagnosis", "ipm", "consumer_review"],
+    notes:
+      "Government plant taxonomy, distribution, documentation, and representative-morphology context. Exact identification still requires adequate characters and appropriate keys or expert/herbarium confirmation within the record's scope.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-07-25"
   },
   {
     id: "vimeo-video-privacy-documentation",

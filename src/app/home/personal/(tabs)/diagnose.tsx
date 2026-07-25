@@ -989,7 +989,9 @@ export default function DiagnoseRoute({
           aiUsable
           maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
           allowVideo
-          maxVideoSeconds={30}
+          extractFramesFromVideo
+          maxExtractedVideoFrames={PLANT_REVIEW_PHOTO_LIMIT}
+          maxVideoSeconds={599}
           purpose="diagnosis"
           sourceContext={{ growId, plantId, facilityId: facilityId || undefined }}
           value={evidenceAssets}

@@ -361,7 +361,11 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   await page.goto("/home/personal/grows/new", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "New Grow" })).toBeVisible();
   await page.getByLabel("Grow name").fill("Blueberry Patio Release Loop");
-  await page.getByLabel("Anchor date").fill("2026-06-01");
+  await page.getByLabel("Anchor date").click();
+  await page.getByLabel("Anchor date year").selectOption("2026");
+  await page.getByLabel("Anchor date month").selectOption("6");
+  await page.getByLabel("Anchor date day 2026-06-01").click();
+  await page.getByLabel("Anchor date use selected date").click();
   await page.getByLabel("Create grow").click();
 
   await expect.poll(() => state.grows.length, { message: "grow was created" }).toBe(1);

@@ -239,8 +239,9 @@ describe("MediaEvidencePicker", () => {
         aiUsable
         allowVideo
         extractFramesFromVideo
-        maxExtractedVideoFrames={6}
-        maxVideoSeconds={20}
+        maxPhotos={12}
+        maxExtractedVideoFrames={12}
+        maxVideoSeconds={599}
         purpose="harvest"
       />
     );
@@ -251,7 +252,7 @@ describe("MediaEvidencePicker", () => {
       expect(mockExtractVideoFrames).toHaveBeenCalledWith({
         uri: "file:///macro-scan.mov",
         durationSeconds: 12,
-        maxFrames: 6
+        maxFrames: 12
       })
     );
     await waitFor(() =>
@@ -273,6 +274,9 @@ describe("MediaEvidencePicker", () => {
         durableUrl: "/uploads/frame-1.jpg"
       })
     );
+    expect(
+      screen.getByText(/keeps only sharp, glare-free gland-head evidence/i)
+    ).toBeTruthy();
     expect(screen.getByText(/AI does not guess from motion/i)).toBeTruthy();
   });
 

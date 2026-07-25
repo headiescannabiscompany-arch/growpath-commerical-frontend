@@ -57,6 +57,17 @@ These videos are useful as owner-supplied observational and acquisition-quality 
 
 They are not a scientific harvest-decision source or labeled model ground truth by themselves. Neither item establishes a verified final harvest date, an independent outcome, or the required top/middle/lower plus context sample set. They should not be added to the runtime scientific source registry until the owner supplies approved uses, exclusions, reliability tier, cross-check requirements, and review date.
 
+### Timestamp review - 2026-07-25
+
+Browser frame inspection identified useful QA windows without treating the videos as ground truth:
+
+- `Scratch and sniff 8-14 days left` around `0:13` provides plant/bud context, while roughly `0:18` moves into individually visible gland heads. The close view has a strong warm/red cast, so it is useful for testing whether the workflow distinguishes visible head transparency from color contamination, not for a final percentage.
+- The same short video around `0:23`, `0:30`, `0:37`, and `0:47` contains blur, shallow focus, and highlight glare. Those are useful rejection/retake examples. A head that looks cloudy only in a glare-obscured frame must not be counted as cloudy.
+- `How many days left until chop?` around `1:13` provides a wider trichome-rich flower/sugar-leaf view, while around `1:50` is strongly overexposed and is a useful glare rejection case.
+- The long video around `5:29` contains the strongest inspected close-up: many individual gland heads are visible with a mixture of transparent and opaque appearances. It is a strong candidate window for clear-versus-cloudy QA, but the provider must still exclude clipped highlights and avoid treating pistils or color cast as amber gland heads.
+
+These timestamps are evidence-discovery anchors, not fixed extraction instructions. A source upload should sample candidate frames across the complete timeline, retain their timestamps, and submit only sharp frames that independently pass the normal role, focus, neutral-light, glare, and gland-head checks.
+
 ## Automated verification
 
 - Frontend Harvest/gating/navigation coverage: 4 suites, 22 tests passed.

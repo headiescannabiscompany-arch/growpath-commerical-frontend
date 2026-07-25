@@ -177,8 +177,33 @@ function main() {
   requireCondition(
     sourceIds.has("inaturalist") &&
       sourceIds.has("growpath_owner_media") &&
-      sourceIds.has("commissioned_failure_cases"),
-    "Source plan must retain iNaturalist, owner media, and commissioned failure cases.",
+      sourceIds.has("commissioned_failure_cases") &&
+      sourceIds.has("crime_pays_botany_youtube"),
+    "Source plan must retain iNaturalist, owner media, commissioned failure cases, and the governed Crime Pays educational lead.",
+    errors
+  );
+  const crimePaysSource = sourcePlan.find(
+    (source) => source.sourceId === "crime_pays_botany_youtube"
+  );
+  requireCondition(
+    crimePaysSource?.status === "external_lead_only_pending_creator_permission" &&
+      crimePaysSource?.allowedLicenseFilter?.length === 1 &&
+      crimePaysSource.allowedLicenseFilter[0] === "OWNER_PERMISSION" &&
+      crimePaysSource?.runtimeSourceRegistryId === "crime-pays-but-botany-doesnt",
+    "Crime Pays must remain lead-only, creator-permission gated, and linked to its governed runtime source.",
+    errors
+  );
+  requireCondition(
+    (crimePaysSource?.requirements || []).some((requirement) =>
+      /do not treat.*gold labels/i.test(requirement)
+    ) &&
+      (crimePaysSource?.requirements || []).some((requirement) =>
+        /cross-check.*Tier A/i.test(requirement)
+      ) &&
+      (crimePaysSource?.requirements || []).some((requirement) =>
+        /never use copied media for model training/i.test(requirement)
+      ),
+    "Crime Pays source requirements must block gold labels/training and require Tier A cross-checking.",
     errors
   );
   for (const source of sourcePlan) {

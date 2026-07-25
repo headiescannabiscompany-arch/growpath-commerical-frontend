@@ -135,7 +135,11 @@ test("Personal Grows: list -> create -> open", async ({ page }, testInfo) => {
 
   const growName = `E2E Grow ${Date.now()}`;
   await page.getByTestId("input-grow-name").fill(growName);
-  await page.getByTestId("input-grow-anchor-date").fill("2026-03-01");
+  await page.getByTestId("input-grow-anchor-date").click();
+  await page.getByLabel("Anchor date year").selectOption("2026");
+  await page.getByLabel("Anchor date month").selectOption("3");
+  await page.getByLabel("Anchor date day 2026-03-01").click();
+  await page.getByLabel("Anchor date use selected date").click();
 
   const createResponsePromise = waitForApiResponse(
     page,
