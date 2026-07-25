@@ -87,6 +87,21 @@ These timestamps are evidence-discovery anchors, not fixed extraction instructio
 - Direct bundle inspection confirmed Harvest Readiness uses private client-side frame extraction, up to 12 extracted candidates, and `maxVideoSeconds: 599`.
 - The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, keeps only sharp glare-free gland-head evidence, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
 
+## Saved-evidence reload and grow-photo reuse delivery - 2026-07-25
+
+- Frontend PR `#232` merged to `main` as `d196005aa87af9221cdf03df516f7347e41a3691` at `2026-07-25T22:28:40Z`.
+- Main Frontend CI run `30177643171` passed in 3m27s, and Production Build Preflight run `30177643166` passed in 3m41s on that exact merge SHA.
+- The production route was retested at `2026-07-25 18:34:42 -04:00`:
+  `https://growpathai.com/home/personal/tools/harvest-readiness?growId=6a551a9d2fb9f669d2319c06&release=d196005a&verify=reload-3-photos`.
+- Account/workspace: `headiescannabiscompany@gmail.com`, Personal Pro. Grow:
+  `6a551a9d2fb9f669d2319c06`.
+- The live page restored the prior uploaded harvest asset as `1/12 photos` and exposed two distinct `Ready to chop` grow-journal photos through the explicit `Use photos already in this grow` control.
+- Both journal photos were deliberately attached to Harvest Readiness. The live count became `3/12 photos`.
+- A fresh production navigation then reported `Restored 3 saved harvest photos for this grow.` and retained `3/12 photos`, proving the selection survives a new page/session-state load instead of falling back to `0/12`.
+- The page displayed `Add 1 more photo` and stated that no AI credit would be used yet. Analyze remained blocked; no provider request or credit charge was triggered.
+- A genuine live screenshot was captured in the Codex release task showing both distinct journal-photo thumbnails as `Added`, the restored-photo message, and the `3/12 photos` count. No repository screenshot file is claimed by this record.
+- Render deployment metadata was not inspected for this follow-up, so no Render deployment ID is claimed. The live production behavior and release-busted route are the deployment evidence.
+
 ## Honest remaining work
 
 - A rightful four-photo top/middle/lower macro plus wider-context set is still needed for one successful production provider analysis, provenance display, exact one-credit deduction, saved-run reopening, and downstream harvest-batch/task verification.
