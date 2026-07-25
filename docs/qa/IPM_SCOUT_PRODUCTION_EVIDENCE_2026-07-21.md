@@ -175,7 +175,7 @@ fields:
 - organism `not confirmed`;
 - damage `some yellowing and possibly necrotic tips on leaves`;
 - direct evidence `visible yellowing and necrosis on some leaf tips, healthy-looking
-  buds`; and
+buds`; and
 - follow-up context recommending underside inspection, comparison with surrounding
   plants, and review of growing conditions before distinguishing nutrient or
   environmental stress.
@@ -216,6 +216,14 @@ same Browser session, but no screenshot artifact tied to SHA
 `91ca611e0af6c01571a33410cd3aeb95c9c32970` is claimed.
 
 ## What this closes and what remains
+
+### Unified video-evidence production delivery - 2026-07-25
+
+- Frontend PR `#230` merged to `main` as `2b0143b30d7554b1906e495ebbd8d64b1212cf06`.
+- Main Frontend CI run `30172567462` and Production Build Preflight run `30172567487` passed.
+- Production served bundle `index-6ad47370c72a945b1ee4bcdd3fab89ff.js`.
+- Direct bundle inspection confirmed IPM Scout uses private client-side frame extraction, `maxExtractedVideoFrames: PLANT_REVIEW_PHOTO_LIMIT`, and `maxVideoSeconds: 599`.
+- The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
 
 Closed for this Personal Pro IPM slice:
 

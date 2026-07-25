@@ -63,6 +63,14 @@ PR `#95` fixed both issues:
 
 ## Evidence limits and remaining acceptance
 
+### Unified video-evidence production delivery - 2026-07-25
+
+- Frontend PR `#230` merged to `main` as `2b0143b30d7554b1906e495ebbd8d64b1212cf06`.
+- Main Frontend CI run `30172567462` and Production Build Preflight run `30172567487` passed.
+- Production served bundle `index-6ad47370c72a945b1ee4bcdd3fab89ff.js`.
+- Direct bundle inspection confirmed Diagnosis uses private client-side frame extraction, `maxExtractedVideoFrames: PLANT_REVIEW_PHOTO_LIMIT`, and `maxVideoSeconds: 599`.
+- The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
+
 - Evidence types completed: production in-app Browser DOM inspection, genuine fresh-file upload, real provider result, server credit ledger, exact Journal/ToolRun reopening, submitted outcome feedback, GitHub CI, Render deployment record, and deployed non-billable retest.
 - One genuine in-task Browser screenshot captured the uploaded photo/current-workflow disclosure, and another captured the saved-feedback/actions area on the pre-fix release. They were not exported as standalone files.
 - The final-SHA screenshot attempt ended with `target closed while handling command`; no final-SHA screenshot or video artifact is claimed.

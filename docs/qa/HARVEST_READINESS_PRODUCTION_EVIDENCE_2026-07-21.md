@@ -79,6 +79,14 @@ These timestamps are evidence-discovery anchors, not fixed extraction instructio
 - Both backend GitHub checks passed; the full CI run completed successfully.
 - Repository-wide frontend TypeScript still reports known unrelated existing files only; no touched Harvest file error remained.
 
+## Unified video-evidence production delivery - 2026-07-25
+
+- Frontend PR `#230` merged to `main` as `2b0143b30d7554b1906e495ebbd8d64b1212cf06`.
+- Main Frontend CI run `30172567462` and Production Build Preflight run `30172567487` passed.
+- Production served bundle `index-6ad47370c72a945b1ee4bcdd3fab89ff.js`.
+- Direct bundle inspection confirmed Harvest Readiness uses private client-side frame extraction, up to 12 extracted candidates, and `maxVideoSeconds: 599`.
+- The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, keeps only sharp glare-free gland-head evidence, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
+
 ## Honest remaining work
 
 - A rightful four-photo top/middle/lower macro plus wider-context set is still needed for one successful production provider analysis, provenance display, exact one-credit deduction, saved-run reopening, and downstream harvest-batch/task verification.
