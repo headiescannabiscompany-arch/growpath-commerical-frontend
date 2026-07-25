@@ -27,6 +27,12 @@ const diagnosisScreen = read("src/app/home/personal/(tabs)/diagnose.tsx");
 const ipmScreen = read("src/app/home/personal/(tabs)/tools/ipm-scout.tsx");
 const speciesScreen = read("src/app/home/personal/(tabs)/tools/species-crop-id.tsx");
 const cropApi = read("src/api/cropKnowledge.ts");
+const mediaPicker = read("src/components/media/MediaEvidencePicker.tsx");
+const videoFrameExtraction = read(
+  "src/features/personal/harvest/videoFrameExtraction.ts"
+);
+const diagnosisMethod = read("docs/knowledge/methods/plant-diagnosis-etgu-method.md");
+const sourceRegistry = read("src/knowledge/sourceRegistry.ts");
 
 const diagnoseTest = read("backend/routes/diagnose.test.js");
 const toolsTest = read("backend/routes/tools.test.js");
@@ -38,6 +44,8 @@ const normalizeTest = read(
 );
 const ipmTest = read("tests/unit/IpmScoutToolScreen.test.tsx");
 const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
+const mediaPickerTest = read("tests/unit/MediaEvidencePicker.test.tsx");
+const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
 
 [
   ["provider status", /router\.get\("\/provider-status"/],
@@ -85,6 +93,14 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
   ["image analysis disclosure", /imageAnalysis[\s\S]*performed/],
   ["outcome feedback", /submitDiagnosisFeedback/],
   ["safety language", /not a guaranteed lab diagnosis/]
+].forEach(([description, pattern]) => {
+  requireText("diagnosis screen", diagnosisScreen, pattern, description);
+});
+
+[
+  ["private video frame extraction", /extractFramesFromVideo/],
+  ["12 video candidate frames", /maxExtractedVideoFrames=\{PLANT_REVIEW_PHOTO_LIMIT\}/],
+  ["under-ten-minute video limit", /maxVideoSeconds=\{599\}/]
 ].forEach(([description, pattern]) => {
   requireText("diagnosis screen", diagnosisScreen, pattern, description);
 });
@@ -139,6 +155,73 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
     pattern,
     description
   );
+});
+
+[
+  ["private video frame extraction", /extractFramesFromVideo/],
+  ["12 video candidate frames", /maxExtractedVideoFrames=\{PLANT_REVIEW_PHOTO_LIMIT\}/],
+  ["under-ten-minute video limit", /maxVideoSeconds=\{599\}/]
+].forEach(([description, pattern]) => {
+  requireText("IPM screen", ipmScreen, pattern, description);
+});
+
+[
+  ["12-photo ceiling", /maxPhotos=\{12\}/],
+  ["private video frame extraction", /extractFramesFromVideo/],
+  ["12 video candidate frames", /maxExtractedVideoFrames=\{12\}/],
+  ["under-ten-minute video limit", /maxVideoSeconds=\{599\}/]
+].forEach(([description, pattern]) => {
+  requireText("species screen", speciesScreen, pattern, description);
+});
+
+[
+  [
+    "source video stays non-AI during frame extraction",
+    /extractFramesFromVideo \? false : aiUsable/
+  ],
+  [
+    "only extracted frames receive workflow AI approval",
+    /toVideoFrameAsset\(frame, purpose, sourceContext, aiUsable\)/
+  ],
+  [
+    "private source and no-motion disclosure",
+    /kept as private evidence[\s\S]*does not guess from motion/
+  ]
+].forEach(([description, pattern]) => {
+  requireText("media evidence picker", mediaPicker, pattern, description);
+});
+
+requireText(
+  "video frame extraction",
+  videoFrameExtraction,
+  /Math\.min\(12, Math\.floor\(maxFrames\)\)/,
+  "12-frame extraction ceiling"
+);
+
+[
+  [
+    "shared diagnosis/IPM/Crop ID video contract",
+    /Diagnosis, IPM Scout, and Crop Identification[\s\S]*9 minutes 59 seconds[\s\S]*12 timestamped candidate still frames/
+  ],
+  [
+    "Crime Pays educational-only boundary",
+    /Crime Pays But Botany Doesn't[\s\S]*Tier C educational and QA context[\s\S]*Do not copy or retain/
+  ]
+].forEach(([description, pattern]) => {
+  requireText("diagnosis method", diagnosisMethod, pattern, description);
+});
+
+[
+  [
+    "Crime Pays governed source",
+    /id: "crime-pays-but-botany-doesnt"[\s\S]*reliabilityTier: "C"[\s\S]*notTrustedFor:[\s\S]*"plant_identification"/
+  ],
+  [
+    "USDA PLANTS cross-check",
+    /id: "usda-plants-database"[\s\S]*reliabilityTier: "A"[\s\S]*trustedFor: \["plant_identification", "education"\]/
+  ]
+].forEach(([description, pattern]) => {
+  requireText("source registry", sourceRegistry, pattern, description);
 });
 
 [
@@ -201,6 +284,16 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
     "organism/crop profile tests",
     cropTest,
     /updates and archives organism profiles[\s\S]*starter crop profiles/
+  ],
+  [
+    "private source video test",
+    mediaPickerTest,
+    /keeps a harvest video private and uploads extracted still frames for AI review/
+  ],
+  [
+    "12-frame timeline test",
+    videoFrameTest,
+    /caps candidate frames at twelve for longer evidence videos/
   ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 3 tests", contents, pattern, description);
