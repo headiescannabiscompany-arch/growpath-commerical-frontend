@@ -15,13 +15,13 @@ jest.mock("@/api/evidence", () => ({
   createEvidenceAsset: (...args: any[]) => mockCreateEvidenceAsset(...args)
 }));
 
-function Harness() {
+function Harness({ purpose = "ipm" }: { purpose?: "ipm" | "harvest" }) {
   const [assets, setAssets] = useState<EvidenceAsset[]>([]);
   return (
     <SavedGrowPhotoEvidencePicker
       growId="grow-1"
       plantId="plant-selected"
-      purpose="ipm"
+      purpose={purpose}
       value={assets}
       onChange={setAssets}
     />
@@ -92,5 +92,40 @@ describe("SavedGrowPhotoEvidencePicker", () => {
       await screen.findByText("Added saved grow photo: Ready to chop.")
     ).toBeTruthy();
     expect(screen.getByText("Added")).toBeTruthy();
+  });
+
+  it("can explicitly attach a saved grow photo to harvest readiness", async () => {
+    mockCreateEvidenceAsset.mockResolvedValue({
+      id: "evidence-harvest-1",
+      growId: "grow-1",
+      plantId: "plant-log",
+      logId: "log-1",
+      assetType: "photo",
+      originalUri: "/uploads/ready.jpg",
+      durableUrl: "/uploads/ready.jpg",
+      source: "upload",
+      purpose: "harvest",
+      uploadStatus: "uploaded",
+      aiUsable: true,
+      qualityWarnings: []
+    });
+    const screen = render(<Harness purpose="harvest" />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          /Selecting a photo explicitly includes it in this harvest readiness request/
+        )
+      ).toBeTruthy()
+    );
+    fireEvent.press(
+      screen.getByLabelText("Use saved photo Ready to chop, item 1 for harvest readiness")
+    );
+
+    await waitFor(() =>
+      expect(mockCreateEvidenceAsset).toHaveBeenCalledWith(
+        expect.objectContaining({ purpose: "harvest", logId: "log-1" })
+      )
+    );
   });
 });
