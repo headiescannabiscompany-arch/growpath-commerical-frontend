@@ -215,7 +215,9 @@ function GrowOverviewContent() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 28 }}>
-      <Text style={styles.title}>{grow?.name || "Grow Workspace"}</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        {grow?.name || "Grow Workspace"}
+      </Text>
       <Text style={styles.subtitle}>
         Status: {grow?.status || "active"} | Updated: {fmtDate(grow?.updatedAt)}
       </Text>
