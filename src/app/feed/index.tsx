@@ -27,6 +27,7 @@ import {
   type FeedCampaignPlacement
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import {
   facilitySalesPolicyText,
@@ -1340,6 +1341,7 @@ export default function CommercialFeedRoute() {
                   shared GrowPath scheduler.
                 </Text>
                 <SchedulePicker
+                  dateTime
                   dueDate={campaignStart}
                   reminder={campaignReminder}
                   recurrence={campaignRecurrence}
@@ -1354,12 +1356,12 @@ export default function CommercialFeedRoute() {
                   reminderPlaceholder="Campaign reminder"
                   recurrencePlaceholder="Campaign recurrence"
                 />
-                <TextInput
+                <CalendarDateField
+                  mode="datetime"
+                  label="Campaign end"
                   value={campaignEnd}
-                  onChangeText={setCampaignEnd}
-                  style={styles.input}
-                  placeholder="Campaign end date/time"
-                  autoCapitalize="none"
+                  onChange={setCampaignEnd}
+                  placeholder="Choose campaign end date and time"
                   accessibilityLabel="Feed campaign schedule end"
                 />
               </View>

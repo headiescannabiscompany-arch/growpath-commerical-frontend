@@ -5,13 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View
 } from "react-native";
 import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -627,13 +627,16 @@ export default function HomeScheduleRoute() {
             >
               <Text style={styles.filterText}>Previous</Text>
             </Pressable>
-            <TextInput
-              accessibilityLabel="Schedule anchor date"
-              value={anchorDate}
-              onChangeText={setAnchorDate}
-              placeholder="YYYY-MM-DD"
-              style={styles.dateInput}
-            />
+            <View style={styles.dateInput}>
+              <CalendarDateField
+                accessibilityLabel="Schedule anchor date"
+                value={anchorDate}
+                onChange={setAnchorDate}
+                placeholder="Choose calendar date"
+                maxYear={2100}
+                optional={false}
+              />
+            </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Schedule next period"
@@ -798,12 +801,8 @@ const styles = StyleSheet.create({
     gap: 8
   },
   dateInput: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 130,
-    paddingHorizontal: 10,
-    paddingVertical: 7
+    flexGrow: 1,
+    minWidth: 220
   },
   filterChip: {
     backgroundColor: "#F8FAFC",

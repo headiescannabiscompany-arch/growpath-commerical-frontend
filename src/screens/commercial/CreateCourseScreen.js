@@ -16,6 +16,7 @@ import {
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import {
   beginTwitchConnection,
   getTwitchConnection,
@@ -1023,22 +1024,22 @@ export default function CreateCourseScreen({
             style={styles.input}
             accessibilityLabel="Live session title"
           />
-          <Text style={styles.label}>Start date and time</Text>
-          <TextInput
+          <CalendarDateField
+            label="Start date and time"
             value={liveStart}
-            onChangeText={setLiveStart}
-            placeholder="2026-07-20T19:00:00-04:00"
-            editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            onChange={setLiveStart}
+            placeholder="Choose start date and time"
+            mode="datetime"
+            disabled={!access.canCreateCourses || submitting}
             accessibilityLabel="Live session start"
           />
-          <Text style={styles.label}>End date and time</Text>
-          <TextInput
+          <CalendarDateField
+            label="End date and time"
             value={liveEnd}
-            onChangeText={setLiveEnd}
-            placeholder="2026-07-20T20:00:00-04:00"
-            editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            onChange={setLiveEnd}
+            placeholder="Choose end date and time"
+            mode="datetime"
+            disabled={!access.canCreateCourses || submitting}
             accessibilityLabel="Live session end"
           />
           <Text style={styles.label}>Timezone</Text>

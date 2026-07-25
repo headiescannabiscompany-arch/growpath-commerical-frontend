@@ -333,7 +333,7 @@ export default function DryCureGuardToolScreen() {
           key: "measuredAt",
           label: "Measurement time",
           defaultValue: "",
-          placeholder: "Example: 2026-07-21 2:00 PM",
+          inputType: "datetime",
           helpText: "Time links this snapshot to logs, changes, and repeat checks."
         },
         {

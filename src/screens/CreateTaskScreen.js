@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
+import { Text, TextInput, TouchableOpacity, StyleSheet, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer.js";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { createCustomTask } from "../api/tasks.js";
 import { listGrows } from "../api/grows.js";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -84,11 +85,12 @@ export default function CreateTaskScreen({ route }) {
         onChangeText={setDesc}
         style={styles.input}
       />
-      <TextInput
-        placeholder="YYYY-MM-DD"
+      <CalendarDateField
+        accessibilityLabel="Task due date"
+        label="Due date"
+        placeholder="Choose task due date"
         value={date}
-        onChangeText={setDate}
-        style={styles.input}
+        onChange={setDate}
       />
 
       <GrowPlantSelector

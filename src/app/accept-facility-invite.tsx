@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
 import { useAccountMode } from "@/state/useAccountMode";
@@ -113,14 +114,16 @@ export default function AcceptFacilityInviteScreen() {
           onChangeText={setDisplayName}
           placeholder="Your name"
         />
-        <TextInput
+        <CalendarDateField
           accessibilityLabel="Invite date of birth"
-          style={styles.input}
+          label="Date of birth"
           value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-          placeholder="Date of birth (YYYY-MM-DD)"
-          autoCapitalize="none"
-          keyboardType="numbers-and-punctuation"
+          onChange={setDateOfBirth}
+          placeholder="Choose date of birth"
+          initialYear={new Date().getFullYear() - 30}
+          minYear={new Date().getFullYear() - 125}
+          maxYear={new Date().getFullYear()}
+          maximumDate={new Date().toISOString().slice(0, 10)}
         />
         <Text style={styles.helper}>
           Required only when this invitation creates a new GrowPathAI account. It is used

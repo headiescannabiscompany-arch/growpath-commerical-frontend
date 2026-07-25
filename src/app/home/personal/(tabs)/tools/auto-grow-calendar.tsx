@@ -89,7 +89,12 @@ export default function AutoGrowCalendarToolRoute() {
           defaultValue: "4",
           keyboardType: "numeric"
         },
-        { key: "startDate", label: "Start date YYYY-MM-DD", defaultValue: tomorrow(0) },
+        {
+          key: "startDate",
+          label: "Start date",
+          defaultValue: tomorrow(0),
+          inputType: "date"
+        },
         {
           key: "vegLengthWeeks",
           label: "Veg length weeks",

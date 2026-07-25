@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -602,13 +603,14 @@ export default function PlatformAdminRoute() {
           placeholder="Required review/change note"
           style={styles.input}
         />
-        <TextInput
+        <CalendarDateField
+          accessibilityLabel="Knowledge source next review date"
+          label="Next review date"
           value={knowledgeDraft.reviewDueAt}
-          onChangeText={(reviewDueAt) =>
+          onChange={(reviewDueAt) =>
             setKnowledgeDraft((value) => ({ ...value, reviewDueAt }))
           }
-          placeholder="Next review date (YYYY-MM-DD)"
-          style={styles.input}
+          placeholder="Choose next review date"
         />
         <Pressable
           disabled={busyId === "knowledge-new"}

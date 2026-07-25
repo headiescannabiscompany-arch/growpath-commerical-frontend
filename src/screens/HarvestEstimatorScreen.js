@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import AppShell from "../components/AppShell.js";
 import Card from "../components/Card.js";
@@ -54,12 +55,13 @@ export default function HarvestEstimatorScreen() {
           value={String(daysToHarvest)}
           onChangeText={(text) => setDaysToHarvest(Number(text))}
         />
-        <Text style={styles.label}>Planting Date (YYYY-MM-DD)</Text>
-        <TextInput
-          style={styles.input}
+        <CalendarDateField
+          accessibilityLabel="Planting date"
+          label="Planting date"
           value={plantDate}
-          onChangeText={setPlantDate}
-          placeholder="2026-01-17"
+          onChange={setPlantDate}
+          placeholder="Choose planting date"
+          optional={false}
         />
         <TouchableOpacity style={styles.button} onPress={handleEstimate}>
           <Text style={styles.buttonText}>Estimate Harvest Date</Text>

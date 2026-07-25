@@ -105,7 +105,10 @@ describe("TimelinePlannerScreen", () => {
   it("creates milestone tasks with shared Schedule metadata", async () => {
     const screen = render(<TimelinePlannerScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Timeline start date"), "2026-07-01");
+    fireEvent.press(screen.getByLabelText("Timeline start date"));
+    fireEvent(screen.getByLabelText("Timeline start date month"), "valueChange", 7, 6);
+    fireEvent.press(screen.getByLabelText("Timeline start date day 2026-07-01"));
+    fireEvent.press(screen.getByLabelText("Timeline start date use selected date"));
     fireEvent.changeText(screen.getByLabelText("Timeline veg weeks"), "4");
     fireEvent.changeText(screen.getByLabelText("Timeline flower weeks"), "9");
     fireEvent.changeText(screen.getByLabelText("Timeline dry days"), "10");

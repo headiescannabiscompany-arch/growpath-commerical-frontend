@@ -8,6 +8,8 @@ Commercial Feed/Campaigns authoring uses one page-level heading. Campaign types 
 
 Commercial tab navigation must expose only the active screen to web keyboard and assistive-technology navigation. Initialize screen detachment at the application root so inactive tab routes are removed from layout and focus order instead of relying on `aria-hidden` around still-focusable descendants. When a route renders its own page heading, hide the duplicate navigator header and keep exactly one level-one heading. At compact widths, keep the active secondary workspace represented in the tab bar and provide a named More destination that links every workspace omitted from the primary tabs; never remove a Commercial destination without a visible replacement path.
 
+Commercial campaign, live-event, production, trial, and task dates use the shared date picker with direct year, month, and day selection. Timed events also expose hour and minute selection. Persist stable ISO date or local date-time values while presenting readable dates; never require an ordinary Commercial user to type an ISO date string.
+
 At compact widths, shared page content and campaign rails must remain in normal document flow without flex shrink or overlap. A campaign card must never cover, intercept, or displace a Commercial form control.
 
 Commercial Product Lines must use one level-one page heading, level-two headings for authoring, saved lines, and guidance sections, and level-three headings for individual saved lines. Hide the duplicate navigator header when the page provides that hierarchy.

@@ -645,7 +645,7 @@ export default function FacilityTasksRoute() {
                 onReminderChange={setNewReminder}
                 onRecurrenceChange={setNewRecurrence}
                 accessibilityPrefix="Facility task"
-                dueDatePlaceholder="Due date, e.g. YYYY-MM-DD"
+                dueDatePlaceholder="Choose due date"
                 reminderPlaceholder="Reminder, e.g. 24 hours before"
                 recurrencePlaceholder="Recurrence, e.g. weekly SOP"
               />

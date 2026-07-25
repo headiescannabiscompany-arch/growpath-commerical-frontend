@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
@@ -602,15 +603,14 @@ export default function FacilityTaskDetail() {
                     multiline
                   />
 
-                  <Text style={styles.label}>Due date</Text>
-                  <TextInput
+                  <CalendarDateField
                     accessibilityLabel="Task detail due date"
+                    label="Due date"
                     value={form.dueDate}
-                    onChangeText={(dueDate) =>
+                    onChange={(dueDate) =>
                       setForm((current) => ({ ...current, dueDate }))
                     }
-                    style={styles.input}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="Choose task due date"
                   />
 
                   <TouchableOpacity

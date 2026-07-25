@@ -9,6 +9,7 @@ import {
   View
 } from "react-native";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { radius } from "@/theme/theme";
 
@@ -63,8 +64,8 @@ export default function CampaignsScreen() {
       <Text style={styles.title}>Marketing Planner</Text>
       <Text style={styles.subtitle}>
         Plan product drops, course announcements, product trial evidence updates, feed
-        campaigns, and external links. Track clicks for ads/marketing links here; use
-        Feed / Campaigns when you are ready to publish promotional placements.
+        campaigns, and external links. Track clicks for ads/marketing links here; use Feed
+        / Campaigns when you are ready to publish promotional placements.
       </Text>
       {error ? <Text style={styles.error}>Failed to load campaigns.</Text> : null}
 
@@ -82,11 +83,12 @@ export default function CampaignsScreen() {
           autoCapitalize="none"
           style={styles.input}
         />
-        <TextInput
+        <CalendarDateField
+          accessibilityLabel="Marketing plan launch date"
+          label="Launch date"
           value={launchDate}
-          onChangeText={setLaunchDate}
-          placeholder="Launch date or window"
-          style={styles.input}
+          onChange={setLaunchDate}
+          placeholder="Choose launch date"
         />
         <TextInput
           value={notes}

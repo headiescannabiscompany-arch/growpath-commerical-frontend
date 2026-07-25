@@ -285,7 +285,7 @@ export default function CloneRootingToolRoute() {
           key: "measuredAt",
           label: "Measured at",
           defaultValue: "",
-          placeholder: "YYYY-MM-DD HH:MM and timezone",
+          inputType: "datetime",
           section: "Measured environment"
         },
         {

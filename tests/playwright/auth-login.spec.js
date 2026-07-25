@@ -47,7 +47,15 @@ async function fillSignupForm(page, { email, password }) {
   await page.getByPlaceholder("Name").fill("Playwright User");
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
-  await page.getByPlaceholder("Date of birth (YYYY-MM-DD)").fill("1990-01-01");
+  await page.getByRole("button", { name: "Register date of birth" }).click();
+  await page.getByLabel("Register date of birth year").selectOption("1990");
+  await page.getByLabel("Register date of birth month").selectOption("1");
+  await page
+    .getByRole("button", { name: "Register date of birth day 1990-01-01" })
+    .click();
+  await page
+    .getByRole("button", { name: "Register date of birth use selected date" })
+    .click();
   const signupButton = page.getByText("Create account").last();
   await expect(signupButton).toBeVisible();
   await signupButton.click();
