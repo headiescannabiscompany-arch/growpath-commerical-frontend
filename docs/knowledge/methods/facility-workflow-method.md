@@ -64,7 +64,10 @@ Personal and Commercial AI may reuse the same starter structure only as a clearl
 review-only recommendation. Those workspaces do not gain Facility approval, assignment,
 upload, versioning, run-evidence, retirement, or audit controls. A recommended draft may
 become a grow review task only after explicit user confirmation; it cannot create or alter
-a Facility SOP.
+a Facility SOP. The shared starter baseline must use workspace-neutral language so a
+non-Facility recommendation does not silently acquire a Facility plan, rating scale,
+approved limit, deviation process, label, or responsible Facility role. Facility-specific
+terms belong only in the owner/manager customization or selected Facility records.
 
 Sensor and controller integrations begin read-only. Store provider credentials only in encrypted backend fields and expose only configured/encrypted state, never secret values. Each connection must declare provider capabilities, connection status, structured errors, and last-sync state; an adapter is incomplete until it implements connection testing, device discovery, and data pulling. Control/setpoint writes require a separately reviewed future permission scope.
 

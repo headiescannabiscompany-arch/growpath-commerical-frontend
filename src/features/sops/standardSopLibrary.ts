@@ -35,14 +35,14 @@ function step(
 export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
   {
     key: "daily_room_opening",
-    version: 1,
+    version: 2,
     title: "Daily Room Opening Check",
     category: "other",
     summary:
       "A crop-neutral opening review for room condition, active work, equipment, and handoff notes.",
     estimatedDurationMinutes: 15,
     safetyNotes:
-      "Do not enter or operate equipment when an unsafe condition is present. Stop and notify the facility lead.",
+      "Do not enter or operate equipment when an unsafe condition is present. Stop and notify the responsible person.",
     checklist: [
       step("Confirm the correct room or zone and review the current shift handoff."),
       step("Record the inspection time and the person performing the check."),
@@ -56,23 +56,23 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
         "Record current environmental readings without replacing missing measurements with estimates."
       ),
       step(
-        "Compare recorded conditions with the facility-approved limits for this room and crop stage."
+        "Compare recorded conditions with the reviewed limits for this area and crop stage; record the limit as missing when none is documented."
       ),
       step(
-        "Create a task or deviation for every unresolved issue and identify the responsible person."
+        "Create a follow-up task or documented exception for every unresolved issue and identify the responsible person."
       )
     ]
   },
   {
     key: "room_sanitation_turnover",
-    version: 1,
+    version: 2,
     title: "Room Sanitation and Turnover",
     category: "reset",
     summary:
       "A documented reset between production cycles without prescribing chemicals, rates, or jurisdiction-specific rules.",
     estimatedDurationMinutes: 60,
     safetyNotes:
-      "Use only facility-approved products, label directions, protective equipment, contact times, and disposal procedures.",
+      "Use only reviewed products, current label directions, protective equipment, contact times, and disposal procedures.",
     checklist: [
       step(
         "Confirm the room is released for cleaning and identify material that must remain."
@@ -83,9 +83,7 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
       step(
         "Clean tools, movable equipment, work surfaces, floors, drains, and high-touch points."
       ),
-      step(
-        "Apply only facility-approved sanitation products according to their current labels."
-      ),
+      step("Apply only reviewed sanitation products according to their current labels."),
       step(
         "Inspect for residue, standing water, damage, pests, and areas that could not be reached."
       ),
@@ -97,16 +95,16 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
   },
   {
     key: "ipm_scouting_escalation",
-    version: 1,
+    version: 2,
     title: "IPM Scouting and Escalation",
     category: "ipm",
     summary:
       "A repeatable visual scouting record that keeps uncertain findings separate from confirmed identifications.",
     estimatedDurationMinutes: 30,
     safetyNotes:
-      "Do not diagnose from one sign or apply a treatment from this checklist. Follow the facility IPM plan and product labels.",
+      "Do not diagnose from one sign or apply a treatment from this checklist. Follow the applicable IPM plan, product labels, and required approvals.",
     checklist: [
-      step("Confirm the room, crop, stage, inspection route, and sampling scope."),
+      step("Confirm the area, crop, stage, inspection route, and sampling scope."),
       step(
         "Inspect representative upper, middle, and lower plant areas without claiming unobserved sections were checked."
       ),
@@ -114,7 +112,7 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
         "Review leaf surfaces, growing points, stems, substrate surface, traps, and nearby structures."
       ),
       step(
-        "Record observed signs, distribution, severity, and affected count using the facility scale."
+        "Record observed signs, distribution, severity, and affected count using the documented rating scale; mark the scale as missing when none is available."
       ),
       step(
         "Capture clear overview and close-up evidence for unusual or uncertain findings.",
@@ -128,19 +126,19 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
       step(
         "Escalate thresholds, unknown findings, and rapid change to the designated reviewer."
       ),
-      step("Create linked follow-up tasks and record any approved containment action.")
+      step("Create linked follow-up tasks and record any reviewed containment action.")
     ]
   },
   {
     key: "incoming_material_quarantine",
-    version: 1,
+    version: 2,
     title: "Incoming Plant and Material Quarantine",
     category: "transplant",
     summary:
       "An intake and isolation checklist for incoming plant material, growing media, and production inputs.",
     estimatedDurationMinutes: 25,
     safetyNotes:
-      "Keep unknown or rejected material separated. Do not release it until the facility reviewer records a decision.",
+      "Keep unknown or rejected material separated. Do not release it until the responsible reviewer records a decision.",
     checklist: [
       step(
         "Record supplier, item identity, quantity, lot or batch information, and arrival time when available."
@@ -158,7 +156,7 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
         "Record missing documents, test results, or source information as missing rather than assumed."
       ),
       step(
-        "Apply the facility quarantine label and restrict use until review is complete."
+        "Apply the applicable quarantine or hold label and restrict use until review is complete."
       ),
       step(
         "Record the reviewer decision: release, extend hold, return, or dispose under an approved procedure."
@@ -167,17 +165,17 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
   },
   {
     key: "irrigation_event_verification",
-    version: 1,
+    version: 2,
     title: "Irrigation or Feeding Event Verification",
     category: "water",
     summary:
       "A measurement-first check before and after an irrigation or feeding event without supplying a recipe or setpoint.",
     estimatedDurationMinutes: 20,
     safetyNotes:
-      "Use only the facility-approved recipe, water source, equipment, labels, and mixing order for the selected crop stage.",
+      "Use only the reviewed recipe or water plan, intended source, equipment, labels, and mixing order for the selected crop stage.",
     checklist: [
       step(
-        "Confirm the assigned room, crop, stage, recipe or water plan, and planned volume."
+        "Confirm the assigned area, crop, stage, recipe or water plan, and planned volume."
       ),
       step(
         "Verify source water, ingredients, measuring tools, and delivery equipment are the intended records."
@@ -195,7 +193,7 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
   },
   {
     key: "sensor_offline_response",
-    version: 1,
+    version: 2,
     title: "Sensor Offline or Stale-Data Response",
     category: "other",
     summary:
@@ -205,68 +203,68 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
       "Do not treat stale or missing telemetry as proof that conditions are safe or unsafe.",
     checklist: [
       step(
-        "Confirm the affected device, room or zone, metric, and last recorded timestamp."
+        "Confirm the affected device, area or zone, metric, and last recorded timestamp."
       ),
       step(
         "Check power, network, controller, cable, probe placement, and visible device status."
       ),
-      step("Take an independent measurement with an approved instrument when available."),
+      step("Take an independent measurement with a verified instrument when available."),
       step(
         "Record the independent value, instrument identity, time, and units without overwriting the original stream."
       ),
-      step("Restore the connection only through the approved integration procedure."),
+      step("Restore the connection only through the documented integration procedure."),
       step("Confirm new readings are current and plausible before closing the issue."),
       step(
-        "Create a maintenance task or deviation when the stream remains unavailable or disagrees with the independent check."
+        "Create a maintenance task or documented exception when the stream remains unavailable or disagrees with the independent check."
       )
     ]
   },
   {
     key: "environment_excursion_response",
-    version: 1,
+    version: 2,
     title: "Environmental Excursion Response",
     category: "other",
     summary:
       "A controlled response to a recorded out-of-range condition without inventing cause, duration, or crop impact.",
     estimatedDurationMinutes: 25,
     safetyNotes:
-      "Follow the facility emergency plan for unsafe heat, electrical, gas, water, or air-quality conditions.",
+      "Follow the applicable emergency plan for unsafe heat, electrical, gas, water, or air-quality conditions; stop and contact the responsible person when no plan is documented.",
     checklist: [
       step(
-        "Confirm the room, metric, units, reading source, event time, and applicable facility-approved limit."
+        "Confirm the area, metric, units, reading source, event time, and applicable documented limit."
       ),
-      step("Validate the reading with another approved source when practical."),
+      step("Validate the reading with another verified source when practical."),
       step(
-        "Record the observed equipment, room, and crop conditions before changing settings."
+        "Record the observed equipment, area, and crop conditions before changing settings."
       ),
       step(
         "Identify immediate safety or containment needs and notify the responsible person."
       ),
       step("Apply only a reviewed corrective action within the operator's authority."),
       step(
-        "Record follow-up measurements and whether the condition returned to the approved range."
+        "Record follow-up measurements and whether the condition returned to the documented range."
       ),
       step(
-        "Create a deviation or investigation when cause, duration, impact, or resolution remains uncertain."
+        "Create a documented exception or investigation when cause, duration, impact, or resolution remains uncertain."
       )
     ]
   },
   {
     key: "post_harvest_area_readiness",
-    version: 1,
+    version: 2,
     title: "Post-Harvest Area Readiness",
     category: "harvest",
     summary:
       "A crop-neutral pre-use review for a harvest, drying, curing, processing, or storage area.",
     estimatedDurationMinutes: 30,
     safetyNotes:
-      "Use crop-, product-, and jurisdiction-specific handling procedures approved by the facility. This starter does not set release criteria.",
+      "Use crop-, product-, and jurisdiction-specific handling procedures reviewed for this workspace. This starter does not set release criteria.",
     checklist: [
       step(
         "Confirm the intended area, crop or batch, process stage, and responsible team."
       ),
       step(
-        "Verify the area was cleaned, inspected, and released under the facility sanitation procedure."
+        "Verify the area was cleaned, inspected, and released under the documented sanitation procedure."
       ),
       step(
         "Confirm required racks, containers, labels, scales, instruments, and monitoring devices are present and identified."
@@ -275,7 +273,7 @@ export const STANDARD_SOP_LIBRARY: StandardSopTemplate[] = [
         "Record current environmental readings and instrument timestamps without estimating missing values."
       ),
       step(
-        "Compare conditions with the facility-approved process limits for this exact stage."
+        "Compare conditions with the reviewed process limits for this exact stage; record missing limits instead of inventing them."
       ),
       step("Check material flow, separation, traceability, access, and emergency paths."),
       step(

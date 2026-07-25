@@ -258,7 +258,7 @@ describe("personal AI screen", () => {
       sopRecommendations: [
         {
           key: "ipm_scouting_escalation",
-          sourceVersion: 1,
+          sourceVersion: 2,
           title: "IPM Scouting and Escalation",
           category: "ipm",
           summary: "A repeatable visual scouting record.",
@@ -291,10 +291,18 @@ describe("personal AI screen", () => {
         workspaceType: "commercial",
         context: expect.objectContaining({
           sopStarterLibrary: expect.arrayContaining([
-            expect.objectContaining({ key: "ipm_scouting_escalation" })
+            expect.objectContaining({
+              key: "ipm_scouting_escalation",
+              sourceVersion: 2
+            })
           ])
         })
       })
+    );
+    expect(
+      JSON.stringify(mockAskPersonalAssistant.mock.calls[0][0].context.sopStarterLibrary)
+    ).not.toMatch(
+      /facility (?:ipm plan|scale|approved|reviewer|quarantine|sanitation|emergency)/i
     );
     expect(screen.getByText(/starting points, not approved Facility SOPs/i)).toBeTruthy();
 
@@ -317,7 +325,7 @@ describe("personal AI screen", () => {
           description: expect.stringContaining(
             "Separate observations from suspected causes."
           ),
-          sourceObjectId: "sop-starter:ipm_scouting_escalation:v1"
+          sourceObjectId: "sop-starter:ipm_scouting_escalation:v2"
         })
       )
     );

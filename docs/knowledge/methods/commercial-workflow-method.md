@@ -81,6 +81,9 @@ shared approved starter library. A recommendation must identify its starter vers
 explain why it fits the selected records, preserve missing inputs as unknown, and require
 human review before it can become a grow task. It is not a formally approved SOP and must
 not imply Facility assignment, document control, version history, execution evidence,
-audit status, or legal compliance.
+audit status, or legal compliance. Shared starter wording must remain workspace-neutral:
+do not refer to a Facility plan, Facility rating scale, Facility-approved limits,
+deviations, Facility labels, or Facility roles unless the selected records explicitly
+provide that context.
 
 Connect formula → verified ingredients → batch/lot → trial grow → long-term outcome → product claims/content. Keep commercial data scoped to the commercial workspace. AI may retrieve records but cannot invent analysis, lots, cost, inventory, trials or performance claims.
