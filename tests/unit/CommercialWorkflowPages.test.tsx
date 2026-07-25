@@ -2,6 +2,7 @@ import React from "react";
 import fs from "fs";
 import path from "path";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import CommercialHome from "@/app/home/commercial";
 import CommercialCommunityRoute from "@/app/home/commercial/community";
@@ -3052,6 +3053,15 @@ describe("commercial workflow pages", () => {
     ].forEach((destination) => {
       expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();
     });
+    expect(
+      StyleSheet.flatten(screen.getByRole("link", { name: "Open Courses" }).props.style)
+    ).toEqual(
+      expect.objectContaining({
+        flexBasis: 220,
+        flexShrink: 1,
+        maxWidth: "100%"
+      })
+    );
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {
