@@ -16,6 +16,7 @@ const mockCreateForumPost = jest.fn();
 const mockCreateGuild = jest.fn();
 const mockReplace = jest.fn();
 let mockGrowInterests: Record<string, string[]> = {};
+let mockCanForumPost = true;
 let mockAuthState: any = {
   isAuthed: true,
   user: {
@@ -120,7 +121,7 @@ jest.mock("@/entitlements", () => ({
   },
   useEntitlements: () => ({
     mode: "personal",
-    can: () => true
+    can: (capability: string) => (capability === "forum_post" ? mockCanForumPost : true)
   })
 }));
 
@@ -134,6 +135,7 @@ describe("Forum and feed separation copy", () => {
     mockAddForumComment.mockResolvedValue({ id: "comment-new" });
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
     mockCreateGuild.mockResolvedValue({ id: "group-new" });
+    mockCanForumPost = true;
     mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
     mockAuthState = {
       isAuthed: true,
@@ -198,6 +200,25 @@ describe("Forum and feed separation copy", () => {
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+  });
+
+  it("replaces the Free write form with a truthful read-only recovery", () => {
+    mockCanForumPost = false;
+
+    const screen = render(<ForumNewPostRoute />);
+
+    expect(screen.getByText("Forum posting unavailable")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Free accounts can read discussions and replies. Upgrade to Pro to create posts and comments."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Forum post title")).toBeNull();
+    expect(screen.queryByLabelText("Toggle grow interest Cannabis")).toBeNull();
+    expect(screen.queryByLabelText("Publish forum post")).toBeNull();
+
+    fireEvent.press(screen.getByText("Back to Forum"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/community");
   });
 
   it("stores personal forum posts with user author identity", async () => {

@@ -31,6 +31,17 @@ describe("Personal root header policy", () => {
     expect(aiLayout).toContain('options={{ title: "AI Assistant" }}');
   });
 
+  test("uses the loaded grow name as the overview heading instead of a raw id", () => {
+    const growLayout = read("src/app/home/personal/(tabs)/grows/[growId]/_layout.tsx");
+    const overview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
+
+    expect(growLayout).toContain(
+      '<Stack.Screen name="index" options={{ headerShown: false }} />'
+    );
+    expect(growLayout).not.toContain("`Grow ${growId");
+    expect(overview).toContain('<Text accessibilityRole="header" style={styles.title}>');
+  });
+
   test.each([
     ["home", "src/app/home/personal/(tabs)/index.tsx", "Your Garden"],
     ["grows", "src/app/home/personal/(tabs)/grows/index.tsx", "Grows"],
