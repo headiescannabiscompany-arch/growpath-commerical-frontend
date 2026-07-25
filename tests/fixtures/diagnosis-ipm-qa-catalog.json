@@ -46,6 +46,40 @@
       "UNKNOWN"
     ]
   },
+  "socialContentPolicy": {
+    "automatedCollectionRequiresPlatformAuthorization": true,
+    "privateGroupContentRequiresGroupAccessAndCreatorPermission": true,
+    "deidentificationRequired": true,
+    "engagementIsNotGroundTruth": true,
+    "confirmedOutcomeRequiredForGoldCase": true,
+    "tierACrossCheckRequiredForDiagnosticLabel": true,
+    "bestCaseUse": "rights-reviewed inference QA and evaluation only",
+    "worstCaseUse": "rights-reviewed negative controls for pre-upload rejection and actionable retake guidance",
+    "useForModelTraining": false
+  },
+  "photoEvidencePolicy": {
+    "maxPhotosPerDiagnosisIpmOrHarvestWorkflow": 12,
+    "minimumPhotosForDiagnosisOrIpm": 1,
+    "minimumPhotosForHarvestProviderReview": 4,
+    "hardRejectBeforeUpload": [
+      "unsupported non-image file",
+      "known image dimensions below 320 pixels on the short side",
+      "known file size below 12 KiB"
+    ],
+    "reviewTimeChecks": [
+      "blur or missed focus",
+      "darkness, colored grow light, glare, or inaccurate color",
+      "missing zoomed-out context or distribution view",
+      "missing leaf top, leaf underside, macro sign, root zone, or required bud site",
+      "digital zoom, excessive compression, screenshot, crop, or text overlay",
+      "irrelevant subject or insufficient diagnostic evidence"
+    ],
+    "requiredRetakeOutput": [
+      "why the submitted image is unusable or limited",
+      "which exact replacement view is needed",
+      "how to improve distance, focus, light, stability, and sample coverage"
+    ]
+  },
   "evidenceEnvelopeContract": {
     "identicalEnvelopeForGrowPathAndGpt": true,
     "photoBytesIncludedOnlyWhenPixelAnalysisIsSupported": true,
@@ -152,6 +186,20 @@
         "document conditions and measurements",
         "record creator permission",
         "review expected classification and uncertainty"
+      ]
+    },
+    {
+      "sourceId": "facebook_grower_groups",
+      "status": "external_lead_only_pending_platform_and_creator_permission",
+      "purpose": "Candidate user question language, evidence leads, confirmed-outcome case recruitment, and deliberately poor-photo negative controls.",
+      "requirements": [
+        "no automated collection without Meta express authorization",
+        "public content or documented group access plus creator permission",
+        "image-level commercial QA rights and intended-use approval",
+        "remove names, faces, usernames, comments, location, and unrelated personal data",
+        "separately confirm outcomes and cross-check diagnostic labels with Tier A sources",
+        "never use post engagement or comment consensus as ground truth",
+        "do not use for model training"
       ]
     }
   ],

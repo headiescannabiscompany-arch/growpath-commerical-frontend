@@ -4,6 +4,10 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { createEvidenceAsset } from "@/api/evidence";
 import { uploadEvidenceMedia } from "@/api/uploads";
+import {
+  assessEvidencePhoto,
+  PHOTO_CAPTURE_GUIDANCE
+} from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { radius } from "@/theme/theme";
 import type {
   EvidenceAsset,
@@ -41,7 +45,7 @@ function toLocalAsset(
   aiUsable: boolean
 ): EvidenceAsset {
   const assetType = asset.type === "video" ? "video" : "photo";
-  return {
+  const local: EvidenceAsset = {
     id: localId(),
     ...sourceContext,
     assetType,
@@ -58,6 +62,15 @@ function toLocalAsset(
     aiUsable,
     qualityWarnings: []
   };
+  if (assetType === "photo") {
+    const assessment = assessEvidencePhoto(local, purpose);
+    local.qualityWarnings = assessment.warnings;
+    if (!assessment.accepted) {
+      local.uploadStatus = "failed";
+      local.error = assessment.error || "This photo cannot be used for plant review.";
+    }
+  }
+  return local;
 }
 
 export default function MediaEvidencePicker({
@@ -75,6 +88,7 @@ export default function MediaEvidencePicker({
   const photoCount = assets.filter((asset) => asset.assetType === "photo").length;
   const videoCount = assets.filter((asset) => asset.assetType === "video").length;
   const busy = assets.some((asset) => asset.uploadStatus === "uploading");
+  const captureGuidance = PHOTO_CAPTURE_GUIDANCE[purpose] || [];
 
   const summary = useMemo(
     () =>
@@ -91,6 +105,7 @@ export default function MediaEvidencePicker({
     let current = [...assets, ...selected];
     commit(current);
     for (const local of selected) {
+      if (local.uploadStatus === "failed") continue;
       current = current.map((asset) =>
         asset.id === local.id ? { ...asset, uploadStatus: "uploading" } : asset
       );
@@ -181,6 +196,21 @@ export default function MediaEvidencePicker({
           ? "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
           : "Upload clear, durable evidence. Failed uploads are never sent to AI analysis."}
       </Text>
+      {captureGuidance.length ? (
+        <View style={styles.guidance} accessibilityLabel={`${purpose} photo checklist`}>
+          <Text style={styles.guidanceTitle}>Photos that make the review stronger</Text>
+          {captureGuidance.map((item, index) => (
+            <Text key={item} style={styles.guidanceItem}>
+              {index + 1}. {item}
+            </Text>
+          ))}
+          <Text style={styles.guidanceNote}>
+            GrowPath can reject obviously tiny or invalid files before upload. Blur,
+            focus, lighting, glare, and whether every required view is present are
+            confirmed during image review.
+          </Text>
+        </View>
+      ) : null}
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
@@ -221,6 +251,11 @@ export default function MediaEvidencePicker({
               </View>
             )}
             <Text style={styles.status}>{asset.uploadStatus}</Text>
+            {(asset.qualityWarnings || []).map((warning) => (
+              <Text key={warning} style={styles.warning}>
+                Photo check: {warning}
+              </Text>
+            ))}
             {asset.error ? <Text style={styles.error}>{asset.error}</Text> : null}
             <Pressable
               accessibilityRole="button"
@@ -249,6 +284,17 @@ const styles = StyleSheet.create({
   title: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
   summary: { color: "#475569", fontWeight: "700" },
   help: { color: "#64748B", lineHeight: 18 },
+  guidance: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 4,
+    padding: 10
+  },
+  guidanceTitle: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  guidanceItem: { color: "#334155", fontSize: 12, lineHeight: 18 },
+  guidanceNote: { color: "#475569", fontSize: 12, lineHeight: 18, marginTop: 3 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   button: {
     backgroundColor: "#166534",
@@ -266,6 +312,7 @@ const styles = StyleSheet.create({
   videoMeta: { color: "#475569", marginTop: 4 },
   status: { color: "#475569", fontSize: 12, marginTop: 4, textTransform: "capitalize" },
   error: { color: "#B91C1C", fontSize: 12, marginTop: 3 },
+  warning: { color: "#92400E", fontSize: 12, marginTop: 3 },
   remove: { alignItems: "center", paddingVertical: 7 },
   removeText: { color: "#991B1B", fontWeight: "700" }
 });

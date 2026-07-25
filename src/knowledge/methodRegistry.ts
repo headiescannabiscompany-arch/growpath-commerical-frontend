@@ -77,6 +77,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "dated trap count with location/exposure context",
       "media with analysis status",
       "explicitly selected existing grow media with grow/plant/log provenance",
+      "up to 12 role-diverse review photos with zoomed-out context and focused detail",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -104,6 +105,8 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Do not declare a nutrient deficiency from appearance alone.",
+      "Do not scrape Facebook or other social groups, treat post engagement as diagnostic truth, or copy a community image without platform authorization and image-level creator rights.",
+      "Use rights-reviewed community cases only as QA/evaluation leads or photo-quality negative controls; require confirmed outcomes and Tier A cross-checks before they influence diagnosis or IPM logic.",
       "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
       "Do not send existing private grow media to diagnosis or IPM until the user explicitly selects each photo and its grow/plant/log provenance is preserved.",
@@ -344,6 +347,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "three macro bud-site photos plus one wider context photo",
+      "up to 12 role-diverse photos when additional representative bud sites are needed",
       "maturity",
       "telemetry",
       "sensory",
@@ -377,6 +381,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Require cannabis/hemp grow context at the Dry / Cure Guard API boundary before saving a ToolRun.",
       "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
+      "Reject obviously tiny or invalid files before upload, but use actionable retake guidance rather than pretending metadata alone can detect blur, glare, lighting, or missing sample roles.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",

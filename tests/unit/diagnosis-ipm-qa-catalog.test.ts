@@ -144,7 +144,36 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           sourceId: "commissioned_mimic_cases",
           status: "preferred_pending_capture"
+        }),
+        expect.objectContaining({
+          sourceId: "facebook_grower_groups",
+          status: "external_lead_only_pending_platform_and_creator_permission"
         })
+      ])
+    );
+  });
+
+  it("uses social posts only as authorized QA leads and negative controls", () => {
+    const catalog = loadCatalog();
+
+    expect(catalog.socialContentPolicy).toMatchObject({
+      automatedCollectionRequiresPlatformAuthorization: true,
+      privateGroupContentRequiresGroupAccessAndCreatorPermission: true,
+      deidentificationRequired: true,
+      engagementIsNotGroundTruth: true,
+      confirmedOutcomeRequiredForGoldCase: true,
+      tierACrossCheckRequiredForDiagnosticLabel: true,
+      useForModelTraining: false
+    });
+    expect(catalog.photoEvidencePolicy).toMatchObject({
+      maxPhotosPerDiagnosisIpmOrHarvestWorkflow: 12,
+      minimumPhotosForHarvestProviderReview: 4
+    });
+    expect(catalog.photoEvidencePolicy.reviewTimeChecks).toEqual(
+      expect.arrayContaining([
+        "blur or missed focus",
+        "missing zoomed-out context or distribution view",
+        "irrelevant subject or insufficient diagnostic evidence"
       ])
     );
   });

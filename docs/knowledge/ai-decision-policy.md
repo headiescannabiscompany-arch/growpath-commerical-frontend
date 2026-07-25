@@ -14,6 +14,7 @@ AI is a synthesis and retrieval layer, not blind authority.
 6. Show provider/fallback labels and disagreements. Never present a rule fallback as GPT.
 7. Do not invent sensor readings, lab values, label analyses, genetics provenance, IDs, dates, costs or actions.
 8. Require user confirmation before writes or consequential decisions.
+9. Social posts and group discussions are candidate language, evidence leads, or rights-reviewed QA cases—not ground-truth diagnoses. Do not automate collection without platform authorization, use private-group content without appropriate access and creator permission, or treat engagement and comment consensus as verification. Gold evaluation cases require image-level rights, de-identification, confirmed outcomes, and Tier A cross-checking; poor cases may test rejection and retake guidance. Neither is model-training data.
 
 Diagnosis uses ETGU plus GPT verification and an agreement/conflict state. Runtime answers should expose `methodIds`, `sourceIds`, `evidenceUsed`, `missingInformation`, `limitations` and `providerLabel`.
 

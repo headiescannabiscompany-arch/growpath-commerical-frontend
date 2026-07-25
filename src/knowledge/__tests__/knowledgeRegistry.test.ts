@@ -27,6 +27,12 @@ describe("GrowPath knowledge registries", () => {
     expect(evaluateSourceForDecision("grower-forum", "consumer_review")).toBe(
       "lead_only"
     );
+    expect(evaluateSourceForDecision("facebook-grower-groups", "qa_evaluation")).toBe(
+      "lead_only"
+    );
+    expect(evaluateSourceForDecision("facebook-grower-groups", "diagnosis")).toBe(
+      "reject"
+    );
     expect(evaluateSourceForDecision("seo-affiliate-blog", "soil_science")).toBe(
       "reject"
     );
@@ -201,6 +207,17 @@ describe("GrowPath knowledge registries", () => {
     expect(getSourceEntry("vimeo-video-privacy-documentation")?.trustedFor).toContain(
       "course_media"
     );
+    expect(getSourceEntry("facebook-grower-groups")).toMatchObject({
+      reliabilityTier: "C",
+      requiresCrossCheck: true,
+      trustedFor: expect.arrayContaining(["qa_evaluation", "photo_quality_guidance"]),
+      notTrustedFor: expect.arrayContaining(["diagnosis", "ipm"])
+    });
+    expect(getSourceEntry("meta-automated-data-collection-terms")).toMatchObject({
+      sourceType: "provider_documentation",
+      trustedFor: ["platform_data_access"],
+      lastReviewedAt: "2026-07-25"
+    });
   });
 
   it("requires evidence and provider transparency in AI results", () => {

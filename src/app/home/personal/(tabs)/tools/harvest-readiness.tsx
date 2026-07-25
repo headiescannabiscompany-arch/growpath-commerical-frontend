@@ -13,6 +13,7 @@ import {
 import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
 import { providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 
@@ -117,7 +118,8 @@ function HarvestPhotoAnalyzer({
         The free readiness calculator works from observations you enter. Optional AI photo
         review costs 1 AI credit only after a complete four-photo set is submitted. A
         provider failure is refunded automatically. Photo review never makes the harvest
-        decision by itself.
+        decision by itself. You can add up to {PLANT_REVIEW_PHOTO_LIMIT} photos when extra
+        top, middle, lower, or zoomed-out samples are needed.
       </Text>
       <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
         <Text style={photoStyles.checklistTitle}>Photo checklist before analysis</Text>
@@ -128,7 +130,7 @@ function HarvestPhotoAnalyzer({
         ))}
       </View>
       <MediaEvidencePicker
-        maxPhotos={10}
+        maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
         purpose="harvest"
         aiUsable
         sourceContext={{ growId: growId || undefined, plantId: plantId || undefined }}
