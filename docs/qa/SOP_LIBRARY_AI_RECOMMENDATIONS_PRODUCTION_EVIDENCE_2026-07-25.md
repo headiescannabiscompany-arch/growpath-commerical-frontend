@@ -186,14 +186,109 @@ The corrective retest was also billed exactly once:
 No grow was selected, no task confirmation was offered, and no task or other
 production record was created.
 
+## Deliberate Production Lifecycle and Audit Acceptance
+
+Account: `jcindc2003@yahoo.com`
+
+Facility: `Triple Bag Genetics, llc`
+
+URLs:
+
+- `https://growpathai.com/home/facility/sop-runs/presets`
+- `https://growpathai.com/home/facility/audit-logs`
+
+### Upload, Create, Reload, Revise, and Retire
+
+Frontend PR `#221` merged as
+`a8d8cbe0e18fbff56c414efb160da810de8589d3`. Its branch and post-merge
+Frontend CI and Production Build Preflight workflows passed.
+
+The signed-in production Owner deliberately created
+`[QA SOP 2026-07-25] IPM lifecycle verification` from the source-version-2 IPM
+starter, uploaded the bounded text supporting document
+`qa-sop-supporting-reference-2026-07-25.txt`, confirmed Facility review, and
+saved version 1 with eight executable steps. A hard reload preserved version 1,
+the attachment, safety notes, and checklist. The version-1 template id was
+`6a64befaa73ae0bf3006ea76`.
+
+The Owner then revised the same record. Review confirmation correctly reset,
+the ninth step `Record the review outcome and the next scheduled inspection
+time.` was added, and version 2 was saved only after review was reconfirmed. A
+hard reload preserved version 2, all nine steps, and the document. The
+version-2 template id was `6a64bf67a73ae0bf3006eab6`.
+
+The active Library originally lacked a retirement control even though the API
+already preserved history. PR `#221` added an Owner/Manager-only `Retire`
+action with an exact-name, cross-platform confirmation and explicit
+preserved-history explanation. Production cancellation was verified first,
+then the exact temporary SOP was retired. The active Library no longer offered
+Start, Revise, or Retire for that record after a hard reload, while the older
+`[QA SOP 2026-07-22] Sanitation evidence check` remained unchanged.
+
+### Facility Audit Trail
+
+The lifecycle pass exposed that create, revise, and retire preserved database
+history but did not append Facility Audit Log events. This was corrected in:
+
+- Frontend PR `#222`, merge
+  `5788731b016b9c6673ed3857eb73ba992a8eeaa1`, merged
+  `2026-07-25T14:45:09Z`.
+- Backend PR `#75`, merge
+  `c4cdf291ee79fdf6fd221e54db273eae3c7dbbf5`, merged
+  `2026-07-25T14:58:39Z`.
+
+Frontend branch CI, post-merge Frontend CI, and Production Build Preflight all
+passed. Backend PR tests passed, the 9m56s lint/audit/full-test/OpenAPI/startup/
+ZAP gate passed, and post-merge Backend CI passed in 1m42s. The public API
+returned HTTP 200 after deployment turnover.
+
+After both releases were live, the Owner created the disposable
+`[QA SOP 2026-07-25] Audit event verification` as version 1 with eight steps,
+revised it to version 2 with nine steps, and retired it. The temporary active
+record was removed from new runs while the older QA SOP remained active.
+
+The live Audit Logs then showed, in order:
+
+- `SOP Template Created` —
+  `[QA SOP 2026-07-25] Audit event verification | Version 1` —
+  `7/25/2026, 11:02:37 AM` — audit id
+  `6a64d00d00627204ec7ef95b`.
+- `SOP Template Revised` —
+  `[QA SOP 2026-07-25] Audit event verification | Version 2` —
+  `7/25/2026, 11:03:30 AM` — audit id
+  `6a64d04200627204ec7ef98a`.
+- `SOP Template Retired` —
+  `[QA SOP 2026-07-25] Audit event verification | Version 2` —
+  `7/25/2026, 11:04:09 AM` — audit id
+  `6a64d06900627204ec7ef99e`.
+
+A hard reload preserved all three readable events. This closes the Owner
+upload/create/reload/revise/retire/audit loop without leaving the disposable
+SOP active.
+
+Automated verification for this corrective release included:
+
+- Frontend contract guard passed.
+- Frontend full regression passed 312 suites / 1,232 tests / 1 snapshot.
+- Focused final audit-presentation coverage passed after the readable-version
+  formatter change.
+- Backend database-backed SOP Library coverage passed 4 tests, including the
+  exact three-event audit sequence and readable event details.
+- Backend clean-runner lint, dependency audit, full tests, OpenAPI startup, and
+  ZAP security scan passed.
+
+The in-app Browser screenshot command timed out again at
+`Page.captureScreenshot`; no screenshot or video is claimed for this lifecycle
+pass. Semantic DOM, persisted record, hard-reload, exact audit-id, release-SHA,
+URL, account, role, and timestamp evidence are retained.
+
 ## Remaining Production Acceptance
 
 - Retest the SOP Library with a real Viewer account. The available production
   accounts currently prove Owner, Manager, and Staff; the account previously
   described as Viewer is actually Manager.
-- Exercise a deliberate production upload/create/revise/retire loop and clean
-  up any temporary record after persistence and authorization checks.
 - Capture genuine final-SHA screenshots or video. Three in-app Browser
-  `Page.captureScreenshot` attempts timed out during this pass, so no screenshot
-  is claimed. The semantic DOM and control-state evidence above is retained,
-  but visual evidence remains open.
+  `Page.captureScreenshot` attempts timed out during the initial pass and the
+  final lifecycle screenshot attempt also timed out, so no screenshot is
+  claimed. The semantic DOM, record-persistence, and audit-id evidence above is
+  retained, but visual evidence remains open.
