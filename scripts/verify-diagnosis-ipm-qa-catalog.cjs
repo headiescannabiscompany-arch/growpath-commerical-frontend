@@ -140,6 +140,44 @@ function main() {
     errors
   );
 
+  const reconnaissance = fixture.anonymizedManualReconnaissance || {};
+  requireCondition(
+    reconnaissance.reviewedAt === "2026-07-25" &&
+      reconnaissance.collectionMode === "manual visible-UI sampling" &&
+      reconnaissance.relevantGroupCount === 3,
+    "Manual social reconnaissance scope is missing or inaccurate.",
+    errors
+  );
+  for (const key of [
+    "automatedCollectionUsed",
+    "personalIdentifiersRetained",
+    "postUrlsRetained",
+    "mediaRetained",
+    "creatorPermissionObtained"
+  ]) {
+    requireCondition(
+      reconnaissance[key] === false,
+      `anonymizedManualReconnaissance.${key} must be false.`,
+      errors
+    );
+  }
+  requireCondition(
+    reconnaissance.goldCaseRecordsAdded === 0 &&
+      reconnaissance.negativeControlMediaRecordsAdded === 0,
+    "Unlicensed reconnaissance must not add gold cases or negative-control media.",
+    errors
+  );
+  const observedPatterns = reconnaissance.observedPatterns || [];
+  requireCondition(
+    Array.isArray(observedPatterns) &&
+      observedPatterns.some((item) => /target visible only/i.test(item)) &&
+      observedPatterns.some((item) => /multiple organism/i.test(item)) &&
+      observedPatterns.some((item) => /high photo count/i.test(item)) &&
+      observedPatterns.some((item) => /diagnostically limited/i.test(item)),
+    "Manual reconnaissance patterns must cover target ambiguity, multiple subjects, photo-count limits, and diagnostic insufficiency.",
+    errors
+  );
+
   const photoPolicy = fixture.photoEvidencePolicy || {};
   requireCondition(
     photoPolicy.maxPhotosPerDiagnosisIpmOrHarvestWorkflow === 12,

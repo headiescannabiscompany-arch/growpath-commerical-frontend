@@ -23,19 +23,22 @@ export const PHOTO_CAPTURE_GUIDANCE: Partial<Record<EvidencePurpose, string[]>> 
     "One zoomed-out whole-plant photo showing the overall pattern.",
     "One mid-range photo showing where symptoms occur on the plant.",
     "Sharp close-ups of the affected leaf top and underside.",
-    "A macro detail and root-zone or medium photo when either may explain the symptom."
+    "A macro detail and root-zone or medium photo when either may explain the symptom.",
+    "If the problem is only a small part of a wider photo, describe or mark the exact target and add a close-up of that area."
   ],
   ipm: [
     "One zoomed-out plant or scout-zone photo showing distribution.",
     "Sharp leaf-top and leaf-underside photos from affected and unaffected tissue.",
     "A macro of the organism, egg, webbing, frass, lesion edge, or other sign.",
-    "A dated sticky-trap or root-zone photo when it is relevant to the scout."
+    "A dated sticky-trap or root-zone photo when it is relevant to the scout.",
+    "When several organisms or objects appear, name the intended target and add a dedicated macro; GrowPath must not assume the largest subject is the pest."
   ],
   harvest: [
     "Three sharp macro photos from top, middle, and lower bud sites.",
     "One wider bud-context photo showing where the macro samples came from.",
     "Use neutral white light and keep intact gland heads on bud calyxes in focus.",
-    "Add extra representative sites when the canopy matures unevenly; do not rely on digital zoom."
+    "Add extra representative sites when the canopy matures unevenly; do not rely on digital zoom.",
+    "Photo count is not proof of coverage: even 12 wide photos cannot replace three true macros that resolve individual intact gland heads."
   ]
 };
 

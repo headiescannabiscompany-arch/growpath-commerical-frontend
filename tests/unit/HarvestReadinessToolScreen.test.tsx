@@ -216,6 +216,9 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
     expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
     expect(screen.getByText(/neutral white light/i)).toBeTruthy();
+    expect(
+      screen.getByText(/even 12 wide photos cannot replace three true macros/i)
+    ).toBeTruthy();
     expect(screen.getByText(/No trichome evidence is ready/i)).toBeTruthy();
   });
 

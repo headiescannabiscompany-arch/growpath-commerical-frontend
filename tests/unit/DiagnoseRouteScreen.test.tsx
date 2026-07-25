@@ -524,6 +524,9 @@ describe("DiagnoseRoute", () => {
     expect(screen.getByLabelText("Run diagnosis").props.accessibilityHint).toMatch(
       /Add written symptom notes/
     );
+    expect(screen.getByLabelText("Diagnosis notes").props.placeholder).toMatch(
+      /exact photo area, leaf, bud, or other target/i
+    );
 
     fireEvent.changeText(
       screen.getByLabelText("Diagnosis notes"),

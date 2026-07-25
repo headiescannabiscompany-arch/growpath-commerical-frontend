@@ -219,6 +219,12 @@ describe("IpmScoutToolRoute", () => {
       screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
     ).toBeTruthy();
     expect(screen.getByText("Use photos already in this grow")).toBeTruthy();
+    expect(
+      screen.getByText(/If several organisms or objects appear, say which one/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("IPM Scout Other context or question").props.placeholder
+    ).toMatch(/Which organism or spot in the photo is the target/i);
   });
 
   it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {

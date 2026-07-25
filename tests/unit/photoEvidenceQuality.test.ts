@@ -10,13 +10,21 @@ describe("plant review photo quality", () => {
     expect(PHOTO_CAPTURE_GUIDANCE.diagnosis).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/zoomed-out whole-plant/i),
-        expect.stringMatching(/leaf top and underside/i)
+        expect.stringMatching(/leaf top and underside/i),
+        expect.stringMatching(/describe or mark the exact target/i)
+      ])
+    );
+    expect(PHOTO_CAPTURE_GUIDANCE.ipm).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/several organisms or objects/i),
+        expect.stringMatching(/must not assume the largest subject/i)
       ])
     );
     expect(PHOTO_CAPTURE_GUIDANCE.harvest).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/top, middle, and lower bud sites/i),
-        expect.stringMatching(/wider bud-context/i)
+        expect.stringMatching(/wider bud-context/i),
+        expect.stringMatching(/12 wide photos cannot replace three true macros/i)
       ])
     );
   });
