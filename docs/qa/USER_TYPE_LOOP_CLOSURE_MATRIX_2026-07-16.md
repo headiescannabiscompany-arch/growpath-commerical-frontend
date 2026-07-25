@@ -490,10 +490,17 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       `bea6633831f4c96594096832053839d2d5c47cce` reconfirmed this account as
       Facility Owner and non-destructively verified all eight standard starters,
       the governed create/revise/upload surface, required review confirmation,
-      disabled incomplete save, and preserved active version. The same release
-      exposed review-only SOP recommendation starters in Personal and Commercial
-      without spending a credit or writing a record. Viewer, deliberate write,
-      provider-backed, and screenshot evidence remain open; see
+      disabled incomplete save, and preserved active version. Personal and
+      Commercial also exposed all eight review-only starters without spending a
+      credit or writing a record at selection time. A first provider-backed
+      Commercial request found Facility-only wording and charged one credit
+      (`2000 -> 1999`). Frontend `aaf68b2fe3380935f1faac9fa7ef6b17759934af`
+      and backend `ff32ec14b27fc4c3fb75643e3e2446929dbec5a1`
+      deployed source version 2; the live corrective response was
+      workspace-neutral, preserved missing information, kept task creation
+      blocked without a grow, and charged exactly one additional credit
+      (`1999 -> 1998`, 2 billed requests, 0 refunds). Viewer, deliberate
+      write/task-confirmation, and screenshot evidence remain open; see
       `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
