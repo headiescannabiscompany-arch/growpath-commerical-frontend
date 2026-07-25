@@ -348,6 +348,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "three macro bud-site photos plus one wider context photo",
       "up to 12 role-diverse photos when additional representative bud sites are needed",
+      "one optional private source video up to 20 seconds with up to six extracted still frames",
       "maturity",
       "telemetry",
       "sensory",
@@ -369,7 +370,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "evidence used, missing information, and limitations",
       "stage timing that distinguishes a 24-hour recheck from completion",
       "10-14 day controlled-dry planning context and 5-7 day fast-dry quality warning",
-      "review ID, evidence IDs, provider/model, image quality, visible traits, limitations, photo count, and credit status"
+      "review ID, evidence IDs, provider/model and image detail, set-level quality checks, per-image findings, visible traits, limitations, photo count, and credit status"
     ],
     [
       "Never estimate sensor values from images.",
@@ -382,6 +383,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never fill trichome percentages after upload failure, unavailable analysis, incomplete provider output, or unusable media; show actionable retake guidance.",
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
       "Reject obviously tiny or invalid files before upload, but use actionable retake guidance rather than pretending metadata alone can detect blur, glare, lighting, or missing sample roles.",
+      "Use provider high-detail image review, but never claim digital zoom restored pixels hidden by blur, compression, or clipped glare; exclude obscured heads and report each image's usable region or exclusion reason.",
+      "Preserve an optional short source video as non-AI evidence and analyze only its extracted still frames. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",

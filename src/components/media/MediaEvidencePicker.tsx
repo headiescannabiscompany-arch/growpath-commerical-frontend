@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { createEvidenceAsset } from "@/api/evidence";
 import { uploadEvidenceMedia } from "@/api/uploads";
@@ -8,6 +8,10 @@ import {
   assessEvidencePhoto,
   PHOTO_CAPTURE_GUIDANCE
 } from "@/features/personal/diagnosis/photoEvidenceQuality";
+import {
+  extractVideoFrameCandidates,
+  type VideoFrameCandidate
+} from "@/features/personal/harvest/videoFrameExtraction";
 import { radius } from "@/theme/theme";
 import type {
   EvidenceAsset,
@@ -20,6 +24,8 @@ import { resolveImageUri } from "@/utils/photoUploads";
 type Props = {
   maxPhotos?: number;
   allowVideo?: boolean;
+  extractFramesFromVideo?: boolean;
+  maxExtractedVideoFrames?: number;
   maxVideoSeconds?: number;
   aiUsable?: boolean;
   purpose: EvidencePurpose;
@@ -73,9 +79,48 @@ function toLocalAsset(
   return local;
 }
 
+function toVideoFrameAsset(
+  frame: VideoFrameCandidate,
+  purpose: EvidencePurpose,
+  sourceContext: EvidenceLinks,
+  aiUsable: boolean
+): EvidenceAsset {
+  const local: EvidenceAsset = {
+    id: localId(),
+    ...sourceContext,
+    assetType: "photo",
+    originalUri: frame.uri,
+    mimeType: frame.mimeType,
+    fileName: frame.fileName,
+    width: frame.width,
+    height: frame.height,
+    source: "generated",
+    purpose,
+    uploadStatus: "local",
+    aiUsable,
+    qualityWarnings: [
+      `Extracted from the source video at ${frame.timeSeconds.toFixed(
+        1
+      )} seconds. Confirm the bud-site role, focus, and glare before analysis.`
+    ]
+  };
+  const assessment = assessEvidencePhoto(local, purpose);
+  local.qualityWarnings = [
+    ...local.qualityWarnings,
+    ...assessment.warnings.filter((warning) => !local.qualityWarnings.includes(warning))
+  ];
+  if (!assessment.accepted) {
+    local.uploadStatus = "failed";
+    local.error = assessment.error || "This frame cannot be used for plant review.";
+  }
+  return local;
+}
+
 export default function MediaEvidencePicker({
   maxPhotos = 10,
   allowVideo = false,
+  extractFramesFromVideo = false,
+  maxExtractedVideoFrames = 6,
   maxVideoSeconds = 30,
   aiUsable = false,
   purpose,
@@ -84,6 +129,7 @@ export default function MediaEvidencePicker({
   onChange
 }: Props) {
   const [internalAssets, setInternalAssets] = useState<EvidenceAsset[]>(value || []);
+  const [videoFeedback, setVideoFeedback] = useState("");
   const assets = value || internalAssets;
   const photoCount = assets.filter((asset) => asset.assetType === "photo").length;
   const videoCount = assets.filter((asset) => asset.assetType === "video").length;
@@ -101,8 +147,11 @@ export default function MediaEvidencePicker({
     onChange?.(next);
   }
 
-  async function uploadSelected(selected: EvidenceAsset[]) {
-    let current = [...assets, ...selected];
+  async function uploadSelected(
+    selected: EvidenceAsset[],
+    baseAssets: EvidenceAsset[] = assets
+  ) {
+    let current = [...baseAssets, ...selected];
     commit(current);
     for (const local of selected) {
       if (local.uploadStatus === "failed") continue;
@@ -119,11 +168,16 @@ export default function MediaEvidencePicker({
         if (!uploaded?.url) throw new Error("Evidence upload did not return a URL.");
         const saved = await createEvidenceAsset({
           ...local,
+          ...(local.source === "generated" ? { originalUri: uploaded.url } : {}),
           durableUrl: uploaded.url,
           mimeType: uploaded.mimeType || local.mimeType,
           uploadStatus: "uploaded"
         });
-        current = current.map((asset) => (asset.id === local.id ? saved : asset));
+        const durableSaved =
+          local.source === "generated"
+            ? { ...saved, originalUri: saved.durableUrl || uploaded.url }
+            : saved;
+        current = current.map((asset) => (asset.id === local.id ? durableSaved : asset));
         commit(current);
       } catch (error: any) {
         current = current.map((asset) =>
@@ -136,8 +190,19 @@ export default function MediaEvidencePicker({
             : asset
         );
         commit(current);
+      } finally {
+        if (
+          Platform.OS === "web" &&
+          local.source === "generated" &&
+          local.originalUri.startsWith("blob:") &&
+          typeof URL !== "undefined" &&
+          typeof URL.revokeObjectURL === "function"
+        ) {
+          URL.revokeObjectURL(local.originalUri);
+        }
       }
     }
+    return current;
   }
 
   async function choosePhotos() {
@@ -174,7 +239,7 @@ export default function MediaEvidencePicker({
       purpose,
       sourceContext,
       "library",
-      aiUsable
+      extractFramesFromVideo ? false : aiUsable
     );
     if ((local.durationSeconds || 0) > maxVideoSeconds) {
       local.uploadStatus = "failed";
@@ -182,7 +247,45 @@ export default function MediaEvidencePicker({
       commit([...assets, local]);
       return;
     }
-    await uploadSelected([local]);
+    setVideoFeedback("");
+    const withVideo = await uploadSelected([local]);
+    if (
+      !extractFramesFromVideo ||
+      withVideo[withVideo.length - 1]?.uploadStatus === "failed"
+    ) {
+      return;
+    }
+
+    const availablePhotoSlots = Math.max(0, maxPhotos - photoCount);
+    if (!availablePhotoSlots) {
+      setVideoFeedback(
+        "The source video was saved, but no frame slots remain. Remove a photo before extracting video frames."
+      );
+      return;
+    }
+    try {
+      setVideoFeedback("Reading candidate frames from the source video...");
+      const frames = await extractVideoFrameCandidates({
+        uri: local.originalUri,
+        durationSeconds: local.durationSeconds || 0,
+        maxFrames: Math.min(maxExtractedVideoFrames, availablePhotoSlots)
+      });
+      const frameAssets = frames.map((frame) =>
+        toVideoFrameAsset(frame, purpose, sourceContext, aiUsable)
+      );
+      await uploadSelected(frameAssets, withVideo);
+      setVideoFeedback(
+        `${frameAssets.length} still frame${
+          frameAssets.length === 1 ? "" : "s"
+        } extracted. Review them like ordinary photos; frames hidden by glare or blur will be excluded by the AI review.`
+      );
+    } catch (error: any) {
+      setVideoFeedback(
+        `The source video was saved, but its still frames could not be extracted. ${
+          error?.message || "Add sharp photos from the video instead."
+        }`
+      );
+    }
   }
 
   return (
@@ -196,6 +299,13 @@ export default function MediaEvidencePicker({
           ? "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
           : "Upload clear, durable evidence. Failed uploads are never sent to AI analysis."}
       </Text>
+      {allowVideo && extractFramesFromVideo ? (
+        <Text style={styles.help}>
+          A video is kept as private evidence. GrowPath extracts up to{" "}
+          {Math.min(maxExtractedVideoFrames, maxPhotos)} still frames for image review;
+          the AI does not guess from motion or rebuild detail hidden by blur or glare.
+        </Text>
+      ) : null}
       {captureGuidance.length ? (
         <View style={styles.guidance} accessibilityLabel={`${purpose} photo checklist`}>
           <Text style={styles.guidanceTitle}>Photos that make the review stronger</Text>
@@ -234,6 +344,11 @@ export default function MediaEvidencePicker({
           </Pressable>
         ) : null}
       </View>
+      {videoFeedback ? (
+        <Text accessibilityLiveRegion="polite" style={styles.videoFeedback}>
+          {videoFeedback}
+        </Text>
+      ) : null}
       <View style={styles.grid}>
         {assets.map((asset, index) => (
           <View key={asset.id} style={styles.asset}>
@@ -311,6 +426,7 @@ const styles = StyleSheet.create({
   videoPreview: { alignItems: "center", justifyContent: "center" },
   videoText: { color: "#0F172A", fontWeight: "800" },
   videoMeta: { color: "#475569", marginTop: 4 },
+  videoFeedback: { color: "#334155", lineHeight: 18 },
   status: { color: "#475569", fontSize: 12, marginTop: 4, textTransform: "capitalize" },
   error: { color: "#B91C1C", fontSize: 12, marginTop: 3 },
   warning: { color: "#92400E", fontSize: 12, marginTop: 3 },

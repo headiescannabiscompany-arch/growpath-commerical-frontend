@@ -12,9 +12,33 @@ export type TrichomeVisionResult = {
   evidence: string[];
   recommendation: string;
   limitations: string[];
+  qualityChecks?: {
+    focus: "usable" | "limited" | "blocking";
+    glare: "none" | "localized" | "blocking";
+    lighting: "neutral" | "mixed" | "colored" | "problematic";
+    headVisibility: "sufficient" | "limited" | "unresolved";
+    roleCoverage: "complete" | "incomplete" | "uncertain";
+  };
+  imageFindings?: Array<{
+    imageIndex: number;
+    role:
+      | "top_macro"
+      | "middle_macro"
+      | "lower_macro"
+      | "context"
+      | "additional_macro"
+      | "uncertain";
+    usableForDistribution: boolean;
+    trichomeRichRegion: string;
+    excludedReason: string;
+    focus: "sharp" | "partial" | "blurred";
+    glare: "none" | "localized" | "blocking";
+    visibleHeadDetail: "sufficient" | "limited" | "unresolved";
+  }>;
   provider: string;
   providerLabel: string;
   providerModel: string;
+  imageDetail?: "low" | "high" | "original" | "auto";
   imagesAnalyzed: number;
   evidenceUsed: string[];
   analysisId: string;
