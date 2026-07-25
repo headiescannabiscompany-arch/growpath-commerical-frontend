@@ -13,6 +13,15 @@ Date: 2026-07-25
 - Backend merged: `2026-07-25T08:08:24Z`
 - Backend URL: `https://api.growpathai.com`
 
+Workspace-neutral corrective release:
+
+- Frontend PR: `#219`
+- Frontend merge SHA: `aaf68b2fe3380935f1faac9fa7ef6b17759934af`
+- Frontend merged: `2026-07-25T13:02:42Z`
+- Backend PR: `#74`
+- Backend merge SHA: `ff32ec14b27fc4c3fb75643e3e2446929dbec5a1`
+- Backend merged: `2026-07-25T13:00:22Z`
+
 GitHub reported successful post-merge Frontend CI and Production Build Preflight
 workflows for the frontend merge and successful post-merge Backend CI for the
 backend merge.
@@ -22,6 +31,13 @@ UTC`. The production backend fingerprint reported
 `growpath-backend|git=dev|ts=2026-07-25T08:09:09.382Z` in production on Node
 24.14.1. Because the backend fingerprint identifies its Git value as `dev`, it is
 deployment-timing evidence and is not treated as SHA evidence.
+
+The corrective release also passed post-merge Frontend CI, Production Build
+Preflight, and Backend CI. The public frontend response then reported
+`last-modified: Sat, 25 Jul 2026 13:04:32 UTC`, and the production backend
+fingerprint reported
+`growpath-backend|git=dev|ts=2026-07-25T13:01:18.772Z`. The fingerprint remains
+deployment-timing evidence rather than backend SHA evidence.
 
 At `2026-07-25T08:40:41Z`,
 `GET /api/facilities/FAC_LIVE_RELEASE_CHECK/sop-documents` returned the expected
@@ -42,6 +58,11 @@ Before merge:
 - Final backend SOP/AI/compatibility database coverage: 3 suites / 25 tests
   passed.
 - Targeted backend lint, formatting, and diff integrity checks passed.
+- The workspace-neutral corrective release passed the two focused frontend
+  suites with 17 tests, touched-source lint and formatting, diff integrity,
+  corruption/export scans, and the networked frontend and backend PR checks.
+- The backend library guard confirmed all eight server-owned starters at source
+  version 2 and rejected Facility-only shared wording.
 
 The database tests cover owner/manager write access, viewer read-only access,
 cross-Facility isolation, required review confirmation, version preservation,
@@ -123,13 +144,50 @@ Verified:
 
 No AI credit was used and no record was created.
 
+### Provider-Backed Commercial Recommendation
+
+URL:
+`https://growpathai.com/home/commercial/tools/ask-ai`
+
+Account: `jcindc2003@yahoo.com`, using the Commercial workspace. The server
+reported plan `FACILITY (trialing)` with 2,000 weekly credits.
+
+The first live `IPM Scouting and Escalation` request used source version 1 and
+returned a complete provider-backed review-only draft, but its wording included
+`facility scale` and `facility IPM plan`. The request was billed exactly once:
+
+- Before: `2000 / 2000`; 0 credits across 0 billed requests; 0 refunded.
+- After: `1999 / 2000`; 1 credit across 1 billed request; 0 refunded.
+
+That finding was fixed in backend PR `#74` and frontend PR `#219`. The shared
+starters are now source version 2 and use workspace-neutral operational
+language. Facility-specific plans, scales, approved limits, roles, and
+deviation rules may only come from selected Facility records or later
+Facility-owned review/customization.
+
+At `2026-07-25T13:09:08.778Z`, the deployed Commercial assistant sent the
+source-version-2 request. The completed response:
+
+- identified `GrowPath context + OpenAI`;
+- returned the ranked starter rationale, eight executable checklist steps,
+  safety boundary, and unresolved-information list;
+- used `documented rating scale` and `applicable IPM plan`;
+- did not contain `facility scale`, `facility IPM plan`, or
+  `facility-approved`;
+- preserved crop identity, stage, reviewer, evidence, exception, and follow-up
+  details as unresolved rather than inventing them; and
+- required `Select a grow to turn this draft into a confirmable review task.`
+
+The corrective retest was also billed exactly once:
+
+- Before: `1999 / 2000`; 1 credit across 1 billed request; 0 refunded.
+- After: `1998 / 2000`; 2 credits across 2 billed requests; 0 refunded.
+
+No grow was selected, no task confirmation was offered, and no task or other
+production record was created.
+
 ## Remaining Production Acceptance
 
-- Exercise one provider-backed recommendation. Sending the request consumes an
-  AI credit, so this pass deliberately stopped before Send.
-- Confirm the returned rationale, checklist, safety boundary, missing
-  information, and separate grow-task confirmation without creating a task
-  unless explicitly approved.
 - Retest the SOP Library with a real Viewer account. The available production
   accounts currently prove Owner, Manager, and Staff; the account previously
   described as Viewer is actually Manager.
@@ -139,4 +197,3 @@ No AI credit was used and no record was created.
   `Page.captureScreenshot` attempts timed out during this pass, so no screenshot
   is claimed. The semantic DOM and control-state evidence above is retained,
   but visual evidence remains open.
-
