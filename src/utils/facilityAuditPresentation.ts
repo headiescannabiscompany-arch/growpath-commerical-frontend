@@ -8,7 +8,9 @@ export function formatFacilityAuditAction(action: unknown) {
     .trim()
     .replace(/[_-]+/g, " ")
     .toLowerCase();
-  return normalized.replace(/\b\w/g, (character) => character.toUpperCase());
+  return normalized
+    .replace(/\b\w/g, (character) => character.toUpperCase())
+    .replace(/^Sop\b/, "SOP");
 }
 
 function includesInternalId(value: string) {
@@ -53,9 +55,11 @@ export function formatFacilityAuditDetails(action: unknown, details: unknown) {
 
   const parts: string[] = [];
   const title = String(record.title || record.name || "").trim();
+  const version = Number(record.version);
   const status = String(record.status || record.state || "").trim();
   const role = String(record.role || "").trim();
   if (title) parts.push(title);
+  if (Number.isInteger(version) && version > 0) parts.push(`Version ${version}`);
   if (status) parts.push(`Status: ${formatFacilityAuditAction(status)}`);
   if (role) parts.push(`Role: ${formatFacilityAuditAction(role)}`);
   if (parts.length) return parts.join(" | ");
