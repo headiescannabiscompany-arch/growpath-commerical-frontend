@@ -558,6 +558,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Personal and Commercial AI reuse limited to review-only starter recommendations",
       "Facility-scoped SOP document attachments that supplement an executable checklist",
       "version-preserving SOP revisions and non-destructive retirement",
+      "Facility-scoped SOP create, revise, and retire audit events with readable title and version context",
       "human-readable two-run SOP comparison selection",
       "review-complete and mutation-locked SOP evidence runs",
       "readable SOP evidence summaries and step differences",
@@ -594,6 +595,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never allow an uploaded SOP document to replace the executable checklist, cross Facility boundaries, or be attached without owner/manager review.",
       "Never overwrite or hard-delete the prior SOP version when a Facility procedure is revised or retired.",
       "Never hide SOP retirement from an authorized owner or manager, label it as deletion, or retire an SOP without naming it and confirming that new runs stop while historical evidence remains.",
+      "Never create, revise, or retire a Facility SOP without appending a Facility-scoped lifecycle audit event that can be understood without raw identifiers.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],

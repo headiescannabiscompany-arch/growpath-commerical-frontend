@@ -14,9 +14,18 @@ describe("Facility reporting presentation", () => {
     const details = JSON.stringify({ roomIds: ["room-1", "room-2", "room-3"] });
 
     expect(formatFacilityAuditAction("ROOMS_REORDERED")).toBe("Rooms Reordered");
+    expect(formatFacilityAuditAction("SOP_TEMPLATE_REVISED")).toBe(
+      "SOP Template Revised"
+    );
     expect(formatFacilityAuditDetails("ROOMS_REORDERED", details)).toBe(
       "3 rooms reordered."
     );
+    expect(
+      formatFacilityAuditDetails("SOP_TEMPLATE_REVISED", {
+        title: "IPM Scouting and Escalation",
+        version: 2
+      })
+    ).toBe("IPM Scouting and Escalation | Version 2");
     expect(
       formatFacilityAuditDetails("TASK_CREATED", '{"title":"Room check","status":"OPEN"}')
     ).toBe("Room check | Status: Open");
