@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
+import { Link, Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
 import { useAuth } from "@/auth/AuthContext";
@@ -45,6 +46,35 @@ export function canOpenCannabisTool(
   return isCannabisGrow(grow);
 }
 
+export function CannabisToolAccessNotice() {
+  return (
+    <View
+      accessibilityRole="alert"
+      style={styles.accessNotice}
+      testID="cannabis-tool-access-notice"
+    >
+      <Text style={styles.accessTitle}>Cannabis tool access is off</Text>
+      <Text style={styles.accessBody}>
+        Harvest, dry/cure, genetics, and other cannabis-specific tools stay hidden unless
+        this Personal account shows cannabis content or the tool is opened from a cannabis
+        grow.
+      </Text>
+      <Text style={styles.accessBody}>
+        Open Profile to review cannabis visibility, or return to AI Tools for workflows
+        that do not require cannabis access.
+      </Text>
+      <View style={styles.accessLinks}>
+        <Link href="/home/personal/profile" style={styles.accessLink}>
+          Open Profile
+        </Link>
+        <Link href="/home/personal/tools" style={styles.accessLink}>
+          Back to AI Tools
+        </Link>
+      </View>
+    </View>
+  );
+}
+
 export default function ToolsLayout() {
   const pathname = usePathname();
   const params = useLocalSearchParams<{ growId?: string | string[] }>();
@@ -85,6 +115,12 @@ export default function ToolsLayout() {
   if (matchedTool && !isFeatureNavigable(matchedTool, { allowBetaSurfaces: true })) {
     return <Redirect href="/home/personal/tools" />;
   }
+  if (
+    isCannabisToolPath(pathname) &&
+    (auth.isHydrating || auth.meStatus === "idle" || auth.meStatus === "loading")
+  ) {
+    return null;
+  }
   if (growId && isCannabisToolPath(pathname) && routeGrow === undefined) return null;
   if (
     !canOpenCannabisTool(
@@ -95,7 +131,7 @@ export default function ToolsLayout() {
       (auth.user as any)?.accountPurpose
     )
   ) {
-    return <Redirect href="/home/personal/tools" />;
+    return <CannabisToolAccessNotice />;
   }
 
   return (
@@ -163,3 +199,29 @@ export default function ToolsLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  accessNotice: {
+    alignSelf: "center",
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+    margin: 20,
+    maxWidth: 620,
+    padding: 18,
+    width: "90%"
+  },
+  accessTitle: { color: "#7C2D12", fontSize: 20, fontWeight: "800" },
+  accessBody: { color: "#334155", fontSize: 15, lineHeight: 22 },
+  accessLinks: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  accessLink: {
+    backgroundColor: "#166534",
+    borderRadius: 10,
+    color: "#FFFFFF",
+    fontWeight: "800",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  }
+});
