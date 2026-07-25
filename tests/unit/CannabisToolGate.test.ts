@@ -1,4 +1,5 @@
 jest.mock("expo-router", () => ({
+  Link: ({ children }: { children: unknown }) => children,
   Redirect: () => null,
   Stack: () => null,
   useLocalSearchParams: () => ({}),
@@ -9,7 +10,13 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ user: { growInterests: {} } })
 }));
 
-import { canOpenCannabisTool } from "@/app/home/personal/(tabs)/tools/_layout";
+import { render } from "@testing-library/react-native";
+import React from "react";
+
+import {
+  canOpenCannabisTool,
+  CannabisToolAccessNotice
+} from "@/app/home/personal/(tabs)/tools/_layout";
 
 describe("cannabis tool gate", () => {
   it("blocks cannabis tools without a Cannabis Tier 1 interest", () => {
@@ -82,5 +89,14 @@ describe("cannabis tool gate", () => {
         crops: ["Vegetables"]
       })
     ).toBe(true);
+  });
+
+  it("renders a stable access notice instead of redirecting a gated route", () => {
+    const { getByTestId, getByText } = render(
+      React.createElement(CannabisToolAccessNotice)
+    );
+
+    expect(getByTestId("cannabis-tool-access-notice")).toBeTruthy();
+    expect(getByText("Cannabis tool access is off")).toBeTruthy();
   });
 });
