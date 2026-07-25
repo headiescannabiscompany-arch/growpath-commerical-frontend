@@ -222,8 +222,12 @@ control, or can bypass its backend authorization boundary.
 - During live testing, record weekly credit exhaustion, action mix, failed/refunded
   calls, upgrade-view rate after demonstrated value, and upgrade conversion. Do not
   tune the allowance from anecdote alone.
-- Static and automated closure checks are complete for these two repaired tools. The
-  Personal Free session remains open until the deployed build is recorded end to end.
+- Static, automated, and final deployed closure checks are complete for the Personal
+  Free backbone. Frontend `4d03dcc2` and backend `64f6d2e` were exercised in the
+  in-app Browser through a one-grow Tomato record, plant, two journal entries, task,
+  rule-based Environment Review ToolRun, hard reload persistence, the 5/5 credit
+  balance, the one-grow limit, and the read-only Forum boundary. See
+  `docs/qa/PERSONAL_FREE_PRODUCTION_EVIDENCE_2026-07-24.md`.
 
 ### Personal Pro production AI-credit follow-up
 
@@ -399,7 +403,14 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       `111a0701d0f1b12645ac18da1350d3289e8618e7` was live as Render deployment
       `dep-d9hvnnepbkes73ba5ohg`; see
       `docs/qa/PUBLIC_SIGNED_OUT_LOOP_EVIDENCE_2026-07-24.md`.
-- [ ] Personal Free loop session recorded and reviewed.
+- [x] Personal Free loop session recorded and reviewed. The final production pass
+      used `free@growpathai.com` on frontend `4d03dcc2` and backend `64f6d2e`.
+      It retained the connected grow/plant/journal/task/ToolRun chain through hard
+      reloads, kept the rule-based ToolRun at 0 credits, showed the server-confirmed
+      5/5 weekly Free balance, blocked both visible and direct second-grow entry,
+      exposed one H1 per nested page, and enforced a truthful read-only Forum
+      boundary. Genuine final-SHA screenshots and exact record ids are retained in
+      `docs/qa/PERSONAL_FREE_PRODUCTION_EVIDENCE_2026-07-24.md`.
 - [ ] Personal Pro loop session recorded and reviewed. Production paid text-AI
       deduction/persistence, plan-action retest, Grows entry, and grow-scoped journal
       entry passed; existing-log, saved-ToolRun, and production task source reopening
