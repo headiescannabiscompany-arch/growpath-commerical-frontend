@@ -279,7 +279,11 @@ describe("GrowTasksScreen", () => {
     expect(screen.queryByLabelText("Set task source sop")).toBeNull();
     fireEvent.changeText(screen.getByLabelText("Task title"), "Check soil moisture");
     fireEvent.changeText(screen.getByLabelText("Task description"), "Before watering.");
-    fireEvent.changeText(screen.getByLabelText("Task due date"), "2026-07-03");
+    fireEvent.press(screen.getByLabelText("Task due date"));
+    fireEvent(screen.getByLabelText("Task due date year"), "valueChange", 2026);
+    fireEvent(screen.getByLabelText("Task due date month"), "valueChange", 7);
+    fireEvent.press(screen.getByLabelText("Task due date day 2026-07-03"));
+    fireEvent.press(screen.getByLabelText("Task due date use selected date"));
     fireEvent.press(screen.getByLabelText("Set task priority high"));
     fireEvent.press(screen.getByLabelText("Set task source product_batch"));
     fireEvent.changeText(screen.getByLabelText("Task source object"), "batch-1");

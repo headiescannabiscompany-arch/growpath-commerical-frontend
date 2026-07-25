@@ -13,6 +13,7 @@ import {
   View
 } from "react-native";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
 import { radius } from "../theme/theme";
 
@@ -179,11 +180,13 @@ export default function SocialToolsScreen() {
                 );
               })}
             </View>
-            <TextInput
-              style={styles.input}
-              placeholder="Scheduled time (optional ISO)"
+            <CalendarDateField
+              accessibilityLabel="External post scheduled time"
+              label="Scheduled time (optional)"
+              mode="datetime"
+              placeholder="Choose date and time"
               value={scheduledTime}
-              onChangeText={setScheduledTime}
+              onChange={setScheduledTime}
             />
             <View style={styles.modalActions}>
               <TouchableOpacity

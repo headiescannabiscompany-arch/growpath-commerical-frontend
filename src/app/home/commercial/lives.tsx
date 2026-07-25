@@ -18,6 +18,7 @@ import {
   fetchCommercialLives
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
@@ -617,6 +618,7 @@ export default function CommercialLivesRoute() {
           </View>
           <View style={styles.fullWidth}>
             <SchedulePicker
+              dateTime
               dueDate={form.scheduledStart}
               reminder={form.scheduleReminder}
               recurrence={form.scheduleRecurrence}
@@ -636,19 +638,18 @@ export default function CommercialLivesRoute() {
               dueDateAccessibilityLabel="Commercial live scheduled start"
               reminderAccessibilityLabel="Commercial live reminder"
               recurrenceAccessibilityLabel="Commercial live recurrence"
-              dueDatePlaceholder="Start ISO date/time"
+              dueDatePlaceholder="Choose start date and time"
               reminderPlaceholder="Reminder plan"
               recurrencePlaceholder="Recurring live schedule"
             />
           </View>
-          <TextInput
+          <CalendarDateField
+            mode="datetime"
+            label="Scheduled end"
             value={form.scheduledEnd}
-            onChangeText={(scheduledEnd) =>
-              setForm((prev) => ({ ...prev, scheduledEnd }))
-            }
+            onChange={(scheduledEnd) => setForm((prev) => ({ ...prev, scheduledEnd }))}
             accessibilityLabel="Commercial live scheduled end"
-            placeholder="End ISO date/time"
-            style={styles.input}
+            placeholder="Choose end date and time"
           />
           <TextInput
             value={form.timezone}

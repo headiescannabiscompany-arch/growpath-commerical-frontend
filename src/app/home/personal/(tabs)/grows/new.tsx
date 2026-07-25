@@ -15,6 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ReportBugButton from "@/components/ReportBugButton";
@@ -372,42 +373,14 @@ export default function NewGrowScreen() {
     testID?: string;
   }) {
     return (
-      <>
-        <Text style={{ fontWeight: "700" }}>{label}</Text>
-        {Platform.OS === "web" ? (
-          React.createElement("input", {
-            type: "date",
-            value,
-            onChange: (event: any) => onChangeText(event?.target?.value || ""),
-            "aria-label": accessibilityLabel,
-            "data-testid": testID,
-            style: {
-              borderWidth: 1,
-              borderStyle: "solid",
-              borderColor: "#E2E8F0",
-              borderRadius: radius.card,
-              padding: 10,
-              fontSize: 16
-            }
-          })
-        ) : (
-          <TextInput
-            testID={testID}
-            value={value}
-            onChangeText={onChangeText}
-            placeholder="YYYY-MM-DD"
-            accessibilityLabel={accessibilityLabel}
-            inputMode="numeric"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: radius.card,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
-        )}
-      </>
+      <CalendarDateField
+        testID={testID}
+        label={label}
+        value={value}
+        onChange={onChangeText}
+        placeholder="Choose date"
+        accessibilityLabel={accessibilityLabel}
+      />
     );
   }
 

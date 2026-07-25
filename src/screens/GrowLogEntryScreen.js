@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import ScreenContainer from "../components/ScreenContainer";
 import StageSlider from "../components/StageSlider";
 import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog";
@@ -517,12 +518,13 @@ export default function GrowLogEntryScreen({ route, navigation }) {
         />
 
         {/* Entry Date */}
-        <Text style={styles.label}>Entry Date</Text>
-        <TextInput
-          style={styles.input}
+        <CalendarDateField
+          accessibilityLabel="Grow log entry date"
+          label="Entry date"
           value={entryDate}
-          onChangeText={setEntryDate}
-          placeholder="YYYY-MM-DD"
+          onChange={setEntryDate}
+          placeholder="Choose entry date"
+          optional={false}
         />
 
         {/* Photos */}

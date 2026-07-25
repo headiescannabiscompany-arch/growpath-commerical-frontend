@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
@@ -144,17 +145,16 @@ export default function StartGrowWizard() {
           }}
         />
 
-        <Text style={styles.label}>Start date</Text>
-        <TextInput
+        <CalendarDateField
           accessibilityLabel="Grow start date"
-          style={styles.input}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor="#64748b"
+          label="Start date"
+          placeholder="Choose grow start date"
           value={startDate}
-          onChangeText={(value) => {
+          onChange={(value) => {
             setStartDate(value);
             setFeedback("");
           }}
+          optional={false}
         />
 
         <View style={styles.sectionHeader}>

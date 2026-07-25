@@ -6,6 +6,19 @@ import CommercialLivesRoute from "@/app/home/commercial/lives";
 
 const mockApiRequest = jest.fn();
 
+function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
+  const [date, time] = value.split("T");
+  const [year, month] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent(screen.getByLabelText(`${label} hour`), "valueChange", hour);
+  fireEvent(screen.getByLabelText(`${label} minute`), "valueChange", minute);
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
@@ -216,10 +229,7 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live Twitch embed URL"),
       "https://player.twitch.tv/?channel=livingsoillabs"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial live scheduled start"),
-      "2026-07-17T21:00:00Z"
-    );
+    chooseDateTime(screen, "Commercial live scheduled start", "2026-07-17T21:00");
     fireEvent.changeText(
       screen.getByLabelText("Commercial live reminder"),
       "1 hour before"
@@ -267,7 +277,7 @@ describe("CommercialLivesRoute", () => {
           title: "Friday mix demo",
           description: "Build a 3-1-1 veg mix with live questions.",
           thumbnailUrl: "https://example.com/friday-live.jpg",
-          scheduledStart: "2026-07-17T21:00:00Z",
+          scheduledStart: "2026-07-17T21:00",
           timezone: "America/New_York",
           reminderPreference: "1 hour before",
           recurrenceRule: "weekly",
@@ -306,10 +316,7 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live title"),
       "Incomplete scheduled live"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial live scheduled start"),
-      "2026-07-20T18:00:00Z"
-    );
+    chooseDateTime(screen, "Commercial live scheduled start", "2026-07-20T18:00");
 
     expect(
       screen.getByLabelText("Schedule commercial live").props.accessibilityState?.disabled

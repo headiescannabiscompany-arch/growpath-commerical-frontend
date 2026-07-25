@@ -463,7 +463,7 @@ export default function TissueCultureToolRoute() {
           key: "observedAt",
           label: "Observation date/time",
           defaultValue: "",
-          placeholder: "YYYY-MM-DD HH:MM and timezone",
+          inputType: "datetime",
           required: true,
           section: "Direct batch inspection"
         },
@@ -580,6 +580,7 @@ export default function TissueCultureToolRoute() {
           key: "lastActionAt",
           label: "Last action date/time",
           defaultValue: "",
+          inputType: "datetime",
           section: "Transfer and custody"
         },
         {
@@ -839,12 +840,14 @@ export default function TissueCultureToolRoute() {
           key: "coldStorageStartDate",
           label: "Cold-storage entry date",
           defaultValue: "",
+          inputType: "date",
           section: "Storage and recovery"
         },
         {
           key: "plannedRetrievalDate",
           label: "Planned retrieval date",
           defaultValue: "",
+          inputType: "date",
           section: "Storage and recovery"
         },
         {

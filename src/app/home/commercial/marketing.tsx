@@ -354,7 +354,7 @@ export default function CommercialMarketingRoute() {
             dueDateAccessibilityLabel="Marketing plan launch date"
             reminderAccessibilityLabel="Marketing plan launch reminder"
             recurrenceAccessibilityLabel="Marketing plan launch recurrence"
-            dueDatePlaceholder="Launch date/time"
+            dueDatePlaceholder="Choose launch date"
           />
           <TextInput
             value={form.totalBudget}

@@ -19,6 +19,7 @@ import {
   updatePersonalLog,
   type PersonalLog
 } from "@/api/logs";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -188,13 +189,13 @@ export default function LogDetailScreen() {
               onChangeText={(title) => setForm((current) => ({ ...current, title }))}
               accessibilityLabel="Edit log title"
             />
-            <Text style={styles.label}>Date</Text>
-            <TextInput
-              style={styles.input}
+            <CalendarDateField
+              label="Date"
               value={form.date}
-              onChangeText={(date) => setForm((current) => ({ ...current, date }))}
-              placeholder="YYYY-MM-DD"
+              onChange={(date) => setForm((current) => ({ ...current, date }))}
+              placeholder="Choose log date"
               accessibilityLabel="Edit log date"
+              optional={false}
             />
             <Text style={styles.label}>Type</Text>
             <TextInput

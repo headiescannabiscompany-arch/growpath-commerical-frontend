@@ -32,6 +32,8 @@ Facility member removal is a consequential owner action and must use a functiona
 
 Facility task queues and detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Queue rows link directly to the selected task through a stable, accessible route. Raw database fields, Facility IDs, user IDs, room IDs, source-object IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
 
+Facility task, SOP, room, grow, compliance, and scheduling dates use the shared date picker with direct year, month, and day selection. Timed records also expose hour and minute selection. Persist stable ISO date or local date-time values while presenting readable dates; never require an ordinary Facility operator to type an ISO date string.
+
 Facility inventory detail screens must present readable stock, reorder, SKU, and record-time information without exposing raw database envelopes or internal identifiers. Authorized owners and managers must be able to remove duplicate, test, or mistakenly created inventory through an explicit confirmation step; ordinary stock changes belong in the quantity-adjustment workflow.
 
 Facility workspace headings, operational summaries, and downloaded evidence filenames must identify the selected Facility by its readable name. If the name is not available, use a neutral label such as `Selected facility`; never substitute the internal Facility identifier as user-facing context or as a downloaded filename.

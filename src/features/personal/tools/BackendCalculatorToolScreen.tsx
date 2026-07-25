@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import FeedBanner from "@/components/feed/FeedBanner";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import {
@@ -41,6 +42,7 @@ type ToolField = {
   label: string;
   defaultValue: string;
   keyboardType?: "default" | "numeric";
+  inputType?: "text" | "date" | "datetime";
   multiline?: boolean;
   placeholder?: string;
   helpText?: string;
@@ -889,6 +891,21 @@ export default function BackendCalculatorToolScreen({
                       );
                     })}
                   </View>
+                ) : field.inputType === "date" || field.inputType === "datetime" ? (
+                  <CalendarDateField
+                    accessibilityLabel={`${title} ${field.label}`}
+                    label={undefined}
+                    mode={field.inputType}
+                    onChange={(value) => updateValue(field.key, value)}
+                    optional={!field.required}
+                    placeholder={
+                      field.placeholder ||
+                      (field.inputType === "datetime"
+                        ? "Choose date and time"
+                        : "Choose date")
+                    }
+                    value={values[field.key] ?? ""}
+                  />
                 ) : (
                   <TextInput
                     accessibilityLabel={`${title} ${field.label}`}

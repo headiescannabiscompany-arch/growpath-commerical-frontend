@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { SignupBody } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
 import { radius } from "@/theme/theme";
 
@@ -229,19 +230,23 @@ export default function RegisterScreen() {
             returnKeyType="go"
           />
 
-          <TextInput
-            accessibilityLabel="Register date of birth"
-            style={styles.input}
-            placeholder="Date of birth (YYYY-MM-DD)"
-            placeholderTextColor="#6b7280"
-            value={dateOfBirth}
-            onChangeText={(value) => {
-              setDateOfBirth(value);
-              if ((ageFromDate(value) || 0) < 21) setShowCannabisContent(false);
-            }}
-            autoCapitalize="none"
-            keyboardType="numbers-and-punctuation"
-          />
+          <View style={styles.dateField}>
+            <CalendarDateField
+              accessibilityLabel="Register date of birth"
+              label="Date of birth"
+              placeholder="Choose date of birth"
+              value={dateOfBirth}
+              onChange={(value) => {
+                setDateOfBirth(value);
+                if ((ageFromDate(value) || 0) < 21) setShowCannabisContent(false);
+              }}
+              initialYear={new Date().getFullYear() - 30}
+              minYear={new Date().getFullYear() - 125}
+              maxYear={new Date().getFullYear()}
+              maximumDate={new Date().toISOString().slice(0, 10)}
+              optional={false}
+            />
+          </View>
           <Text style={styles.ageHelper}>
             Date of birth is used for age eligibility and is never displayed publicly.
             Cannabis content stays hidden unless an eligible user chooses to show it.
@@ -399,6 +404,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12
   },
+  dateField: { marginBottom: 12 },
   ageHelper: { color: "#64748b", fontSize: 12, lineHeight: 17 },
   contentChoice: {
     borderColor: "#cbd5e1",

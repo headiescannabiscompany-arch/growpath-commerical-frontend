@@ -9,6 +9,19 @@ const mockPush = jest.fn();
 let mockMode = "commercial";
 let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
 
+function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
+  const [date, time] = value.split("T");
+  const [year, month] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent(screen.getByLabelText(`${label} hour`), "valueChange", hour);
+  fireEvent(screen.getByLabelText(`${label} minute`), "valueChange", minute);
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   Redirect: () => null,
   useLocalSearchParams: () => mockRouteParams,
@@ -195,14 +208,8 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign grow interests"),
       "living soil, recipe building"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule start"),
-      "2026-07-17T21:00:00Z"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule end"),
-      "2026-07-24T21:00:00Z"
-    );
+    chooseDateTime(screen, "Feed campaign schedule start", "2026-07-17T21:00");
+    chooseDateTime(screen, "Feed campaign schedule end", "2026-07-24T21:00");
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign reminder"),
       "1 hour before"
@@ -230,8 +237,8 @@ describe("CommercialFeedRoute", () => {
             linkedTrialId: "trial-demo-1",
             linkedGrowId: "trial-demo-1",
             growInterests: ["living soil", "recipe building"],
-            campaignStartsAt: "2026-07-17T21:00:00Z",
-            campaignEndsAt: "2026-07-24T21:00:00Z",
+            campaignStartsAt: "2026-07-17T21:00",
+            campaignEndsAt: "2026-07-24T21:00",
             recurrenceRule: "weekly",
             allDay: true,
             calendarType: "commercial_feed_campaign_setup",
@@ -292,8 +299,8 @@ describe("CommercialFeedRoute", () => {
           linkedForumThreadId: "thread-q-and-a",
           imageUrl: "https://example.com/demo.jpg",
           creativeImageUrl: "https://example.com/demo.jpg",
-          startsAt: "2026-07-17T21:00:00Z",
-          endsAt: "2026-07-24T21:00:00Z",
+          startsAt: "2026-07-17T21:00",
+          endsAt: "2026-07-24T21:00",
           reminderPreference: "1 hour before",
           recurrenceRule: "weekly",
           placements: ["feed", "tool"],
@@ -325,14 +332,8 @@ describe("CommercialFeedRoute", () => {
       "https://example.com/workshop.jpg"
     );
     fireEvent.changeText(screen.getByLabelText("External link URL"), "not-a-url");
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule start"),
-      "2099-07-25T12:00:00Z"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule end"),
-      "2099-07-24T12:00:00Z"
-    );
+    chooseDateTime(screen, "Feed campaign schedule start", "2099-07-25T12:00");
+    chooseDateTime(screen, "Feed campaign schedule end", "2099-07-24T12:00");
 
     expect(
       screen.getAllByText(/External destination must start with/).length
@@ -348,10 +349,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("External link URL"),
       "https://example.com/workshop"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule end"),
-      "2099-07-26T12:00:00Z"
-    );
+    chooseDateTime(screen, "Feed campaign schedule end", "2099-07-26T12:00");
 
     expect(screen.getByText("Ready to publish.")).toBeTruthy();
     expect(screen.getByText(/Will publish as: Scheduled/)).toBeTruthy();

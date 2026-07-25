@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { useUpdateGrow } from "../hooks";
 
 export default function EndGrowFlow() {
@@ -20,11 +21,13 @@ export default function EndGrowFlow() {
   return (
     <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 20, fontWeight: "bold" }}>End Grow</Text>
-      <TextInput
-        placeholder="End Date (YYYY-MM-DD)"
+      <CalendarDateField
+        accessibilityLabel="Grow end date"
+        label="End date"
+        placeholder="Choose grow end date"
         value={endDate}
-        onChangeText={setEndDate}
-        style={{ borderWidth: 1, marginVertical: 8, padding: 8 }}
+        onChange={setEndDate}
+        optional={false}
       />
       <TextInput
         placeholder="Notes"

@@ -4,6 +4,19 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CreateCourseScreen from "@/screens/commercial/CreateCourseScreen";
 
+function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
+  const [date, time] = value.split("T");
+  const [year, month] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent(screen.getByLabelText(`${label} hour`), "valueChange", hour);
+  fireEvent(screen.getByLabelText(`${label} minute`), "valueChange", minute);
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 const mockCreateCourse = jest.fn();
 const mockReplace = jest.fn();
 const mockPersistImageUri = jest.fn();
@@ -206,14 +219,8 @@ describe("CreateCourseScreen", () => {
       "Two 20 minute videos"
     );
     fireEvent.changeText(screen.getByLabelText("Live session title"), "Live Q&A");
-    fireEvent.changeText(
-      screen.getByLabelText("Live session start"),
-      "2026-07-20T19:00:00-04:00"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Live session end"),
-      "2026-07-20T20:00:00-04:00"
-    );
+    chooseDateTime(screen, "Live session start", "2026-07-20T19:00");
+    chooseDateTime(screen, "Live session end", "2026-07-20T20:00");
     fireEvent.changeText(
       screen.getByLabelText("Live session Twitch channel"),
       "https://www.twitch.tv/growpath"
@@ -258,8 +265,8 @@ describe("CreateCourseScreen", () => {
         liveSessions: [
           expect.objectContaining({
             title: "Live Q&A",
-            scheduledStart: "2026-07-20T19:00:00-04:00",
-            scheduledEnd: "2026-07-20T20:00:00-04:00",
+            scheduledStart: "2026-07-20T19:00",
+            scheduledEnd: "2026-07-20T20:00",
             platform: "twitch",
             twitchChannel: "growpath",
             twitchChannelId: "broadcaster-1",

@@ -12,6 +12,19 @@ const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
 let mockLimits: Record<string, number> = {};
 
+function chooseDate(
+  screen: ReturnType<typeof render>,
+  accessibilityLabel: string,
+  value: string
+) {
+  const [year, month] = value.split("-").map(Number);
+  fireEvent.press(screen.getByLabelText(accessibilityLabel));
+  fireEvent(screen.getByLabelText(`${accessibilityLabel} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${accessibilityLabel} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${accessibilityLabel} day ${value}`));
+  fireEvent.press(screen.getByLabelText(`${accessibilityLabel} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
@@ -123,7 +136,7 @@ describe("NewGrowScreen access", () => {
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
-    fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    chooseDate(screen, "Anchor date", "2026-01-01");
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
@@ -150,18 +163,18 @@ describe("NewGrowScreen access", () => {
     expect(screen.getByLabelText("Veg length (weeks)")).toBeTruthy();
     expect(screen.getByLabelText("Expected flower days")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "Bruce Banner Auto");
-    fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    chooseDate(screen, "Anchor date", "2026-01-01");
     fireEvent.press(screen.getByLabelText("Show advanced fields"));
-    fireEvent.changeText(screen.getByLabelText("Start date"), "2026-01-01");
-    fireEvent.changeText(screen.getByLabelText("Germination date"), "2026-01-03");
-    fireEvent.changeText(screen.getByLabelText("Clone cut date"), "2026-01-04");
-    fireEvent.changeText(screen.getByLabelText("Transplant date"), "2026-01-15");
-    fireEvent.changeText(screen.getByLabelText("Flip date"), "2026-02-14");
-    fireEvent.changeText(screen.getByLabelText("Flower day 1"), "2026-02-15");
-    fireEvent.changeText(screen.getByLabelText("Expected harvest date"), "2026-04-15");
-    fireEvent.changeText(screen.getByLabelText("Actual harvest date"), "2026-04-20");
-    fireEvent.changeText(screen.getByLabelText("Dry start date"), "2026-04-20");
-    fireEvent.changeText(screen.getByLabelText("Cure start date"), "2026-04-30");
+    chooseDate(screen, "Start date", "2026-01-01");
+    chooseDate(screen, "Germination date", "2026-01-03");
+    chooseDate(screen, "Clone cut date", "2026-01-04");
+    chooseDate(screen, "Transplant date", "2026-01-15");
+    chooseDate(screen, "Flip date", "2026-02-14");
+    chooseDate(screen, "Flower day 1", "2026-02-15");
+    chooseDate(screen, "Expected harvest date", "2026-04-15");
+    chooseDate(screen, "Actual harvest date", "2026-04-20");
+    chooseDate(screen, "Dry start date", "2026-04-20");
+    chooseDate(screen, "Cure start date", "2026-04-30");
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());

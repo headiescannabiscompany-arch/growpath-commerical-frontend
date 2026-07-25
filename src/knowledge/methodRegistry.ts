@@ -477,7 +477,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "workspace selection and routing use the same effective paid-plan capabilities",
       "review-only SOP/checklist recommendations with starter version, rationale, missing information, and separately confirmed grow-task conversion",
       "clear not-configured guidance for unavailable third-party integrations",
-      "connection-derived read-only EventSub status and checked Commercial Live visibility controls"
+      "connection-derived read-only EventSub status and checked Commercial Live visibility controls",
+      "readable calendar selection with direct year, month, day, and optional time controls"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -513,7 +514,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never inject a Facility plan, rating scale, approved limit, deviation process, label, or Facility role into a Personal or Commercial procedure recommendation unless selected records explicitly provide it.",
       "Never pass reserved public route words or malformed record IDs into database ID queries.",
       "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
-      "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state."
+      "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state.",
+      "Never require an ordinary Commercial user to type an ISO date or date-time string."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),
@@ -562,7 +564,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "human-readable two-run SOP comparison selection",
       "review-complete and mutation-locked SOP evidence runs",
       "readable SOP evidence summaries and step differences",
-      "separate seed-readiness and post-seed QA evidence"
+      "separate seed-readiness and post-seed QA evidence",
+      "readable calendar selection with direct year, month, day, and optional time controls"
     ],
     [
       "A selected facility and authorization are required.",
@@ -597,6 +600,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never hide SOP retirement from an authorized owner or manager, label it as deletion, or retire an SOP without naming it and confirming that new runs stop while historical evidence remains.",
       "Never create, revise, or retire a Facility SOP without appending a Facility-scoped lifecycle audit event that can be understood without raw identifiers.",
       "Never complete an SOP run with unreviewed steps, mutate completed evidence, or expose raw run JSON as the primary interface.",
+      "Never require an ordinary Facility operator to type an ISO date or date-time string.",
       "Synthetic QA approval never authorizes production records, operational setpoints, publication, or external source rights."
     ],
     [

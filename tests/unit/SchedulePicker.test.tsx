@@ -83,12 +83,13 @@ describe("SchedulePicker", () => {
       />
     );
 
-    fireEvent.press(screen.getByLabelText("Recipe timeline open calendar"));
-    expect(screen.getByLabelText("Recipe timeline calendar")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Recipe timeline due date"));
+    expect(screen.getByLabelText("Recipe timeline due date calendar")).toBeTruthy();
     expect(screen.getByText("July 2026")).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Recipe timeline calendar date 2026-07-23"));
+    fireEvent.press(screen.getByLabelText("Recipe timeline due date day 2026-07-23"));
+    fireEvent.press(screen.getByLabelText("Recipe timeline due date use selected date"));
     expect(onDueDateChange).toHaveBeenCalledWith("2026-07-23");
-    expect(screen.queryByLabelText("Recipe timeline calendar")).toBeNull();
+    expect(screen.queryByLabelText("Recipe timeline due date calendar")).toBeNull();
   });
 });

@@ -23,6 +23,7 @@ import {
   verifyPulseApiKey
 } from "@/api/telemetry";
 import type { PulseDevice, TelemetryPoint, TelemetrySource } from "@/types/telemetry";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import {
   cToF,
   computeTelemetryRisk,
@@ -1678,11 +1679,13 @@ export default function DewPointGuardTool({
                 <Text style={{ color: "white", fontWeight: "800" }}>Add reading</Text>
               </Pressable>
             </View>
-            <Field
-              label="Timestamp ISO (UTC)"
+            <CalendarDateField
+              accessibilityLabel="Telemetry reading timestamp"
+              label="Reading date and time"
+              mode="datetime"
               value={readingTs}
-              onChangeText={setReadingTs}
-              keyboardType="default"
+              onChange={setReadingTs}
+              optional={false}
             />
             <Field
               label="Temperature (F)"
@@ -1761,17 +1764,21 @@ export default function DewPointGuardTool({
           </View>
           {windowMode === "custom" ? (
             <>
-              <Field
-                label="Start ISO (UTC)"
+              <CalendarDateField
+                accessibilityLabel="Telemetry window start"
+                label="Window start"
+                mode="datetime"
                 value={startIsoText}
-                onChangeText={setStartIsoText}
-                keyboardType="default"
+                onChange={setStartIsoText}
+                optional={false}
               />
-              <Field
-                label="End ISO (UTC)"
+              <CalendarDateField
+                accessibilityLabel="Telemetry window end"
+                label="Window end"
+                mode="datetime"
                 value={endIsoText}
-                onChangeText={setEndIsoText}
-                keyboardType="default"
+                onChange={setEndIsoText}
+                optional={false}
               />
             </>
           ) : (

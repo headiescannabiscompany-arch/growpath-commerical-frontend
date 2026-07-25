@@ -14,6 +14,7 @@ import {
 import { suggestLogInsights } from "@/api/logInsights";
 import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -307,13 +308,13 @@ export default function NewLogScreen() {
           placeholder="Day 12 - Defoliation"
           accessibilityLabel="Log title"
         />
-        <Text style={styles.label}>Date</Text>
-        <TextInput
-          style={styles.input}
+        <CalendarDateField
+          label="Date"
           value={date}
-          onChangeText={setDate}
-          placeholder="YYYY-MM-DD"
+          onChange={setDate}
+          placeholder="Choose log date"
           accessibilityLabel="Log date"
+          optional={false}
         />
         <Text style={styles.label}>Type</Text>
         <View style={styles.row}>

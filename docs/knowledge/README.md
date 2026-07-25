@@ -20,3 +20,7 @@ Before changing a tool, read the relevant method plus `source-reliability-regist
 | Sensor/controller import | `methods/integration-workflow-method.md`                                       |
 
 The runtime counterparts live in `src/knowledge`. Method IDs and source IDs are stable API values. Add named sites to the registry only after recording trusted uses, exclusions, cross-check requirements, and review date.
+
+## Shared date-entry rule
+
+User-facing calendar dates use the shared date picker: people select year, month, and day instead of typing a storage format. Date-and-time workflows add explicit hour and minute selection. Store stable ISO date or local date-time values, but display readable dates. Date of birth cannot be in the future and must offer direct year selection; ordinary users must never be forced through month-by-month navigation to reach an older year.

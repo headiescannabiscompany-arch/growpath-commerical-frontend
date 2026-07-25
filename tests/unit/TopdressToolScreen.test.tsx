@@ -7,6 +7,15 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 
+function chooseApplyDate(screen: ReturnType<typeof render>) {
+  const label = "Topdress Planner Planned apply date";
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", 2026);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", 7);
+  fireEvent.press(screen.getByLabelText(`${label} day 2026-07-10`));
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
   useRouter: () => ({
@@ -96,10 +105,7 @@ describe("TopdressToolScreen", () => {
       screen.getByLabelText("Topdress Planner Product or recipe name"),
       "Bloom topdress"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Topdress Planner Planned apply date"),
-      "2026-07-10"
-    );
+    chooseApplyDate(screen);
     fireEvent.press(screen.getByLabelText("Run Topdress Planner"));
 
     await waitFor(() =>
@@ -185,10 +191,7 @@ describe("TopdressToolScreen", () => {
       screen.getByLabelText("Topdress Planner Days until harvest"),
       "42"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Topdress Planner Planned apply date"),
-      "2026-07-10"
-    );
+    chooseApplyDate(screen);
 
     fireEvent.press(screen.getByLabelText("Ask AI to build topdress plan"));
 

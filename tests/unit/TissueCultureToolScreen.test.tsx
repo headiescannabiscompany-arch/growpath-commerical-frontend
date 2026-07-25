@@ -72,10 +72,14 @@ function fillRequired(screen: ReturnType<typeof render>) {
   fireEvent.press(
     screen.getByLabelText(`${title} Direct inspection status: Mixed visible condition`)
   );
-  fireEvent.changeText(
-    screen.getByLabelText(`${title} Observation date/time`),
-    "2026-07-21 14:30 ET"
-  );
+  const observationLabel = `${title} Observation date/time`;
+  fireEvent.press(screen.getByLabelText(observationLabel));
+  fireEvent(screen.getByLabelText(`${observationLabel} year`), "valueChange", 2026);
+  fireEvent(screen.getByLabelText(`${observationLabel} month`), "valueChange", 7);
+  fireEvent.press(screen.getByLabelText(`${observationLabel} day 2026-07-21`));
+  fireEvent(screen.getByLabelText(`${observationLabel} hour`), "valueChange", 14);
+  fireEvent(screen.getByLabelText(`${observationLabel} minute`), "valueChange", 30);
+  fireEvent.press(screen.getByLabelText(`${observationLabel} use selected date`));
   fireEvent.changeText(
     screen.getByLabelText(`${title} Observation source`),
     "Ailda direct count at rack TC-2"
@@ -222,7 +226,7 @@ describe("TissueCultureToolRoute", () => {
           workflowLane: "production",
           stage: "initiation",
           inspectionStatus: "mixed",
-          observedAt: "2026-07-21 14:30 ET",
+          observedAt: "2026-07-21T14:30",
           observationSource: "Ailda direct count at rack TC-2",
           vessels: "12",
           contaminatedVessels: "3",

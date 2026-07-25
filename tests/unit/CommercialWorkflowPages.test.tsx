@@ -1594,9 +1594,16 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(screen.getByLabelText("Marketing plan objective"), "traffic");
     fireEvent.changeText(screen.getByLabelText("Marketing plan platform"), "multi");
     fireEvent.changeText(screen.getByLabelText("Marketing plan status"), "scheduled");
-    fireEvent.changeText(
-      screen.getByLabelText("Marketing plan launch date"),
-      "2026-08-01"
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date"));
+    fireEvent(
+      screen.getByLabelText("Marketing plan launch date month"),
+      "valueChange",
+      8,
+      7
+    );
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date day 2026-08-01"));
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan launch date use selected date")
     );
     fireEvent.press(
       screen.getByLabelText("Marketing plan reminder preset 1 hour before")

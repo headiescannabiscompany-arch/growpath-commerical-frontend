@@ -398,7 +398,11 @@ describe("HomeScheduleRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Schedule source filter all"));
     fireEvent.press(screen.getByLabelText("Schedule view day"));
-    fireEvent.changeText(screen.getByLabelText("Schedule anchor date"), "2099-07-16");
+    fireEvent.press(screen.getByLabelText("Schedule anchor date"));
+    fireEvent(screen.getByLabelText("Schedule anchor date year"), "valueChange", 2099, 0);
+    fireEvent(screen.getByLabelText("Schedule anchor date month"), "valueChange", 7, 6);
+    fireEvent.press(screen.getByLabelText("Schedule anchor date day 2099-07-16"));
+    fireEvent.press(screen.getByLabelText("Schedule anchor date use selected date"));
     expect(screen.getByText("Flip to flower")).toBeTruthy();
     expect(screen.queryByText("Live Soil Demo")).toBeNull();
 

@@ -184,7 +184,8 @@ export default function TopdressToolScreen() {
         {
           key: "plannedApplyDate",
           label: "Planned apply date",
-          defaultValue: tomorrow(1)
+          defaultValue: tomorrow(1),
+          inputType: "date"
         },
         {
           key: "decisionNotes",
