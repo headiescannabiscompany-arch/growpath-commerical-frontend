@@ -66,6 +66,14 @@ This record covers production Crop ID photo transport, no-grow operation, cannab
 - At 1:41:35 PM EDT, the exact formerly crashing production endpoint returned HTTP 200. At 1:41:43 PM EDT, `/health` still returned `ok: true`, proving that request no longer terminated the service.
 - The authenticated in-app Browser then reopened exact Crop ID ToolRun `6a5fa308b9f052dfe64627ff` with `Likely crop: Mint`, two inspected photos, medium confidence, limited image quality, and confirmation required. Profile also reopened at `59 / 100`, 41 credits across 25 billed requests, zero refunds.
 
+## Unified video-evidence production delivery - 2026-07-25
+
+- Frontend PR `#230` merged to `main` as `2b0143b30d7554b1906e495ebbd8d64b1212cf06`.
+- Main Frontend CI run `30172567462` and Production Build Preflight run `30172567487` passed.
+- Production served bundle `index-6ad47370c72a945b1ee4bcdd3fab89ff.js`.
+- Direct bundle inspection confirmed Species/Crop Identification uses a 12-photo ceiling, private client-side frame extraction, up to 12 extracted candidates, and `maxVideoSeconds: 599`.
+- The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
+
 ## Honest remaining work
 
 - The broader 300-500-image identification QA pack is not curated or executed.
