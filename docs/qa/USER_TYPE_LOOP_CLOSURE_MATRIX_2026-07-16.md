@@ -485,6 +485,16 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       loaded and status states; the live 391-pixel retest had zero overflow and
       console errors/warnings and captured a genuine final-SHA screenshot. See
       `docs/qa/FACILITY_COMMERCIAL_NONDESTRUCTIVE_AUDIT_EVIDENCE_2026-07-25.md`.
+      The 2026-07-25 SOP Library follow-up on frontend
+      `abc60a123a34765014aa502dca26c82f8e99738a` and backend
+      `bea6633831f4c96594096832053839d2d5c47cce` reconfirmed this account as
+      Facility Owner and non-destructively verified all eight standard starters,
+      the governed create/revise/upload surface, required review confirmation,
+      disabled incomplete save, and preserved active version. The same release
+      exposed review-only SOP recommendation starters in Personal and Commercial
+      without spending a credit or writing a record. Viewer, deliberate write,
+      provider-backed, and screenshot evidence remain open; see
+      `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
       completed fresh login, workspace choice, Facility entry, restricted Team review,
