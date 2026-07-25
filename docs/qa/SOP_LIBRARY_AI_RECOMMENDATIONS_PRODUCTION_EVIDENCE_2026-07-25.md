@@ -282,13 +282,56 @@ The in-app Browser screenshot command timed out again at
 pass. Semantic DOM, persisted record, hard-reload, exact audit-id, release-SHA,
 URL, account, role, and timestamp evidence are retained.
 
+## Real Facility Viewer Production Acceptance
+
+Account: `john.collins15@alumni.morgan.edu`
+
+Role: `VIEWER`
+
+Facility: `Triple Bag Genetics, llc`
+
+Timestamp: `2026-07-25T11:28:07-04:00`
+
+The Owner sent a Viewer invitation from the production Team page, the recipient
+accepted it, and the resulting signed-in production session was reviewed in the
+in-app Browser.
+
+Verified:
+
+- The workspace chooser identified `John collins`, offered Personal,
+  Commercial, and Facility workspaces, and opened the Facility workspace.
+- The Facility Team page showed four members and identified the accepted
+  account as `Role: VIEWER - john.collins15@alumni.morgan.edu`.
+- The Team page exposed no invitation, assignment, role-change, or removal
+  controls and explained that only owners and managers assign work and only
+  the owner manages access roles.
+- The task queue exposed the existing shared production task
+  `[QA cross-role 2026-07-22] Verify shared task persistence` at
+  `/home/facility/tasks/6a6140ec67a6aeadb8f4a0c9`, while the create area
+  stated `You do not have permission to create tasks.`
+- The same task opened as `Completed` with its due, created, and updated
+  timestamps and stated `You do not have permission to update tasks.` No
+  mutation control was present.
+- Facility Profile showed the Facility-owned balance `1999 / 2000`, named
+  `Triple Bag Genetics, llc` as the balance owner, and did not substitute the
+  account's Personal balance.
+- The live SOP Library exposed all eight standard starters, the active
+  `[QA SOP 2026-07-22] Sanitation evidence check`, and the explicit
+  `Read-only SOP access` boundary. No create, revise, upload, or retire control
+  was present.
+
+A genuine loaded viewport screenshot was captured and reviewed at:
+
+`https://growpathai.com/home/facility/sop-runs/presets?release=5788731b&backend=c4cdf291&verify=real-viewer-2026-07-25`
+
+The screenshot visibly retained the `SOP Library` heading, starter cards,
+read-only access notice, and active Facility SOP. No production Facility record
+was created, updated, or removed during this Viewer pass.
+
 ## Remaining Production Acceptance
 
-- Retest the SOP Library with a real Viewer account. The available production
-  accounts currently prove Owner, Manager, and Staff; the account previously
-  described as Viewer is actually Manager.
-- Capture genuine final-SHA screenshots or video. Three in-app Browser
-  `Page.captureScreenshot` attempts timed out during the initial pass and the
-  final lifecycle screenshot attempt also timed out, so no screenshot is
-  claimed. The semantic DOM, record-persistence, and audit-id evidence above is
-  retained, but visual evidence remains open.
+- Complete the deliberate selected-grow task-confirmation path for Personal or
+  Commercial AI procedure recommendations.
+- Capture recommendation-flow screenshot/video evidence and export any required
+  release recording. The real Viewer SOP Library viewport screenshot is
+  complete; no exported video is claimed.
