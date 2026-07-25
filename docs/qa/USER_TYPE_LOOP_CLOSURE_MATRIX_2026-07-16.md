@@ -505,8 +505,13 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       active-Library retirement and lifecycle-audit findings; the final
       production retest preserved readable create-version-1,
       revise-version-2, and retire-version-2 events with exact timestamps and
-      audit ids across a hard reload. Viewer, grow-task confirmation, and
-      screenshot evidence remain open; see
+      audit ids across a hard reload. A real production Viewer then accepted an
+      invitation, confirmed the four-member Team roster and exact Viewer role,
+      reopened shared completed task `6a6140ec67a6aeadb8f4a0c9` with no create
+      or update permission, confirmed Facility-owned credits, and opened the
+      active SOP under the explicit read-only boundary. A genuine final-SHA
+      Viewer SOP screenshot was captured. Grow-task confirmation and
+      recommendation-flow video evidence remain open; see
       `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
 - [x] Facility Manager loop session recorded and reviewed. Staging create/assign and
       permission controls passed. On production frontend `b2469b22`, the real Manager
@@ -521,22 +526,25 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
 - [ ] Facility Viewer loop session recorded and reviewed. Read-only tasks/team passed
       in staging. The invitation-session repair is deployed on frontend `ac58eb4c`
       and backend `41d50b69`; the Owner Team page retained five active members after
-      a hard reload with no console errors. Forced backend 403, exported recording,
-      and the real Viewer production-role retest remain open.
+      a hard reload with no console errors. On 2026-07-25, real account
+      `john.collins15@alumni.morgan.edu` accepted a production Viewer invitation,
+      appeared in the four-member Team roster as `VIEWER`, reopened shared completed
+      task `6a6140ec67a6aeadb8f4a0c9`, and received explicit no-create/no-update
+      task boundaries. Team mutation controls were absent, Facility-owned credits
+      were shown, and the read-only SOP Library passed with a genuine final-SHA
+      screenshot. Forced backend 403 and exported recording remain open.
 - [ ] Cross-role Facility chain completed on one shared record. Manager -> Grower ->
       Scout/Viewer persistence passed in staging. Production task
       `6a6140ec67a6aeadb8f4a0c9` now passed Owner creation, Manager reassignment, Staff
-      completion/reload, and Owner final-state/audit review. One real Viewer account
-      and its read-only observation/forced-authorization evidence remain to finish the
-      production chain.
+      completion/reload, Owner final-state/audit review, and real Viewer read-only
+      observation. Forced backend authorization evidence and the exported recording
+      remain to finish the production chain.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
 
 ## Deferred owner-input pass
 
-- [deferred-owner-input] Owner, Manager, and Staff already have real production
-  accounts. One real Facility Viewer account must complete the outstanding invitation
-  from its recipient mailbox and provide any required account details.
-  After acceptance, rerun the automatic Facility handoff/read-only-role checks and
-  ask the owner before removing the temporary Staff/Viewer aliases. Keep this parked
-  until the final owner-input pass; it does not block other actionable verification.
+- [completed-owner-input] Owner, Manager, Staff, and Viewer now have real production
+  accounts. `john.collins15@alumni.morgan.edu` accepted the Viewer invitation and
+  completed the signed-in production read-only retest on 2026-07-25. Ask the owner
+  before removing any temporary Staff/Viewer aliases.
