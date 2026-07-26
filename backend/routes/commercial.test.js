@@ -1023,9 +1023,14 @@ describe("commercial backend routes", () => {
 
     const lesson = await request(app)
       .post(`/api/commercial/courses/${course.body.course.id}/lessons`)
-      .send({ title: "Application rate", body: "Water in after topdress." });
+      .send({
+        title: "Application rate",
+        body: "Water in after topdress.",
+        videoAssetId: "video-1"
+      });
     expect(lesson.status).toBe(201);
     expect(lesson.body.lesson.title).toBe("Application rate");
+    expect(lesson.body.lesson.videoAssetId).toBe("video-1");
 
     const updatedLesson = await request(app)
       .patch(

@@ -10,7 +10,9 @@ Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Othe
 
 The initial Course Builder and later Add/Edit Lesson screens use the same provider-aware media contract. Authors may attach and review lesson media while outlining a new draft or defer it until lesson editing; no initial-builder shortcut may bypass URL normalization, rights, availability, accessibility, learner-summary, embed, or fallback fields.
 
-Accept HTTP(S) video-page URLs and first-party `/uploads/` paths. Reject iframe, script, object, embed, video, HTML, `javascript:` and `data:` input. Never store or execute author-supplied embed markup. A provider not covered by a reviewed embed contract remains link-only.
+Authors may also attach an existing video from the Personal, Commercial, or Facility workspace library by storing its `videoAssetId` with the normalized lesson media snapshot. Detaching the video from a lesson must not delete the reusable library asset. Removing a library video must be blocked while any course lesson still references it so an author cannot silently break a published or draft course.
+
+Accept HTTP(S) video-page URLs, legacy first-party `/uploads/` paths, and protected first-party `/api/videos/uploads/` asset paths. Reject iframe, script, object, embed, video, HTML, `javascript:` and `data:` input. Never store or execute author-supplied embed markup. A provider not covered by a reviewed embed contract remains link-only.
 
 ## Author review and publishing
 
@@ -30,7 +32,7 @@ The signed-out course catalog is discovery-only. It may request published public
 
 ## Playback and fallback
 
-Use first-party playback for GrowPath uploads. Use a normalized YouTube or Vimeo player only when the author recorded the source as available and explicitly allowed embedding. Preserve Vimeo unlisted privacy hashes in both canonical and player URLs. Keep Rumble and unknown providers link-only until a stable reviewed provider contract exists.
+Use first-party playback for GrowPath uploads. Protected library videos retain only their stable asset path and video ID in the lesson; the learner obtains a short-lived playback URL only after the API verifies course and workspace access. Never save an object-store credential or expiring signed playback URL in the course. Use a normalized YouTube or Vimeo player only when the author recorded the source as available and explicitly allowed embedding. Preserve Vimeo unlisted privacy hashes in both canonical and player URLs. Keep Rumble and unknown providers link-only until a stable reviewed provider contract exists.
 
 Before loading a third-party player, explain that the learner will connect to the provider and that provider cookies or viewing collection may apply. Require an explicit click to load. Always keep the provider link, text summary, captions/transcript status, lesson text, documents, audio, images, tasks, notes, and discussion usable when playback is unavailable.
 

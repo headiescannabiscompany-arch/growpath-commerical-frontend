@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,11 +14,20 @@ import {
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { searchContent } from "@/api/marketplace";
 import { searchPublicStorefronts } from "@/api/storefront";
+import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { resolveImageUri } from "@/utils/photoUploads";
 
-type Result = { id: string; title: string; summary?: string; href: string };
+type Result = {
+  id: string;
+  title: string;
+  summary?: string;
+  href: string;
+  thumbnailUrl?: string;
+  meta?: string;
+};
 type Section = {
   key: string;
   title: string;
@@ -74,21 +84,27 @@ export default function DiscoverDirectory() {
   const [stores, setStores] = useState<any[]>([]);
   const [marketplace, setMarketplace] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
 
   const load = useCallback(async (q = "") => {
     setLoading(true);
     setError("");
-    const [feedResult, storeResult, marketResult, courseResult] =
+    const [feedResult, storeResult, marketResult, courseResult, videoResult] =
       await Promise.allSettled([
         listCommercialFeedCampaigns({ q: q || undefined, sort: "new", limit: 18 }),
         searchPublicStorefronts({ q: q || undefined, limit: 18 }),
         searchContent(q, undefined),
         import("@/api/courses").then((api) =>
           q ? api.searchCourses(q) : api.listCourses(1)
-        )
+        ),
+        searchVideos({ q: q || undefined, sort: "new", limit: 18 })
       ]);
 
-    setFeed(feedResult.status === "fulfilled" ? feedResult.value.items : []);
+    setFeed(
+      feedResult.status === "fulfilled"
+        ? rows(feedResult.value, ["campaigns", "results"])
+        : []
+    );
     setStores(
       storeResult.status === "fulfilled"
         ? rows(storeResult.value, ["storefronts", "brands"])
@@ -98,8 +114,9 @@ export default function DiscoverDirectory() {
       marketResult.status === "fulfilled" ? marketplaceRows(marketResult.value) : []
     );
     setCourses(courseResult.status === "fulfilled" ? courseRows(courseResult.value) : []);
+    setVideos(videoResult.status === "fulfilled" ? videoResult.value : []);
     if (
-      [feedResult, storeResult, marketResult, courseResult].every(
+      [feedResult, storeResult, marketResult, courseResult, videoResult].every(
         (r) => r.status === "rejected"
       )
     ) {
@@ -145,6 +162,28 @@ export default function DiscoverDirectory() {
         empty: "No matching feed updates.",
         results: feedResults(ordinaryFeed),
         browseHref: "/feed"
+      },
+      {
+        key: "videos",
+        title: "Videos",
+        ranking: activeQuery ? "Relevant & accessible" : "Newest & accessible",
+        empty: "No matching videos are available to you.",
+        results: videos.map((row) => ({
+          id: idOf(row),
+          title: titleOf(row, "Video"),
+          summary: summaryOf(row),
+          href: `/videos/${encodeURIComponent(idOf(row))}`,
+          thumbnailUrl: resolveImageUri(
+            row.thumbnailUrl || row.mediaSource?.thumbnailUrl || ""
+          ),
+          meta: [
+            row.owner?.displayName,
+            row.visibility ? String(row.visibility).replace(/_/g, " ") : ""
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        })),
+        browseHref: "/videos?tab=discover"
       },
       {
         key: "storefronts",
@@ -208,7 +247,7 @@ export default function DiscoverDirectory() {
         browseHref: "/feed"
       }
     ];
-  }, [courses, feed, marketplace, stores]);
+  }, [activeQuery, courses, feed, marketplace, stores, videos]);
 
   function search() {
     const q = query.trim();
@@ -225,8 +264,8 @@ export default function DiscoverDirectory() {
             Discover
           </Text>
           <Text style={styles.subtitle}>
-            Search once, then scroll through every customer-facing community and
-            commercial section.
+            Search once, then scroll through videos and every customer-facing community
+            and commercial section.
           </Text>
         </View>
       }
@@ -236,7 +275,7 @@ export default function DiscoverDirectory() {
           accessibilityLabel="Search discovery"
           onChangeText={setQuery}
           onSubmitEditing={search}
-          placeholder="Search brands, products, courses, lives..."
+          placeholder="Search videos, accounts, brands, products, courses, lives..."
           returnKeyType="search"
           style={styles.input}
           value={query}
@@ -309,9 +348,22 @@ export default function DiscoverDirectory() {
                       pressed && styles.buttonPressed
                     ]}
                   >
+                    {result.thumbnailUrl ? (
+                      <Image
+                        accessibilityLabel={`${result.title} thumbnail`}
+                        resizeMode="cover"
+                        source={{ uri: result.thumbnailUrl }}
+                        style={styles.resultImage}
+                      />
+                    ) : null}
                     <Text style={styles.resultTitle} numberOfLines={2}>
                       {result.title}
                     </Text>
+                    {result.meta ? (
+                      <Text style={styles.resultMeta} numberOfLines={2}>
+                        {result.meta}
+                      </Text>
+                    ) : null}
                     {result.summary ? (
                       <Text style={styles.resultSummary} numberOfLines={3}>
                         {result.summary}
@@ -388,6 +440,13 @@ const styles = StyleSheet.create({
     width: 260
   },
   resultTitle: { color: "#111827", fontSize: 16, fontWeight: "800" },
+  resultImage: {
+    borderRadius: radius.card,
+    height: 112,
+    marginBottom: 10,
+    width: "100%"
+  },
+  resultMeta: { color: "#64748B", fontSize: 11, marginTop: 4 },
   resultSummary: { color: "#475569", lineHeight: 19, marginTop: 6 },
   empty: { color: "#64748B", paddingVertical: 12 }
 });

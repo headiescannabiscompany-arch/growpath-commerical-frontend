@@ -105,7 +105,8 @@ function unsafeMarkup(value: string) {
 
 function parseMediaUrl(value: string) {
   if (value.startsWith("/")) {
-    if (!value.startsWith("/uploads/")) return null;
+    if (!value.startsWith("/uploads/") && !value.startsWith("/api/videos/uploads/"))
+      return null;
     return { parsed: new URL(value, "https://growpathai.com"), relative: value };
   }
   try {
@@ -235,10 +236,12 @@ export function normalizeLessonMediaDraft(
   const { parsed, relative } = parsedResult;
   const firstPartyUpload =
     relative.startsWith("/uploads/") ||
+    relative.startsWith("/api/videos/uploads/") ||
     (new Set(["growpathai.com", "api.growpathai.com"]).has(
       parsed.hostname.toLowerCase().replace(/^www\./, "")
     ) &&
-      parsed.pathname.startsWith("/uploads/"));
+      (parsed.pathname.startsWith("/uploads/") ||
+        parsed.pathname.startsWith("/api/videos/uploads/")));
   const detectedYoutube = youtubeId(parsed);
   const detectedVimeo = vimeoParts(parsed);
   const detectedRumble = rumbleId(parsed);

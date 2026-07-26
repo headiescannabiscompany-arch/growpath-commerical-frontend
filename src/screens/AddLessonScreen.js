@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { addLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -23,6 +24,7 @@ import { radius } from "../theme/theme";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 import {
   emptyLessonMediaDraft,
+  lessonMediaDraftFromLesson,
   prepareLessonMediaSubmission
 } from "@/features/learning/lessonMedia";
 
@@ -43,6 +45,7 @@ export default function AddLessonScreen({ route, navigation }) {
   const [content, setContent] = useState(""); // text lesson
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
   const [videoFile, setVideoFile] = useState(null);
+  const [videoAssetId, setVideoAssetId] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
@@ -60,6 +63,7 @@ export default function AddLessonScreen({ route, navigation }) {
 
       if (!result.canceled && result.assets[0]) {
         setVideoFile(result.assets[0]);
+        setVideoAssetId("");
         setMediaDraft((current) => ({
           ...current,
           sourceType: "growpath_upload",
@@ -165,6 +169,7 @@ export default function AddLessonScreen({ route, navigation }) {
       videoUrl: preparedMedia?.videoUrl || "",
       externalVideoUrl: preparedMedia?.externalVideoUrl || "",
       mediaSource: preparedMedia?.mediaSource || undefined,
+      videoAssetId,
       pdfUrl: uploadedPdf?.url || pdfUrl,
       audioUrl: uploadedAudio?.url || "",
       imageUrls,
@@ -183,9 +188,10 @@ export default function AddLessonScreen({ route, navigation }) {
           <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
         </View>
       ) : null}
-      <Text style={styles.helpText}>Course storage: 0 MB / plan limit</Text>
-      <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
-      <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
+      <Text style={styles.helpText}>
+        Course videos can be uploaded here or reused from the current workspace Video
+        Library.
+      </Text>
 
       <TextInput
         style={styles.input}
@@ -222,7 +228,19 @@ export default function AddLessonScreen({ route, navigation }) {
         pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
         onRemove={() => {
           setVideoFile(null);
+          setVideoAssetId("");
           setMediaDraft(emptyLessonMediaDraft());
+        }}
+      />
+      <VideoLibraryPicker
+        selectedId={videoAssetId}
+        disabled={!access.canCreateCourses}
+        onSelect={(video) => {
+          setVideoFile(null);
+          setVideoAssetId(video?.id || "");
+          setMediaDraft(
+            video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
+          );
         }}
       />
 

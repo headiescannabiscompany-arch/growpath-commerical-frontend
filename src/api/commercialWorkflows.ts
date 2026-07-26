@@ -406,6 +406,29 @@ export async function addCommercialCourseLesson(id: string, data: Record<string,
   return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
 }
 
+export async function updateCommercialCourseLesson(
+  id: string,
+  lessonId: string,
+  data: Record<string, any>
+) {
+  const res = await apiRequest(
+    `/api/commercial/courses/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}`,
+    {
+      method: "PATCH",
+      body: data
+    }
+  );
+  return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
+}
+
+export async function deleteCommercialCourseLesson(id: string, lessonId: string) {
+  const res = await apiRequest(
+    `/api/commercial/courses/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}`,
+    { method: "DELETE" }
+  );
+  return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
+}
+
 export async function publishCommercialCourse(id: string) {
   const res = await apiRequest(
     `/api/commercial/courses/${encodeURIComponent(id)}/publish`,

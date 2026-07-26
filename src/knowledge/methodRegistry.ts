@@ -395,6 +395,53 @@ export const methodRegistry: GrowPathMethod[] = [
     ["harvest-readiness", "dry-cure-guard"]
   ),
   method(
+    "video-sharing-workflow",
+    "Video Sharing Workflow",
+    ["video", "discovery", "following", "media"],
+    "video-sharing-workflow-method.md",
+    [
+      "upload or link",
+      "reserve and verify private storage",
+      "review rights and accessibility",
+      "save once",
+      "publish with visibility",
+      "discover or follow",
+      "reuse by reference"
+    ],
+    [
+      "active Personal, Commercial, or Facility workspace",
+      "video source",
+      "title and description",
+      "creator rights confirmation",
+      "availability and accessibility review",
+      "explicit visibility",
+      "cannabis/hemp classification",
+      "authoritative storage size for GrowPath uploads"
+    ],
+    [
+      "workspace-owned reusable video record",
+      "truthful workspace storage usage and limit",
+      "verified private object and authorized short-lived playback",
+      "public or follower-scoped Discover result",
+      "creator follow action from video detail",
+      "stable course and content references",
+      "reference-safe detach and deletion status",
+      "cannabis-aware discovery filtering"
+    ],
+    [
+      "Never limit video upload or sharing only to accounts labeled as creators.",
+      "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover.",
+      "Never treat a client-provided flag as proof that the viewer follows a video owner.",
+      "Never duplicate an upload merely to attach one reusable video to a course.",
+      "Never delete a library video while a course or supported record still references it.",
+      "Never claim storage was released until the storage service confirms physical deletion.",
+      "Never persist object-storage credentials or expiring signed upload or playback URLs in video, course, or lesson records.",
+      "Never show cannabis/hemp-specific video discovery to unrelated horticulture viewers.",
+      "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission."
+    ],
+    ["videos", "discover", "course-builder", "profiles", "following-feed"]
+  ),
+  method(
     "course-media-workflow",
     "Course Media Workflow",
     ["course", "lesson", "education", "media"],
@@ -421,6 +468,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "approved embed capability or link-only fallback",
       "learner-visible availability and accessibility status",
       "external provider link",
+      "authorized short-lived playback for protected GrowPath library videos",
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
@@ -433,6 +481,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never imply GrowPath owns, hosts, continuously monitors, or verifies watch analytics for third-party media.",
       "Never publish video without rights confirmation, a timestamped availability check, accessibility status, text summary, and external-link fallback.",
       "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
+      "Never persist object-storage credentials or expiring signed playback URLs in a course or lesson.",
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
       "Never request owned courses or expose authoring, invite, analytics, publish, unpublish, enrollment, purchase, or progress controls before authentication.",
       "Never expose duplicate course-authoring back actions, multiple page-level headings, unchecked pricing or access choices, or raw stored values as course labels.",

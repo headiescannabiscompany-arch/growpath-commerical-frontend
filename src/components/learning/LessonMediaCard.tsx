@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Linking,
   Platform,
@@ -14,12 +15,15 @@ import {
   lessonMediaDraftFromLesson,
   normalizeLessonMediaDraft
 } from "@/features/learning/lessonMedia";
+import { getVideoPlayback, VideoWorkspaceType } from "@/api/videos";
+import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type Props = {
   lesson: any;
   compact?: boolean;
+  context?: "lesson" | "video";
 };
 
 function accessibilityLabel(status: string) {
@@ -57,18 +61,95 @@ function BrowserPlayer({
   });
 }
 
-export default function LessonMediaCard({ lesson, compact = false }: Props) {
+export default function LessonMediaCard({
+  lesson,
+  compact = false,
+  context = "lesson"
+}: Props) {
+  const entitlements = useEntitlements();
   const [playerLoaded, setPlayerLoaded] = useState(false);
+  const [protectedPlaybackUrl, setProtectedPlaybackUrl] = useState("");
+  const [protectedPlaybackLoading, setProtectedPlaybackLoading] = useState(false);
+  const [protectedPlaybackError, setProtectedPlaybackError] = useState("");
   const normalized = useMemo(
     () => normalizeLessonMediaDraft(lessonMediaDraftFromLesson(lesson)),
     [lesson]
   );
   const media = normalized.mediaSource;
+  const videoAssetId = String(lesson?.videoAssetId || "");
+  const suppliedPlaybackUrl = String(lesson?.playbackUrl || "");
+  const protectedGrowPathMedia = Boolean(
+    media?.sourceType === "growpath_upload" &&
+    String(media.canonicalUrl || media.originalUrl || "").startsWith(
+      "/api/videos/uploads/"
+    )
+  );
+
+  useEffect(() => {
+    let active = true;
+    setProtectedPlaybackError("");
+    if (!protectedGrowPathMedia) {
+      setProtectedPlaybackUrl("");
+      setProtectedPlaybackLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    if (suppliedPlaybackUrl) {
+      setProtectedPlaybackUrl(suppliedPlaybackUrl);
+      setProtectedPlaybackLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    if (!videoAssetId) {
+      setProtectedPlaybackUrl("");
+      setProtectedPlaybackLoading(false);
+      setProtectedPlaybackError(
+        "This protected video is not connected to its library record."
+      );
+      return () => {
+        active = false;
+      };
+    }
+    setProtectedPlaybackLoading(true);
+    getVideoPlayback(
+      videoAssetId,
+      entitlements.mode as VideoWorkspaceType,
+      entitlements.facilityId || undefined
+    )
+      .then((result) => {
+        if (active) setProtectedPlaybackUrl(result.playbackUrl);
+      })
+      .catch(() => {
+        if (active) {
+          setProtectedPlaybackUrl("");
+          setProtectedPlaybackError(
+            "This protected video is unavailable or your account does not have access."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setProtectedPlaybackLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    entitlements.facilityId,
+    entitlements.mode,
+    protectedGrowPathMedia,
+    suppliedPlaybackUrl,
+    videoAssetId
+  ]);
+
   if (!media) return null;
 
-  const sourceUrl = resolveImageUri(
-    media.externalLinkFallback || media.canonicalUrl || media.originalUrl
-  );
+  const sourceUrl = protectedGrowPathMedia
+    ? protectedPlaybackUrl
+    : resolveImageUri(
+        media.externalLinkFallback || media.canonicalUrl || media.originalUrl
+      );
   const isUnavailable = new Set(["unavailable", "restricted"]).has(
     media.availabilityStatus
   );
@@ -77,9 +158,11 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
     media.availabilityStatus === "available" &&
     (media.embedCapability === "native" ||
       (media.embedCapability === "supported" && media.allowEmbed && media.embedUrl));
-  const playerUrl = resolveImageUri(
-    media.embedCapability === "native" ? media.canonicalUrl : media.embedUrl
-  );
+  const playerUrl = protectedGrowPathMedia
+    ? protectedPlaybackUrl
+    : resolveImageUri(
+        media.embedCapability === "native" ? media.canonicalUrl : media.embedUrl
+      );
   const clickToLoad = media.privacyMode === "click_to_load";
   const shouldRenderPlayer = canEmbed && (playerLoaded || !clickToLoad);
   const title = media.title || lesson?.title || `${media.providerLabel} lesson video`;
@@ -87,7 +170,7 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
   return (
     <View
       style={[styles.card, compact && styles.compactCard]}
-      accessibilityLabel="Lesson video"
+      accessibilityLabel={context === "lesson" ? "Lesson video" : "Video"}
     >
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
@@ -137,13 +220,30 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
             claim or verify provider watch analytics.
           </Text>
           <Pressable
-            accessibilityLabel={`Load ${media.providerLabel} lesson video`}
+            accessibilityLabel={`Load ${media.providerLabel} ${context === "lesson" ? "lesson " : ""}video`}
             accessibilityRole="button"
             onPress={() => setPlayerLoaded(true)}
             style={styles.primaryButton}
           >
             <Text style={styles.primaryButtonText}>Load {media.providerLabel} video</Text>
           </Pressable>
+        </View>
+      ) : null}
+
+      {protectedPlaybackLoading ? (
+        <View
+          accessibilityLabel="Preparing protected video playback"
+          accessibilityLiveRegion="polite"
+          style={styles.playbackStatus}
+        >
+          <ActivityIndicator />
+          <Text style={styles.statusText}>Preparing protected playback…</Text>
+        </View>
+      ) : null}
+      {protectedPlaybackError ? (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningTitle}>Video playback unavailable</Text>
+          <Text style={styles.warningText}>{protectedPlaybackError}</Text>
         </View>
       ) : null}
 
@@ -190,7 +290,7 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
 
       {sourceUrl ? (
         <Pressable
-          accessibilityLabel={`Open ${media.providerLabel} lesson video in provider`}
+          accessibilityLabel={`Open ${media.providerLabel} ${context === "lesson" ? "lesson " : ""}video in provider`}
           accessibilityRole="link"
           onPress={() => Linking.openURL(sourceUrl)}
           style={styles.secondaryButton}
@@ -199,10 +299,12 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
         </Pressable>
       ) : null}
 
-      <Text style={styles.progressNote}>
-        Watching here or at the provider does not complete the lesson automatically. Your
-        GrowPath course progress changes only when you choose Mark Complete.
-      </Text>
+      {context === "lesson" ? (
+        <Text style={styles.progressNote}>
+          Watching here or at the provider does not complete the lesson automatically.
+          Your GrowPath course progress changes only when you choose Mark Complete.
+        </Text>
+      ) : null}
       {media.lastCheckedAt ? (
         <Text style={styles.checkedAt}>
           Source last checked {new Date(media.lastCheckedAt).toLocaleString()}.
@@ -299,6 +401,13 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: "#1d4ed8", fontWeight: "800" },
   statusText: { color: "#475569", fontSize: 12, lineHeight: 18 },
+  playbackStatus: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 9,
+    justifyContent: "center",
+    paddingVertical: 12
+  },
   progressNote: { color: "#334155", fontSize: 12, lineHeight: 18, fontWeight: "600" },
   checkedAt: { color: "#64748b", fontSize: 11 }
 });

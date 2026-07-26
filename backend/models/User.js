@@ -12,6 +12,10 @@ const UserSchema = new mongoose.Schema({
   growInterests: {
     type: [String],
     default: []
+  },
+  following: {
+    type: [String],
+    default: []
   }
   // ...other fields...
 });

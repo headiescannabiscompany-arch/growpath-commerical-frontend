@@ -2,7 +2,11 @@ import { uploadImage } from "@/api/uploads";
 import { API_URL } from "@/api/apiRequest";
 
 export function isPersistedImageUri(uri: string) {
-  return /^https?:\/\//i.test(uri) || uri.startsWith("/uploads/");
+  return (
+    /^https?:\/\//i.test(uri) ||
+    uri.startsWith("/uploads/") ||
+    uri.startsWith("/api/videos/uploads/")
+  );
 }
 
 export function resolveImageUri(uri: string | null | undefined) {
@@ -28,6 +32,7 @@ export function resolveImageUri(uri: string | null | undefined) {
   }
   const apiOrigin = String(API_URL || "").replace(/\/+$/, "");
   if (value.startsWith("/uploads/")) return `${apiOrigin}${value}`;
+  if (value.startsWith("/api/videos/uploads/")) return `${apiOrigin}${value}`;
   if (value.startsWith("uploads/")) return `${apiOrigin}/${value}`;
   return value;
 }

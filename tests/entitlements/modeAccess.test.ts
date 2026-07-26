@@ -339,6 +339,10 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH]).toBe(false);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_MANAGE]).toBe(false);
   });
 
   it("grants managers operational writes without owner account controls", () => {
@@ -356,6 +360,9 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.TEAM_UPDATE_ROLE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.TEAM_REMOVE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_MANAGE]).toBe(true);
   });
 
   it("grants commercial inventory write to active commercial workspaces", () => {
@@ -392,6 +399,10 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.FORUM_VIEW]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.FORUM_POST]).toBe(false);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.VIDEOS_MANAGE]).toBe(true);
   });
 
   it("lets every personal plan create free or paid courses with plan limits", () => {
