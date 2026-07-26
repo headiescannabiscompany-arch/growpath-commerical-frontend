@@ -57,7 +57,7 @@ describe("shared video API", () => {
 
     await createVideo({ title: "Video", mediaSource: source });
     await updateVideo("video-1", { status: "published" });
-    await deleteVideo("video-1");
+    await deleteVideo("video-1", "facility", "facility-1");
 
     expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/videos", {
       method: "POST",
@@ -68,7 +68,8 @@ describe("shared video API", () => {
       body: { status: "published" }
     });
     expect(mockApiRequest).toHaveBeenNthCalledWith(3, "/api/videos/video-1", {
-      method: "DELETE"
+      method: "DELETE",
+      params: { workspaceType: "facility", workspaceId: "facility-1" }
     });
   });
 
