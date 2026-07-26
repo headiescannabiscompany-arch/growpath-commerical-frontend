@@ -324,6 +324,7 @@ export default function CommercialProfileRoute() {
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
+          <ActionLink href="/videos?tab=library" label="Videos" />
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
         </View>
       </AppCard>

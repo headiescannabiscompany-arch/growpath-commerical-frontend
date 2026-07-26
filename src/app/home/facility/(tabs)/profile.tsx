@@ -291,6 +291,11 @@ export default function FacilityProfileRoute() {
               onPress={() => router.push("/courses" as any)}
             />
             <ProfileAction
+              label="Videos"
+              accessibilityLabel="Open Facility video library"
+              onPress={() => router.push("/videos?tab=library" as any)}
+            />
+            <ProfileAction
               label="Forum"
               accessibilityLabel="Open forum"
               onPress={() => router.push("/forum" as any)}

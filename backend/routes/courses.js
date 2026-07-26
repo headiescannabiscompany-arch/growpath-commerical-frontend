@@ -121,6 +121,7 @@ function normalizeLesson(body, fallback = {}) {
       videoUrl: mediaSource?.canonicalUrl || "",
       externalVideoUrl: mediaSource?.canonicalUrl || "",
       mediaSource,
+      videoAssetId: cleanString(body?.videoAssetId ?? fallback.videoAssetId),
       pdfUrl: cleanString(body?.pdfUrl || fallback.pdfUrl || ""),
       audioUrl: cleanString(body?.audioUrl || fallback.audioUrl || ""),
       imageUrls: Array.isArray(body?.imageUrls)

@@ -10,6 +10,8 @@ Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Othe
 
 The initial Course Builder and later Add/Edit Lesson screens use the same provider-aware media contract. Authors may attach and review lesson media while outlining a new draft or defer it until lesson editing; no initial-builder shortcut may bypass URL normalization, rights, availability, accessibility, learner-summary, embed, or fallback fields.
 
+Authors may also attach an existing video from the Personal, Commercial, or Facility workspace library by storing its `videoAssetId` with the normalized lesson media snapshot. Detaching the video from a lesson must not delete the reusable library asset. Removing a library video must be blocked while any course lesson still references it so an author cannot silently break a published or draft course.
+
 Accept HTTP(S) video-page URLs and first-party `/uploads/` paths. Reject iframe, script, object, embed, video, HTML, `javascript:` and `data:` input. Never store or execute author-supplied embed markup. A provider not covered by a reviewed embed contract remains link-only.
 
 ## Author review and publishing

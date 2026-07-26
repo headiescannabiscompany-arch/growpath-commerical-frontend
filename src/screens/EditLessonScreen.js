@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { updateLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -32,6 +33,7 @@ export default function EditLessonScreen({ route, navigation }) {
   const [content, setContent] = useState("");
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
   const [videoFile, setVideoFile] = useState(null);
+  const [videoAssetId, setVideoAssetId] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
     buildEmptyTierSelection()
@@ -45,6 +47,7 @@ export default function EditLessonScreen({ route, navigation }) {
       setOrder(String(l.order || 1));
       setContent(l.content || "");
       setMediaDraft(lessonMediaDraftFromLesson(l));
+      setVideoAssetId(l.videoAssetId || "");
       setPdfUrl(l.pdfUrl || "");
       setGrowInterestSelections(groupTagsByTier(l.growTags || []));
     } else {
@@ -61,6 +64,7 @@ export default function EditLessonScreen({ route, navigation }) {
       });
       if (!result.canceled && result.assets[0]) {
         setVideoFile(result.assets[0]);
+        setVideoAssetId("");
         setMediaDraft((current) => ({
           ...current,
           sourceType: "growpath_upload",
@@ -105,6 +109,7 @@ export default function EditLessonScreen({ route, navigation }) {
       videoUrl: preparedMedia?.videoUrl || "",
       externalVideoUrl: preparedMedia?.externalVideoUrl || "",
       mediaSource: preparedMedia?.mediaSource || null,
+      videoAssetId,
       pdfUrl,
       growTags: flattenTierSelections(growInterestSelections)
     });
@@ -133,9 +138,10 @@ export default function EditLessonScreen({ route, navigation }) {
       {!access.canCreateCourses ? (
         <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
       ) : null}
-      <Text style={styles.helpText}>Course storage: 0 MB / plan limit</Text>
-      <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
-      <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
+      <Text style={styles.helpText}>
+        Replace this lesson video, detach it, or reuse one video from the current
+        workspace library.
+      </Text>
 
       <TextInput
         style={styles.input}
@@ -171,7 +177,19 @@ export default function EditLessonScreen({ route, navigation }) {
         pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
         onRemove={() => {
           setVideoFile(null);
+          setVideoAssetId("");
           setMediaDraft(emptyLessonMediaDraft());
+        }}
+      />
+      <VideoLibraryPicker
+        selectedId={videoAssetId}
+        disabled={!access.canCreateCourses}
+        onSelect={(video) => {
+          setVideoFile(null);
+          setVideoAssetId(video?.id || "");
+          setMediaDraft(
+            video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
+          );
         }}
       />
 

@@ -214,10 +214,13 @@ describe("generic courses backend routes", () => {
     expect(unsafe.status).toBe(400);
     expect(unsafe.body.error.code).toBe("INVALID_LESSON_MEDIA");
 
-    const added = await request(app)
-      .post(`/api/courses/${created.body.id}/lesson`)
-      .send({ title: "Provider lesson", videoUrl: "https://youtu.be/QT7vv46368M" });
+    const added = await request(app).post(`/api/courses/${created.body.id}/lesson`).send({
+      title: "Provider lesson",
+      videoUrl: "https://youtu.be/QT7vv46368M",
+      videoAssetId: "video-1"
+    });
     expect(added.status).toBe(201);
+    expect(added.body.lesson.videoAssetId).toBe("video-1");
     expect(added.body.lesson.mediaSource).toMatchObject({
       sourceType: "youtube",
       providerVideoId: "QT7vv46368M",
@@ -251,10 +254,16 @@ describe("generic courses backend routes", () => {
 
     const removed = await request(app)
       .put(`/api/courses/lesson/${added.body.lesson.id}`)
-      .send({ videoUrl: "", externalVideoUrl: "", mediaSource: null });
+      .send({
+        videoUrl: "",
+        externalVideoUrl: "",
+        mediaSource: null,
+        videoAssetId: ""
+      });
     expect(removed.status).toBe(200);
     expect(removed.body.lesson.videoUrl).toBe("");
     expect(removed.body.lesson.mediaSource).toBeNull();
+    expect(removed.body.lesson.videoAssetId).toBe("");
   });
 
   test("course owner can update and delete lessons by lesson route", async () => {

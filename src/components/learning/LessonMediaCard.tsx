@@ -20,6 +20,7 @@ import { resolveImageUri } from "@/utils/photoUploads";
 type Props = {
   lesson: any;
   compact?: boolean;
+  context?: "lesson" | "video";
 };
 
 function accessibilityLabel(status: string) {
@@ -57,7 +58,11 @@ function BrowserPlayer({
   });
 }
 
-export default function LessonMediaCard({ lesson, compact = false }: Props) {
+export default function LessonMediaCard({
+  lesson,
+  compact = false,
+  context = "lesson"
+}: Props) {
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const normalized = useMemo(
     () => normalizeLessonMediaDraft(lessonMediaDraftFromLesson(lesson)),
@@ -87,7 +92,7 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
   return (
     <View
       style={[styles.card, compact && styles.compactCard]}
-      accessibilityLabel="Lesson video"
+      accessibilityLabel={context === "lesson" ? "Lesson video" : "Video"}
     >
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
@@ -137,7 +142,7 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
             claim or verify provider watch analytics.
           </Text>
           <Pressable
-            accessibilityLabel={`Load ${media.providerLabel} lesson video`}
+            accessibilityLabel={`Load ${media.providerLabel} ${context === "lesson" ? "lesson " : ""}video`}
             accessibilityRole="button"
             onPress={() => setPlayerLoaded(true)}
             style={styles.primaryButton}
@@ -190,7 +195,7 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
 
       {sourceUrl ? (
         <Pressable
-          accessibilityLabel={`Open ${media.providerLabel} lesson video in provider`}
+          accessibilityLabel={`Open ${media.providerLabel} ${context === "lesson" ? "lesson " : ""}video in provider`}
           accessibilityRole="link"
           onPress={() => Linking.openURL(sourceUrl)}
           style={styles.secondaryButton}
@@ -199,10 +204,12 @@ export default function LessonMediaCard({ lesson, compact = false }: Props) {
         </Pressable>
       ) : null}
 
-      <Text style={styles.progressNote}>
-        Watching here or at the provider does not complete the lesson automatically. Your
-        GrowPath course progress changes only when you choose Mark Complete.
-      </Text>
+      {context === "lesson" ? (
+        <Text style={styles.progressNote}>
+          Watching here or at the provider does not complete the lesson automatically.
+          Your GrowPath course progress changes only when you choose Mark Complete.
+        </Text>
+      ) : null}
       {media.lastCheckedAt ? (
         <Text style={styles.checkedAt}>
           Source last checked {new Date(media.lastCheckedAt).toLocaleString()}.

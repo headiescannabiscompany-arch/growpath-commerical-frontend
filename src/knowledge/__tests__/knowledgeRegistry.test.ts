@@ -195,6 +195,15 @@ describe("GrowPath knowledge registries", () => {
     expect(methodsForTool("course-player").map((entry) => entry.id)).toContain(
       "course-media-workflow"
     );
+    expect(methodsForTool("videos").map((entry) => entry.id)).toContain(
+      "video-sharing-workflow"
+    );
+    expect(getMethod("video-sharing-workflow")?.requiredOutputs).toContain(
+      "public or follower-scoped Discover result"
+    );
+    expect(getMethod("video-sharing-workflow")?.warnings).toContain(
+      "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover."
+    );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "Vimeo unlisted privacy hash when present"
     );

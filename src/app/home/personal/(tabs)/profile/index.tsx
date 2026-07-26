@@ -454,6 +454,14 @@ export default function ProfileScreen() {
         >
           <Text style={styles.accountActionText}>Profile links</Text>
         </Pressable>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/videos?tab=library" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Open personal video library"
+        >
+          <Text style={styles.accountActionText}>My videos</Text>
+        </Pressable>
         <Text style={styles.mutedText}>
           Personal is for your grow records and Forum/Q&A. Commercial and Facility
           workspaces keep storefront outreach and operational rooms separate.

@@ -18,9 +18,18 @@ describe("backend entitlement capability checks", () => {
 
     expect(entitlements.capabilities).toContain(CAP.COURSES_CREATE);
     expect(entitlements.capabilities).toContain(CAP.COURSES_SELL_PAID);
+    expect(entitlements.capabilities).toEqual(
+      expect.arrayContaining([
+        CAP.VIDEOS_VIEW,
+        CAP.VIDEOS_UPLOAD,
+        CAP.VIDEOS_PUBLISH,
+        CAP.VIDEOS_MANAGE
+      ])
+    );
     expect(entitlements.limits).toMatchObject({
       maxPaidCourses: 1,
-      maxLessonsPerCourse: 7
+      maxLessonsPerCourse: 7,
+      videoStorageBytes: 500 * 1024 * 1024
     });
   });
 
@@ -39,6 +48,10 @@ describe("backend entitlement capability checks", () => {
     expect(
       can({ capabilities: [CAP.TASKS_WRITE], facilityRole: "VIEWER" }, CAP.TASKS_WRITE)
     ).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_UPLOAD, "STAFF")).toBe(true);
+    expect(canInFacilityRole(CAP.VIDEOS_PUBLISH, "STAFF")).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_MANAGE, "VIEWER")).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_VIEW, "VIEWER")).toBe(true);
   });
 
   test("requireCapability returns a 403 error when disabled", () => {

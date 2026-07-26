@@ -230,12 +230,19 @@ export function applyFacilityRoleCapabilities(
   normalized[CAPABILITY_KEYS.SOP_RUNS_READ] = true;
   normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
   normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_VIEW] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = false;
+  normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = false;
+  normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = false;
 
   if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
     normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
     normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
     normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
     normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = true;
   }
 
   if (
@@ -245,6 +252,7 @@ export function applyFacilityRoleCapabilities(
   ) {
     normalized[CAPABILITY_KEYS.TASKS_WRITE] = true;
     normalized[CAPABILITY_KEYS.GROWLOGS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
   }
 
   if (facilityRole === "OWNER") {
@@ -272,6 +280,10 @@ export function applyUniversalCapabilities(
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
   normalized[CAPABILITY_KEYS.FORUM_POST] =
     String(plan || "free").toLowerCase() !== "free";
+  normalized[CAPABILITY_KEYS.VIDEOS_VIEW] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = true;
 }
 
 export function applyDefaultCourseLimits(
@@ -298,6 +310,10 @@ export function applyDefaultCourseLimits(
 
   if (next.maxPlants === undefined || next.maxPlants === null) {
     next.maxPlants = fallback.maxPlants;
+  }
+
+  if (next.videoStorageBytes === undefined || next.videoStorageBytes === null) {
+    next.videoStorageBytes = fallback.videoStorageBytes;
   }
 
   return next;

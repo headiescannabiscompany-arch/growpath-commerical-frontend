@@ -395,6 +395,50 @@ export const methodRegistry: GrowPathMethod[] = [
     ["harvest-readiness", "dry-cure-guard"]
   ),
   method(
+    "video-sharing-workflow",
+    "Video Sharing Workflow",
+    ["video", "discovery", "following", "media"],
+    "video-sharing-workflow-method.md",
+    [
+      "upload or link",
+      "review rights and accessibility",
+      "save once",
+      "publish with visibility",
+      "discover or follow",
+      "reuse by reference"
+    ],
+    [
+      "active Personal, Commercial, or Facility workspace",
+      "video source",
+      "title and description",
+      "creator rights confirmation",
+      "availability and accessibility review",
+      "explicit visibility",
+      "cannabis/hemp classification",
+      "authoritative storage size for GrowPath uploads"
+    ],
+    [
+      "workspace-owned reusable video record",
+      "truthful workspace storage usage and limit",
+      "public or follower-scoped Discover result",
+      "creator follow action from video detail",
+      "stable course and content references",
+      "reference-safe detach and deletion status",
+      "cannabis-aware discovery filtering"
+    ],
+    [
+      "Never limit video upload or sharing only to accounts labeled as creators.",
+      "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover.",
+      "Never treat a client-provided flag as proof that the viewer follows a video owner.",
+      "Never duplicate an upload merely to attach one reusable video to a course.",
+      "Never delete a library video while a course or supported record still references it.",
+      "Never claim storage was released until the storage service confirms physical deletion.",
+      "Never show cannabis/hemp-specific video discovery to unrelated horticulture viewers.",
+      "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission."
+    ],
+    ["videos", "discover", "course-builder", "profiles", "following-feed"]
+  ),
+  method(
     "course-media-workflow",
     "Course Media Workflow",
     ["course", "lesson", "education", "media"],

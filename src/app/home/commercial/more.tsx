@@ -30,6 +30,12 @@ const workspaceGroups: Array<{
         description: "Plan live sessions, connection status, and audience access."
       },
       {
+        label: "Videos",
+        href: "/videos?tab=library",
+        description:
+          "Upload once, manage workspace video storage, and publish videos for discovery."
+      },
+      {
         label: "Forum / Q&A",
         href: "/home/commercial/community",
         description:

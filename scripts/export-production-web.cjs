@@ -85,6 +85,9 @@ const fallbackRoutes = [
   "storefront",
   "orders",
   "offers",
+  "discover",
+  "videos",
+  "videos/example-video",
   "feed",
   "forum",
   "forum/new-post",
@@ -384,6 +387,22 @@ const routeSeo = new Map(
         title: "GrowPath Courses",
         description:
           "Browse grow education, live sessions, documents, videos, and structured courses from GrowPath creators."
+      }
+    ],
+    [
+      "discover",
+      {
+        title: "Discover GrowPath Videos, Courses, Products, and Communities",
+        description:
+          "Search accessible grow videos, accounts, courses, products, storefronts, lives, and community resources across GrowPath."
+      }
+    ],
+    [
+      "videos",
+      {
+        title: "GrowPath Videos",
+        description:
+          "Watch and search public grow videos, follow GrowPath members, and manage reusable Personal, Commercial, or Facility video libraries."
       }
     ],
     [
