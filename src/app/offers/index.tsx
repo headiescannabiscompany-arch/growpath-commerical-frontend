@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Linking,
   Platform,
@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
@@ -80,6 +81,7 @@ export default function Offers() {
   const auth = useAuth();
   const ent = useEntitlements();
   const { width } = useWindowDimensions();
+  const searchParams = useLocalSearchParams<{ subscription?: string | string[] }>();
   const isWide = width >= 980;
 
   const [interval, setInterval] = useState<BillingInterval>("monthly");
@@ -88,11 +90,18 @@ export default function Offers() {
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
+  const [pendingImmediatePlan, setPendingImmediatePlan] = useState<PlanKey | null>(null);
+  const handledCheckoutResultRef = useRef("");
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
     String(auth.user?.subscriptionStatus || "").toLowerCase()
   );
+  const trialEligible = trialEnabled && !auth.user?.trialUsed;
+  const subscriptionResult = useMemo(() => {
+    const value = searchParams.subscription;
+    return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
+  }, [searchParams.subscription]);
 
   useEffect(() => {
     let mounted = true;
@@ -117,7 +126,37 @@ export default function Offers() {
     };
   }, []);
 
-  async function startCheckout(plan: PlanKey) {
+  useEffect(() => {
+    if (!["success", "canceled"].includes(subscriptionResult)) return;
+    if (handledCheckoutResultRef.current === subscriptionResult) return;
+    handledCheckoutResultRef.current = subscriptionResult;
+
+    if (subscriptionResult === "success") {
+      setFeedback(
+        "Stripe checkout completed. GrowPath is refreshing your plan. If access does not update yet, reload in a moment."
+      );
+      void auth.retryMe().catch(() => {
+        setFeedback(
+          "Stripe checkout completed, but GrowPath could not refresh the plan yet. Reload in a moment or open Account Profile."
+        );
+      });
+      return;
+    }
+
+    setFeedback("Checkout canceled. No new payment was submitted by this checkout.");
+  }, [auth, subscriptionResult]);
+
+  async function startCheckout(plan: PlanKey, confirmedImmediateBilling = false) {
+    if (!trialEligible && !confirmedImmediateBilling) {
+      setPendingImmediatePlan(plan);
+      const selected = PLANS.find((item) => item.key === plan);
+      setFeedback(
+        `${selected?.title || "This plan"} has no trial remaining for this account. Review the price, then continue only if you want Stripe to bill when checkout completes.`
+      );
+      return;
+    }
+
+    setPendingImmediatePlan(null);
     setLoadingPlan(plan);
     setFeedback("");
     try {
@@ -144,9 +183,11 @@ export default function Offers() {
           <Text style={styles.kicker}>Plans</Text>
           <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
           <Text style={styles.headerSubtitle}>
-            {trialEnabled
-              ? `Eligible new subscribers receive ${trialDays} days free through Stripe checkout. A payment method is required, and paid billing begins after the trial unless canceled.`
-              : "New trials have ended. Stripe checkout begins paid billing immediately."}
+            {trialEligible
+              ? `This account is eligible for ${trialDays} days free through Stripe checkout. A payment method is required, and paid billing begins after the trial unless canceled.`
+              : trialEnabled
+                ? `This account has already used its ${trialDays}-day trial. Starting another paid plan will bill the shown price when Stripe checkout completes.`
+                : "New trials have ended. Stripe checkout begins paid billing immediately."}
           </Text>
           <View style={styles.segment}>
             {(["monthly", "yearly"] as const).map((item) => {
@@ -154,7 +195,11 @@ export default function Offers() {
               return (
                 <Pressable
                   key={item}
-                  onPress={() => setInterval(item)}
+                  onPress={() => {
+                    setInterval(item);
+                    setPendingImmediatePlan(null);
+                    setFeedback("");
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel={
                     item === "monthly" ? "Monthly billing" : "Yearly billing"
@@ -210,7 +255,11 @@ export default function Offers() {
       </AppCard>
 
       {feedback ? (
-        <View style={styles.feedback}>
+        <View
+          style={styles.feedback}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
           <Text style={styles.feedbackText}>{feedback}</Text>
         </View>
       ) : null}
@@ -219,6 +268,7 @@ export default function Offers() {
         {PLANS.map((plan) => {
           const current = activePlan === plan.key && subscriptionActive;
           const loading = loadingPlan === plan.key;
+          const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
           return (
             <AppCard key={plan.key} style={[styles.planCard, current && styles.current]}>
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
@@ -244,10 +294,16 @@ export default function Offers() {
               </View>
 
               <Pressable
-                onPress={() => startCheckout(plan.key)}
+                onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}
                 disabled={loading || current}
                 accessibilityRole="button"
-                accessibilityLabel={`Start ${plan.title} checkout`}
+                accessibilityLabel={
+                  confirmingImmediateBilling
+                    ? `Continue to paid ${plan.title} checkout`
+                    : trialEligible
+                      ? `Start ${plan.title} trial checkout`
+                      : `Review paid ${plan.title} checkout`
+                }
                 style={[styles.button, (loading || current) && styles.buttonDisabled]}
               >
                 <Text style={styles.buttonText}>
@@ -255,9 +311,11 @@ export default function Offers() {
                     ? "Starting..."
                     : current
                       ? "Current plan"
-                      : auth.user?.trialUsed || !trialEnabled
-                        ? "Start checkout"
-                        : `Start ${trialDays}-day trial`}
+                      : confirmingImmediateBilling
+                        ? `Continue — billed ${formatPlanPrice(plan.key, interval)}`
+                        : trialEligible
+                          ? `Start ${trialDays}-day trial`
+                          : "Review paid checkout"}
                 </Text>
               </Pressable>
             </AppCard>
