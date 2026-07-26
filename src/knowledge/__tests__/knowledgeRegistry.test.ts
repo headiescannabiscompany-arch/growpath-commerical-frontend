@@ -3,6 +3,7 @@ import {
   evaluateSourceForDecision,
   getMethod,
   getSourceEntry,
+  knowledgeGovernancePolicy,
   methodRegistry,
   methodsForTool,
   sourceRegistry
@@ -278,5 +279,12 @@ describe("GrowPath knowledge registries", () => {
     expect(aiDecisionPolicy.requiredResultFields).toEqual(
       expect.arrayContaining(["evidenceUsed", "methodIds", "sourceIds", "providerLabel"])
     );
+  });
+
+  it("keeps Admin knowledge review editorial and outcome-backed", () => {
+    expect(knowledgeGovernancePolicy.minimumMethodOutcomeRecords).toBe(3);
+    expect(knowledgeGovernancePolicy.excludesSyntheticOutcomes).toBe(true);
+    expect(knowledgeGovernancePolicy.approvalEffect).toBe("editorial_review_only");
+    expect(knowledgeGovernancePolicy.runtimeChangeRequiresReviewedCodeRelease).toBe(true);
   });
 });
