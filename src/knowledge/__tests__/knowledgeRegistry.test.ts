@@ -79,6 +79,9 @@ describe("GrowPath knowledge registries", () => {
       "post-login workspace choice for every multi-workspace identity"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "account-specific trial eligibility with a second price-labeled confirmation before immediate Stripe billing"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "bounded Personal home campaign density that preserves the grow workspace"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -155,6 +158,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never honor deterministic test identity headers as production authentication."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never open an immediately billed Stripe checkout on the first action after an account trial has been used."
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "readable Facility inventory details with confirmed mistaken-record removal"
