@@ -35,6 +35,16 @@ storage. GrowPath-hosted uploads consume the active Personal, Commercial, or poo
 Facility allowance. The API-provided usage and limit are authoritative; clients may show
 plan defaults while loading but must not display hard-coded zero usage as real quota.
 
+Production GrowPath-hosted video objects remain private. Reserve workspace quota before
+issuing a short-lived direct-upload URL, count unexpired pending reservations so
+concurrent uploads cannot oversubscribe the workspace, and activate the record only after
+the storage service confirms the expected size and video media type. Large web uploads
+use resumable multipart transfer; failed, expired, or canceled uploads release the
+reservation. Store only the stable internal asset path in video and course records.
+Authorized viewers receive a short-lived playback URL after video, course-enrollment,
+Facility, cannabis-visibility, and owner/uploader checks. Never persist object-store
+credentials or expiring signed URLs in content records.
+
 ## Publishing and discovery
 
 Video visibility is explicit: public, followers-only, unlisted, private, course-only, or

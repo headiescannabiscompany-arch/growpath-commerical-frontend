@@ -204,6 +204,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("video-sharing-workflow")?.warnings).toContain(
       "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover."
     );
+    expect(getMethod("video-sharing-workflow")?.requiredOutputs).toContain(
+      "verified private object and authorized short-lived playback"
+    );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "Vimeo unlisted privacy hash when present"
     );

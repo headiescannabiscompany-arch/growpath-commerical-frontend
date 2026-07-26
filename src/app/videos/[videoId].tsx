@@ -105,7 +105,9 @@ export default function VideoDetailRoute() {
             lesson={{
               title: video.title,
               mediaSource: video.mediaSource,
-              videoUrl: video.mediaSource?.canonicalUrl
+              videoUrl: video.mediaSource?.canonicalUrl,
+              videoAssetId: video.id,
+              playbackUrl: video.playbackUrl
             }}
           />
           {video.tags?.length || video.growInterests?.length ? (

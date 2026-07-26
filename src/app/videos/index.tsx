@@ -10,13 +10,14 @@ import {
   View
 } from "react-native";
 
-import { uploadCourseMedia } from "@/api/uploads";
 import {
+  abortVideoUpload,
   createVideo,
   deleteVideo,
   GrowPathVideo,
   listVideoLibrary,
   searchVideos,
+  uploadVideoFile,
   updateVideo,
   VideoLibraryResponse,
   VideoVisibility,
@@ -101,6 +102,7 @@ export default function VideosRoute() {
   const [cannabisSpecific, setCannabisSpecific] = useState(false);
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
   const [videoFile, setVideoFile] = useState<any>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const loadDiscover = useCallback(async () => {
     setLoading(true);
@@ -183,6 +185,7 @@ export default function VideosRoute() {
     setCannabisSpecific(false);
     setMediaDraft(emptyLessonMediaDraft());
     setVideoFile(null);
+    setUploadProgress(null);
   }
 
   async function pickVideo() {
@@ -236,21 +239,24 @@ export default function VideosRoute() {
     setSaving(true);
     setError(null);
     setMessage("");
+    setUploadProgress(videoFile ? 0 : null);
+    let uploadedAssetId = "";
+    const uploadWorkspace = {
+      workspaceType,
+      workspaceId:
+        workspaceType === "facility" ? entitlements.facilityId || undefined : undefined
+    };
     try {
       const preview = videoFile
         ? null
         : prepareLessonMediaSubmission(mediaDraft, mediaDraft.originalUrl);
       if (preview?.errors.length) throw new Error(preview.errors.join(" "));
       const uploaded = videoFile
-        ? await uploadCourseMedia(videoFile, {
-            purpose: "video",
-            workspaceType,
-            workspaceId:
-              workspaceType === "facility"
-                ? entitlements.facilityId || undefined
-                : undefined
-          })
+        ? await uploadVideoFile(videoFile, uploadWorkspace, (fraction) =>
+            setUploadProgress(Math.round(fraction * 100))
+          )
         : null;
+      uploadedAssetId = uploaded?.assetId || "";
       const prepared = uploaded
         ? prepareLessonMediaSubmission(
             {
@@ -281,18 +287,25 @@ export default function VideosRoute() {
         growInterests: splitList(growInterests),
         cannabisSpecific
       };
-      if (editingId) await updateVideo(editingId, input);
-      else await createVideo(input);
+      const saved = editingId
+        ? await updateVideo(editingId, input)
+        : await createVideo(input);
+      uploadedAssetId = "";
       setMessage(
-        editingId
-          ? "Video changes saved as a draft."
-          : "Video added to this workspace library as a draft."
+        saved.storageCleanupWarning ||
+          (editingId
+            ? "Video changes saved as a draft."
+            : "Video added to this workspace library as a draft.")
       );
       resetForm();
       await loadLibrary();
     } catch (err) {
+      if (uploadedAssetId) {
+        await abortVideoUpload(uploadedAssetId, uploadWorkspace).catch(() => undefined);
+      }
       setError(err);
     } finally {
+      setUploadProgress(null);
       setSaving(false);
     }
   }
@@ -551,6 +564,22 @@ export default function VideosRoute() {
                   setMediaDraft(emptyLessonMediaDraft());
                 }}
               />
+              {uploadProgress !== null ? (
+                <View
+                  accessibilityLabel={`Uploading video ${uploadProgress} percent`}
+                  accessibilityLiveRegion="polite"
+                  style={styles.uploadProgress}
+                >
+                  <ActivityIndicator accessibilityLabel="Uploading video" />
+                  <View style={styles.uploadProgressCopy}>
+                    <Text style={styles.fieldLabel}>Uploading video</Text>
+                    <Text style={styles.help}>
+                      {uploadProgress}% complete. Keep this page open until GrowPath
+                      verifies the file.
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
               <Text style={styles.fieldLabel}>Who can watch?</Text>
               <View accessibilityRole="radiogroup" style={styles.choiceRow}>
                 {visibilityOptions(workspaceType).map((option) => (
@@ -752,6 +781,18 @@ const styles = StyleSheet.create({
   },
   checkboxSelected: { backgroundColor: "#166534", borderColor: "#166534" },
   fieldLabel: { color: "#0F172A", fontWeight: "800", marginBottom: 8 },
+  uploadProgress: {
+    alignItems: "center",
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 12,
+    padding: 11
+  },
+  uploadProgressCopy: { flex: 1 },
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

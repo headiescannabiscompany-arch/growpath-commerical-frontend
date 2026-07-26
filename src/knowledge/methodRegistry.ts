@@ -401,6 +401,7 @@ export const methodRegistry: GrowPathMethod[] = [
     "video-sharing-workflow-method.md",
     [
       "upload or link",
+      "reserve and verify private storage",
       "review rights and accessibility",
       "save once",
       "publish with visibility",
@@ -420,6 +421,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "workspace-owned reusable video record",
       "truthful workspace storage usage and limit",
+      "verified private object and authorized short-lived playback",
       "public or follower-scoped Discover result",
       "creator follow action from video detail",
       "stable course and content references",
@@ -433,6 +435,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never duplicate an upload merely to attach one reusable video to a course.",
       "Never delete a library video while a course or supported record still references it.",
       "Never claim storage was released until the storage service confirms physical deletion.",
+      "Never persist object-storage credentials or expiring signed upload or playback URLs in video, course, or lesson records.",
       "Never show cannabis/hemp-specific video discovery to unrelated horticulture viewers.",
       "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission."
     ],
@@ -465,6 +468,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "approved embed capability or link-only fallback",
       "learner-visible availability and accessibility status",
       "external provider link",
+      "authorized short-lived playback for protected GrowPath library videos",
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
@@ -477,6 +481,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never imply GrowPath owns, hosts, continuously monitors, or verifies watch analytics for third-party media.",
       "Never publish video without rights confirmation, a timestamped availability check, accessibility status, text summary, and external-link fallback.",
       "Never drop a Vimeo unlisted privacy hash while normalizing its canonical or player URL.",
+      "Never persist object-storage credentials or expiring signed playback URLs in a course or lesson.",
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
       "Never request owned courses or expose authoring, invite, analytics, publish, unpublish, enrollment, purchase, or progress controls before authentication.",
       "Never expose duplicate course-authoring back actions, multiple page-level headings, unchecked pricing or access choices, or raw stored values as course labels.",

@@ -39,15 +39,13 @@ jest.mock("@/entitlements", () => ({
 }));
 
 jest.mock("@/api/videos", () => ({
+  abortVideoUpload: jest.fn(),
   createVideo: jest.fn(),
   deleteVideo: jest.fn(),
   updateVideo: jest.fn(),
   searchVideos: (...args: any[]) => mockSearchVideos(...args),
-  listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args)
-}));
-
-jest.mock("@/api/uploads", () => ({
-  uploadCourseMedia: jest.fn()
+  listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args),
+  uploadVideoFile: jest.fn()
 }));
 
 jest.mock("@/components/layout/AppPage", () => ({

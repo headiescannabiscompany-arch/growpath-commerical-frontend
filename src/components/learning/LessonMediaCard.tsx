@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Linking,
   Platform,
@@ -14,6 +15,8 @@ import {
   lessonMediaDraftFromLesson,
   normalizeLessonMediaDraft
 } from "@/features/learning/lessonMedia";
+import { getVideoPlayback, VideoWorkspaceType } from "@/api/videos";
+import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -63,17 +66,90 @@ export default function LessonMediaCard({
   compact = false,
   context = "lesson"
 }: Props) {
+  const entitlements = useEntitlements();
   const [playerLoaded, setPlayerLoaded] = useState(false);
+  const [protectedPlaybackUrl, setProtectedPlaybackUrl] = useState("");
+  const [protectedPlaybackLoading, setProtectedPlaybackLoading] = useState(false);
+  const [protectedPlaybackError, setProtectedPlaybackError] = useState("");
   const normalized = useMemo(
     () => normalizeLessonMediaDraft(lessonMediaDraftFromLesson(lesson)),
     [lesson]
   );
   const media = normalized.mediaSource;
+  const videoAssetId = String(lesson?.videoAssetId || "");
+  const suppliedPlaybackUrl = String(lesson?.playbackUrl || "");
+  const protectedGrowPathMedia = Boolean(
+    media?.sourceType === "growpath_upload" &&
+    String(media.canonicalUrl || media.originalUrl || "").startsWith(
+      "/api/videos/uploads/"
+    )
+  );
+
+  useEffect(() => {
+    let active = true;
+    setProtectedPlaybackError("");
+    if (!protectedGrowPathMedia) {
+      setProtectedPlaybackUrl("");
+      setProtectedPlaybackLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    if (suppliedPlaybackUrl) {
+      setProtectedPlaybackUrl(suppliedPlaybackUrl);
+      setProtectedPlaybackLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    if (!videoAssetId) {
+      setProtectedPlaybackUrl("");
+      setProtectedPlaybackLoading(false);
+      setProtectedPlaybackError(
+        "This protected video is not connected to its library record."
+      );
+      return () => {
+        active = false;
+      };
+    }
+    setProtectedPlaybackLoading(true);
+    getVideoPlayback(
+      videoAssetId,
+      entitlements.mode as VideoWorkspaceType,
+      entitlements.facilityId || undefined
+    )
+      .then((result) => {
+        if (active) setProtectedPlaybackUrl(result.playbackUrl);
+      })
+      .catch(() => {
+        if (active) {
+          setProtectedPlaybackUrl("");
+          setProtectedPlaybackError(
+            "This protected video is unavailable or your account does not have access."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setProtectedPlaybackLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    entitlements.facilityId,
+    entitlements.mode,
+    protectedGrowPathMedia,
+    suppliedPlaybackUrl,
+    videoAssetId
+  ]);
+
   if (!media) return null;
 
-  const sourceUrl = resolveImageUri(
-    media.externalLinkFallback || media.canonicalUrl || media.originalUrl
-  );
+  const sourceUrl = protectedGrowPathMedia
+    ? protectedPlaybackUrl
+    : resolveImageUri(
+        media.externalLinkFallback || media.canonicalUrl || media.originalUrl
+      );
   const isUnavailable = new Set(["unavailable", "restricted"]).has(
     media.availabilityStatus
   );
@@ -82,9 +158,11 @@ export default function LessonMediaCard({
     media.availabilityStatus === "available" &&
     (media.embedCapability === "native" ||
       (media.embedCapability === "supported" && media.allowEmbed && media.embedUrl));
-  const playerUrl = resolveImageUri(
-    media.embedCapability === "native" ? media.canonicalUrl : media.embedUrl
-  );
+  const playerUrl = protectedGrowPathMedia
+    ? protectedPlaybackUrl
+    : resolveImageUri(
+        media.embedCapability === "native" ? media.canonicalUrl : media.embedUrl
+      );
   const clickToLoad = media.privacyMode === "click_to_load";
   const shouldRenderPlayer = canEmbed && (playerLoaded || !clickToLoad);
   const title = media.title || lesson?.title || `${media.providerLabel} lesson video`;
@@ -149,6 +227,23 @@ export default function LessonMediaCard({
           >
             <Text style={styles.primaryButtonText}>Load {media.providerLabel} video</Text>
           </Pressable>
+        </View>
+      ) : null}
+
+      {protectedPlaybackLoading ? (
+        <View
+          accessibilityLabel="Preparing protected video playback"
+          accessibilityLiveRegion="polite"
+          style={styles.playbackStatus}
+        >
+          <ActivityIndicator />
+          <Text style={styles.statusText}>Preparing protected playback…</Text>
+        </View>
+      ) : null}
+      {protectedPlaybackError ? (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningTitle}>Video playback unavailable</Text>
+          <Text style={styles.warningText}>{protectedPlaybackError}</Text>
         </View>
       ) : null}
 
@@ -306,6 +401,13 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: "#1d4ed8", fontWeight: "800" },
   statusText: { color: "#475569", fontSize: 12, lineHeight: 18 },
+  playbackStatus: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 9,
+    justifyContent: "center",
+    paddingVertical: 12
+  },
   progressNote: { color: "#334155", fontSize: 12, lineHeight: 18, fontWeight: "600" },
   checkedAt: { color: "#64748b", fontSize: 11 }
 });

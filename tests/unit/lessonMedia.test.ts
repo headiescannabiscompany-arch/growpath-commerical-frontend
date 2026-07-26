@@ -109,4 +109,23 @@ describe("lesson media contract", () => {
       ])
     );
   });
+
+  it("recognizes a protected GrowPath video object path", () => {
+    const prepared = prepareLessonMediaSubmission(
+      {
+        ...emptyLessonMediaDraft("growpath_upload"),
+        availabilityStatus: "available",
+        lastCheckedAt: "2026-07-26T12:00:00Z"
+      },
+      "/api/videos/uploads/507f1f77bcf86cd799439011/object"
+    );
+
+    expect(prepared.errors).toEqual([]);
+    expect(prepared.mediaSource).toMatchObject({
+      sourceType: "growpath_upload",
+      provider: "growpath",
+      embedCapability: "native",
+      canonicalUrl: "/api/videos/uploads/507f1f77bcf86cd799439011/object"
+    });
+  });
 });
