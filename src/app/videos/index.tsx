@@ -724,7 +724,9 @@ export default function VideosRoute() {
                   ownerControls={canEdit || canPublish || canManage}
                   onEdit={canEdit ? editVideo : undefined}
                   onTogglePublished={canPublish ? togglePublished : undefined}
-                  onDelete={canManage ? setConfirmDelete : undefined}
+                  onDelete={
+                    canManage || canEditOwnStaffDraft ? setConfirmDelete : undefined
+                  }
                 />
               );
             })}

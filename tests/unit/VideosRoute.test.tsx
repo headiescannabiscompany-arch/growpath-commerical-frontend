@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 const mockListVideoLibrary = jest.fn();
 const mockSearchVideos = jest.fn();
+const mockDeleteVideo = jest.fn();
 const mockSetParams = jest.fn();
 let mockMode = "personal";
 let mockFacilityId: string | null = null;
@@ -41,7 +42,7 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/api/videos", () => ({
   abortVideoUpload: jest.fn(),
   createVideo: jest.fn(),
-  deleteVideo: jest.fn(),
+  deleteVideo: (...args: any[]) => mockDeleteVideo(...args),
   updateVideo: jest.fn(),
   searchVideos: (...args: any[]) => mockSearchVideos(...args),
   listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args),
@@ -79,9 +80,19 @@ jest.mock("@/components/learning/LessonMediaSourceEditor", () => ({
 }));
 jest.mock("@/components/videos/VideoCard", () => ({
   __esModule: true,
-  default: ({ video }: any) => {
-    const MockText = require("react-native").Text;
-    return <MockText>{video.title}</MockText>;
+  default: ({ video, onDelete }: any) => {
+    const { Pressable: MockPressable, Text: MockText, View: MockView } =
+      require("react-native");
+    return (
+      <MockView>
+        <MockText>{video.title}</MockText>
+        {onDelete ? (
+          <MockPressable accessibilityLabel={`Remove ${video.title}`} onPress={() => onDelete(video)}>
+            <MockText>Remove</MockText>
+          </MockPressable>
+        ) : null}
+      </MockView>
+    );
   }
 }));
 
@@ -93,6 +104,8 @@ describe("universal Videos route", () => {
     mockFacilityId = null;
     mockListVideoLibrary.mockReset();
     mockSearchVideos.mockReset();
+    mockDeleteVideo.mockReset();
+    mockDeleteVideo.mockResolvedValue({ deleted: true });
   });
 
   it("gives a Free personal account its library and truthful storage", async () => {
@@ -147,5 +160,42 @@ describe("universal Videos route", () => {
     });
     expect(screen.queryByText("Add a video")).toBeNull();
     expect(mockListVideoLibrary).toHaveBeenCalledWith("facility", "facility-1");
+  });
+
+  it("lets Facility staff remove their own unpublished draft", async () => {
+    mockMode = "facility";
+    mockFacilityId = "facility-1";
+    mockListVideoLibrary.mockResolvedValue({
+      videos: [
+        {
+          id: "staff-draft",
+          uploaderUserId: "user-1",
+          title: "Staff training draft",
+          status: "draft",
+          visibility: "facility_internal"
+        }
+      ],
+      quota: {
+        plan: "facility",
+        usedBytes: 0,
+        limitBytes: 100 * 1024 * 1024 * 1024,
+        remainingBytes: 100 * 1024 * 1024 * 1024
+      },
+      permissions: { canUpload: true, canPublish: false, canManage: false }
+    });
+
+    render(<VideosRoute />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Staff training draft")).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText("Remove Staff training draft"));
+    fireEvent.press(
+      screen.getByLabelText("Confirm removal of Staff training draft")
+    );
+
+    await waitFor(() => {
+      expect(mockDeleteVideo).toHaveBeenCalledWith("staff-draft");
+    });
   });
 });

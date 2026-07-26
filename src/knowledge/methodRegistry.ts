@@ -430,6 +430,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
+      "Never let Facility Staff remove another member's draft or any published Facility video.",
       "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover.",
       "Never treat a client-provided flag as proof that the viewer follows a video owner.",
       "Never duplicate an upload merely to attach one reusable video to a course.",

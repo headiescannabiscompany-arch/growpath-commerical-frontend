@@ -12,8 +12,9 @@ Commercial workspace and retain the uploader. Facility videos belong to the sele
 Facility and retain the uploader and role context.
 
 Facility viewers and auditors may watch accessible videos and follow users, but they
-cannot mutate the shared Facility library. Staff may upload and edit only their own
-drafts. Owners and managers may review, publish, edit, detach, archive, and remove
+cannot mutate the shared Facility library. Staff may upload, edit, and remove only their
+own unpublished drafts. They cannot remove another member's draft or any published
+record. Owners and managers may review, publish, edit, detach, archive, and remove
 Facility video records. Unpublished Facility drafts are visible only to their uploader
 and Facility owners or managers. Every Facility request must match the selected Facility;
 no video may cross Facility scope.
