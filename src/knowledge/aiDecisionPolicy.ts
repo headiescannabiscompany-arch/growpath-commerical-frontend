@@ -33,6 +33,7 @@ export const aiDecisionPolicy = {
     "Separate observation, calculation, inference and user claim.",
     "Treat social posts as authorized QA leads only, never diagnostic ground truth or model-training data.",
     "Expose rule/GPT disagreement and fallback provider labels.",
+    "Treat outcome aggregates as observational review evidence, exclude synthetic QA records, and never rewrite runtime methods automatically.",
     "Require user confirmation before writes and consequential decisions."
   ]
 };

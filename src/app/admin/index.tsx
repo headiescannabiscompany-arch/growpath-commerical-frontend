@@ -116,6 +116,11 @@ type KnowledgeEntry = {
   status: "draft" | "approved" | "retired";
   reliabilityTier?: "A" | "B" | "C" | "D" | "";
   guidance?: string;
+  preferredAuthors?: string[];
+  trustedFor?: string[];
+  notTrustedFor?: string[];
+  requiresCrossCheck?: boolean;
+  crossCheckRequirements?: string[];
   revision: number;
   reviewDueAt?: string;
   reviewStatus?:
@@ -135,6 +140,24 @@ type MethodReviewProposal = {
   agreementCounts?: Record<string, number>;
   decisionCounts?: Record<string, number>;
 };
+
+const RELIABILITY_TIERS = ["A", "B", "C", "D"] as const;
+
+function splitAdminList(value: string) {
+  return [
+    ...new Set(
+      value
+        .split(/[,\n]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  ];
+}
+
+function nextReliabilityTier(value: string) {
+  const current = RELIABILITY_TIERS.indexOf(value as (typeof RELIABILITY_TIERS)[number]);
+  return RELIABILITY_TIERS[(current + 1) % RELIABILITY_TIERS.length];
+}
 
 function defaultKnowledgeReviewDate() {
   const value = new Date();
@@ -181,9 +204,14 @@ export default function PlatformAdminRoute() {
     title: "",
     domain: "",
     reliabilityTier: "B",
+    preferredAuthors: "",
+    trustedFor: "",
+    notTrustedFor: "",
+    requiresCrossCheck: true,
+    crossCheckRequirements: "",
     guidance: "",
     reviewDueAt: defaultKnowledgeReviewDate(),
-    changeNote: "Initial admin review"
+    changeNote: "Initial governance review"
   });
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -200,16 +228,17 @@ export default function PlatformAdminRoute() {
     setError("");
     try {
       const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
-      const [
-        overviewResponse,
-        usageResponse,
-        usersResponse,
-        moderationResponse,
-        evidenceResponse,
-        supportResponse,
-        knowledgeResponse,
-        methodReviewResponse
-      ] = await Promise.all([
+      const labels = [
+        "Overview",
+        "Usage",
+        "Users",
+        "Moderation",
+        "Evidence requests",
+        "Support requests",
+        "Knowledge registry",
+        "Method review"
+      ];
+      const settled = await Promise.allSettled([
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
         apiRequest(`/api/admin/users${suffix}`),
@@ -219,25 +248,54 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/knowledge-registry"),
         apiRequest("/api/admin/method-review-proposals")
       ]);
-      setOverview(overviewResponse?.overview || null);
-      setUsage(usageResponse?.usage || null);
-      setUsers(Array.isArray(usersResponse?.users) ? usersResponse.users : []);
-      setModerationCases(
-        Array.isArray(moderationResponse?.cases) ? moderationResponse.cases : []
-      );
-      setEvidenceRequests(
-        Array.isArray(evidenceResponse?.requests) ? evidenceResponse.requests : []
-      );
-      setSupportRequests(
-        Array.isArray(supportResponse?.requests) ? supportResponse.requests : []
-      );
-      setKnowledgeEntries(
-        Array.isArray(knowledgeResponse?.entries) ? knowledgeResponse.entries : []
-      );
-      setMethodReviewProposals(
-        Array.isArray(methodReviewResponse?.proposals)
-          ? methodReviewResponse.proposals
-          : []
+      const failures: string[] = [];
+      const responseAt = (index: number) => {
+        const result = settled[index];
+        if (result.status === "fulfilled") return result.value;
+        const detail = result.reason?.message || "request failed";
+        failures.push(`${labels[index]}: ${detail}`);
+        return null;
+      };
+
+      const overviewResponse = responseAt(0);
+      const usageResponse = responseAt(1);
+      const usersResponse = responseAt(2);
+      const moderationResponse = responseAt(3);
+      const evidenceResponse = responseAt(4);
+      const supportResponse = responseAt(5);
+      const knowledgeResponse = responseAt(6);
+      const methodReviewResponse = responseAt(7);
+
+      if (overviewResponse) setOverview(overviewResponse.overview || null);
+      if (usageResponse) setUsage(usageResponse.usage || null);
+      if (usersResponse)
+        setUsers(Array.isArray(usersResponse.users) ? usersResponse.users : []);
+      if (moderationResponse)
+        setModerationCases(
+          Array.isArray(moderationResponse.cases) ? moderationResponse.cases : []
+        );
+      if (evidenceResponse)
+        setEvidenceRequests(
+          Array.isArray(evidenceResponse.requests) ? evidenceResponse.requests : []
+        );
+      if (supportResponse)
+        setSupportRequests(
+          Array.isArray(supportResponse.requests) ? supportResponse.requests : []
+        );
+      if (knowledgeResponse)
+        setKnowledgeEntries(
+          Array.isArray(knowledgeResponse.entries) ? knowledgeResponse.entries : []
+        );
+      if (methodReviewResponse)
+        setMethodReviewProposals(
+          Array.isArray(methodReviewResponse.proposals)
+            ? methodReviewResponse.proposals
+            : []
+        );
+      setError(
+        failures.length
+          ? `Some administration sections could not load. ${failures.join("; ")}`
+          : ""
       );
     } catch (err: any) {
       setError(err?.message || "Unable to load platform administration data.");
@@ -247,8 +305,29 @@ export default function PlatformAdminRoute() {
   }, [isAdmin, query]);
 
   async function createKnowledgeEntry() {
-    if (!knowledgeDraft.entryId.trim() || !knowledgeDraft.title.trim()) {
-      setError("Knowledge entry ID and title are required.");
+    const preferredAuthors = splitAdminList(knowledgeDraft.preferredAuthors);
+    const trustedFor = splitAdminList(knowledgeDraft.trustedFor);
+    const notTrustedFor = splitAdminList(knowledgeDraft.notTrustedFor);
+    const crossCheckRequirements = splitAdminList(knowledgeDraft.crossCheckRequirements);
+    if (
+      !knowledgeDraft.entryId.trim() ||
+      !knowledgeDraft.title.trim() ||
+      !knowledgeDraft.guidance.trim() ||
+      !knowledgeDraft.changeNote.trim()
+    ) {
+      setError("Knowledge entry ID, title, guidance, and change note are required.");
+      return;
+    }
+    if (
+      knowledgeDraft.entryType === "source" &&
+      ((!knowledgeDraft.domain.trim() && !preferredAuthors.length) ||
+        !trustedFor.length ||
+        !notTrustedFor.length ||
+        (knowledgeDraft.requiresCrossCheck && !crossCheckRequirements.length))
+    ) {
+      setError(
+        "A source needs a domain or preferred author/channel, approved uses, exclusions, and cross-check requirements when cross-checking is on."
+      );
       return;
     }
     setBusyId("knowledge-new");
@@ -256,7 +335,13 @@ export default function PlatformAdminRoute() {
     try {
       await apiRequest("/api/admin/knowledge-registry", {
         method: "POST",
-        body: knowledgeDraft
+        body: {
+          ...knowledgeDraft,
+          preferredAuthors,
+          trustedFor,
+          notTrustedFor,
+          crossCheckRequirements
+        }
       });
       setKnowledgeDraft((value) => ({
         ...value,
@@ -264,8 +349,12 @@ export default function PlatformAdminRoute() {
         title: "",
         domain: "",
         guidance: "",
+        preferredAuthors: "",
+        trustedFor: "",
+        notTrustedFor: "",
+        crossCheckRequirements: "",
         reviewDueAt: defaultKnowledgeReviewDate(),
-        changeNote: "Initial admin review"
+        changeNote: "Initial governance review"
       }));
       await load();
     } catch (err: any) {
@@ -551,10 +640,16 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Knowledge registry review"
-        subtitle="Version source reliability and GrowPath methods. Drafts do not silently replace approved runtime guidance."
+        subtitle="Create an audited review ledger for source reliability and GrowPath methods. Approval records editorial intent; runtime guidance changes only in a separate reviewed code release."
       >
+        <Text style={styles.meta}>
+          Do not invent a source. Enter the owner-supplied domain or author, approved
+          uses, explicit exclusions, cross-check rule, and next review date.
+        </Text>
         <View style={styles.searchRow}>
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Knowledge entry type"
             style={styles.secondaryButton}
             onPress={() =>
               setKnowledgeDraft((value) => ({
@@ -586,12 +681,91 @@ export default function PlatformAdminRoute() {
           placeholder="Domain (sources only)"
           style={styles.input}
         />
+        {knowledgeDraft.entryType === "source" ? (
+          <>
+            <TextInput
+              value={knowledgeDraft.preferredAuthors}
+              onChangeText={(preferredAuthors) =>
+                setKnowledgeDraft((value) => ({ ...value, preferredAuthors }))
+              }
+              placeholder="Preferred authors or channels, comma-separated"
+              style={styles.input}
+            />
+            <TextInput
+              value={knowledgeDraft.trustedFor}
+              onChangeText={(trustedFor) =>
+                setKnowledgeDraft((value) => ({ ...value, trustedFor }))
+              }
+              placeholder="Approved uses, comma-separated"
+              style={styles.input}
+            />
+            <TextInput
+              value={knowledgeDraft.notTrustedFor}
+              onChangeText={(notTrustedFor) =>
+                setKnowledgeDraft((value) => ({ ...value, notTrustedFor }))
+              }
+              placeholder="Explicit exclusions, comma-separated"
+              style={styles.input}
+            />
+            <View style={styles.searchRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Source reliability tier"
+                style={styles.secondaryButton}
+                onPress={() =>
+                  setKnowledgeDraft((value) => ({
+                    ...value,
+                    reliabilityTier: nextReliabilityTier(value.reliabilityTier)
+                  }))
+                }
+              >
+                <Text style={styles.secondaryText}>
+                  Reliability tier {knowledgeDraft.reliabilityTier}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityLabel="Cross-check required"
+                accessibilityState={{ checked: knowledgeDraft.requiresCrossCheck }}
+                style={styles.secondaryButton}
+                onPress={() =>
+                  setKnowledgeDraft((value) => ({
+                    ...value,
+                    requiresCrossCheck: !value.requiresCrossCheck
+                  }))
+                }
+              >
+                <Text style={styles.secondaryText}>
+                  Cross-check{" "}
+                  {knowledgeDraft.requiresCrossCheck ? "required" : "not required"}
+                </Text>
+              </Pressable>
+            </View>
+            {knowledgeDraft.requiresCrossCheck ? (
+              <TextInput
+                value={knowledgeDraft.crossCheckRequirements}
+                onChangeText={(crossCheckRequirements) =>
+                  setKnowledgeDraft((value) => ({
+                    ...value,
+                    crossCheckRequirements
+                  }))
+                }
+                placeholder="Cross-check requirements, comma-separated"
+                style={styles.input}
+              />
+            ) : null}
+          </>
+        ) : null}
         <TextInput
           value={knowledgeDraft.guidance}
           onChangeText={(guidance) =>
             setKnowledgeDraft((value) => ({ ...value, guidance }))
           }
-          placeholder="Trusted use, exclusions, or method guidance"
+          placeholder={
+            knowledgeDraft.entryType === "source"
+              ? "Source guidance and limitations"
+              : "Proposed method guidance and limitations"
+          }
           multiline
           style={[styles.input, styles.messageInput]}
         />
@@ -617,7 +791,7 @@ export default function PlatformAdminRoute() {
           style={styles.primaryButton}
           onPress={() => void createKnowledgeEntry()}
         >
-          <Text style={styles.primaryText}>Create draft revision 1</Text>
+          <Text style={styles.primaryText}>Create governed draft revision</Text>
         </Pressable>
         {knowledgeEntries.map((entry) => (
           <View key={entry._id} style={styles.caseRow}>
@@ -639,6 +813,32 @@ export default function PlatformAdminRoute() {
               {entry.guidance ? (
                 <Text style={styles.evidencePreview}>{entry.guidance}</Text>
               ) : null}
+              {entry.preferredAuthors?.length ? (
+                <Text style={styles.meta}>
+                  Preferred authors/channels: {entry.preferredAuthors.join(", ")}
+                </Text>
+              ) : null}
+              {entry.trustedFor?.length ? (
+                <Text style={styles.meta}>
+                  Approved uses: {entry.trustedFor.join(", ")}
+                </Text>
+              ) : null}
+              {entry.notTrustedFor?.length ? (
+                <Text style={styles.meta}>
+                  Exclusions: {entry.notTrustedFor.join(", ")}
+                </Text>
+              ) : null}
+              {entry.entryType === "source" ? (
+                <Text style={styles.meta}>
+                  Cross-check:{" "}
+                  {entry.requiresCrossCheck
+                    ? entry.crossCheckRequirements?.join(", ") || "required"
+                    : "not required"}
+                </Text>
+              ) : null}
+              <Text style={styles.meta}>
+                Runtime guidance unchanged until a separate reviewed code release.
+              </Text>
             </View>
             <View style={styles.actions}>
               <Pressable
@@ -659,7 +859,7 @@ export default function PlatformAdminRoute() {
           </View>
         ))}
         {!knowledgeEntries.length ? (
-          <Text style={styles.meta}>No reviewed runtime overrides yet.</Text>
+          <Text style={styles.meta}>No governed knowledge revisions yet.</Text>
         ) : null}
       </AppCard>
 
@@ -696,6 +896,9 @@ export default function PlatformAdminRoute() {
                 Agreement: {JSON.stringify(proposal.agreementCounts || {})} · decisions:{" "}
                 {JSON.stringify(proposal.decisionCounts || {})}
               </Text>
+              {proposal.limitations?.length ? (
+                <Text style={styles.meta}>Limits: {proposal.limitations.join(" ")}</Text>
+              ) : null}
             </View>
             {proposal.status === "pending_review" ? (
               <View style={styles.actions}>

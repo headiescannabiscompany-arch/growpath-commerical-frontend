@@ -90,21 +90,26 @@ const moderationCase = {
   }
 };
 
+function defaultAdminApi(path: string) {
+  if (path === "/api/admin/overview") return Promise.resolve({ overview });
+  if (path === "/api/admin/usage") return Promise.resolve({ usage });
+  if (path.startsWith("/api/admin/users")) return Promise.resolve({ users: [member] });
+  if (path === "/api/admin/moderation-cases")
+    return Promise.resolve({ cases: [moderationCase] });
+  if (path === "/api/admin/evidence-requests") return Promise.resolve({ requests: [] });
+  if (path === "/api/admin/support-requests")
+    return Promise.resolve({ requests: [supportRequest] });
+  if (path === "/api/admin/knowledge-registry") return Promise.resolve({ entries: [] });
+  if (path === "/api/admin/method-review-proposals")
+    return Promise.resolve({ proposals: [] });
+  return Promise.resolve({ ok: true });
+}
+
 describe("PlatformAdminRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = "admin";
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/overview") return Promise.resolve({ overview });
-      if (path === "/api/admin/usage") return Promise.resolve({ usage });
-      if (path.startsWith("/api/admin/users"))
-        return Promise.resolve({ users: [member] });
-      if (path === "/api/admin/moderation-cases")
-        return Promise.resolve({ cases: [moderationCase] });
-      if (path === "/api/admin/support-requests")
-        return Promise.resolve({ requests: [supportRequest] });
-      return Promise.resolve({ ok: true });
-    });
+    mockApiRequest.mockImplementation(defaultAdminApi);
   });
 
   it("shows global presence and account controls to platform admins", async () => {
@@ -121,6 +126,79 @@ describe("PlatformAdminRoute", () => {
         method: "POST",
         body: { reason: "Platform owner token refresh" }
       })
+    );
+  });
+
+  it("keeps working Admin sections visible when one independent section fails", async () => {
+    mockApiRequest.mockImplementation((path: string) =>
+      path === "/api/admin/knowledge-registry"
+        ? Promise.reject(new Error("Not found"))
+        : defaultAdminApi(path)
+    );
+
+    const screen = render(<PlatformAdminRoute />);
+
+    await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
+    expect(screen.getByText("42")).toBeTruthy();
+    expect(screen.getByText(/Knowledge registry: Not found/)).toBeTruthy();
+    expect(screen.getByText("member@example.com · personal · pro")).toBeTruthy();
+  });
+
+  it("submits complete owner-supplied source governance fields as arrays", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Stable entry ID"),
+      "extension-example"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Source or method title"),
+      "Example Extension"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Domain (sources only)"),
+      "extension.example.edu"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Preferred authors or channels, comma-separated"),
+      "Horticulture Team"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Approved uses, comma-separated"),
+      "education, IPM"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Explicit exclusions, comma-separated"),
+      "cultivar claims, medical advice"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Cross-check requirements, comma-separated"),
+      "Confirm crop scope, check publication date"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Source guidance and limitations"),
+      "Use only within the reviewed publication scope."
+    );
+    fireEvent.press(screen.getByText("Create governed draft revision"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/knowledge-registry",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            entryId: "extension-example",
+            entryType: "source",
+            reliabilityTier: "B",
+            preferredAuthors: ["Horticulture Team"],
+            trustedFor: ["education", "IPM"],
+            notTrustedFor: ["cultivar claims", "medical advice"],
+            requiresCrossCheck: true,
+            crossCheckRequirements: ["Confirm crop scope", "check publication date"]
+          })
+        })
+      )
     );
   });
 
