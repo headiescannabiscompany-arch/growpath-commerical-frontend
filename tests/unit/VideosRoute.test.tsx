@@ -137,6 +137,28 @@ describe("universal Videos route", () => {
     expect(mockListVideoLibrary).toHaveBeenCalledWith("personal", undefined);
   });
 
+  it("does not send a Facility ID when the user switches to Commercial", async () => {
+    mockMode = "commercial";
+    mockFacilityId = "facility-1";
+    mockListVideoLibrary.mockResolvedValue({
+      videos: [],
+      quota: {
+        plan: "commercial",
+        usedBytes: 0,
+        limitBytes: 100 * 1024 * 1024 * 1024,
+        remainingBytes: 100 * 1024 * 1024 * 1024
+      },
+      permissions: { canUpload: true, canPublish: true, canManage: true }
+    });
+
+    render(<VideosRoute />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Commercial video storage")).toBeTruthy();
+    });
+    expect(mockListVideoLibrary).toHaveBeenCalledWith("commercial", undefined);
+  });
+
   it("keeps a Facility viewer read-only in the shared library", async () => {
     mockMode = "facility";
     mockFacilityId = "facility-1";

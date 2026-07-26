@@ -26,7 +26,10 @@ export default function VideoLibraryPicker({
     let active = true;
     setLoading(true);
     setError("");
-    listVideoLibrary(workspaceType, entitlements.facilityId || undefined)
+    listVideoLibrary(
+      workspaceType,
+      workspaceType === "facility" ? entitlements.facilityId || undefined : undefined
+    )
       .then((result) => {
         if (!active) return;
         setVideos(result.videos.filter((video) => video.status !== "archived"));
