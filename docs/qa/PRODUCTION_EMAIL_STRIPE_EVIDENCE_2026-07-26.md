@@ -64,7 +64,7 @@ Account: `support+qa-resend-20260726-0907@growpathai.com`
 Production evidence:
 
 - A live Commercial Checkout completed at `https://growpathai.com/offers?subscription=success`.
-- Stripe charged $50.00 immediately. The expected 30-day trial was not applied, so this is a product/configuration finding rather than accepted trial behavior.
+- Stripe charged $50.00 immediately. The account had already consumed its one-time 30-day trial, but the applicable account-specific billing state was not clear enough before Checkout; this exposed a billing-safety copy and confirmation finding.
 - The initial account-event deliveries failed while the replacement signing secret was being corrected in Render.
 - Backend PR `#83` merged as `2d0164e6fc60d62dc0f52945023f22a5a3bd97e2` and deployed Live as Render deployment `dep-d9j1dh0k1i2s73bfsj50`. It preserves the exact signed bytes across all three Stripe webhook paths and adds a full-app raw-body contract test plus safe signature-rejection diagnostics.
 - The focused backend webhook regression passed: 4 suites, 27 tests.
@@ -83,10 +83,31 @@ Evidence types:
 
 No card number, password, verification/reset token, API key, or webhook signing secret is retained in this record.
 
+## Checkout billing-safety follow-up
+
+Frontend PR `#240` merged as `809a820625f7edcb9351d93f255a6f98cfc287f7` and deployed Live as Render deployment `dep-d9j203cvikkc73d680o0` on July 26, 2026 at 10:57 AM EDT.
+
+The verified production account had already consumed its one-time 30-day trial, so the backend correctly considered it ineligible for another trial. The frontend now:
+
+- states that the account has already used its 30-day trial;
+- states that completing another paid-plan Checkout bills the displayed price;
+- keeps the first paid-plan action on GrowPath and changes it to a second explicit price-labeled confirmation;
+- refreshes the authenticated account and displays completion feedback on `?subscription=success`; and
+- displays that no new payment was submitted on `?subscription=canceled`.
+
+Live in-app Browser verification against `https://growpathai.com/offers?release=809a820&verify=billing-safety` confirmed that the first Pro action did not navigate away and changed to `Continue — billed $10`. The second action was intentionally not pressed, so no new Checkout session or charge was created. The success and cancellation return messages were each verified through their production query routes.
+
+Validation:
+
+- focused Offers billing-safety tests: 3 passed;
+- changed-file ESLint: passed;
+- production web export: passed and used `https://api.growpathai.com`;
+- full GitHub frontend CI, including the complete test suite: passed.
+
+
 ## Still open
 
-- Correct the missing 30-day Commercial trial or remove that promise from the applicable offer; the verified live Checkout charged immediately.
-- Add clear success feedback at the Checkout return route; the verified `?subscription=success` return did not visibly confirm completion.
+- Decide whether GrowPath's one-time trial should remain shared across paid plan types or become plan-specific. The verified account had already used its one-time trial; the frontend no longer promises a second one and now protects immediate billing with an explicit confirmation.
 - Retest the August 26 cancellation expiry and GrowPath downgrade after Stripe emits the terminal lifecycle event.
 - Paid course checkout/enrollment/unlock/refund and Facility-plan settlement remain separate live workflows.
 - No dispute was created. A real bank dispute would harm the live account and is not an appropriate synthetic QA action.
