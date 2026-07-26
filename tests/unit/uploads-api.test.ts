@@ -17,16 +17,32 @@ describe("uploads API", () => {
   it("uploads course media to the course media endpoint", async () => {
     const { uploadCourseMedia } = require("@/api/uploads");
 
-    const result = await uploadCourseMedia({
-      uri: "file:///tmp/lesson.pdf",
-      name: "lesson.pdf",
-      mimeType: "application/pdf"
-    });
+    const result = await uploadCourseMedia(
+      {
+        uri: "file:///tmp/lesson.pdf",
+        name: "lesson.pdf",
+        mimeType: "application/pdf"
+      },
+      {
+        purpose: "video",
+        workspaceType: "facility",
+        workspaceId: "facility-1"
+      }
+    );
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/uploads/course-media", {
       method: "POST",
       body: expect.any(FormData)
     });
+    const formData = mockApiRequest.mock.calls[0][1].body;
+    const parts = formData?._parts || Array.from(formData?.entries?.() || []);
+    expect(parts).toEqual(
+      expect.arrayContaining([
+        ["purpose", "video"],
+        ["workspaceType", "facility"],
+        ["workspaceId", "facility-1"]
+      ])
+    );
     expect(result).toEqual({ url: "/uploads/lesson.pdf" });
   });
 

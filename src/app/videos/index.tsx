@@ -241,7 +241,16 @@ export default function VideosRoute() {
         ? null
         : prepareLessonMediaSubmission(mediaDraft, mediaDraft.originalUrl);
       if (preview?.errors.length) throw new Error(preview.errors.join(" "));
-      const uploaded = videoFile ? await uploadCourseMedia(videoFile) : null;
+      const uploaded = videoFile
+        ? await uploadCourseMedia(videoFile, {
+            purpose: "video",
+            workspaceType,
+            workspaceId:
+              workspaceType === "facility"
+                ? entitlements.facilityId || undefined
+                : undefined
+          })
+        : null;
       const prepared = uploaded
         ? prepareLessonMediaSubmission(
             {

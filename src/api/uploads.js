@@ -92,12 +92,19 @@ export async function uploadImage(uri) {
   });
 }
 
-export async function uploadCourseMedia(input) {
+export async function uploadCourseMedia(input, options = {}) {
   const file = normalizeUploadInput(input, "lesson-media");
   if (!file.uri) throw new Error("uploadCourseMedia: uri is required");
 
   const formData = new FormData();
   const type = file.type || guessCourseMediaMime(file.name);
+  if (options.purpose) formData.append("purpose", String(options.purpose));
+  if (options.workspaceType) {
+    formData.append("workspaceType", String(options.workspaceType));
+  }
+  if (options.workspaceId) {
+    formData.append("workspaceId", String(options.workspaceId));
+  }
 
   if (Platform.OS === "web") {
     const blob = await uriToBlob(file.uri);
