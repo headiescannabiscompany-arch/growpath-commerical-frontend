@@ -13,21 +13,20 @@ import {
 } from "react-native";
 
 import {
-  approveCourse,
   completeLesson,
   enrollInCourse,
   getCourse,
   getCourseLearnerNotes,
   getEnrollmentStatus,
   getReviews,
-  rejectCourse,
+  publishCourse,
   sendWatchTime,
   saveCourseLearnerNote,
-  submitForReview,
   trackDropoff,
   trackCourseProductClick,
   trackCourseView,
   trackLessonView,
+  unpublishCourse,
   updateCourse
 } from "../api/courses";
 import { apiRequest } from "../api/apiRequest";
@@ -111,7 +110,6 @@ export default function CourseDetailScreen({ route, navigation }) {
   const [reportReason, setReportReason] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [disputeReason, setDisputeReason] = useState("");
-  const [rejectReason, setRejectReason] = useState("");
   const [salesRange, setSalesRange] = useState("last_30_days");
   const [courseFee, setCourseFee] = useState(() => {
     const cents = Number(initialCourse?.priceCents || 0);
@@ -328,12 +326,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     setSaving(true);
     setFeedback("");
     try {
-      const payload = { ...(course || {}) };
-      delete payload._viewerOwnsCourse;
-      delete payload.id;
-      delete payload._id;
       const updated = await updateCourse(loadedCourseId, {
-        ...payload,
         priceCents: cents,
         price: cents / 100,
         currency: "usd",
@@ -460,44 +453,29 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
-  async function submitReview() {
+  async function publishCurrentCourse() {
     if (!loadedCourseId) return;
     setSaving(true);
     try {
-      await submitForReview(loadedCourseId);
-      setFeedback("Course submitted for review.");
+      await publishCourse(loadedCourseId);
+      setFeedback("Course published.");
       await load();
     } catch (error) {
-      setFeedback(error?.message || "Unable to submit for review.");
+      setFeedback(error?.message || "Unable to publish course.");
     } finally {
       setSaving(false);
     }
   }
 
-  async function approve() {
+  async function unpublishCurrentCourse() {
     if (!loadedCourseId) return;
     setSaving(true);
     try {
-      await approveCourse(loadedCourseId);
-      setFeedback("Course approved.");
+      await unpublishCourse(loadedCourseId);
+      setFeedback("Course unpublished and returned to a private draft.");
       await load();
     } catch (error) {
-      setFeedback(error?.message || "Unable to approve course.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function reject() {
-    if (!loadedCourseId || !rejectReason.trim()) return;
-    setSaving(true);
-    try {
-      await rejectCourse(loadedCourseId, rejectReason.trim());
-      setRejectReason("");
-      setFeedback("Course rejected.");
-      await load();
-    } catch (error) {
-      setFeedback(error?.message || "Unable to reject course.");
+      setFeedback(error?.message || "Unable to unpublish course.");
     } finally {
       setSaving(false);
     }
@@ -1228,41 +1206,30 @@ export default function CourseDetailScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {access.canCreateCourses || access.canPublishCourses ? (
+      {ownsCourse && access.canPublishCourses ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Creator and Moderation</Text>
-          {access.canCreateCourses ? (
-            <Pressable
-              disabled={saving}
-              onPress={submitReview}
-              style={styles.secondaryBtn}
-            >
-              <Text style={styles.secondaryText}>Submit for Review</Text>
-            </Pressable>
-          ) : null}
-          {access.canPublishCourses ? (
-            <>
-              <Pressable disabled={saving} onPress={approve} style={styles.primaryBtn}>
-                <Text style={styles.primaryText}>Approve Course</Text>
-              </Pressable>
-              <TextInput
-                value={rejectReason}
-                onChangeText={setRejectReason}
-                placeholder="Rejection reason"
-                style={styles.input}
-              />
-              <Pressable
-                disabled={saving || !rejectReason.trim()}
-                onPress={reject}
-                style={[
-                  styles.secondaryBtn,
-                  (!rejectReason.trim() || saving) && styles.disabled
-                ]}
-              >
-                <Text style={styles.secondaryText}>Reject Course</Text>
-              </Pressable>
-            </>
-          ) : null}
+          <Text style={styles.cardTitle}>Course publication</Text>
+          <Text style={styles.meta}>
+            Publish when the learner experience is ready. Unpublish returns the course to
+            a private draft without deleting it.
+          </Text>
+          <Pressable
+            disabled={saving}
+            onPress={course?.isPublished ? unpublishCurrentCourse : publishCurrentCourse}
+            style={[styles.primaryBtn, saving && styles.disabled]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              course?.isPublished ? "Unpublish course" : "Publish course"
+            }
+          >
+            <Text style={styles.primaryText}>
+              {saving
+                ? "Saving..."
+                : course?.isPublished
+                  ? "Unpublish Course"
+                  : "Publish Course"}
+            </Text>
+          </Pressable>
         </View>
       ) : null}
 

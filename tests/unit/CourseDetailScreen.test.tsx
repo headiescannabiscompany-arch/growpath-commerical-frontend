@@ -13,6 +13,17 @@ const mockGetCoursePaymentStatus = jest.fn();
 const mockOpenCourseDispute = jest.fn();
 const mockRequestCourseRefund = jest.fn();
 const mockStartCourseCheckout = jest.fn();
+const mockPublishCourse = jest.fn();
+const mockUnpublishCourse = jest.fn();
+const mockUpdateCourse = jest.fn();
+const mockLearningAccess = {
+  canViewCourses: true,
+  canCreateCourses: false,
+  canSellPaidCourses: false,
+  canPublishCourses: false,
+  canViewCourseAnalytics: false,
+  maxLessonsPerCourse: 12
+};
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/auth/AuthContext", () => ({
@@ -22,14 +33,7 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({ mode: "personal" })
 }));
 jest.mock("@/features/learning/learningAccess", () => ({
-  getLearningAccess: () => ({
-    canViewCourses: true,
-    canCreateCourses: false,
-    canSellPaidCourses: false,
-    canPublishCourses: false,
-    canViewCourseAnalytics: false,
-    maxLessonsPerCourse: 12
-  })
+  getLearningAccess: () => mockLearningAccess
 }));
 jest.mock("@/components/feed/PersonalFeedPlacement", () => () => null);
 jest.mock("@/api/grows", () => ({ listPersonalGrows: jest.fn().mockResolvedValue([]) }));
@@ -48,7 +52,6 @@ jest.mock("@/api/reports", () => ({
   exportCourseSales: jest.fn()
 }));
 jest.mock("@/api/courses", () => ({
-  approveCourse: jest.fn(),
   completeLesson: (...args: any[]) => mockCompleteLesson(...args),
   enrollInCourse: jest.fn(),
   getCourse: (...args: any[]) => mockGetCourse(...args),
@@ -58,15 +61,15 @@ jest.mock("@/api/courses", () => ({
     }),
   getEnrollmentStatus: (...args: any[]) => mockGetEnrollmentStatus(...args),
   getReviews: () => Promise.resolve([]),
-  rejectCourse: jest.fn(),
+  publishCourse: (...args: any[]) => mockPublishCourse(...args),
   saveCourseLearnerNote: (...args: any[]) => mockSaveNote(...args),
   sendWatchTime: () => Promise.resolve(),
-  submitForReview: jest.fn(),
   trackDropoff: () => Promise.resolve(),
   trackCourseProductClick: () => Promise.resolve(),
   trackCourseView: () => Promise.resolve(),
   trackLessonView: () => Promise.resolve(),
-  updateCourse: jest.fn()
+  unpublishCourse: (...args: any[]) => mockUnpublishCourse(...args),
+  updateCourse: (...args: any[]) => mockUpdateCourse(...args)
 }));
 
 const freeCourse = {
@@ -101,8 +104,19 @@ const freeCourse = {
 describe("CourseDetailScreen learner player", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.assign(mockLearningAccess, {
+      canViewCourses: true,
+      canCreateCourses: false,
+      canSellPaidCourses: false,
+      canPublishCourses: false,
+      canViewCourseAnalytics: false,
+      maxLessonsPerCourse: 12
+    });
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
     mockSaveNote.mockResolvedValue({ note: "Updated note" });
+    mockPublishCourse.mockResolvedValue({ published: true });
+    mockUnpublishCourse.mockResolvedValue({ published: false });
+    mockUpdateCourse.mockResolvedValue({});
     mockGetCourse.mockResolvedValue(freeCourse);
     mockGetEnrollmentStatus.mockResolvedValue({
       enrolled: true,
@@ -229,5 +243,60 @@ describe("CourseDetailScreen learner player", () => {
         "Payment issue sent to GrowPath support. This does not open a bank or card dispute."
       )
     ).toBeTruthy();
+  });
+
+  it("lets an owner update the fee, publish, and return the course to a private draft", async () => {
+    Object.assign(mockLearningAccess, {
+      canCreateCourses: true,
+      canSellPaidCourses: true,
+      canPublishCourses: true
+    });
+    let ownerCourse = {
+      id: "course-owner",
+      title: "Owner Course",
+      creator: "learner-1",
+      _viewerOwnsCourse: true,
+      priceCents: 100,
+      isPublished: false,
+      lessons: [{ id: "owner-lesson", title: "Owner lesson", content: "Ready" }]
+    };
+    mockGetCourse.mockImplementation(() => Promise.resolve({ ...ownerCourse }));
+    mockUpdateCourse.mockImplementation((_id, payload) =>
+      Promise.resolve({ ...ownerCourse, ...payload })
+    );
+    mockPublishCourse.mockImplementation(() => {
+      ownerCourse = { ...ownerCourse, isPublished: true, visibility: "public" };
+      return Promise.resolve({ published: true, course: ownerCourse });
+    });
+    mockUnpublishCourse.mockImplementation(() => {
+      ownerCourse = { ...ownerCourse, isPublished: false, visibility: "private" };
+      return Promise.resolve({ published: false, course: ownerCourse });
+    });
+
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: "course-owner" } }} />
+    );
+
+    await waitFor(() => expect(screen.getByText("Owner Course")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Edit course price USD"), "2.00");
+    fireEvent.press(screen.getByLabelText("Save course fee"));
+    await waitFor(() =>
+      expect(mockUpdateCourse).toHaveBeenCalledWith("course-owner", {
+        priceCents: 200,
+        price: 2,
+        currency: "usd",
+        access: "paid"
+      })
+    );
+
+    fireEvent.press(await screen.findByText("Publish Course"));
+    await waitFor(() => expect(mockPublishCourse).toHaveBeenCalledWith("course-owner"));
+    expect(await screen.findByText("Unpublish Course")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Unpublish Course"));
+    await waitFor(() => expect(mockUnpublishCourse).toHaveBeenCalledWith("course-owner"));
+    expect(await screen.findByText("Publish Course")).toBeTruthy();
+    expect(screen.queryByText("Submit for Review")).toBeNull();
+    expect(screen.queryByText("Approve Course")).toBeNull();
   });
 });
