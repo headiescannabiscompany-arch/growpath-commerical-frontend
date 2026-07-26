@@ -72,6 +72,23 @@ const supportRequest = {
   createdAt: "2026-07-15T12:00:00.000Z",
   emailDelivery: { sent: true }
 };
+const moderationCase = {
+  _id: "case-1",
+  targetType: "forumPost",
+  targetId: "post-1",
+  reason: "Reported promotional sale",
+  severity: "high",
+  status: "reviewing",
+  action: "none",
+  actionHistory: [],
+  evidenceSnapshot: {
+    automated: false,
+    content: {
+      title: "Plant health discussion",
+      body: "Review this reported Forum post."
+    }
+  }
+};
 
 describe("PlatformAdminRoute", () => {
   beforeEach(() => {
@@ -82,6 +99,8 @@ describe("PlatformAdminRoute", () => {
       if (path === "/api/admin/usage") return Promise.resolve({ usage });
       if (path.startsWith("/api/admin/users"))
         return Promise.resolve({ users: [member] });
+      if (path === "/api/admin/moderation-cases")
+        return Promise.resolve({ cases: [moderationCase] });
       if (path === "/api/admin/support-requests")
         return Promise.resolve({ requests: [supportRequest] });
       return Promise.resolve({ ok: true });
@@ -117,6 +136,79 @@ describe("PlatformAdminRoute", () => {
         {
           method: "PATCH",
           body: { status: "resolved", reason: "Platform owner support review" }
+        }
+      )
+    );
+  });
+
+  it("sends the enforced Forum moderation actions from the administrator review card", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await waitFor(() => expect(screen.getByText("Soft-remove post")).toBeTruthy());
+    const expectReloadCount = (count: number) =>
+      waitFor(() =>
+        expect(
+          mockApiRequest.mock.calls.filter(
+            ([path]) => path === "/api/admin/moderation-cases"
+          )
+        ).toHaveLength(count)
+      );
+
+    fireEvent.press(screen.getByText("Lock"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/moderation-cases/case-1/action",
+        {
+          method: "POST",
+          body: { action: "lock" }
+        }
+      )
+    );
+    await expectReloadCount(2);
+
+    fireEvent.press(screen.getByText("Pin"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/moderation-cases/case-1/action",
+        {
+          method: "POST",
+          body: { action: "pin" }
+        }
+      )
+    );
+    await expectReloadCount(3);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Destination category"), "help");
+    fireEvent.press(screen.getByText("Move category"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/moderation-cases/case-1/action",
+        {
+          method: "POST",
+          body: { action: "move", category: "help" }
+        }
+      )
+    );
+    await expectReloadCount(4);
+
+    fireEvent.press(screen.getByText("Soft-remove post"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/moderation-cases/case-1/action",
+        {
+          method: "POST",
+          body: { action: "remove" }
+        }
+      )
+    );
+    await expectReloadCount(5);
+
+    fireEvent.press(screen.getByText("Approve / restore"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/moderation-cases/case-1/action",
+        {
+          method: "POST",
+          body: { action: "restore" }
         }
       )
     );

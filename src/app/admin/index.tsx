@@ -854,7 +854,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Moderation cases"
-        subtitle="Review reports and evidence before acting. Every action is retained in the case and platform audit trail."
+        subtitle="Review reports and evidence before acting. Hide and soft-remove clear shared feeds; restore is reversible. Every action remains in the case and platform audit trail."
       >
         <TextInput
           value={moveCategory}
@@ -947,10 +947,12 @@ export default function PlatformAdminRoute() {
                     </Pressable>
                     <Pressable
                       disabled={busyId === item._id}
+                      accessibilityLabel="Soft-remove Forum post"
+                      accessibilityHint="Removes the post from readers and shared feeds while preserving evidence for review and restoration."
                       style={styles.warningButton}
                       onPress={() => void moderateContent(item, "remove")}
                     >
-                      <Text style={styles.warningText}>Remove post</Text>
+                      <Text style={styles.warningText}>Soft-remove post</Text>
                     </Pressable>
                   </>
                 ) : null}
