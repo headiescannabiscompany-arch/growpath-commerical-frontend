@@ -445,7 +445,7 @@ export const methodRegistry: GrowPathMethod[] = [
   method(
     "course-media-workflow",
     "Course Media Workflow",
-    ["course", "lesson", "education", "media"],
+    ["course", "lesson", "education", "media", "payment", "refund"],
     "course-media-workflow-method.md",
     [
       "choose source",
@@ -460,7 +460,10 @@ export const methodRegistry: GrowPathMethod[] = [
       "creator rights confirmation",
       "timestamped availability check",
       "captions or transcript status",
-      "learner-visible text summary"
+      "learner-visible text summary",
+      "signature-verified paid checkout webhook",
+      "active learner enrollment",
+      "recorded refund or payment-support state"
     ],
     [
       "normalized provider metadata",
@@ -475,7 +478,12 @@ export const methodRegistry: GrowPathMethod[] = [
       "learner preview without authoring controls",
       "signed-out published catalog without owned-course or authoring controls",
       "one provider-aware media contract shared by initial course creation and later lesson editing",
-      "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls"
+      "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls",
+      "paid discovery metadata without protected lesson, assessment, document, or media content",
+      "webhook-confirmed paid enrollment and idempotent course counters",
+      "buyer-visible payment, refund, and GrowPath support status",
+      "refund-adjusted and dispute-held creator earning",
+      "creator payout eligibility limited to available unpaid earnings"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
@@ -486,9 +494,20 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID.",
       "Never request owned courses or expose authoring, invite, analytics, publish, unpublish, enrollment, purchase, or progress controls before authentication.",
       "Never expose duplicate course-authoring back actions, multiple page-level headings, unchecked pricing or access choices, or raw stored values as course labels.",
+      "Never expose paid lesson text, media, documents, assessments, protected playback, or completion controls before active enrollment.",
+      "Never treat checkout creation, a success redirect, direct enrollment, or lesson completion as proof of paid access.",
+      "Never increment paid enrollment, revenue, or creator earnings more than once when Stripe retries a webhook.",
+      "Never show refund or payment-issue forms without a recorded paid purchase, or label GrowPath support intake as a bank, card-network, or Stripe dispute.",
+      "Never include held or refunded course earnings in creator payout eligibility.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],
-    ["course-builder", "course-player", "commercial-courses", "facility-training"]
+    [
+      "course-builder",
+      "course-player",
+      "commercial-courses",
+      "facility-training",
+      "course-payments"
+    ]
   ),
   method(
     "commercial-workflow",

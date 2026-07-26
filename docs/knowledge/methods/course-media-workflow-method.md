@@ -30,6 +30,18 @@ Draft courses, lessons, media metadata, summaries, documents, and authoring fiel
 
 The signed-out course catalog is discovery-only. It may request published public catalogs and show sign-in or registration actions, but it must not request an owned-course collection or expose Course Builder, create, invite, analytics, publish, unpublish, enrollment, purchase, or learner-progress controls before authentication.
 
+## Paid access and payment support
+
+A paid course catalog may expose discovery fields such as title, description, cover, price, and lesson titles. It must not expose lesson text, video or audio URLs, provider metadata, documents, images, assessment questions or answers, protected playback URLs, or completion controls before access is confirmed. An author or platform administrator may preview the author's course. A learner receives protected content only while an active enrollment exists.
+
+Creating a Stripe checkout session records a pending purchase; it does not enroll the learner. Only a signature-verified paid Stripe webhook may activate paid enrollment, add the learner to course counts, and record creator earnings. Webhook retries must be idempotent and must not increment enrollment, revenue, or earnings more than once. Direct enrollment and lesson-completion endpoints must never manufacture paid access.
+
+A learner may request GrowPath refund review or report a payment issue only after a paid purchase exists. A GrowPath payment-issue report is support intake; it is not a bank, card-network, or Stripe dispute and the interface must say so. Do not show refund or payment-issue forms to an unpaid learner or course owner.
+
+Stripe refund and dispute webhooks remain the source of truth for external payment state. A full refund revokes enrollment, removes the learner from course counts, adjusts revenue, and removes the refunded creator earning from payout eligibility. An open or unresolved Stripe dispute revokes access and holds the earning. A won dispute may restore access and release the hold. Replayed checkout webhooks must not erase a refund, dispute, or hold state.
+
+Buyer-facing payment status shows enrollment, payment, refund, and GrowPath support state. It must not expose creator settlement internals. Creator payout queries include only available, unpaid earnings; held and refunded earnings are not payout eligible.
+
 ## Playback and fallback
 
 Use first-party playback for GrowPath uploads. Protected library videos retain only their stable asset path and video ID in the lesson; the learner obtains a short-lived playback URL only after the API verifies course and workspace access. Never save an object-store credential or expiring signed playback URL in the course. Use a normalized YouTube or Vimeo player only when the author recorded the source as available and explicitly allowed embedding. Preserve Vimeo unlisted privacy hashes in both canonical and player URLs. Keep Rumble and unknown providers link-only until a stable reviewed provider contract exists.

@@ -219,6 +219,18 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("course-media-workflow")?.warnings).toContain(
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID."
     );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "webhook-confirmed paid enrollment and idempotent course counters"
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "refund-adjusted and dispute-held creator earning"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never show refund or payment-issue forms without a recorded paid purchase, or label GrowPath support intake as a bank, card-network, or Stripe dispute."
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never include held or refunded course earnings in creator payout eligibility."
+    );
     expect(getSourceEntry("youtube-player-documentation")?.trustedFor).toContain(
       "course_media"
     );

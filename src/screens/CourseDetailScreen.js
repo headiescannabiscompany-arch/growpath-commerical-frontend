@@ -155,12 +155,18 @@ export default function CourseDetailScreen({ route, navigation }) {
     course?.isEnrolled ||
     course?.enrolled
   );
-  const isPaidCourse = Number(course?.priceCents || course?.price || 0) > 0;
+  const isPaidCourse =
+    Number(course?.priceCents || course?.price || 0) > 0 ||
+    Boolean(String(course?.stripePriceId || "").trim()) ||
+    String(course?.access || "").toLowerCase() === "paid";
   const paymentStatus =
     enrollment?.paymentStatus ||
     enrollment?.checkoutStatus ||
     enrollment?.status ||
     "not_started";
+  const normalizedPaymentStatus = String(paymentStatus).toLowerCase();
+  const refundStatus = String(enrollment?.refundStatus || "none").toLowerCase();
+  const disputeStatus = String(enrollment?.disputeStatus || "none").toLowerCase();
   const viewerId = String(auth.user?._id || auth.user?.id || "");
   const ownerId = String(
     course?.userId ||
@@ -173,6 +179,16 @@ export default function CourseDetailScreen({ route, navigation }) {
   const ownsCourse = Boolean(
     course?._viewerOwnsCourse || (viewerId && ownerId === viewerId)
   );
+  const hasPaidPurchase =
+    isPaidCourse &&
+    (enrolled ||
+      ["paid", "refunded", "disputed"].includes(normalizedPaymentStatus) ||
+      refundStatus !== "none" ||
+      disputeStatus !== "none");
+  const canOpenLessons =
+    !isPaidCourse || ownsCourse || enrolled || course?._viewerHasAccess === true;
+  const canRequestRefund = !["requested", "refunded"].includes(refundStatus);
+  const canReportPaymentIssue = !["reported", "open"].includes(disputeStatus);
 
   useEffect(() => {
     const cents = Number(course?.priceCents || 0);
@@ -528,10 +544,12 @@ export default function CourseDetailScreen({ route, navigation }) {
     try {
       await openCourseDispute(loadedCourseId, disputeReason.trim());
       setDisputeReason("");
-      setFeedback("Dispute submitted. Final state comes from backend payment status.");
+      setFeedback(
+        "Payment issue sent to GrowPath support. This does not open a bank or card dispute."
+      );
       await refreshPaymentStatus();
     } catch (error) {
-      setFeedback(error?.message || "Unable to open dispute.");
+      setFeedback(error?.message || "Unable to report the payment issue.");
     } finally {
       setSaving(false);
     }
@@ -745,22 +763,20 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : (
         <Text style={styles.badge}>Enrolled</Text>
       )}
-      {!ownsCourse ? (
+      {!ownsCourse && isPaidCourse ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Purchase Status</Text>
           <Text style={styles.meta}>
-            Enrollment: {enrolled ? "confirmed" : "pending"}
+            Enrollment: {enrolled ? "confirmed" : "not confirmed"}
           </Text>
           <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
-          <Text style={styles.meta}>
-            Refund: {String(enrollment?.refundStatus || "none")}
-          </Text>
-          <Text style={styles.meta}>
-            Dispute: {String(enrollment?.disputeStatus || "none")}
-          </Text>
-          <Text style={styles.meta}>
-            Earnings: {String(enrollment?.earningsStatus || "pending_webhook")}
-          </Text>
+          <Text style={styles.meta}>Refund: {refundStatus}</Text>
+          <Text style={styles.meta}>Payment support: {disputeStatus}</Text>
+          {!hasPaidPurchase ? (
+            <Text style={styles.meta}>
+              No completed payment is recorded for this course.
+            </Text>
+          ) : null}
           <Pressable
             disabled={saving}
             onPress={refreshPaymentStatus}
@@ -831,13 +847,20 @@ export default function CourseDetailScreen({ route, navigation }) {
             </Text>
             <View style={styles.actions}>
               <Pressable
-                disabled={
-                  !enrolled && Number(course?.priceCents || course?.price || 0) > 0
-                }
+                disabled={!canOpenLessons}
                 onPress={() => openLesson(lesson)}
-                style={styles.secondaryBtn}
+                style={[styles.secondaryBtn, !canOpenLessons && styles.disabled]}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canOpenLessons }}
+                accessibilityLabel={
+                  canOpenLessons
+                    ? `Open lesson ${lessonTitle(lesson, index)}`
+                    : `Lesson ${lessonTitle(lesson, index)} locked until payment is confirmed`
+                }
               >
-                <Text style={styles.secondaryText}>Open Lesson</Text>
+                <Text style={styles.secondaryText}>
+                  {canOpenLessons ? "Open Lesson" : "Locked — Payment Required"}
+                </Text>
               </Pressable>
               {access.canCreateCourses && navigation?.navigate ? (
                 <Pressable onPress={() => editLesson(lesson)} style={styles.secondaryBtn}>
@@ -1146,40 +1169,61 @@ export default function CourseDetailScreen({ route, navigation }) {
         </Pressable>
       </View>
 
-      {isPaidCourse ? (
+      {!ownsCourse && hasPaidPurchase ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Refunds and Disputes</Text>
+          <Text style={styles.cardTitle}>Refunds and payment support</Text>
+          <Text style={styles.meta}>
+            Refund requests and payment issues are reviewed by GrowPath support. Reporting
+            a payment issue here does not open a bank or card dispute.
+          </Text>
           <TextInput
             value={refundReason}
             onChangeText={setRefundReason}
             placeholder="Refund reason"
             style={styles.input}
+            editable={canRequestRefund && !saving}
+            accessibilityLabel="Course refund reason"
           />
           <Pressable
-            disabled={saving || !refundReason.trim()}
+            disabled={saving || !canRequestRefund || !refundReason.trim()}
             onPress={submitRefund}
             style={[
               styles.secondaryBtn,
-              (!refundReason.trim() || saving) && styles.disabled
+              (!refundReason.trim() || !canRequestRefund || saving) && styles.disabled
             ]}
+            accessibilityRole="button"
           >
-            <Text style={styles.secondaryText}>Request Refund</Text>
+            <Text style={styles.secondaryText}>
+              {refundStatus === "requested"
+                ? "Refund Requested"
+                : refundStatus === "refunded"
+                  ? "Refunded"
+                  : "Request Refund"}
+            </Text>
           </Pressable>
           <TextInput
             value={disputeReason}
             onChangeText={setDisputeReason}
-            placeholder="Dispute reason"
+            placeholder="What is wrong with this payment?"
             style={styles.input}
+            editable={canReportPaymentIssue && !saving}
+            accessibilityLabel="Course payment issue"
           />
           <Pressable
-            disabled={saving || !disputeReason.trim()}
+            disabled={saving || !canReportPaymentIssue || !disputeReason.trim()}
             onPress={submitDispute}
             style={[
               styles.secondaryBtn,
-              (!disputeReason.trim() || saving) && styles.disabled
+              (!disputeReason.trim() || !canReportPaymentIssue || saving) &&
+                styles.disabled
             ]}
+            accessibilityRole="button"
           >
-            <Text style={styles.secondaryText}>Open Dispute</Text>
+            <Text style={styles.secondaryText}>
+              {["reported", "open"].includes(disputeStatus)
+                ? "Payment Issue Reported"
+                : "Report Payment Issue"}
+            </Text>
           </Pressable>
         </View>
       ) : null}
