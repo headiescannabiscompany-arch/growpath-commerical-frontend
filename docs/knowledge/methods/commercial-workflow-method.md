@@ -42,7 +42,9 @@ Product Q&A, course discussion, and live Q&A are Forum categories attached to th
 
 Forum replies, mentions, and unanswered product/course/live questions create source-linked in-app alerts. Thread or comment task creation must preserve exact Forum and commercial-object context. Forum AI may suggest titles, categories, tags, summaries, and tasks, but must label its provider/fallback and require review before writes.
 
-Reported commercial Forum content enters the shared moderation queue with an evidence snapshot. Only authorized platform moderators may hide, restore, soft-remove, lock, pin, or move a thread; these actions must retain actor, reason, timestamps, category changes, and an immutable platform audit event.
+Reported commercial Forum content enters the shared moderation queue with an evidence snapshot. Repeated reports from the same account for the same post are idempotent and cannot increase an automatic hold threshold. Only authorized platform moderators may hide, restore, soft-remove, lock, pin, or move a thread; these actions must retain actor, reason, timestamps, category changes, and an immutable platform audit event.
+
+Hidden and soft-removed Forum posts must be removed from every shared feed projection. Restore may recreate a projection only through the post's existing visibility rules. A locked thread rejects both legacy and structured reply writes with a clear locked-discussion response. Soft removal preserves the post, evidence snapshot, action history, and audit records for review and reversal; hard deletion is not the routine moderation workflow.
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.
 

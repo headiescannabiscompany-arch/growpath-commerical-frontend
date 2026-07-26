@@ -91,6 +91,9 @@ describe("GrowPath knowledge registries", () => {
       "accessible inline Forum reply expansion and text reply composition on canonical post previews"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "server-enforced audited Forum moderation with feed-projection removal, reversible soft removal, and locked-reply blocking"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "capability-gated Commercial inventory creation exposed as a named actionable control"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -145,6 +148,12 @@ describe("GrowPath knowledge registries", () => {
       "Never require a page transition merely to read or write an ordinary Forum text reply from a canonical post preview."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never leave hidden or soft-removed Forum content in shared feeds, accept replies on locked threads, hard-delete moderation evidence, or perform a moderator action without a case and platform audit event."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never count repeated Forum reports from the same account toward an automatic hold threshold."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Commercial Inventory Support."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
@@ -180,6 +189,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "readable audit-detail evidence context before immutable raw payloads"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "Facility-scoped audited Forum moderation with feed-projection removal, reversible soft removal, and locked-reply blocking"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );
@@ -194,6 +206,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never replace an individual account with Facility membership or bypass the post-login choice when both workspaces are eligible."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never leave hidden or soft-removed Facility Forum content in eligible feeds, accept replies on locked threads, hard-delete moderation evidence, or change Facility-only visibility during moderation."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never count repeated Facility Forum reports from the same account toward an automatic hold threshold."
     );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"
