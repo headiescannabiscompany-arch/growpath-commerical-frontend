@@ -133,7 +133,10 @@ export default function VideosRoute() {
     setError(null);
     try {
       setLibrary(
-        await listVideoLibrary(workspaceType, entitlements.facilityId || undefined)
+        await listVideoLibrary(
+          workspaceType,
+          workspaceType === "facility" ? entitlements.facilityId || undefined : undefined
+        )
       );
     } catch (err) {
       setError(err);
