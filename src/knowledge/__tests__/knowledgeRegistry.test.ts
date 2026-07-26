@@ -220,6 +220,12 @@ describe("GrowPath knowledge registries", () => {
       "Never expose unpublished course or lesson content to anonymous users or unrelated accounts, including through a direct record ID."
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "owner-controlled publish and private-draft unpublish"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never expose submit, approve, or reject course actions unless a real moderated-review backend workflow and role policy are implemented end to end."
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "webhook-confirmed paid enrollment and idempotent course counters"
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
