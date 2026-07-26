@@ -336,7 +336,11 @@ export default function VideosRoute() {
     setError(null);
     setMessage("");
     try {
-      const result: any = await deleteVideo(confirmDelete.id);
+      const result: any = await deleteVideo(
+        confirmDelete.id,
+        workspaceType,
+        entitlements.facilityId || undefined
+      );
       setMessage(
         result?.storageDeletionStatus === "pending"
           ? "The video was removed from the library. GrowPath storage release is pending."

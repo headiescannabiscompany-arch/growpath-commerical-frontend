@@ -327,8 +327,13 @@ export async function updateVideo(id: string, input: Partial<VideoInput>) {
   };
 }
 
-export async function deleteVideo(id: string) {
+export async function deleteVideo(
+  id: string,
+  workspaceType?: VideoWorkspaceType,
+  workspaceId?: string
+) {
   return apiRequest(`/api/videos/${encodeURIComponent(id)}`, {
-    method: "DELETE"
+    method: "DELETE",
+    params: { workspaceType, workspaceId }
   });
 }

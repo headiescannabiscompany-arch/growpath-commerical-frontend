@@ -190,12 +190,20 @@ describe("universal Videos route", () => {
       expect(screen.getByText("Staff training draft")).toBeTruthy();
     });
     fireEvent.press(screen.getByLabelText("Remove Staff training draft"));
+    await waitFor(() => {
+      expect(
+        screen.getByLabelText("Confirm removal of Staff training draft")
+      ).toBeTruthy();
+    });
     fireEvent.press(
       screen.getByLabelText("Confirm removal of Staff training draft")
     );
-
     await waitFor(() => {
-      expect(mockDeleteVideo).toHaveBeenCalledWith("staff-draft");
+      expect(mockDeleteVideo).toHaveBeenCalledWith(
+        "staff-draft",
+        "facility",
+        "facility-1"
+      );
     });
   });
 });
