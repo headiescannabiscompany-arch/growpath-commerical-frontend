@@ -12,6 +12,8 @@ Facility Forum replies, mentions, unanswered internal questions, and task creati
 
 Facility Forum reports may enter the shared platform moderation queue without changing Facility visibility. Repeated reports from the same account for the same post are idempotent and cannot increase an automatic hold threshold. Moderator hide, restore, soft-remove, lock, pin, and move actions require platform authorization and an auditable case history; moderation must never make Facility-only content public.
 
+A Facility-scoped report must be stored before administrator-email delivery. Notification links may open the exact content only through its existing authorization boundary and may focus the corresponding platform moderation case; email failure never removes the report or changes Facility visibility.
+
 Hidden and soft-removed Facility Forum posts must be removed from every eligible feed projection without changing their Facility-only scope. Restore must reapply the existing visibility boundary, locked threads must reject all reply-write paths, and soft removal must preserve the post, evidence snapshot, case history, and platform audit records for review and reversal.
 
 Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, tasks, inventory, sensors, audit and compliance-style records. It is not the commercial storefront workspace and must not pretend to work without a selected facility.

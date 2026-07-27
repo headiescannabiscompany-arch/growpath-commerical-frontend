@@ -5,9 +5,14 @@ import PlatformAdminRoute from "@/app/admin";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
+let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace }) }));
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockRouteParams,
+  useRouter: () => ({ replace: mockReplace, push: mockPush })
+}));
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "admin-1", role: mockRole } })
 }));
@@ -83,6 +88,7 @@ const moderationCase = {
   actionHistory: [],
   evidenceSnapshot: {
     automated: false,
+    targetUrl: "https://growpathai.com/forum/post/post-1",
     content: {
       title: "Plant health discussion",
       body: "Review this reported Forum post."
@@ -109,6 +115,9 @@ describe("PlatformAdminRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = "admin";
+    mockRouteParams = {};
+    mockPush.mockReset();
+    mockReplace.mockReset();
     mockApiRequest.mockImplementation(defaultAdminApi);
   });
 
@@ -217,6 +226,22 @@ describe("PlatformAdminRoute", () => {
         }
       )
     );
+  });
+
+  it("focuses a moderation case opened from email and links to its exact content", async () => {
+    mockRouteParams = { moderationCaseId: "case-1" };
+    const screen = render(<PlatformAdminRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Opened from report email")).toBeTruthy()
+    );
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Open reported forumPost"
+      })
+    );
+
+    expect(mockPush).toHaveBeenCalledWith("/forum/post/post-1");
   });
 
   it("sends the enforced Forum moderation actions from the administrator review card", async () => {

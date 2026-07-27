@@ -32,6 +32,11 @@ Draft courses, lessons, media metadata, summaries, documents, and authoring fiel
 
 The signed-out course catalog is discovery-only. It may request published public catalogs and show sign-in or registration actions, but it must not request an owned-course collection or expose Course Builder, create, invite, analytics, publish, unpublish, enrollment, purchase, or learner-progress controls before authentication.
 
+A signed-in learner may report a course. Persist the report and moderation case before
+attempting administrator-email delivery, and include both the exact course link and a
+focused moderation-review link. Email delivery is not the moderation record and its
+failure must not remove or reject an otherwise valid stored report.
+
 ## Paid access and payment support
 
 A paid course catalog may expose discovery fields such as title, description, cover, price, and lesson titles. It must not expose lesson text, video or audio URLs, provider metadata, documents, images, assessment questions or answers, protected playback URLs, or completion controls before access is confirmed. An author or platform administrator may preview the author's course. A learner receives protected content only while an active enrollment exists.

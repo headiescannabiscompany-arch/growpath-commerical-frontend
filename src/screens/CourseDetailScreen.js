@@ -488,6 +488,8 @@ export default function CourseDetailScreen({ route, navigation }) {
       await submitReport({
         contentType: "course",
         contentId: loadedCourseId,
+        contentTitle: course?.title || course?.name || "Course",
+        targetUrl: `/courses?courseId=${encodeURIComponent(loadedCourseId)}`,
         reason: reportReason.trim()
       });
       setReportReason("");

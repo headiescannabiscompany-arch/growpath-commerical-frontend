@@ -1,0 +1,111 @@
+import React from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+
+import VideoDetailRoute from "@/app/videos/[videoId]";
+
+const mockGetVideo = jest.fn();
+const mockBack = jest.fn();
+let mockReportProps: any = null;
+let mockUserId = "viewer-1";
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({ videoId: "video-1" }),
+  useRouter: () => ({ back: mockBack })
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    isAuthed: true,
+    user: { id: mockUserId, _id: mockUserId }
+  })
+}));
+
+jest.mock("@/api/videos", () => ({
+  getVideo: (...args: any[]) => mockGetVideo(...args)
+}));
+
+jest.mock("@/components/FollowButton", () => () => null);
+jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
+jest.mock("@/components/ReportModal", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockReportProps = props;
+    return null;
+  }
+}));
+jest.mock("@/components/learning/LessonMediaCard", () => () => null);
+jest.mock("@/components/layout/AppCard", () => ({
+  __esModule: true,
+  default: ({ children }: any) => {
+    const { View } = require("react-native");
+    return <View>{children}</View>;
+  }
+}));
+jest.mock("@/components/layout/AppPage", () => ({
+  __esModule: true,
+  default: ({ header, children }: any) => {
+    const { View } = require("react-native");
+    return (
+      <View>
+        {header}
+        {children}
+      </View>
+    );
+  }
+}));
+
+const video = {
+  id: "video-1",
+  title: "Living soil walkthrough",
+  description: "A reusable public video.",
+  status: "published",
+  visibility: "public",
+  workspaceType: "commercial",
+  owner: {
+    id: "owner-1",
+    displayName: "Living Soil Labs",
+    workspaceType: "commercial"
+  },
+  mediaSource: { sourceType: "external", canonicalUrl: "https://example.com/video" },
+  thumbnailUrl: "",
+  durationSeconds: 90,
+  tags: [],
+  growInterests: [],
+  cannabisSpecific: false
+};
+
+describe("VideoDetailRoute reporting", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockReportProps = null;
+    mockUserId = "viewer-1";
+    mockGetVideo.mockResolvedValue(video);
+  });
+
+  it("lets a signed-in non-owner open an exact video report", async () => {
+    render(<VideoDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Report Video")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Report Living soil walkthrough"));
+
+    await waitFor(() =>
+      expect(mockReportProps).toEqual(
+        expect.objectContaining({
+          visible: true,
+          contentType: "video",
+          contentId: "video-1",
+          contentTitle: "Living soil walkthrough",
+          targetUrl: "/videos/video-1"
+        })
+      )
+    );
+  });
+
+  it("does not offer an owner a report action on their own video", async () => {
+    mockUserId = "owner-1";
+    render(<VideoDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living soil walkthrough")).toBeTruthy());
+    expect(screen.queryByText("Report Video")).toBeNull();
+  });
+});

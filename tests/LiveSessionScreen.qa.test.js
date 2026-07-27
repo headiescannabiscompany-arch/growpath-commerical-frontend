@@ -10,6 +10,7 @@ const mockApiRequest = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
+let mockReportProps = null;
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
@@ -40,6 +41,14 @@ jest.mock("../src/api/tasks", () => ({
 jest.mock("../src/api/commercialAnalytics", () => ({
   __esModule: true,
   recordCommercialAnalyticsEvent: (...args) => mockRecordCommercialAnalyticsEvent(...args)
+}));
+
+jest.mock("../src/components/ReportModal", () => ({
+  __esModule: true,
+  default: (props) => {
+    mockReportProps = props;
+    return null;
+  }
 }));
 
 // Avoid rendering the real embed in tests
@@ -87,6 +96,7 @@ describe("LiveSessionScreen QA", () => {
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ recorded: true });
     jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    mockReportProps = null;
   });
 
   afterEach(() => {
@@ -252,6 +262,37 @@ describe("LiveSessionScreen QA", () => {
       expect(queryByText(/Session 1/i)).toBeTruthy();
       expect(queryByText(/Open Twitch Moderation/i)).toBeNull();
     });
+  });
+
+  it("lets a signed-in non-owner open an exact live-session report", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "viewer-1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "live-report-1",
+      ownerId: "owner-1",
+      title: "Live soil questions"
+    });
+
+    const { getByLabelText } = renderWithNav({
+      sessionId: "live-report-1"
+    });
+
+    await waitFor(() =>
+      expect(getByLabelText("Report Live soil questions")).toBeTruthy()
+    );
+    fireEvent.press(getByLabelText("Report Live soil questions"));
+
+    await waitFor(() =>
+      expect(mockReportProps).toEqual(
+        expect.objectContaining({
+          visible: true,
+          contentType: "liveSession",
+          contentId: "live-report-1",
+          contentTitle: "Live soil questions",
+          targetUrl: "/live-session?sessionId=live-report-1"
+        })
+      )
+    );
   });
 
   it("uses public Store search fallback for product links without a storefront slug", async () => {

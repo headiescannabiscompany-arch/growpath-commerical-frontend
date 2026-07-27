@@ -79,6 +79,26 @@ describe("API Wrappers Unit Tests", () => {
     expect(JSON.parse(fetchCalls[0].options.body).bio).toBe("New bio");
   });
 
+  it("Reports API: sends authenticated exact-content context to the moderation endpoint", async () => {
+    await reportsApi.submitReport({
+      contentType: "video",
+      contentId: "video-1",
+      contentTitle: "Living soil walkthrough",
+      targetUrl: "/videos/video-1",
+      reason: "Misleading claim"
+    });
+
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith(ROUTES.REPORTS.SUBMIT)).toBe(true);
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      contentType: "video",
+      contentId: "video-1",
+      contentTitle: "Living soil walkthrough",
+      targetUrl: "/videos/video-1",
+      reason: "Misleading claim"
+    });
+  });
+
   it("Courses API: enrollInCourse uses POST", async () => {
     await coursesApi.enrollInCourse("c1");
     expect(fetchCalls[0].options.method).toBe("POST");

@@ -44,6 +44,8 @@ Forum replies, mentions, and unanswered product/course/live questions create sou
 
 Reported commercial Forum content enters the shared moderation queue with an evidence snapshot. Repeated reports from the same account for the same post are idempotent and cannot increase an automatic hold threshold. Only authorized platform moderators may hide, restore, soft-remove, lock, pin, or move a thread; these actions must retain actor, reason, timestamps, category changes, and an immutable platform audit event.
 
+Signed-in reports for Forum posts, Feed campaigns, storefront products, courses, videos, and live sessions must be stored before notification. The administrator email links to both the exact same-origin content route and its focused moderation case; email delivery is not the source of truth and a provider failure must not erase the report.
+
 Hidden and soft-removed Forum posts must be removed from every shared feed projection. Restore may recreate a projection only through the post's existing visibility rules. A locked thread rejects both legacy and structured reply writes with a clear locked-discussion response. Soft removal preserves the post, evidence snapshot, action history, and audit records for review and reversal; hard deletion is not the routine moderation workflow.
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.

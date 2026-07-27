@@ -7,7 +7,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { useAuth } from "@/auth/AuthContext";
@@ -67,6 +67,7 @@ type ModerationCase = {
   }>;
   evidenceSnapshot?: {
     automated?: boolean;
+    targetUrl?: string;
     classification?: {
       category?: string;
       confidence?: number;
@@ -80,6 +81,42 @@ type ModerationCase = {
 function moderationPreview(item: ModerationCase) {
   const content = item.evidenceSnapshot?.content;
   return String(content?.content || content?.body || content?.title || "").trim();
+}
+
+const MODERATABLE_TARGETS = new Set([
+  "post",
+  "forumPost",
+  "comment",
+  "course",
+  "commercialPost",
+  "storefrontProduct"
+]);
+
+function moderationTargetHref(item: ModerationCase) {
+  const submitted = String(item.evidenceSnapshot?.targetUrl || "").trim();
+  if (submitted) {
+    try {
+      const parsed = new URL(submitted, "https://growpathai.com");
+      if (
+        parsed.hostname === "growpathai.com" ||
+        parsed.hostname.endsWith(".growpathai.com")
+      ) {
+        return `${parsed.pathname}${parsed.search}`;
+      }
+    } catch {
+      // Fall back to the canonical route for the stored target type.
+    }
+  }
+
+  const id = encodeURIComponent(String(item.targetId || ""));
+  if (item.targetType === "forumPost") return `/forum/post/${id}`;
+  if (item.targetType === "course") return `/courses?courseId=${id}`;
+  if (item.targetType === "video") return `/videos/${id}`;
+  if (item.targetType === "commercialPost") return `/feed?campaignId=${id}`;
+  if (item.targetType === "feedItem") return `/feed?feedItemId=${id}`;
+  if (item.targetType === "storefrontProduct") return `/store?q=${id}`;
+  if (item.targetType === "liveSession") return `/live-session?sessionId=${id}`;
+  return `/admin?targetType=${encodeURIComponent(item.targetType)}&targetId=${id}`;
 }
 
 type EvidenceRequest = {
@@ -186,11 +223,25 @@ function Metric({
 export default function PlatformAdminRoute() {
   const { user } = useAuth();
   const router = useRouter();
+  const routeParams = useLocalSearchParams<{ moderationCaseId?: string | string[] }>();
+  const focusedModerationCaseId = String(
+    Array.isArray(routeParams.moderationCaseId)
+      ? routeParams.moderationCaseId[0]
+      : routeParams.moderationCaseId || ""
+  );
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const [overview, setOverview] = useState<Overview | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
+  const orderedModerationCases = useMemo(() => {
+    if (!focusedModerationCaseId) return moderationCases;
+    return [...moderationCases].sort((left, right) => {
+      if (left._id === focusedModerationCaseId) return -1;
+      if (right._id === focusedModerationCaseId) return 1;
+      return 0;
+    });
+  }, [focusedModerationCaseId, moderationCases]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
   const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
@@ -1065,10 +1116,19 @@ export default function PlatformAdminRoute() {
           placeholder="Destination category"
           style={styles.input}
         />
-        {moderationCases.length ? (
-          moderationCases.slice(0, 20).map((item) => (
-            <View key={item._id} style={styles.caseRow}>
+        {orderedModerationCases.length ? (
+          orderedModerationCases.slice(0, 20).map((item) => (
+            <View
+              key={item._id}
+              style={[
+                styles.caseRow,
+                item._id === focusedModerationCaseId ? styles.focusedCaseRow : null
+              ]}
+            >
               <View style={styles.caseCopy}>
+                {item._id === focusedModerationCaseId ? (
+                  <Text style={styles.focusedCaseLabel}>Opened from report email</Text>
+                ) : null}
                 <Text style={styles.caseTitle}>
                   {item.targetType} · {item.severity} · {item.status}
                 </Text>
@@ -1098,19 +1158,31 @@ export default function PlatformAdminRoute() {
               </View>
               <View style={styles.actions}>
                 <Pressable
-                  disabled={busyId === item._id}
-                  style={styles.warningButton}
-                  onPress={() => void moderateContent(item, "hide")}
-                >
-                  <Text style={styles.warningText}>Hide content</Text>
-                </Pressable>
-                <Pressable
-                  disabled={busyId === item._id}
+                  accessibilityLabel={`Open reported ${item.targetType}`}
+                  accessibilityRole="button"
                   style={styles.secondaryButton}
-                  onPress={() => void moderateContent(item, "restore")}
+                  onPress={() => router.push(moderationTargetHref(item) as never)}
                 >
-                  <Text style={styles.secondaryText}>Approve / restore</Text>
+                  <Text style={styles.secondaryText}>Open reported content</Text>
                 </Pressable>
+                {MODERATABLE_TARGETS.has(item.targetType) ? (
+                  <>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.warningButton}
+                      onPress={() => void moderateContent(item, "hide")}
+                    >
+                      <Text style={styles.warningText}>Hide content</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "restore")}
+                    >
+                      <Text style={styles.secondaryText}>Approve / restore</Text>
+                    </Pressable>
+                  </>
+                ) : null}
                 {item.targetType === "forumPost" ? (
                   <>
                     <Pressable
@@ -1258,6 +1330,20 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     paddingVertical: 12
+  },
+  focusedCaseRow: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#16A34A",
+    borderRadius: radius.card,
+    borderWidth: 2,
+    marginVertical: 8,
+    paddingHorizontal: 12
+  },
+  focusedCaseLabel: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 4
   },
   caseTitle: { color: "#0F172A", fontWeight: "900", textTransform: "capitalize" },
   evidencePreview: {

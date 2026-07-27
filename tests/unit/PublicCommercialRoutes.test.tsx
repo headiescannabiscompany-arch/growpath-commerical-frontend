@@ -59,6 +59,12 @@ jest.mock("@/api/commercialAnalytics", () => ({
     mockRecordCommercialAnalyticsEvent(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } })
+}));
+
+jest.mock("@/components/ReportModal", () => () => null);
+
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: "personal",
@@ -436,6 +442,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();
+    expect(screen.getByText("Report Product")).toBeTruthy();
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Similar Storefronts")).toBeTruthy();
