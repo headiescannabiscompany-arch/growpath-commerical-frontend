@@ -82,6 +82,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "explicit external-source verification status and empty source records when no database was queried"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "common and nursery names separated from scientific names, with invalid scientific-name phrases withheld and genus-level drafts retained when supported"
+    );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"
     );

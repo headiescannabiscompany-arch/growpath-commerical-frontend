@@ -4990,13 +4990,27 @@ function calculateSpeciesCropIdentification(input = {}) {
     /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
       clean(value)
     );
+  const normalizeScientificName = (value) => {
+    const name = clean(value);
+    if (
+      !name ||
+      unresolved(name) ||
+      /\b(?:plant|tree|shrub|bush|flower|crop|weed|grass|vine)\b/i.test(name)
+    ) {
+      return "";
+    }
+    return name;
+  };
 
   const suppliedName = clean(
     input.userEnteredName || input.commonName || input.crop || input.scientificName
   );
-  const scientificName = unresolved(input.scientificName)
-    ? ""
-    : clean(input.scientificName);
+  const suppliedScientificName = clean(input.scientificName);
+  const scientificName = normalizeScientificName(suppliedScientificName);
+  const scientificNameWithheld =
+    Boolean(suppliedScientificName) &&
+    !unresolved(suppliedScientificName) &&
+    !scientificName;
   const cultivar = clean(input.cultivar || input.strain);
   const suppliedCommonNames = list(input.commonNames).filter((name) => !unresolved(name));
   const likelyCrop =
@@ -5237,21 +5251,28 @@ function calculateSpeciesCropIdentification(input = {}) {
   const rawCandidates = Array.isArray(draft.candidates) ? draft.candidates : [];
   const candidates = rawCandidates
     .slice(0, 5)
-    .map((candidate) => ({
-      scientificName: clean(candidate?.scientificName) || null,
-      commonNames: uniqueList(list(candidate?.commonNames)),
-      rank: choice(
+    .map((candidate) => {
+      const candidateScientificName = normalizeScientificName(candidate?.scientificName);
+      const candidateRank = choice(
         candidate?.rank,
         ["family", "genus", "species", "working_candidate"],
         "working_candidate"
-      ),
-      confidence: choice(candidate?.confidence, ["high", "medium", "low"], "low"),
-      evidence: uniqueList(list(candidate?.evidence)),
-      counterEvidence: uniqueList(list(candidate?.counterEvidence)),
-      missingEvidence: uniqueList(list(candidate?.missingEvidence)),
-      sourceRecords: [],
-      verificationStatus: "not_verified"
-    }))
+      );
+      return {
+        scientificName: candidateScientificName || null,
+        commonNames: uniqueList(list(candidate?.commonNames)),
+        rank:
+          candidateRank === "species" && !candidateScientificName
+            ? "working_candidate"
+            : candidateRank,
+        confidence: choice(candidate?.confidence, ["high", "medium", "low"], "low"),
+        evidence: uniqueList(list(candidate?.evidence)),
+        counterEvidence: uniqueList(list(candidate?.counterEvidence)),
+        missingEvidence: uniqueList(list(candidate?.missingEvidence)),
+        sourceRecords: [],
+        verificationStatus: "not_verified"
+      };
+    })
     .filter((candidate) => candidate.scientificName || candidate.commonNames.length > 0);
   if (!candidates.length && likelyCrop !== "unknown crop") {
     candidates.push({
@@ -5347,6 +5368,11 @@ function calculateSpeciesCropIdentification(input = {}) {
       "Confirm crop identity before relying on crop-specific recommendations.",
       "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
       "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+      ...(scientificNameWithheld
+        ? [
+            "The supplied scientific-name value looked like a common-name phrase and was withheld; verify the accepted botanical name before saving it."
+          ]
+        : []),
       ...(cultivar
         ? [
             "A cultivar or variety is retained only as user/source-entered information; appearance cannot prove it."

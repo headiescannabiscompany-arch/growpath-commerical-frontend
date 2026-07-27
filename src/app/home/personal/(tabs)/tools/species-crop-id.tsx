@@ -24,7 +24,7 @@ Inspect the attached image pixels first. Use user-entered context and selected p
 
 Return useful broader candidates when exact species is unresolved. Cannabis is an allowed crop candidate from deliberately submitted evidence. A clear cannabis flower or harvested bud may support a crop-level Cannabis draft from visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure. Never infer cultivar or strain from appearance.
 
-Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
+Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If the evidence supports a genus but not an exact species, use a genus-level scientific draft such as "Mandevilla spp." and keep nursery or common synonyms such as "Dipladenia" in commonNames. Never put an English common-name phrase such as "rose plant" in scientificName. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
 
 Return JSON only with exactly these keys:
 {
@@ -93,17 +93,38 @@ function compactValues(values: Record<string, string>) {
   );
 }
 
+function normalizeScientificName(value: unknown) {
+  const name = String(value || "").trim();
+  if (
+    !name ||
+    /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
+      name
+    ) ||
+    /\b(?:plant|tree|shrub|bush|flower|crop|weed|grass|vine)\b/i.test(name)
+  ) {
+    return "";
+  }
+  return name;
+}
+
 function buildIdentificationDraft(parsed: Record<string, any>) {
   const candidates = Array.isArray(parsed.candidates)
-    ? parsed.candidates.slice(0, 5).map((candidate: any) => ({
-        scientificName: String(candidate?.scientificName || "").trim(),
-        commonNames: stringList(candidate?.commonNames),
-        rank: String(candidate?.rank || "working_candidate").trim(),
-        confidence: String(candidate?.confidence || "low").trim(),
-        evidence: stringList(candidate?.evidence),
-        counterEvidence: stringList(candidate?.counterEvidence),
-        missingEvidence: stringList(candidate?.missingEvidence)
-      }))
+    ? parsed.candidates.slice(0, 5).map((candidate: any) => {
+        const scientificName = normalizeScientificName(candidate?.scientificName);
+        const suppliedRank = String(candidate?.rank || "working_candidate").trim();
+        return {
+          scientificName,
+          commonNames: stringList(candidate?.commonNames),
+          rank:
+            suppliedRank === "species" && !scientificName
+              ? "working_candidate"
+              : suppliedRank,
+          confidence: String(candidate?.confidence || "low").trim(),
+          evidence: stringList(candidate?.evidence),
+          counterEvidence: stringList(candidate?.counterEvidence),
+          missingEvidence: stringList(candidate?.missingEvidence)
+        };
+      })
     : [];
   return {
     broadGroup: String(parsed.broadGroup || "unknown").trim(),
@@ -141,6 +162,7 @@ function normalizeCropIdentityPrefillField({
   value: unknown;
   parsed: Record<string, any>;
 }) {
+  if (fieldKey === "scientificName") return normalizeScientificName(value);
   if (fieldKey !== "userEnteredName") return undefined;
   const suppliedName = String(value || "").trim();
   if (suppliedName && !unresolvedCropName(suppliedName)) return suppliedName;

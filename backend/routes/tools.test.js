@@ -1590,6 +1590,63 @@ describe("Tools Router (tools.js)", () => {
     expect(cropId.body.toolRun.growId).toBeNull();
   });
 
+  test("withholds common-name phrases from scientific plant identity fields", async () => {
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const cropId = await authed(
+      request(app)
+        .post("/api/tools/species-crop-id")
+        .send({
+          userEnteredName: "Cotton plant",
+          scientificName: "Rose plant",
+          commonNames: "Cotton plant",
+          userConfirmed: false,
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            photoCount: 1,
+            provider: "openai",
+            confidence: "medium",
+            quality: "usable"
+          },
+          identificationDraft: {
+            candidates: [
+              {
+                scientificName: "Rose plant",
+                commonNames: ["Cotton plant"],
+                rank: "species",
+                confidence: "medium"
+              }
+            ]
+          }
+        })
+    );
+
+    expect(cropId.status).toBe(201);
+    expect(cropId.body.outputs).toMatchObject({
+      likelyCrop: "Cotton plant",
+      scientificName: null,
+      possibleSpecies: [],
+      candidates: [
+        expect.objectContaining({
+          scientificName: null,
+          commonNames: ["Cotton plant"],
+          rank: "working_candidate"
+        })
+      ]
+    });
+    expect(cropId.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          "scientific-name value looked like a common-name phrase and was withheld"
+        )
+      ])
+    );
+  });
+
   test("runs genetics inventory and harvest readiness tools", async () => {
     mockGrow.exists.mockResolvedValue(true);
     mockToolRun.create.mockImplementation((payload) => ({
