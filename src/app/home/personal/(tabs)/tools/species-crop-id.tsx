@@ -521,6 +521,21 @@ export default function SpeciesCropIdToolRoute() {
             {fieldStudyError ? (
               <Text style={styles.fieldStudyError}>{fieldStudyError}</Text>
             ) : null}
+            <View style={styles.fieldMapLink}>
+              <Text style={styles.evidenceGuidance}>
+                See public, opt-in observations on the shared field map. Personal details
+                and cannabis observations stay excluded from public map pins.
+              </Text>
+              <Link href="/field-observations" asChild>
+                <Pressable
+                  accessibilityRole="link"
+                  accessibilityLabel="Explore the public field observation map"
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Explore public field map</Text>
+                </Pressable>
+              </Link>
+            </View>
           </View>
         </View>
       )}
@@ -1198,5 +1213,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
-  fieldStudyError: { color: "#B91C1C", lineHeight: 19 }
+  fieldStudyError: { color: "#B91C1C", lineHeight: 19 },
+  fieldMapLink: { gap: 8, marginTop: 4 }
 });
