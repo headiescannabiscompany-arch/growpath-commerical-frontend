@@ -5,6 +5,8 @@ import SpeciesCropIdToolRoute from "@/app/home/personal/(tabs)/tools/species-cro
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockUpdateGrowpathModuleRecord = jest.fn();
+const mockUpdateToolRun = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockSavePersonalGrowCropIdentity = jest.fn();
 const mockSavePersonalPlantCropIdentity = jest.fn();
@@ -73,7 +75,8 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 });
 
 jest.mock("@/api/toolRuns", () => ({
-  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+  runCalculator: (...args: any[]) => mockRunCalculator(...args),
+  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
 }));
 
 jest.mock("@/api/grows", () => ({
@@ -88,7 +91,8 @@ jest.mock("@/api/plants", () => ({
 }));
 
 jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
+  updateGrowpathModuleRecord: (...args: any[]) => mockUpdateGrowpathModuleRecord(...args)
 }));
 
 jest.mock("@/api/personalAssistant", () => ({
@@ -108,6 +112,25 @@ describe("SpeciesCropIdToolRoute", () => {
     mockRunCalculator.mockResolvedValue({
       outputs: {
         likelyCrop: "Cannabis",
+        broadGroup: "flowering_plant",
+        likelyFamily: "Cannabaceae",
+        possibleGenera: ["Cannabis"],
+        candidates: [
+          {
+            scientificName: "Cannabis sativa",
+            commonNames: ["Cannabis"],
+            rank: "species",
+            confidence: "medium",
+            evidence: ["Visible bracts and pistils"],
+            counterEvidence: ["No external range check"],
+            missingEvidence: ["Whole-plant context"],
+            verificationStatus: "not_verified"
+          }
+        ],
+        sourceVerification: {
+          status: "required_not_performed",
+          recommendedSourceIds: ["usda-plants-database", "kew-powo"]
+        },
         scientificName: "Cannabis sativa",
         confidence: "medium",
         userConfirmationRequired: true,
@@ -134,6 +157,8 @@ describe("SpeciesCropIdToolRoute", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockUpdateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockUpdateToolRun.mockResolvedValue({ id: "toolrun-1" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -182,9 +207,9 @@ describe("SpeciesCropIdToolRoute", () => {
         screen.getByText(/No grow is required. Upload photos or enter what you know/)
       ).toBeTruthy()
     );
-    expect(screen.getByText("Add identification photos")).toBeTruthy();
+    expect(screen.getByText("Step 1 — Add identification evidence")).toBeTruthy();
     expect(
-      screen.getByText(/appearance cannot prove a cultivar or strain/i)
+      screen.getByText(/do not enter a cultivar inferred from appearance/i)
     ).toBeTruthy();
     expect(
       screen.queryByLabelText(
@@ -192,7 +217,7 @@ describe("SpeciesCropIdToolRoute", () => {
       )
     ).toBeNull();
 
-    fireEvent.press(screen.getByText("Identify Crop from Photos"));
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
 
     await waitFor(() =>
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
@@ -223,7 +248,8 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
     expect(screen.getByText("Photos inspected")).toBeTruthy();
-    expect(screen.getByText("Image quality")).toBeTruthy();
+    expect(screen.getByText("External verification")).toBeTruthy();
+    expect(screen.getByText("Candidate comparison")).toBeTruthy();
     expect(screen.getByText(/inspected 1 uploaded photo/i)).toBeTruthy();
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   });
@@ -281,7 +307,7 @@ describe("SpeciesCropIdToolRoute", () => {
     });
 
     const screen = render(<SpeciesCropIdToolRoute />);
-    fireEvent.press(screen.getByText("Identify Crop from Photos"));
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -380,7 +406,9 @@ describe("SpeciesCropIdToolRoute", () => {
       "Cannabis sativa"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Species / Crop Identification Cultivar / strain"),
+      screen.getByLabelText(
+        "Species / Crop Identification Cultivar / variety from a label or source"
+      ),
       "Bruce Banner"
     );
     fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
@@ -402,5 +430,63 @@ describe("SpeciesCropIdToolRoute", () => {
       )
     );
     expect(screen.getByText("Confirmed crop identity saved to grow.")).toBeTruthy();
+  });
+
+  it("submits click-based morphology and private observation context", async () => {
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(
+      screen.getByLabelText("Species / Crop Identification Growth habit: Herb")
+    );
+    fireEvent.press(
+      screen.getByLabelText("Species / Crop Identification Wild or cultivated?: Wild")
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Location or region"),
+      "Baltimore, Maryland"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Habitat"),
+      "Sunny disturbed roadside"
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          morphology: expect.objectContaining({
+            growthHabit: "herb"
+          }),
+          observationContext: expect.objectContaining({
+            cultivationStatus: "wild",
+            region: "Baltimore, Maryland",
+            habitat: "Sunny disturbed roadside"
+          })
+        })
+      )
+    );
+  });
+
+  it("records confirmation in Saved Runs when no grow is attached", async () => {
+    mockSearchParams = {};
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(screen.getByText("Confirm in Saved Run")).toBeTruthy());
+    fireEvent.press(screen.getByText("Confirm in Saved Run"));
+
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({
+          outputs: expect.objectContaining({
+            confidence: "user_confirmed",
+            userConfirmationRequired: false,
+            userDecision: expect.objectContaining({ value: "accepted" })
+          })
+        })
+      )
+    );
   });
 });

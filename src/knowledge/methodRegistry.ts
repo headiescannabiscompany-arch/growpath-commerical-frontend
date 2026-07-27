@@ -63,7 +63,7 @@ export const methodRegistry: GrowPathMethod[] = [
   method(
     "plant-diagnosis-etgu",
     "Plant Diagnosis — ETGU",
-    ["diagnosis", "ipm"],
+    ["diagnosis", "ipm", "plant_identification"],
     "plant-diagnosis-etgu-method.md",
     ["pattern", "medium", "environment", "numbers", "likely causes"],
     [
@@ -79,6 +79,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicitly selected existing grow media with grow/plant/log provenance",
       "up to 12 role-diverse review photos with zoomed-out context and focused detail",
       "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
+      "structured crop-identification morphology and optional private place/context",
+      "whole-plant, leaf, stem/node, flower, fruit/seed, and habitat evidence when available",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -102,6 +104,10 @@ export const methodRegistry: GrowPathMethod[] = [
       "grow-optional draft crop identity from uploaded media",
       "defensible common, genus, or family-level candidate retained when exact species is unresolved",
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result",
+      "ranked crop-identification candidates with evidence, counter-evidence, missing evidence, and next photos/questions",
+      "broad group, likely family, possible genera, and species only when supported",
+      "explicit external-source verification status and empty source records when no database was queried",
+      "user confirmed, uncertain, or rejected identification decision with timestamp",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
     ],
     [
@@ -125,7 +131,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
       "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
     ],
-    ["plant-diagnosis", "ipm-scout", "ask-ai"]
+    ["plant-diagnosis", "ipm-scout", "species-crop-id", "ask-ai"]
   ),
   method(
     "pheno-hunting",

@@ -4975,102 +4975,399 @@ function calculateIpmScout(input = {}) {
 }
 
 function calculateSpeciesCropIdentification(input = {}) {
-  const commonName = String(
-    input.userEnteredName ||
-      input.commonName ||
-      input.crop ||
-      input.scientificName ||
-      "unknown crop"
-  ).trim();
-  const scientificName = String(input.scientificName || "").trim();
-  const cultivar = String(input.cultivar || input.strain || "").trim();
-  const commonNames = Array.from(
-    new Set([commonName, ...parseList(input.commonNames)].filter(Boolean))
+  const clean = (value) => String(value || "").trim();
+  const list = (value) =>
+    parseList(value)
+      .map(String)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  const uniqueList = (values) => Array.from(new Set(values.filter(Boolean)));
+  const choice = (value, allowed, fallback = "unknown") => {
+    const normalized = clean(value).toLowerCase();
+    return allowed.includes(normalized) ? normalized : fallback;
+  };
+  const unresolved = (value) =>
+    /^(not confirmed|not identified|unidentified|unknown(?: crop)?|unsure|uncertain|n\/a|none)$/i.test(
+      clean(value)
+    );
+
+  const suppliedName = clean(
+    input.userEnteredName || input.commonName || input.crop || input.scientificName
   );
-  const suppliedImageAnalysis =
+  const scientificName = unresolved(input.scientificName)
+    ? ""
+    : clean(input.scientificName);
+  const cultivar = clean(input.cultivar || input.strain);
+  const suppliedCommonNames = list(input.commonNames).filter((name) => !unresolved(name));
+  const likelyCrop =
+    (!unresolved(suppliedName) && suppliedName) ||
+    suppliedCommonNames[0] ||
+    scientificName ||
+    "unknown crop";
+  const commonNames = uniqueList(
+    [likelyCrop, ...suppliedCommonNames].filter((name) => name !== "unknown crop")
+  );
+
+  const suppliedImage =
     input.imageAnalysis && typeof input.imageAnalysis === "object"
       ? input.imageAnalysis
       : {};
+  const mediaEvidence = Array.isArray(input.mediaEvidence) ? input.mediaEvidence : [];
+  const attachedPhotos = mediaEvidence.filter((item) =>
+    /photo|image/i.test(clean(item?.type || item?.mimeType || item?.kind))
+  ).length;
+  const requestedPhotoCount = Number(
+    suppliedImage.photosAnalyzed || suppliedImage.photoCount || attachedPhotos || 0
+  );
+  const photoCount =
+    Number.isFinite(requestedPhotoCount) && requestedPhotoCount > 0
+      ? Math.floor(requestedPhotoCount)
+      : 0;
+  const imageRequested = suppliedImage.requested === true || photoCount > 0;
+  const imagePerformed =
+    imageRequested && suppliedImage.performed === true && photoCount > 0;
   const imageAnalysis = {
-    requested: suppliedImageAnalysis.requested === true,
-    performed: suppliedImageAnalysis.performed === true,
-    photoCount: Number.isFinite(Number(suppliedImageAnalysis.photoCount))
-      ? Number(suppliedImageAnalysis.photoCount)
-      : 0,
-    provider: String(suppliedImageAnalysis.provider || "").trim() || null,
-    providerLabel: String(suppliedImageAnalysis.providerLabel || "").trim() || null,
-    confidence: ["high", "medium", "low"].includes(
-      String(suppliedImageAnalysis.confidence || "").toLowerCase()
-    )
-      ? String(suppliedImageAnalysis.confidence).toLowerCase()
+    requested: imageRequested,
+    performed: imagePerformed,
+    photoCount,
+    photosAnalyzed: imagePerformed ? photoCount : 0,
+    provider: imagePerformed ? clean(suppliedImage.provider) || null : null,
+    providerModel: imagePerformed ? clean(suppliedImage.providerModel) || null : null,
+    providerLabel: imagePerformed
+      ? clean(suppliedImage.providerLabel) || "AI crop identity review"
+      : null,
+    confidence: imagePerformed
+      ? choice(suppliedImage.confidence, ["high", "medium", "low"], "low")
       : "low",
-    quality: ["usable", "limited", "unusable"].includes(
-      String(suppliedImageAnalysis.quality || "").toLowerCase()
-    )
-      ? String(suppliedImageAnalysis.quality).toLowerCase()
-      : "limited",
-    identifyingVisualTraits: String(
-      suppliedImageAnalysis.identifyingVisualTraits || ""
-    ).trim(),
-    evidenceUsed: parseList(suppliedImageAnalysis.evidenceUsed),
-    limitations: parseList(suppliedImageAnalysis.limitations)
+    quality: imagePerformed
+      ? choice(suppliedImage.quality, ["usable", "limited", "unusable"], "limited")
+      : "unreviewed",
+    identifyingVisualTraits: imagePerformed
+      ? clean(suppliedImage.identifyingVisualTraits)
+      : "",
+    evidenceUsed: imagePerformed ? uniqueList(list(suppliedImage.evidenceUsed)) : [],
+    limitations: uniqueList(list(suppliedImage.limitations)),
+    status: imagePerformed
+      ? "photo_pixels_analyzed"
+      : imageRequested
+        ? "photos_attached_not_analyzed"
+        : "no_photos_submitted"
   };
-  const traits = [
-    input.traits,
-    input.identificationNotes,
-    input.notes,
-    imageAnalysis.identifyingVisualTraits
-  ]
-    .flatMap(parseList)
-    .filter(Boolean);
+
+  const suppliedMorphology =
+    input.morphology && typeof input.morphology === "object" ? input.morphology : {};
+  const morphology = {
+    growthHabit: choice(suppliedMorphology.growthHabit || input.growthHabit, [
+      "tree",
+      "shrub",
+      "vine",
+      "herb",
+      "grasslike",
+      "succulent",
+      "fernlike",
+      "unknown"
+    ]),
+    leafArrangement: choice(suppliedMorphology.leafArrangement || input.leafArrangement, [
+      "opposite",
+      "alternate",
+      "whorled",
+      "basal",
+      "rosette",
+      "unknown"
+    ]),
+    leafType: choice(suppliedMorphology.leafType || input.leafType, [
+      "simple",
+      "compound",
+      "pinnate",
+      "palmate",
+      "scale_like",
+      "needle_like",
+      "unknown"
+    ]),
+    leafMargin: choice(suppliedMorphology.leafMargin || input.leafMargin, [
+      "entire",
+      "serrated",
+      "lobed",
+      "spiny",
+      "wavy",
+      "unknown"
+    ]),
+    venation: choice(suppliedMorphology.venation || input.venation, [
+      "parallel",
+      "pinnate",
+      "palmate",
+      "unknown"
+    ]),
+    flowerPresent: choice(suppliedMorphology.flowerPresent || input.flowerPresent, [
+      "yes",
+      "no",
+      "unknown"
+    ]),
+    flowerSymmetry: choice(suppliedMorphology.flowerSymmetry || input.flowerSymmetry, [
+      "radial",
+      "bilateral",
+      "unknown"
+    ]),
+    fruitPresent: choice(suppliedMorphology.fruitPresent || input.fruitPresent, [
+      "yes",
+      "no",
+      "unknown"
+    ]),
+    stemTraits: uniqueList(list(suppliedMorphology.stemTraits || input.stemTraits)),
+    flowerPartsVisible: uniqueList(
+      list(suppliedMorphology.flowerPartsVisible || input.flowerPartsVisible)
+    ),
+    inflorescenceType: clean(
+      suppliedMorphology.inflorescenceType || input.inflorescenceType
+    ),
+    fruitType: clean(suppliedMorphology.fruitType || input.fruitType),
+    specialStructures: uniqueList(
+      list(suppliedMorphology.specialStructures || input.specialStructures)
+    ),
+    sensoryTraits: uniqueList(
+      list(suppliedMorphology.sensoryTraits || input.sensoryTraits)
+    )
+  };
+  const suppliedContext =
+    input.observationContext && typeof input.observationContext === "object"
+      ? input.observationContext
+      : {};
+  const observationContext = {
+    cultivationStatus: choice(
+      suppliedContext.cultivationStatus || input.cultivationStatus,
+      ["wild", "cultivated", "unknown"]
+    ),
+    setting: choice(suppliedContext.setting || input.setting, [
+      "outdoor",
+      "indoor",
+      "greenhouse",
+      "unknown"
+    ]),
+    region: clean(suppliedContext.region || input.region),
+    observationDate: clean(suppliedContext.observationDate || input.observationDate),
+    habitat: clean(suppliedContext.habitat || input.habitat),
+    substrate: clean(suppliedContext.substrate || input.substrate),
+    associatedPlants: uniqueList(
+      list(suppliedContext.associatedPlants || input.associatedPlants)
+    ),
+    plantSize: clean(suppliedContext.plantSize || input.plantSize)
+  };
+  const draft =
+    input.identificationDraft && typeof input.identificationDraft === "object"
+      ? input.identificationDraft
+      : {};
+  const broadGroup = choice(draft.broadGroup || input.broadGroup, [
+    "flowering_plant",
+    "conifer",
+    "fern",
+    "moss_or_ally",
+    "fungus_or_lichen",
+    "unknown"
+  ]);
+  const likelyFamily = clean(draft.likelyFamily || input.likelyFamily) || null;
+  const possibleGenera = uniqueList(list(draft.possibleGenera || input.possibleGenera));
+
+  const evidence = uniqueList([
+    ...list(draft.evidence),
+    ...list(input.traits),
+    ...list(input.identificationNotes),
+    ...(imageAnalysis.identifyingVisualTraits
+      ? [imageAnalysis.identifyingVisualTraits]
+      : []),
+    ...morphology.stemTraits,
+    ...morphology.flowerPartsVisible,
+    ...morphology.specialStructures,
+    ...morphology.sensoryTraits
+  ]);
+  const counterEvidence = uniqueList(list(draft.counterEvidence));
+  const requiredNextPhotos = uniqueList([
+    ...list(draft.requiredNextPhotos),
+    ...(!imagePerformed ? ["A sharp whole-plant photo in its growing context"] : []),
+    ...(morphology.leafArrangement === "unknown" || morphology.leafType === "unknown"
+      ? ["Leaf top and underside plus a stem node showing leaf arrangement"]
+      : []),
+    ...(morphology.flowerPresent === "unknown"
+      ? ["Any flower or flower-cluster close-up, including side and face views"]
+      : []),
+    ...(morphology.fruitPresent === "unknown"
+      ? ["Any fruit or seed structure present on the same plant"]
+      : [])
+  ]);
+  const requiredNextQuestions = uniqueList([
+    ...list(draft.requiredNextQuestions),
+    ...(!observationContext.region ? ["Where was the plant observed?"] : []),
+    ...(!observationContext.habitat
+      ? ["What habitat and moisture/light conditions was it growing in?"]
+      : []),
+    ...(observationContext.cultivationStatus === "unknown"
+      ? ["Was it wild, planted, or escaping from cultivation?"]
+      : []),
+    ...(!observationContext.observationDate
+      ? ["What date or season was it flowering or fruiting?"]
+      : [])
+  ]);
+  const missingInformation = uniqueList([
+    ...list(draft.missingEvidence),
+    ...requiredNextPhotos,
+    ...requiredNextQuestions
+  ]);
+
+  const diagnosticStructuresVisible =
+    morphology.flowerPresent === "yes" ||
+    morphology.fruitPresent === "yes" ||
+    morphology.specialStructures.length > 0 ||
+    morphology.flowerPartsVisible.length > 0;
+  let confidence =
+    imagePerformed && imageAnalysis.confidence
+      ? imageAnalysis.confidence
+      : likelyCrop !== "unknown crop" || evidence.length >= 3
+        ? "medium"
+        : "low";
+  if (
+    confidence === "high" &&
+    (!imagePerformed ||
+      imageAnalysis.photosAnalyzed < 2 ||
+      !observationContext.region ||
+      !observationContext.habitat ||
+      !diagnosticStructuresVisible)
+  ) {
+    confidence = "medium";
+  }
+
+  const rawCandidates = Array.isArray(draft.candidates) ? draft.candidates : [];
+  const candidates = rawCandidates
+    .slice(0, 5)
+    .map((candidate) => ({
+      scientificName: clean(candidate?.scientificName) || null,
+      commonNames: uniqueList(list(candidate?.commonNames)),
+      rank: choice(
+        candidate?.rank,
+        ["family", "genus", "species", "working_candidate"],
+        "working_candidate"
+      ),
+      confidence: choice(candidate?.confidence, ["high", "medium", "low"], "low"),
+      evidence: uniqueList(list(candidate?.evidence)),
+      counterEvidence: uniqueList(list(candidate?.counterEvidence)),
+      missingEvidence: uniqueList(list(candidate?.missingEvidence)),
+      sourceRecords: [],
+      verificationStatus: "not_verified"
+    }))
+    .filter((candidate) => candidate.scientificName || candidate.commonNames.length > 0);
+  if (!candidates.length && likelyCrop !== "unknown crop") {
+    candidates.push({
+      scientificName: scientificName || null,
+      commonNames,
+      rank: scientificName ? "species" : likelyFamily ? "family" : "working_candidate",
+      confidence,
+      evidence,
+      counterEvidence,
+      missingEvidence: missingInformation,
+      sourceRecords: [],
+      verificationStatus: "not_verified"
+    });
+  }
+  candidates.forEach((candidate) => {
+    if (
+      candidate.confidence === "high" &&
+      (!observationContext.region ||
+        !observationContext.habitat ||
+        !diagnosticStructuresVisible)
+    ) {
+      candidate.confidence = "medium";
+    }
+  });
+
   const confirmed =
-    input.userConfirmed === true ||
-    String(input.userConfirmed || "").toLowerCase() === "true";
-  const recommendationContext = confirmed
-    ? `Save ${commonName} as the confirmed crop identity before applying crop-specific targets.`
-    : `Confirm ${commonName} identity before applying crop-specific diagnosis, nutrient, environment, or IPM guidance.`;
+    input.userConfirmed === true || clean(input.userConfirmed).toLowerCase() === "true";
+  const sourceVerification = {
+    status: "required_not_performed",
+    performed: false,
+    verifiedSourceRecords: [],
+    recommendedSourceIds: [
+      "usda-plants-database",
+      "kew-powo",
+      "gbif-species-api",
+      "inaturalist-observations",
+      "regional-flora-or-herbarium"
+    ],
+    note: "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+  };
+
   return {
-    likelyCrop: commonName,
+    broadGroup,
+    likelyFamily,
+    possibleGenera,
+    possibleSpecies: candidates
+      .filter((candidate) => candidate.rank === "species")
+      .map((candidate) => candidate.scientificName)
+      .filter(Boolean),
+    likelyCrop,
     scientificName: scientificName || null,
     commonNames,
+    cultivar: cultivar || null,
     cultivarOrStrain: cultivar || null,
-    confidence: confirmed
-      ? "user_confirmed"
-      : imageAnalysis.performed
-        ? imageAnalysis.confidence
-        : traits.length >= 3
-          ? "medium"
-          : "low",
+    confidence: confirmed ? "user_confirmed" : confidence,
     confirmationRequired: !confirmed,
     userConfirmationRequired: !confirmed,
-    recommendationContext,
+    candidates,
+    evidence,
+    counterEvidence,
+    missingInformation,
+    requiredNextPhotos,
+    requiredNextQuestions,
+    morphology,
+    observationContext,
+    identificationNotes: clean(input.identificationNotes) || null,
+    identifyingVisualTraits: imageAnalysis.identifyingVisualTraits || null,
     imageAnalysis,
+    evidenceUsed: imageAnalysis.evidenceUsed,
+    sourceVerification,
+    sourceRecords: [],
+    methodIds: ["plant-diagnosis-etgu"],
+    sourceIds: ["growpath-method", "user-observation"],
+    providerLabel: imageAnalysis.performed
+      ? imageAnalysis.providerLabel
+      : "GrowPath structured plant-identification review",
     cropProfileSuggestion: {
-      commonName,
+      commonName: likelyCrop,
       scientificName: scientificName || null,
       commonNames,
       cultivarOrStrain: cultivar || null,
-      traits,
+      traits: evidence,
       source: confirmed
         ? "user_confirmed"
         : imageAnalysis.performed
           ? "ai_vision_draft"
           : "user_entered"
     },
-    warnings: [
-      ...(!confirmed
-        ? ["Confirm crop identity before relying on crop-specific recommendations."]
-        : []),
-      ...(imageAnalysis.requested && !imageAnalysis.performed
-        ? ["Uploaded photo pixels were not analyzed by the active provider."]
+    recommendationContext: confirmed
+      ? `Use the user-confirmed ${likelyCrop} identity as context while preserving its source-verification status.`
+      : `Confirm ${likelyCrop} only after reviewing the evidence, lookalikes, missing characters, and source-verification status.`,
+    warnings: uniqueList([
+      "Confirm crop identity before relying on crop-specific recommendations.",
+      "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+      "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+      ...(cultivar
+        ? [
+            "A cultivar or variety is retained only as user/source-entered information; appearance cannot prove it."
+          ]
         : [])
-    ],
-    recommendations: [
-      "Attach this identity to the plant or grow profile once confirmed.",
-      imageAnalysis.performed
-        ? "Compare the visible flower, leaf, stem, and growth traits with another clear view before confirmation."
-        : "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
-    ]
+    ]),
+    limitations: uniqueList([
+      ...imageAnalysis.limitations,
+      "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+      "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+    ]),
+    recommendations: uniqueList([
+      ...requiredNextPhotos.slice(0, 3),
+      ...requiredNextQuestions.slice(0, 2),
+      "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+    ]),
+    userDecision: {
+      value: "not_decided",
+      allowed: ["accepted", "uncertain", "rejected"],
+      note: "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+    }
   };
 }
 

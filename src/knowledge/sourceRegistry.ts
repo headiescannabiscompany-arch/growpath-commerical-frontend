@@ -39,6 +39,7 @@ export type SourceType =
   | "grower_media"
   | "seo_blog"
   | "internal_growpath_method"
+  | "botanical_database"
   | "provider_documentation"
   | "user_observation";
 
@@ -104,7 +105,13 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     notes:
       "Educational and QA context for field observation vocabulary, plant-family pattern recognition, morphology, ecology, and candidate discriminating questions. Do not copy or retain videos, audio, frames, transcripts, or thumbnails without creator permission. A host identification is not GrowPath ground truth and cannot solely support species confirmation, diagnosis, treatment, toxicity, edibility, or legal status.",
     requiresCrossCheck: true,
-    preferredCrossCheckSources: ["usda-plants-database", "extension-penn-state"],
+    preferredCrossCheckSources: [
+      "usda-plants-database",
+      "kew-powo",
+      "gbif-species-api",
+      "inaturalist-observations",
+      "extension-penn-state"
+    ],
     lastReviewedAt: "2026-07-25"
   },
   {
@@ -119,6 +126,48 @@ export const sourceRegistry: SourceRegistryEntry[] = [
       "Government plant taxonomy, distribution, documentation, and representative-morphology context. Exact identification still requires adequate characters and appropriate keys or expert/herbarium confirmation within the record's scope.",
     requiresCrossCheck: false,
     lastReviewedAt: "2026-07-25"
+  },
+  {
+    id: "gbif-species-api",
+    name: "Global Biodiversity Information Facility Species and Occurrence APIs",
+    domain: "gbif.org",
+    sourceType: "botanical_database",
+    reliabilityTier: "A",
+    trustedFor: ["plant_identification", "education"],
+    notTrustedFor: ["diagnosis", "ipm", "legal_regulatory"],
+    notes:
+      "Institutional taxonomy-backbone and occurrence-record context for candidate names and geographic plausibility. Individual occurrence identifications, coordinates, and dataset records retain their own evidence quality and must not be treated as visual species confirmation.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["kew-powo", "usda-plants-database"],
+    lastReviewedAt: "2026-07-27"
+  },
+  {
+    id: "kew-powo",
+    name: "Royal Botanic Gardens, Kew — Plants of the World Online",
+    domain: "powo.science.kew.org",
+    sourceType: "botanical_database",
+    reliabilityTier: "A",
+    trustedFor: ["plant_identification", "education"],
+    notTrustedFor: ["diagnosis", "ipm", "legal_regulatory"],
+    notes:
+      "Expert-reviewed vascular-plant names, synonymy, distribution, traits, and bibliography using the World Checklist of Vascular Plants backbone. It supports name and range checks, but the user's specimen still needs adequate diagnostic characters, an appropriate flora/key, herbarium evidence, or expert review.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["gbif-species-api", "usda-plants-database"],
+    lastReviewedAt: "2026-07-27"
+  },
+  {
+    id: "inaturalist-observations",
+    name: "iNaturalist Observations and Community Identification",
+    domain: "inaturalist.org",
+    sourceType: "consumer_database",
+    reliabilityTier: "C",
+    trustedFor: ["plant_identification", "education", "qa_evaluation"],
+    notTrustedFor: ["diagnosis", "ipm", "legal_regulatory"],
+    notes:
+      "Candidate occurrence, season, lookalike, and community-identification lead. Needs ID, Research Grade, or community agreement is not automatic GrowPath ground truth. Review the specific observation, evidence quality, location precision, taxon agreement, and photo license before use; never treat it as model-training permission.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["usda-plants-database", "kew-powo", "gbif-species-api"],
+    lastReviewedAt: "2026-07-27"
   },
   {
     id: "vimeo-video-privacy-documentation",

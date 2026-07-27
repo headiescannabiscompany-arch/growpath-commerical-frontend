@@ -119,6 +119,14 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
   ["IPM task suggestions", /taskSuggestions/],
   ["species calculator", /function calculateSpeciesCropIdentification/],
   [
+    "field-botany candidate contract",
+    /candidates[\s\S]*counterEvidence[\s\S]*requiredNextPhotos[\s\S]*requiredNextQuestions/
+  ],
+  [
+    "honest source-verification contract",
+    /sourceVerification[\s\S]*required_not_performed[\s\S]*verifiedSourceRecords: \[\]/
+  ],
+  [
     "crop identity warning",
     /Confirm crop identity before relying on crop-specific recommendations/
   ]
@@ -138,6 +146,15 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
   ["IPM likely decision", /Mark as Likely Match/],
   ["IPM uncertain decision", /Mark as Not Sure/],
   ["IPM rejected decision", /Mark as Doesn't Match/],
+  ["structured morphology intake", /key: "growthHabit"[\s\S]*key: "leafArrangement"/],
+  [
+    "private place context",
+    /key: "cultivationStatus"[\s\S]*key: "region"[\s\S]*key: "habitat"/
+  ],
+  ["candidate comparison details", /PlantIdentificationResultDetails/],
+  ["no-grow confirmation decision", /Confirm in Saved Run/],
+  ["uncertain identity decision", /Mark as Not Sure/],
+  ["rejected identity decision", /Mark as Doesn't Match/],
   ["species screen route", /tool="species-crop-id"/],
   ["grow-optional crop identity", /growOptional/],
   ["one-step photo identification", /runAfterPrefill: true/],
@@ -204,6 +221,10 @@ requireText(
     /Diagnosis, IPM Scout, and Crop Identification[\s\S]*9 minutes 59 seconds[\s\S]*12 timestamped candidate still frames/
   ],
   [
+    "field-botany identification workflow",
+    /Field-botany identification workflow[\s\S]*broad group[\s\S]*likely family[\s\S]*possible genera[\s\S]*required_not_performed/
+  ],
+  [
     "Crime Pays educational-only boundary",
     /Crime Pays But Botany Doesn't[\s\S]*Tier C educational and QA context[\s\S]*Do not copy or retain/
   ]
@@ -215,6 +236,18 @@ requireText(
   [
     "Crime Pays governed source",
     /id: "crime-pays-but-botany-doesnt"[\s\S]*reliabilityTier: "C"[\s\S]*notTrustedFor:[\s\S]*"plant_identification"/
+  ],
+  [
+    "Kew POWO cross-check",
+    /id: "kew-powo"[\s\S]*reliabilityTier: "A"[\s\S]*trustedFor: \["plant_identification", "education"\]/
+  ],
+  [
+    "GBIF cross-check",
+    /id: "gbif-species-api"[\s\S]*reliabilityTier: "A"[\s\S]*requiresCrossCheck: true/
+  ],
+  [
+    "iNaturalist lead-only boundary",
+    /id: "inaturalist-observations"[\s\S]*reliabilityTier: "C"[\s\S]*requiresCrossCheck: true/
   ],
   [
     "USDA PLANTS cross-check",

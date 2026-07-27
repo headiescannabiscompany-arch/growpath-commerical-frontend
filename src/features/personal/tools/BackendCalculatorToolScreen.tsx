@@ -90,6 +90,7 @@ type BackendCalculatorToolScreenProps = {
   ) => Record<string, any>;
   buildMetrics?: (outputs: Record<string, any>) => ToolResultMetric[];
   buildNotices?: (outputs: Record<string, any>) => ToolResultNotice[];
+  buildDetails?: (outputs: Record<string, any>) => React.ReactNode;
   defaultLogTitle: (outputs: Record<string, any>) => string;
   defaultTask?: (outputs: Record<string, any>) =>
     | {
@@ -134,7 +135,11 @@ type BackendCalculatorToolScreenProps = {
     evidenceAssetIds?: () => string[];
     isReady?: () => boolean;
     notReadyMessage?: string;
-    buildMessage: (context: { growId: string; plantId: string }) => string;
+    buildMessage: (context: {
+      growId: string;
+      plantId: string;
+      values: Record<string, string>;
+    }) => string;
     normalizeFieldValue?: (context: {
       fieldKey: string;
       value: unknown;
@@ -248,6 +253,7 @@ export default function BackendCalculatorToolScreen({
   buildPayload,
   buildMetrics = defaultMetrics,
   buildNotices = defaultNotices,
+  buildDetails,
   defaultLogTitle,
   defaultTask,
   buildActions,
@@ -380,7 +386,8 @@ export default function BackendCalculatorToolScreen({
         context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
         message: aiPrefill.buildMessage({
           growId,
-          plantId: plantContext.plantId || ""
+          plantId: plantContext.plantId || "",
+          values
         })
       });
       if (!response?.success || !response.reply) {
@@ -961,6 +968,7 @@ export default function BackendCalculatorToolScreen({
               outputs.releaseDisclaimer,
               outputs.realisticNotes
             ].filter(Boolean)}
+            details={buildDetails?.(outputs)}
             actions={actions}
             feedback={feedback}
             contextMessage={
