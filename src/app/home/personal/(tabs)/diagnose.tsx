@@ -28,6 +28,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 import { providerEvidencePayload } from "@/api/evidence";
+import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 
@@ -1243,6 +1244,24 @@ export default function DiagnoseRoute({
                 ...result.evidence.map((item) => `Observed evidence: ${item}`),
                 ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
               ]}
+              evidenceReview={
+                diagnosisEvidence.images.length || result.imageAnalysis?.requested
+                  ? normalizeEvidenceReview(result.imageAnalysis, {
+                      requested: diagnosisEvidence.images.length > 0,
+                      photoCount: diagnosisEvidence.images.length,
+                      confidence: result.confidence,
+                      evidenceUsed: result.evidence,
+                      counterEvidence: result.counterEvidence,
+                      missingInformation: result.missingData,
+                      limitations: result.limitations || []
+                    })
+                  : null
+              }
+              onAddEvidence={() =>
+                setFeedback(
+                  "Add the requested photos above, then submit the diagnosis follow-up to update this result."
+                )
+              }
               details={
                 <View style={styles.providerPanel}>
                   <Text style={styles.providerTitle}>ETGU and GPT verification</Text>
