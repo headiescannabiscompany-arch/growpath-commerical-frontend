@@ -223,7 +223,10 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
         expect.objectContaining({
           growId: undefined,
-          evidenceAssetIds: ["evidence-1"]
+          evidenceAssetIds: ["evidence-1"],
+          message: expect.stringContaining(
+            'Never put an English common-name phrase such as "rose plant" in scientificName'
+          )
         })
       )
     );
@@ -328,6 +331,63 @@ describe("SpeciesCropIdToolRoute", () => {
         .value
     ).toBe("Mint");
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+  });
+
+  it("does not submit a common-name phrase as a scientific name", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cotton plant",
+        scientificName: "Rose plant",
+        cultivar: "",
+        commonNames: "Cotton plant",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium",
+        identifyingVisualTraits: "A woody branch and one pod-like structure.",
+        candidates: [
+          {
+            scientificName: "Rose plant",
+            commonNames: ["Cotton plant"],
+            rank: "species",
+            confidence: "medium"
+          }
+        ]
+      }),
+      provider: "openai",
+      providerLabel: "OpenAI vision crop identity",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: {
+        requested: true,
+        photosAttached: 1,
+        photosAnalyzed: 1,
+        status: "completed",
+        providerModel: "gpt-4o-mini"
+      },
+      limitations: ["Exact identity requires leaf, flower, and fruit detail."]
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "Cotton plant",
+          scientificName: "",
+          identificationDraft: expect.objectContaining({
+            candidates: [
+              expect.objectContaining({
+                scientificName: "",
+                rank: "working_candidate"
+              })
+            ]
+          })
+        })
+      )
+    );
   });
 
   it("creates crop identity tasks from species identification output", async () => {

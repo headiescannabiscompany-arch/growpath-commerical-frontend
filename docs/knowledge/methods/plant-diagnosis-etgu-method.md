@@ -122,6 +122,8 @@ Narrow results in this order:
 
 Return ranked candidates with rank, confidence, supporting evidence, counter-evidence, missing evidence, required next photos, and discriminating next questions. High species confidence requires multiple diagnostic structures, compatible region and habitat, lookalike review, and recorded authoritative source support. Otherwise retain the defensible family, genus, or working-candidate rank. User confirmation, uncertainty, and rejection are saved decisions with timestamps; user confirmation does not mean expert or external-source verification.
 
+Keep common, nursery, and trade names separate from scientific names. When the evidence supports a genus but not an exact species, a genus-level draft such as `Mandevilla spp.` is preferable to an invented species. Withhold plain-language phrases such as ?rose plant? from scientific-name and possible-species fields, demote the affected candidate to a working candidate, and tell the user that accepted-name and synonym verification is still required.
+
 The calculator itself does not query a botanical database. When no lookup occurred, return `required_not_performed`, an empty source-record list, and recommended source IDs rather than invented citations or range matches. Verification may use USDA PLANTS and regional floras for jurisdictional distribution, Kew POWO/WCVP for accepted vascular-plant names and synonymy, GBIF for taxonomy and occurrence leads, and iNaturalist only as a Tier C observation/community-identification lead. A future live lookup must record the exact record URL or identifier, access time, scope, match result, conflicts, and source-specific limitations.
 
 ## Crop identity confirmation
