@@ -76,6 +76,7 @@ const fallbackRoutes = [
   "courses",
   "courses/create",
   "courses/add-lesson",
+  "field-observations",
   "brands",
   "brands/example-brand",
   "store",
@@ -392,6 +393,16 @@ const routeSeo = new Map(
       }
     ],
     [
+      "field-observations",
+      {
+        title: "GrowPath Field Observations",
+        heading: "Explore shared plant observations around the world",
+        description:
+          "Explore opted-in plant identifications on an interactive globe, review field-study evidence, and contribute observations without exposing personal information.",
+        topics: ["Plant identification", "Field studies", "Shared observations"]
+      }
+    ],
+    [
       "discover",
       {
         title: "Discover GrowPath Videos, Courses, Products, and Communities",
@@ -481,6 +492,7 @@ const sitemapRoutes = [
   { route: "register", priority: "0.8", changefreq: "monthly" },
   { route: "store", priority: "0.8", changefreq: "daily" },
   { route: "courses", priority: "0.8", changefreq: "weekly" },
+  { route: "field-observations", priority: "0.7", changefreq: "daily" },
   { route: "feed", priority: "0.7", changefreq: "daily" },
   { route: "forum", priority: "0.7", changefreq: "daily" },
   { route: "communities", priority: "0.5", changefreq: "weekly" },
