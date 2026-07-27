@@ -34,6 +34,15 @@ describe("GrowPath knowledge registries", () => {
     expect(evaluateSourceForDecision("facebook-grower-groups", "diagnosis")).toBe(
       "reject"
     );
+    expect(evaluateSourceForDecision("gbif-species-api", "plant_identification")).toBe(
+      "allow_with_caveat"
+    );
+    expect(evaluateSourceForDecision("kew-powo", "plant_identification")).toBe(
+      "allow_with_caveat"
+    );
+    expect(
+      evaluateSourceForDecision("inaturalist-observations", "plant_identification")
+    ).toBe("lead_only");
     expect(evaluateSourceForDecision("seo-affiliate-blog", "soil_science")).toBe(
       "reject"
     );
@@ -63,6 +72,15 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "defensible common, genus, or family-level candidate retained when exact species is unresolved"
+    );
+    expect(methodsForTool("species-crop-id").map((entry) => entry.id)).toContain(
+      "plant-diagnosis-etgu"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "ranked crop-identification candidates with evidence, counter-evidence, missing evidence, and next photos/questions"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "explicit external-source verification status and empty source records when no database was queried"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"

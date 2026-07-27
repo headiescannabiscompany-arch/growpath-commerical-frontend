@@ -4,12 +4,120 @@ import { StyleSheet, Text, View } from "react-native";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import { savePersonalGrowCropIdentity } from "@/api/grows";
 import { savePersonalPlantCropIdentity } from "@/api/plants";
+import {
+  updateGrowpathModuleRecord,
+  type GrowpathModuleRecord,
+  type GrowpathModuleUserDecision
+} from "@/api/growpathModules";
+import { updateToolRun, type ToolRun } from "@/api/toolRuns";
 import type { EvidenceAsset } from "@/types/evidence";
+
+const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant. Act like a cautious field botanist, not a one-photo image-matching toy.
+
+Inspect the attached image pixels first. Use user-entered context and selected private grow/plant context only when supplied. Narrow in this order: broad plant group, morphology, likely family, possible genera, then species only when diagnostic evidence supports it. Consider growth habit, leaf arrangement/type/margin/venation, stems, flower symmetry and parts, inflorescence, fruit/seed, special structures, habitat, geography, season, and whether the plant is wild or cultivated.
+
+Return useful broader candidates when exact species is unresolved. Cannabis is an allowed crop candidate from deliberately submitted evidence. A clear cannabis flower or harvested bud may support a crop-level Cannabis draft from visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure. Never infer cultivar or strain from appearance.
+
+Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
+
+Return JSON only with exactly these keys:
+{
+  "userEnteredName": "string",
+  "scientificName": "string",
+  "cultivar": "",
+  "commonNames": "comma-separated string",
+  "broadGroup": "flowering_plant, conifer, fern, moss_or_ally, fungus_or_lichen, or unknown",
+  "likelyFamily": "string",
+  "possibleGenera": ["string"],
+  "growthHabit": "tree, shrub, vine, herb, grasslike, succulent, fernlike, or unknown",
+  "leafArrangement": "opposite, alternate, whorled, basal, rosette, or unknown",
+  "leafType": "simple, compound, pinnate, palmate, scale_like, needle_like, or unknown",
+  "leafMargin": "entire, serrated, lobed, spiny, wavy, or unknown",
+  "venation": "parallel, pinnate, palmate, or unknown",
+  "flowerPresent": "yes, no, or unknown",
+  "flowerSymmetry": "radial, bilateral, or unknown",
+  "fruitPresent": "yes, no, or unknown",
+  "stemTraits": "comma-separated visible traits",
+  "flowerPartsVisible": "comma-separated visible parts",
+  "inflorescenceType": "string",
+  "fruitType": "string",
+  "specialStructures": "comma-separated visible structures",
+  "identificationNotes": "visible observations and uncertainty",
+  "imageAnalysisPerformed": "true or false",
+  "imageQuality": "usable, limited, or unusable",
+  "visualConfidence": "high, medium, or low",
+  "identifyingVisualTraits": "string",
+  "candidates": [
+    {
+      "scientificName": "string",
+      "commonNames": ["string"],
+      "rank": "family, genus, species, or working_candidate",
+      "confidence": "high, medium, or low",
+      "evidence": ["visible or user-provided evidence"],
+      "counterEvidence": ["conflicts or unresolved lookalikes"],
+      "missingEvidence": ["evidence needed to narrow further"]
+    }
+  ],
+  "evidence": ["observations that support the draft"],
+  "counterEvidence": ["observations that conflict or preserve lookalikes"],
+  "missingEvidence": ["missing information"],
+  "requiredNextPhotos": ["specific photo requests"],
+  "requiredNextQuestions": ["specific context questions"]
+}`;
+
+function stringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map(String)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return String(value || "")
+    .split(/[,;\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function compactValues(values: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([, value]) => {
+      const text = String(value || "").trim();
+      return text && text !== "unknown";
+    })
+  );
+}
+
+function buildIdentificationDraft(parsed: Record<string, any>) {
+  const candidates = Array.isArray(parsed.candidates)
+    ? parsed.candidates.slice(0, 5).map((candidate: any) => ({
+        scientificName: String(candidate?.scientificName || "").trim(),
+        commonNames: stringList(candidate?.commonNames),
+        rank: String(candidate?.rank || "working_candidate").trim(),
+        confidence: String(candidate?.confidence || "low").trim(),
+        evidence: stringList(candidate?.evidence),
+        counterEvidence: stringList(candidate?.counterEvidence),
+        missingEvidence: stringList(candidate?.missingEvidence)
+      }))
+    : [];
+  return {
+    broadGroup: String(parsed.broadGroup || "unknown").trim(),
+    likelyFamily: String(parsed.likelyFamily || "").trim(),
+    possibleGenera: stringList(parsed.possibleGenera),
+    candidates,
+    evidence: stringList(parsed.evidence),
+    counterEvidence: stringList(parsed.counterEvidence),
+    missingEvidence: stringList(parsed.missingEvidence),
+    requiredNextPhotos: stringList(parsed.requiredNextPhotos),
+    requiredNextQuestions: stringList(parsed.requiredNextQuestions),
+    sourceVerificationPerformed: false
+  };
+}
 
 function normalizePriority(
   value: unknown,
@@ -40,6 +148,70 @@ function normalizeCropIdentityPrefillField({
     .split(/[,;\n]/)
     .map((candidate) => candidate.trim())
     .find((candidate) => candidate && !unresolvedCropName(candidate));
+}
+
+async function recordCropIdentificationDecision({
+  decision,
+  outputs,
+  toolRun,
+  moduleRecord
+}: {
+  decision: GrowpathModuleUserDecision;
+  outputs: Record<string, any>;
+  toolRun: ToolRun | null;
+  moduleRecord: GrowpathModuleRecord | null;
+}) {
+  const recordedAt = new Date().toISOString();
+  const decisionRecord = {
+    value: decision,
+    recordedAt,
+    meaning:
+      decision === "accepted"
+        ? "The user confirmed this saved identity draft. This is not external botanical-source or expert verification."
+        : decision === "rejected"
+          ? "The user marked this candidate as not matching the observed plant."
+          : "The user needs more evidence before confirming an identity."
+  };
+  const nextOutputs = {
+    ...outputs,
+    userDecision: decisionRecord,
+    ...(decision === "accepted"
+      ? { confidence: "user_confirmed", userConfirmationRequired: false }
+      : {})
+  };
+  const toolRunId = String(toolRun?.id || toolRun?._id || "");
+  const moduleRecordId = String(moduleRecord?.id || moduleRecord?._id || "");
+  let saved = false;
+
+  if (toolRunId) {
+    saved = Boolean(
+      await updateToolRun(toolRunId, {
+        outputs: nextOutputs,
+        output: nextOutputs,
+        result: nextOutputs
+      })
+    );
+  }
+  if (moduleRecordId) {
+    const updatedRecord = await updateGrowpathModuleRecord(moduleRecordId, {
+      title: moduleRecord?.title || "Species / Crop Identification",
+      status: moduleRecord?.status || "active",
+      userDecision: decision,
+      outcome: {
+        ...(moduleRecord?.outcome || {}),
+        lastDecision: decision,
+        decisionRecordedAt: recordedAt
+      },
+      warnings: moduleRecord?.warnings || [],
+      recommendations: moduleRecord?.recommendations || [],
+      limitations: moduleRecord?.limitations || [],
+      tags: moduleRecord?.tags || [],
+      linkedTaskIds: moduleRecord?.linkedTaskIds || [],
+      tasksToCreate: moduleRecord?.tasksToCreate || []
+    });
+    saved = Boolean(updatedRecord) || saved;
+  }
+  if (!saved) throw new Error("Unable to save this identification decision.");
 }
 
 function cropIdentityCalendarMetadata(sourceStage: string) {
@@ -109,17 +281,17 @@ export default function SpeciesCropIdToolRoute() {
       tool="species-crop-id"
       toolKey="species-crop-id"
       title="Species / Crop Identification"
-      subtitle="Identify a crop from uploaded photos or entered traits. A grow is optional and only adds private history or a place to save the confirmed result."
+      subtitle="Narrow an unknown plant by combining photos, morphology, habitat, geography, and season. A grow is optional."
       growOptional
-      noGrowContextMessage="Identification is complete and remains in Saved Runs. Attach a grow only to add it to grow or plant history, save a grow log, or create follow-up tasks."
+      noGrowContextMessage="This identification and your confirmation decision remain in Saved Runs. Attach a grow only to add the confirmed identity to grow or plant history."
       formHeader={({ growId }) => (
         <View style={styles.evidenceSection}>
-          <Text style={styles.evidenceTitle}>Add identification photos</Text>
+          <Text style={styles.evidenceTitle}>Step 1 — Add identification evidence</Text>
           <Text style={styles.evidenceGuidance}>
-            When available, start with the whole plant, then add sharp close-ups of
-            leaves, stems, flowers, fruit, or other identifying structures. A recognizable
-            flower or harvested bud can support a crop-level result; appearance cannot
-            prove a cultivar or strain.
+            Start with the whole plant and its habitat, then add sharp leaf-top,
+            leaf-underside, stem/node, flower, and fruit or seed views when available. You
+            can use up to 12 photos or extract still frames from one short video. Location
+            is optional and can remain private.
           </Text>
           <MediaEvidencePicker
             aiUsable
@@ -136,14 +308,18 @@ export default function SpeciesCropIdToolRoute() {
         </View>
       )}
       aiPrefill={{
-        buttonLabel: "Identify Crop from Photos",
+        buttonLabel: "Identify Plant from Photos",
         clearUnfilled: true,
         evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         isReady: () => providerEvidencePayload(evidenceAssets).images.length > 0,
         notReadyMessage: "Upload at least one photo before starting AI identification.",
         runAfterPrefill: true,
-        buildMessage: () =>
-          `Inspect the attached image pixels first, then use selected private grow or plant context only when it was provided. Identify the crop at the most defensible common-name and species level. When exact species remains uncertain but the visible evidence supports a useful common, genus, or family-level working candidate (for example, mint), put that candidate in userEnteredName and leave scientificName blank; reserve "not confirmed" for cases where no crop-level or broader plant candidate is defensible. Cannabis is an allowed crop candidate. A clear cannabis flower or harvested bud can support a draft identification of Cannabis when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent; do not require a fan-leaf photo when the flower itself is recognizable. Never infer a cultivar or strain from appearance. If image pixels are unavailable, set imageAnalysisPerformed to "false" and do not claim a visual identification. Return JSON only with exactly these keys: {"userEnteredName":"string","scientificName":"string","cultivar":"string","commonNames":"string","identificationNotes":"string","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low","identifyingVisualTraits":"string"}. Every AI result is a draft because only the user can confirm it. In identificationNotes state visible traits, competing candidates, confidence limitations, and the exact whole-plant/leaf/flower/fruit/stem media needed for a better identification. Do not suggest public posting or external reporting.`,
+        buildMessage: ({ values }) =>
+          `${PLANT_ID_AI_PROMPT}\n\nUser-entered context:\n${JSON.stringify(
+            compactValues(values),
+            null,
+            2
+          )}`,
         normalizeFieldValue: normalizeCropIdentityPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
@@ -159,6 +335,7 @@ export default function SpeciesCropIdToolRoute() {
           );
           const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
           return {
+            identificationDraft: buildIdentificationDraft(parsed),
             imageAnalysis: {
               requested: evidenceAssetIds.length > 0,
               performed:
@@ -184,25 +361,259 @@ export default function SpeciesCropIdToolRoute() {
         }
       }}
       fields={[
-        { key: "userEnteredName", label: "Plant or crop name", defaultValue: "" },
+        {
+          key: "userEnteredName",
+          label: "Plant or crop name",
+          defaultValue: "",
+          section: "Step 2 — Proposed identity",
+          placeholder: "Leave blank if unknown"
+        },
         {
           key: "scientificName",
           label: "Scientific name, if known",
-          defaultValue: ""
+          defaultValue: "",
+          section: "Step 2 — Proposed identity"
         },
-        { key: "cultivar", label: "Cultivar / strain", defaultValue: "" },
+        {
+          key: "cultivar",
+          label: "Cultivar / variety from a label or source",
+          defaultValue: "",
+          section: "Step 2 — Proposed identity",
+          helpText: "Do not enter a cultivar inferred from appearance."
+        },
         {
           key: "commonNames",
-          label: "Common names, comma-separated",
-          defaultValue: ""
+          label: "Other common names",
+          defaultValue: "",
+          section: "Step 2 — Proposed identity"
+        },
+        {
+          key: "cultivationStatus",
+          label: "Wild or cultivated?",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          options: [
+            { value: "wild", label: "Wild" },
+            { value: "cultivated", label: "Cultivated" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "setting",
+          label: "Growing setting",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          options: [
+            { value: "outdoor", label: "Outdoor" },
+            { value: "indoor", label: "Indoor" },
+            { value: "greenhouse", label: "Greenhouse" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "region",
+          label: "Location or region",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          placeholder: "City/state, county, or general region",
+          helpText: "Optional. Use only the precision you are comfortable saving."
+        },
+        {
+          key: "observationDate",
+          label: "Observation date",
+          defaultValue: "",
+          inputType: "date",
+          section: "Step 3 — Place and context"
+        },
+        {
+          key: "habitat",
+          label: "Habitat",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          placeholder: "Roadside, wetland, woodland shade, garden bed…"
+        },
+        {
+          key: "substrate",
+          label: "Soil, substrate, or geology",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          placeholder: "Sand, clay, limestone, potting mix…"
+        },
+        {
+          key: "associatedPlants",
+          label: "Nearby associated plants",
+          defaultValue: "",
+          section: "Step 3 — Place and context"
+        },
+        {
+          key: "plantSize",
+          label: "Approximate plant size",
+          defaultValue: "",
+          section: "Step 3 — Place and context",
+          placeholder: "Height, spread, trunk or stem size"
+        },
+        {
+          key: "growthHabit",
+          label: "Growth habit",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "tree", label: "Tree" },
+            { value: "shrub", label: "Shrub" },
+            { value: "vine", label: "Vine" },
+            { value: "herb", label: "Herb" },
+            { value: "grasslike", label: "Grass-like" },
+            { value: "succulent", label: "Succulent" },
+            { value: "fernlike", label: "Fern-like" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "leafArrangement",
+          label: "Leaf arrangement",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "opposite", label: "Opposite" },
+            { value: "alternate", label: "Alternate" },
+            { value: "whorled", label: "Whorled" },
+            { value: "basal", label: "Basal" },
+            { value: "rosette", label: "Rosette" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "leafType",
+          label: "Leaf type",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "simple", label: "Simple" },
+            { value: "compound", label: "Compound" },
+            { value: "pinnate", label: "Pinnate" },
+            { value: "palmate", label: "Palmate" },
+            { value: "scale_like", label: "Scale-like" },
+            { value: "needle_like", label: "Needle-like" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "leafMargin",
+          label: "Leaf edge / margin",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "entire", label: "Smooth" },
+            { value: "serrated", label: "Serrated" },
+            { value: "lobed", label: "Lobed" },
+            { value: "spiny", label: "Spiny" },
+            { value: "wavy", label: "Wavy" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "venation",
+          label: "Leaf veins",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "parallel", label: "Parallel" },
+            { value: "pinnate", label: "Pinnate" },
+            { value: "palmate", label: "Palmate" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "flowerPresent",
+          label: "Flowers visible?",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "flowerSymmetry",
+          label: "Flower symmetry",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "radial", label: "Radial" },
+            { value: "bilateral", label: "Bilateral" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "fruitPresent",
+          label: "Fruit or seed visible?",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          options: [
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+            { value: "unknown", label: "Not sure" }
+          ]
+        },
+        {
+          key: "stemTraits",
+          label: "Stem, bark, or node traits",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          multiline: true,
+          placeholder: "Square stem, woody bark, hairs, latex, colored nodes…"
+        },
+        {
+          key: "flowerPartsVisible",
+          label: "Visible flower parts",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          placeholder: "Petals/tepals, sepals, stamens, pistil, spathe/spadix…"
+        },
+        {
+          key: "inflorescenceType",
+          label: "Flower-cluster / inflorescence shape",
+          defaultValue: "",
+          section: "Step 4 — Morphology"
+        },
+        {
+          key: "fruitType",
+          label: "Fruit or seed type",
+          defaultValue: "",
+          section: "Step 4 — Morphology"
+        },
+        {
+          key: "specialStructures",
+          label: "Special structures",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          multiline: true,
+          placeholder:
+            "Spines, tendrils, stipules, bulb, corm, rhizome, latex, hairs, succulent stem…"
+        },
+        {
+          key: "sensoryTraits",
+          label: "Smell, sap, texture, or other direct observations",
+          defaultValue: "",
+          section: "Step 4 — Morphology",
+          multiline: true,
+          helpText: "Do not taste an unknown plant."
         },
         {
           key: "identificationNotes",
-          label: "Identification evidence or additional context (optional)",
+          label: "Additional identification evidence",
           defaultValue: "",
+          section: "Step 4 — Morphology",
           multiline: true
         }
       ]}
+      validateValues={(values) => {
+        const useful = compactValues(values);
+        return Object.keys(useful).length
+          ? null
+          : "Enter at least one observed trait or proposed name, or use AI photo identification.";
+      }}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
@@ -212,12 +623,43 @@ export default function SpeciesCropIdToolRoute() {
         userConfirmed: false,
         commonNames: values.commonNames,
         identificationNotes: values.identificationNotes || undefined,
+        observationContext: {
+          cultivationStatus: values.cultivationStatus || "unknown",
+          setting: values.setting || "unknown",
+          region: values.region || "",
+          observationDate: values.observationDate || "",
+          habitat: values.habitat || "",
+          substrate: values.substrate || "",
+          associatedPlants: stringList(values.associatedPlants),
+          plantSize: values.plantSize || ""
+        },
+        morphology: {
+          growthHabit: values.growthHabit || "unknown",
+          leafArrangement: values.leafArrangement || "unknown",
+          leafType: values.leafType || "unknown",
+          leafMargin: values.leafMargin || "unknown",
+          venation: values.venation || "unknown",
+          flowerPresent: values.flowerPresent || "unknown",
+          flowerSymmetry: values.flowerSymmetry || "unknown",
+          fruitPresent: values.fruitPresent || "unknown",
+          stemTraits: stringList(values.stemTraits),
+          flowerPartsVisible: stringList(values.flowerPartsVisible),
+          inflorescenceType: values.inflorescenceType || "",
+          fruitType: values.fruitType || "",
+          specialStructures: stringList(values.specialStructures),
+          sensoryTraits: stringList(values.sensoryTraits)
+        },
         evidenceAssetIds: providerEvidencePayload(evidenceAssets).evidenceAssetIds,
         mediaEvidence: providerEvidencePayload(evidenceAssets).media
       })}
       buildMetrics={(outputs) => [
-        { key: "crop", label: "Likely crop", value: outputs.likelyCrop },
-        { key: "scientific", label: "Scientific", value: outputs.scientificName || "-" },
+        { key: "crop", label: "Working identity", value: outputs.likelyCrop },
+        { key: "family", label: "Likely family", value: outputs.likelyFamily || "-" },
+        {
+          key: "scientific",
+          label: "Scientific name",
+          value: outputs.scientificName || "-"
+        },
         { key: "confidence", label: "Confidence", value: outputs.confidence },
         {
           key: "vision",
@@ -231,15 +673,16 @@ export default function SpeciesCropIdToolRoute() {
             : "0"
         },
         {
-          key: "quality",
-          label: "Image quality",
-          value: outputs.imageAnalysis?.performed
-            ? outputs.imageAnalysis.quality || "not provided"
-            : "not analyzed"
+          key: "verification",
+          label: "External verification",
+          value:
+            outputs.sourceVerification?.status === "verified"
+              ? "Recorded"
+              : "Not performed"
         },
         {
           key: "confirm",
-          label: "Needs confirm",
+          label: "Needs confirmation",
           value: outputs.userConfirmationRequired ? "Yes" : "No"
         }
       ]}
@@ -264,11 +707,9 @@ export default function SpeciesCropIdToolRoute() {
                   ) === 1
                     ? ""
                     : "s"
-                }. Image quality: ${
-                  outputs.imageAnalysis.quality || "not provided"
-                }. The crop-level result is still a draft until you confirm it.`
+                }. The result is still a draft until you confirm it.`
               : outputs.imageAnalysis?.requested
-                ? "The uploaded photo pixels were not analyzed. Try again with the image-capable AI available, or enter visible traits manually."
+                ? "The uploaded photo pixels were not analyzed. Try again with image-capable AI, or enter visible traits manually."
                 : "No photo was analyzed. This result uses only the information entered in the form."
           },
           ...warnings.map((message: unknown, index: number) => ({
@@ -278,6 +719,7 @@ export default function SpeciesCropIdToolRoute() {
           }))
         ];
       }}
+      buildDetails={(outputs) => <PlantIdentificationResultDetails outputs={outputs} />}
       defaultLogTitle={(outputs) =>
         `Crop identity: ${outputs.likelyCrop || "unconfirmed crop"}`
       }
@@ -291,11 +733,19 @@ export default function SpeciesCropIdToolRoute() {
         priority: outputs.userConfirmationRequired ? "high" : "medium",
         ...cropIdentityCalendarMetadata("crop_identity_confirmation")
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => {
+      buildActions={({
+        outputs,
+        payload,
+        toolRun,
+        moduleRecord,
+        growId,
+        plantContext
+      }) => {
         const cropCommonName = String(
           outputs.likelyCrop || payload.userEnteredName || ""
         ).trim();
-        const invalidIdentity = !cropCommonName || /^unknown crop$/i.test(cropCommonName);
+        const invalidIdentity =
+          !cropCommonName || /^(unknown crop|not confirmed)$/i.test(cropCommonName);
         const target = plantContext.plantId ? "Plant" : "Grow";
         const identity = {
           growId,
@@ -303,40 +753,75 @@ export default function SpeciesCropIdToolRoute() {
           scientificName: String(
             outputs.scientificName || payload.scientificName || ""
           ).trim(),
-          commonNames:
-            outputs.commonNames ||
-            String(payload.commonNames || "")
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean),
-          cultivar: String(outputs.cultivarOrStrain || payload.cultivar || "").trim(),
+          commonNames: stringList(outputs.commonNames || payload.commonNames),
+          cultivar: String(
+            outputs.cultivarOrStrain || outputs.cultivar || payload.cultivar || ""
+          ).trim(),
           cropProfileId: outputs.cropProfileSuggestion?.cropProfileId || null,
           confidence: "user_confirmed",
           sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
           userConfirmed: true as const
         };
 
-        if (!growId) return [];
-
-        return [
+        const actions = [
           {
-            key: "confirm-save-crop-identity",
-            label: `Confirm & Save to ${target}`,
+            key: "confirm-crop-identity",
+            label: growId ? `Confirm & Save to ${target}` : "Confirm in Saved Run",
             pendingLabel: "Saving...",
             disabled: invalidIdentity,
-            successMessage: `Confirmed crop identity saved to ${target.toLowerCase()}.`,
+            successMessage: growId
+              ? `Confirmed crop identity saved to ${target.toLowerCase()}.`
+              : "Confirmed identity saved to this run.",
             onPress: async () => {
-              if (plantContext.plantId) {
+              if (growId && plantContext.plantId) {
                 await savePersonalPlantCropIdentity(plantContext.plantId, identity);
-              } else {
+              } else if (growId) {
                 await savePersonalGrowCropIdentity(growId, identity);
               }
+              await recordCropIdentificationDecision({
+                decision: "accepted",
+                outputs,
+                toolRun,
+                moduleRecord
+              });
             }
           },
           {
+            key: "crop-identity-uncertain",
+            label: "Mark as Not Sure",
+            variant: "secondary" as const,
+            pendingLabel: "Saving...",
+            successMessage:
+              "Saved as uncertain. Add the requested evidence before confirming.",
+            onPress: () =>
+              recordCropIdentificationDecision({
+                decision: "uncertain",
+                outputs,
+                toolRun,
+                moduleRecord
+              })
+          },
+          {
+            key: "crop-identity-rejected",
+            label: "Mark as Doesn't Match",
+            variant: "secondary" as const,
+            pendingLabel: "Saving...",
+            successMessage: "Saved as rejected for future outcome review.",
+            onPress: () =>
+              recordCropIdentificationDecision({
+                decision: "rejected",
+                outputs,
+                toolRun,
+                moduleRecord
+              })
+          }
+        ];
+
+        if (growId) {
+          actions.push({
             key: "create-crop-identity-tasks",
             label: "Create Crop Identity Tasks",
-            variant: "secondary",
+            variant: "secondary" as const,
             pendingLabel: "Creating...",
             successMessage: "Created crop identity tasks.",
             onPress: async () => {
@@ -351,8 +836,9 @@ export default function SpeciesCropIdToolRoute() {
               });
               if (!result.ok) throw new Error(result.error);
             }
-          }
-        ];
+          });
+        }
+        return actions;
       }}
     />
   );

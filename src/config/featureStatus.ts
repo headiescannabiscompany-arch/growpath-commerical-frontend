@@ -629,9 +629,9 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
       grow: "not_needed",
       audience: "general",
       inputSummary:
-        "One or more clear plant photos; a grow can be attached but is not required.",
+        "Up to 12 plant photos or short-video frames, plus optional morphology, habitat, region, and observation context; a grow is not required.",
       outputSummary:
-        "A draft crop/species identity, visible traits, confidence, and better-photo guidance."
+        "Ranked botanical candidates with supporting and conflicting evidence, confidence limits, missing-photo guidance, and source-verification status."
     },
     internalNote:
       "Approved beta crop-context workflow. Regional invasive alerts stay out of current programming."
