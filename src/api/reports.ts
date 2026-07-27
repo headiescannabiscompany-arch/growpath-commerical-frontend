@@ -7,17 +7,24 @@ type ReportTokenOptions = { token?: string };
 export const submitReport = async ({
   contentType,
   contentId,
+  contentTitle,
+  targetUrl,
+  parentPostId,
   reason,
   token
 }: {
   contentType: string;
   contentId: string;
+  contentTitle?: string;
+  targetUrl?: string;
+  parentPostId?: string;
   reason: string;
 } & ReportTokenOptions) => {
   return apiRequest(apiRoutes.REPORTS.SUBMIT, {
     method: "POST",
-    auth: token ? true : false,
-    body: { contentType, contentId, reason }
+    auth: true,
+    body: { contentType, contentId, contentTitle, targetUrl, parentPostId, reason },
+    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   });
 };
 

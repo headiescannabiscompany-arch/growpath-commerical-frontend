@@ -11,12 +11,14 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "../api/apiRequest";
 import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
+import ReportModal from "../components/ReportModal";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -29,6 +31,7 @@ export default function LiveSessionScreen({ route }) {
   }, [params.sessionId, params.id]);
 
   const entitlements = useEntitlements();
+  const auth = useAuth();
   const canModerate = entitlements.can(CAPABILITY_KEYS.LIVE_SESSION_MODERATE);
 
   const [loading, setLoading] = useState(true);
@@ -38,6 +41,8 @@ export default function LiveSessionScreen({ route }) {
   const [reminderCreated, setReminderCreated] = useState(false);
   const [rsvped, setRsvped] = useState(false);
   const [savingRsvp, setSavingRsvp] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -134,6 +139,11 @@ export default function LiveSessionScreen({ route }) {
   const feedHref = feedCampaignId
     ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
+  const ownerId = String(
+    session?.owner?.id || session?.owner?._id || session?.ownerId || session?.userId || ""
+  );
+  const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
+  const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
 
   useEffect(() => {
     if (!session || !storefrontSlug) return;
@@ -238,6 +248,7 @@ export default function LiveSessionScreen({ route }) {
       ) : null}
 
       {err ? <Text style={styles.error}>{err}</Text> : null}
+      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {session ? (
         <View style={styles.card}>
@@ -377,6 +388,17 @@ export default function LiveSessionScreen({ route }) {
             </Pressable>
           ) : null}
 
+          {canReport ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Report ${String(session.title || "live session")}`}
+              style={styles.secondaryBtn}
+              onPress={() => setReportVisible(true)}
+            >
+              <Text style={styles.secondaryBtnText}>Report Live Session</Text>
+            </Pressable>
+          ) : null}
+
           {replayUrl ? (
             <Pressable
               accessibilityRole="button"
@@ -412,6 +434,17 @@ export default function LiveSessionScreen({ route }) {
           ) : null}
         </View>
       ) : null}
+      <ReportModal
+        visible={reportVisible}
+        onClose={() => setReportVisible(false)}
+        contentType="liveSession"
+        contentId={sessionId}
+        contentTitle={String(session?.title || "Live session")}
+        targetUrl={`/live-session?sessionId=${encodeURIComponent(sessionId)}`}
+        onSuccess={() =>
+          setFeedback("Live-session report submitted for administrator review.")
+        }
+      />
     </ScrollView>
   );
 }
@@ -436,6 +469,14 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
+  feedback: {
+    backgroundColor: "#F0FDF4",
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "700",
+    marginBottom: 10,
+    padding: 10
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: radius.card,

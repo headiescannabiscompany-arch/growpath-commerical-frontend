@@ -88,3 +88,8 @@ Never infer that a social video is scientifically correct because it is popular,
 or highly engaged. Social video is Tier C anecdotal context unless the underlying claim is
 supported by the appropriate reviewed evidence. Preserve reports, moderation state, and
 rights review separately from ranking and engagement.
+
+A signed-in viewer may report a video they do not own. Persist the report and moderation
+case before attempting email delivery, then notify the platform administrator with a
+same-origin link to the exact video and a focused moderation-case link. Email is only a
+notification; failed delivery must not erase the stored report or become moderation truth.

@@ -14,6 +14,7 @@ import {
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { submitReport } from "@/api/reports";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
 import {
@@ -931,14 +932,26 @@ export default function CommercialFeedRoute() {
     }).catch(() => undefined);
   }
 
-  function reportCampaign(post: CommercialFeedCampaign) {
-    setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
-    setFeedback("Campaign reported and hidden from this view.");
-    void recordFeedCampaignEvent(post.id, {
-      eventType: "report",
-      placement: "feed",
-      reportReason: "viewer_report"
-    }).catch(() => undefined);
+  async function reportCampaign(post: CommercialFeedCampaign) {
+    setFeedback("");
+    try {
+      await submitReport({
+        contentType: "commercialPost",
+        contentId: post.id,
+        contentTitle: post.title || "Feed campaign",
+        targetUrl: `/feed?campaignId=${encodeURIComponent(post.id)}`,
+        reason: "Reported from Feed by a viewer"
+      });
+      setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
+      setFeedback("Campaign reported and hidden from this view.");
+      void recordFeedCampaignEvent(post.id, {
+        eventType: "report",
+        placement: "feed",
+        reportReason: "viewer_report"
+      }).catch(() => undefined);
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to submit the campaign report.");
+    }
   }
 
   if (!ent.ready) return null;
@@ -1622,7 +1635,7 @@ export default function CommercialFeedRoute() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Report ${post.title || "campaign"}`}
-                  onPress={() => reportCampaign(post)}
+                  onPress={() => void reportCampaign(post)}
                   style={styles.secondaryButton}
                 >
                   <Text style={styles.secondaryButtonText}>Report</Text>

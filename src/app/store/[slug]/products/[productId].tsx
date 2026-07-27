@@ -15,6 +15,8 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { checkoutProduct } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import { useAuth } from "@/auth/AuthContext";
+import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
@@ -169,6 +171,7 @@ function trackCommercialClick(payload: Record<string, any>) {
 
 export default function PublicProductRoute() {
   const params = useLocalSearchParams<{ slug?: string; productId?: string }>();
+  const auth = useAuth();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedProductId = useMemo(
     () => String(params.productId || "").trim(),
@@ -187,6 +190,7 @@ export default function PublicProductRoute() {
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [reportVisible, setReportVisible] = useState(false);
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -482,6 +486,15 @@ export default function PublicProductRoute() {
               <Pressable style={styles.secondaryButton} onPress={shareProduct}>
                 <Text style={styles.secondaryButtonText}>Share Product</Text>
               </Pressable>
+              {auth.isAuthed ? (
+                <Pressable
+                  accessibilityLabel={`Report ${product?.name || "product"}`}
+                  style={styles.secondaryButton}
+                  onPress={() => setReportVisible(true)}
+                >
+                  <Text style={styles.secondaryButtonText}>Report Product</Text>
+                </Pressable>
+              ) : null}
             </View>
           </AppCard>
 
@@ -814,6 +827,17 @@ export default function PublicProductRoute() {
           ) : null}
         </>
       )}
+      <ReportModal
+        visible={reportVisible}
+        onClose={() => setReportVisible(false)}
+        contentType="storefrontProduct"
+        contentId={productId}
+        contentTitle={product?.name || "Product"}
+        targetUrl={product ? publicProductUrl(slug, product) : ""}
+        onSuccess={() =>
+          setFeedback("Product report submitted for administrator review.")
+        }
+      />
     </AppPage>
   );
 }

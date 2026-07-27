@@ -4,7 +4,17 @@ import { submitReport } from "../api/reports";
 import { radius } from "../theme/theme";
 import ReportBugButton from "./ReportBugButton";
 
-const ReportModal = ({ visible, onClose, contentType, contentId, token, onSuccess }) => {
+const ReportModal = ({
+  visible,
+  onClose,
+  contentType,
+  contentId,
+  contentTitle,
+  targetUrl,
+  parentPostId,
+  token,
+  onSuccess
+}) => {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,7 +23,15 @@ const ReportModal = ({ visible, onClose, contentType, contentId, token, onSucces
     setLoading(true);
     setError("");
     try {
-      await submitReport({ contentType, contentId, reason, token });
+      await submitReport({
+        contentType,
+        contentId,
+        contentTitle,
+        targetUrl,
+        parentPostId,
+        reason,
+        token
+      });
       setReason("");
       onSuccess && onSuccess();
       onClose();

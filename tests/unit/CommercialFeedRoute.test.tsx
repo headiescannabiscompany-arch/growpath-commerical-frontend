@@ -699,7 +699,20 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByText(/Grow interest vegetables: 8 impressions/)).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Report Analytics campaign"));
-    expect(screen.queryByText("Analytics campaign")).toBeNull();
+    await waitFor(() => expect(screen.queryByText("Analytics campaign")).toBeNull());
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/reports",
+        expect.objectContaining({
+          method: "POST",
+          auth: true,
+          body: expect.objectContaining({
+            contentType: "commercialPost",
+            contentId: "campaign-metrics"
+          })
+        })
+      )
+    );
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/commercial/feed/campaign-metrics/events",

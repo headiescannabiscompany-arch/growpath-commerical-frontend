@@ -426,7 +426,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "creator follow action from video detail",
       "stable course and content references",
       "reference-safe detach and deletion status",
-      "cannabis-aware discovery filtering"
+      "cannabis-aware discovery filtering",
+      "stored video moderation case with exact-content and administrator-email links"
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
@@ -438,7 +439,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never claim storage was released until the storage service confirms physical deletion.",
       "Never persist object-storage credentials or expiring signed upload or playback URLs in video, course, or lesson records.",
       "Never show cannabis/hemp-specific video discovery to unrelated horticulture viewers.",
-      "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission."
+      "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission.",
+      "Never send a video-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails."
     ],
     ["videos", "discover", "course-builder", "profiles", "following-feed"]
   ),
@@ -484,7 +486,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "webhook-confirmed paid enrollment and idempotent course counters",
       "buyer-visible payment, refund, and GrowPath support status",
       "refund-adjusted and dispute-held creator earning",
-      "creator payout eligibility limited to available unpaid earnings"
+      "creator payout eligibility limited to available unpaid earnings",
+      "stored course moderation case with exact-content and administrator-email links"
     ],
     [
       "Never accept or execute author-supplied iframe, script, object, embed, video, or HTML markup.",
@@ -501,6 +504,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never increment paid enrollment, revenue, or creator earnings more than once when Stripe retries a webhook.",
       "Never show refund or payment-issue forms without a recorded paid purchase, or label GrowPath support intake as a bank, card-network, or Stripe dispute.",
       "Never include held or refunded course earnings in creator payout eligibility.",
+      "Never send a course-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],
     [
@@ -542,6 +546,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "canonical Forum Directory group discovery and accessible group creation",
       "moderation audit",
       "server-enforced audited Forum moderation with feed-projection removal, reversible soft removal, and locked-reply blocking",
+      "stored reports for Forum, Feed, storefront, course, video, and live content with focused administrator-email links",
       "owner-scoped event analytics",
       "one level-one Commercial Analytics heading with level-two metrics, breakdown, and guidance sections",
       "bounded Personal home campaign density that preserves the grow workspace",
@@ -584,6 +589,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never strand Forum group creation in a legacy compatibility screen or hide public-versus-private discoverability.",
       "Never leave hidden or soft-removed Forum content in shared feeds, accept replies on locked threads, hard-delete moderation evidence, or perform a moderator action without a case and platform audit event.",
       "Never count repeated Forum reports from the same account toward an automatic hold threshold.",
+      "Never send a content-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails.",
       "Never hide a Commercial workspace at compact widths without a visible replacement path from More.",
       "Never expose Commercial Analytics metric, breakdown, or guidance sections as additional level-one page headings.",
       "A batch calculation may report inventory shortages but cannot decrement stock, assign lots, publish claims or authorize release.",
@@ -620,6 +626,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "forum tasks and alerts",
       "moderation audit",
       "Facility-scoped audited Forum moderation with feed-projection removal, reversible soft removal, and locked-reply blocking",
+      "stored Facility report with focused administrator-email links that preserve content authorization",
       "read-only integration state",
       "reviewed device mapping",
       "record-backed facility analytics",
@@ -665,6 +672,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never rely on native-only Alert callbacks for web member-removal confirmation or remove the last owner.",
       "Never leave hidden or soft-removed Facility Forum content in eligible feeds, accept replies on locked threads, hard-delete moderation evidence, or change Facility-only visibility during moderation.",
       "Never count repeated Facility Forum reports from the same account toward an automatic hold threshold.",
+      "Never send a Facility report email before storing the report and moderation case, expose content outside its authorization boundary, or erase the report when email delivery fails.",
       "Local previews require explicit preview intent; bare routes preserve real authenticated Facility sessions.",
       "Never hide a confirmed Facility task write behind a cached or stale queue response.",
       "Never make Facility outreach operators type raw course, live-event, or Forum identifiers when readable public records are available.",

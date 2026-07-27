@@ -6,6 +6,7 @@ import { getVideo, GrowPathVideo } from "@/api/videos";
 import { useAuth } from "@/auth/AuthContext";
 import FollowButton from "@/components/FollowButton";
 import { InlineError } from "@/components/InlineError";
+import ReportModal from "@/components/ReportModal";
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -22,6 +23,14 @@ export default function VideoDetailRoute() {
   const [video, setVideo] = useState<GrowPathVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const ownerId = String(video?.owner?.id || "");
+  const canReport =
+    auth.isAuthed &&
+    Boolean(ownerId) &&
+    ownerId !== String(auth.user?.id || "") &&
+    ownerId !== String(auth.user?._id || "");
 
   useEffect(() => {
     let active = true;
@@ -63,6 +72,7 @@ export default function VideoDetailRoute() {
     >
       {loading ? <ActivityIndicator accessibilityLabel="Loading video" /> : null}
       <InlineError error={error} />
+      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {video ? (
         <>
           <AppCard>
@@ -99,6 +109,16 @@ export default function VideoDetailRoute() {
                 Cannabis/hemp-specific content shown under GrowPath visibility rules.
               </Text>
             ) : null}
+            {canReport ? (
+              <Pressable
+                accessibilityLabel={`Report ${video.title || "video"}`}
+                accessibilityRole="button"
+                onPress={() => setReportVisible(true)}
+                style={styles.reportButton}
+              >
+                <Text style={styles.reportButtonText}>Report Video</Text>
+              </Pressable>
+            ) : null}
           </AppCard>
           <LessonMediaCard
             context="video"
@@ -124,6 +144,15 @@ export default function VideoDetailRoute() {
           ) : null}
         </>
       ) : null}
+      <ReportModal
+        visible={reportVisible}
+        onClose={() => setReportVisible(false)}
+        contentType="video"
+        contentId={videoId}
+        contentTitle={video?.title || "Video"}
+        targetUrl={`/videos/${encodeURIComponent(videoId)}`}
+        onSuccess={() => setFeedback("Video report submitted for administrator review.")}
+      />
     </AppPage>
   );
 }
@@ -141,6 +170,24 @@ const styles = StyleSheet.create({
   ownerCopy: { flex: 1 },
   owner: { color: "#0F172A", fontSize: 17, fontWeight: "800" },
   meta: { color: "#64748B", fontSize: 12, marginTop: 3, textTransform: "capitalize" },
+  feedback: {
+    backgroundColor: "#F0FDF4",
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "700",
+    marginBottom: 10,
+    padding: 10
+  },
+  reportButton: {
+    alignSelf: "flex-start",
+    borderColor: "#94A3B8",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  reportButtonText: { color: "#334155", fontWeight: "800" },
   description: { color: "#334155", lineHeight: 21, marginTop: 12 },
   context: {
     backgroundColor: "#F0FDF4",
