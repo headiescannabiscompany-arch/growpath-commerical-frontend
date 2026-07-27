@@ -1513,7 +1513,9 @@ describe("Tools Router (tools.js)", () => {
       cultivarOrStrain: "Blue Dream",
       confirmationRequired: true,
       userConfirmationRequired: true,
-      recommendationContext: expect.stringContaining("Confirm Cannabis identity")
+      recommendationContext: expect.stringContaining(
+        "Confirm Cannabis only after reviewing the evidence"
+      )
     });
     expect(cropId.body.outputs.warnings).toEqual(
       expect.arrayContaining([
@@ -1570,7 +1572,7 @@ describe("Tools Router (tools.js)", () => {
     expect(cropId.body.outputs).toMatchObject({
       likelyCrop: "Cannabis",
       scientificName: "Cannabis sativa",
-      confidence: "high",
+      confidence: "medium",
       userConfirmationRequired: true,
       imageAnalysis: {
         requested: true,

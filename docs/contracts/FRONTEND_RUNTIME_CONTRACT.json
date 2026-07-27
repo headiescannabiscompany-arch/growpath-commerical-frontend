@@ -252,7 +252,7 @@
       },
       {
         "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx",
-        "mustContain": "Identify Crop from Photos"
+        "mustContain": "Identify Plant from Photos"
       },
       {
         "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx",
