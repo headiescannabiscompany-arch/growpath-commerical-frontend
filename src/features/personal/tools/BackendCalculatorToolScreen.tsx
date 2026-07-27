@@ -36,6 +36,38 @@ import {
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildModuleRecordInput } from "@/features/personal/tools/moduleRecordPersistence";
+import { createFacilityTask } from "@/api/facilityTasks";
+import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
+
+function inferEvidenceReview(outputs: Record<string, any>, payload: Record<string, any>) {
+  const media = outputs.mediaAnalysis || outputs.photoAnalysis || outputs.imageAnalysis;
+  const assetIds = Array.isArray(payload.evidenceAssetIds)
+    ? payload.evidenceAssetIds
+    : [];
+  const mediaEvidence = Array.isArray(payload.mediaEvidence) ? payload.mediaEvidence : [];
+  const photoUrls = Array.isArray(payload.photoUrls) ? payload.photoUrls : [];
+  const requested = Boolean(
+    media || assetIds.length || mediaEvidence.length || photoUrls.length
+  );
+  if (!requested) return null;
+  return normalizeEvidenceReview(
+    {
+      ...(media || {}),
+      evidenceUsed: outputs.evidenceUsed || media?.evidenceUsed,
+      counterEvidence: outputs.counterEvidence || media?.counterEvidence,
+      missingInformation: outputs.missingInformation || media?.missingInformation,
+      requiredNextPhotos: outputs.requiredNextPhotos || media?.requiredNextPhotos,
+      limitations: outputs.limitations || media?.limitations || outputs.warnings
+    },
+    {
+      requested,
+      photoCount:
+        assetIds.length ||
+        mediaEvidence.filter((item: any) => item?.type !== "video").length ||
+        photoUrls.length
+    }
+  );
+}
 
 type ToolField = {
   key: string;
@@ -586,27 +618,47 @@ export default function BackendCalculatorToolScreen({
         label: "Create Follow-up Task",
         variant: "secondary",
         pendingLabel: "Creating...",
-        successMessage: "Created grow task.",
+        successMessage: "Created follow-up task in the selected workspace.",
         onPress: async () => {
-          const result = await saveToolRunAndCreateTask({
-            growId,
-            ...plantContext.toolRunContext,
-            toolKey,
-            toolRunId: toolRun?.id || toolRun?._id,
-            input: payload,
-            output: outputs,
-            title: task.title,
-            description: task.description,
-            priority: task.priority,
-            dueDate: task.dueDate,
-            endAt: task.endAt,
-            allDay: task.allDay,
-            calendarType: task.calendarType,
-            sourceStage: task.sourceStage,
-            reminderPlan: task.reminderPlan,
-            recurrence: task.recurrence
-          });
-          if (!result.ok) throw new Error(result.error);
+          if (facilityId) {
+            await createFacilityTask(facilityId, {
+              title: task.title,
+              description: task.description || `Follow up on ${toolKey} result.`,
+              priority: task.priority === "medium" ? "normal" : task.priority,
+              dueAt: task.dueDate
+                ? new Date(`${task.dueDate}T12:00:00.000Z`).toISOString()
+                : undefined,
+              endAt: task.endAt,
+              recurrence:
+                typeof task.recurrence === "string"
+                  ? { rule: task.recurrence }
+                  : task.recurrence,
+              reminderPlan: task.reminderPlan,
+              sourceType: "tool_run",
+              sourceObjectId: String(toolRun?.id || toolRun?._id || "") || undefined,
+              linkedToolRunId: String(toolRun?.id || toolRun?._id || "") || undefined
+            });
+          } else {
+            const result = await saveToolRunAndCreateTask({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey,
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              dueDate: task.dueDate,
+              endAt: task.endAt,
+              allDay: task.allDay,
+              calendarType: task.calendarType,
+              sourceStage: task.sourceStage,
+              reminderPlan: task.reminderPlan,
+              recurrence: task.recurrence
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
         }
       });
     }
@@ -969,6 +1021,12 @@ export default function BackendCalculatorToolScreen({
               outputs.realisticNotes
             ].filter(Boolean)}
             details={buildDetails?.(outputs)}
+            evidenceReview={inferEvidenceReview(outputs, payload)}
+            onAddEvidence={() =>
+              setFeedback(
+                "Add the requested evidence above, then run this tool again to update the review."
+              )
+            }
             actions={actions}
             feedback={feedback}
             contextMessage={

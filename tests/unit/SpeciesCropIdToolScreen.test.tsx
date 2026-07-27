@@ -12,9 +12,12 @@ const mockSavePersonalGrowCropIdentity = jest.fn();
 const mockSavePersonalPlantCropIdentity = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockListFieldStudies = jest.fn();
+const mockCreateFieldObservation = jest.fn();
 let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("expo-router", () => ({
+  Link: ({ children }: any) => children,
   useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({
     back: jest.fn(),
@@ -90,6 +93,11 @@ jest.mock("@/api/plants", () => ({
     mockSavePersonalPlantCropIdentity(...args)
 }));
 
+jest.mock("@/api/fieldStudies", () => ({
+  listFieldStudies: (...args: any[]) => mockListFieldStudies(...args),
+  createFieldObservation: (...args: any[]) => mockCreateFieldObservation(...args)
+}));
+
 jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
   updateGrowpathModuleRecord: (...args: any[]) => mockUpdateGrowpathModuleRecord(...args)
@@ -109,6 +117,10 @@ describe("SpeciesCropIdToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockSearchParams = { growId: "grow-1" };
+    mockListFieldStudies.mockResolvedValue([]);
+    mockCreateFieldObservation.mockResolvedValue({
+      observation: { id: "observation-1" }
+    });
     mockRunCalculator.mockResolvedValue({
       outputs: {
         likelyCrop: "Cannabis",
@@ -548,6 +560,56 @@ describe("SpeciesCropIdToolRoute", () => {
             confidence: "user_confirmed",
             userConfirmationRequired: false,
             userDecision: expect.objectContaining({ value: "accepted" })
+          })
+        })
+      )
+    );
+  });
+
+  it("saves the AI candidate and missing evidence to a selected Field Study", async () => {
+    mockSearchParams = { fieldStudyId: "study-1" };
+    mockListFieldStudies.mockResolvedValueOnce([
+      {
+        id: "study-1",
+        _id: "study-1",
+        title: "Roadside survey",
+        slug: "roadside-survey",
+        visibility: "private",
+        accessRole: "owner"
+      }
+    ]);
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    await waitFor(() => expect(screen.getByText("Roadside survey")).toBeTruthy());
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() =>
+      expect(screen.getByText("Save Draft to Field Study")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Save Draft to Field Study"));
+
+    await waitFor(() =>
+      expect(mockCreateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        expect.objectContaining({
+          sourceToolRunId: "toolrun-1",
+          identity: expect.objectContaining({
+            commonName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            verificationStatus: "ai_candidate"
+          }),
+          evidenceAssets: [
+            expect.objectContaining({
+              assetId: "evidence-1",
+              kind: "photo"
+            })
+          ],
+          location: expect.objectContaining({
+            privacy: "private",
+            exactLocationPublicConfirmed: false
+          }),
+          publication: expect.objectContaining({
+            status: "draft",
+            sensitiveSpecies: false
           })
         })
       )

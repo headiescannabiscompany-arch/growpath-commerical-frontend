@@ -14,6 +14,8 @@ Photo uploads must never imply that image pixels were inspected when the active 
 
 When image analysis is available, request a whole-plant context photo, a photo showing symptom distribution, and sharp close-ups of both leaf surfaces. A photo-only result must report whether visual analysis was actually performed and ask for replacement media when blur, lighting, distance, or missing leaf-surface coverage prevents useful review.
 
+Diagnosis, IPM Scout, and Harvest Readiness share an evidence-review surface after analysis. It must show whether pixels were actually inspected, the media quality and confidence, provider label, evidence used, counter-evidence, limitations, and exact next photos or checks. A follow-up action reuses the prior structured result and asks the user to add the requested evidence before rerunning; it must never silently upgrade confidence. When a follow-up task is created from a Facility route, it is written to the selected Facility task scope rather than the member's Personal queue.
+
 Diagnosis and IPM may accept up to 12 photos so a user can include zoomed-out context, distribution across plants, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone evidence, and a trap or follow-up view without deleting useful evidence. The count is a ceiling, not a requirement. Reject obviously invalid or tiny files before upload and billing. Metadata alone cannot prove focus, lighting, glare, color accuracy, subject relevance, or complete view coverage; those failures require explicit image-review findings and precise retake instructions.
 
 Image review must evaluate target clarity, not only whole-frame quality. A sharp wide photo can still be diagnostically limited when the symptom occupies a small, unmarked region. Ask the user to describe or mark the intended target and add a close target view. When an IPM frame contains multiple organisms, objects, or size classes, list defensible visible traits separately, do not assume the largest or most obvious subject is the intended pest, and request a dedicated macro when the target remains ambiguous.
@@ -137,3 +139,52 @@ When exact species is unresolved but the evidence supports a defensible common, 
 When the server confirms that crop-identification pixels were analyzed, the calculator result and saved ToolRun must preserve that provenance: requested/performed state, exact photo count, provider/model label, image quality, visible identifying traits, evidence IDs, and limitations. The reopened Saved Run must surface those details instead of hiding the nested provenance object. Do not discard server-attested vision metadata and then label the same result as text-only or unanalyzed. An attachment without server-attested analysis must remain explicitly unanalyzed.
 
 Plant diagnosis uses the same server-side OpenAI credential as other image-capable GrowPath AI workflows. A successful image request must record that image analysis was requested and performed, the number of photos inspected, and the provider/model label. A failed or text-only request must say that pixels were not analyzed and request written observations or better evidence rather than presenting a generic result as visual analysis.
+
+## Shared Field Studies and public observations
+
+A Field Study is the shared parent for public-space or field-botany observations. It is
+not a publicly editable grow. The owner may invite an editor, verifier, or viewer.
+Owners and editors may add or change observations; verifiers may change identification
+review status and its supporting, counter, or missing evidence; viewers are read-only.
+Publishing a study or observation never grants edit access.
+
+Each observation keeps plant identification, plant-health assessment, and invasive
+status as separate claims. An AI identification enters the study as `ai_candidate`
+even when it was saved from Crop Identification. `user_confirmed`,
+`community_suggestion`, `expert_reviewed`, `source_verified`, `disputed`, and
+`needs_evidence` remain distinct provenance states. A verified invasive status must
+name the governing jurisdiction and record an authoritative source URL; identity or
+community consensus alone is insufficient.
+
+Field Study media follows the ordinary crop-identification evidence ceiling and
+provenance rules. A public observation requires at least one photo, video, or extracted
+frame. Public output may show evidence, counter-evidence, missing evidence, habitat,
+region, and the contributor-approved public note, but must not expose owner-only
+identifiers or private ToolRun provenance.
+
+Location starts private. Observation-level choices are owner-only, study-team exact,
+public approximate, or explicitly confirmed public exact. Public approximate
+coordinates are rounded before delivery. Exact coordinates require an explicit
+observation-level confirmation and must be reduced to a wider regional location when
+the observation is marked sensitive. A private or collaborator-only coordinate must
+never be present in a public response.
+
+The public discovery surface is an interactive, zoomable globe with clustered pins.
+The server queries only the rounded or explicitly approved public point that the visitor
+is allowed to see; it must never use the protected exact point for viewport filtering, as
+that could reveal hidden precision through repeated map requests. The accessible
+observation list is a synchronized alternative to the globe, and selecting a cluster
+or pin must expose the same identification evidence, review status, and Field Study link.
+
+Cannabis/hemp identification remains allowed from deliberately submitted evidence, but
+ordinary public horticulture discovery excludes those observations. A cannabis/hemp
+observation can appear in public discovery only for an authenticated viewer whose
+existing cannabis/hemp grow interest or content setting permits it, and only after the
+owner separately confirms that public context. Signed-out viewers and unrelated growers
+do not receive those pins. Publishing a botanical Field Study must not unlock or
+advertise other cannabis-specific tools.
+
+The globe may begin near the viewer's already-permitted browser location; if location
+permission is not enabled it begins over the United States. Viewing the globe never
+publishes the viewer's location. Public observations omit email, account identifiers,
+private notes, private grow/tool provenance, and collaborator-only data.

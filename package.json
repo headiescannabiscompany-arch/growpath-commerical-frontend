@@ -161,6 +161,7 @@
     "expo-video-thumbnails": "~10.0.8",
     "express": "^5.2.1",
     "jimp-compact": "^0.16.1",
+    "maplibre-gl": "^6.0.0",
     "mongodb-memory-server": "^11.2.0",
     "mongoose": "^7.8.8",
     "pngjs": "^7.0.0",

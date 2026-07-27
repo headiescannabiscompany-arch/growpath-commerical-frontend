@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Link, useLocalSearchParams } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -10,6 +11,13 @@ import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import { savePersonalGrowCropIdentity } from "@/api/grows";
 import { savePersonalPlantCropIdentity } from "@/api/plants";
+import {
+  createFieldObservation,
+  FieldStudy,
+  listFieldStudies,
+  ObservationLocationPrivacy
+} from "@/api/fieldStudies";
+import { requestCurrentCoordinates } from "@/utils/locationSearch";
 import {
   updateGrowpathModuleRecord,
   type GrowpathModuleRecord,
@@ -306,7 +314,52 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function SpeciesCropIdToolRoute() {
+  const params = useLocalSearchParams<{ fieldStudyId?: string }>();
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const [fieldStudies, setFieldStudies] = useState<FieldStudy[]>([]);
+  const [selectedFieldStudyId, setSelectedFieldStudyId] = useState(
+    String(params.fieldStudyId || "")
+  );
+  const [observationLocation, setObservationLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [locationPrivacy, setLocationPrivacy] =
+    useState<ObservationLocationPrivacy>("private");
+  const [publishObservation, setPublishObservation] = useState(false);
+  const [sensitiveSpecies, setSensitiveSpecies] = useState(false);
+  const [locationBusy, setLocationBusy] = useState(false);
+  const [fieldStudyError, setFieldStudyError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    listFieldStudies()
+      .then((studies) => {
+        if (!active) return;
+        const editable = studies.filter(
+          (study) => study.accessRole === "owner" || study.accessRole === "editor"
+        );
+        setFieldStudies(editable);
+        const requested = String(params.fieldStudyId || "");
+        if (
+          requested &&
+          editable.some((study) => String(study.id || study._id) === requested)
+        ) {
+          setSelectedFieldStudyId(requested);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setFieldStudyError(
+            "Field Studies could not be loaded. Plant ID still works normally."
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [params.fieldStudyId]);
+
   return (
     <BackendCalculatorToolScreen
       tool="species-crop-id"
@@ -336,6 +389,139 @@ export default function SpeciesCropIdToolRoute() {
             value={evidenceAssets}
             onChange={setEvidenceAssets}
           />
+          <View style={styles.fieldStudySection}>
+            <Text style={styles.evidenceTitle}>Optional — Add to a Field Study</Text>
+            <Text style={styles.evidenceGuidance}>
+              A Field Study lets invited botanists edit or verify the same observations.
+              Public viewing never grants edit access. This observation starts as a draft
+              unless you deliberately select Publish.
+            </Text>
+            {!fieldStudies.length ? (
+              <Link href="/home/personal/field-studies" asChild>
+                <Pressable accessibilityRole="link" style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Create a Field Study</Text>
+                </Pressable>
+              </Link>
+            ) : (
+              <View style={styles.choiceRow}>
+                {fieldStudies.map((study) => {
+                  const id = String(study.id || study._id || "");
+                  const selected = selectedFieldStudyId === id;
+                  return (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: selected }}
+                      key={id}
+                      onPress={() => setSelectedFieldStudyId(selected ? "" : id)}
+                      style={[
+                        styles.choiceButton,
+                        selected && styles.choiceButtonSelected
+                      ]}
+                    >
+                      <Text
+                        style={[styles.choiceText, selected && styles.choiceTextSelected]}
+                      >
+                        {study.title}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+            {selectedFieldStudyId ? (
+              <>
+                <Pressable
+                  disabled={locationBusy}
+                  onPress={async () => {
+                    setLocationBusy(true);
+                    setFieldStudyError("");
+                    try {
+                      setObservationLocation(await requestCurrentCoordinates());
+                    } catch (locationError: any) {
+                      setFieldStudyError(
+                        locationError?.message || "Current location is unavailable."
+                      );
+                    } finally {
+                      setLocationBusy(false);
+                    }
+                  }}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>
+                    {locationBusy
+                      ? "Reading location..."
+                      : observationLocation
+                        ? "Location added"
+                        : "Use Current Location"}
+                  </Text>
+                </Pressable>
+                <Text style={styles.fieldLabel}>Who can see these coordinates?</Text>
+                <View style={styles.choiceRow}>
+                  {(
+                    [
+                      ["private", "Only me"],
+                      ["collaborators", "Study team"],
+                      ["public_approximate", "Public approximate"]
+                    ] as const
+                  ).map(([value, label]) => (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: locationPrivacy === value }}
+                      key={value}
+                      onPress={() => setLocationPrivacy(value)}
+                      style={[
+                        styles.choiceButton,
+                        locationPrivacy === value && styles.choiceButtonSelected
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.choiceText,
+                          locationPrivacy === value && styles.choiceTextSelected
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View style={styles.choiceRow}>
+                  <Pressable
+                    onPress={() => setPublishObservation((value) => !value)}
+                    style={[
+                      styles.choiceButton,
+                      publishObservation && styles.choiceButtonSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.choiceText,
+                        publishObservation && styles.choiceTextSelected
+                      ]}
+                    >
+                      {publishObservation ? "Published observation" : "Draft observation"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSensitiveSpecies((value) => !value)}
+                    style={[
+                      styles.choiceButton,
+                      sensitiveSpecies && styles.sensitiveButtonSelected
+                    ]}
+                  >
+                    <Text style={styles.choiceText}>
+                      {sensitiveSpecies
+                        ? "Sensitive species: yes"
+                        : "Sensitive species: no"}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
+            {fieldStudyError ? (
+              <Text style={styles.fieldStudyError}>{fieldStudyError}</Text>
+            ) : null}
+          </View>
         </View>
       )}
       aiPrefill={{
@@ -880,6 +1066,89 @@ export default function SpeciesCropIdToolRoute() {
             }
           });
         }
+        if (selectedFieldStudyId) {
+          actions.push({
+            key: "save-field-observation",
+            label: publishObservation
+              ? "Publish to Field Study"
+              : "Save Draft to Field Study",
+            variant: "secondary" as const,
+            pendingLabel: publishObservation ? "Publishing..." : "Saving...",
+            successMessage: publishObservation
+              ? "Observation published to the Field Study."
+              : "Observation saved as a private Field Study draft.",
+            onPress: async () => {
+              if (publishObservation && evidenceAssets.length === 0) {
+                throw new Error(
+                  "Add at least one photo or video before publishing an observation."
+                );
+              }
+              const draft = outputs.identificationDraft || {};
+              const media = providerEvidencePayload(evidenceAssets).media;
+              const confidence = ["low", "medium", "high"].includes(
+                String(outputs.confidence || draft.confidence || "").toLowerCase()
+              )
+                ? String(outputs.confidence || draft.confidence).toLowerCase()
+                : "low";
+              await createFieldObservation(selectedFieldStudyId, {
+                sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
+                growId: growId || null,
+                title:
+                  String(outputs.likelyCrop || payload.userEnteredName || "").trim() ||
+                  "Unconfirmed plant observation",
+                observationDate:
+                  payload.observationContext?.observationDate || new Date().toISOString(),
+                identity: {
+                  commonName: String(
+                    outputs.likelyCrop || payload.userEnteredName || ""
+                  ).trim(),
+                  scientificName: String(outputs.scientificName || "").trim(),
+                  family: String(outputs.likelyFamily || draft.likelyFamily || "").trim(),
+                  confidence: confidence as "low" | "medium" | "high",
+                  verificationStatus: "ai_candidate",
+                  evidence: stringList(draft.evidence),
+                  counterEvidence: stringList(draft.counterEvidence),
+                  missingEvidence: [
+                    ...stringList(draft.missingEvidence),
+                    ...stringList(draft.requiredNextPhotos),
+                    ...stringList(draft.requiredNextQuestions)
+                  ],
+                  candidates: (Array.isArray(draft.candidates)
+                    ? draft.candidates
+                    : []
+                  ).map((candidate: any) => ({
+                    commonName: stringList(candidate.commonNames)[0] || "",
+                    scientificName: String(candidate.scientificName || ""),
+                    confidence: candidate.confidence || "low",
+                    evidence: stringList(candidate.evidence),
+                    counterEvidence: stringList(candidate.counterEvidence)
+                  }))
+                },
+                observationContext: payload.observationContext || {},
+                evidenceAssets: media.map((item) => ({
+                  assetId: item.id,
+                  url: item.url,
+                  kind: item.type === "video" ? "video" : "photo",
+                  label: item.purpose
+                })),
+                photoUrls: media
+                  .filter((item) => item.type === "photo")
+                  .map((item) => item.url),
+                location: {
+                  ...(observationLocation || {}),
+                  label: String(payload.observationContext?.region || ""),
+                  privacy: locationPrivacy,
+                  exactLocationPublicConfirmed: false
+                },
+                publication: {
+                  status: publishObservation ? "published" : "draft",
+                  sensitiveSpecies,
+                  publicNotes: ""
+                }
+              });
+            }
+          });
+        }
         return actions;
       }}
     />
@@ -889,5 +1158,45 @@ export default function SpeciesCropIdToolRoute() {
 const styles = StyleSheet.create({
   evidenceSection: { gap: 8 },
   evidenceTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800" },
-  evidenceGuidance: { color: "#475569", lineHeight: 19 }
+  evidenceGuidance: { color: "#475569", lineHeight: 19 },
+  fieldStudySection: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 9,
+    marginTop: 8,
+    padding: 13
+  },
+  fieldLabel: { color: "#334155", fontSize: 13, fontWeight: "800" },
+  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  choiceButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 11,
+    paddingVertical: 7
+  },
+  choiceButtonSelected: {
+    backgroundColor: "#166534",
+    borderColor: "#166534"
+  },
+  sensitiveButtonSelected: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#D97706"
+  },
+  choiceText: { color: "#334155", fontSize: 12, fontWeight: "700" },
+  choiceTextSelected: { color: "#FFFFFF" },
+  secondaryButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#94A3B8",
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
+  fieldStudyError: { color: "#B91C1C", lineHeight: 19 }
 });
