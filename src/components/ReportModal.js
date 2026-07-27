@@ -59,6 +59,7 @@ const ReportModal = ({
             onChangeText={setReason}
             editable={!loading}
             multiline
+            accessibilityLabel="Report reason"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.buttonRow}>

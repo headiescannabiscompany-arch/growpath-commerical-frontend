@@ -14,6 +14,7 @@ const mockOpenCourseDispute = jest.fn();
 const mockRequestCourseRefund = jest.fn();
 const mockStartCourseCheckout = jest.fn();
 const mockPublishCourse = jest.fn();
+const mockSubmitReport = jest.fn();
 const mockUnpublishCourse = jest.fn();
 const mockUpdateCourse = jest.fn();
 const mockLearningAccess = {
@@ -48,7 +49,7 @@ jest.mock("@/api/coursePayments", () => ({
   startCourseCheckout: (...args: any[]) => mockStartCourseCheckout(...args)
 }));
 jest.mock("@/api/reports", () => ({
-  submitReport: jest.fn(),
+  submitReport: (...args: any[]) => mockSubmitReport(...args),
   exportCourseSales: jest.fn()
 }));
 jest.mock("@/api/courses", () => ({
@@ -115,6 +116,7 @@ describe("CourseDetailScreen learner player", () => {
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
     mockSaveNote.mockResolvedValue({ note: "Updated note" });
     mockPublishCourse.mockResolvedValue({ published: true });
+    mockSubmitReport.mockResolvedValue({ accepted: true });
     mockUnpublishCourse.mockResolvedValue({ published: false });
     mockUpdateCourse.mockResolvedValue({});
     mockGetCourse.mockResolvedValue(freeCourse);
@@ -159,6 +161,27 @@ describe("CourseDetailScreen learner player", () => {
     );
     fireEvent.press(screen.getByText("Ask AI About This Lesson"));
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("courseId=course-1"));
+  });
+
+  it("exposes an operable course report path with exact content context", async () => {
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+    await waitFor(() => expect(screen.getByText("Living Soil Course")).toBeTruthy());
+    fireEvent.changeText(
+      screen.getByLabelText("Course report reason"),
+      "Production report-path verification."
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Submit course report" }));
+    await waitFor(() =>
+      expect(mockSubmitReport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contentType: "course",
+          contentId: "course-1",
+          targetUrl: "/courses?courseId=course-1",
+          reason: "Production report-path verification."
+        })
+      )
+    );
+    expect(await screen.findByText("Report submitted.")).toBeTruthy();
   });
 
   it("keeps unpaid lessons locked and hides refund or payment-issue forms", async () => {
