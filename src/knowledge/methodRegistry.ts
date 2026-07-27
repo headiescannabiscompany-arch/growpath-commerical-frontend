@@ -63,7 +63,7 @@ export const methodRegistry: GrowPathMethod[] = [
   method(
     "plant-diagnosis-etgu",
     "Plant Diagnosis — ETGU",
-    ["diagnosis", "ipm", "plant_identification"],
+    ["diagnosis", "ipm", "plant_identification", "field_observation"],
     "plant-diagnosis-etgu-method.md",
     ["pattern", "medium", "environment", "numbers", "likely causes"],
     [
@@ -81,6 +81,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "structured crop-identification morphology and optional private place/context",
       "whole-plant, leaf, stem/node, flower, fruit/seed, and habitat evidence when available",
+      "optional Field Study with owner, editor, verifier, and viewer roles",
+      "explicit observation publication state and location privacy",
+      "jurisdiction and authoritative source URL before invasive status is called verified",
       "grow history",
       "environment with explicit units",
       "pH/EC"
@@ -111,7 +114,11 @@ export const methodRegistry: GrowPathMethod[] = [
       "user correction that preserves the rejected AI draft, presents the corrected common identity first, leaves unknown exact species unverified, and requests discriminating replacement photos",
       "explicit external-source verification status and empty source records when no database was queried",
       "user confirmed, uncertain, or rejected identification decision with timestamp",
-      "explicitly confirmed crop identity persisted to the selected grow/plant"
+      "explicitly confirmed crop identity persisted to the selected grow/plant",
+      "Field Study observation kept as an AI candidate until separately confirmed or reviewed",
+      "public observation projection that excludes private coordinates and owner-only provenance",
+      "distinct identification verification, plant-health assessment, and jurisdiction-specific invasive status",
+      "interactive clustered globe synchronized with a keyboard-accessible observation list"
     ],
     [
       "Do not declare a nutrient deficiency from appearance alone.",
@@ -134,9 +141,16 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not preserve medium or high identity confidence after a scientific-name conflict has been detected.",
       "Do not discard server-attested crop-identification vision provenance and relabel an analyzed result as text-only or unanalyzed.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
-      "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."
+      "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows.",
+      "Public viewing never grants edit access; only Field Study owners and invited editors may change observations.",
+      "Do not publish an observation, coordinates, or media by default, and do not expose private or collaborator-only coordinates through public APIs.",
+      "Do not expose an exact public location without explicit observation-level confirmation; reduce sensitive-species locations to a wider approximate region.",
+      "Do not call a plant invasive without a jurisdiction and authoritative source record.",
+      "Do not include cannabis or hemp observations in ordinary public horticulture discovery without a deliberate cannabis context.",
+      "Do not filter a public viewport against protected exact coordinates; query only the stored privacy-safe public point.",
+      "Do not use a visitor's location for anything beyond centering their local view, and never publish it."
     ],
-    ["plant-diagnosis", "ipm-scout", "species-crop-id", "ask-ai"]
+    ["plant-diagnosis", "ipm-scout", "species-crop-id", "field-studies", "ask-ai"]
   ),
   method(
     "pheno-hunting",

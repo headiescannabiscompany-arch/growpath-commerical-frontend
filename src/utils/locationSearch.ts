@@ -24,7 +24,7 @@ export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
     if (!geolocation?.getCurrentPosition) {
       reject(
         new Error(
-          "Current-location search is unavailable on this device. Search by state instead."
+          "Current location is unavailable on this device. Enter a region or location manually instead."
         )
       );
       return;
@@ -46,7 +46,7 @@ export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
         reject(
           new Error(
             error?.message ||
-              "Location permission was not granted. Search dispensaries by state instead."
+              "Location permission was not granted. Enter a location manually instead."
           )
         );
       },

@@ -413,6 +413,8 @@ export default function PersonalHomeTab() {
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
           <ActionLink href="/store" label="Discover Storefronts" />
           <ActionLink href="/feed" label="Commercial Feed" />
+          <ActionLink href="/home/personal/field-studies" label="Field Studies" />
+          <ActionLink href="/field-observations" label="Public Plant Map" />
           <ActionLink href="/home/personal/discover" label="Discover" />
           <ActionLink href="/home/personal/more/analytics" label="Grow Analytics" />
           <ActionLink href="/home/personal/profile" label="Profile" />
