@@ -1629,21 +1629,26 @@ describe("Tools Router (tools.js)", () => {
     expect(cropId.body.outputs).toMatchObject({
       likelyCrop: "Cotton plant",
       scientificName: null,
+      confidence: "low",
+      identityConflictDetected: true,
+      requiredNextPhotos: expect.arrayContaining([
+        "A new whole-plant photo showing overall growth habit and scale"
+      ]),
       possibleSpecies: [],
       candidates: [
         expect.objectContaining({
           scientificName: null,
           commonNames: ["Cotton plant"],
-          rank: "working_candidate"
+          rank: "working_candidate",
+          confidence: "low",
+          counterEvidence: expect.arrayContaining([
+            "The supplied scientific-name output was not a usable botanical name."
+          ])
         })
       ]
     });
     expect(cropId.body.outputs.warnings).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining(
-          "scientific-name value looked like a common-name phrase and was withheld"
-        )
-      ])
+      expect.arrayContaining([expect.stringContaining("Identity conflict detected")])
     );
   });
 

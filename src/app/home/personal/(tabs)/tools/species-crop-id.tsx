@@ -24,7 +24,7 @@ Inspect the attached image pixels first. Use user-entered context and selected p
 
 Return useful broader candidates when exact species is unresolved. Cannabis is an allowed crop candidate from deliberately submitted evidence. A clear cannabis flower or harvested bud may support a crop-level Cannabis draft from visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure. Never infer cultivar or strain from appearance.
 
-Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If the evidence supports a genus but not an exact species, use a genus-level scientific draft such as "Mandevilla spp." and keep nursery or common synonyms such as "Dipladenia" in commonNames. Never put an English common-name phrase such as "rose plant" in scientificName. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
+Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If the evidence supports a genus but not an exact species, use a genus-level scientific draft such as "Mandevilla spp." and keep nursery or common synonyms such as "Dipladenia" in commonNames. Never put an English common-name phrase such as "rose plant" in scientificName. If names conflict, a proposed name is unusable, or the current views cannot separate lookalikes, set visualConfidence and candidate confidence to low and request a new whole-plant view, full leaf and underside with stem node, open flower, and any fruit or seed structure present. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
 
 Return JSON only with exactly these keys:
 {
@@ -110,7 +110,9 @@ function normalizeScientificName(value: unknown) {
 function buildIdentificationDraft(parsed: Record<string, any>) {
   const candidates = Array.isArray(parsed.candidates)
     ? parsed.candidates.slice(0, 5).map((candidate: any) => {
-        const scientificName = normalizeScientificName(candidate?.scientificName);
+        const suppliedScientificName = String(candidate?.scientificName || "").trim();
+        const scientificName = normalizeScientificName(suppliedScientificName);
+        const scientificNameWithheld = Boolean(suppliedScientificName) && !scientificName;
         const suppliedRank = String(candidate?.rank || "working_candidate").trim();
         return {
           scientificName,
@@ -119,9 +121,16 @@ function buildIdentificationDraft(parsed: Record<string, any>) {
             suppliedRank === "species" && !scientificName
               ? "working_candidate"
               : suppliedRank,
-          confidence: String(candidate?.confidence || "low").trim(),
+          confidence: scientificNameWithheld
+            ? "low"
+            : String(candidate?.confidence || "low").trim(),
           evidence: stringList(candidate?.evidence),
-          counterEvidence: stringList(candidate?.counterEvidence),
+          counterEvidence: [
+            ...stringList(candidate?.counterEvidence),
+            ...(scientificNameWithheld
+              ? ["The supplied scientific-name output was not a usable botanical name."]
+              : [])
+          ],
           missingEvidence: stringList(candidate?.missingEvidence)
         };
       })
@@ -713,6 +722,17 @@ export default function SpeciesCropIdToolRoute() {
         return [
           {
             key: "image-analysis-status",
+            ...(outputs.identityConflictDetected || outputs.confidence === "low"
+              ? [
+                  {
+                    key: "identity-confidence",
+                    severity: "high" as const,
+                    message: outputs.identityConflictDetected
+                      ? "Identity not verified: the proposed names conflicted or included an unusable scientific name. Treat this result as low confidence and provide clearer leaf, flower, fruit, stem, and whole-plant evidence before confirming it."
+                      : "Low-confidence identity: do not rely on this plant name yet. Review the missing evidence and upload the requested views before confirming it."
+                  }
+                ]
+              : []),
             severity: outputs.imageAnalysis?.performed
               ? ("info" as const)
               : ("medium" as const),

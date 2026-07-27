@@ -1,10 +1,11 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SavedToolRunsRoute from "@/app/home/personal/(tabs)/tools/saved-runs";
 
 const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
+const mockUpdateToolRun = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({
@@ -29,7 +30,7 @@ jest.mock("@/api/toolRuns", () => ({
   getToolRun: (...args: any[]) => mockGetToolRun(...args),
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
   saveToolRunToLog: jest.fn(),
-  updateToolRun: jest.fn()
+  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -172,6 +173,84 @@ describe("SavedToolRunsRoute", () => {
     expect(
       screen.getByText(/Exact mint species cannot be confirmed from these views/i)
     ).toBeTruthy();
+  });
+
+  it("saves a user correction while keeping exact species unverified and requesting new photos", async () => {
+    const originalRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "species_crop_id completed",
+      outputs: {
+        likelyCrop: "Cotton plant",
+        scientificName: "Rose plant",
+        confidence: "medium",
+        userConfirmationRequired: true,
+        requiredNextPhotos: []
+      },
+      createdAt: "2026-07-27T12:00:00.000Z"
+    };
+    const correctedRun = {
+      ...originalRun,
+      summary: "User-corrected identity: Rose bush.",
+      outputs: {
+        ...originalRun.outputs,
+        userCorrection: {
+          status: "user_corrected",
+          commonName: "Rose bush",
+          scientificName: null,
+          correctedAt: "2026-07-27T13:30:00.000Z",
+          previousLikelyCrop: "Cotton plant",
+          previousScientificName: "Rose plant"
+        },
+        confidence: "user_corrected",
+        userConfirmationRequired: false,
+        requiredNextPhotos: [
+          "A new whole-plant photo showing overall growth habit and scale"
+        ]
+      }
+    };
+    mockListToolRuns.mockResolvedValue([originalRun]);
+    mockGetToolRun.mockResolvedValue(originalRun);
+    mockUpdateToolRun.mockResolvedValue(correctedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    fireEvent.changeText(
+      screen.getByLabelText("Corrected plant or crop name"),
+      "Rose bush"
+    );
+    fireEvent.press(screen.getByText("Save Identification Correction"));
+
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          confidence: "user_corrected",
+          outputs: expect.objectContaining({
+            confidence: "user_corrected",
+            userConfirmationRequired: false,
+            userCorrection: expect.objectContaining({
+              status: "user_corrected",
+              commonName: "Rose bush",
+              scientificName: null,
+              previousLikelyCrop: "Cotton plant",
+              previousScientificName: "Rose plant"
+            }),
+            requiredNextPhotos: expect.arrayContaining([
+              "A new whole-plant photo showing overall growth habit and scale",
+              "A sharp full-leaf photo plus the leaf underside and stem node",
+              "A sharp open-flower close-up and any fruit or seed structure on the same plant"
+            ])
+          })
+        })
+      )
+    );
+    expect(await screen.findByText("Likely crop: Rose bush")).toBeTruthy();
+    expect(screen.getByText("Scientific name: -")).toBeTruthy();
+    expect(screen.getByText("Confidence: user corrected")).toBeTruthy();
+    expect(screen.getByText(/original AI draft was rejected/i)).toBeTruthy();
   });
 
   it("keeps saved Dry Cure light and timing evidence visible", async () => {

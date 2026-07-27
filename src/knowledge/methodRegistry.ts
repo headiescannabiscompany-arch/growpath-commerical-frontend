@@ -107,6 +107,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "ranked crop-identification candidates with evidence, counter-evidence, missing evidence, and next photos/questions",
       "broad group, likely family, possible genera, and species only when supported",
       "common and nursery names separated from scientific names, with invalid scientific-name phrases withheld and genus-level drafts retained when supported",
+      "low overall and candidate confidence plus a prominent identity-not-verified warning when proposed identity fields conflict or contain an unusable scientific name",
+      "user correction that preserves the rejected AI draft, presents the corrected common identity first, leaves unknown exact species unverified, and requests discriminating replacement photos",
       "explicit external-source verification status and empty source records when no database was queried",
       "user confirmed, uncertain, or rejected identification decision with timestamp",
       "explicitly confirmed crop identity persisted to the selected grow/plant"
@@ -129,6 +131,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Do not replace a defensible broader crop candidate with a confirmation placeholder merely because exact species remains unresolved.",
       "Do not store a plain-language common-name phrase as a scientific name or possible species.",
+      "Do not preserve medium or high identity confidence after a scientific-name conflict has been detected.",
       "Do not discard server-attested crop-identification vision provenance and relabel an analyzed result as text-only or unanalyzed.",
       "Collect identification photos before the AI action and reserve user confirmation for the explicit result action.",
       "Recognizing cannabis from deliberately submitted crop-identification evidence must not unlock or advertise unrelated cannabis-only workflows."

@@ -381,7 +381,11 @@ describe("SpeciesCropIdToolRoute", () => {
             candidates: [
               expect.objectContaining({
                 scientificName: "",
-                rank: "working_candidate"
+                rank: "working_candidate",
+                confidence: "low",
+                counterEvidence: expect.arrayContaining([
+                  "The supplied scientific-name output was not a usable botanical name."
+                ])
               })
             ]
           })

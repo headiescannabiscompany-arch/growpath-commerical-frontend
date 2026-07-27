@@ -85,6 +85,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "common and nursery names separated from scientific names, with invalid scientific-name phrases withheld and genus-level drafts retained when supported"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "low overall and candidate confidence plus a prominent identity-not-verified warning when proposed identity fields conflict or contain an unusable scientific name"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "user correction that preserves the rejected AI draft, presents the corrected common identity first, leaves unknown exact species unverified, and requests discriminating replacement photos"
+    );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"
     );

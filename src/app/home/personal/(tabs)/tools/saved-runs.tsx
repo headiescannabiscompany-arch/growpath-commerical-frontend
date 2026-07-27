@@ -114,7 +114,18 @@ function unresolvedSavedCropName(value: unknown) {
   );
 }
 
+function savedUserCorrection(outputs: Record<string, any>) {
+  const correction =
+    outputs.userCorrection && typeof outputs.userCorrection === "object"
+      ? outputs.userCorrection
+      : null;
+  const commonName = String(correction?.commonName || "").trim();
+  return commonName ? { ...correction, commonName } : null;
+}
+
 function savedCropCandidate(outputs: Record<string, any>) {
+  const correction = savedUserCorrection(outputs);
+  if (correction) return correction.commonName;
   const suppliedName = String(outputs.likelyCrop || "").trim();
   if (suppliedName && !unresolvedSavedCropName(suppliedName)) return suppliedName;
   const commonNames = Array.isArray(outputs.commonNames)
@@ -132,12 +143,22 @@ function savedCropCandidate(outputs: Record<string, any>) {
 function displayOutputsFor(run: ToolRun | null) {
   const outputs = runOutputs(run);
   if (!isSpeciesCropRun(run)) return outputs;
-  return { ...outputs, likelyCrop: savedCropCandidate(outputs) };
+  const correction = savedUserCorrection(outputs);
+  return {
+    ...outputs,
+    likelyCrop: savedCropCandidate(outputs),
+    scientificName: correction
+      ? correction.scientificName || null
+      : outputs.scientificName,
+    confidence: correction ? "user_corrected" : outputs.confidence,
+    userConfirmationRequired: correction ? false : outputs.userConfirmationRequired
+  };
 }
 
 function metricsFor(run: ToolRun | null): ToolResultMetric[] {
   const outputs = runOutputs(run);
   if (isSpeciesCropRun(run)) {
+    const correction = savedUserCorrection(outputs);
     const imageAnalysis =
       outputs.imageAnalysis && typeof outputs.imageAnalysis === "object"
         ? outputs.imageAnalysis
@@ -154,9 +175,15 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       {
         key: "scientific",
         label: "Scientific name",
-        value: outputs.scientificName || "-"
+        value: correction
+          ? correction.scientificName || "-"
+          : outputs.scientificName || "-"
       },
-      { key: "confidence", label: "Confidence", value: outputs.confidence || "-" },
+      {
+        key: "confidence",
+        label: "Confidence",
+        value: correction ? "user corrected" : outputs.confidence || "-"
+      },
       {
         key: "photos",
         label: "Photos inspected",
@@ -172,7 +199,7 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       {
         key: "confirm",
         label: "Needs confirmation",
-        value: outputs.userConfirmationRequired ? "Yes" : "No"
+        value: correction ? "No" : outputs.userConfirmationRequired ? "Yes" : "No"
       }
     ];
   }
@@ -384,6 +411,14 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
 
   if (isSpeciesCropRun(run)) {
     const candidate = savedCropCandidate(outputs);
+    const correction = savedUserCorrection(outputs);
+    if (correction) {
+      provenance.push({
+        key: "crop-id-user-correction",
+        severity: "high",
+        message: `User correction: ${correction.commonName}. The original AI draft was rejected. Exact scientific species remains unverified; add a whole-plant photo, full leaf and underside with stem node, open flower, and any fruit or seed structure for a new AI review.`
+      });
+    }
     if (unresolvedSavedCropName(outputs.likelyCrop) && candidate !== "-") {
       provenance.push({
         key: "crop-id-working-candidate",
@@ -658,6 +693,7 @@ export default function SavedToolRunsScreen() {
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [summaryDraft, setSummaryDraft] = useState("");
+  const [correctionDraft, setCorrectionDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
   const scrollRef = useRef<ScrollView>(null);
@@ -689,6 +725,13 @@ export default function SavedToolRunsScreen() {
     const nextRun = full || run;
     setSelectedRun(nextRun);
     setSummaryDraft(nextRun.summary || "");
+    const nextOutputs = runOutputs(nextRun);
+    const correction = savedUserCorrection(nextOutputs);
+    setCorrectionDraft(
+      isSpeciesCropRun(nextRun)
+        ? correction?.commonName || savedCropCandidate(nextOutputs)
+        : ""
+    );
     if (!full) setFeedback("Unable to reload this run; showing cached list data.");
   }, []);
 
@@ -710,6 +753,13 @@ export default function SavedToolRunsScreen() {
       }
       setSelectedRun(full);
       setSummaryDraft(full.summary || "");
+      const fullOutputs = runOutputs(full);
+      const correction = savedUserCorrection(fullOutputs);
+      setCorrectionDraft(
+        isSpeciesCropRun(full)
+          ? correction?.commonName || savedCropCandidate(fullOutputs)
+          : ""
+      );
     })();
   }, [loading, runs, selectedRun, selectRun, targetToolRunId]);
 
@@ -723,8 +773,74 @@ export default function SavedToolRunsScreen() {
     }
     setSelectedRun(updated);
     setSummaryDraft(updated.summary || "");
-    setFeedback("Saved run updated.");
     await load();
+    setFeedback("Saved run updated.");
+  }
+
+  async function saveIdentificationCorrection() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    const commonName = correctionDraft.trim();
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
+    if (!commonName || commonName === "-") {
+      setFeedback("Enter the corrected common plant name first.");
+      return;
+    }
+
+    const currentOutputs = runOutputs(selectedRun);
+    const correctedAt = new Date().toISOString();
+    const requiredPhotoRequests = [
+      "A new whole-plant photo showing overall growth habit and scale",
+      "A sharp full-leaf photo plus the leaf underside and stem node",
+      "A sharp open-flower close-up and any fruit or seed structure on the same plant"
+    ];
+    const requiredNextPhotos = Array.from(
+      new Set([
+        ...requiredPhotoRequests,
+        ...(Array.isArray(currentOutputs.requiredNextPhotos)
+          ? currentOutputs.requiredNextPhotos
+          : [])
+      ])
+    );
+    const nextOutputs = {
+      ...currentOutputs,
+      userCorrection: {
+        status: "user_corrected",
+        commonName,
+        scientificName: null,
+        correctedAt,
+        previousLikelyCrop: currentOutputs.likelyCrop || null,
+        previousScientificName: currentOutputs.scientificName || null
+      },
+      confidence: "user_corrected",
+      userConfirmationRequired: false,
+      confirmationRequired: false,
+      requiredNextPhotos,
+      missingInformation: Array.from(
+        new Set([
+          ...requiredNextPhotos,
+          ...(Array.isArray(currentOutputs.missingInformation)
+            ? currentOutputs.missingInformation
+            : [])
+        ])
+      )
+    };
+    const summary = `User-corrected identity: ${commonName}. The original AI draft was rejected. Exact scientific species remains unverified; new whole-plant, leaf, flower, and fruit/seed photos are requested.`;
+    const updated = await updateToolRun(id, {
+      outputs: nextOutputs,
+      confidence: "user_corrected",
+      summary
+    });
+    if (!updated) {
+      setFeedback("Unable to save this identification correction.");
+      return;
+    }
+    setSelectedRun(updated);
+    setSummaryDraft(updated.summary || summary);
+    setCorrectionDraft(commonName);
+    await load();
+    setFeedback(
+      "Identification correction saved. Add the requested photos for a new AI review."
+    );
   }
 
   async function archiveSelectedRun() {
@@ -852,6 +968,30 @@ export default function SavedToolRunsScreen() {
               feedback={feedback}
               copyPayload={selectedRun}
             />
+            {isSpeciesCropRun(selectedRun) ? (
+              <View style={styles.editor}>
+                <Text style={styles.label}>Correct this identification</Text>
+                <Text style={styles.subtitle}>
+                  Save the common identity you know. GrowPath preserves the rejected AI
+                  draft, leaves the exact scientific species unverified, and asks for the
+                  photos needed for a fresh review.
+                </Text>
+                <TextInput
+                  accessibilityLabel="Corrected plant or crop name"
+                  value={correctionDraft}
+                  onChangeText={setCorrectionDraft}
+                  style={styles.input}
+                  placeholder="Enter corrected common plant name"
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={saveIdentificationCorrection}
+                  style={styles.primary}
+                >
+                  <Text style={styles.primaryText}>Save Identification Correction</Text>
+                </Pressable>
+              </View>
+            ) : null}
             <View style={styles.editor}>
               <Text style={styles.label}>Summary / note</Text>
               <TextInput

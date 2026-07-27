@@ -5231,6 +5231,17 @@ function calculateSpeciesCropIdentification(input = {}) {
     morphology.fruitPresent === "yes" ||
     morphology.specialStructures.length > 0 ||
     morphology.flowerPartsVisible.length > 0;
+  const rawCandidates = Array.isArray(draft.candidates) ? draft.candidates : [];
+  const candidateScientificNameConflict = rawCandidates.slice(0, 5).some((candidate) => {
+    const suppliedCandidateScientificName = clean(candidate?.scientificName);
+    return (
+      Boolean(suppliedCandidateScientificName) &&
+      !unresolved(suppliedCandidateScientificName) &&
+      !normalizeScientificName(suppliedCandidateScientificName)
+    );
+  });
+  const identityConflictDetected =
+    scientificNameWithheld || candidateScientificNameConflict;
   let confidence =
     imagePerformed && imageAnalysis.confidence
       ? imageAnalysis.confidence
@@ -5247,12 +5258,30 @@ function calculateSpeciesCropIdentification(input = {}) {
   ) {
     confidence = "medium";
   }
+  if (identityConflictDetected) {
+    confidence = "low";
+    const conflictPhotoRequests = [
+      "A new whole-plant photo showing overall growth habit and scale",
+      "A sharp full-leaf photo plus the leaf underside and stem node",
+      "A sharp open-flower close-up and any fruit or seed structure on the same plant"
+    ];
+    for (const request of [...conflictPhotoRequests].reverse()) {
+      if (!requiredNextPhotos.includes(request)) requiredNextPhotos.unshift(request);
+      if (!missingInformation.includes(request)) missingInformation.unshift(request);
+    }
+  }
 
-  const rawCandidates = Array.isArray(draft.candidates) ? draft.candidates : [];
   const candidates = rawCandidates
     .slice(0, 5)
     .map((candidate) => {
-      const candidateScientificName = normalizeScientificName(candidate?.scientificName);
+      const suppliedCandidateScientificName = clean(candidate?.scientificName);
+      const candidateScientificName = normalizeScientificName(
+        suppliedCandidateScientificName
+      );
+      const candidateScientificNameWithheld =
+        Boolean(suppliedCandidateScientificName) &&
+        !unresolved(suppliedCandidateScientificName) &&
+        !candidateScientificName;
       const candidateRank = choice(
         candidate?.rank,
         ["family", "genus", "species", "working_candidate"],
@@ -5265,9 +5294,16 @@ function calculateSpeciesCropIdentification(input = {}) {
           candidateRank === "species" && !candidateScientificName
             ? "working_candidate"
             : candidateRank,
-        confidence: choice(candidate?.confidence, ["high", "medium", "low"], "low"),
+        confidence: candidateScientificNameWithheld
+          ? "low"
+          : choice(candidate?.confidence, ["high", "medium", "low"], "low"),
         evidence: uniqueList(list(candidate?.evidence)),
-        counterEvidence: uniqueList(list(candidate?.counterEvidence)),
+        counterEvidence: uniqueList([
+          ...list(candidate?.counterEvidence),
+          ...(candidateScientificNameWithheld
+            ? ["The supplied scientific-name output was not a usable botanical name."]
+            : [])
+        ]),
         missingEvidence: uniqueList(list(candidate?.missingEvidence)),
         sourceRecords: [],
         verificationStatus: "not_verified"
@@ -5328,6 +5364,7 @@ function calculateSpeciesCropIdentification(input = {}) {
     cultivar: cultivar || null,
     cultivarOrStrain: cultivar || null,
     confidence: confirmed ? "user_confirmed" : confidence,
+    identityConflictDetected,
     confirmationRequired: !confirmed,
     userConfirmationRequired: !confirmed,
     candidates,
@@ -5368,9 +5405,9 @@ function calculateSpeciesCropIdentification(input = {}) {
       "Confirm crop identity before relying on crop-specific recommendations.",
       "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
       "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
-      ...(scientificNameWithheld
+      ...(identityConflictDetected
         ? [
-            "The supplied scientific-name value looked like a common-name phrase and was withheld; verify the accepted botanical name before saving it."
+            "Identity conflict detected: a proposed scientific-name value looked like a common-name phrase and was withheld. The entire identification was downgraded to low confidence; verify the accepted botanical name and gather better evidence before confirming it."
           ]
         : []),
       ...(cultivar
