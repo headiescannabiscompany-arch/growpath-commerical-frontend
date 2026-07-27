@@ -1,6 +1,71 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+type MapLibreMap = any;
+type MapLibreGeoJSONSource = any;
+type MapLibreModule = {
+  Map: new (options: any) => MapLibreMap;
+  NavigationControl: new (options?: any) => any;
+  GlobeControl: new () => any;
+  FullscreenControl: new () => any;
+  GeolocateControl: new (options?: any) => any;
+};
+
+const MAPLIBRE_SCRIPT_ID = "growpath-maplibre-loader";
+const MAPLIBRE_READY_EVENT = "growpath-maplibre-ready";
+let mapLibrePromise: Promise<MapLibreModule> | null = null;
+
+function loadMapLibreModule() {
+  if (typeof window === "undefined") {
+    return Promise.reject(
+      new Error("The interactive globe is only available in a web browser.")
+    );
+  }
+  const existing = (window as any).__growpathMapLibre as MapLibreModule | undefined;
+  if (existing?.Map) return Promise.resolve(existing);
+  if (!mapLibrePromise) {
+    mapLibrePromise = new Promise<MapLibreModule>((resolve, reject) => {
+      const finish = () => {
+        const loaded = (window as any).__growpathMapLibre as MapLibreModule | undefined;
+        if (loaded?.Map) {
+          window.removeEventListener(MAPLIBRE_READY_EVENT, onReady);
+          resolve(loaded);
+          return true;
+        }
+        return false;
+      };
+      const onReady = () => {
+        if (!finish()) reject(new Error("The map module loaded without its Map API."));
+      };
+      window.addEventListener(MAPLIBRE_READY_EVENT, onReady, { once: true });
+      const existingScript = document.getElementById(MAPLIBRE_SCRIPT_ID);
+      if (existingScript) {
+        if (!finish())
+          existingScript.addEventListener(
+            "error",
+            () => reject(new Error("The map module could not be loaded.")),
+            { once: true }
+          );
+        return;
+      }
+      const script = document.createElement("script");
+      script.id = MAPLIBRE_SCRIPT_ID;
+      script.async = true;
+      script.type = "module";
+      script.src = "/maplibre-loader.mjs";
+      script.addEventListener(
+        "error",
+        () => reject(new Error("The map module could not be loaded.")),
+        { once: true }
+      );
+      document.head.appendChild(script);
+    }).catch((error) => {
+      mapLibrePromise = null;
+      throw error;
+    });
+  }
+  return mapLibrePromise;
+}
 
 import type { FieldObservation } from "@/api/fieldStudies";
 
@@ -80,7 +145,7 @@ function fallbackStyle() {
   } as any;
 }
 
-function viewportFromMap(map: maplibregl.Map): FieldObservationViewport | null {
+function viewportFromMap(map: MapLibreMap): FieldObservationViewport | null {
   const bounds = map.getBounds();
   const west = Math.max(-180, bounds.getWest());
   const east = Math.min(180, bounds.getEast());
@@ -103,7 +168,7 @@ export default function FieldObservationGlobe({
   onViewportChange
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
   const observationsRef = useRef(observations);
   const onSelectRef = useRef(onSelectObservations);
   const onViewportRef = useRef(onViewportChange);
@@ -116,7 +181,7 @@ export default function FieldObservationGlobe({
   useEffect(() => {
     observationsRef.current = observations;
     const source = mapRef.current?.getSource(SOURCE_ID) as
-      | maplibregl.GeoJSONSource
+      | MapLibreGeoJSONSource
       | undefined;
     source?.setData(observationsToGeoJson(observations));
   }, [observations]);
@@ -163,154 +228,176 @@ export default function FieldObservationGlobe({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const configuredStyle = process.env.EXPO_PUBLIC_FIELD_MAP_STYLE_URL;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: configuredStyle || fallbackStyle(),
-      center: UNITED_STATES_CENTER,
-      zoom: 2.55,
-      minZoom: 1.25,
-      maxZoom: 18,
-      attributionControl: { compact: true }
-    });
-    mapRef.current = map;
+    let map: MapLibreMap | null = null;
+    let disposed = false;
+    void loadMapLibreModule()
+      .then((maplibregl) => {
+        if (disposed || !containerRef.current || mapRef.current) return;
+        const configuredStyle = process.env.EXPO_PUBLIC_FIELD_MAP_STYLE_URL;
+        const activeMap = new maplibregl.Map({
+          container: containerRef.current,
+          style: configuredStyle || fallbackStyle(),
+          center: UNITED_STATES_CENTER,
+          zoom: 2.55,
+          minZoom: 1.25,
+          maxZoom: 18,
+          attributionControl: { compact: true }
+        });
+        map = activeMap;
 
-    const emitViewport = () => {
-      onViewportRef.current(viewportFromMap(map));
-    };
-    const selectPin = (event: maplibregl.MapLayerMouseEvent) => {
-      const id = String(event.features?.[0]?.properties?.id || "");
-      if (id) onSelectRef.current([id]);
-    };
-    const expandCluster = async (event: maplibregl.MapLayerMouseEvent) => {
-      const feature = event.features?.[0];
-      const clusterId = Number(feature?.properties?.cluster_id);
-      const coordinates = (feature?.geometry as any)?.coordinates;
-      const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-      if (!source || !Number.isFinite(clusterId) || !Array.isArray(coordinates)) return;
-      const center: [number, number] = [Number(coordinates[0]), Number(coordinates[1])];
-      if (!center.every(Number.isFinite)) return;
-      const leaves = await source.getClusterLeaves(clusterId, 100, 0);
-      const observationIds = leaves
-        .map((leaf) => String(leaf.properties?.id || ""))
-        .filter(Boolean);
-      if (observationIds.length) onSelectRef.current(observationIds);
+        const emitViewport = () => {
+          onViewportRef.current(viewportFromMap(activeMap));
+        };
+        const selectPin = (event: any) => {
+          const id = String(event.features?.[0]?.properties?.id || "");
+          if (id) onSelectRef.current([id]);
+        };
+        const expandCluster = async (event: any) => {
+          const feature = event.features?.[0];
+          const clusterId = Number(feature?.properties?.cluster_id);
+          const coordinates = (feature?.geometry as any)?.coordinates;
+          const source = activeMap.getSource(SOURCE_ID) as
+            | MapLibreGeoJSONSource
+            | undefined;
+          if (!source || !Number.isFinite(clusterId) || !Array.isArray(coordinates))
+            return;
+          const center: [number, number] = [
+            Number(coordinates[0]),
+            Number(coordinates[1])
+          ];
+          if (!center.every(Number.isFinite)) return;
+          const leaves = await source.getClusterLeaves(clusterId, 100, 0);
+          const observationIds = leaves
+            .map((leaf: any) => String(leaf.properties?.id || ""))
+            .filter(Boolean);
+          if (observationIds.length) onSelectRef.current(observationIds);
 
-      const zoom = await source.getClusterExpansionZoom(clusterId);
-      map.easeTo({ center, zoom, duration: 650 });
-    };
-    const showPointer = () => {
-      map.getCanvas().style.cursor = "pointer";
-    };
-    const clearPointer = () => {
-      map.getCanvas().style.cursor = "";
-    };
+          const zoom = await source.getClusterExpansionZoom(clusterId);
+          activeMap.easeTo({ center, zoom, duration: 650 });
+        };
+        const showPointer = () => {
+          activeMap.getCanvas().style.cursor = "pointer";
+        };
+        const clearPointer = () => {
+          activeMap.getCanvas().style.cursor = "";
+        };
 
-    map.on("load", () => {
-      map.setProjection({ type: "globe" });
-      map.addSource(SOURCE_ID, {
-        type: "geojson",
-        data: observationsToGeoJson(observationsRef.current),
-        cluster: true,
-        clusterMaxZoom: 13,
-        clusterRadius: 48
-      });
-      map.addLayer({
-        id: CLUSTER_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "#65A30D",
-            10,
-            "#15803D",
-            50,
-            "#14532D"
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 18, 10, 23, 50, 29],
-          "circle-stroke-color": "#FFFFFF",
-          "circle-stroke-width": 3
-        }
-      });
-      map.addLayer({
-        id: PIN_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-color": [
-            "case",
-            ["==", ["get", "precision"], "exact"],
-            "#15803D",
-            "#D97706"
-          ],
-          "circle-radius": 9,
-          "circle-stroke-color": "#FFFFFF",
-          "circle-stroke-width": 3
-        }
-      });
-      map.on("click", CLUSTER_LAYER_ID, expandCluster);
-      map.on("click", PIN_LAYER_ID, selectPin);
-      map.on("mouseenter", CLUSTER_LAYER_ID, showPointer);
-      map.on("mouseleave", CLUSTER_LAYER_ID, clearPointer);
-      map.on("mouseenter", PIN_LAYER_ID, showPointer);
-      map.on("mouseleave", PIN_LAYER_ID, clearPointer);
-      map.on("moveend", emitViewport);
-      setReady(true);
-      emitViewport();
-
-      const permissions = (navigator as any)?.permissions;
-      if (permissions?.query) {
-        void permissions
-          .query({ name: "geolocation" })
-          .then((result: PermissionStatus) => {
-            if (result.state === "granted") {
-              centerOnUser(false);
-            } else {
-              setLocationMessage(
-                "Location is not enabled, so the globe is showing the United States."
-              );
+        activeMap.on("load", () => {
+          activeMap.setProjection({ type: "globe" });
+          activeMap.addSource(SOURCE_ID, {
+            type: "geojson",
+            data: observationsToGeoJson(observationsRef.current),
+            cluster: true,
+            clusterMaxZoom: 13,
+            clusterRadius: 48
+          });
+          activeMap.addLayer({
+            id: CLUSTER_LAYER_ID,
+            type: "circle",
+            source: SOURCE_ID,
+            filter: ["has", "point_count"],
+            paint: {
+              "circle-color": [
+                "step",
+                ["get", "point_count"],
+                "#65A30D",
+                10,
+                "#15803D",
+                50,
+                "#14532D"
+              ],
+              "circle-radius": ["step", ["get", "point_count"], 18, 10, 23, 50, 29],
+              "circle-stroke-color": "#FFFFFF",
+              "circle-stroke-width": 3
             }
-          })
-          .catch(() => {
+          });
+          activeMap.addLayer({
+            id: PIN_LAYER_ID,
+            type: "circle",
+            source: SOURCE_ID,
+            filter: ["!", ["has", "point_count"]],
+            paint: {
+              "circle-color": [
+                "case",
+                ["==", ["get", "precision"], "exact"],
+                "#15803D",
+                "#D97706"
+              ],
+              "circle-radius": 9,
+              "circle-stroke-color": "#FFFFFF",
+              "circle-stroke-width": 3
+            }
+          });
+          activeMap.on("click", CLUSTER_LAYER_ID, expandCluster);
+          activeMap.on("click", PIN_LAYER_ID, selectPin);
+          activeMap.on("mouseenter", CLUSTER_LAYER_ID, showPointer);
+          activeMap.on("mouseleave", CLUSTER_LAYER_ID, clearPointer);
+          activeMap.on("mouseenter", PIN_LAYER_ID, showPointer);
+          activeMap.on("mouseleave", PIN_LAYER_ID, clearPointer);
+          activeMap.on("moveend", emitViewport);
+          setReady(true);
+          emitViewport();
+
+          const permissions = (navigator as any)?.permissions;
+          if (permissions?.query) {
+            void permissions
+              .query({ name: "geolocation" })
+              .then((result: PermissionStatus) => {
+                if (result.state === "granted") {
+                  centerOnUser(false);
+                } else {
+                  setLocationMessage(
+                    "Location is not enabled, so the globe is showing the United States."
+                  );
+                }
+              })
+              .catch(() => {
+                setLocationMessage(
+                  "Location is not enabled, so the globe is showing the United States."
+                );
+              });
+          } else {
             setLocationMessage(
               "Location is not enabled, so the globe is showing the United States."
             );
-          });
-      } else {
-        setLocationMessage(
-          "Location is not enabled, so the globe is showing the United States."
+          }
+        });
+        activeMap.on("error", (event: any) => {
+          if (!activeMap.loaded()) {
+            setMapError(
+              event?.error?.message ||
+                "The interactive globe could not load. The observation list is still available."
+            );
+          }
+        });
+        activeMap.addControl(
+          new maplibregl.NavigationControl({ visualizePitch: true }),
+          "top-right"
         );
-      }
-    });
-    map.on("error", (event) => {
-      if (!map.loaded()) {
-        setMapError(
-          event?.error?.message ||
-            "The interactive globe could not load. The observation list is still available."
+        activeMap.addControl(new maplibregl.GlobeControl(), "top-right");
+        activeMap.addControl(new maplibregl.FullscreenControl(), "top-right");
+        activeMap.addControl(
+          new maplibregl.GeolocateControl({
+            positionOptions: { enableHighAccuracy: false },
+            trackUserLocation: false
+          }),
+          "top-right"
         );
-      }
-    });
-    map.addControl(
-      new maplibregl.NavigationControl({ visualizePitch: true }),
-      "top-right"
-    );
-    map.addControl(new maplibregl.GlobeControl(), "top-right");
-    map.addControl(new maplibregl.FullscreenControl(), "top-right");
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: false },
-        trackUserLocation: false
-      }),
-      "top-right"
-    );
+      })
+      .catch((error) => {
+        if (!disposed) {
+          setMapError(
+            error instanceof Error
+              ? error.message
+              : "The interactive globe could not load. The observation list is still available."
+          );
+        }
+      });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      disposed = true;
+      map?.remove();
+      if (mapRef.current === map) mapRef.current = null;
     };
   }, [centerOnUser]);
 
