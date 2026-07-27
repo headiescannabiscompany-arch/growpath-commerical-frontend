@@ -60,4 +60,28 @@ describe("trial subscription status", () => {
     expect(screen.getByText("Facility Free Trial")).toBeTruthy();
     expect(screen.queryByText("Free")).toBeNull();
   });
+
+  it("maps a legacy used trial to Pro and shows the other two trials", async () => {
+    (getLegacyStatus as jest.Mock).mockResolvedValue({
+      success: true,
+      isPro: false,
+      plan: "free",
+      status: "inactive",
+      trialUsed: true,
+      trialPlansUsed: ["pro"]
+    });
+
+    const screen = render(
+      <SubscriptionStatusScreen navigation={{ navigate: jest.fn() }} />
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "You have a separate 30-day trial available for Commercial, Facility."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText(/available for Pro/)).toBeNull();
+  });
 });

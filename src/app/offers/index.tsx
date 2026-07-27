@@ -97,7 +97,20 @@ export default function Offers() {
   const subscriptionActive = ["active", "trial", "trialing"].includes(
     String(auth.user?.subscriptionStatus || "").toLowerCase()
   );
-  const trialEligible = trialEnabled && !auth.user?.trialUsed;
+  const reportedTrialPlans = Array.isArray(auth.user?.trialPlansUsed)
+    ? auth.user.trialPlansUsed
+    : [];
+  const usedTrialPlans = new Set<PlanKey>(
+    reportedTrialPlans.filter((plan): plan is PlanKey =>
+      ["pro", "commercial", "facility"].includes(plan)
+    )
+  );
+  if (!usedTrialPlans.size && auth.user?.trialUsed) usedTrialPlans.add("pro");
+  const trialEligibleForPlan = (plan: PlanKey) =>
+    trialEnabled && !usedTrialPlans.has(plan);
+  const eligibleTrialPlanTitles = PLANS.filter((plan) =>
+    trialEligibleForPlan(plan.key)
+  ).map((plan) => plan.title);
   const subscriptionResult = useMemo(() => {
     const value = searchParams.subscription;
     return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
@@ -147,7 +160,7 @@ export default function Offers() {
   }, [auth, subscriptionResult]);
 
   async function startCheckout(plan: PlanKey, confirmedImmediateBilling = false) {
-    if (!trialEligible && !confirmedImmediateBilling) {
+    if (!trialEligibleForPlan(plan) && !confirmedImmediateBilling) {
       setPendingImmediatePlan(plan);
       const selected = PLANS.find((item) => item.key === plan);
       setFeedback(
@@ -183,10 +196,10 @@ export default function Offers() {
           <Text style={styles.kicker}>Plans</Text>
           <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
           <Text style={styles.headerSubtitle}>
-            {trialEligible
-              ? `This account is eligible for ${trialDays} days free through Stripe checkout. A payment method is required, and paid billing begins after the trial unless canceled.`
+            {eligibleTrialPlanTitles.length > 0
+              ? `This account has a separate ${trialDays}-day trial available for ${eligibleTrialPlanTitles.join(", ")}. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled.`
               : trialEnabled
-                ? `This account has already used its ${trialDays}-day trial. Starting another paid plan will bill the shown price when Stripe checkout completes.`
+                ? `This account has already used its Pro, Commercial, and Facility trials. Starting another paid plan will bill the shown price when Stripe checkout completes.`
                 : "New trials have ended. Stripe checkout begins paid billing immediately."}
           </Text>
           <View style={styles.segment}>
@@ -269,6 +282,7 @@ export default function Offers() {
           const current = activePlan === plan.key && subscriptionActive;
           const loading = loadingPlan === plan.key;
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
+          const planTrialEligible = trialEligibleForPlan(plan.key);
           return (
             <AppCard key={plan.key} style={[styles.planCard, current && styles.current]}>
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
@@ -300,7 +314,7 @@ export default function Offers() {
                 accessibilityLabel={
                   confirmingImmediateBilling
                     ? `Continue to paid ${plan.title} checkout`
-                    : trialEligible
+                    : planTrialEligible
                       ? `Start ${plan.title} trial checkout`
                       : `Review paid ${plan.title} checkout`
                 }
@@ -313,7 +327,7 @@ export default function Offers() {
                       ? "Current plan"
                       : confirmingImmediateBilling
                         ? `Continue — billed ${formatPlanPrice(plan.key, interval)}`
-                        : trialEligible
+                        : planTrialEligible
                           ? `Start ${trialDays}-day trial`
                           : "Review paid checkout"}
                 </Text>
