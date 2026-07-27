@@ -57,6 +57,22 @@ if (exportResult.status !== 0) {
   process.exit(exportResult.status || 1);
 }
 
+const maplibreOutputDir = path.join(absoluteOutputDir, "maplibre");
+const maplibreSourceDir = path.join(ROOT, "node_modules", "maplibre-gl", "dist");
+fs.mkdirSync(maplibreOutputDir, { recursive: true });
+for (const filename of ["maplibre-gl.mjs", "maplibre-gl-shared.mjs"]) {
+  fs.copyFileSync(
+    path.join(maplibreSourceDir, filename),
+    path.join(maplibreOutputDir, filename)
+  );
+}
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "maplibre-loader.mjs"),
+  'import * as maplibregl from "/maplibre/maplibre-gl.mjs";\n' +
+    "window.__growpathMapLibre = maplibregl;\n" +
+    'window.dispatchEvent(new Event("growpath-maplibre-ready"));\n'
+);
+
 const fallbackRoutes = [
   "admin",
   "login",
