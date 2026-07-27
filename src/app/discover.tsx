@@ -156,6 +156,23 @@ export default function DiscoverDirectory() {
 
     return [
       {
+        key: "field-observations",
+        title: "Field observations",
+        ranking: "Shared, opt-in plant findings",
+        empty: "Explore the public plant map to see opted-in observations.",
+        results: [
+          {
+            id: "field-observations",
+            title: "Explore the public plant map",
+            summary:
+              "Browse shared plant identifications on a zoomable globe. Personal details and cannabis observations stay excluded.",
+            href: "/field-observations",
+            meta: "Opt-in locations only"
+          }
+        ],
+        browseHref: "/field-observations"
+      },
+      {
         key: "feed",
         title: "Feed",
         ranking: "Recent",
