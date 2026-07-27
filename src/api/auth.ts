@@ -13,6 +13,7 @@ export type AuthUser = {
   plan: string | null;
   subscriptionStatus: string | null;
   trialUsed?: boolean;
+  trialPlansUsed?: Array<"pro" | "commercial" | "facility">;
   emailVerified?: boolean;
   growInterests?: Record<string, string[]>;
   ageBand?: "13_17" | "18_20" | "21_plus" | "unknown";

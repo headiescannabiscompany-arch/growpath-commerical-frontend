@@ -104,10 +104,9 @@ Validation:
 - production web export: passed and used `https://api.growpathai.com`;
 - full GitHub frontend CI, including the complete test suite: passed.
 
-
 ## Still open
 
-- Decide whether GrowPath's one-time trial should remain shared across paid plan types or become plan-specific. The verified account had already used its one-time trial; the frontend no longer promises a second one and now protects immediate billing with an explicit confirmation.
+- Deploy and live-retest the selected plan-specific policy: each account gets one 30-day trial for Pro, Commercial, and Facility; legacy Boolean-only trial history counts as Pro. Confirm that a remaining plan trial starts at $0, a repeated same-plan checkout uses the explicit immediate-billing confirmation, and both Stripe webhook paths persist the selected plan history.
 - Retest the August 26 cancellation expiry and GrowPath downgrade after Stripe emits the terminal lifecycle event.
 - Paid course checkout/enrollment/unlock/refund and Facility-plan settlement remain separate live workflows.
 - No dispute was created. A real bank dispute would harm the live account and is not an appropriate synthetic QA action.

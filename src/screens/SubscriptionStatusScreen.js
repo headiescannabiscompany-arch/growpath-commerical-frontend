@@ -21,6 +21,25 @@ function isConfirmedPro(status) {
   );
 }
 
+const TRIAL_PLAN_LABELS = {
+  pro: "Pro",
+  commercial: "Commercial",
+  facility: "Facility"
+};
+
+function remainingTrialPlanLabels(status) {
+  const explicit = Array.isArray(status?.trialPlansUsed)
+    ? status.trialPlansUsed.filter((plan) =>
+        Object.prototype.hasOwnProperty.call(TRIAL_PLAN_LABELS, plan)
+      )
+    : [];
+  const used = new Set(explicit);
+  if (!used.size && status?.trialUsed) used.add("pro");
+  return Object.entries(TRIAL_PLAN_LABELS)
+    .filter(([plan]) => !used.has(plan))
+    .map(([, label]) => label);
+}
+
 export default function SubscriptionStatusScreen({ navigation }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -60,7 +79,10 @@ export default function SubscriptionStatusScreen({ navigation }) {
           onPress: async () => {
             try {
               await cancelSubscription(token);
-              Alert.alert("Cancellation submitted", "Status updates after backend confirmation.");
+              Alert.alert(
+                "Cancellation submitted",
+                "Status updates after backend confirmation."
+              );
               loadStatus();
             } catch (error) {
               Alert.alert("Error", "Failed to cancel subscription");
@@ -86,7 +108,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
     .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase());
   const trialing = ["trial", "trialing"].includes(currentStatus);
   const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
-  const trialUsed = status?.trialUsed;
+  const remainingTrialPlans = remainingTrialPlanLabels(status);
 
   return (
     <ScreenContainer style={styles.container}>
@@ -97,9 +119,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
           <View style={styles.statusRow}>
             <Text style={styles.label}>Status:</Text>
             <Text style={[styles.value, isPro && styles.proBadge]}>
-              {isPro
-                ? `${planLabel} ${trialing ? "trial" : "paid"} confirmed`
-                : "Free"}
+              {isPro ? `${planLabel} ${trialing ? "trial" : "paid"} confirmed` : "Free"}
             </Text>
           </View>
 
@@ -110,8 +130,9 @@ export default function SubscriptionStatusScreen({ navigation }) {
               {currentStatus === "active" && `${planLabel} Subscription`}
               {currentStatus === "free" && "Free Plan"}
               {currentStatus === "expired" && "Expired"}
-              {!["trial", "trialing", "active", "free", "expired"].includes(currentStatus) &&
-                currentStatus}
+              {!["trial", "trialing", "active", "free", "expired"].includes(
+                currentStatus
+              ) && currentStatus}
             </Text>
           </View>
 
@@ -122,9 +143,12 @@ export default function SubscriptionStatusScreen({ navigation }) {
             </View>
           ) : null}
 
-          {!trialUsed && !isPro ? (
+          {remainingTrialPlans.length > 0 && !isPro ? (
             <View style={styles.trialNotice}>
-              <Text style={styles.trialText}>You have a 30-day free trial available.</Text>
+              <Text style={styles.trialText}>
+                You have a separate 30-day trial available for{" "}
+                {remainingTrialPlans.join(", ")}.
+              </Text>
             </View>
           ) : null}
 

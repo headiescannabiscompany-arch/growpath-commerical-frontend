@@ -8,6 +8,7 @@ import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscri
 const mockRetryMe = jest.fn();
 const mockSearchParams: { subscription?: string } = {};
 let mockTrialUsed = true;
+let mockTrialPlansUsed = ["pro", "commercial", "facility"];
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams
@@ -17,7 +18,8 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     user: {
       subscriptionStatus: "inactive",
-      trialUsed: mockTrialUsed
+      trialUsed: mockTrialUsed,
+      trialPlansUsed: mockTrialPlansUsed
     },
     retryMe: mockRetryMe
   })
@@ -50,6 +52,7 @@ jest.mock("@/components/layout/AppCard", () => ({
 describe("Offers billing safety", () => {
   beforeEach(() => {
     mockTrialUsed = true;
+    mockTrialPlansUsed = ["pro", "commercial", "facility"];
     delete mockSearchParams.subscription;
     mockRetryMe.mockReset();
     (createCheckoutSession as jest.Mock).mockReset();
@@ -67,7 +70,7 @@ describe("Offers billing safety", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "This account has already used its 30-day trial. Starting another paid plan will bill the shown price when Stripe checkout completes."
+          "This account has already used its Pro, Commercial, and Facility trials. Starting another paid plan will bill the shown price when Stripe checkout completes."
         )
       ).toBeTruthy()
     );
@@ -108,15 +111,35 @@ describe("Offers billing safety", () => {
 
   it("labels an eligible account trial without an immediate-billing confirmation", async () => {
     mockTrialUsed = false;
+    mockTrialPlansUsed = [];
     const screen = render(<Offers />);
 
     await waitFor(() =>
       expect(
         screen.getByText(
-          "This account is eligible for 30 days free through Stripe checkout. A payment method is required, and paid billing begins after the trial unless canceled."
+          "This account has a separate 30-day trial available for Pro Grower, Commercial, Facility. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled."
         )
       ).toBeTruthy()
     );
     expect(screen.getAllByText("Start 30-day trial")).toHaveLength(3);
+  });
+
+  it("maps the legacy trial to Pro while leaving Commercial and Facility available", async () => {
+    mockTrialUsed = true;
+    mockTrialPlansUsed = [];
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Start 30-day trial")).toHaveLength(2)
+    );
+    expect(screen.getAllByText("Review paid checkout")).toHaveLength(1);
+    fireEvent.press(screen.getAllByText("Start 30-day trial")[0]);
+
+    await waitFor(() =>
+      expect(createCheckoutSession).toHaveBeenCalledWith({
+        plan: "commercial",
+        interval: "monthly"
+      })
+    );
   });
 });
