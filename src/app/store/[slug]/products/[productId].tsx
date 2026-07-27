@@ -488,6 +488,7 @@ export default function PublicProductRoute() {
               </Pressable>
               {auth.isAuthed ? (
                 <Pressable
+                  accessibilityRole="button"
                   accessibilityLabel={`Report ${product?.name || "product"}`}
                   style={styles.secondaryButton}
                   onPress={() => setReportVisible(true)}

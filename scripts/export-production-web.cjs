@@ -88,6 +88,8 @@ const fallbackRoutes = [
   "discover",
   "videos",
   "videos/example-video",
+  "lives",
+  "live-session",
   "feed",
   "forum",
   "forum/new-post",

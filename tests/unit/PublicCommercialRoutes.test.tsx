@@ -443,6 +443,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();
     expect(screen.getByText("Report Product")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Report Veg Mix" })).toBeTruthy();
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Similar Storefronts")).toBeTruthy();

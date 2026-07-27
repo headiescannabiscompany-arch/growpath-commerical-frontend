@@ -189,4 +189,17 @@ describe("live URL verifier", () => {
     expect(fallbackBlock).toContain('"account/workspace"');
     expect(fallbackBlock).toContain('"account/mode"');
   });
+
+  it("keeps public live discovery and live-session details in the production fallback export", () => {
+    const exportScript = fs.readFileSync(
+      path.join(root, "scripts", "export-production-web.cjs"),
+      "utf8"
+    );
+    const fallbackBlock = exportScript.match(
+      /const fallbackRoutes = \[([\s\S]*?)\];/
+    )?.[1];
+
+    expect(fallbackBlock).toContain('"lives"');
+    expect(fallbackBlock).toContain('"live-session"');
+  });
 });

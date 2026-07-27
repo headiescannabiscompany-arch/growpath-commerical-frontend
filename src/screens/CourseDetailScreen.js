@@ -1136,10 +1136,14 @@ export default function CourseDetailScreen({ route, navigation }) {
           onChangeText={setReportReason}
           placeholder="Reason"
           style={styles.input}
+          accessibilityLabel="Course report reason"
         />
         <Pressable
           disabled={saving || !reportReason.trim()}
           onPress={reportCourse}
+          accessibilityRole="button"
+          accessibilityLabel="Submit course report"
+          accessibilityState={{ disabled: saving || !reportReason.trim() }}
           style={[
             styles.secondaryBtn,
             (!reportReason.trim() || saving) && styles.disabled
