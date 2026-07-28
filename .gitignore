@@ -6,6 +6,11 @@ dist/
 .expo/
 .artifacts/
 .tools/
+coverage/
+eslint-warnings.json
+eslint-warnings.txt
+lint-after-canonical.txt
+lint-after-tools-fix.txt
 backend-media-storage/
 tmp/
 test-results/
