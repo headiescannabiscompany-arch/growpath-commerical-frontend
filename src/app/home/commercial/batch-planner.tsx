@@ -639,13 +639,12 @@ export default function CommercialBatchPlannerRoute() {
           Naming rule
         </Text>
         <Text style={styles.body}>
-          The app module is Soil & Nutrient Batch Planner. Living Soil Labs is an example
-          commercial brand, not the feature name.
+          The app module is Soil & Nutrient Batch Planner. Keep brand names out of the feature name.
         </Text>
         <Text style={styles.bullet}>
           Use product, formula, batch, trial, and storefront language in the app
         </Text>
-        <Text style={styles.bullet}>Do not label the module Living Soil Labs</Text>
+        <Text style={styles.bullet}>Do not label the module with a brand name</Text>
         <Text style={styles.bullet}>
           Keep production batch planning and records inside the Commercial workspace
         </Text>

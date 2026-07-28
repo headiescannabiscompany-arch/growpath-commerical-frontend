@@ -307,7 +307,7 @@ export default function PublicFieldObservationsScreen() {
                 {readableStatus(
                   selectedObservation.identity?.verificationStatus || "ai_candidate"
                 )}{" "}
-                · {selectedObservation.identity?.confidence || "unknown"} confidence
+                � {selectedObservation.identity?.confidence || "unknown"} confidence
               </Text>
               {selectedObservation.study?.slug ? (
                 <Link
@@ -315,7 +315,7 @@ export default function PublicFieldObservationsScreen() {
                   asChild
                 >
                   <Pressable accessibilityRole="link">
-                    <Text style={styles.linkText}>Open the full Field Study →</Text>
+                    <Text style={styles.linkText}>Open the full Field Study ?</Text>
                   </Pressable>
                 </Link>
               ) : null}
@@ -376,7 +376,7 @@ export default function PublicFieldObservationsScreen() {
                 </Text>
               ) : null}
               <Text style={styles.cardMeta}>
-                {observation.identity?.verificationStatus || "ai_candidate"} ·{" "}
+                {observation.identity?.verificationStatus || "ai_candidate"} �{" "}
                 {observation.identity?.confidence || "unknown"} confidence
               </Text>
               <Text style={styles.cardMeta}>
@@ -385,7 +385,7 @@ export default function PublicFieldObservationsScreen() {
                     observation.location?.label ||
                     "Region not shared"
                 )}
-                {precision ? ` · ${precision} map location` : ""}
+                {precision ? ` � ${precision} map location` : ""}
               </Text>
               {observation.notes ? (
                 <Text style={styles.cardBody}>{observation.notes}</Text>
@@ -394,7 +394,7 @@ export default function PublicFieldObservationsScreen() {
                 <Link href={`/field-observations/${studySlug}`} asChild>
                   <Pressable accessibilityRole="link">
                     <Text style={styles.linkText}>
-                      Open {observation.study?.title || "Field Study"} →
+                      Open {observation.study?.title || "Field Study"} ?
                     </Text>
                   </Pressable>
                 </Link>
