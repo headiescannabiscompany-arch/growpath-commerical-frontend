@@ -92,7 +92,7 @@ const DEFAULT_TILE_URL =
   process.env.EXPO_PUBLIC_FIELD_MAP_TILE_URL ||
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const DEFAULT_ATTRIBUTION =
-  process.env.EXPO_PUBLIC_FIELD_MAP_ATTRIBUTION || "Â© OpenStreetMap contributors";
+  process.env.EXPO_PUBLIC_FIELD_MAP_ATTRIBUTION || "© OpenStreetMap contributors";
 
 function observationId(observation: FieldObservation) {
   return String(observation.id || observation._id || "");
@@ -205,7 +205,7 @@ export default function FieldObservationGlobe({
       return;
     }
     setLocationMessage(
-      shouldPrompt ? "Requesting your locationâ€¦" : "Centering near your locationâ€¦"
+      shouldPrompt ? "Requesting your location…" : "Centering near your location…"
     );
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -424,7 +424,7 @@ export default function FieldObservationGlobe({
       />
       {!ready && !mapError ? (
         <div aria-live="polite" className="growpath-field-globe-status">
-          Loading the living worldâ€¦
+          Loading the living world…
         </div>
       ) : null}
       {mapError ? (

@@ -223,7 +223,7 @@ export default function DiscoverDirectory() {
             row.visibility ? String(row.visibility).replace(/_/g, " ") : ""
           ]
             .filter(Boolean)
-            .join(" Â· ")
+            .join(" · ")
         })),
         browseHref: "/videos?tab=discover"
       },
@@ -341,7 +341,7 @@ export default function DiscoverDirectory() {
           ) : null}
         </View>
         {activeQuery ? (
-          <Text style={styles.meta}>Results for â€œ{activeQuery}â€</Text>
+          <Text style={styles.meta}>Results for "{activeQuery}"</Text>
         ) : (
           <Text style={styles.meta}>Browse all current discovery sections below.</Text>
         )}
