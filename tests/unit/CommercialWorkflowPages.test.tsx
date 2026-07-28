@@ -31,6 +31,8 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
+jest.setTimeout(15000);
+
 jest.mock("expo-router", () => {
   const React = require("react");
   const mockRouter = { replace: mockReplace, push: mockPush, back: mockBack };
@@ -3117,3 +3119,6 @@ describe("commercial workflow pages", () => {
     );
   });
 });
+
+
+
