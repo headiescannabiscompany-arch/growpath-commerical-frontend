@@ -142,8 +142,7 @@ describe("Profile privacy controls", () => {
     const screen = render(<Profile />);
 
     expect(screen.queryByText("Upgrade to Pro")).toBeNull();
-    expect(screen.getByText("Upgrade to Commercial")).toBeTruthy();
-    expect(screen.getByText("Apply / Upgrade to Facility")).toBeTruthy();
+    expect(screen.getByText("Upgrade to Commercial / Facility")).toBeTruthy();
     expect(screen.getByText("Manage Billing")).toBeTruthy();
   });
 

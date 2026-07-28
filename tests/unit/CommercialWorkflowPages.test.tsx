@@ -1094,7 +1094,7 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getAllByText(/Product education .* Beginner .* Free .* Draft/).length
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Edit Course").length).toBeGreaterThan(0);
     expect(screen.getByText(/1 quizzes/)).toBeTruthy();
     expect(screen.getAllByText("Learner Preview").length).toBeGreaterThan(0);
     expect(screen.getByText("Course Discussion")).toBeTruthy();

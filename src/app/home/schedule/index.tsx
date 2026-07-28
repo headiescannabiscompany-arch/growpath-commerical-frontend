@@ -8,7 +8,6 @@ import {
   View
 } from "react-native";
 import { Link } from "expo-router";
-import BackButton from "@/components/nav/BackButton";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -556,7 +555,11 @@ export default function HomeScheduleRoute() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.backRow}>
-        <BackButton fallbackHref="/home/personal" />
+        <Link href="/home/personal" asChild>
+          <Pressable accessibilityRole="link" style={styles.backButton}>
+            <Text style={styles.backButtonText}>Back</Text>
+          </Pressable>
+        </Link>
       </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
@@ -751,6 +754,16 @@ const styles = StyleSheet.create({
   screen: { backgroundColor: "#F8FAFC", flex: 1 },
   content: { gap: 12, padding: 20, paddingBottom: 44 },
   backRow: { marginBottom: 4 },
+  backButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  backButtonText: { color: "#0F172A", fontWeight: "900" },
   headerRow: {
     alignItems: "flex-start",
     flexDirection: "row",
