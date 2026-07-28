@@ -1,10 +1,10 @@
 # Full Scan Report
 
 ## Counts
-- src files: 858
-- test files: 250
-- total files: 1108
-- api files: 109
+- src files: 970
+- test files: 323
+- total files: 1293
+- api files: 121
 - api orphans: 0
 - legacy client callers: 0
 - js/ts twin modules: 2
