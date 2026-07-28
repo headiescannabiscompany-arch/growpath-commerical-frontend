@@ -24,7 +24,7 @@ jest.mock("@/entitlements", () => ({
 }));
 
 describe("PersonalTabsLayout", () => {
-  it("uses readable active and inactive tab labels", () => {
+  it("uses readable active and inactive tab labels and hides field study routes", () => {
     render(<PersonalTabsLayout />);
 
     expect(mockTabs).toHaveBeenCalledWith(
@@ -35,6 +35,27 @@ describe("PersonalTabsLayout", () => {
           tabBarLabelStyle: { fontSize: 11, fontWeight: "700" }
         })
       })
+    );
+
+    const props = mockTabs.mock.calls[0][0];
+    const names = React.Children.toArray(props.children).map((child: any) => child.props.name);
+
+    expect(names).toEqual(
+      expect.arrayContaining(["field-studies", "field-studies/[studyId]"])
+    );
+
+    const fieldStudiesScreen = React.Children.toArray(props.children).find(
+      (child: any) => child.props.name === "field-studies"
+    ) as any;
+    const fieldStudyDetailScreen = React.Children.toArray(props.children).find(
+      (child: any) => child.props.name === "field-studies/[studyId]"
+    ) as any;
+
+    expect(fieldStudiesScreen.props.options).toEqual(
+      expect.objectContaining({ href: null, title: "Field Studies" })
+    );
+    expect(fieldStudyDetailScreen.props.options).toEqual(
+      expect.objectContaining({ href: null, title: "Field Study" })
     );
   });
 });
