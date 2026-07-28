@@ -179,7 +179,13 @@ export default function GrowsListScreen() {
   );
 
   return (
-    <AppPage routeKey="personal_grows" showBack={false} longContent header={header}>
+    <AppPage
+      routeKey="personal_grows"
+      showBack={false}
+      longContent
+      railOverride={null}
+      header={header}
+    >
       <View testID="screen-personal-grows" style={styles.stack}>
         {error ? (
           <AppCard style={styles.stateCard}>
