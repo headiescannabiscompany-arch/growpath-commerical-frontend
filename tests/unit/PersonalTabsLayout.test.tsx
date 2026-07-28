@@ -41,11 +41,11 @@ describe("PersonalTabsLayout", () => {
     const names = React.Children.toArray(props.children).map((child: any) => child.props.name);
 
     expect(names).toEqual(
-      expect.arrayContaining(["field-studies", "field-studies/[studyId]"])
+      expect.arrayContaining(["field-studies/index", "field-studies/[studyId]"])
     );
 
     const fieldStudiesScreen = React.Children.toArray(props.children).find(
-      (child: any) => child.props.name === "field-studies"
+      (child: any) => child.props.name === "field-studies/index"
     ) as any;
     const fieldStudyDetailScreen = React.Children.toArray(props.children).find(
       (child: any) => child.props.name === "field-studies/[studyId]"
