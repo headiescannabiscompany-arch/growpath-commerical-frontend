@@ -115,15 +115,8 @@ export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   const currentRank = planRank[String(plan || "free").toLowerCase()] ?? 0;
   const actions: PlanAction[] = [];
 
-  if (currentRank < planRank.pro) {
-    actions.push(["Upgrade to Pro", "/home/personal/upgrade/pro", true]);
-  }
-  if (currentRank < planRank.commercial || currentRank < planRank.facility) {
-    actions.push([
-      "Upgrade to Commercial / Facility",
-      "/home/personal/upgrade",
-      currentRank >= planRank.pro
-    ]);
+  if (currentRank < planRank.facility) {
+    actions.push(["Upgrade Plans", "/home/personal/upgrade", currentRank < planRank.pro]);
   }
   actions.push([
     "Manage Billing",
@@ -521,7 +514,7 @@ export default function ProfileScreen() {
           {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
         </Text>
         <Text style={styles.mutedText}>
-          Age eligibility: {auth.user?.ageBand || "verification needed"} · Parental lock:{" "}
+          Age eligibility: {auth.user?.ageBand || "verification needed"} Â· Parental lock:{" "}
           {auth.user?.parentalLockEnabled ? "On" : "Off"}
         </Text>
         <TextInput
@@ -532,7 +525,7 @@ export default function ProfileScreen() {
           placeholder={
             auth.user?.parentalLockEnabled
               ? "Current parental PIN"
-              : "New 4–12 digit parental PIN"
+              : "New 4â€“12 digit parental PIN"
           }
           keyboardType="number-pad"
           secureTextEntry

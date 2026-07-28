@@ -137,19 +137,17 @@ describe("Profile privacy controls", () => {
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
   });
 
-  it("does not offer a Pro account its current or a lower plan", () => {
+  it("shows a Pro account the shared upgrade action for higher plans", () => {
     mockEntitlementsPlan = "pro";
     const screen = render(<Profile />);
-
-    expect(screen.queryByText("Upgrade to Pro")).toBeNull();
-    expect(screen.getByText("Upgrade to Commercial / Facility")).toBeTruthy();
+    expect(screen.getByText("Upgrade Plans")).toBeTruthy();
     expect(screen.getByText("Manage Billing")).toBeTruthy();
   });
 
-  it("shows a Free account the Pro upgrade as its primary next plan", () => {
+  it("shows a Free account the shared upgrade action", () => {
     const screen = render(<Profile />);
 
-    expect(screen.getByText("Upgrade to Pro")).toBeTruthy();
+    expect(screen.getByText("Upgrade Plans")).toBeTruthy();
     expect(screen.getByText("Manage Billing")).toBeTruthy();
   });
 

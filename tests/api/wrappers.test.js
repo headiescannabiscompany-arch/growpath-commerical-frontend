@@ -112,31 +112,84 @@ describe("API Wrappers Unit Tests", () => {
   });
 
   it("Subscription API: createCheckoutSession starts Stripe checkout via POST", async () => {
-    await subscriptionApi.createCheckoutSession({
-      plan: "commercial",
-      interval: "yearly"
-    });
-    expect(fetchCalls[0].options.method).toBe("POST");
-    expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
-      true
-    );
-    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
-      plan: "commercial",
-      interval: "yearly",
-      paymentMethodTypes: ["card"],
-      disallowBankDebits: true
-    });
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession({
+        plan: "commercial",
+        interval: "yearly"
+      });
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
+        true
+      );
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "commercial",
+        interval: "yearly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/offers?subscription=success",
+        cancelUrl: "https://app.example/offers?subscription=canceled"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
+  });
+
+  it("Subscription API: createCheckoutSession forwards gift metadata and custom URLs", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession({
+        plan: "pro",
+        interval: "monthly",
+        giftMode: true,
+        giftRecipientEmail: "Friend@Example.com",
+        giftRecipientName: "Friend Name",
+        giftMessage: "Happy growing!",
+        giftTerm: "yearly",
+        successUrl: "https://app.example/home/personal/upgrade?gift=success",
+        cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
+      });
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "pro",
+        interval: "monthly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/home/personal/upgrade?gift=success",
+        cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled",
+        giftMode: true,
+        giftRecipientEmail: "friend@example.com",
+        giftRecipientName: "Friend Name",
+        giftMessage: "Happy growing!",
+        giftTerm: "yearly"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
   });
 
   it("Subscription API: createCheckoutSession defaults legacy callers to pro monthly", async () => {
-    await subscriptionApi.createCheckoutSession();
-    expect(fetchCalls[0].options.method).toBe("POST");
-    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
-      plan: "pro",
-      interval: "monthly",
-      paymentMethodTypes: ["card"],
-      disallowBankDebits: true
-    });
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession();
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "pro",
+        interval: "monthly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/offers?subscription=success",
+        cancelUrl: "https://app.example/offers?subscription=canceled"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
   });
 
   it("Course payments API: startCourseCheckout uses canonical Stripe checkout", async () => {

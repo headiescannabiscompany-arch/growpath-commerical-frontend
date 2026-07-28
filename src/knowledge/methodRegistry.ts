@@ -27,7 +27,7 @@ function method(
     id,
     title,
     appliesTo,
-    summary: workflow.join(" → "),
+    summary: workflow.join(" â†’ "),
     primaryWorkflow: workflow,
     requiredInputs: inputs,
     requiredOutputs: outputs,
@@ -62,7 +62,7 @@ export const methodRegistry: GrowPathMethod[] = [
   ),
   method(
     "plant-diagnosis-etgu",
-    "Plant Diagnosis — ETGU",
+    "Plant Diagnosis â€” ETGU",
     ["diagnosis", "ipm", "plant_identification", "field_observation"],
     "plant-diagnosis-etgu-method.md",
     ["pattern", "medium", "environment", "numbers", "likely causes"],
