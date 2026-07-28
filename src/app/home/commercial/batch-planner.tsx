@@ -639,7 +639,8 @@ export default function CommercialBatchPlannerRoute() {
           Naming rule
         </Text>
         <Text style={styles.body}>
-          The app module is Soil & Nutrient Batch Planner. Keep brand names out of the feature name.
+          The app module is Soil & Nutrient Batch Planner. Keep brand names out of the
+          feature name.
         </Text>
         <Text style={styles.bullet}>
           Use product, formula, batch, trial, and storefront language in the app
