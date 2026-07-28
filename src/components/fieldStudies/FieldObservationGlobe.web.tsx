@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+﻿import React, { useCallback, useEffect, useRef, useState } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type MapLibreMap = any;
@@ -91,7 +91,7 @@ const DEFAULT_TILE_URL =
   process.env.EXPO_PUBLIC_FIELD_MAP_TILE_URL ||
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const DEFAULT_ATTRIBUTION =
-  process.env.EXPO_PUBLIC_FIELD_MAP_ATTRIBUTION || "© OpenStreetMap contributors";
+  process.env.EXPO_PUBLIC_FIELD_MAP_ATTRIBUTION || "Â© OpenStreetMap contributors";
 
 function observationId(observation: FieldObservation) {
   return String(observation.id || observation._id || "");
@@ -164,6 +164,7 @@ function viewportFromMap(map: MapLibreMap): FieldObservationViewport | null {
 export default function FieldObservationGlobe({
   observations,
   selectedObservationId,
+  compact = false,
   onSelectObservations,
   onViewportChange
 }: Props) {
@@ -203,7 +204,7 @@ export default function FieldObservationGlobe({
       return;
     }
     setLocationMessage(
-      shouldPrompt ? "Requesting your location…" : "Centering near your location…"
+      shouldPrompt ? "Requesting your locationâ€¦" : "Centering near your locationâ€¦"
     );
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -416,13 +417,13 @@ export default function FieldObservationGlobe({
     <div className="growpath-field-globe-shell">
       <div
         aria-label={`Interactive globe with ${observations.length} shared plant observations`}
-        className="growpath-field-globe"
+        className={`growpath-field-globe ${compact ? "growpath-field-globe-compact" : ""}`.trim()}
         ref={containerRef}
         role="application"
       />
       {!ready && !mapError ? (
         <div aria-live="polite" className="growpath-field-globe-status">
-          Loading the living world…
+          Loading the living worldâ€¦
         </div>
       ) : null}
       {mapError ? (
