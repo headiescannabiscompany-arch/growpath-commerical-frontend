@@ -17,7 +17,7 @@ type Props = {
   onViewportChange: (viewport: FieldObservationViewport | null) => void;
 };
 
-export default function FieldObservationGlobe({ observations, compact = false }: Props) {
+export default function FieldObservationGlobe({ observations }: Props) {
   const mapped = observations.filter(
     (observation) =>
       Number.isFinite(Number(observation.location?.latitude)) &&
@@ -27,7 +27,7 @@ export default function FieldObservationGlobe({ observations, compact = false }:
   return (
     <View
       accessibilityLabel={`${mapped} shared plant observations. Interactive globe available in the GrowPathAI web experience.`}
-      style={[styles.panel, compact && styles.compactPanel]}
+      style={styles.panel}
     >
       <Text style={styles.title}>{mapped} shared locations</Text>
       <Text style={styles.body}>

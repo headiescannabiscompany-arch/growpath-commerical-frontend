@@ -12,13 +12,11 @@ import {
 } from "react-native";
 
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
-import { listPublicFieldObservations } from "@/api/fieldStudies";
 import { searchContent } from "@/api/marketplace";
 import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -87,8 +85,6 @@ export default function DiscoverDirectory() {
   const [marketplace, setMarketplace] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
-  const [globeObservations, setGlobeObservations] = useState<any[]>([]);
-  const [globeLoading, setGlobeLoading] = useState(true);
 
   const load = useCallback(async (q = "") => {
     setLoading(true);
@@ -132,27 +128,6 @@ export default function DiscoverDirectory() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    let alive = true;
-    async function loadGlobePreview() {
-      setGlobeLoading(true);
-      try {
-        const observations = await listPublicFieldObservations({ limit: 12 });
-        if (alive) {
-          setGlobeObservations(Array.isArray(observations) ? observations : []);
-        }
-      } catch {
-        if (alive) setGlobeObservations([]);
-      } finally {
-        if (alive) setGlobeLoading(false);
-      }
-    }
-    void loadGlobePreview();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   const sections = useMemo<Section[]>(() => {
     const ordinaryFeed = feed.filter(
@@ -349,40 +324,6 @@ export default function DiscoverDirectory() {
 
       {loading ? <ActivityIndicator accessibilityLabel="Loading discovery" /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <AppCard style={styles.previewCard}>
-        <View style={styles.previewHeader}>
-          <View>
-            <Text style={styles.sectionTitle}>Discovery globe</Text>
-            <Text style={styles.ranking}>Shared, opt-in plant findings</Text>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open public plant globe"
-            onPress={() => router.push("/field-observations")}
-            style={({ pressed }) => [
-              styles.browseButton,
-              pressed && styles.buttonPressed
-            ]}
-          >
-            <Text style={styles.browseButtonText}>Open globe</Text>
-          </Pressable>
-        </View>
-        <Text style={styles.previewMeta}>
-          Browse shared plant identifications on a zoomable globe. Personal details and
-          cannabis observations stay excluded from this shared view.
-        </Text>
-        <View style={styles.previewFrame}>
-          {globeLoading ? (
-            <ActivityIndicator accessibilityLabel="Loading globe preview" />
-          ) : null}
-          <FieldObservationGlobe
-            compact
-            observations={globeObservations}
-            onSelectObservations={() => {}}
-            onViewportChange={() => {}}
-          />
-        </View>
-      </AppCard>
       {!loading &&
         sections.map((section) => (
           <View
@@ -485,21 +426,6 @@ const styles = StyleSheet.create({
   clearText: { color: "#334155", fontWeight: "800" },
   meta: { color: "#64748B", marginTop: 10 },
   error: { color: "#B91C1C" },
-  previewCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#D1FAE5",
-    marginBottom: 8
-  },
-  previewHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8
-  },
-  previewMeta: { color: "#475569", lineHeight: 20, marginBottom: 10 },
-  previewFrame: {
-    minHeight: 260
-  },
   section: { marginVertical: 8 },
   sectionHeader: {
     alignItems: "center",
