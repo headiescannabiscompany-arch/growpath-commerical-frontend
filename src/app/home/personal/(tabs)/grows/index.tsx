@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link } from "expo-router";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
-import AppPage from "@/components/layout/AppPage";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 
@@ -179,14 +178,9 @@ export default function GrowsListScreen() {
   );
 
   return (
-    <AppPage
-      routeKey="personal_grows"
-      showBack={false}
-      longContent
-      railOverride={null}
-      header={header}
-    >
+    <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
       <View testID="screen-personal-grows" style={styles.stack}>
+        {header}
         {error ? (
           <AppCard style={styles.stateCard}>
             <Text style={styles.stateTitle}>Unable to load grows</Text>
@@ -421,11 +415,21 @@ export default function GrowsListScreen() {
           })}
         </View>
       </View>
-    </AppPage>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: "#F1F5F9"
+  },
+  pageContent: {
+    alignSelf: "center",
+    maxWidth: 1200,
+    padding: 20,
+    width: "100%"
+  },
   stack: {
     gap: 14
   },
