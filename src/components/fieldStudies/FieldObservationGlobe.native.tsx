@@ -15,6 +15,7 @@ type Props = {
   selectedObservationId?: string;
   onSelectObservations: (observationIds: string[]) => void;
   onViewportChange: (viewport: FieldObservationViewport | null) => void;
+  compact?: boolean;
 };
 
 export default function FieldObservationGlobe({ observations, compact = false }: Props) {
@@ -46,6 +47,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 280,
     padding: 24
+  },
+  compactPanel: {
+    minHeight: 220,
+    padding: 16
   },
   title: { color: "#14532D", fontSize: 22, fontWeight: "800" },
   body: {

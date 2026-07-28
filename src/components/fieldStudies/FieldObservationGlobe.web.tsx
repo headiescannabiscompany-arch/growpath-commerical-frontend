@@ -81,6 +81,7 @@ type Props = {
   selectedObservationId?: string;
   onSelectObservations: (observationIds: string[]) => void;
   onViewportChange: (viewport: FieldObservationViewport | null) => void;
+  compact?: boolean;
 };
 
 const SOURCE_ID = "growpath-field-observations";
@@ -450,6 +451,10 @@ export default function FieldObservationGlobe({
           overflow: hidden;
           width: 100%;
         }
+        .growpath-field-globe-compact {
+          height: min(34vh, 280px);
+          min-height: 220px;
+        }
         .growpath-field-globe-status,
         .growpath-field-globe-error {
           background: rgba(255, 255, 255, 0.94);
@@ -504,6 +509,10 @@ export default function FieldObservationGlobe({
           .growpath-field-globe {
             height: 58vh;
             min-height: 360px;
+          }
+          .growpath-field-globe-compact {
+            height: 240px;
+            min-height: 220px;
           }
           .growpath-field-globe-location {
             align-items: flex-start;
