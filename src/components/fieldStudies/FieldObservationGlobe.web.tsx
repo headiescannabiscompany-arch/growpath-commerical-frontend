@@ -416,7 +416,7 @@ export default function FieldObservationGlobe({
     <div className="growpath-field-globe-shell">
       <div
         aria-label={`Interactive globe with ${observations.length} shared plant observations`}
-        className="growpath-field-globe"
+        className={`growpath-field-globe ${compact ? "growpath-field-globe-compact" : ""}`.trim()}
         ref={containerRef}
         role="application"
       />

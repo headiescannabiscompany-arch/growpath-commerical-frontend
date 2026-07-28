@@ -376,6 +376,7 @@ export default function DiscoverDirectory() {
             <ActivityIndicator accessibilityLabel="Loading globe preview" />
           ) : null}
           <FieldObservationGlobe
+            compact
             observations={globeObservations}
             onSelectObservations={() => {}}
             onViewportChange={() => {}}
