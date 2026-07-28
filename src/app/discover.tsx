@@ -341,7 +341,7 @@ export default function DiscoverDirectory() {
           ) : null}
         </View>
         {activeQuery ? (
-          <Text style={styles.meta}>Results for "{activeQuery}"</Text>
+          <Text style={styles.meta}>Results for “{activeQuery}”</Text>
         ) : (
           <Text style={styles.meta}>Browse all current discovery sections below.</Text>
         )}
