@@ -4,6 +4,8 @@ import { Link } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { getDiagnosisHistory } from "@/api/diagnose";
+import { apiRequest } from "@/api/apiRequest";
+import { listForumPosts } from "@/api/communitySocial";
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
@@ -13,6 +15,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import FeedBanner from "@/components/feed/FeedBanner";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
@@ -44,6 +47,9 @@ export default function PersonalHomeTab() {
   const canCreateLog = ent.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
   const canCreateTask = ent.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const [model, setModel] = useState<HomeModel | null>(null);
+  const [growRows, setGrowRows] = useState<any[]>([]);
+  const [featuredCourse, setFeaturedCourse] = useState<any | null>(null);
+  const [popularForumPost, setPopularForumPost] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -61,6 +67,7 @@ export default function PersonalHomeTab() {
           getDiagnosisHistory()
         ]
       );
+      setGrowRows(Array.isArray(grows) ? grows : []);
       const diagnoses = Array.isArray(diagnosisResponse)
         ? diagnosisResponse
         : diagnosisResponse?.diagnoses || diagnosisResponse?.data || [];
@@ -106,6 +113,46 @@ export default function PersonalHomeTab() {
     }, [load])
   );
 
+  React.useEffect(() => {
+    let alive = true;
+    async function loadHighlights() {
+      try {
+        const [courseResult, forumResult] = await Promise.allSettled([
+          apiRequest("/api/commercial/courses/public"),
+          listForumPosts(1)
+        ]);
+        if (!alive) return;
+        const courseRows =
+          courseResult.status === "fulfilled"
+            ? Array.isArray(courseResult.value?.courses)
+              ? courseResult.value.courses
+              : Array.isArray(courseResult.value?.items)
+                ? courseResult.value.items
+                : Array.isArray(courseResult.value)
+                  ? courseResult.value
+                  : []
+            : [];
+        setFeaturedCourse(courseRows[0] || null);
+        const forumRows =
+          forumResult.status === "fulfilled" && Array.isArray(forumResult.value)
+            ? forumResult.value
+            : [];
+        const topForum = [...forumRows].sort((a, b) => {
+          const scoreA = Number(a?.likeCount || 0) + Number(a?.commentCount || 0);
+          const scoreB = Number(b?.likeCount || 0) + Number(b?.commentCount || 0);
+          return scoreB - scoreA;
+        })[0];
+        setPopularForumPost(topForum || null);
+      } catch {
+        if (!alive) return;
+      }
+    }
+    void loadHighlights();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const growId = model?.activeGrowId || "";
   const growHref = growId ? `/home/personal/grows/${growId}` : "/home/personal/grows";
 
@@ -126,6 +173,88 @@ export default function PersonalHomeTab() {
     >
       {loading ? <ActivityIndicator /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Home feed</Text>
+        <FeedBanner placement="top" routeKey="personal_home_feed" longContent />
+        <FeedBanner placement="middle" routeKey="personal_home_feed" longContent />
+        <FeedBanner placement="bottom" routeKey="personal_home_feed" longContent />
+        {featuredCourse ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>Featured course</Text>
+            <Text style={styles.cardDescription}>
+              {featuredCourse?.title || featuredCourse?.name || "Course"}
+            </Text>
+            <Text style={styles.cardDescription}>
+              {featuredCourse?.description ||
+                featuredCourse?.summary ||
+                "Public course from the catalog."}
+            </Text>
+            <ActionLink
+              href={
+                featuredCourse?.id || featuredCourse?._id || featuredCourse?.courseId
+                  ? `/courses?courseId=${encodeURIComponent(
+                      String(
+                        featuredCourse?.id ||
+                          featuredCourse?._id ||
+                          featuredCourse?.courseId
+                      )
+                    )}`
+                  : "/courses"
+              }
+              label="Open Course"
+            />
+          </AppCard>
+        ) : null}
+        {popularForumPost ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>Popular forum post</Text>
+            <Text style={styles.cardDescription}>
+              {popularForumPost?.title ||
+                popularForumPost?.text ||
+                popularForumPost?.body ||
+                "Forum post"}
+            </Text>
+            <Text style={styles.cardDescription}>
+              {popularForumPost?.body ||
+                popularForumPost?.content ||
+                "Open the discussion for details."}
+            </Text>
+            <ActionLink
+              href={`/forum/post?id=${encodeURIComponent(
+                String(popularForumPost?._id || popularForumPost?.id || "")
+              )}`}
+              label="Open Discussion"
+            />
+          </AppCard>
+        ) : null}
+      </View>
+
+      {growRows.length ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Grows</Text>
+          {growRows.slice(0, 2).map((grow) => {
+            const id = String(grow?._id || grow?.id || "");
+            if (!id) return null;
+            return (
+              <AppCard key={id}>
+                <Text style={styles.cardTitle}>{grow?.name || "Untitled Grow"}</Text>
+                <Text style={styles.cardDescription}>
+                  Status: {grow?.status || "active"}
+                  {grow?.updatedAt ? ` | Updated ${fmtDate(grow.updatedAt)}` : ""}
+                </Text>
+                <View style={styles.actions}>
+                  <ActionLink href={`/home/personal/grows/${id}`} label="Open Grow" />
+                  <ActionLink
+                    href={`/home/personal/tools?growId=${id}`}
+                    label="AI Tools"
+                  />
+                </View>
+              </AppCard>
+            );
+          })}
+        </View>
+      ) : null}
 
       {!loading && !model?.activeGrow ? (
         <View style={styles.section}>
