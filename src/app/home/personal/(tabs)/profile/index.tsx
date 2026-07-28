@@ -118,18 +118,11 @@ export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   if (currentRank < planRank.pro) {
     actions.push(["Upgrade to Pro", "/home/personal/upgrade/pro", true]);
   }
-  if (currentRank < planRank.commercial) {
+  if (currentRank < planRank.commercial || currentRank < planRank.facility) {
     actions.push([
-      "Upgrade to Commercial",
-      "/home/personal/upgrade/commercial",
+      "Upgrade to Commercial / Facility",
+      "/home/personal/upgrade",
       currentRank >= planRank.pro
-    ]);
-  }
-  if (currentRank < planRank.facility) {
-    actions.push([
-      "Apply / Upgrade to Facility",
-      "/home/personal/upgrade/facility",
-      false
     ]);
   }
   actions.push([

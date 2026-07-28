@@ -168,7 +168,7 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
 }
 
 function courseThumbnailUrl(course: Partial<CommercialCourse>) {
-  return resolveImageUri(course.thumbnailUrl || "");
+  return resolveImageUri(course.thumbnailUrl || course.bannerUrl || "");
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -815,7 +815,7 @@ export default function CommercialCoursesRoute() {
                       ) : null}
                       <ActionLink
                         href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
-                        label="Open Detail"
+                        label="Edit Course"
                       />
                     </View>
                   </View>

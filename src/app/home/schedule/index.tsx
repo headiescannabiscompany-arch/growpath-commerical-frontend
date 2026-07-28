@@ -8,6 +8,7 @@ import {
   View
 } from "react-native";
 import { Link } from "expo-router";
+import BackButton from "@/components/nav/BackButton";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -554,6 +555,9 @@ export default function HomeScheduleRoute() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <View style={styles.backRow}>
+        <BackButton fallbackHref="/home/personal" />
+      </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <Text style={styles.kicker}>GrowPath schedule</Text>
@@ -746,6 +750,7 @@ export default function HomeScheduleRoute() {
 const styles = StyleSheet.create({
   screen: { backgroundColor: "#F8FAFC", flex: 1 },
   content: { gap: 12, padding: 20, paddingBottom: 44 },
+  backRow: { marginBottom: 4 },
   headerRow: {
     alignItems: "flex-start",
     flexDirection: "row",

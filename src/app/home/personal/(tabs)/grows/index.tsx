@@ -123,6 +123,8 @@ export default function GrowsListScreen() {
         </Text>
       </View>
 
+      <PersonalFeedPlacement placement="top" routeKey="personal_grows" longContent />
+
       <View style={styles.heroGrid}>
         <View style={styles.heroCard}>
           <Text style={styles.heroKicker}>Grow overview</Text>
@@ -273,7 +275,6 @@ export default function GrowsListScreen() {
           )}
         </View>
       )}
-      <PersonalFeedPlacement placement="middle" routeKey="personal_grows" longContent />
       <PersonalFeedPlacement placement="bottom" routeKey="personal_grows" longContent />
     </ScrollView>
   );
