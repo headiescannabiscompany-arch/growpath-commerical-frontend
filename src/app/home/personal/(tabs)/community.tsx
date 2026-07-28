@@ -16,6 +16,9 @@ import {
   leaveGuild,
   listForumPosts,
   listGuilds,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
   postId,
   type Guild,
   type SocialNotification,
@@ -126,10 +129,16 @@ export default function CommunityTab() {
 
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [notifications, setNotifications] = useState<SocialNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => !item.read).length,
+    [notifications]
+  );
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -141,13 +150,17 @@ export default function CommunityTab() {
       else setLoading(true);
       setFeedback("");
       try {
-        const [postResult, guildResult] = await Promise.allSettled([
+        const [postResult, guildResult, notificationResult] = await Promise.allSettled([
           listForumPosts(),
-          listGuilds()
+          listGuilds(),
+          listNotifications()
         ]);
         if (postResult.status === "rejected") throw postResult.reason;
         setPosts(postResult.value);
         setGuilds(guildResult.status === "fulfilled" ? guildResult.value : []);
+        setNotifications(
+          notificationResult.status === "fulfilled" ? notificationResult.value : []
+        );
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load Forum/Q&A data.");
       } finally {
@@ -182,6 +195,35 @@ export default function CommunityTab() {
       setSaving(false);
     }
   }
+
+  async function markRead(notification: SocialNotification) {
+    const id = rowId(notification);
+    if (!id) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await markNotificationRead(id);
+      await load({ refresh: true });
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to update notification.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function readAll() {
+    setSaving(true);
+    setFeedback("");
+    try {
+      await markAllNotificationsRead();
+      await load({ refresh: true });
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to mark notifications read.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -212,6 +254,10 @@ export default function CommunityTab() {
           <View style={styles.pulse}>
             <Text style={styles.pulseValue}>{guilds.length}</Text>
             <Text style={styles.pulseLabel}>Groups</Text>
+          </View>
+          <View style={styles.pulse}>
+            <Text style={styles.pulseValue}>{unreadCount}</Text>
+            <Text style={styles.pulseLabel}>Unread</Text>
           </View>
         </View>
       </View>
@@ -432,7 +478,47 @@ export default function CommunityTab() {
                 </Pressable>
               </Link>
             </View>
+
+            <View style={[styles.card, styles.secondaryPanel]}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>Notifications</Text>
+                {unreadCount ? (
+                  <Pressable
+                    disabled={saving}
+                    onPress={readAll}
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark all forum notifications read"
+                  >
+                    <Text style={styles.cta}>Mark all read</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              <Text style={styles.cardText}>{unreadCount} unread notifications</Text>
+              {notifications.slice(0, 4).map((notification) => (
+                <View key={rowId(notification) || notification.title} style={styles.row}>
+                  <Text style={styles.rowTitle}>
+                    {notification.title || "Notification"}
+                  </Text>
+                  <Text style={styles.rowMeta}>{notification.message || ""}</Text>
+                  {!notification.read ? (
+                    <Pressable
+                      disabled={saving}
+                      onPress={() => markRead(notification)}
+                      style={styles.secondaryBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark ${notification.title || "notification"} read`}
+                    >
+                      <Text style={styles.secondaryText}>Mark read</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ))}
+              {!notifications.length ? (
+                <Text style={styles.cardText}>No notifications.</Text>
+              ) : null}
+            </View>
           </View>
+
           <View style={styles.discoveryCard}>
             <Text style={styles.cardTitle}>Explore beyond the Forum</Text>
             <Text style={styles.cardText}>
