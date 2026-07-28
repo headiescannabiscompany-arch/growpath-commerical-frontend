@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { getDiagnosisHistory } from "@/api/diagnose";
+import { listPublicFieldObservations } from "@/api/fieldStudies";
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
@@ -13,6 +14,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
@@ -44,6 +46,8 @@ export default function PersonalHomeTab() {
   const canCreateLog = ent.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
   const canCreateTask = ent.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const [model, setModel] = useState<HomeModel | null>(null);
+  const [globeObservations, setGlobeObservations] = useState<any[]>([]);
+  const [globeLoading, setGlobeLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -105,6 +109,27 @@ export default function PersonalHomeTab() {
       load();
     }, [load])
   );
+
+  React.useEffect(() => {
+    let alive = true;
+    async function loadGlobePreview() {
+      setGlobeLoading(true);
+      try {
+        const observations = await listPublicFieldObservations({ limit: 12 });
+        if (alive) {
+          setGlobeObservations(Array.isArray(observations) ? observations : []);
+        }
+      } catch {
+        if (alive) setGlobeObservations([]);
+      } finally {
+        if (alive) setGlobeLoading(false);
+      }
+    }
+    void loadGlobePreview();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const growId = model?.activeGrowId || "";
   const growHref = growId ? `/home/personal/grows/${growId}` : "/home/personal/grows";
@@ -408,11 +433,35 @@ export default function PersonalHomeTab() {
       ) : null}
 
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Discovery globe</Text>
+        <AppCard style={styles.globeCard}>
+          <Text style={styles.cardTitle}>Shared plant findings</Text>
+          <Text style={styles.cardDescription}>
+            Opt-in public observations appear on the globe. Personal details and cannabis
+            observations stay excluded from this shared view.
+          </Text>
+          <View style={styles.globeFrame}>
+            {globeLoading ? <ActivityIndicator /> : null}
+            <FieldObservationGlobe
+              observations={globeObservations}
+              onSelectObservations={() => {}}
+              onViewportChange={() => {}}
+            />
+          </View>
+          <View style={styles.actions}>
+            <ActionLink href="/field-observations" label="Open Globe" />
+            <ActionLink href="/home/personal/tools/species-crop-id" label="Plant ID" />
+          </View>
+        </AppCard>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Explore</Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
           <ActionLink href="/store" label="Discover Storefronts" />
           <ActionLink href="/feed" label="Commercial Feed" />
+          <ActionLink href="/field-observations" label="Discovery Globe" />
           <ActionLink href="/home/personal/discover" label="Discover" />
           <ActionLink href="/home/personal/more/analytics" label="Grow Analytics" />
           <ActionLink href="/home/personal/profile" label="Profile" />
@@ -451,6 +500,14 @@ const styles = StyleSheet.create({
   onboardingCard: {
     flexBasis: 230,
     flexGrow: 1
+  },
+  globeCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#D1FAE5"
+  },
+  globeFrame: {
+    minHeight: 280,
+    marginBottom: 8
   },
   stepNumber: {
     alignSelf: "flex-start",
