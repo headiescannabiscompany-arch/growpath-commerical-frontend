@@ -14,6 +14,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
 import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
@@ -151,6 +152,8 @@ export default function PersonalHomeTab() {
     >
       {loading ? <ActivityIndicator /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <PersonalFeaturedFeed />
 
       {!loading && !model?.activeGrow ? (
         <View style={styles.section}>
@@ -437,8 +440,8 @@ export default function PersonalHomeTab() {
         <AppCard style={styles.globeCard}>
           <Text style={styles.cardTitle}>Shared plant findings</Text>
           <Text style={styles.cardDescription}>
-            Opt-in public observations appear on the globe. Personal details and cannabis
-            observations stay excluded from this shared view.
+            Opt-in public observations appear on the globe. Personal details stay excluded
+            from this shared view.
           </Text>
           <View style={styles.globeFrame}>
             {globeLoading ? <ActivityIndicator /> : null}

@@ -13,7 +13,6 @@ import {
 
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { listPublicFieldObservations } from "@/api/fieldStudies";
-import { listPublicFieldObservations } from "@/api/fieldStudies";
 import { searchContent } from "@/api/marketplace";
 import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
@@ -183,15 +182,15 @@ export default function DiscoverDirectory() {
     return [
       {
         key: "field-observations",
-        title: "Discovery globe",
+        title: "Discovery Nature",
         ranking: "Shared, opt-in plant findings",
-        empty: "Open the public plant globe to see opted-in observations.",
+        empty: "Open Discovery Nature to see opted-in observations.",
         results: [
           {
             id: "field-observations",
-            title: "Open the public plant globe",
+            title: "Open Discovery Nature",
             summary:
-              "Browse shared plant identifications on a zoomable globe. Personal details and cannabis observations stay excluded.",
+              "Share/view opted-in plant findings. Discover species of mapped areas and find invasive species.",
             href: "/field-observations",
             meta: "Opt-in locations only"
           }
@@ -224,7 +223,7 @@ export default function DiscoverDirectory() {
             row.visibility ? String(row.visibility).replace(/_/g, " ") : ""
           ]
             .filter(Boolean)
-            .join(" Â· ")
+            .join(" · ")
         })),
         browseHref: "/videos?tab=discover"
       },
@@ -342,7 +341,7 @@ export default function DiscoverDirectory() {
           ) : null}
         </View>
         {activeQuery ? (
-          <Text style={styles.meta}>Results for â€œ{activeQuery}â€</Text>
+          <Text style={styles.meta}>Results for “{activeQuery}”</Text>
         ) : (
           <Text style={styles.meta}>Browse all current discovery sections below.</Text>
         )}
@@ -353,24 +352,24 @@ export default function DiscoverDirectory() {
       <AppCard style={styles.previewCard}>
         <View style={styles.previewHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Discovery globe</Text>
+            <Text style={styles.sectionTitle}>Discovery Nature</Text>
             <Text style={styles.ranking}>Shared, opt-in plant findings</Text>
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Open public plant globe"
+            accessibilityLabel="Open Discovery Nature globe"
             onPress={() => router.push("/field-observations")}
             style={({ pressed }) => [
               styles.browseButton,
               pressed && styles.buttonPressed
             ]}
           >
-            <Text style={styles.browseButtonText}>Open globe</Text>
+            <Text style={styles.browseButtonText}>Open Nature Globe</Text>
           </Pressable>
         </View>
         <Text style={styles.previewMeta}>
-          Browse shared plant identifications on a zoomable globe. Personal details and
-          cannabis observations stay excluded from this shared view.
+          Share/view opted-in plant findings. Discover species of mapped areas and find
+          invasive species.
         </Text>
         <View style={styles.previewFrame}>
           {globeLoading ? (

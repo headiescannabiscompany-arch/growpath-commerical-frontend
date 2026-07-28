@@ -68,6 +68,14 @@ export default function GrowsListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
+  const activeGrows = grows.filter(
+    (grow) => String(grow?.status || "") !== "harvested"
+  ).length;
+  const latestGrow = [...grows].sort((left, right) => {
+    const leftAt = new Date(left?.updatedAt || left?.createdAt || 0).getTime();
+    const rightAt = new Date(right?.updatedAt || right?.createdAt || 0).getTime();
+    return rightAt - leftAt;
+  })[0];
   const canCreateGrow =
     hasCreateCapability &&
     !loading &&
@@ -110,9 +118,64 @@ export default function GrowsListScreen() {
           Grows
         </Text>
         <Text style={styles.subtitle}>
-          Grows are the parent object for journal entries, tool runs, and tasks.
+          Keep each grow labeled, visual, and one tap away from logs, tools, tasks, and
+          field-study work.
         </Text>
       </View>
+
+      <View style={styles.heroGrid}>
+        <View style={styles.heroCard}>
+          <Text style={styles.heroKicker}>Grow overview</Text>
+          <Text style={styles.heroTitle}>
+            {loading
+              ? "Loading your grows..."
+              : `${grows.length} grow${grows.length === 1 ? "" : "s"} saved`}
+          </Text>
+          <Text style={styles.heroText}>
+            The first screen should show what is active, what needs attention, and what
+            you can do next.
+          </Text>
+          <View style={styles.heroStats}>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroStatValue}>{grows.length}</Text>
+              <Text style={styles.heroStatLabel}>Total grows</Text>
+            </View>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroStatValue}>{activeGrows}</Text>
+              <Text style={styles.heroStatLabel}>Active</Text>
+            </View>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroStatValue}>{latestGrow?.name || "None"}</Text>
+              <Text style={styles.heroStatLabel}>Latest grow</Text>
+            </View>
+          </View>
+          <View style={styles.heroActions}>
+            <Link href="/home/personal/tools" asChild>
+              <Pressable style={styles.heroAction}>
+                <Text style={styles.heroActionText}>Open AI Tools</Text>
+              </Pressable>
+            </Link>
+            <Link href="/home/personal/field-studies" asChild>
+              <Pressable style={styles.heroAction}>
+                <Text style={styles.heroActionText}>Field Studies</Text>
+              </Pressable>
+            </Link>
+            <Link href="/home/personal/tasks" asChild>
+              <Pressable style={styles.heroAction}>
+                <Text style={styles.heroActionText}>Tasks</Text>
+              </Pressable>
+            </Link>
+            {canCreateGrow ? (
+              <Link href="/home/personal/grows/new" asChild>
+                <Pressable style={styles.heroActionPrimary}>
+                  <Text style={styles.heroActionPrimaryText}>New Grow</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+          </View>
+        </View>
+      </View>
+
       <PersonalFeedPlacement placement="top" routeKey="personal_grows" longContent />
 
       {loading ? (
