@@ -138,8 +138,7 @@ export default function GrowsListScreen() {
     [grows]
   );
 
-  const canCreateGrow =
-    hasCreateCapability && (maxGrows <= 0 || grows.length < maxGrows);
+  const canCreateGrow = hasCreateCapability && (maxGrows <= 0 || grows.length < maxGrows);
   const limitTitle = maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached";
   const limitMessage =
     maxGrows === 1
