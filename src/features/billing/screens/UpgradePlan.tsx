@@ -30,7 +30,9 @@ type Plan = {
   key: PlanKey;
   title: string;
   eyebrow: string;
+  audience: string;
   description: string;
+  billingNext: string;
   bullets: string[];
 };
 
@@ -39,8 +41,12 @@ const PLANS: Plan[] = [
     key: "pro",
     title: PLAN_PRICING.pro.title,
     eyebrow: PLAN_PRICING.pro.eyebrow,
+    audience:
+      "Solo growers and personal accounts that want AI guidance, diagnosis, planning, exports, and saved run history without storefront or facility admin overhead.",
     description:
       "For an individual grower account that needs AI guidance, diagnosis, planning, exports, and the stronger personal toolset without brand or facility admin overhead.",
+    billingNext:
+      "Stripe opens with Pro selected and the chosen monthly or yearly interval. Payment is collected there.",
     bullets: [
       "AI diagnosis, planning, and review workflows",
       "Advanced calculators and grow exports",
@@ -51,8 +57,12 @@ const PLANS: Plan[] = [
     key: "commercial",
     title: PLAN_PRICING.commercial.title,
     eyebrow: PLAN_PRICING.commercial.eyebrow,
+    audience:
+      "Brands, sellers, and educators that need storefronts, products, courses, lives, orders, analytics, and discovery surfaces.",
     description:
       "For a public brand or seller that needs storefronts, products, campaigns, courses, lives, orders, analytics, and the discovery surfaces that connect the whole brand workflow.",
+    billingNext:
+      "Stripe opens with Commercial selected and the chosen monthly or yearly interval. Payment is collected there.",
     bullets: [
       "Storefront, products, and public brand pages",
       "Courses, lives, and campaign publishing",
@@ -63,8 +73,12 @@ const PLANS: Plan[] = [
     key: "facility",
     title: PLAN_PRICING.facility.title,
     eyebrow: PLAN_PRICING.facility.eyebrow,
+    audience:
+      "Multi-user operators that need rooms, tasks, SOPs, compliance, and team controls.",
     description:
       "For a multi-user operation that needs rooms, tasks, SOPs, audit evidence, compliance exports, and team coordination with stronger operational controls.",
+    billingNext:
+      "Stripe opens with Facility selected and the chosen monthly or yearly interval. Payment is collected there.",
     bullets: [
       "Rooms, tasks, and team coordination",
       "SOPs, audit evidence, and compliance exports",
@@ -226,6 +240,10 @@ export default function UpgradePlan() {
           {requestedPlan
             ? ` ${PLAN_PRICING[requestedPlan].title} is shown first from your link.`
             : ""}
+        </Text>
+        <Text style={styles.comparisonNote}>
+          Compare the cards below. Each one explains who it is for, what it unlocks,
+          and what Stripe does next when you continue.
         </Text>
         <View style={styles.segment}>
           {(["monthly", "yearly"] as const).map((item) => {
@@ -389,6 +407,10 @@ export default function UpgradePlan() {
                 <Text style={styles.selectedFlag}>Selected from link</Text>
               ) : null}
               <Text style={styles.cardTitle}>{plan.title}</Text>
+              <Text style={styles.sectionLabel}>Who it is for</Text>
+              <Text style={styles.sectionText}>{plan.audience}</Text>
+              <Text style={styles.sectionLabel}>What it unlocks</Text>
+              <Text style={styles.cardDesc}>{plan.description}</Text>
               <Text style={styles.price}>
                 {formatPlanPrice(plan.key, interval)}
                 <Text style={styles.priceMeta}>
@@ -399,7 +421,8 @@ export default function UpgradePlan() {
               <Text style={styles.billingNote}>
                 {formatPlanBillingNote(plan.key, interval)}
               </Text>
-              <Text style={styles.cardDesc}>{plan.description}</Text>
+              <Text style={styles.sectionLabel}>Billing next</Text>
+              <Text style={styles.sectionText}>{plan.billingNext}</Text>
 
               <View style={styles.bullets}>
                 {plan.bullets.map((bullet) => (
@@ -443,6 +466,12 @@ const styles = StyleSheet.create({
   header: { gap: 8 },
   title: { fontSize: 20, fontWeight: "bold" },
   subtitle: { color: "#475569", fontSize: 14, fontWeight: "700" },
+  comparisonNote: {
+    color: "#0f172a",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 18
+  },
   segment: {
     alignSelf: "flex-start",
     backgroundColor: "#e2e8f0",
@@ -493,6 +522,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   cardTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
+  sectionLabel: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  sectionText: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19 },
   price: { color: "#111827", fontSize: 30, fontWeight: "900" },
   priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
   billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },

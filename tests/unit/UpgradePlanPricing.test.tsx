@@ -30,6 +30,21 @@ describe("UpgradePlan pricing", () => {
     const screen = render(<UpgradePlan />);
 
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+    expect(
+      screen.getByText(
+        "Compare the cards below. Each one explains who it is for, what it unlocks, and what Stripe does next when you continue."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Solo growers and personal accounts that want AI guidance, diagnosis, planning, exports, and saved run history without storefront or facility admin overhead."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Stripe opens with Commercial selected and the chosen monthly or yearly interval. Payment is collected there."
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Checkout $10/month")).toBeTruthy();
     expect(screen.getByText("Checkout $50/month")).toBeTruthy();
     expect(screen.getByText("Checkout $100/month")).toBeTruthy();
