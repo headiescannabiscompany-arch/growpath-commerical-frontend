@@ -25,14 +25,14 @@ type ProfileForm = {
 };
 
 const EMPTY_FORM: ProfileForm = {
-  businessName: "",
+  businessName: "Living Soil Labs",
   slug: "",
-  accountType: "brand",
-  bio: "",
+  accountType: "soil_nutrient_brand",
+  bio: "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them.",
   websiteUrl: "",
   supportEmail: "",
   socialLinks: "",
-  forumDisplayName: "",
+  forumDisplayName: "Living Soil Labs",
   storefrontStatus: "draft"
 };
 
@@ -65,8 +65,18 @@ function splitLinks(value: string) {
     .filter(Boolean);
 }
 
+function hasStorefrontIdentity(storefront: BusinessStorefront | null) {
+  return Boolean(
+    storefront &&
+      (storefront.id ||
+        storefront.name ||
+        storefront.businessName ||
+        storefront.slug)
+  );
+}
+
 function hydrateForm(storefront: BusinessStorefront | null): ProfileForm {
-  if (!storefront) return EMPTY_FORM;
+  if (!hasStorefrontIdentity(storefront)) return EMPTY_FORM;
   const socialLinks = Array.isArray(storefront.socialLinks)
     ? storefront.socialLinks.join(", ")
     : String(storefront.socialLinks || "");
@@ -169,7 +179,9 @@ export default function CommercialProfileRoute() {
         <Text style={styles.body}>
           Commercial profile is the brand-level identity. The root profile page stays
           account-level for sign-in and privacy; storefront and public profile settings
-          define how the brand appears publicly.
+          define how the brand appears publicly. When no storefront has been saved yet,
+          GrowPath shows a Living Soil Labs starter draft so the owner can edit a real
+          placeholder instead of an empty shell.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -333,10 +345,10 @@ export default function CommercialProfileRoute() {
         <Text style={styles.cardTitle}>Billing and account controls</Text>
         <Text style={styles.body}>
           Signed in as {user?.email || "commercial user"}. Plan:{" "}
-          {entitlements?.plan || "commercial"}. Mode: {entitlements?.mode || "commercial"}
-          . Keep sign-in, email verification, plan status, privacy export, and account
-          deletion in the account profile. Brand-facing settings should not be mixed with
-          destructive account controls.
+          {entitlements?.plan || "commercial"}. Workspace mode:{" "}
+          {entitlements?.mode || "commercial"}. Keep sign-in, email verification, plan
+          status, privacy export, and account deletion in the account profile.
+          Brand-facing settings should not be mixed with destructive account controls.
         </Text>
         {storefront?.id ? (
           <Text style={styles.muted}>Brand profile record: {storefront.id}</Text>

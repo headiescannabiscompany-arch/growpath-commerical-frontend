@@ -166,4 +166,24 @@ describe("CommercialProfileRoute", () => {
       )
     );
   });
+
+  it("shows the Living Soil Labs starter draft when no storefront exists", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/storefront" && !options) {
+        return Promise.resolve({ storefront: null });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialProfileRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    expect(screen.getAllByDisplayValue("Living Soil Labs").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/starter draft/i)).toBeTruthy();
+    expect(
+      screen.getByDisplayValue(
+        "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them."
+      )
+    ).toBeTruthy();
+  });
 });
