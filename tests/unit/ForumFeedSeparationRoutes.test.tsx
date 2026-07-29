@@ -425,6 +425,11 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() => expect(screen.getByText("Community help")).toBeTruthy());
     expect(screen.queryByTestId("link-/forum/post?id=thread-community-help")).toBeNull();
     expect(screen.getByText("Start a Discussion")).toBeTruthy();
+    expect(screen.getByText("Forum videos")).toBeTruthy();
+    expect(screen.getByText("Forum lives")).toBeTruthy();
+    expect(screen.getByText("Open Video Library")).toBeTruthy();
+    expect(screen.getByText("Browse Videos")).toBeTruthy();
+    expect(screen.getByText("Open Lives")).toBeTruthy();
     expect(screen.getByText("Latest discussions")).toBeTruthy();
     expect(screen.getByText("GrowPath Gardener")).toBeTruthy();
     expect(screen.getByText("Living Soil")).toBeTruthy();

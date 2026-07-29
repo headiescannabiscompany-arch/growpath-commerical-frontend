@@ -342,6 +342,25 @@ export default function CommunityTab() {
         </View>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Forum lives</Text>
+        <Text style={styles.cardText}>
+          Live sessions stay campaign-linked and replay-friendly. Browse them here
+          instead of treating Lives like a generic join list.
+        </Text>
+        <View style={styles.discoveryActions}>
+          <Link href="/lives" asChild>
+            <Pressable
+              style={styles.secondaryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Open lives browser"
+            >
+              <Text style={styles.secondaryText}>Open Lives</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
+
       {!canView ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Forum unavailable</Text>
