@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import { createCheckoutSession, getSubscriptionSetupStatus } from "../../src/api/subscription";
+import {
+  createCheckoutSession,
+  getSubscriptionSetupStatus
+} from "../../src/api/subscription";
 import UpgradePlan from "../../src/features/billing/screens/UpgradePlan";
 import { openExternalUrl } from "../../src/utils/openExternalUrl";
 
@@ -32,7 +35,9 @@ describe("UpgradePlan pricing", () => {
     expect(screen.getByText("Checkout $100/month")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Yearly billing"));
-    expect(screen.getByText("Billed once yearly. Equivalent to $41.67/month.")).toBeTruthy();
+    expect(
+      screen.getByText("Billed once yearly. Equivalent to $41.67/month.")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Choose Commercial yearly checkout"));
 
@@ -54,7 +59,12 @@ describe("UpgradePlan pricing", () => {
       await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
       fireEvent.press(screen.getByLabelText("Gift subscription mode"));
-      fireEvent.changeText(screen.getByLabelText("Gift recipient email"), "friend@example.com");
+      fireEvent.changeText(
+        screen.getByLabelText("Gift recipient email"),
+        "friend@example.com"
+      );
+      fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Friend Name");
+      fireEvent.changeText(screen.getByLabelText("Gift message"), "Happy growing!");
       fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
 
       await waitFor(() =>
@@ -63,12 +73,16 @@ describe("UpgradePlan pricing", () => {
           interval: "monthly",
           giftMode: true,
           giftRecipientEmail: "friend@example.com",
+          giftRecipientName: "Friend Name",
+          giftMessage: "Happy growing!",
           giftTerm: "monthly",
           successUrl: "https://app.example/home/personal/upgrade?gift=success",
           cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
         })
       );
-      expect(openExternalUrl).toHaveBeenCalledWith("https://checkout.example.com/session");
+      expect(openExternalUrl).toHaveBeenCalledWith(
+        "https://checkout.example.com/session"
+      );
     } finally {
       global.window = previousWindow;
     }

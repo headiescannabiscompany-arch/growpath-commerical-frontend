@@ -40,22 +40,37 @@ const PLANS: Plan[] = [
     key: "pro",
     title: PLAN_PRICING.pro.title,
     eyebrow: PLAN_PRICING.pro.eyebrow,
-    description: "Advanced personal grow tools, AI workflows, and exports.",
-    bullets: ["AI diagnosis and planning", "Advanced calculators", "Grow exports"]
+    description:
+      "For an individual grower account that needs AI guidance, diagnosis, planning, exports, and the stronger personal toolset without brand or facility admin overhead.",
+    bullets: [
+      "AI diagnosis, planning, and review workflows",
+      "Advanced calculators and grow exports",
+      "Personal account tools and saved run history"
+    ]
   },
   {
     key: "commercial",
     title: PLAN_PRICING.commercial.title,
     eyebrow: PLAN_PRICING.commercial.eyebrow,
-    description: "Storefront, products, campaigns, and brand operations.",
-    bullets: ["Storefront and products", "Campaign tools", "Commercial inventory"]
+    description:
+      "For a public brand or seller that needs storefronts, products, campaigns, courses, lives, orders, analytics, and the discovery surfaces that connect the whole brand workflow.",
+    bullets: [
+      "Storefront, products, and public brand pages",
+      "Courses, lives, and campaign publishing",
+      "Orders, analytics, and discovery reach"
+    ]
   },
   {
     key: "facility",
     title: PLAN_PRICING.facility.title,
     eyebrow: PLAN_PRICING.facility.eyebrow,
-    description: "Facility compliance, SOPs, team workflows, audit evidence, and AI.",
-    bullets: ["Compliance export packet", "Rooms, plants, SOPs", "Facility AI command"]
+    description:
+      "For a multi-user operation that needs rooms, tasks, SOPs, audit evidence, compliance exports, and team coordination with stronger operational controls.",
+    bullets: [
+      "Rooms, tasks, and team coordination",
+      "SOPs, audit evidence, and compliance exports",
+      "Multi-user operational workflows"
+    ]
   }
 ];
 

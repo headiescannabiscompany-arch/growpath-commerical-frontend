@@ -11,7 +11,10 @@ import {
 import { useLocalSearchParams } from "expo-router";
 
 import AppCard from "../../../components/layout/AppCard";
-import { createCheckoutSession, getSubscriptionSetupStatus } from "../../../api/subscription";
+import {
+  createCheckoutSession,
+  getSubscriptionSetupStatus
+} from "../../../api/subscription";
 import {
   formatPlanBillingNote,
   formatPlanPrice,
@@ -37,24 +40,36 @@ const PLANS: Plan[] = [
     title: PLAN_PRICING.pro.title,
     eyebrow: PLAN_PRICING.pro.eyebrow,
     description:
-      "Personal AI, diagnosis, planning, exports, and advanced grow tools for one grower account.",
-    bullets: ["AI diagnosis and planning", "Advanced calculators", "Grow exports"]
+      "For an individual grower account that needs AI guidance, diagnosis, planning, exports, and the stronger personal toolset without brand or facility admin overhead.",
+    bullets: [
+      "AI diagnosis, planning, and review workflows",
+      "Advanced calculators and grow exports",
+      "Personal account tools and saved run history"
+    ]
   },
   {
     key: "commercial",
     title: PLAN_PRICING.commercial.title,
     eyebrow: PLAN_PRICING.commercial.eyebrow,
     description:
-      "Brand storefronts, products, campaigns, courses, lives, orders, and analytics for a public brand.",
-    bullets: ["Storefront and products", "Courses and lives", "Campaigns and analytics"]
+      "For a public brand or seller that needs storefronts, products, campaigns, courses, lives, orders, analytics, and the discovery surfaces that connect the whole brand workflow.",
+    bullets: [
+      "Storefront, products, and public brand pages",
+      "Courses, lives, and campaign publishing",
+      "Orders, analytics, and discovery reach"
+    ]
   },
   {
     key: "facility",
     title: PLAN_PRICING.facility.title,
     eyebrow: PLAN_PRICING.facility.eyebrow,
     description:
-      "Multi-user facility operations with rooms, tasks, SOPs, audit evidence, compliance export, and team workflows.",
-    bullets: ["Team and room workflows", "SOPs and audit evidence", "Compliance exports"]
+      "For a multi-user operation that needs rooms, tasks, SOPs, audit evidence, compliance exports, and team coordination with stronger operational controls.",
+    bullets: [
+      "Rooms, tasks, and team coordination",
+      "SOPs, audit evidence, and compliance exports",
+      "Multi-user operational workflows"
+    ]
   }
 ];
 
@@ -80,10 +95,16 @@ function checkoutUrlFromResponse(response: any) {
 
 export default function UpgradePlan() {
   const { width } = useWindowDimensions();
-  const searchParams = useLocalSearchParams<{ plan?: string | string[]; gift?: string | string[] }>();
+  const searchParams = useLocalSearchParams<{
+    plan?: string | string[];
+    gift?: string | string[];
+  }>();
   const isWide = width >= 980;
 
-  const requestedPlan = useMemo(() => normalizePlanKey(searchParams.plan), [searchParams.plan]);
+  const requestedPlan = useMemo(
+    () => normalizePlanKey(searchParams.plan),
+    [searchParams.plan]
+  );
   const giftResult = useMemo(() => {
     const value = searchParams.gift;
     return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
@@ -101,6 +122,8 @@ export default function UpgradePlan() {
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
+  const [giftRecipientName, setGiftRecipientName] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
   const handledGiftResultRef = useRef("");
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
@@ -132,7 +155,7 @@ export default function UpgradePlan() {
 
     if (giftResult === "success") {
       setFeedback(
-        "Gift checkout completed. The recipient email was included in the checkout request."
+        "Gift checkout completed. The recipient details were included in the checkout request."
       );
       return;
     }
@@ -143,6 +166,8 @@ export default function UpgradePlan() {
   async function startCheckout(plan: PlanKey) {
     const selected = PLANS.find((item) => item.key === plan);
     const recipient = giftRecipientValue;
+    const recipientName = giftRecipientName.trim();
+    const note = giftMessage.trim();
 
     if (giftMode && !giftRecipientValid) {
       setFeedback("Enter a valid recipient email before starting a gift checkout.");
@@ -161,9 +186,15 @@ export default function UpgradePlan() {
           ? {
               giftMode: true,
               giftRecipientEmail: recipient,
+              ...(recipientName ? { giftRecipientName: recipientName } : {}),
+              ...(note ? { giftMessage: note } : {}),
               giftTerm: interval,
-              successUrl: origin ? `${origin}/home/personal/upgrade?gift=success` : undefined,
-              cancelUrl: origin ? `${origin}/home/personal/upgrade?gift=canceled` : undefined
+              successUrl: origin
+                ? `${origin}/home/personal/upgrade?gift=success`
+                : undefined,
+              cancelUrl: origin
+                ? `${origin}/home/personal/upgrade?gift=canceled`
+                : undefined
             }
           : {})
       });
@@ -190,8 +221,11 @@ export default function UpgradePlan() {
       <View style={styles.header}>
         <Text style={styles.title}>Upgrade Account</Text>
         <Text style={styles.subtitle}>
-          Pick a plan, choose monthly or yearly billing, and open Stripe when you are ready.
-          {requestedPlan ? ` ${PLAN_PRICING[requestedPlan].title} is shown first from your link.` : ""}
+          Pick a plan, choose monthly or yearly billing, and open Stripe when you are
+          ready.
+          {requestedPlan
+            ? ` ${PLAN_PRICING[requestedPlan].title} is shown first from your link.`
+            : ""}
         </Text>
         <View style={styles.segment}>
           {(["monthly", "yearly"] as const).map((item) => {
@@ -204,7 +238,9 @@ export default function UpgradePlan() {
                   setFeedback("");
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={item === "monthly" ? "Monthly billing" : "Yearly billing"}
+                accessibilityLabel={
+                  item === "monthly" ? "Monthly billing" : "Yearly billing"
+                }
                 style={[styles.segmentButton, active && styles.segmentButtonActive]}
               >
                 <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
@@ -244,14 +280,17 @@ export default function UpgradePlan() {
         <Text style={styles.eyebrow}>Gift subscription</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
-          Turn this into a gift checkout, enter the recipient email, and use the monthly or yearly
-          selector above for the gift term.
+          Turn this into a gift checkout, enter the recipient email, and use the monthly
+          or yearly selector above for the gift term. Optional name and message fields are
+          passed into the checkout payload so the backend can build the handoff flow.
         </Text>
         <View style={styles.segment}>
-          {([
-            { key: "self", label: "Buy for me" },
-            { key: "gift", label: "Gift someone else" }
-          ] as const).map((item) => {
+          {(
+            [
+              { key: "self", label: "Buy for me" },
+              { key: "gift", label: "Gift someone else" }
+            ] as const
+          ).map((item) => {
             const active = (item.key === "gift") === giftMode;
             return (
               <Pressable
@@ -261,7 +300,9 @@ export default function UpgradePlan() {
                   setFeedback("");
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={item.key === "gift" ? "Gift subscription mode" : "Buy for me mode"}
+                accessibilityLabel={
+                  item.key === "gift" ? "Gift subscription mode" : "Buy for me mode"
+                }
                 style={[styles.segmentButton, active && styles.segmentButtonActive]}
               >
                 <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
@@ -286,9 +327,34 @@ export default function UpgradePlan() {
                 setFeedback("");
               }}
             />
+            <TextInput
+              accessibilityLabel="Gift recipient name"
+              autoCapitalize="words"
+              autoCorrect={false}
+              placeholder="Recipient name (optional)"
+              style={styles.input}
+              value={giftRecipientName}
+              onChangeText={(value) => {
+                setGiftRecipientName(value);
+                setFeedback("");
+              }}
+            />
+            <TextInput
+              accessibilityLabel="Gift message"
+              autoCapitalize="sentences"
+              autoCorrect
+              multiline
+              placeholder="Short gift note (optional)"
+              style={[styles.input, styles.textArea]}
+              value={giftMessage}
+              onChangeText={(value) => {
+                setGiftMessage(value);
+                setFeedback("");
+              }}
+            />
             <Text style={styles.helper}>
-              The backend receives the recipient email with the checkout request. After payment,
-              the recipient can claim the subscription from the gift handoff link.
+              The backend receives the recipient email, optional name, note, and gift term
+              with the checkout request so it can build the handoff flow.
             </Text>
           </>
         ) : (
@@ -299,7 +365,11 @@ export default function UpgradePlan() {
       </AppCard>
 
       {feedback ? (
-        <View style={styles.feedback} accessibilityRole="alert" accessibilityLiveRegion="polite">
+        <View
+          style={styles.feedback}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
           <Text style={styles.feedbackText}>{feedback}</Text>
         </View>
       ) : null}
@@ -315,7 +385,9 @@ export default function UpgradePlan() {
               style={[styles.planCard, featured && styles.planCardFeatured]}
             >
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
-              {featured ? <Text style={styles.selectedFlag}>Selected from link</Text> : null}
+              {featured ? (
+                <Text style={styles.selectedFlag}>Selected from link</Text>
+              ) : null}
               <Text style={styles.cardTitle}>{plan.title}</Text>
               <Text style={styles.price}>
                 {formatPlanPrice(plan.key, interval)}
@@ -324,7 +396,9 @@ export default function UpgradePlan() {
                   / {interval === "monthly" ? "month" : "year"}
                 </Text>
               </Text>
-              <Text style={styles.billingNote}>{formatPlanBillingNote(plan.key, interval)}</Text>
+              <Text style={styles.billingNote}>
+                {formatPlanBillingNote(plan.key, interval)}
+              </Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
 
               <View style={styles.bullets}>
@@ -432,6 +506,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     paddingHorizontal: 12,
     paddingVertical: 10
+  },
+  textArea: {
+    minHeight: 92,
+    textAlignVertical: "top"
   },
   bullets: { gap: 6 },
   bullet: { color: "#334155", fontSize: 13, fontWeight: "800" },
