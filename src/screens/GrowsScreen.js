@@ -103,8 +103,9 @@ function ActionLink({ href, label, primary = false }) {
 }
 
 function SummaryMetric({ label, value, tone }) {
+  var cardStyle = StyleSheet.flatten([styles.metricCard, tone]);
   return (
-    <View style={[styles.metricCard, tone]}>
+    <View style={cardStyle}>
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
@@ -276,7 +277,7 @@ export default function GrowsScreen() {
               {latestGrow ? <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text> : null}
             </View>
             {latestGrow ? (
-              <View style={[styles.statusChip, statusTone(growStatus(latestGrow))]}>
+              <View style={StyleSheet.flatten([styles.statusChip, statusTone(growStatus(latestGrow))])}>
                 <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
                 <Text style={styles.statusChipLabel}>{growPhotoCount(latestGrow)} photos</Text>
               </View>
@@ -318,7 +319,9 @@ export default function GrowsScreen() {
         {loading && !sortedGrows.length ? (
           <AppCard style={styles.stateCard}>
             <ActivityIndicator />
-            <Text style={[styles.stateText, { marginTop: 10 }]}>Loading grow dashboard...</Text>
+            <Text style={StyleSheet.flatten([styles.stateText, { marginTop: 10 }])}>
+              Loading grow dashboard...
+            </Text>
           </AppCard>
         ) : null}
 
@@ -364,7 +367,7 @@ export default function GrowsScreen() {
                     <Text style={styles.growIdentity}>{growIdentity(grow)}</Text>
                     <Text style={styles.growMeta}>{growSummary(grow)}</Text>
                   </View>
-                  <View style={[styles.statusChip, statusTone(status)]}>
+                  <View style={StyleSheet.flatten([styles.statusChip, statusTone(status)])}>
                     <Text style={styles.statusChipValue}>{status}</Text>
                     <Text style={styles.statusChipLabel}>{growPhotoCount(grow)} photos</Text>
                   </View>
