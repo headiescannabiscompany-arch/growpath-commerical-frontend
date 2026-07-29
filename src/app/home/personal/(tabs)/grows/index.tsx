@@ -13,6 +13,7 @@ import {
 
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
+import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 
@@ -247,6 +248,8 @@ export default function PersonalGrowsRoute() {
           </View>
           {!canCreateGrow ? <Text style={styles.limitText}>{limitMessage}</Text> : null}
         </AppCard>
+
+        <PersonalFeaturedFeed />
 
         {error ? (
           <AppCard style={styles.stateCard}>
