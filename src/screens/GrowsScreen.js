@@ -13,7 +13,6 @@ import {
 import { Link } from "expo-router";
 
 import { listPersonalGrows } from "@/api/grows";
-import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import AppCard from "@/components/layout/AppCard";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
@@ -216,8 +215,6 @@ export default function GrowsScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.stack}>
-        <PersonalFeedPlacement placement="top" routeKey="personal_grows" />
-
         <AppCard style={styles.heroCard}>
           <Text style={styles.kicker}>Personal grow workspace</Text>
           <Text style={styles.title}>Grows</Text>
