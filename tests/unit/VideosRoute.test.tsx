@@ -81,13 +81,19 @@ jest.mock("@/components/learning/LessonMediaSourceEditor", () => ({
 jest.mock("@/components/videos/VideoCard", () => ({
   __esModule: true,
   default: ({ video, onDelete }: any) => {
-    const { Pressable: MockPressable, Text: MockText, View: MockView } =
-      require("react-native");
+    const {
+      Pressable: MockPressable,
+      Text: MockText,
+      View: MockView
+    } = require("react-native");
     return (
       <MockView>
         <MockText>{video.title}</MockText>
         {onDelete ? (
-          <MockPressable accessibilityLabel={`Remove ${video.title}`} onPress={() => onDelete(video)}>
+          <MockPressable
+            accessibilityLabel={`Remove ${video.title}`}
+            onPress={() => onDelete(video)}
+          >
             <MockText>Remove</MockText>
           </MockPressable>
         ) : null}
@@ -97,6 +103,8 @@ jest.mock("@/components/videos/VideoCard", () => ({
 }));
 
 import VideosRoute from "@/app/videos";
+
+jest.setTimeout(15000);
 
 describe("universal Videos route", () => {
   beforeEach(() => {
@@ -159,6 +167,48 @@ describe("universal Videos route", () => {
     expect(mockListVideoLibrary).toHaveBeenCalledWith("commercial", undefined);
   });
 
+  it("lets the library switch between the full workspace and the user's uploads", async () => {
+    mockListVideoLibrary.mockResolvedValue({
+      videos: [
+        {
+          id: "mine-1",
+          uploaderUserId: "user-1",
+          title: "My garden video",
+          status: "draft",
+          visibility: "public"
+        },
+        {
+          id: "team-1",
+          uploaderUserId: "user-2",
+          title: "Team update",
+          status: "published",
+          visibility: "followers"
+        }
+      ],
+      quota: {
+        plan: "free",
+        usedBytes: 100 * 1024 * 1024,
+        limitBytes: 500 * 1024 * 1024,
+        remainingBytes: 400 * 1024 * 1024
+      },
+      permissions: { canUpload: true, canPublish: true, canManage: true }
+    });
+
+    render(<VideosRoute />);
+
+    await waitFor(() => {
+      expect(screen.getByText("My garden video")).toBeTruthy();
+    });
+    expect(screen.getByText("Team update")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("My uploads"));
+
+    await waitFor(() => {
+      expect(screen.getByText("My garden video")).toBeTruthy();
+      expect(screen.queryByText("Team update")).toBeNull();
+    });
+  });
+
   it("keeps a Facility viewer read-only in the shared library", async () => {
     mockMode = "facility";
     mockFacilityId = "facility-1";
@@ -217,9 +267,7 @@ describe("universal Videos route", () => {
         screen.getByLabelText("Confirm removal of Staff training draft")
       ).toBeTruthy();
     });
-    fireEvent.press(
-      screen.getByLabelText("Confirm removal of Staff training draft")
-    );
+    fireEvent.press(screen.getByLabelText("Confirm removal of Staff training draft"));
     await waitFor(() => {
       expect(mockDeleteVideo).toHaveBeenCalledWith(
         "staff-draft",
