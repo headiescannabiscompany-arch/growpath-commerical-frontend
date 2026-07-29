@@ -6,7 +6,7 @@ import Offers from "@/app/offers";
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 
 const mockRetryMe = jest.fn();
-const mockSearchParams: { subscription?: string } = {};
+const mockSearchParams: { subscription?: string; gift?: string } = {};
 let mockTrialUsed = true;
 let mockTrialPlansUsed = ["pro", "commercial", "facility"];
 
@@ -54,6 +54,7 @@ describe("Offers billing safety", () => {
     mockTrialUsed = true;
     mockTrialPlansUsed = ["pro", "commercial", "facility"];
     delete mockSearchParams.subscription;
+    delete mockSearchParams.gift;
     mockRetryMe.mockReset();
     (createCheckoutSession as jest.Mock).mockReset();
     (getSubscriptionSetupStatus as jest.Mock).mockReset();
@@ -141,5 +142,41 @@ describe("Offers billing safety", () => {
         interval: "monthly"
       })
     );
+  });
+
+  it("supports gift checkout with recipient details and gift return URLs", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example", href: "" } } as any;
+
+    try {
+      const screen = render(<Offers />);
+
+      await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+
+      fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+      fireEvent.changeText(
+        screen.getByLabelText("Gift recipient email"),
+        "Friend@Example.com"
+      );
+      fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Friend Name");
+      fireEvent.changeText(screen.getByLabelText("Gift message"), "Happy growing!");
+      fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+
+      await waitFor(() =>
+        expect(createCheckoutSession).toHaveBeenCalledWith({
+          plan: "pro",
+          interval: "monthly",
+          giftMode: true,
+          giftRecipientEmail: "friend@example.com",
+          giftRecipientName: "Friend Name",
+          giftMessage: "Happy growing!",
+          giftTerm: "monthly",
+          successUrl: "https://app.example/offers?gift=success",
+          cancelUrl: "https://app.example/offers?gift=canceled"
+        })
+      );
+    } finally {
+      global.window = previousWindow;
+    }
   });
 });
