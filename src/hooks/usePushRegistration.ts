@@ -21,6 +21,14 @@ type PushAuth = {
   isHydrating: boolean;
 };
 
+type PushRegistrationDeps = {
+  requestNotificationPermission?: typeof requestNotificationPermission;
+  setupAndroidChannel?: typeof setupAndroidChannel;
+  savePushToken?: typeof savePushToken;
+  getExpoPushTokenAsync?: (args: { projectId: string }) => Promise<{ data?: string }>;
+  projectId?: string;
+};
+
 function expoProjectId() {
   const fromConfig =
     (Constants.expoConfig as any)?.extra?.eas?.projectId ||
@@ -28,6 +36,44 @@ function expoProjectId() {
     (Constants.expoConfig as any)?.projectId ||
     "";
   return String(fromConfig || "").trim();
+}
+
+export async function registerPushTokenForCurrentSession(
+  { userId, token, isHydrating }: PushAuth,
+  deps: PushRegistrationDeps = {}
+) {
+  if (isHydrating || !userId || !token || Platform.OS === "web") {
+    return { registered: false as const };
+  }
+
+  try {
+    const requestPermission =
+      deps.requestNotificationPermission || requestNotificationPermission;
+    const setupChannel = deps.setupAndroidChannel || setupAndroidChannel;
+    const saveToken = deps.savePushToken || savePushToken;
+    const getExpoPushTokenAsync =
+      deps.getExpoPushTokenAsync ||
+      Notifications?.getExpoPushTokenAsync?.bind(Notifications) ||
+      null;
+
+    const granted = await requestPermission();
+    if (!granted || !getExpoPushTokenAsync) return { registered: false as const };
+
+    await setupChannel();
+
+    const projectId = deps.projectId || expoProjectId();
+    if (!projectId) return { registered: false as const };
+
+    const result = await getExpoPushTokenAsync({ projectId });
+    const pushToken = String(result?.data || "").trim();
+    if (!pushToken) return { registered: false as const };
+
+    await saveToken(pushToken);
+    return { registered: true as const, pushToken };
+  } catch (error) {
+    console.error("Push registration failed:", error);
+    return { registered: false as const };
+  }
 }
 
 export function usePushRegistration({ userId, token, isHydrating }: PushAuth) {
@@ -42,23 +88,18 @@ export function usePushRegistration({ userId, token, isHydrating }: PushAuth) {
     let cancelled = false;
 
     (async () => {
-      try {
-        const granted = await requestNotificationPermission();
-        if (!granted || cancelled || !Notifications) return;
-
-        await setupAndroidChannel();
-
-        const projectId = expoProjectId();
-        if (!projectId) return;
-
-        const result = await Notifications.getExpoPushTokenAsync({ projectId });
-        const pushToken = String(result?.data || "").trim();
-        if (!pushToken) return;
-
-        await savePushToken(pushToken);
+      const result = await registerPushTokenForCurrentSession(
+        { userId, token, isHydrating },
+        {
+          requestNotificationPermission,
+          setupAndroidChannel,
+          savePushToken,
+          getExpoPushTokenAsync: Notifications?.getExpoPushTokenAsync?.bind(Notifications) || undefined,
+          projectId: expoProjectId()
+        }
+      );
+      if (result.registered && !cancelled) {
         if (!cancelled) lastTokenSent.current = key;
-      } catch (error) {
-        console.error("Push registration failed:", error);
       }
     })();
 
