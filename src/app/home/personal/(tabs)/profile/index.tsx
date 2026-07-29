@@ -21,6 +21,11 @@ import {
   updateNotificationPreferences,
   updateProfile
 } from "@/api/users";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  NOTIFICATION_PREFERENCE_OPTIONS,
+  NotificationPreferenceState
+} from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
@@ -125,70 +130,6 @@ const styles = StyleSheet.create({
 });
 
 type PlanAction = readonly [label: string, href: string, primary: boolean];
-
-type NotificationPreferenceState = {
-  pushEnabled: boolean;
-  taskReminders: boolean;
-  forumReplies: boolean;
-  forumMentions: boolean;
-  videoActivity: boolean;
-  courseAndLiveUpdates: boolean;
-  commerceUpdates: boolean;
-  facilityAlerts: boolean;
-};
-
-const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferenceState = {
-  pushEnabled: true,
-  taskReminders: true,
-  forumReplies: true,
-  forumMentions: true,
-  videoActivity: true,
-  courseAndLiveUpdates: true,
-  commerceUpdates: true,
-  facilityAlerts: true
-};
-
-const NOTIFICATION_PREFERENCE_OPTIONS: Array<{
-  key: keyof NotificationPreferenceState;
-  title: string;
-  description: string;
-}> = [
-  {
-    key: "pushEnabled",
-    title: "Device push",
-    description: "Allow GrowPath to send opted-in notifications to this device."
-  },
-  {
-    key: "taskReminders",
-    title: "Task reminders",
-    description: "Due dates, follow-ups, and reminder-based workflow items."
-  },
-  {
-    key: "forumReplies",
-    title: "Forum replies",
-    description: "Replies, @mentions, and discussion follow-ups in Forum/Q&A."
-  },
-  {
-    key: "videoActivity",
-    title: "Video activity",
-    description: "Comments, follows, and library activity for uploaded videos."
-  },
-  {
-    key: "courseAndLiveUpdates",
-    title: "Courses and lives",
-    description: "Course progress, live reminders, and replay availability."
-  },
-  {
-    key: "commerceUpdates",
-    title: "Commerce updates",
-    description: "Feed campaigns, storefronts, orders, and related commercial alerts."
-  },
-  {
-    key: "facilityAlerts",
-    title: "Facility alerts",
-    description: "Facility-specific room, task, SOP, and compliance notifications."
-  }
-];
 
 export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   const planRank: Record<string, number> = {

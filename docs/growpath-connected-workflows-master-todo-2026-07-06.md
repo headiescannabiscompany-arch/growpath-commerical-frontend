@@ -1103,7 +1103,7 @@ Completed and pushed:
 686. Discover should keep Lives framed as campaigns and surfaced opportunities, not as a plain joinable live-session list. Add a separate Lives browsing mode like the Forum video view when live sessions need to be explored, but keep the top-level Discover presentation focused on featured campaigns and discovery content.
    - In progress in repo: Discover now points live browsing to `/lives`, and the public Lives screen now renders campaign-linked opportunities, upcoming sessions, live-now, and replay sections instead of a plain join list.
 687. Replace the misinterpreted forum tasks/notifications surface with a real notification system in Profile. Define the notification types first, then support device delivery when enabled, clear per-type on/off toggles, and visible read/unread and disabled state across the app.
-   - In progress in repo: Profile notification preferences and push-token registration are wired; the remaining pass is validating inbox/device delivery and any backend propagation needed for live notifications.
+   - In progress in repo: Profile notification preferences and push-token registration are wired, and the inbox now uses the same preference taxonomy with visible delivery status. The remaining pass is validating live inbox/device delivery and any backend propagation needed for push.
 688. Recheck the live deployment against the current forum, video, lives, and notification decisions before any further cleanup so we do not keep editing against stale production behavior. If the live branch is outdated, rebaseline the affected screens and update the todo list before changing anything else.
 ## Post-Commercial Follow-up
 

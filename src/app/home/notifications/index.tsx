@@ -10,7 +10,15 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
+import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  NOTIFICATION_PREFERENCE_OPTIONS,
+  NOTIFICATION_PREFERENCE_TITLES,
+  NotificationPreferenceState,
+  notificationPreferenceKeyForSourceType
+} from "@/notifications/notificationPreferences";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -34,7 +42,10 @@ type NotificationRow = {
   createdAt?: string;
 };
 
-type FilterKey = "unread" | "all" | "tasks" | "lives";
+type FilterKey =
+  | "unread"
+  | "all"
+  | Exclude<keyof NotificationPreferenceState, "pushEnabled">;
 
 function rows(response: any): NotificationRow[] {
   if (Array.isArray(response)) return response;
@@ -196,10 +207,26 @@ function notificationScheduleMetadata(row: NotificationRow) {
   };
 }
 
-function statusText(row: NotificationRow) {
+function statusText(
+  row: NotificationRow,
+  prefs: NotificationPreferenceState = DEFAULT_NOTIFICATION_PREFERENCES
+) {
+  const preferenceKey = notificationPreferenceKeyForSourceType(row.sourceType);
+  const preferenceTitle = preferenceKey
+    ? NOTIFICATION_PREFERENCE_TITLES[preferenceKey] || preferenceKey
+    : "Other";
+  const pushLabel = prefs.pushEnabled
+    ? preferenceKey && prefs[preferenceKey]
+      ? "push eligible"
+      : preferenceKey
+        ? "muted in Profile"
+        : "in-app only"
+    : "device push off";
   const parts = [
     row.workspaceType && `Workspace ${row.workspaceType}`,
     row.sourceType && `Source ${row.sourceType}`,
+    `Category ${preferenceTitle}`,
+    `Delivery ${pushLabel}`,
     row.channel && `Channel ${row.channel}`,
     row.sentAt && `Sent ${String(row.sentAt).slice(0, 10)}`,
     row.scheduledFor && `Scheduled ${String(row.scheduledFor).slice(0, 10)}`
@@ -211,7 +238,19 @@ function isUnread(row: NotificationRow) {
   return !row.read && !row.readAt && row.status !== "read";
 }
 
+function preferenceState(raw: any): NotificationPreferenceState {
+  return {
+    ...DEFAULT_NOTIFICATION_PREFERENCES,
+    ...(raw || {})
+  };
+}
+
+const NOTIFICATION_INBOX_FILTERS = NOTIFICATION_PREFERENCE_OPTIONS.filter(
+  (option) => option.key !== "pushEnabled"
+);
+
 export default function NotificationCenterRoute() {
+  const auth = useAuth();
   const params = useLocalSearchParams<{ notificationId?: string | string[] }>();
   const focusedNotificationId = Array.isArray(params.notificationId)
     ? params.notificationId[0]
@@ -222,6 +261,17 @@ export default function NotificationCenterRoute() {
   const [filter, setFilter] = useState<FilterKey>("unread");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const notificationPrefs = useMemo(
+    () => preferenceState(auth.user?.notificationPreferences),
+    [auth.user?.notificationPreferences]
+  );
+  const enabledCategories = useMemo(
+    () =>
+      NOTIFICATION_INBOX_FILTERS.filter((option) => notificationPrefs[option.key]).map(
+        (option) => option.title
+      ),
+    [notificationPrefs]
+  );
 
   async function loadNotifications() {
     setLoading(true);
@@ -266,19 +316,11 @@ export default function NotificationCenterRoute() {
 
   const filtered = useMemo(() => {
     if (filter === "unread") return notifications.filter(isUnread);
-    if (filter === "tasks") {
-      return notifications.filter((row) =>
-        ["task", "alert", "course_assignment", "lesson"].includes(
-          String(row.sourceType || "")
-        )
-      );
-    }
-    if (filter === "lives") {
-      return notifications.filter((row) =>
-        ["live", "replay", "live_event"].includes(String(row.sourceType || ""))
-      );
-    }
-    return notifications;
+    if (filter === "all") return notifications;
+    return notifications.filter(
+      (row) =>
+        notificationPreferenceKeyForSourceType(String(row.sourceType || "")) === filter
+    );
   }, [filter, notifications]);
 
   async function markRead(row: NotificationRow) {
@@ -373,33 +415,63 @@ export default function NotificationCenterRoute() {
     }
   }
 
+  const filterOptions: Array<{ key: FilterKey; title: string }> = [
+    { key: "unread", title: "Unread" },
+    { key: "all", title: "All" },
+    ...NOTIFICATION_INBOX_FILTERS.map((option) => ({
+      key: option.key as FilterKey,
+      title: option.title
+    }))
+  ];
+  const pushStatusText = notificationPrefs.pushEnabled
+    ? "Device push is enabled for this account."
+    : "Device push is off. Notifications still appear in-app.";
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>GrowPath reminders</Text>
         <Text style={styles.title}>Notification Center</Text>
         <Text style={styles.subtitle}>
-          One inbox for task reminders, live reminders, course notices, replay updates,
-          storefront setup, alerts, and facility follow-up.
+          One inbox for task reminders, forum replies, videos, courses, commerce, and
+          facility follow-up.
         </Text>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Delivery status</Text>
+        <Text style={styles.cardText}>{pushStatusText}</Text>
+        <Text style={styles.metaText}>
+          {enabledCategories.length
+            ? `Enabled categories: ${enabledCategories.join(", ")}`
+            : "All notification categories are muted in Profile."}
+        </Text>
+        <Link href="/home/personal/profile" asChild>
+          <Pressable accessibilityRole="link" style={styles.linkButton}>
+            <Text style={styles.linkButtonText}>Open Profile settings</Text>
+          </Pressable>
+        </Link>
+      </View>
+
       <View style={styles.toolbar}>
-        {(["unread", "all", "tasks", "lives"] as const).map((item) => (
+        {filterOptions.map((item) => (
           <Pressable
-            key={item}
+            key={item.key}
             accessibilityRole="button"
-            accessibilityLabel={`Notification filter ${item}`}
-            onPress={() => setFilter(item)}
-            style={[styles.filterButton, filter === item && styles.filterButtonActive]}
+            accessibilityLabel={`Notification filter ${item.key}`}
+            onPress={() => setFilter(item.key)}
+            style={[
+              styles.filterButton,
+              filter === item.key && styles.filterButtonActive
+            ]}
           >
             <Text
               style={[
                 styles.filterButtonText,
-                filter === item && styles.filterButtonTextActive
+                filter === item.key && styles.filterButtonTextActive
               ]}
             >
-              {item}
+              {item.title}
             </Text>
           </Pressable>
         ))}
@@ -429,8 +501,7 @@ export default function NotificationCenterRoute() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>No notifications</Text>
           <Text style={styles.cardText}>
-            Task, alert, live, course, storefront, and facility notifications will appear
-            here when available.
+            Notifications that match your current filter will appear here when available.
           </Text>
         </View>
       ) : null}
@@ -458,8 +529,8 @@ export default function NotificationCenterRoute() {
               </Text>
             </View>
             <Text style={styles.cardText}>{notificationText(row)}</Text>
-            {statusText(row) ? (
-              <Text style={styles.metaText}>{statusText(row)}</Text>
+            {statusText(row, notificationPrefs) ? (
+              <Text style={styles.metaText}>{statusText(row, notificationPrefs)}</Text>
             ) : null}
 
             <View style={styles.actions}>
