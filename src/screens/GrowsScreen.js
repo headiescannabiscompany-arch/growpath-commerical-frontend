@@ -10,7 +10,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 
 import { listPersonalGrows } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
@@ -86,6 +86,7 @@ function actionHref(id, section) {
 }
 
 function ActionLink({ href, label, primary = false }) {
+  var router = useRouter();
   var buttonStyle = primary
     ? StyleSheet.flatten([styles.action, styles.actionPrimary])
     : styles.action;
@@ -94,11 +95,15 @@ function ActionLink({ href, label, primary = false }) {
     : styles.actionText;
 
   return (
-    <Link href={href} asChild>
-      <Pressable accessibilityRole="button" style={buttonStyle}>
-        <Text style={textStyle}>{label}</Text>
-      </Pressable>
-    </Link>
+    <Pressable
+      accessibilityRole="link"
+      onPress={function () {
+        router.push(href);
+      }}
+      style={buttonStyle}
+    >
+      <Text style={textStyle}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -218,6 +223,7 @@ export default function GrowsScreen() {
 
   return (
     <ScrollView
+      testID="screen-personal-grows"
       style={styles.page}
       contentContainerStyle={styles.pageContent}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
