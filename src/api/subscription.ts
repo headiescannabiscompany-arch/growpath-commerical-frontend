@@ -1,4 +1,4 @@
-﻿import { apiRequest } from "./apiRequest";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 import apiRoutes from "./routes.js";
 
@@ -52,7 +52,9 @@ export async function createCheckoutSession(
     ...(data.giftRecipientEmail
       ? { giftRecipientEmail: data.giftRecipientEmail.trim().toLowerCase() }
       : {}),
-    ...(data.giftRecipientName ? { giftRecipientName: data.giftRecipientName.trim() } : {}),
+    ...(data.giftRecipientName
+      ? { giftRecipientName: data.giftRecipientName.trim() }
+      : {}),
     ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
     ...(data.giftTerm ? { giftTerm: data.giftTerm } : {})
   };
