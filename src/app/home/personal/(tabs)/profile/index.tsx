@@ -8,13 +8,24 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  Share
+  Share,
+  Switch
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification, updateContentControls } from "@/api/auth";
-import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
+import {
+  deleteAccount,
+  exportPrivacyData,
+  updateNotificationPreferences,
+  updateProfile
+} from "@/api/users";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  NOTIFICATION_PREFERENCE_OPTIONS,
+  NotificationPreferenceState
+} from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
@@ -77,6 +88,21 @@ const styles = StyleSheet.create({
   buttonDanger: { backgroundColor: "#fff", borderColor: "#FCA5A5" },
   buttonDangerText: { color: "#DC2626", fontWeight: "800" },
   buttonSecondaryText: { color: "#0F172A", fontWeight: "800" },
+  notificationRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 8
+  },
+  notificationCopy: { flex: 1, minWidth: 0 },
+  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
+  notificationDescription: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
 
   accountAction: {
     marginTop: 10,
@@ -115,15 +141,8 @@ export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   const currentRank = planRank[String(plan || "free").toLowerCase()] ?? 0;
   const actions: PlanAction[] = [];
 
-  if (currentRank < planRank.pro) {
-    actions.push(["Upgrade to Pro", "/home/personal/upgrade/pro", true]);
-  }
-  if (currentRank < planRank.commercial || currentRank < planRank.facility) {
-    actions.push([
-      "Upgrade to Commercial / Facility",
-      "/home/personal/upgrade",
-      currentRank >= planRank.pro
-    ]);
+  if (currentRank < planRank.facility) {
+    actions.push(["Upgrade Plans", "/home/personal/upgrade", currentRank < planRank.pro]);
   }
   actions.push([
     "Manage Billing",
@@ -153,6 +172,12 @@ export default function ProfileScreen() {
   const [contentControlFeedback, setContentControlFeedback] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
+    DEFAULT_NOTIFICATION_PREFERENCES
+  );
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState("");
+  const [notificationError, setNotificationError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
   const planActions = getPersonalProfilePlanActions(plan);
@@ -161,6 +186,16 @@ export default function ProfileScreen() {
   useEffect(() => {
     setEmailDraft(email === "unknown" ? "" : email);
   }, [email]);
+
+  useEffect(() => {
+    const storedPrefs =
+      ((auth.user as any)
+        ?.notificationPreferences as Partial<NotificationPreferenceState>) || {};
+    setNotificationPrefs({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      ...storedPrefs
+    });
+  }, [auth.user]);
 
   const handleSaveEmail = async () => {
     const nextEmail = emailDraft.trim().toLowerCase();
@@ -200,6 +235,21 @@ export default function ProfileScreen() {
       setEmailError(e?.message || "Unable to request verification email.");
     } finally {
       setResendingVerification(false);
+    }
+  };
+
+  const handleSaveNotificationPreferences = async () => {
+    setNotificationSaving(true);
+    setNotificationFeedback("");
+    setNotificationError("");
+    try {
+      await updateNotificationPreferences(notificationPrefs as any);
+      await auth.retryMe();
+      setNotificationFeedback("Notification settings saved.");
+    } catch (error: any) {
+      setNotificationError(error?.message || "Unable to save notification settings.");
+    } finally {
+      setNotificationSaving(false);
     }
   };
 
@@ -495,6 +545,61 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.rowLabel}>Notification settings</Text>
+        <Text style={styles.mutedText}>
+          These controls decide which inbox items can also reach your device. In-app
+          notifications stay available; push requires a registered phone.
+        </Text>
+        {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+          <View key={String(option.key)} style={styles.notificationRow}>
+            <View style={styles.notificationCopy}>
+              <Text style={styles.notificationTitle}>{option.title}</Text>
+              <Text style={styles.notificationDescription}>{option.description}</Text>
+            </View>
+            <Switch
+              accessibilityLabel={option.title}
+              value={Boolean(notificationPrefs[option.key])}
+              onValueChange={(value) =>
+                setNotificationPrefs((current) => ({
+                  ...current,
+                  [option.key]: value
+                }))
+              }
+            />
+          </View>
+        ))}
+        <View style={styles.actionGrid}>
+          <Pressable
+            style={styles.accountAction}
+            onPress={() => router.push("/home/notifications" as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification inbox"
+          >
+            <Text style={styles.accountActionText}>Open Notification Inbox</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.planAction,
+              styles.planActionPrimary,
+              notificationSaving && { opacity: 0.6 }
+            ]}
+            onPress={() => void handleSaveNotificationPreferences()}
+            accessibilityRole="button"
+            accessibilityLabel="Save notification settings"
+            disabled={notificationSaving}
+          >
+            <Text style={styles.planActionPrimaryText}>
+              {notificationSaving ? "Saving..." : "Save Notification Settings"}
+            </Text>
+          </Pressable>
+        </View>
+        {notificationFeedback ? (
+          <Text style={styles.feedback}>{notificationFeedback}</Text>
+        ) : null}
+        {notificationError ? <Text style={styles.error}>{notificationError}</Text> : null}
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.rowLabel}>Grow interests</Text>
         <Text style={styles.mutedText}>
           Edit what you grow, your environment, growing method, experience level, and
@@ -521,7 +626,7 @@ export default function ProfileScreen() {
           {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
         </Text>
         <Text style={styles.mutedText}>
-          Age eligibility: {auth.user?.ageBand || "verification needed"} · Parental lock:{" "}
+          Age eligibility: {auth.user?.ageBand || "verification needed"} - Parental lock:{" "}
           {auth.user?.parentalLockEnabled ? "On" : "Off"}
         </Text>
         <TextInput
@@ -532,7 +637,7 @@ export default function ProfileScreen() {
           placeholder={
             auth.user?.parentalLockEnabled
               ? "Current parental PIN"
-              : "New 4–12 digit parental PIN"
+              : "New 4-12 digit parental PIN"
           }
           keyboardType="number-pad"
           secureTextEntry

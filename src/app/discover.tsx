@@ -282,11 +282,11 @@ export default function DiscoverDirectory() {
       },
       {
         key: "lives",
-        title: "Lives",
-        ranking: "Upcoming & recent",
-        empty: "No matching live events or replays.",
+        title: "Live opportunities",
+        ranking: "Campaign-linked, upcoming, and replay content",
+        empty: "No matching live opportunities.",
         results: feedResults(lives),
-        browseHref: "/feed"
+        browseHref: "/lives"
       }
     ];
   }, [activeQuery, courses, feed, marketplace, stores, videos]);

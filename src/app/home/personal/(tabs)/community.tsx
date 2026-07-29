@@ -314,6 +314,34 @@ export default function CommunityTab() {
         </View>
       ) : null}
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Forum videos</Text>
+        <Text style={styles.cardText}>
+          Videos belong in Forum/Q&A, not only through Discover. Open the shared library
+          to upload clips, review storage, and browse public or followed videos.
+        </Text>
+        <View style={styles.discoveryActions}>
+          <Link href="/videos?tab=library" asChild>
+            <Pressable
+              style={styles.secondaryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Open video library"
+            >
+              <Text style={styles.secondaryText}>Open Video Library</Text>
+            </Pressable>
+          </Link>
+          <Link href="/videos?tab=discover" asChild>
+            <Pressable
+              style={styles.secondaryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Browse videos"
+            >
+              <Text style={styles.secondaryText}>Browse Videos</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
+
       {!canView ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Forum unavailable</Text>
@@ -481,7 +509,7 @@ export default function CommunityTab() {
 
             <View style={[styles.card, styles.secondaryPanel]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Notifications</Text>
+                <Text style={styles.cardTitle}>Inbox notifications</Text>
                 {unreadCount ? (
                   <Pressable
                     disabled={saving}
@@ -494,6 +522,18 @@ export default function CommunityTab() {
                 ) : null}
               </View>
               <Text style={styles.cardText}>{unreadCount} unread notifications</Text>
+              <Text style={styles.cardText}>
+                These are inbox items, not tasks. Use Profile to control which types can
+                reach your device.
+              </Text>
+              <Link href="/home/personal/profile" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open notification settings"
+                >
+                  <Text style={styles.cta}>Notification settings</Text>
+                </Pressable>
+              </Link>
               {notifications.slice(0, 4).map((notification) => (
                 <View key={rowId(notification) || notification.title} style={styles.row}>
                   <Text style={styles.rowTitle}>

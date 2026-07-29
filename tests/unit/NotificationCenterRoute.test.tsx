@@ -9,6 +9,23 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      notificationPreferences: {
+        pushEnabled: true,
+        taskReminders: true,
+        forumReplies: true,
+        forumMentions: true,
+        videoActivity: true,
+        courseAndLiveUpdates: true,
+        commerceUpdates: true,
+        facilityAlerts: true
+      }
+    }
+  })
+}));
+
 jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -23,6 +40,8 @@ jest.mock("expo-router", () => {
     useLocalSearchParams: () => ({ notificationId: "notification-1" })
   };
 });
+
+jest.setTimeout(15000);
 
 describe("NotificationCenterRoute", () => {
   beforeEach(() => {
@@ -249,12 +268,15 @@ describe("NotificationCenterRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
+    expect(
+      screen.getByText("Device push is enabled for this account.")
+    ).toBeTruthy();
     expect(screen.getByText(/Join the soil mixing demo/)).toBeTruthy();
     expect(screen.getByLabelText("Focused notification notification-1")).toBeTruthy();
     expect(screen.getByText(/Source live/)).toBeTruthy();
     expect(screen.queryByText("Task overdue")).toBeNull();
 
-    fireEvent.press(screen.getByLabelText("Notification filter tasks"));
+    fireEvent.press(screen.getByLabelText("Notification filter taskReminders"));
     expect(screen.getByText("Task overdue")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));

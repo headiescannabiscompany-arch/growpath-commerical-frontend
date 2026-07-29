@@ -52,6 +52,15 @@ const SORT_OPTIONS = [
   { value: "popular", label: "Most viewed" }
 ] as const;
 
+type LibraryScope = "workspace" | "mine" | "published" | "drafts";
+
+const LIBRARY_SCOPE_OPTIONS: Array<{ value: LibraryScope; label: string }> = [
+  { value: "workspace", label: "Workspace library" },
+  { value: "mine", label: "My uploads" },
+  { value: "published", label: "Published" },
+  { value: "drafts", label: "Drafts" }
+];
+
 function splitList(value: string) {
   return value
     .split(",")
@@ -86,6 +95,7 @@ export default function VideosRoute() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"new" | "popular">("new");
   const [followingOnly, setFollowingOnly] = useState(false);
+  const [libraryScope, setLibraryScope] = useState<LibraryScope>("workspace");
   const [discoverVideos, setDiscoverVideos] = useState<GrowPathVideo[]>([]);
   const [library, setLibrary] = useState<VideoLibraryResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,6 +173,38 @@ export default function VideosRoute() {
       }
     );
   }, [entitlements.plan, library?.quota]);
+
+  const currentUserId = useMemo(
+    () => String(auth.user?.id || auth.user?._id || ""),
+    [auth.user]
+  );
+  const libraryVideos = useMemo(() => library?.videos || [], [library]);
+  const libraryCounts = useMemo(() => {
+    const mine = libraryVideos.filter(
+      (video) => String(video.uploaderUserId || video.owner?.id || "") === currentUserId
+    );
+    return {
+      total: libraryVideos.length,
+      mine: mine.length,
+      published: libraryVideos.filter((video) => video.status === "published").length,
+      drafts: libraryVideos.filter((video) => video.status === "draft").length
+    };
+  }, [currentUserId, libraryVideos]);
+  const filteredLibraryVideos = useMemo(() => {
+    switch (libraryScope) {
+      case "mine":
+        return libraryVideos.filter(
+          (video) =>
+            String(video.uploaderUserId || video.owner?.id || "") === currentUserId
+        );
+      case "published":
+        return libraryVideos.filter((video) => video.status === "published");
+      case "drafts":
+        return libraryVideos.filter((video) => video.status === "draft");
+      default:
+        return libraryVideos;
+    }
+  }, [currentUserId, libraryScope, libraryVideos]);
 
   const canUpload =
     auth.isAuthed &&
@@ -532,6 +574,24 @@ export default function VideosRoute() {
               GrowPath uploads use this allowance. YouTube, Vimeo, Rumble, and other
               external links do not.
             </Text>
+            <View style={styles.librarySummaryRow}>
+              <View style={styles.libraryMetric}>
+                <Text style={styles.libraryMetricValue}>{libraryCounts.total}</Text>
+                <Text style={styles.libraryMetricLabel}>Workspace videos</Text>
+              </View>
+              <View style={styles.libraryMetric}>
+                <Text style={styles.libraryMetricValue}>{libraryCounts.mine}</Text>
+                <Text style={styles.libraryMetricLabel}>My videos</Text>
+              </View>
+              <View style={styles.libraryMetric}>
+                <Text style={styles.libraryMetricValue}>{libraryCounts.published}</Text>
+                <Text style={styles.libraryMetricLabel}>Published</Text>
+              </View>
+              <View style={styles.libraryMetric}>
+                <Text style={styles.libraryMetricValue}>{libraryCounts.drafts}</Text>
+                <Text style={styles.libraryMetricLabel}>Drafts</Text>
+              </View>
+            </View>
             {workspaceType === "facility" && !canUpload ? (
               <Text style={styles.warning}>
                 Your Facility role can watch and follow videos but cannot upload to the
@@ -708,13 +768,48 @@ export default function VideosRoute() {
           {loading ? (
             <ActivityIndicator accessibilityLabel="Loading video library" />
           ) : null}
-          {!loading && !library?.videos.length ? (
+          {!loading && !filteredLibraryVideos.length ? (
             <AppCard>
-              <Text style={styles.empty}>This workspace has no videos yet.</Text>
+              <Text style={styles.empty}>
+                {libraryScope === "workspace"
+                  ? "This workspace has no videos yet."
+                  : "No videos match this view yet."}
+              </Text>
             </AppCard>
           ) : null}
+          <AppCard>
+            <Text style={styles.cardTitle}>Library view</Text>
+            <Text style={styles.help}>
+              Switch between the whole workspace library and the videos you uploaded
+              yourself.
+            </Text>
+            <View accessibilityRole="toolbar" style={styles.scopeRow}>
+              {LIBRARY_SCOPE_OPTIONS.map((option) => {
+                const selected = libraryScope === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setLibraryScope(option.value)}
+                    style={[
+                      styles.choice,
+                      selected && styles.choiceSelected,
+                      styles.scopeChip
+                    ]}
+                  >
+                    <Text
+                      style={[styles.choiceText, selected && styles.choiceTextSelected]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </AppCard>
           <View style={styles.grid}>
-            {(library?.videos || []).map((video) => {
+            {filteredLibraryVideos.map((video) => {
               const currentUserId = String(auth.user?.id || auth.user?._id || "");
               const canEditOwnStaffDraft =
                 !canManage &&
@@ -779,6 +874,26 @@ const styles = StyleSheet.create({
   choiceSelected: { backgroundColor: "#166534", borderColor: "#166534" },
   choiceText: { color: "#334155", fontSize: 13, fontWeight: "800" },
   choiceTextSelected: { color: "#FFFFFF" },
+  scopeRow: { marginTop: 6 },
+  scopeChip: { minWidth: 150 },
+  librarySummaryRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 4,
+    marginTop: 6
+  },
+  libraryMetric: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    minWidth: 120,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  libraryMetricValue: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
+  libraryMetricLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
   checkbox: {
     alignSelf: "flex-start",
     borderColor: "#94A3B8",
