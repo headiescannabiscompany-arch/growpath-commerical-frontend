@@ -42,6 +42,11 @@ describe("UpgradePlan pricing", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
+        /Best for one grower managing a personal grow or a small private set of plants\./
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
         "Stripe opens with Commercial selected and the chosen monthly or yearly interval. Payment is collected there."
       )
     ).toBeTruthy();

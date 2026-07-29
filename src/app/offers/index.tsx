@@ -20,60 +20,13 @@ import {
   formatPlanPrice,
   PLAN_PRICING
 } from "@/constants/pricing";
+import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { FREE_POLICY } from "@/config/freePolicy";
 
 type BillingInterval = "monthly" | "yearly";
-type PlanKey = "pro" | "commercial" | "facility";
 type CheckoutMode = "live" | "test" | "unknown";
-
-type Plan = {
-  key: PlanKey;
-  title: string;
-  eyebrow: string;
-  description: string;
-  bullets: string[];
-};
-
-const PLANS: Plan[] = [
-  {
-    key: "pro",
-    title: PLAN_PRICING.pro.title,
-    eyebrow: PLAN_PRICING.pro.eyebrow,
-    description:
-      "For an individual grower account that needs AI guidance, diagnosis, planning, exports, and the stronger personal toolset without brand or facility admin overhead.",
-    bullets: [
-      "AI diagnosis, planning, and review workflows",
-      "Advanced calculators and grow exports",
-      "Personal account tools and saved run history"
-    ]
-  },
-  {
-    key: "commercial",
-    title: PLAN_PRICING.commercial.title,
-    eyebrow: PLAN_PRICING.commercial.eyebrow,
-    description:
-      "For a public brand or seller that needs storefronts, products, campaigns, courses, lives, orders, analytics, and the discovery surfaces that connect the whole brand workflow.",
-    bullets: [
-      "Storefront, products, and public brand pages",
-      "Courses, lives, and campaign publishing",
-      "Orders, analytics, and discovery reach"
-    ]
-  },
-  {
-    key: "facility",
-    title: PLAN_PRICING.facility.title,
-    eyebrow: PLAN_PRICING.facility.eyebrow,
-    description:
-      "For a multi-user operation that needs rooms, tasks, SOPs, audit evidence, compliance exports, and team coordination with stronger operational controls.",
-    bullets: [
-      "Rooms, tasks, and team coordination",
-      "SOPs, audit evidence, and compliance exports",
-      "Multi-user operational workflows"
-    ]
-  }
-];
 
 function isLikelyEmail(value: string) {
   const next = value.trim();
@@ -109,12 +62,14 @@ export default function Offers() {
   const isWide = width >= 980;
 
   const [interval, setInterval] = useState<BillingInterval>("monthly");
-  const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
-  const [pendingImmediatePlan, setPendingImmediatePlan] = useState<PlanKey | null>(null);
+  const [pendingImmediatePlan, setPendingImmediatePlan] = useState<BillingPlanKey | null>(
+    null
+  );
   const handledCheckoutResultRef = useRef("");
   const handledGiftResultRef = useRef("");
   const [giftMode, setGiftMode] = useState(false);
@@ -129,15 +84,15 @@ export default function Offers() {
   const reportedTrialPlans = Array.isArray(auth.user?.trialPlansUsed)
     ? auth.user.trialPlansUsed
     : [];
-  const usedTrialPlans = new Set<PlanKey>(
-    reportedTrialPlans.filter((plan): plan is PlanKey =>
+  const usedTrialPlans = new Set<BillingPlanKey>(
+    reportedTrialPlans.filter((plan): plan is BillingPlanKey =>
       ["pro", "commercial", "facility"].includes(plan)
     )
   );
   if (!usedTrialPlans.size && auth.user?.trialUsed) usedTrialPlans.add("pro");
-  const trialEligibleForPlan = (plan: PlanKey) =>
+  const trialEligibleForPlan = (plan: BillingPlanKey) =>
     trialEnabled && !usedTrialPlans.has(plan);
-  const eligibleTrialPlanTitles = PLANS.filter((plan) =>
+  const eligibleTrialPlanTitles = BILLING_PLANS.filter((plan) =>
     trialEligibleForPlan(plan.key)
   ).map((plan) => plan.title);
   const subscriptionResult = useMemo(() => {
@@ -209,7 +164,7 @@ export default function Offers() {
     setFeedback("Gift checkout canceled. No new payment was submitted.");
   }, [giftResult]);
 
-  async function startCheckout(plan: PlanKey, confirmedImmediateBilling = false) {
+  async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
     if (giftMode) {
       const recipient = giftRecipientValue;
       const recipientName = giftRecipientName.trim();
@@ -255,7 +210,7 @@ export default function Offers() {
 
     if (!trialEligibleForPlan(plan) && !confirmedImmediateBilling) {
       setPendingImmediatePlan(plan);
-      const selected = PLANS.find((item) => item.key === plan);
+      const selected = BILLING_PLANS.find((item) => item.key === plan);
       setFeedback(
         `${selected?.title || "This plan"} has no trial remaining for this account. Review the price, then continue only if you want Stripe to bill when checkout completes.`
       );
@@ -343,7 +298,7 @@ export default function Offers() {
             ? "Stripe checkout is live. Real cards can be charged."
             : checkoutMode === "test"
               ? "Stripe checkout is in test mode. Test card payments are not real charges."
-          : "Stripe checkout mode is being checked before payment."}
+              : "Stripe checkout mode is being checked before payment."}
         </Text>
       </View>
 
@@ -352,8 +307,8 @@ export default function Offers() {
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
           Turn this into a gift checkout, enter the recipient email, and use the monthly
-          or yearly selector above for the gift term. Optional name and message fields
-          are passed into the checkout payload so the backend can build the handoff flow.
+          or yearly selector above for the gift term. Optional name and message fields are
+          passed into the checkout payload so the backend can build the handoff flow.
         </Text>
         <View style={styles.segment}>
           {(
@@ -424,14 +379,13 @@ export default function Offers() {
               }}
             />
             <Text style={styles.helper}>
-              The backend receives the recipient email, optional name, note, and gift
-              term with the checkout request so it can build the handoff flow.
+              The backend receives the recipient email, optional name, note, and gift term
+              with the checkout request so it can build the handoff flow.
             </Text>
           </>
         ) : (
           <Text style={styles.helper}>
-            Switch to gift mode when you want the checkout tied to another email
-            address.
+            Switch to gift mode when you want the checkout tied to another email address.
           </Text>
         )}
       </AppCard>
@@ -460,7 +414,7 @@ export default function Offers() {
       ) : null}
 
       <View style={[styles.planGrid, isWide ? styles.planGridWide : null]}>
-        {PLANS.map((plan) => {
+        {BILLING_PLANS.map((plan) => {
           const current = activePlan === plan.key && subscriptionActive;
           const loading = loadingPlan === plan.key;
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
@@ -482,6 +436,15 @@ export default function Offers() {
                 {formatPlanBillingNote(plan.key, interval)}
               </Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
+
+              <Text style={styles.sectionLabel}>Plan details</Text>
+              <View style={styles.details}>
+                {plan.details.map((detail) => (
+                  <Text key={detail} style={styles.detail}>
+                    • {detail}
+                  </Text>
+                ))}
+              </View>
 
               <View style={styles.bullets}>
                 {plan.bullets.map((bullet) => (
@@ -622,6 +585,14 @@ const styles = StyleSheet.create({
   priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
   billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },
   cardDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
+  sectionLabel: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  details: { gap: 4 },
+  detail: { color: "#334155", fontSize: 12, fontWeight: "700", lineHeight: 18 },
   bullets: { gap: 6 },
   bullet: { color: "#334155", fontSize: 13, fontWeight: "800" },
   button: {
