@@ -43,11 +43,11 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen
         name="field-studies/index"
-        options={{ href: null, title: "Field Studies" }}
+        options={{ href: null, title: "Field Studies", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="field-studies/[studyId]"
-        options={{ href: null, title: "Field Study" }}
+        options={{ href: null, title: "Field Study", tabBarButton: () => null }}
       />
       <Tabs.Screen name="ai" options={{ href: null, title: "AI Assistant" }} />
       <Tabs.Screen name="forum" options={{ href: null, title: "Forum / Q&A" }} />

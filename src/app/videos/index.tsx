@@ -28,6 +28,7 @@ import { InlineError } from "@/components/InlineError";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import GrowInterestPicker from "@/components/GrowInterestPicker";
 import VideoCard from "@/components/videos/VideoCard";
 import { useEntitlements } from "@/entitlements";
 import {
@@ -35,6 +36,12 @@ import {
   lessonMediaDraftFromLesson,
   prepareLessonMediaSubmission
 } from "@/features/learning/lessonMedia";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier,
+  getTier1Options
+} from "@/utils/growInterests";
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
 import { radius } from "@/theme/theme";
 
@@ -107,7 +114,9 @@ export default function VideosRoute() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
-  const [growInterests, setGrowInterests] = useState("");
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
   const [visibility, setVisibility] = useState<VideoVisibility>("public");
   const [cannabisSpecific, setCannabisSpecific] = useState(false);
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
@@ -225,7 +234,7 @@ export default function VideosRoute() {
     setTitle("");
     setDescription("");
     setTags("");
-    setGrowInterests("");
+    setGrowInterestSelections(buildEmptyTierSelection());
     setVisibility("public");
     setCannabisSpecific(false);
     setMediaDraft(emptyLessonMediaDraft());
@@ -271,7 +280,7 @@ export default function VideosRoute() {
     setTitle(video.title);
     setDescription(video.description || "");
     setTags((video.tags || []).join(", "));
-    setGrowInterests((video.growInterests || []).join(", "));
+    setGrowInterestSelections(groupTagsByTier(video.growInterests || []));
     setVisibility(video.visibility);
     setCannabisSpecific(video.cannabisSpecific);
     setMediaDraft(lessonMediaDraftFromLesson(video));
@@ -329,7 +338,7 @@ export default function VideosRoute() {
         storageBytes: Number(videoFile?.fileSize || 0),
         mimeType: String(videoFile?.mimeType || ""),
         tags: splitList(tags),
-        growInterests: splitList(growInterests),
+        growInterests: flattenTierSelections(growInterestSelections),
         cannabisSpecific
       };
       const saved = editingId
@@ -679,12 +688,14 @@ export default function VideosRoute() {
                 style={styles.input}
                 value={tags}
               />
-              <TextInput
-                accessibilityLabel="Video grow interests"
-                onChangeText={setGrowInterests}
-                placeholder="Grow interests, comma separated"
-                style={styles.input}
-                value={growInterests}
+              <GrowInterestPicker
+                title="Video grow interests"
+                helperText="Select the structured grow interests this video should be attached to. These tags power discovery and targeting."
+                value={growInterestSelections}
+                onChange={setGrowInterestSelections}
+                tierOptionsOverride={{ crops: getTier1Options() }}
+                collapsible={false}
+                showEmptyTiers
               />
               <Pressable
                 accessibilityLabel="Mark video as cannabis or hemp specific"
