@@ -626,7 +626,7 @@ export default function ProfileScreen() {
           {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
         </Text>
         <Text style={styles.mutedText}>
-          Age eligibility: {auth.user?.ageBand || "verification needed"} Â· Parental lock:{" "}
+          Age eligibility: {auth.user?.ageBand || "verification needed"} - Parental lock:{" "}
           {auth.user?.parentalLockEnabled ? "On" : "Off"}
         </Text>
         <TextInput
@@ -637,7 +637,7 @@ export default function ProfileScreen() {
           placeholder={
             auth.user?.parentalLockEnabled
               ? "Current parental PIN"
-              : "New 4â€“12 digit parental PIN"
+              : "New 4-12 digit parental PIN"
           }
           keyboardType="number-pad"
           secureTextEntry
