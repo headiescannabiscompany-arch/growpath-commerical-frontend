@@ -74,7 +74,18 @@ describe("Discover video search", () => {
     expect(mockSearchVideos).toHaveBeenCalledWith({
       q: undefined,
       sort: "new",
-      limit: 18
+      limit: 18,
+      followingOnly: undefined
+    });
+
+    fireEvent.press(screen.getByLabelText("Show videos from people you follow"));
+    await waitFor(() => {
+      expect(mockSearchVideos).toHaveBeenCalledWith({
+        q: undefined,
+        sort: "new",
+        limit: 18,
+        followingOnly: true
+      });
     });
 
     fireEvent.press(screen.getByLabelText("Open Tomato training"));

@@ -87,10 +87,11 @@ export default function DiscoverDirectory() {
   const [marketplace, setMarketplace] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
+  const [videoFollowingOnly, setVideoFollowingOnly] = useState(false);
   const [globeObservations, setGlobeObservations] = useState<any[]>([]);
   const [globeLoading, setGlobeLoading] = useState(true);
 
-  const load = useCallback(async (q = "") => {
+  const load = useCallback(async (q = "", followingOnly = false) => {
     setLoading(true);
     setError("");
     const [feedResult, storeResult, marketResult, courseResult, videoResult] =
@@ -101,7 +102,12 @@ export default function DiscoverDirectory() {
         import("@/api/courses").then((api) =>
           q ? api.searchCourses(q) : api.listCourses(1)
         ),
-        searchVideos({ q: q || undefined, sort: "new", limit: 18 })
+        searchVideos({
+          q: q || undefined,
+          sort: "new",
+          limit: 18,
+          followingOnly: followingOnly || undefined
+        })
       ]);
 
     setFeed(
@@ -130,8 +136,8 @@ export default function DiscoverDirectory() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(activeQuery, videoFollowingOnly);
+  }, [activeQuery, load, videoFollowingOnly]);
 
   useEffect(() => {
     let alive = true;
@@ -294,7 +300,6 @@ export default function DiscoverDirectory() {
   function search() {
     const q = query.trim();
     setActiveQuery(q);
-    void load(q);
   }
 
   return (
@@ -407,6 +412,52 @@ export default function DiscoverDirectory() {
                 <Text style={styles.browseButtonText}>View all {section.title}</Text>
               </Pressable>
             </View>
+            {section.key === "videos" ? (
+              <View style={styles.sectionFilterRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Show all discover videos"
+                  onPress={() => {
+                    setVideoFollowingOnly(false);
+                  }}
+                  style={({ pressed }) => [
+                    styles.filterButton,
+                    !videoFollowingOnly && styles.filterButtonSelected,
+                    pressed && styles.buttonPressed
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterText,
+                      !videoFollowingOnly && styles.filterTextSelected
+                    ]}
+                  >
+                    All videos
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Show videos from people you follow"
+                  onPress={() => {
+                    setVideoFollowingOnly(true);
+                  }}
+                  style={({ pressed }) => [
+                    styles.filterButton,
+                    videoFollowingOnly && styles.filterButtonSelected,
+                    pressed && styles.buttonPressed
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterText,
+                      videoFollowingOnly && styles.filterTextSelected
+                    ]}
+                  >
+                    Following only
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
             {section.results.length ? (
               <ScrollView
                 horizontal
@@ -507,6 +558,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8
   },
+  sectionFilterRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10
+  },
   sectionTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
   ranking: { color: "#64748B", fontSize: 12, marginTop: 2 },
   browseButton: {
@@ -520,6 +577,20 @@ const styles = StyleSheet.create({
   },
   browseButtonText: { color: "#166534", fontSize: 13, fontWeight: "800" },
   buttonPressed: { opacity: 0.7 },
+  filterButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  filterButtonSelected: {
+    backgroundColor: "#DCFCE7",
+    borderColor: "#16A34A"
+  },
+  filterText: { color: "#334155", fontSize: 13, fontWeight: "800" },
+  filterTextSelected: { color: "#166534" },
   rail: { gap: 12, paddingBottom: 6, paddingRight: 16 },
   resultCard: {
     backgroundColor: "#FFFFFF",
