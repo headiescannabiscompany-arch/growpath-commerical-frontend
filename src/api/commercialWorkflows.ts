@@ -97,10 +97,28 @@ export type SoilNutrientBatch = {
   productLineId?: string;
   linkedTrialId?: string;
   trialGrowId?: string;
+  facilityId?: string;
+  linkedToolRunId?: string;
+  linkedRecipeId?: string;
+  toolRunId?: string;
   batchVolume?: number;
   batchVolumeUnit?: string;
+  bagSize?: number;
+  bagCount?: number | null;
+  usableVolume?: number | null;
   estimatedCost?: number;
   costPerUnit?: number;
+  costEstimate?: Record<string, any>;
+  guaranteedAnalysisEstimate?: Record<string, any>;
+  elementalEstimate?: Record<string, any>;
+  releaseTimeline?: Record<string, any>;
+  ingredientPullSheet?: Array<Record<string, any>>;
+  inventoryReview?: Array<Record<string, any>>;
+  warnings?: string[];
+  missingInformation?: string[];
+  limitations?: string[];
+  calculatorInput?: Record<string, any>;
+  calculatorOutput?: Record<string, any>;
   releaseTimelineNotes?: string;
   guaranteedAnalysisNotes?: string;
   ingredientSummary?: string;
@@ -138,6 +156,7 @@ export type CommercialCourse = {
   forumThreadId?: string;
   modules?: Array<Record<string, any>>;
   lessons?: Array<Record<string, any>>;
+  quizzes?: Array<Record<string, any>>;
   tasks?: Array<Record<string, any>>;
   status?: "draft" | "published" | "archived";
   createdAt?: string;
@@ -169,6 +188,7 @@ export type CommercialLiveEvent = {
   growInterests?: string[];
   visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
   status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
+  isPublished?: boolean;
   replayUrl?: string;
   notificationPlan?: string[];
   createdAt?: string;
@@ -334,6 +354,14 @@ export async function updateSoilNutrientBatch(
   return res?.batch ?? res?.soilNutrientBatch ?? res?.updated ?? res;
 }
 
+export async function createCommercialTask(data: Record<string, any>) {
+  const res = await apiRequest(endpoints.tasksGlobal, {
+    method: "POST",
+    body: { ...data, workspaceType: "commercial" }
+  });
+  return res?.task ?? res?.item ?? res;
+}
+
 export async function fetchCommercialCourses(): Promise<CommercialCourse[]> {
   const res = await apiRequest("/api/commercial/courses");
   return listFromEnvelope(res, ["courses", "commercialCourses"]);
@@ -374,6 +402,29 @@ export async function addCommercialCourseLesson(id: string, data: Record<string,
       method: "POST",
       body: data
     }
+  );
+  return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
+}
+
+export async function updateCommercialCourseLesson(
+  id: string,
+  lessonId: string,
+  data: Record<string, any>
+) {
+  const res = await apiRequest(
+    `/api/commercial/courses/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}`,
+    {
+      method: "PATCH",
+      body: data
+    }
+  );
+  return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
+}
+
+export async function deleteCommercialCourseLesson(id: string, lessonId: string) {
+  const res = await apiRequest(
+    `/api/commercial/courses/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}`,
+    { method: "DELETE" }
   );
   return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
 }

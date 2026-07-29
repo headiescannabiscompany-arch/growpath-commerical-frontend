@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { getDiagnosisHistory } from "@/api/diagnose";
+import { listPublicFieldObservations } from "@/api/fieldStudies";
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
@@ -13,6 +14,8 @@ import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
+import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
@@ -44,6 +47,9 @@ export default function PersonalHomeTab() {
   const canCreateLog = ent.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
   const canCreateTask = ent.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const [model, setModel] = useState<HomeModel | null>(null);
+  const [globeObservations, setGlobeObservations] = useState<any[]>([]);
+  const [globeLoading, setGlobeLoading] = useState(true);
+  const [globeVisible, setGlobeVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -106,6 +112,36 @@ export default function PersonalHomeTab() {
     }, [load])
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      setGlobeVisible(true);
+      return () => {
+        setGlobeVisible(false);
+      };
+    }, [])
+  );
+
+  React.useEffect(() => {
+    let alive = true;
+    async function loadGlobePreview() {
+      setGlobeLoading(true);
+      try {
+        const observations = await listPublicFieldObservations({ limit: 12 });
+        if (alive) {
+          setGlobeObservations(Array.isArray(observations) ? observations : []);
+        }
+      } catch {
+        if (alive) setGlobeObservations([]);
+      } finally {
+        if (alive) setGlobeLoading(false);
+      }
+    }
+    void loadGlobePreview();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const growId = model?.activeGrowId || "";
   const growHref = growId ? `/home/personal/grows/${growId}` : "/home/personal/grows";
 
@@ -115,7 +151,9 @@ export default function PersonalHomeTab() {
       header={
         <View>
           <Text style={styles.kicker}>Personal workspace</Text>
-          <Text style={styles.headerTitle}>Your Garden</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>
+            Your Garden
+          </Text>
           <Text style={styles.headerSubtitle}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
           </Text>
@@ -124,6 +162,8 @@ export default function PersonalHomeTab() {
     >
       {loading ? <ActivityIndicator /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <PersonalFeaturedFeed />
 
       {!loading && !model?.activeGrow ? (
         <View style={styles.section}>
@@ -138,7 +178,7 @@ export default function PersonalHomeTab() {
               {canCreateGrow ? (
                 <ActionLink href="/home/personal/grows/new" label="Create Grow" />
               ) : null}
-              <ActionLink href="/home/personal/tools" label="Explore Tools" />
+              <ActionLink href="/home/personal/tools" label="Explore AI Tools" />
               <ActionLink href="/home/personal/diagnose" label="Run Diagnosis" />
               <ActionLink href="/home/personal/community" label="Ask Forum / Q&A" />
             </View>
@@ -168,7 +208,7 @@ export default function PersonalHomeTab() {
                 Save photos, watering notes, symptoms, environment readings, and task
                 decisions in the journal.
               </Text>
-              <ActionLink href="/home/personal/tools" label="Open Tools" />
+              <ActionLink href="/home/personal/tools" label="Open AI Tools" />
             </AppCard>
             <AppCard style={styles.onboardingCard}>
               <Text style={styles.stepNumber}>3</Text>
@@ -189,92 +229,92 @@ export default function PersonalHomeTab() {
           <Link href={growHref} asChild>
             <Pressable accessibilityRole="link" accessibilityLabel="Open active grow">
               <AppCard style={styles.commandCard}>
-            <View style={styles.commandHeader}>
-              <View style={styles.commandCopy}>
-                <Text style={styles.commandEyebrow}>Personal command center</Text>
-                <Text style={styles.commandTitle}>
-                  {model.activeGrow.name || "Active grow"}
-                </Text>
-                <Text style={styles.commandDescription}>
-                  {model.activeGrow.status} | Updated{" "}
-                  {fmtDate(model.activeGrow.updatedAt)}
-                </Text>
-              </View>
-              <View style={styles.pulseStack}>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>
-                    {model.activeGrow.status || "Active"}
-                  </Text>
-                  <Text style={styles.pulseLabel}>Stage</Text>
+                <View style={styles.commandHeader}>
+                  <View style={styles.commandCopy}>
+                    <Text style={styles.commandEyebrow}>Personal command center</Text>
+                    <Text style={styles.commandTitle}>
+                      {model.activeGrow.name || "Active grow"}
+                    </Text>
+                    <Text style={styles.commandDescription}>
+                      {model.activeGrow.status} | Updated{" "}
+                      {fmtDate(model.activeGrow.updatedAt)}
+                    </Text>
+                  </View>
+                  <View style={styles.pulseStack}>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>
+                        {model.activeGrow.status || "Active"}
+                      </Text>
+                      <Text style={styles.pulseLabel}>Stage</Text>
+                    </View>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>{model.alerts.length}</Text>
+                      <Text style={styles.pulseLabel}>Alerts</Text>
+                    </View>
+                    <View style={styles.pulse}>
+                      <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
+                      <Text style={styles.pulseLabel}>Open tasks</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>{model.alerts.length}</Text>
-                  <Text style={styles.pulseLabel}>Alerts</Text>
+                <View style={styles.metrics}>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
+                    <Text style={styles.metricLabel}>Plants</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.stats.logCount}</Text>
+                    <Text style={styles.metricLabel}>Journal entries</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>{model.openTaskCount}</Text>
+                    <Text style={styles.metricLabel}>Open tasks</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricValue}>
+                      {model.latestToolRun?.toolType ||
+                        model.latestToolRun?.toolName ||
+                        "None"}
+                    </Text>
+                    <Text style={styles.metricLabel}>Latest tool</Text>
+                  </View>
                 </View>
-                <View style={styles.pulse}>
-                  <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
-                  <Text style={styles.pulseLabel}>Open tasks</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.metrics}>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
-                <Text style={styles.metricLabel}>Plants</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.logCount}</Text>
-                <Text style={styles.metricLabel}>Journal entries</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.openTaskCount}</Text>
-                <Text style={styles.metricLabel}>Open tasks</Text>
-              </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>
-                  {model.latestToolRun?.toolType ||
-                    model.latestToolRun?.toolName ||
-                    "None"}
-                </Text>
-                <Text style={styles.metricLabel}>Latest tool</Text>
-              </View>
-            </View>
               </AppCard>
             </Pressable>
           </Link>
-            <View style={styles.actions}>
-              <ActionLink href={growHref} label="Open Grow" />
-              {canCreateLog ? (
-                <>
-                  <ActionLink
-                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
-                    label="Add Log"
-                  />
-                  <ActionLink
-                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
-                    label="Add Photo"
-                  />
-                </>
-              ) : null}
-              <ActionLink
-                href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
-                label="Run Tool"
-              />
-              <ActionLink
-                href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
-                label="Diagnose"
-              />
-              {canCreateTask ? (
-                <ActionLink href={`${growHref}/tasks`} label="Create Task" />
-              ) : null}
-            </View>
-            {!canCreateLog || !canCreateTask ? (
-              <Text style={styles.upgradeNote}>
-                Free plan includes basic grow tracking, logs, tasks, and limited AI/tool
-                tokens. Upgrade for more grows, more storage, advanced tools, exports,
-                and higher AI limits.
-              </Text>
+          <View style={styles.actions}>
+            <ActionLink href={growHref} label="Open Grow" />
+            {canCreateLog ? (
+              <>
+                <ActionLink
+                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+                  label="Add Log"
+                />
+                <ActionLink
+                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                  label="Add Photo"
+                />
+              </>
             ) : null}
+            <ActionLink
+              href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
+              label="Open AI Tools"
+            />
+            <ActionLink
+              href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
+              label="Diagnose"
+            />
+            {canCreateTask ? (
+              <ActionLink href={`${growHref}/tasks`} label="Create Task" />
+            ) : null}
+          </View>
+          {!canCreateLog || !canCreateTask ? (
+            <Text style={styles.upgradeNote}>
+              Free plan includes basic grow tracking, logs, tasks, and limited AI credits.
+              Upgrade for more grows, more storage, advanced tools, exports, and higher AI
+              limits.
+            </Text>
+          ) : null}
         </View>
       ) : null}
 
@@ -406,9 +446,48 @@ export default function PersonalHomeTab() {
       ) : null}
 
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Discovery globe</Text>
+        <AppCard style={styles.globeCard}>
+          <Text style={styles.cardTitle}>Shared plant findings</Text>
+          <Text style={styles.cardDescription}>
+            Opt-in public observations appear on the globe. Personal details stay excluded
+            from this shared view.
+          </Text>
+          <View style={styles.globeFrame}>
+            {globeLoading && globeVisible ? <ActivityIndicator /> : null}
+            {globeVisible ? (
+              <FieldObservationGlobe
+                observations={globeObservations}
+                onSelectObservations={() => {}}
+                onViewportChange={() => {}}
+              />
+            ) : null}
+          </View>
+          <View style={styles.actions}>
+            <ActionLink href="/field-observations" label="Open Globe" />
+            <ActionLink href="/home/personal/tools/species-crop-id" label="Plant ID" />
+          </View>
+        </AppCard>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Single-user shortcuts</Text>
+        <View style={styles.actions}>
+          <ActionLink href="/videos?tab=library" label="My Videos" />
+          <ActionLink href="/lives" label="Lives" />
+          <ActionLink href="/home/notifications" label="Notifications" />
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Explore</Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
+          <ActionLink href="/store" label="Discover Storefronts" />
+          <ActionLink href="/feed" label="Commercial Feed" />
+          <ActionLink href="/field-observations" label="Discovery Globe" />
+          <ActionLink href="/home/personal/discover" label="Discover" />
+          <ActionLink href="/home/personal/more/analytics" label="Grow Analytics" />
           <ActionLink href="/home/personal/profile" label="Profile" />
         </View>
       </View>
@@ -425,7 +504,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   headerTitle: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: "#64748B" },
+  headerSubtitle: { fontSize: 14, color: "#475569" },
   section: { gap: 10 },
   sectionTitle: { fontSize: 18, fontWeight: "700", color: "#0F172A" },
   commandCard: {
@@ -445,6 +524,14 @@ const styles = StyleSheet.create({
   onboardingCard: {
     flexBasis: 230,
     flexGrow: 1
+  },
+  globeCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#D1FAE5"
+  },
+  globeFrame: {
+    minHeight: 280,
+    marginBottom: 8
   },
   stepNumber: {
     alignSelf: "flex-start",
@@ -537,6 +624,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#166534",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 11,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -548,6 +637,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#CBD5E1",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 9,
     paddingVertical: 6,
     backgroundColor: "#FFFFFF"

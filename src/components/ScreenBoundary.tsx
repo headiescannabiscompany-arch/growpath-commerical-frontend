@@ -8,6 +8,7 @@ type Props = {
   title?: string;
   showBack?: boolean;
   backFallbackHref?: string;
+  preferBackFallback?: boolean;
   children: React.ReactNode;
 };
 
@@ -32,11 +33,16 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
     const fallbackHref = this.props.backFallbackHref || "/home";
 
     if (!this.state.error) {
-      if (!showBack) return this.props.children;
+      if (!showBack) {
+        return <View style={{ flex: 1 }}>{this.props.children}</View>;
+      }
       return (
         <View style={{ flex: 1 }}>
           <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-            <BackButton fallbackHref={fallbackHref} />
+            <BackButton
+              fallbackHref={fallbackHref}
+              preferFallback={this.props.preferBackFallback}
+            />
           </View>
           {this.props.children}
         </View>
@@ -45,7 +51,12 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
 
     return (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {showBack ? <BackButton fallbackHref={fallbackHref} /> : null}
+        {showBack ? (
+          <BackButton
+            fallbackHref={fallbackHref}
+            preferFallback={this.props.preferBackFallback}
+          />
+        ) : null}
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
           Screen crashed: {this.props.name || this.props.title || "UnknownScreen"}
         </Text>

@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.4'
+          node-version: "20.19.4"
           cache: npm
 
       - name: Install dependencies
@@ -54,6 +54,9 @@ jobs:
 
       - name: Guard sensitive copy
         run: npm run check:sensitive-copy
+
+      - name: Verify Codex Browser workflow contract
+        run: npm run verify:codex-workflow
 
       - name: Run delivery guard
         run: npm run guard

@@ -10,6 +10,7 @@ import AppPage from "@/components/layout/AppPage";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import CannabisContentControls from "@/components/account/CannabisContentControls";
 
 type ProfileForm = {
   businessName: string;
@@ -24,14 +25,14 @@ type ProfileForm = {
 };
 
 const EMPTY_FORM: ProfileForm = {
-  businessName: "",
+  businessName: "Living Soil Labs",
   slug: "",
-  accountType: "brand",
-  bio: "",
+  accountType: "soil_nutrient_brand",
+  bio: "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them.",
   websiteUrl: "",
   supportEmail: "",
   socialLinks: "",
-  forumDisplayName: "",
+  forumDisplayName: "Living Soil Labs",
   storefrontStatus: "draft"
 };
 
@@ -64,8 +65,18 @@ function splitLinks(value: string) {
     .filter(Boolean);
 }
 
+function hasStorefrontIdentity(storefront: BusinessStorefront | null) {
+  return Boolean(
+    storefront &&
+      (storefront.id ||
+        storefront.name ||
+        storefront.businessName ||
+        storefront.slug)
+  );
+}
+
 function hydrateForm(storefront: BusinessStorefront | null): ProfileForm {
-  if (!storefront) return EMPTY_FORM;
+  if (!hasStorefrontIdentity(storefront)) return EMPTY_FORM;
   const socialLinks = Array.isArray(storefront.socialLinks)
     ? storefront.socialLinks.join(", ")
     : String(storefront.socialLinks || "");
@@ -91,35 +102,10 @@ export default function CommercialProfileRoute() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  const legacyProfileUrl = useMemo(
-    () => (form.slug.trim() ? `/brands/${form.slug.trim()}` : "/brands/your-brand-slug"),
-    [form.slug]
-  );
-  const publicStoreUrl = useMemo(
-    () => (form.slug.trim() ? `/store/${form.slug.trim()}` : "/store/your-brand-slug"),
-    [form.slug]
-  );
-  const publicStorefrontAliasUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/storefront/${form.slug.trim()}`
-        : "/storefront/your-brand-slug",
-    [form.slug]
-  );
-  const publicProductUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/store/${form.slug.trim()}/products/product-id`
-        : "/store/your-brand-slug/products/product-id",
-    [form.slug]
-  );
-  const publicProductAliasUrl = useMemo(
-    () =>
-      form.slug.trim()
-        ? `/storefront/${form.slug.trim()}/products/product-id`
-        : "/storefront/your-brand-slug/products/product-id",
-    [form.slug]
-  );
+  const publicStoreUrl = useMemo(() => {
+    const slug = form.slug.trim();
+    return slug ? `/store/${encodeURIComponent(slug)}` : "";
+  }, [form.slug]);
 
   async function loadProfile() {
     setLoading(true);
@@ -193,7 +179,9 @@ export default function CommercialProfileRoute() {
         <Text style={styles.body}>
           Commercial profile is the brand-level identity. The root profile page stays
           account-level for sign-in and privacy; storefront and public profile settings
-          define how the brand appears publicly.
+          define how the brand appears publicly. When no storefront has been saved yet,
+          GrowPath shows a Living Soil Labs starter draft so the owner can edit a real
+          placeholder instead of an empty shell.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -314,18 +302,18 @@ export default function CommercialProfileRoute() {
         <Text style={styles.body}>
           Free, Pro, commercial, and facility users should be able to discover this brand
           from feed campaigns, product cards, courses, forum threads, store search,
-          similar storefronts, and direct public Storefront URLs. The older Brand Profile
-          URL remains available only as a legacy compatibility route.
+          similar storefronts, and direct public store URLs. Use one public store link
+          everywhere so customers always land on the same brand experience.
         </Text>
         <View style={styles.urlList}>
-          <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
-          <Text style={styles.urlText}>Legacy brand profile: {legacyProfileUrl}</Text>
           <Text style={styles.urlText}>
-            Public storefront alias: {publicStorefrontAliasUrl}
+            Public storefront: {publicStoreUrl || "Add a public slug to create this URL."}
           </Text>
-          <Text style={styles.urlText}>Public product detail: {publicProductUrl}</Text>
           <Text style={styles.urlText}>
-            Public product alias: {publicProductAliasUrl}
+            Public product detail:{" "}
+            {publicStoreUrl
+              ? `Save and publish a product to create its URL under ${publicStoreUrl}.`
+              : "Add a public slug and save a product to create this URL."}
           </Text>
           <Text style={styles.urlText}>
             Similar storefronts and return-to-feed actions stay available from public
@@ -348,6 +336,7 @@ export default function CommercialProfileRoute() {
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
+          <ActionLink href="/videos?tab=library" label="Videos" />
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
         </View>
       </AppCard>
@@ -356,10 +345,10 @@ export default function CommercialProfileRoute() {
         <Text style={styles.cardTitle}>Billing and account controls</Text>
         <Text style={styles.body}>
           Signed in as {user?.email || "commercial user"}. Plan:{" "}
-          {entitlements?.plan || "commercial"}. Mode: {entitlements?.mode || "commercial"}
-          . Keep sign-in, email verification, plan status, privacy export, and account
-          deletion in the account profile. Brand-facing settings should not be mixed with
-          destructive account controls.
+          {entitlements?.plan || "commercial"}. Workspace mode:{" "}
+          {entitlements?.mode || "commercial"}. Keep sign-in, email verification, plan
+          status, privacy export, and account deletion in the account profile.
+          Brand-facing settings should not be mixed with destructive account controls.
         </Text>
         {storefront?.id ? (
           <Text style={styles.muted}>Brand profile record: {storefront.id}</Text>
@@ -369,6 +358,8 @@ export default function CommercialProfileRoute() {
           <ActionLink href="/profile" label="Open Account Profile" />
         </View>
       </AppCard>
+
+      <CannabisContentControls />
     </AppPage>
   );
 }

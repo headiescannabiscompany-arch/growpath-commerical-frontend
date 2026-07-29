@@ -1,0 +1,110 @@
+# Harvest Readiness Production Evidence - 2026-07-21
+
+## Scope and status
+
+This record covers the production Harvest Readiness release, authenticated Personal Pro UI behavior, the incomplete-photo no-charge boundary, AI-evidence disclosure, and owner-supplied video review. It does not claim a successful provider-backed trichome estimate because a truthful top/middle/lower macro set plus a wider context photo was not available in this session.
+
+- Production site: `https://growpathai.com`
+- Production API: `https://api.growpathai.com`
+- Account/role: `headiescannabiscompany@gmail.com`, Personal Pro, trialing
+- Grow context: `6a551a9d2fb9f669d2319c06`
+- Browser evidence: authenticated Codex in-app Browser semantic inspection and live screenshots
+- Harvest Readiness frontend SHA: `8ebf26a9fbe3986ec9c518c76c7471c7d8b379e6`
+- Harvest Readiness backend SHA: `bb0968f3b25d9dd62541cdfb2aff6479f1392be0`
+
+## Releases
+
+| Area                                                                           | PR              | Merge SHA                                  | Render deploy              | Production evidence                                               |
+| ------------------------------------------------------------------------------ | --------------- | ------------------------------------------ | -------------------------- | ----------------------------------------------------------------- |
+| Private harvest evidence, cannabis API gate, provenance, and credit protection | Backend `#43`   | `bb0968f3b25d9dd62541cdfb2aff6479f1392be0` | `dep-d9frm7cvikkc73bho5t0` | Live after a 1m12s deploy; Render lists 2026-07-21 2:31:57 PM EDT |
+| Four-photo UX, blank observations, billing disclosure, and saved provenance    | Frontend `#102` | `8ebf26a9fbe3986ec9c518c76c7471c7d8b379e6` | `dep-d9frnbu8bjmc73e1dkig` | Live after a 2m12s deploy; Render lists 2026-07-21 2:34:23 PM EDT |
+
+The independent production API health request after the backend release returned `ok: true` at `2026-07-21T18:34:11.573Z`.
+
+## Production UI verification
+
+The release-busted live route was opened at:
+
+`https://growpathai.com/home/personal/tools/harvest-readiness?growId=6a551a9d2fb9f669d2319c06&release=8ebf26a&verify=harvest`
+
+The deployed page showed all of the following:
+
+- The readiness calculator remains free; grow-context prefill and photo analysis are separate optional one-credit actions.
+- Provider failures are described as automatically refunded.
+- Photo analysis requires three sharp macro samples from top, middle, and lower bud sites plus one wider context photo.
+- Guidance asks for intact gland heads on calyxes under neutral light and warns against pistils, sugar-leaf edges, purple light, glare, blur, digital zoom, and heavy compression.
+- Flower day, breeder timeline, trichome percentages, pistil status, bud structure, sample location, aroma trend, and effect goal all loaded blank instead of silently submitting example values.
+- The page states that a photo estimate is not a harvest order and that the user reviews values before the deterministic result is calculated.
+
+## Production incomplete-set and billing case
+
+- Starting Profile state: `59 / 100`, 41 credits across 25 billed requests, zero refunds.
+- One genuine owner photo was uploaded through the live picker and persisted as evidence `6a5fbc97f7dfa4a764f878ba`.
+- The page changed to `1/10 photos`, displayed `Add 3 more photos`, named the missing top/middle/lower macro plus wider-context set, and stated that no credit would be used yet.
+- DOM inspection confirmed the Analyze Photo Set control's parent carried `aria-disabled="true"`.
+- No provider request was made.
+- A Profile hard reload afterward remained `59 / 100`, 41 credits across 25 billed requests, zero refunds.
+- Live screenshots were captured in the Codex release task showing the deployed checklist and the disabled one-photo state. No repository image file is claimed by this record.
+
+## Owner-supplied video review
+
+The signed-in YouTube pages expose `Analytics` and `Edit video` for both items, demonstrating that the active `EtGU` channel account controls them:
+
+- [Scratch and sniff 8-14 days left](https://www.youtube.com/watch?v=CUIifOqeS1Q), a one-minute close trichome view.
+- [How many days left until chop?](https://www.youtube.com/watch?v=QT7vv46368M), a 6:05 grower review of changing planned harvest dates.
+
+These videos are useful as owner-supplied observational and acquisition-quality examples. Their visible macro footage includes the real-world blur, color cast, focus variation, compression, and sampling ambiguity that the tool should detect and explain. They are suitable for UI guidance, retake-message evaluation, and a future owner-approved QA media pack.
+
+They are not a scientific harvest-decision source or labeled model ground truth by themselves. Neither item establishes a verified final harvest date, an independent outcome, or the required top/middle/lower plus context sample set. They should not be added to the runtime scientific source registry until the owner supplies approved uses, exclusions, reliability tier, cross-check requirements, and review date.
+
+### Timestamp review - 2026-07-25
+
+Browser frame inspection identified useful QA windows without treating the videos as ground truth:
+
+- `Scratch and sniff 8-14 days left` around `0:13` provides plant/bud context, while roughly `0:18` moves into individually visible gland heads. The close view has a strong warm/red cast, so it is useful for testing whether the workflow distinguishes visible head transparency from color contamination, not for a final percentage.
+- The same short video around `0:23`, `0:30`, `0:37`, and `0:47` contains blur, shallow focus, and highlight glare. Those are useful rejection/retake examples. A head that looks cloudy only in a glare-obscured frame must not be counted as cloudy.
+- `How many days left until chop?` around `1:13` provides a wider trichome-rich flower/sugar-leaf view, while around `1:50` is strongly overexposed and is a useful glare rejection case.
+- The long video around `5:29` contains the strongest inspected close-up: many individual gland heads are visible with a mixture of transparent and opaque appearances. It is a strong candidate window for clear-versus-cloudy QA, but the provider must still exclude clipped highlights and avoid treating pistils or color cast as amber gland heads.
+
+These timestamps are evidence-discovery anchors, not fixed extraction instructions. A source upload should sample candidate frames across the complete timeline, retain their timestamps, and submit only sharp frames that independently pass the normal role, focus, neutral-light, glare, and gland-head checks.
+
+## Automated verification
+
+- Frontend Harvest/gating/navigation coverage: 4 suites, 22 tests passed.
+- Frontend harvest-history contract and contamination guard passed.
+- Frontend changed-source lint, formatting, export sanity, production export, and final static build passed.
+- Frontend GitHub `lint-and-audit` passed in 3m10s.
+- Backend workflow, vision, calculator, and evidence service coverage: 36 tests passed.
+- Backend Harvest and Tools route coverage: 2 suites, 10 tests passed.
+- Both backend GitHub checks passed; the full CI run completed successfully.
+- Repository-wide frontend TypeScript still reports known unrelated existing files only; no touched Harvest file error remained.
+
+## Unified video-evidence production delivery - 2026-07-25
+
+- Frontend PR `#230` merged to `main` as `2b0143b30d7554b1906e495ebbd8d64b1212cf06`.
+- Main Frontend CI run `30172567462` and Production Build Preflight run `30172567487` passed.
+- Production served bundle `index-6ad47370c72a945b1ee4bcdd3fab89ff.js`.
+- Direct bundle inspection confirmed Harvest Readiness uses private client-side frame extraction, up to 12 extracted candidates, and `maxVideoSeconds: 599`.
+- The deployed shared picker states that the source is kept as private evidence, samples timestamped still frames, keeps only sharp glare-free gland-head evidence, and does not guess from motion. This proves delivery of the acquisition contract; it is not a provider-result, billing, screenshot, or physical-device claim.
+
+## Saved-evidence reload and grow-photo reuse delivery - 2026-07-25
+
+- Frontend PR `#232` merged to `main` as `d196005aa87af9221cdf03df516f7347e41a3691` at `2026-07-25T22:28:40Z`.
+- Main Frontend CI run `30177643171` passed in 3m27s, and Production Build Preflight run `30177643166` passed in 3m41s on that exact merge SHA.
+- The production route was retested at `2026-07-25 18:34:42 -04:00`:
+  `https://growpathai.com/home/personal/tools/harvest-readiness?growId=6a551a9d2fb9f669d2319c06&release=d196005a&verify=reload-3-photos`.
+- Account/workspace: `headiescannabiscompany@gmail.com`, Personal Pro. Grow:
+  `6a551a9d2fb9f669d2319c06`.
+- The live page restored the prior uploaded harvest asset as `1/12 photos` and exposed two distinct `Ready to chop` grow-journal photos through the explicit `Use photos already in this grow` control.
+- Both journal photos were deliberately attached to Harvest Readiness. The live count became `3/12 photos`.
+- A fresh production navigation then reported `Restored 3 saved harvest photos for this grow.` and retained `3/12 photos`, proving the selection survives a new page/session-state load instead of falling back to `0/12`.
+- The page displayed `Add 1 more photo` and stated that no AI credit would be used yet. Analyze remained blocked; no provider request or credit charge was triggered.
+- A genuine live screenshot was captured in the Codex release task showing both distinct journal-photo thumbnails as `Added`, the restored-photo message, and the `3/12 photos` count. No repository screenshot file is claimed by this record.
+- Render deployment metadata was not inspected for this follow-up, so no Render deployment ID is claimed. The live production behavior and release-busted route are the deployment evidence.
+
+## Honest remaining work
+
+- A rightful four-photo top/middle/lower macro plus wider-context set is still needed for one successful production provider analysis, provenance display, exact one-credit deduction, saved-run reopening, and downstream harvest-batch/task verification.
+- A deliberately failed provider request was not triggered in production. Refund behavior is covered by automated tests but still needs live failure evidence under a safe failure mechanism.
+- The supplied YouTube videos need explicit registry metadata before they can become governed knowledge sources; today they are QA/observation material only.
+- Independent harvest-timing review, mobile/desktop accessibility coverage, keyboard and screen-reader checks, and an exported final-SHA video remain open.

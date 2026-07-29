@@ -5,7 +5,9 @@ import BackendCalculatorToolScreen from "../BackendCalculatorToolScreen";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockGetGrowpathModuleRecord = jest.fn();
 const mockUseEntitlements = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1", plantId: "plant-1" }),
@@ -17,7 +19,12 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/api/growpathModules", () => ({
-  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
+  getGrowpathModuleRecord: (...args: any[]) => mockGetGrowpathModuleRecord(...args)
+}));
+
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -99,7 +106,12 @@ function renderCloneRootingTool() {
 describe("BackendCalculatorToolScreen beta access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "" }
+    });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-1" });
+    mockGetGrowpathModuleRecord.mockResolvedValue({ id: "module-backend-1" });
     mockRunCalculator.mockResolvedValue({
       outputs: { rootingProgress: "normal_wait", warnings: [] },
       toolRun: {
@@ -125,6 +137,25 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(mockRunCalculator).not.toHaveBeenCalled();
   });
 
+  it("lets the local paid preview flag run beta packet tools for free accounts", async () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { hostname: "localhost", search: "?paid=1" }
+    });
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "free",
+      can: jest.fn(() => false)
+    });
+
+    renderCloneRootingTool();
+
+    expect(screen.queryByText("Clone Rooting Troubleshooter is a Pro tool")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
+  });
+
   it("lets pro personal users run beta packet tools", async () => {
     mockUseEntitlements.mockReturnValue({
       mode: "personal",
@@ -135,7 +166,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
     renderCloneRootingTool();
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    fireEvent.press(screen.getByText("Calculate"));
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
 
     await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
     expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -149,5 +180,109 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(
       await screen.findByText("Calculated and saved as a ToolRun and module record.")
     ).toBeTruthy();
+  });
+
+  it("reuses the backend-created module record instead of saving a duplicate", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockRunCalculator.mockResolvedValue({
+      outputs: { rootingProgress: "normal_wait", warnings: [] },
+      toolRun: {
+        id: "tool-run-1",
+        linkedModuleRecordId: "module-backend-1",
+        toolName: "clone-rooting"
+      }
+    });
+
+    renderCloneRootingTool();
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    await waitFor(() =>
+      expect(mockGetGrowpathModuleRecord).toHaveBeenCalledWith("module-backend-1")
+    );
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
+  });
+
+  it("does not create a duplicate when the backend record is briefly unavailable", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockGetGrowpathModuleRecord.mockResolvedValue(null);
+    mockRunCalculator.mockResolvedValue({
+      outputs: { rootingProgress: "normal_wait", warnings: [] },
+      toolRun: {
+        id: "tool-run-1",
+        linkedModuleRecordId: "module-backend-1",
+        toolName: "clone-rooting"
+      }
+    });
+
+    renderCloneRootingTool();
+    fireEvent.press(screen.getByLabelText("Run Clone Rooting Troubleshooter"));
+
+    expect(
+      await screen.findByText(
+        "Calculated and saved. The backend created the module record, but it could not be reloaded yet. Open Saved Runs before calculating again."
+      )
+    ).toBeTruthy();
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
+  });
+
+  it("leaves empty AI values blank and counts only non-empty prefill fields", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: JSON.stringify({
+        pestSeen: "not confirmed",
+        evidence: [],
+        scoutLocation: ""
+      }),
+      missingInformation: []
+    });
+
+    render(
+      <BackendCalculatorToolScreen
+        tool="ipm-scout"
+        toolKey="ipm-scout"
+        title="IPM Scout"
+        subtitle="Review saved photo evidence."
+        growOptional
+        fields={[
+          { key: "pestSeen", label: "Pest seen", defaultValue: "" },
+          { key: "evidence", label: "Direct evidence", defaultValue: "" },
+          { key: "scoutLocation", label: "Scout location", defaultValue: "" }
+        ]}
+        aiPrefill={{
+          buttonLabel: "Test photo prefill",
+          buildMessage: () => "Inspect the saved photo."
+        }}
+        buildPayload={(values) => values}
+        defaultLogTitle={() => "IPM scout"}
+      />
+    );
+
+    fireEvent.press(screen.getByText("Test photo prefill"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "AI filled 1 non-empty field from available evidence. Empty or unknown values were left blank. Review before calculating."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.getByLabelText("IPM Scout Pest seen").props.value).toBe(
+      "not confirmed"
+    );
+    expect(screen.getByLabelText("IPM Scout Direct evidence").props.value).toBe("");
+    expect(screen.getByLabelText("IPM Scout Scout location").props.value).toBe("");
   });
 });

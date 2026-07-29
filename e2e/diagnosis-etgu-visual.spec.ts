@@ -276,11 +276,9 @@ test.describe("ETGU diagnosis intake", () => {
         waitUntil: "domcontentloaded"
       });
       await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
-      await expect(
-        page.getByText("Production AI provider needs verification")
-      ).toBeVisible();
+      await expect(page.getByText("Diagnosis provider needs verification")).toBeVisible();
 
-      await expect(page.getByText("Crop identity")).toBeVisible();
+      await expect(page.getByText("Crop identity", { exact: true })).toBeVisible();
       await page
         .getByRole("button", { name: "Diagnose plant Arbequina Olive #1" })
         .click();
@@ -298,7 +296,9 @@ test.describe("ETGU diagnosis intake", () => {
         .getByLabel("Diagnosis notes")
         .fill("Leaf spotting and possible container root-zone stress.");
       await page.getByLabel("Diagnosis root-zone notes").fill("slow dryback");
-      await page.getByLabel("Diagnosis temperature").fill("78");
+      await page
+        .getByRole("textbox", { name: "Diagnosis temperature", exact: true })
+        .fill("78");
       await page.getByLabel("Diagnosis RH").fill("72");
       await page.getByLabel("Diagnosis VPD").fill("0.7");
       await page.getByLabel("Diagnosis feed EC").fill("1.4");

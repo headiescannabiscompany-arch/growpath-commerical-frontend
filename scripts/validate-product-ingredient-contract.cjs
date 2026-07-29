@@ -63,7 +63,10 @@ const uiTest = read("tests/unit/IngredientLibraryRoute.test.tsx");
   ["auth scoped query", /user: toObjectId\(getRawUserId\(req\)\)/],
   ["default active filter", /archivedAt = null/],
   ["favorite sort", /sort\(\{ favorite: -1, name: 1 \}\)/],
-  ["allowed update fields", /const allowed = \[[\s\S]*"labelNPK"[\s\S]*"sourceRecords"[\s\S]*"favorite"[\s\S]*\]/],
+  [
+    "allowed update fields",
+    /const allowed = \[[\s\S]*"labelNPK"[\s\S]*"sourceRecords"[\s\S]*"favorite"[\s\S]*\]/
+  ],
   ["archive update", /\{ archivedAt: new Date\(\) \}/]
 ].forEach(([description, pattern]) => {
   requireText("tools ingredient route", route, pattern, description);
@@ -80,7 +83,7 @@ const uiTest = read("tests/unit/IngredientLibraryRoute.test.tsx");
 });
 
 [
-  "Product / Ingredient Library",
+  "Products & Label Library",
   "payloadFromDraft",
   "sourceRecords",
   "commercialUseAllowed",
@@ -92,14 +95,27 @@ const uiTest = read("tests/unit/IngredientLibraryRoute.test.tsx");
   "Release speed",
   "Guaranteed analysis"
 ].forEach((text) => {
-  requireText("Ingredient Library UI", screen, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), text);
+  requireText(
+    "Ingredient Library UI",
+    screen,
+    new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    text
+  );
 });
 
 [
   ["backend CRUD test", routeTest, /reads, updates, and archives product ingredients/],
-  ["backend source record assertion", routeTest, /sourceRecords: \[expect\.objectContaining\(\{ sourceName: "Manufacturer label" \}\)\]/],
+  [
+    "backend source record assertion",
+    routeTest,
+    /sourceRecords: \[expect\.objectContaining\(\{ sourceName: "Manufacturer label" \}\)\]/
+  ],
   ["UI create test", uiTest, /saves reusable ingredient library fields for recipe math/],
-  ["UI payload assertion", uiTest, /mockCreateProductIngredient[\s\S]*labelNPK[\s\S]*releaseSpeed[\s\S]*documentUrl[\s\S]*photoUrl/]
+  [
+    "UI payload assertion",
+    uiTest,
+    /mockCreateProductIngredient[\s\S]*labelNPK[\s\S]*releaseSpeed[\s\S]*documentUrl[\s\S]*photoUrl/
+  ]
 ].forEach(([label, contents, pattern]) => {
   requireText(label, contents, pattern, "test coverage");
 });

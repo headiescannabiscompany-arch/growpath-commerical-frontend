@@ -76,6 +76,21 @@ describe("ModeSwitcher", () => {
     expect(mockPush).toHaveBeenNthCalledWith(2, "/offers");
   });
 
+  it("shows only workspaces the signed-in identity can actually enter at login", () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      can: (capability: string) => capability === "FACILITY_ACCESS",
+      facilityId: "facility-1",
+      facilityRole: "STAFF"
+    });
+
+    const screen = render(<ModeSwitcher availableOnly />);
+
+    expect(screen.getByText("Continue as Personal")).toBeTruthy();
+    expect(screen.getByText("Manage Facility")).toBeTruthy();
+    expect(screen.queryByText("Create Commercial Account")).toBeNull();
+  });
+
   it("switches directly to commercial and facility when access exists", () => {
     mockUseEntitlements.mockReturnValue({
       mode: "commercial",

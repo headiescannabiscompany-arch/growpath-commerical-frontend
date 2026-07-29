@@ -388,7 +388,8 @@ export default function Profile() {
         <AppCard style={styles.card}>
           <Text style={styles.cardTitle}>Session</Text>
           <Text style={styles.cardText}>
-            Sign out before switching to a different account type or business.
+            Use Switch workspace to move between eligible Personal, Commercial, and
+            Facility work without signing out. Sign out only when changing email accounts.
           </Text>
           <Pressable
             onPress={handleLogout}

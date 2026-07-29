@@ -12,6 +12,19 @@ export type AssistantProposedWrite = {
   payload: Record<string, any>;
 };
 
+export type AssistantSopRecommendation = {
+  key: string;
+  sourceVersion: number;
+  title: string;
+  category: string;
+  summary: string;
+  whyRecommended: string;
+  checklist: string[];
+  safetyNotes?: string;
+  missingInformation: string[];
+  reviewStatus: "review_required";
+};
+
 export type PersonalAssistantResponse = {
   success: boolean;
   intent?: string;
@@ -20,11 +33,41 @@ export type PersonalAssistantResponse = {
   contextSummary?: Record<string, any>;
   referencedData?: AssistantReference[];
   proposedWrites?: AssistantProposedWrite[];
+  sopRecommendations?: AssistantSopRecommendation[];
+  provider?: string;
+  providerLabel?: string;
+  conversationId?: string;
+  evidenceUsed?: string[];
+  mediaAnalysis?: {
+    requested?: boolean;
+    photosAttached?: number;
+    photosAnalyzed?: number;
+    status?: string;
+    provider?: string;
+    providerModel?: string;
+    providerLabel?: string;
+  };
+  missingInformation?: string[];
+  limitations?: string[];
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  agreementStatus?: string;
+  aiCreditsUsed?: number;
+  aiTokensRemaining?: number;
+  creditNotice?: string;
 };
 
 export async function askPersonalAssistant(payload: {
   message: string;
   context: Record<string, any>;
+  growId?: string;
+  facilityId?: string;
+  workspaceType?: "personal" | "commercial" | "facility";
+  plantId?: string;
+  conversationId?: string;
+  evidenceAssetIds?: string[];
 }): Promise<PersonalAssistantResponse> {
   return apiRequest<PersonalAssistantResponse>("/api/ai/assistant/personal", {
     method: "POST",

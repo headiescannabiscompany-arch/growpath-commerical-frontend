@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/auth/AuthContext";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
@@ -51,12 +52,13 @@ export default function ScheduleCalculatorScreen() {
           value={String(days)}
           onChangeText={(text) => setDays(Number(text))}
         />
-        <Text style={styles.label}>Last Event Date (YYYY-MM-DD)</Text>
-        <TextInput
-          style={styles.input}
+        <CalendarDateField
+          accessibilityLabel="Last event date"
+          label="Last event date"
           value={lastWatered}
-          onChangeText={setLastWatered}
-          placeholder="2026-01-17"
+          onChange={setLastWatered}
+          placeholder="Choose last event date"
+          optional={false}
         />
         <TouchableOpacity style={styles.button} onPress={handleCalculate}>
           <Text style={styles.buttonText}>Calculate Next Event</Text>

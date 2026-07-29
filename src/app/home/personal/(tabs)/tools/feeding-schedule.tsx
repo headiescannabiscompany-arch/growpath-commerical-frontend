@@ -18,11 +18,18 @@ import {
 import { reviewFeedingSchedule } from "@/features/personal/tools/feedingScheduleReview";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value[0] || "";
   return "";
+}
+
+function optionalNumeric(value: string) {
+  if (!value.trim()) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function rowsFromSchedule(result: any): any[] {
@@ -43,6 +50,10 @@ function notesFromSchedule(result: any) {
       result?.schedule?.notes ||
       ""
   );
+}
+
+function resultToolRunId(result: any) {
+  return String(result?.data?.toolRun?.id || result?.data?.toolRun?._id || "").trim();
 }
 
 function dueTomorrow() {
@@ -86,6 +97,58 @@ export default function FeedingScheduleToolScreen() {
   const [result, setResult] = useState<any>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [prefilling, setPrefilling] = useState(false);
+
+  async function prefillFromGrow() {
+    if (!growId || prefilling) return;
+    setPrefilling(true);
+    setFeedback("");
+    try {
+      const response = await askPersonalAssistant({
+        growId,
+        plantId: plantContext.plantId || undefined,
+        context: {
+          workflow: "feeding-schedule",
+          requestedFields: [
+            "productName",
+            "medium",
+            "strainType",
+            "currentStage",
+            "experience",
+            "weeks",
+            "inputEC",
+            "runoffEC",
+            "inputPH",
+            "runoffPH",
+            "waterSource"
+          ]
+        },
+        message: `Prefill this Feeding Schedule from the selected grow/plant's saved nutrient or soil recipe, verified product guaranteed analysis, water profile and alkalinity, actual medium, stage, cultivar/provenance, prior feed/topdress events, pH/EC input and runoff trends, diagnoses, plant response, and harvest timing. Return JSON only with exactly these string keys: productName, medium, strainType, currentStage, experience, weeks, inputEC, runoffEC, inputPH, runoffPH, waterSource. Product/recipe, crop type, measurements, and water source must come from saved records; never invent them. experience is a user preference and must be blank unless the user already saved it. Do not infer a dose or schedule from visual symptoms. Consider nitrogen and carbon context, release timing, water chemistry, and K/Ca/Mg antagonism, but leave calculation to the nutrient engine. Leave unknowns blank.`
+      });
+      const raw = String(response.reply || "");
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
+      setProductName(String(parsed.productName ?? ""));
+      setMedium(String(parsed.medium ?? ""));
+      setStrainType(String(parsed.strainType ?? ""));
+      setCurrentStage(String(parsed.currentStage ?? ""));
+      setExperience(String(parsed.experience ?? ""));
+      setWeeks(String(parsed.weeks ?? ""));
+      setInputEC(String(parsed.inputEC ?? ""));
+      setRunoffEC(String(parsed.runoffEC ?? ""));
+      setInputPH(String(parsed.inputPH ?? ""));
+      setRunoffPH(String(parsed.runoffPH ?? ""));
+      setWaterSource(String(parsed.waterSource ?? ""));
+      setResult(null);
+      setFeedback(
+        `AI filled recorded feeding inputs. Review them before running the nutrient engine.${response.missingInformation?.length ? ` Optional missing details: ${response.missingInformation.join(", ")}.` : ""}`
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "AI could not prefill the feeding schedule.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
 
   const scheduleRows = rowsFromSchedule(result);
   const notes = notesFromSchedule(result);
@@ -130,10 +193,10 @@ export default function FeedingScheduleToolScreen() {
         experience: experience.trim(),
         weeks: Number(weeks),
         stage: currentStage.trim(),
-        inputEC: Number(inputEC),
-        runoffEC: Number(runoffEC),
-        inputPH: Number(inputPH),
-        runoffPH: Number(runoffPH),
+        inputEC: optionalNumeric(inputEC),
+        runoffEC: optionalNumeric(runoffEC),
+        inputPH: optionalNumeric(inputPH),
+        runoffPH: optionalNumeric(runoffPH),
         waterSource: waterSource.trim()
       });
       setResult(response);
@@ -156,16 +219,17 @@ export default function FeedingScheduleToolScreen() {
       experience: experience.trim(),
       weeks: Number(weeks),
       stage: currentStage.trim(),
-      inputEC: Number(inputEC),
-      runoffEC: Number(runoffEC),
-      inputPH: Number(inputPH),
-      runoffPH: Number(runoffPH),
+      inputEC: optionalNumeric(inputEC),
+      runoffEC: optionalNumeric(runoffEC),
+      inputPH: optionalNumeric(inputPH),
+      runoffPH: optionalNumeric(runoffPH),
       waterSource: waterSource.trim()
     };
     const created = await saveToolRunAndCreateLog({
       growId,
       ...plantContext.toolRunContext,
       toolKey: "feeding-schedule",
+      toolRunId: resultToolRunId(result),
       input,
       output: result,
       type: "feed",
@@ -199,14 +263,15 @@ export default function FeedingScheduleToolScreen() {
 
   return (
     <ScreenBoundary
-      title="AI Feeding Schedule"
+      title="Feeding Schedule Planner"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>AI Feeding Schedule</Text>
+        <Text style={styles.title}>Feeding Schedule Planner</Text>
         <Text style={styles.subtitle}>
-          Generate a feeding plan from nutrient, medium, strain, and schedule context.
+          Build a conservative schedule and review EC, pH, runoff, medium, and crop-stage
+          risks without using AI credits.
         </Text>
         <PersonalFeedPlacement
           placement="top"
@@ -220,6 +285,25 @@ export default function FeedingScheduleToolScreen() {
           selectedPlant={plantContext.selectedPlant}
           onSelect={plantContext.setPlantId}
         />
+
+        <View style={styles.aiCard}>
+          <Text style={styles.aiTitle}>AI grow-context prefill</Text>
+          <Text style={styles.aiText}>
+            Fill saved recipe, medium, water, stage, and pH/EC fields. The nutrient engine
+            still calculates and reviews the schedule.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Fill feeding schedule from grow"
+            disabled={!growId || prefilling}
+            onPress={prefillFromGrow}
+            style={[styles.button, (!growId || prefilling) && styles.disabled]}
+          >
+            <Text style={styles.buttonText}>
+              {prefilling ? "Reviewing grow..." : "Fill feeding schedule from grow"}
+            </Text>
+          </Pressable>
+        </View>
 
         <Text style={styles.label}>Product or nutrient line</Text>
         <TextInput
@@ -307,7 +391,7 @@ export default function FeedingScheduleToolScreen() {
 
         {!enabled ? (
           <LockedToolCard
-            title="AI Feeding Schedule"
+            title="Feeding Schedule Planner"
             capability={CAPABILITY_KEYS.FEEDING_SCHEDULE}
             description="Generate stage-aware feeding plans after this capability is enabled for the account."
           />
@@ -332,7 +416,7 @@ export default function FeedingScheduleToolScreen() {
 
         <ToolResultSurface
           title="Feeding schedule"
-          status={result ? "AI ENDPOINT" : "READY"}
+          status={result ? "RULE REVIEW" : "READY"}
           summary={notes || "Run the endpoint to generate a schedule."}
           metrics={[
             { key: "weeks", label: "Requested weeks", value: weeks || "0" },
@@ -359,7 +443,7 @@ export default function FeedingScheduleToolScreen() {
             ) : undefined
           }
           assumptions={[
-            "Backend schedule output is authoritative for entitlement and endpoint behavior.",
+            "GrowPath's rule engine reviews the schedule without using AI credits.",
             ...review.warnings,
             ...review.recommendations,
             "Confirm product label rates, local regulations, runoff, EC, and plant response before applying."
@@ -383,6 +467,7 @@ export default function FeedingScheduleToolScreen() {
                         growId,
                         ...plantContext.toolRunContext,
                         toolKey: "feeding-schedule",
+                        toolRunId: resultToolRunId(result),
                         input: {
                           nutrientData: { productName: productName.trim() },
                           growMedium: medium.trim(),
@@ -390,10 +475,10 @@ export default function FeedingScheduleToolScreen() {
                           experience: experience.trim(),
                           weeks: Number(weeks),
                           stage: currentStage.trim(),
-                          inputEC: Number(inputEC),
-                          runoffEC: Number(runoffEC),
-                          inputPH: Number(inputPH),
-                          runoffPH: Number(runoffPH),
+                          inputEC: optionalNumeric(inputEC),
+                          runoffEC: optionalNumeric(runoffEC),
+                          inputPH: optionalNumeric(inputPH),
+                          runoffPH: optionalNumeric(runoffPH),
                           waterSource: waterSource.trim()
                         },
                         output: result,
@@ -456,5 +541,15 @@ const styles = StyleSheet.create({
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   disabled: { opacity: 0.5 },
   rows: { gap: 5 },
-  rowText: { color: "#334155", lineHeight: 19 }
+  rowText: { color: "#334155", lineHeight: 19 },
+  aiCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  aiTitle: { color: "#14532D", fontWeight: "800" },
+  aiText: { color: "#475569", lineHeight: 19 }
 });

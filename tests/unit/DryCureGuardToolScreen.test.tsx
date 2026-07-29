@@ -72,10 +72,13 @@ describe("DryCureGuardToolScreen", () => {
     jest.resetAllMocks();
     mockRunCalculator.mockResolvedValue({
       outputs: {
-        moldRisk: "medium",
-        overdryRisk: "low",
+        assessmentStatus: "measured_snapshot",
+        moldRisk: "monitor",
+        overdryRisk: "monitor",
         dewPointF: 53.2,
         dewPointSpreadC: 6.1,
+        surfaceDewPointMarginC: 3.4,
+        condensationRisk: "not_indicated_by_entered_surface_reading",
         nextAction: "Keep airflow gentle and verify jar RH before sealing.",
         taskSuggestions: [{ title: "Check dry room tomorrow", priority: "high" }]
       },
@@ -107,12 +110,49 @@ describe("DryCureGuardToolScreen", () => {
     });
   });
 
+  function enterRequiredReadings(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Stage"), "curing");
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Days in current stage"),
+      "2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Measured room temperature"),
+      "68"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Measured room RH"),
+      "60"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Light condition"),
+      "dark"
+    );
+  }
+
+  it("does not run with blank measurements or invent default readings", async () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Complete the required fields: Stage, Days in current stage, Measured room temperature, Measured room RH, Light condition."
+        )
+      ).toBeTruthy()
+    );
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+    expect(screen.queryByDisplayValue("68")).toBeNull();
+    expect(screen.queryByDisplayValue("60")).toBeNull();
+  });
+
   it("creates dry/cure monitoring tasks from the saved ToolRun", async () => {
     const screen = render(<DryCureGuardToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    enterRequiredReadings(screen);
     fireEvent.changeText(
-      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      screen.getByLabelText("Dry / Cure Guard Equilibrated jar or bag RH (during cure)"),
       "63"
     );
     fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
@@ -123,7 +163,11 @@ describe("DryCureGuardToolScreen", () => {
         expect.objectContaining({
           growId: "grow-1",
           mode: "curing",
-          jarRH: 63
+          daysInStage: 2,
+          dryRoomTemp: 68,
+          dryRoomRH: 60,
+          jarRH: 63,
+          lightExposure: "dark"
         })
       )
     );
@@ -139,10 +183,12 @@ describe("DryCureGuardToolScreen", () => {
           toolRunId: "toolrun-1",
           input: expect.objectContaining({
             mode: "curing",
-            jarRH: 63
+            daysInStage: 2,
+            jarRH: 63,
+            lightExposure: "dark"
           }),
           output: expect.objectContaining({
-            moldRisk: "medium",
+            moldRisk: "monitor",
             nextAction: "Keep airflow gentle and verify jar RH before sealing."
           }),
           tasks: [
@@ -156,7 +202,7 @@ describe("DryCureGuardToolScreen", () => {
                 channels: ["in_app"],
                 reminders: [expect.objectContaining({ offsetMinutes: -720 })]
               }),
-              description: expect.stringContaining("Mold risk: medium")
+              description: expect.stringContaining("Mold risk: monitor")
             }),
             expect.objectContaining({
               title: "Inspect buds for dry/cure quality",
@@ -179,9 +225,13 @@ describe("DryCureGuardToolScreen", () => {
   it("saves dry/cure readings to a harvest batch record", async () => {
     const screen = render(<DryCureGuardToolScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    enterRequiredReadings(screen);
     fireEvent.changeText(
-      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      screen.getByLabelText("Dry / Cure Guard Coldest surface temperature (recommended)"),
+      "59"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Equilibrated jar or bag RH (during cure)"),
       "63"
     );
     fireEvent.changeText(
@@ -213,7 +263,7 @@ describe("DryCureGuardToolScreen", () => {
             jarRh: 63,
             dewPointF: 53.2,
             linkedToolRunId: "toolrun-1",
-            qualityNotes: expect.stringContaining("Mold risk: medium")
+            qualityNotes: expect.stringContaining("Mold risk: monitor")
           })
         ]
       })
@@ -221,5 +271,15 @@ describe("DryCureGuardToolScreen", () => {
     await waitFor(() =>
       expect(screen.getByText("Saved dry/cure record to harvest batch.")).toBeTruthy()
     );
+  });
+
+  it("explains darkness and stage timing without calling 24 hours completion", () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    expect(screen.getByText(/Keep drying and curing material dark/i)).toBeTruthy();
+    expect(screen.getByText(/Plan controlled drying around 10-14 days/i)).toBeTruthy();
+    expect(screen.getByText(/Fast, hot, low-humidity drying/i)).toBeTruthy();
+    expect(screen.getByText(/Longer than 14 days can occur/i)).toBeTruthy();
+    expect(screen.getByText(/24-hour item is only a recheck/i)).toBeTruthy();
   });
 });

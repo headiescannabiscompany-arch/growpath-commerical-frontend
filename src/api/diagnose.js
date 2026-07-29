@@ -10,6 +10,13 @@ export function analyzeDiagnosis(payload) {
   });
 }
 
+export function diagnoseEvidence(payload) {
+  return apiRequest(apiRoutes.DIAGNOSE.CREATE, {
+    method: "POST",
+    body: payload
+  });
+}
+
 export function getDiagnosisHistory() {
   return apiRequest(apiRoutes.DIAGNOSE.HISTORY);
 }

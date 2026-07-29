@@ -12,7 +12,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: mockPush,
     replace: mockReplace
-  })
+  }),
+  usePathname: () => "/home/facility/profile"
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -37,7 +38,21 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
+    user: {
+      id: "facility-user-1",
+      email: "facility@example.com",
+      displayName: "Facility Lead"
+    },
     logout: (...args: any[]) => mockLogout(...args)
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    plan: "facility",
+    mode: "facility",
+    facilityId: "facility-1",
+    facilityRole: "admin"
   })
 }));
 
@@ -55,7 +70,13 @@ describe("FacilityProfileRoute", () => {
     mockLogout.mockReset();
     mockPush.mockReset();
     mockReplace.mockReset();
-    mockApiRequest.mockResolvedValue({});
+    mockApiRequest.mockImplementation((path: string) =>
+      Promise.resolve(
+        path === "/api/tokens/balance"
+          ? { aiTokens: 100, maxTokens: 100, refreshCadence: "weekly" }
+          : {}
+      )
+    );
   });
 
   it("shows workspace boundaries and opens account mode routes", async () => {
@@ -63,12 +84,22 @@ describe("FacilityProfileRoute", () => {
 
     expect(screen.getByText("Facility workspace")).toBeTruthy();
     expect(screen.getByText("Operational facility identity")).toBeTruthy();
+    expect(screen.getByLabelText("Parental content control PIN").props).toMatchObject({
+      autoComplete: "one-time-code",
+      textContentType: "oneTimeCode",
+      importantForAutofill: "no"
+    });
 
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));
+    fireEvent.press(screen.getByLabelText("Manage facility plan and billing"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/home/facility/select"));
+    expect(mockPush).toHaveBeenCalledWith("/offers");
+    expect(screen.queryByText("Report Bug")).toBeNull();
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
+    );
   });
 });

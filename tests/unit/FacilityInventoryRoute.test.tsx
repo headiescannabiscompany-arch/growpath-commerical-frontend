@@ -68,6 +68,9 @@ describe("FacilityInventoryTab", () => {
       ).toBeTruthy();
     });
     expect(screen.queryByLabelText("Open inventory AI review")).toBeNull();
+    expect(screen.queryByText("out of stock")).toBeNull();
+    expect(screen.queryByText("low stock")).toBeNull();
+    expect(screen.queryByText("missing SKU")).toBeNull();
   });
 
   it("uses canonical facility inventory routes for create and detail", async () => {

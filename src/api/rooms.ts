@@ -5,6 +5,7 @@ export type Room = {
   id: string;
   name: string;
   createdAt: string;
+  displayOrder?: number | null;
   roomType?: string;
   trackingMode?: string;
   zoneName?: string;
@@ -13,7 +14,14 @@ export type Room = {
   lastActivityAt?: string;
   plantCount?: number;
   lightCount?: number;
+  environmentType?: string;
+  dimensions?: { length?: number; width?: number; height?: number; unit?: string };
+  location?: { city?: string; region?: string; postalCode?: string; country?: string };
+  baselines?: Record<string, unknown>;
+  roomProfile?: Record<string, unknown>;
 };
+
+export type RoomDraft = Omit<Partial<Room>, "id" | "createdAt"> & { name: string };
 
 function normalizeRoom(raw: any): Room | null {
   if (!raw || typeof raw !== "object") return null;
@@ -33,9 +41,13 @@ function normalizeRoomsResponse(response: any): Room[] {
       ? response.rooms
       : Array.isArray(response?.items)
         ? response.items
-        : Array.isArray(response?.data)
-          ? response.data
-          : [];
+        : Array.isArray(response?.data?.rooms)
+          ? response.data.rooms
+          : Array.isArray(response?.data?.items)
+            ? response.data.items
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
 
   return rows.map(normalizeRoom).filter(Boolean) as Room[];
 }
@@ -45,17 +57,7 @@ export async function fetchRooms(facilityId: string): Promise<Room[]> {
   return normalizeRoomsResponse(listRes);
 }
 
-export async function createRoom(
-  facilityId: string,
-  data: {
-    name: string;
-    roomType?: string;
-    trackingMode?: string;
-    zoneName?: string;
-    zoneId?: string;
-    stage?: string;
-  }
-) {
+export async function createRoom(facilityId: string, data: RoomDraft) {
   const createRes = await apiRequest(endpoints.rooms(facilityId), {
     method: "POST",
     body: data
@@ -80,4 +82,15 @@ export async function deleteRoom(facilityId: string, id: string) {
     method: "DELETE"
   });
   return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
+}
+
+export async function reorderRooms(
+  facilityId: string,
+  roomIds: string[]
+): Promise<Room[]> {
+  const response = await apiRequest(`${endpoints.rooms(facilityId)}/order`, {
+    method: "PUT",
+    body: { roomIds }
+  });
+  return normalizeRoomsResponse(response);
 }

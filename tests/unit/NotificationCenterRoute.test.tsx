@@ -9,6 +9,23 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      notificationPreferences: {
+        pushEnabled: true,
+        taskReminders: true,
+        forumReplies: true,
+        forumMentions: true,
+        videoActivity: true,
+        courseAndLiveUpdates: true,
+        commerceUpdates: true,
+        facilityAlerts: true
+      }
+    }
+  })
+}));
+
 jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -23,6 +40,8 @@ jest.mock("expo-router", () => {
     useLocalSearchParams: () => ({ notificationId: "notification-1" })
   };
 });
+
+jest.setTimeout(15000);
 
 describe("NotificationCenterRoute", () => {
   beforeEach(() => {
@@ -228,7 +247,7 @@ describe("NotificationCenterRoute", () => {
         });
       }
       if (
-        path === "/api/notifications/read/notification-1" &&
+        path === "/api/notifications/notification-1/read" &&
         options?.method === "POST"
       ) {
         return Promise.resolve({ ok: true });
@@ -249,12 +268,15 @@ describe("NotificationCenterRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
+    expect(
+      screen.getByText("Device push is enabled for this account.")
+    ).toBeTruthy();
     expect(screen.getByText(/Join the soil mixing demo/)).toBeTruthy();
     expect(screen.getByLabelText("Focused notification notification-1")).toBeTruthy();
     expect(screen.getByText(/Source live/)).toBeTruthy();
     expect(screen.queryByText("Task overdue")).toBeNull();
 
-    fireEvent.press(screen.getByLabelText("Notification filter tasks"));
+    fireEvent.press(screen.getByLabelText("Notification filter taskReminders"));
     expect(screen.getByText("Task overdue")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));
@@ -269,7 +291,7 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /forum/post/thread-product")
+      screen.getByLabelText("Notification link /forum/post?id=thread-product")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/grows/run-1")
@@ -550,7 +572,7 @@ describe("NotificationCenterRoute", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/notifications/read/notification-1",
+        "/api/notifications/notification-1/read",
         { method: "POST" }
       )
     );

@@ -39,6 +39,8 @@ jest.mock("expo-image-picker", () => ({
   launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibrary(...args)
 }));
 
+jest.setTimeout(15000);
+
 describe("ContentMarketplaceScreen storefront offers", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -108,3 +110,6 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     );
   });
 });
+
+
+

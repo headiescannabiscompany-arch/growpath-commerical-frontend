@@ -114,7 +114,9 @@ describe("live URL verifier", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Live URL dry run passed/);
-    expect(result.stdout).toContain("[live-url] configured privacy: https://growpathai.com/privacy");
+    expect(result.stdout).toContain(
+      "[live-url] configured privacy: https://growpathai.com/privacy"
+    );
   });
 
   it("rejects local production API URLs before network checks", () => {
@@ -157,7 +159,10 @@ describe("live URL verifier", () => {
       "terms",
       "support",
       "communities",
+      "personal-grow-deep-link",
       "delete-account",
+      "workspace-choice",
+      "workspace-switch",
       "api-health",
       "api-ready",
       "api-health-api"
@@ -168,7 +173,33 @@ describe("live URL verifier", () => {
       .trim()
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
-    expect(fetchLog).toHaveLength(8);
+    expect(fetchLog).toHaveLength(11);
     expect(fetchLog.every((entry) => entry.method === "HEAD")).toBe(true);
+  });
+
+  it("keeps both workspace selectors in the production fallback export", () => {
+    const exportScript = fs.readFileSync(
+      path.join(root, "scripts", "export-production-web.cjs"),
+      "utf8"
+    );
+    const fallbackBlock = exportScript.match(
+      /const fallbackRoutes = \[([\s\S]*?)\];/
+    )?.[1];
+
+    expect(fallbackBlock).toContain('"account/workspace"');
+    expect(fallbackBlock).toContain('"account/mode"');
+  });
+
+  it("keeps public live discovery and live-session details in the production fallback export", () => {
+    const exportScript = fs.readFileSync(
+      path.join(root, "scripts", "export-production-web.cjs"),
+      "utf8"
+    );
+    const fallbackBlock = exportScript.match(
+      /const fallbackRoutes = \[([\s\S]*?)\];/
+    )?.[1];
+
+    expect(fallbackBlock).toContain('"lives"');
+    expect(fallbackBlock).toContain('"live-session"');
   });
 });

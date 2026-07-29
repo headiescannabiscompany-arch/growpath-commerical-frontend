@@ -1,5 +1,3 @@
-
-
 "use strict";
 
 const mongoose = require("mongoose");
@@ -14,32 +12,31 @@ const PlantSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: false,
-      index: true,
+      index: true
     },
 
     // Back-compat (some legacy flows may use string user ids)
     userId: { type: String, required: false, index: true },
-
 
     // Grow linkage (acceptance/legacy tests check these)
     growId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Grow",
       default: null,
-      index: true,
+      index: true
     },
     grow: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Grow",
       default: null,
-      index: true,
+      index: true
     },
     growIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Grow",
-        default: null,
-      },
+        default: null
+      }
     ],
 
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", default: null },
@@ -51,11 +48,14 @@ const PlantSchema = new mongoose.Schema(
     cultivar: { type: String, default: "" },
     scientificName: { type: String, default: "" },
     cropCommonName: { type: String, default: "" },
+    commonNames: { type: [String], default: [] },
+    cropIdentity: { type: mongoose.Schema.Types.Mixed, default: null },
+    cropIdentityConfirmedAt: { type: Date, default: null },
     cropProfileId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CropProfile",
       default: null,
-      index: true,
+      index: true
     },
     stage: { type: String, default: "" },
     photos: { type: [String], default: [] },
@@ -63,7 +63,7 @@ const PlantSchema = new mongoose.Schema(
 
     // Soft delete / active flag
     deletedAt: { type: Date, default: null, index: true },
-    isActive: { type: Boolean, default: true, index: true },
+    isActive: { type: Boolean, default: true, index: true }
   },
   { timestamps: true }
 );

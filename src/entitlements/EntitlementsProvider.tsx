@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthContext";
 import { buildCan } from "./can";
 import { CAPABILITY_KEYS, KNOWN_CAPS } from "./capabilityKeys";
 import { normalizeCapabilityKey, normalizeFacilityRole } from "./normalize";
+import { fallbackPlanLimits } from "@/config/planLimits";
 import {
   getPreferredMode as loadPreferredMode,
   setPreferredMode as persistPreferredMode,
@@ -76,6 +77,14 @@ function safeStringify(v: any) {
   }
 }
 
+export function entitlementApplicationFingerprint(
+  ctx: any,
+  user: any,
+  preferredMode: PreferredMode | null
+) {
+  return safeStringify({ ctx, user, preferredMode });
+}
+
 function pickMode(ctxMode: any): EntitlementsMode {
   if (ctxMode === "commercial") return "commercial";
   if (ctxMode === "facility") return "facility";
@@ -110,8 +119,20 @@ function hasCommercialAccess(ctx: any) {
 
 export function resolveDevEntitlementsPlan(rawPlan?: string | null, isDev = __DEV__) {
   if (!isDev) return null;
+  const queryPlan =
+    typeof window !== "undefined" && window.location
+      ? new URLSearchParams(window.location.search).get("devPlan")
+      : null;
+  const paidPreview =
+    typeof window !== "undefined" && window.location
+      ? new URLSearchParams(window.location.search).get("paid")
+      : null;
   const normalized = String(
-    rawPlan ?? process.env.EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN ?? ""
+    rawPlan ??
+      queryPlan ??
+      (paidPreview === "1" || paidPreview === "true" ? "pro" : null) ??
+      process.env.EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN ??
+      ""
   )
     .trim()
     .toLowerCase();
@@ -170,6 +191,28 @@ export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
   return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
 }
 
+export function resolveWorkspaceAccessPlan(
+  mode: EntitlementsMode,
+  accountPlan: string,
+  ctx: any
+) {
+  if (mode !== "facility") return accountPlan;
+  if (ctx?.facilityPlan === undefined && ctx?.facilitySubscriptionStatus === undefined) {
+    return accountPlan;
+  }
+  return getEffectivePlan(
+    ctx?.facilityPlan ?? "free",
+    ctx?.facilitySubscriptionStatus ?? "inactive"
+  );
+}
+
+export function shouldBlockEntitlementBootstrap(
+  meStatus: "idle" | "loading" | "ready" | "error",
+  hasResolvedEntitlements: boolean
+) {
+  return (meStatus === "idle" || meStatus === "loading") && !hasResolvedEntitlements;
+}
+
 export function applyFacilityRoleCapabilities(
   normalized: Record<string, boolean>,
   facilityRole: string | null
@@ -187,12 +230,19 @@ export function applyFacilityRoleCapabilities(
   normalized[CAPABILITY_KEYS.SOP_RUNS_READ] = true;
   normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
   normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_VIEW] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = false;
+  normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = false;
+  normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = false;
 
   if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
     normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
     normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
     normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
     normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = true;
   }
 
   if (
@@ -202,25 +252,38 @@ export function applyFacilityRoleCapabilities(
   ) {
     normalized[CAPABILITY_KEYS.TASKS_WRITE] = true;
     normalized[CAPABILITY_KEYS.GROWLOGS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
   }
 
-  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
+  if (facilityRole === "OWNER") {
     normalized[CAPABILITY_KEYS.TEAM_INVITE] = true;
     normalized[CAPABILITY_KEYS.TEAM_UPDATE_ROLE] = true;
     normalized[CAPABILITY_KEYS.TEAM_REMOVE] = true;
+    normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT] = true;
+  }
+
+  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
     normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE] = true;
     normalized[CAPABILITY_KEYS.EXPORT_COMPLIANCE] = true;
-    normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT] = true;
   }
 }
 
-export function applyUniversalCapabilities(normalized: Record<string, boolean>) {
+export function applyUniversalCapabilities(
+  normalized: Record<string, boolean>,
+  plan: string | null = null
+) {
   normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
   normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
   normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
+  normalized[CAPABILITY_KEYS.PUBLISH_COURSES] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
-  normalized[CAPABILITY_KEYS.FORUM_POST] = true;
+  normalized[CAPABILITY_KEYS.FORUM_POST] =
+    String(plan || "free").toLowerCase() !== "free";
+  normalized[CAPABILITY_KEYS.VIDEOS_VIEW] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = true;
+  normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = true;
 }
 
 export function applyDefaultCourseLimits(
@@ -231,27 +294,26 @@ export function applyDefaultCourseLimits(
   const normalizedPlan = String(plan || "free")
     .trim()
     .toLowerCase();
+  const fallback = fallbackPlanLimits(normalizedPlan);
 
   if (next.maxPaidCourses === undefined || next.maxPaidCourses === null) {
-    if (normalizedPlan === "free") next.maxPaidCourses = 1;
-    else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
-      next.maxPaidCourses = 5;
-    }
+    next.maxPaidCourses = fallback.maxPaidCourses;
   }
 
   if (next.maxLessonsPerCourse === undefined || next.maxLessonsPerCourse === null) {
-    if (normalizedPlan === "free") next.maxLessonsPerCourse = 7;
-    else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
-      next.maxLessonsPerCourse = 20;
-    }
+    next.maxLessonsPerCourse = fallback.maxLessonsPerCourse;
   }
 
   if (next.maxGrows === undefined || next.maxGrows === null) {
-    if (normalizedPlan === "free") next.maxGrows = 1;
+    next.maxGrows = fallback.maxGrows;
   }
 
   if (next.maxPlants === undefined || next.maxPlants === null) {
-    if (normalizedPlan === "free") next.maxPlants = 1;
+    next.maxPlants = fallback.maxPlants;
+  }
+
+  if (next.videoStorageBytes === undefined || next.videoStorageBytes === null) {
+    next.videoStorageBytes = fallback.videoStorageBytes;
   }
 
   return next;
@@ -272,30 +334,31 @@ export function applyPlanCapabilities(
   const isFacility = normalizedPlan === "facility";
 
   normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
   normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE] = true;
   normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE] = true;
+  normalized[CAPABILITY_KEYS.AI_ASSISTANT] = true;
   normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC] = true;
+  normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
   normalized[CAPABILITY_KEYS.TOOLS_VPD] = true;
+  normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE] = true;
+  normalized[CAPABILITY_KEYS.TASK_REMINDERS] = true;
+  normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
 
   if (isPaidPersonal || isCommercial || isFacility) {
-    normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE] = true;
-    normalized[CAPABILITY_KEYS.AI_ASSISTANT] = true;
     normalized[CAPABILITY_KEYS.ALERTS_VIEW] = true;
     normalized[CAPABILITY_KEYS.ALERTS_ACK] = true;
     normalized[CAPABILITY_KEYS.DASHBOARD_ANALYTICS] = true;
     normalized[CAPABILITY_KEYS.DASHBOARD_EXPORT] = true;
-    normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_ADVANCED] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
     normalized[CAPABILITY_KEYS.TOOL_NPK] = true;
     normalized[CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR] = true;
-    normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
     normalized[CAPABILITY_KEYS.TOOL_PDF_EXPORT] = true;
     normalized[CAPABILITY_KEYS.TOOL_PHENO_MATRIX] = true;
-    normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE] = true;
-    normalized[CAPABILITY_KEYS.TASK_REMINDERS] = true;
   }
 
   if (isCommercial || isFacility) {
@@ -311,11 +374,18 @@ export function applyPlanCapabilities(
 
 export function resolveEntitlementsMode(
   ctx: any,
-  preferredMode: PreferredMode | null
+  preferredMode: PreferredMode | null,
+  effectivePlan: string | null = null
 ): EntitlementsMode {
   const baseMode = pickMode(ctx?.mode);
   const canFacility = hasFacilityAccess(ctx);
-  const canCommercial = hasCommercialAccess(ctx);
+  const normalizedPlan = String(effectivePlan || "")
+    .trim()
+    .toLowerCase();
+  const canCommercial =
+    hasCommercialAccess(ctx) ||
+    normalizedPlan === "commercial" ||
+    normalizedPlan === "facility";
 
   if (preferredMode === "facility" && canFacility) return "facility";
   if (preferredMode === "commercial" && canCommercial) return "commercial";
@@ -330,11 +400,16 @@ export function resolveEntitlementsMode(
 
 export function resolveWorkspaceMode(
   requestedPlan: any,
-  resolvedMode: EntitlementsMode
+  resolvedMode: EntitlementsMode,
+  preferredMode: PreferredMode | null = null
 ): EntitlementsMode {
   const requestedPlanKey = String(requestedPlan || "free")
     .trim()
     .toLowerCase();
+
+  // An explicit preference wins only when entitlement resolution confirmed that
+  // exact mode. Unsupported preferences fall through to the paid-account intent.
+  if (preferredMode && resolvedMode === preferredMode) return resolvedMode;
 
   if (requestedPlanKey === "facility" || resolvedMode === "facility") {
     return "facility";
@@ -349,7 +424,17 @@ export function shouldApplyFacilityRoleCapabilities(
   mode: EntitlementsMode,
   plan: string | null = null
 ) {
+  // Membership selects the role. Paid or trialing Facility entitlement unlocks
+  // the role's operational capabilities.
   return mode === "facility" && String(plan || "").toLowerCase() === "facility";
+}
+
+export function resolveRequestedPlan(
+  ctx: any,
+  user: any,
+  previousPlan: string | null = null
+) {
+  return ctx?.requestedPlan ?? ctx?.plan ?? user?.plan ?? previousPlan ?? "free";
 }
 
 // Pure "apply" function (no side effects other than returning next state)
@@ -361,20 +446,15 @@ function applyServerCtx(
 ): Omit<EntitlementsState, "can"> {
   const devPlan = resolveDevEntitlementsPlan();
   const effectiveCtx = applyDevEntitlementsOverride(ctx, devPlan);
-  const requestedPlan =
-    devPlan ??
-    user?.plan ??
-    effectiveCtx?.requestedPlan ??
-    effectiveCtx?.plan ??
-    prev.plan ??
-    "free";
+  const requestedPlan = devPlan ?? resolveRequestedPlan(effectiveCtx, user, prev.plan);
   const subscriptionStatus =
     effectiveCtx?.subscriptionStatus ??
     effectiveCtx?.user?.subscriptionStatus ??
     user?.subscriptionStatus;
-  const plan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
-  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode);
-  const mode = resolveWorkspaceMode(requestedPlan, resolvedMode);
+  const accountPlan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
+  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode, accountPlan);
+  const mode = resolveWorkspaceMode(requestedPlan, resolvedMode, preferredMode);
+  const plan = devPlan ?? resolveWorkspaceAccessPlan(mode, accountPlan, effectiveCtx);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
 
@@ -410,7 +490,7 @@ function applyServerCtx(
     }
   }
   warnUnknownCapsOnce(unknownKeys);
-  applyUniversalCapabilities(normalized);
+  applyUniversalCapabilities(normalized, plan);
   applyPlanCapabilities(normalized, plan, mode);
   if (shouldApplyFacilityRoleCapabilities(mode, plan)) {
     applyFacilityRoleCapabilities(normalized, facilityRole);
@@ -444,9 +524,6 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
 
-  // Guard: prevent refetching /api/me for the same token
-  const lastFetchedTokenRef = useRef<string | null>(null);
-
   // Stabilize logout reference to prevent effect re-runs from logout identity changes
   const logoutRef = useRef(logout);
   useEffect(() => {
@@ -473,49 +550,46 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         capabilities: {
           [CAPABILITY_KEYS.COURSES_VIEW]: true,
           [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
-          [CAPABILITY_KEYS.COURSES_CREATE]: true,
-          [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
-          [CAPABILITY_KEYS.FORUM_VIEW]: true,
-          [CAPABILITY_KEYS.FORUM_POST]: true
+          [CAPABILITY_KEYS.FORUM_VIEW]: true
         },
         limits: applyDefaultCourseLimits({}, "free")
       });
       setPreferredModeState(null);
       lastAppliedRef.current = "NO_TOKEN";
-      lastFetchedTokenRef.current = null;
       return () => {};
     }
 
     // Token exists but /api/me is not yet confirmed: keep bootstrap blocked.
     if (meStatus === "loading" || meStatus === "idle") {
-      setState((s) => ({
-        ...s,
-        ready: false,
-        bootstrapError: null
-      }));
+      // A background /api/me refresh must not erase already-resolved access.
+      // Doing so previously left Profile and Tools permanently loading because
+      // a same-token guard skipped the successful refresh result.
+      setState((s) =>
+        shouldBlockEntitlementBootstrap(meStatus, s.ready)
+          ? { ...s, ready: false, bootstrapError: null }
+          : s
+      );
       return () => {};
     }
 
     if (meStatus === "error") {
-      setState((s) => ({
-        ...s,
-        ready: false,
-        bootstrapError: meError || "Failed to load /api/me."
-      }));
+      setState((s) =>
+        s.ready
+          ? s
+          : {
+              ...s,
+              ready: false,
+              bootstrapError: meError || "Failed to load /api/me."
+            }
+      );
       return () => {};
     }
-
-    // Only apply if we haven't already applied for this token
-    if (lastFetchedTokenRef.current === token) {
-      return () => {};
-    }
-    lastFetchedTokenRef.current = token;
 
     // Read ctx and user from AuthContext (no duplicate fetch)
     const ctx = auth.ctx ?? null;
     const user = auth.user ?? null;
 
-    const fingerprint = safeStringify({ ctx, user });
+    const fingerprint = entitlementApplicationFingerprint(ctx, user, preferredMode);
 
     // Only apply if changed
     if (fingerprint !== lastAppliedRef.current) {

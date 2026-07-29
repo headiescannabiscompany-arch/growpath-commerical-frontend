@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { getToken } from "../../src/auth/tokenStore";
 import { apiRequest, setOnUnauthorized } from "../../src/api/apiRequest";
+import { subscribeToTokenBalanceChange } from "../../src/utils/tokenBalanceEvents";
 
 jest.mock("../../src/auth/tokenStore", () => ({
   getToken: jest.fn()
@@ -29,6 +30,22 @@ describe("apiRequest authentication contract", () => {
     });
   });
 
+  it("publishes the remaining balance reported by a completed AI request", async () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeToTokenBalanceChange(listener);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => JSON.stringify({ aiTokensRemaining: 99 })
+    })) as any;
+
+    try {
+      await apiRequest("/api/ai/assistant/personal");
+      expect(listener).toHaveBeenCalledWith(99);
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it("does not replace an explicitly supplied lowercase authorization header", async () => {
     global.fetch = jest.fn(async (_url: string, options: any) => ({
       ok: true,
@@ -40,7 +57,7 @@ describe("apiRequest authentication contract", () => {
     ).resolves.toEqual({ authorization: "Custom token" });
   });
 
-  it("invalidates the session on 401 and preserves the backend error", async () => {
+  it("preserves a feature 401 without invalidating the session", async () => {
     const onUnauthorized = jest.fn(async () => {});
     setOnUnauthorized(onUnauthorized);
     global.fetch = jest.fn(async () => ({
@@ -54,6 +71,25 @@ describe("apiRequest authentication contract", () => {
     await expect(apiRequest("/api/test")).rejects.toMatchObject({
       code: "TOKEN_EXPIRED",
       message: "Session expired.",
+      requestId: "request-401",
+      status: 401
+    });
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it("invalidates the session when the canonical session check opts in", async () => {
+    const onUnauthorized = jest.fn(async () => {});
+    setOnUnauthorized(onUnauthorized);
+    global.fetch = jest.fn(async () => ({
+      ok: false,
+      status: 401,
+      headers: { get: () => "request-401" },
+      text: async () =>
+        JSON.stringify({ code: "TOKEN_EXPIRED", message: "Session expired." })
+    })) as any;
+
+    await expect(apiRequest("/api/me", { invalidateOn401: true })).rejects.toMatchObject({
+      code: "TOKEN_EXPIRED",
       requestId: "request-401",
       status: 401
     });

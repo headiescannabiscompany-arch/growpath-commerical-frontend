@@ -61,7 +61,7 @@ export function getFeedPolicy({
 
   if (isHome) {
     return {
-      slots: 2,
+      slots: 0,
       railMode: "promo-only",
       cadence: "always"
     };
@@ -120,14 +120,14 @@ export function getFeedBannerPolicy({
   if (isHome) {
     return {
       top: true,
-      middle: true,
-      bottom: true,
+      middle: false,
+      bottom: isFree,
       slotsByPlacement: {
         top: 1,
-        middle: 1,
-        bottom: 1
+        middle: 0,
+        bottom: isFree ? 1 : 0
       },
-      railMode: "promo-only"
+      railMode
     };
   }
 

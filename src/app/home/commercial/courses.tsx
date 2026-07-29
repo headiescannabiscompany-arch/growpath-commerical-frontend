@@ -35,8 +35,10 @@ type CourseForm = {
   linkedLiveIds: string;
   linkedVideoUrls: string;
   documentUrls: string;
+  forumThreadId: string;
   moduleOutline: string;
   lessonOutline: string;
+  quizOutline: string;
   taskChecklist: string;
 };
 
@@ -45,7 +47,7 @@ const EMPTY_FORM: CourseForm = {
   description: "",
   thumbnailUrl: "",
   bannerUrl: "",
-  category: "product_education",
+  category: "Product education",
   growInterests: "",
   skillLevel: "",
   access: "free",
@@ -58,10 +60,35 @@ const EMPTY_FORM: CourseForm = {
   linkedLiveIds: "",
   linkedVideoUrls: "",
   documentUrls: "",
+  forumThreadId: "",
   moduleOutline: "",
   lessonOutline: "",
+  quizOutline: "",
   taskChecklist: ""
 };
+
+const COURSE_ACCESS_OPTIONS: Array<{
+  value: CourseForm["access"];
+  label: string;
+}> = [
+  { value: "free", label: "Free" },
+  { value: "paid", label: "Paid" },
+  { value: "followers", label: "Followers only" },
+  { value: "customers", label: "Customers only" },
+  { value: "private", label: "Private" }
+];
+
+function formatCourseLabel(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+  return normalized
+    ? normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase()
+    : "";
+}
+
+const FULL_COURSE_BUILDER_HREF = "/courses/create?from=%2Fhome%2Fcommercial%2Fcourses";
 
 function splitList(value: string) {
   return value
@@ -104,6 +131,26 @@ function outlineItems(value: string, type: "module" | "lesson" | "task") {
   }));
 }
 
+function quizItems(value: string) {
+  return value
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const [question, ...options] = line
+        .split("|")
+        .map((part) => part.trim())
+        .filter(Boolean);
+      return {
+        title: question,
+        question,
+        options,
+        sortOrder: index + 1,
+        status: "draft"
+      };
+    });
+}
+
 function courseSetupWarnings(course: Partial<CommercialCourse>) {
   const warnings: string[] = [];
   if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
@@ -121,7 +168,7 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
 }
 
 function courseThumbnailUrl(course: Partial<CommercialCourse>) {
-  return resolveImageUri(course.thumbnailUrl || "");
+  return resolveImageUri(course.thumbnailUrl || course.bannerUrl || "");
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -170,12 +217,13 @@ export default function CommercialCoursesRoute() {
     setLoading(true);
     setError(null);
     try {
-      const [nextCourses, nextLines] = await Promise.all([
+      const [courseResult, lineResult] = await Promise.allSettled([
         fetchCommercialCourses(),
         fetchProductLines()
       ]);
-      setCourses(nextCourses);
-      setProductLines(nextLines);
+      if (courseResult.status === "rejected") throw courseResult.reason;
+      setCourses(courseResult.value);
+      setProductLines(lineResult.status === "fulfilled" ? lineResult.value : []);
     } catch (err) {
       setError(err);
     } finally {
@@ -201,7 +249,7 @@ export default function CommercialCoursesRoute() {
         description: form.description.trim(),
         thumbnailUrl: thumbnailUrl || undefined,
         bannerUrl: bannerUrl || undefined,
-        category: form.category.trim() || "product_education",
+        category: form.category.trim() || "Product education",
         growInterests: splitList(form.growInterests),
         skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
@@ -215,8 +263,10 @@ export default function CommercialCoursesRoute() {
         linkedLiveIds: splitIds(form.linkedLiveIds),
         linkedVideoUrls: splitList(form.linkedVideoUrls),
         documentUrls: splitList(form.documentUrls),
+        forumThreadId: form.forumThreadId.trim() || undefined,
         modules: outlineItems(form.moduleOutline, "module"),
         lessons: outlineItems(form.lessonOutline, "lesson"),
+        quizzes: quizItems(form.quizOutline),
         tasks: outlineItems(form.taskChecklist, "task"),
         status: "draft"
       });
@@ -316,7 +366,7 @@ export default function CommercialCoursesRoute() {
           </View>
           <View style={styles.headerActions}>
             <ActionLink href="/courses" label="Open Course Catalog" />
-            <ActionLink href="/home/commercial/courses" label="Create Course" />
+            <ActionLink href={FULL_COURSE_BUILDER_HREF} label="Create Course" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/products" label="Products" />
           </View>
@@ -324,7 +374,7 @@ export default function CommercialCoursesRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Course creation workflow</Text>
+        <Text style={styles.cardTitle}>Create a course</Text>
         <Text style={styles.body}>
           All user types can create courses. Commercial courses should add storefront
           context: product use, grow methods, plant care, seasonal gardening, support, and
@@ -347,10 +397,19 @@ export default function CommercialCoursesRoute() {
         {loading ? <Text style={styles.muted}>Loading commercial courses...</Text> : null}
         {feedback ? <Text style={styles.successText}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
+        <View style={styles.actions}>
+          <ActionLink href={FULL_COURSE_BUILDER_HREF} label="Open Full Course Builder" />
+        </View>
       </AppCard>
 
       <AppCard>
         <Text style={styles.cardTitle}>Create commercial course</Text>
+        <Text style={styles.body}>
+          For provider-aware GrowPath uploads, YouTube, Rumble, Vimeo, other video links,
+          Twitch lives, shared Schedule, and Notification Center reminders, use the Full
+          Course Builder. This quick form remains available for a lightweight commercial
+          draft.
+        </Text>
         <TextInput
           value={form.title}
           onChangeText={(title) => setForm((prev) => ({ ...prev, title }))}
@@ -534,6 +593,15 @@ export default function CommercialCoursesRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.forumThreadId}
+            onChangeText={(forumThreadId) =>
+              setForm((prev) => ({ ...prev, forumThreadId }))
+            }
+            accessibilityLabel="Commercial course Forum Q&A thread"
+            placeholder="Course discussion Forum/Q&A thread ID"
+            style={styles.input}
+          />
+          <TextInput
             value={form.price}
             onChangeText={(price) => setForm((prev) => ({ ...prev, price }))}
             accessibilityLabel="Commercial course price"
@@ -583,6 +651,14 @@ export default function CommercialCoursesRoute() {
           style={[styles.input, styles.textArea]}
         />
         <TextInput
+          value={form.quizOutline}
+          onChangeText={(quizOutline) => setForm((prev) => ({ ...prev, quizOutline }))}
+          accessibilityLabel="Commercial course quiz outline"
+          multiline
+          placeholder="Quiz question | option A | option B, one question per line"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
           value={form.taskChecklist}
           onChangeText={(taskChecklist) =>
             setForm((prev) => ({ ...prev, taskChecklist }))
@@ -592,33 +668,31 @@ export default function CommercialCoursesRoute() {
           placeholder="Course tasks/checklist, one per line"
           style={[styles.input, styles.textArea]}
         />
-        <View style={styles.actions}>
-          {(
-            [
-              "free",
-              "paid",
-              "followers",
-              "customers",
-              "private"
-            ] as CourseForm["access"][]
-          ).map((access) => (
+        <View
+          style={styles.actions}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Commercial course access"
+        >
+          {COURSE_ACCESS_OPTIONS.map(({ value, label }) => (
             <Pressable
-              key={access}
-              accessibilityRole="button"
-              accessibilityLabel={`Set commercial course access ${access}`}
-              onPress={() => setForm((prev) => ({ ...prev, access }))}
+              key={value}
+              accessibilityRole="radio"
+              accessibilityLabel={`Set commercial course access to ${label}`}
+              aria-checked={form.access === value}
+              accessibilityState={{ checked: form.access === value }}
+              onPress={() => setForm((prev) => ({ ...prev, access: value }))}
               style={[
                 styles.action,
-                form.access === access ? styles.actionSelected : null
+                form.access === value ? styles.actionSelected : null
               ]}
             >
               <Text
                 style={[
                   styles.actionText,
-                  form.access === access ? styles.actionTextSelected : null
+                  form.access === value ? styles.actionTextSelected : null
                 ]}
               >
-                {access}
+                {label}
               </Text>
             </Pressable>
           ))}
@@ -666,22 +740,23 @@ export default function CommercialCoursesRoute() {
                     </Text>
                     <Text style={styles.courseMeta}>
                       {[
-                        course.category,
-                        course.skillLevel,
-                        course.access || "free",
-                        course.status || "draft",
+                        formatCourseLabel(course.category),
+                        formatCourseLabel(course.skillLevel),
+                        formatCourseLabel(course.access || "free"),
+                        formatCourseLabel(course.status || "draft"),
                         course.growInterests?.length
-                          ? `Interests ${course.growInterests.join(", ")}`
+                          ? `Interests: ${course.growInterests.join(", ")}`
                           : null,
                         course.linkedLiveIds?.length
-                          ? `Lives ${course.linkedLiveIds.join(", ")}`
+                          ? `Lives: ${course.linkedLiveIds.join(", ")}`
                           : null
                       ]
                         .filter(Boolean)
-                        .join(" | ")}
+                        .join(" · ")}
                     </Text>
                     {course.modules?.length ||
                     course.lessons?.length ||
+                    course.quizzes?.length ||
                     course.tasks?.length ? (
                       <Text style={styles.courseMeta}>
                         {[
@@ -690,6 +765,9 @@ export default function CommercialCoursesRoute() {
                             : null,
                           course.lessons?.length
                             ? `${course.lessons.length} lessons`
+                            : null,
+                          course.quizzes?.length
+                            ? `${course.quizzes.length} quizzes`
                             : null,
                           course.tasks?.length ? `${course.tasks.length} tasks` : null
                         ]
@@ -726,8 +804,18 @@ export default function CommercialCoursesRoute() {
                     ) : null}
                     <View style={styles.actions}>
                       <ActionLink
+                        href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}?preview=1`}
+                        label="Learner Preview"
+                      />
+                      {course.forumThreadId ? (
+                        <ActionLink
+                          href={`/forum/post?id=${encodeURIComponent(course.forumThreadId)}`}
+                          label="Course Discussion"
+                        />
+                      ) : null}
+                      <ActionLink
                         href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
-                        label="Open Detail"
+                        label="Edit Course"
                       />
                     </View>
                   </View>
@@ -787,6 +875,7 @@ export default function CommercialCoursesRoute() {
           relevant
         </Text>
         <View style={styles.actions}>
+          <ActionLink href="/courses/analytics" label="Course Analytics" />
           <ActionLink href="/courses" label="Open Course Catalog" />
         </View>
       </AppCard>

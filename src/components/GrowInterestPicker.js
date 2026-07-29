@@ -28,7 +28,9 @@ export default function GrowInterestPicker({
   enabledTierIds,
   tierOptionsOverride,
   collapsible = true,
-  defaultExpanded = true
+  defaultExpanded = true,
+  showEmptyTiers = false,
+  emptyTierText = "No choices are saved for this tier."
 }) {
   const selections = value || buildEmptyTierSelection();
   const visibleTiers = resolveVisibleTiers(enabledTierIds);
@@ -65,6 +67,9 @@ export default function GrowInterestPicker({
         style={[styles.headerRow, !collapsible && styles.headerRowStatic]}
         activeOpacity={collapsible ? 0.7 : 1}
         onPress={toggleExpanded}
+        accessibilityRole={collapsible ? "button" : undefined}
+        accessibilityLabel={collapsible ? `Toggle ${title}` : undefined}
+        accessibilityState={collapsible ? { expanded } : undefined}
       >
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{title}</Text>
@@ -87,7 +92,7 @@ export default function GrowInterestPicker({
               tierOptions = appliedOverrides[tier.id] ?? userTier1Selections;
             }
 
-            if (!tierOptions || tierOptions.length === 0) {
+            if ((!tierOptions || tierOptions.length === 0) && !showEmptyTiers) {
               return null;
             }
 
@@ -103,6 +108,9 @@ export default function GrowInterestPicker({
                   </Text>
                 </View>
                 <View style={styles.chipRow}>
+                  {!tierOptions.length ? (
+                    <Text style={styles.emptyTierText}>{emptyTierText}</Text>
+                  ) : null}
                   {tierOptions.map((option) => {
                     const active = selections[tier.id]?.includes(option);
                     return (
@@ -110,6 +118,9 @@ export default function GrowInterestPicker({
                         key={option}
                         style={[styles.chip, active && styles.chipActive]}
                         onPress={() => handleToggle(tier.id, option)}
+                        accessibilityRole="checkbox"
+                        accessibilityLabel={`Toggle grow interest ${option}`}
+                        accessibilityState={{ checked: Boolean(active) }}
                       >
                         <Text style={[styles.chipText, active && styles.chipTextActive]}>
                           {option}
@@ -177,6 +188,11 @@ const styles = StyleSheet.create({
   tierCount: {
     fontSize: 12,
     color: "#6B7280"
+  },
+  emptyTierText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#B45309"
   },
   chipRow: {
     flexDirection: "row",

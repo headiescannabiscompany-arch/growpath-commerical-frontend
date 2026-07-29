@@ -36,7 +36,9 @@ Generic supply inventory = commercial + facility only
 
 Personal free/pro users should not see generic inventory.
 
-Personal users can scale batches for one grow and save tasks/log/timeline. Commercial/facility users can connect inventory, stock levels, costs, pull sheets, packaging, and production records.
+Personal users build grow-scale recipes through the Soil Mix Builder or Nutrient Mix Builder and save their grow-owned outputs. The production Batch Planner is Commercial-only; it can connect inventory evidence, stock levels, costs, pull sheets, packaging, durable production batches, and source-linked Commercial tasks. Calculation reviews inventory but never decrements stock automatically.
+
+Blank quantity, cost, label analysis, shrinkage, margin, lot, or inventory fields remain unknown. Blended guaranteed analysis is calculated only from complete label values and compatible quantity units. A partial known-cost subtotal must not be presented as the complete batch cost.
 
 ## Required Record
 

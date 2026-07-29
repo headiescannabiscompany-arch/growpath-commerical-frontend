@@ -16,11 +16,20 @@ jest.mock("@/components/ScreenBoundary", () => ({
   }
 }));
 
-jest.mock("@/screens/commercial/CreateCourseScreen", () => () => {
-  const React = require("react");
-  const { Text } = require("react-native");
-  return <Text>Create course form</Text>;
-});
+jest.mock(
+  "@/screens/commercial/CreateCourseScreen",
+  () =>
+    ({ showBackToCourses }: any) => {
+      const React = require("react");
+      const { Text } = require("react-native");
+      return (
+        <Text>
+          Create course form{" "}
+          {showBackToCourses === false ? "shared back only" : "own back"}
+        </Text>
+      );
+    }
+);
 
 jest.mock("@/screens/AddLessonScreen", () => ({ route, navigation }: any) => {
   const React = require("react");
@@ -54,20 +63,20 @@ describe("legacy course authoring route back behavior", () => {
 
     expect(screen.getByText("Boundary Create Course")).toBeTruthy();
     expect(screen.getByText("Shared Back /home/personal/courses")).toBeTruthy();
-    expect(screen.getByText("Create course form")).toBeTruthy();
+    expect(screen.getByText("Create course form shared back only")).toBeTruthy();
   });
 
-  it("uses the shared back header on lesson creation and keeps the legacy fallback", () => {
+  it("uses the shared back header on lesson creation and returns to personal courses", () => {
     mockSearchParams.courseId = "course-123";
     const AddLessonRoute = require("@/app/courses/add-lesson").default;
 
     render(<AddLessonRoute />);
 
     expect(screen.getByText("Boundary Add Lesson")).toBeTruthy();
-    expect(screen.getByText("Shared Back /courses")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/courses")).toBeTruthy();
     expect(screen.getByText("Add lesson form course-123")).toBeTruthy();
 
     screen.getByText("Submit lesson").props.onPress();
-    expect(mockReplace).toHaveBeenCalledWith("/courses");
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
   });
 });

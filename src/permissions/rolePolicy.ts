@@ -28,8 +28,15 @@ const OWNER_CAPS: FacilityAction[] = [
   K.EXPORT_COMPLIANCE
 ];
 
+const OWNER_ONLY_CAPS = new Set<FacilityAction>([
+  K.TEAM_INVITE,
+  K.TEAM_UPDATE_ROLE,
+  K.TEAM_REMOVE,
+  K.FACILITY_SETTINGS_EDIT
+]);
+
 const MANAGER_CAPS: FacilityAction[] = OWNER_CAPS.filter(
-  (cap) => cap !== K.FACILITY_SETTINGS_EDIT
+  (cap) => !OWNER_ONLY_CAPS.has(cap)
 );
 
 const STAFF_CAPS: FacilityAction[] = [
@@ -40,7 +47,7 @@ const STAFF_CAPS: FacilityAction[] = [
   K.PLANTS_READ,
   K.GROWLOGS_READ,
   K.GROWLOGS_WRITE,
-  K.INVENTORY_READ,
+  K.INVENTORY_READ
 ];
 
 const VIEWER_CAPS: FacilityAction[] = [

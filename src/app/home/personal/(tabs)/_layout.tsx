@@ -25,18 +25,30 @@ export default function PersonalTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        tabBarActiveTintColor: "#0056B3",
+        tabBarInactiveTintColor: "#475569",
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
         tabBarStyle: hideTabBar ? { display: "none" } : undefined
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="tools" options={{ title: "Tools" }} />
+      <Tabs.Screen name="tools" options={{ title: "AI Tools" }} />
       <Tabs.Screen name="community" options={{ title: "Forum / Q&A" }} />
+      <Tabs.Screen name="discover" options={{ title: "Discover" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="field-studies/index"
+        options={{ href: null, title: "Field Studies" }}
+      />
+      <Tabs.Screen
+        name="field-studies/[studyId]"
+        options={{ href: null, title: "Field Study" }}
+      />
       <Tabs.Screen name="ai" options={{ href: null, title: "AI Assistant" }} />
       <Tabs.Screen name="forum" options={{ href: null, title: "Forum / Q&A" }} />
       <Tabs.Screen name="diagnose" options={{ href: null, title: "Diagnose" }} />

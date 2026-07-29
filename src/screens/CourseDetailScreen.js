@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -13,18 +13,23 @@ import {
 } from "react-native";
 
 import {
-  approveCourse,
   completeLesson,
   enrollInCourse,
   getCourse,
+  getCourseLearnerNotes,
   getEnrollmentStatus,
   getReviews,
-  rejectCourse,
+  publishCourse,
   sendWatchTime,
-  submitForReview,
+  saveCourseLearnerNote,
   trackDropoff,
-  trackLessonView
+  trackCourseProductClick,
+  trackCourseView,
+  trackLessonView,
+  unpublishCourse,
+  updateCourse
 } from "../api/courses";
+import { apiRequest } from "../api/apiRequest";
 import {
   getCoursePaymentStatus,
   openCourseDispute,
@@ -33,8 +38,13 @@ import {
 } from "../api/coursePayments";
 import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import LessonMediaCard from "@/components/learning/LessonMediaCard";
+import { listPersonalGrows } from "@/api/grows";
+import { createPersonalTask } from "@/api/tasks";
+import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { lessonHasMedia } from "@/features/learning/lessonMedia";
 import { radius } from "../theme/theme";
 
 function rowId(row) {
@@ -42,10 +52,14 @@ function rowId(row) {
 }
 
 function normalizeCourse(payload, fallback) {
-  if (payload?.course) return payload.course;
-  if (payload?.data?.course) return payload.data.course;
-  if (payload?.data && !Array.isArray(payload.data)) return payload.data;
-  return payload || fallback || null;
+  const next = payload?.course
+    ? payload.course
+    : payload?.data?.course
+      ? payload.data.course
+      : payload?.data && !Array.isArray(payload.data)
+        ? payload.data
+        : payload;
+  return next ? { ...(fallback || {}), ...next } : fallback || null;
 }
 
 function normalizeList(payload, key) {
@@ -77,11 +91,14 @@ async function openCheckoutUrl(url) {
 
 export default function CourseDetailScreen({ route, navigation }) {
   const router = useRouter();
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const initialCourse = route?.params?.course || null;
   const rawId = route?.params?.id || route?.params?.courseId || rowId(initialCourse);
   const courseId = String(rawId || "");
+  const checkoutResult = String(route?.params?.checkout || "").toLowerCase();
+  const checkoutHandledRef = useRef(false);
 
   const [course, setCourse] = useState(initialCourse);
   const [reviews, setReviews] = useState([]);
@@ -93,23 +110,88 @@ export default function CourseDetailScreen({ route, navigation }) {
   const [reportReason, setReportReason] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [disputeReason, setDisputeReason] = useState("");
-  const [rejectReason, setRejectReason] = useState("");
   const [salesRange, setSalesRange] = useState("last_30_days");
+  const [courseFee, setCourseFee] = useState(() => {
+    const cents = Number(initialCourse?.priceCents || 0);
+    return cents > 0 ? (cents / 100).toFixed(2) : "";
+  });
+  const [liveReminderIds, setLiveReminderIds] = useState([]);
+  const [liveRsvpIds, setLiveRsvpIds] = useState([]);
+  const [learnerNotes, setLearnerNotes] = useState({});
+  const [lessonNote, setLessonNote] = useState("");
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
+  const liveSessions = useMemo(
+    () => normalizeList(course?.liveSessions, "liveSessions"),
+    [course]
+  );
+  const documents = useMemo(
+    () => normalizeList(course?.documents, "documents"),
+    [course]
+  );
+  const mediaAssets = useMemo(
+    () => normalizeList(course?.mediaAssets, "mediaAssets"),
+    [course]
+  );
+  const completedLessonIds = useMemo(
+    () =>
+      new Set(
+        normalizeList(
+          enrollment?.progress?.completedLessonIds ||
+            enrollment?.completedLessonIds ||
+            enrollment?.enrollment?.completedLessonIds,
+          "completedLessonIds"
+        ).map(String)
+      ),
+    [enrollment]
+  );
+  const completedLessonCount = completedLessonIds.size;
   const enrolled = Boolean(
     enrollment?.enrolled ||
     enrollment?.isEnrolled ||
     course?.isEnrolled ||
     course?.enrolled
   );
-  const isPaidCourse = Number(course?.priceCents || course?.price || 0) > 0;
+  const isPaidCourse =
+    Number(course?.priceCents || course?.price || 0) > 0 ||
+    Boolean(String(course?.stripePriceId || "").trim()) ||
+    String(course?.access || "").toLowerCase() === "paid";
   const paymentStatus =
     enrollment?.paymentStatus ||
     enrollment?.checkoutStatus ||
     enrollment?.status ||
     "not_started";
+  const normalizedPaymentStatus = String(paymentStatus).toLowerCase();
+  const refundStatus = String(enrollment?.refundStatus || "none").toLowerCase();
+  const disputeStatus = String(enrollment?.disputeStatus || "none").toLowerCase();
+  const viewerId = String(auth.user?._id || auth.user?.id || "");
+  const ownerId = String(
+    course?.userId ||
+      course?.creatorId ||
+      course?.authorId ||
+      course?.creator?._id ||
+      course?.creator?.id ||
+      ""
+  );
+  const ownsCourse = Boolean(
+    course?._viewerOwnsCourse || (viewerId && ownerId === viewerId)
+  );
+  const hasPaidPurchase =
+    isPaidCourse &&
+    (enrolled ||
+      ["paid", "refunded", "disputed"].includes(normalizedPaymentStatus) ||
+      refundStatus !== "none" ||
+      disputeStatus !== "none");
+  const canOpenLessons =
+    !isPaidCourse || ownsCourse || enrolled || course?._viewerHasAccess === true;
+  const canRequestRefund = !["requested", "refunded"].includes(refundStatus);
+  const canReportPaymentIssue = !["reported", "open"].includes(disputeStatus);
+
+  useEffect(() => {
+    const cents = Number(course?.priceCents || 0);
+    setCourseFee(cents > 0 ? (cents / 100).toFixed(2) : "");
+  }, [course?.priceCents]);
 
   const load = useCallback(async () => {
     if (!access.canViewCourses) {
@@ -124,14 +206,20 @@ export default function CourseDetailScreen({ route, navigation }) {
     setFeedback("");
     try {
       const id = courseId || rowId(initialCourse);
-      const [courseResponse, statusResponse, reviewsResponse] = await Promise.all([
-        id ? getCourse(id) : Promise.resolve(initialCourse),
-        id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
-        id ? getReviews(id).catch(() => []) : Promise.resolve([])
-      ]);
+      const [courseResponse, statusResponse, reviewsResponse, notesResponse] =
+        await Promise.all([
+          id ? getCourse(id) : Promise.resolve(initialCourse),
+          id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
+          id ? getReviews(id).catch(() => []) : Promise.resolve([]),
+          id ? getCourseLearnerNotes(id).catch(() => null) : Promise.resolve(null)
+        ]);
       setCourse(normalizeCourse(courseResponse, initialCourse));
       setEnrollment(statusResponse?.data || statusResponse || null);
       setReviews(normalizeList(reviewsResponse, "reviews"));
+      const noteRows = normalizeList(notesResponse, "notes");
+      setLearnerNotes(
+        Object.fromEntries(noteRows.map((item) => [String(item.lessonId), item.note]))
+      );
     } catch (error) {
       setFeedback(error?.message || "Unable to load course.");
     } finally {
@@ -143,7 +231,24 @@ export default function CourseDetailScreen({ route, navigation }) {
     load();
   }, [load]);
 
-  async function refreshPaymentStatus() {
+  useEffect(() => {
+    if (loadedCourseId) trackCourseView(loadedCourseId).catch(() => null);
+  }, [loadedCourseId]);
+
+  useEffect(() => {
+    if (!loadedCourseId) return;
+    let alive = true;
+    apiRequest(`/api/courses/${encodeURIComponent(loadedCourseId)}/live-rsvps`)
+      .then((response) => {
+        if (alive) setLiveRsvpIds(response?.sessionIds || []);
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [loadedCourseId]);
+
+  const refreshPaymentStatus = useCallback(async () => {
     if (!loadedCourseId) return null;
     try {
       const [payment, status] = await Promise.all([
@@ -160,7 +265,26 @@ export default function CourseDetailScreen({ route, navigation }) {
       setFeedback(error?.message || "Unable to refresh payment status.");
       return null;
     }
-  }
+  }, [loadedCourseId]);
+
+  useEffect(() => {
+    if (loading || checkoutHandledRef.current || !checkoutResult) return;
+    checkoutHandledRef.current = true;
+    if (checkoutResult === "canceled") {
+      setFeedback("Checkout was canceled. No course access was changed.");
+      return;
+    }
+    if (checkoutResult !== "success") return;
+    void (async () => {
+      const next = await refreshPaymentStatus();
+      const confirmed = Boolean(next?.enrolled || next?.isEnrolled);
+      setFeedback(
+        confirmed
+          ? "Payment confirmed. This course is unlocked."
+          : "Payment submitted. Stripe confirmation is still processing; refresh status in a moment."
+      );
+    })();
+  }, [checkoutResult, loading, refreshPaymentStatus]);
 
   async function enroll() {
     if (!loadedCourseId) return;
@@ -191,6 +315,41 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
+  async function saveCourseFee() {
+    if (!loadedCourseId || !ownsCourse || !access.canSellPaidCourses) return;
+    const numeric = Number(courseFee);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      setFeedback("Enter a valid course fee of $0.00 or more.");
+      return;
+    }
+    const cents = Math.round(numeric * 100);
+    setSaving(true);
+    setFeedback("");
+    try {
+      const updated = await updateCourse(loadedCourseId, {
+        priceCents: cents,
+        price: cents / 100,
+        currency: "usd",
+        access: cents > 0 ? "paid" : "free"
+      });
+      setCourse((current) => ({
+        ...current,
+        ...normalizeCourse(updated, current),
+        _viewerOwnsCourse: true,
+        priceCents: cents,
+        price: cents / 100,
+        access: cents > 0 ? "paid" : "free"
+      }));
+      setFeedback(
+        `Course fee saved: ${cents > 0 ? `$${(cents / 100).toFixed(2)}` : "Free"}.`
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to save the course fee.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function openLesson(lesson) {
     const id = rowId(lesson);
     if (id) await trackLessonView(id).catch(() => null);
@@ -199,6 +358,82 @@ export default function CourseDetailScreen({ route, navigation }) {
       return;
     }
     setActiveLesson(lesson);
+    setLessonNote(learnerNotes[id] || "");
+  }
+
+  async function saveLessonNote() {
+    const lessonId = rowId(activeLesson);
+    if (!loadedCourseId || !lessonId) return;
+    setSaving(true);
+    try {
+      await saveCourseLearnerNote(loadedCourseId, lessonId, lessonNote);
+      setLearnerNotes((current) => ({ ...current, [lessonId]: lessonNote.trim() }));
+      setFeedback(
+        lessonNote.trim() ? "Private lesson note saved." : "Lesson note removed."
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to save the lesson note.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function askAIAboutCourse() {
+    const lessonId = rowId(activeLesson);
+    const query = new URLSearchParams({
+      preset: "course",
+      courseId: loadedCourseId,
+      ...(lessonId ? { lessonId } : {}),
+      prompt: `Help me understand ${activeLesson?.title || course?.title || "this course"}`
+    }).toString();
+    const path =
+      entitlements.mode === "facility"
+        ? `/home/facility/ai-ask?${query}`
+        : entitlements.mode === "commercial"
+          ? `/home/commercial/tools/ask-ai?${query}`
+          : `/home/personal/ai?${query}`;
+    router.push(path);
+  }
+
+  async function openRelatedProduct(productId) {
+    if (loadedCourseId) {
+      await trackCourseProductClick(loadedCourseId, productId).catch(() => null);
+    }
+    router.push(`/home/commercial/products/${encodeURIComponent(String(productId))}`);
+  }
+
+  async function createLessonTask() {
+    if (!activeLesson || !loadedCourseId) return;
+    setSaving(true);
+    try {
+      const grows = await listPersonalGrows();
+      const grow = grows.find((item) => item?.status === "active") || grows[0];
+      const growId = rowId(grow);
+      if (!growId) {
+        setFeedback("Create or select a grow before adding this lesson task.");
+        return;
+      }
+      await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedCourseId: loadedCourseId,
+        linkedCourseAssignmentId: rowId(activeLesson),
+        linkedLessonId: rowId(activeLesson),
+        title: activeLesson?.taskTemplate?.title || `Course: ${activeLesson.title}`,
+        description:
+          activeLesson?.taskTemplate?.description ||
+          activeLesson?.assignmentPrompt ||
+          "Complete this course lesson assignment.",
+        priority: activeLesson?.taskTemplate?.priority || "medium",
+        sourceType: "course_assignment",
+        sourceObjectId: rowId(activeLesson)
+      });
+      setFeedback("Lesson task added to your grow workspace.");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to create the lesson task.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function markLessonComplete(lesson) {
@@ -218,44 +453,29 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
-  async function submitReview() {
+  async function publishCurrentCourse() {
     if (!loadedCourseId) return;
     setSaving(true);
     try {
-      await submitForReview(loadedCourseId);
-      setFeedback("Course submitted for review.");
+      await publishCourse(loadedCourseId);
+      setFeedback("Course published.");
       await load();
     } catch (error) {
-      setFeedback(error?.message || "Unable to submit for review.");
+      setFeedback(error?.message || "Unable to publish course.");
     } finally {
       setSaving(false);
     }
   }
 
-  async function approve() {
+  async function unpublishCurrentCourse() {
     if (!loadedCourseId) return;
     setSaving(true);
     try {
-      await approveCourse(loadedCourseId);
-      setFeedback("Course approved.");
+      await unpublishCourse(loadedCourseId);
+      setFeedback("Course unpublished and returned to a private draft.");
       await load();
     } catch (error) {
-      setFeedback(error?.message || "Unable to approve course.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function reject() {
-    if (!loadedCourseId || !rejectReason.trim()) return;
-    setSaving(true);
-    try {
-      await rejectCourse(loadedCourseId, rejectReason.trim());
-      setRejectReason("");
-      setFeedback("Course rejected.");
-      await load();
-    } catch (error) {
-      setFeedback(error?.message || "Unable to reject course.");
+      setFeedback(error?.message || "Unable to unpublish course.");
     } finally {
       setSaving(false);
     }
@@ -268,6 +488,8 @@ export default function CourseDetailScreen({ route, navigation }) {
       await submitReport({
         contentType: "course",
         contentId: loadedCourseId,
+        contentTitle: course?.title || course?.name || "Course",
+        targetUrl: `/courses?courseId=${encodeURIComponent(loadedCourseId)}`,
         reason: reportReason.trim()
       });
       setReportReason("");
@@ -302,10 +524,12 @@ export default function CourseDetailScreen({ route, navigation }) {
     try {
       await openCourseDispute(loadedCourseId, disputeReason.trim());
       setDisputeReason("");
-      setFeedback("Dispute submitted. Final state comes from backend payment status.");
+      setFeedback(
+        "Payment issue sent to GrowPath support. This does not open a bank or card dispute."
+      );
       await refreshPaymentStatus();
     } catch (error) {
-      setFeedback(error?.message || "Unable to open dispute.");
+      setFeedback(error?.message || "Unable to report the payment issue.");
     } finally {
       setSaving(false);
     }
@@ -329,10 +553,104 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
   }
 
+  async function addLiveReminder(session, index) {
+    const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+    if (!session?.scheduledStart || liveReminderIds.includes(sessionKey)) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      const grows = await listPersonalGrows();
+      const grow =
+        grows.find(
+          (item) => String(item?.status || "active").toLowerCase() === "active"
+        ) || grows[0];
+      const growId = String(grow?.id || grow?._id || "");
+      if (!growId) {
+        setFeedback("Create a grow first so the live reminder has a task workspace.");
+        return;
+      }
+      const watchUrl = String(
+        session?.watchUrl ||
+          session?.meetingUrl ||
+          (session?.twitchChannel ? `https://www.twitch.tv/${session.twitchChannel}` : "")
+      );
+      const task = await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedCourseId: loadedCourseId,
+        linkedLiveId: sessionKey,
+        actionUrl: watchUrl || null,
+        title: `Watch live: ${String(session?.title || course?.title || "Course session")}`,
+        description: [
+          String(session?.description || "Scheduled course live session."),
+          watchUrl ? `Watch: ${watchUrl}` : ""
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        dueDate: String(session.scheduledStart),
+        endAt: session?.scheduledEnd || null,
+        allDay: false,
+        priority: "high",
+        calendarType: "live_session",
+        sourceType: "course_live_reminder",
+        sourceObjectId: loadedCourseId,
+        reminderPlan: session?.reminderPlan || {
+          label: "1 hour before",
+          channels: ["in_app"]
+        }
+      });
+      if (!task) throw new Error("The reminder task could not be saved.");
+      setLiveReminderIds((current) => [...current, sessionKey]);
+      setFeedback("Live-session reminder added to My Tasks and Calendar.");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to create the live reminder task.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggleLiveRsvp(session, index) {
+    const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+    if (!loadedCourseId || !sessionKey || saving) return;
+    const isRsvped = liveRsvpIds.includes(sessionKey);
+    setSaving(true);
+    setFeedback("");
+    try {
+      await apiRequest(
+        `/api/courses/${encodeURIComponent(loadedCourseId)}/lives/${encodeURIComponent(sessionKey)}/rsvp`,
+        {
+          method: isRsvped ? "DELETE" : "POST",
+          body: isRsvped
+            ? undefined
+            : {
+                reminderPlan: session?.reminderPlan || {
+                  label: "1 hour before",
+                  channels: ["in_app"]
+                }
+              }
+        }
+      );
+      setLiveRsvpIds((current) =>
+        isRsvped ? current.filter((id) => id !== sessionKey) : [...current, sessionKey]
+      );
+      setFeedback(
+        isRsvped
+          ? "Live RSVP canceled. The course event remains visible on your calendar."
+          : "You are going. GrowPath will keep this live in your course calendar and reminder center."
+      );
+    } catch (error) {
+      setFeedback(error?.message || "Unable to update the live RSVP.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function addLesson() {
     if (!loadedCourseId) return;
     if (!navigation?.navigate) {
-      router.push(`/courses/add-lesson?courseId=${encodeURIComponent(loadedCourseId)}`);
+      router.push(
+        `/courses/add-lesson?courseId=${encodeURIComponent(loadedCourseId)}&from=${encodeURIComponent("/home/personal/courses")}`
+      );
       return;
     }
     navigation.navigate("AddLesson", { courseId: loadedCourseId });
@@ -367,7 +685,11 @@ export default function CourseDetailScreen({ route, navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{course?.title || course?.name || "Course"}</Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_course_detail" longContent />
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_course_detail"
+        longContent
+      />
       <Text style={styles.meta}>
         {coursePrice(course)} |{" "}
         {course?.status || (course?.isPublished ? "published" : "draft")}
@@ -377,7 +699,42 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
-      {!enrolled ? (
+      {ownsCourse ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Creator pricing</Text>
+          {access.canSellPaidCourses ? (
+            <>
+              <Text style={styles.meta}>
+                Enter 0.00 for a free course or set the learner fee in USD.
+              </Text>
+              <TextInput
+                value={courseFee}
+                onChangeText={setCourseFee}
+                placeholder="0.00"
+                keyboardType="decimal-pad"
+                editable={!saving}
+                style={styles.input}
+                accessibilityLabel="Edit course price USD"
+              />
+              <Pressable
+                disabled={saving}
+                onPress={saveCourseFee}
+                style={[styles.primaryBtn, saving && styles.disabled]}
+                accessibilityRole="button"
+                accessibilityLabel="Save course fee"
+              >
+                <Text style={styles.primaryText}>
+                  {saving ? "Saving..." : "Save Course Fee"}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <Text style={styles.meta}>
+              Paid course sales are available on Free. Refresh access or contact support.
+            </Text>
+          )}
+        </View>
+      ) : !enrolled ? (
         <Pressable disabled={saving} onPress={enroll} style={styles.primaryBtn}>
           <Text style={styles.primaryText}>
             {saving ? "Saving..." : isPaidCourse ? "Start Checkout" : "Enroll"}
@@ -386,25 +743,47 @@ export default function CourseDetailScreen({ route, navigation }) {
       ) : (
         <Text style={styles.badge}>Enrolled</Text>
       )}
+      {!ownsCourse && isPaidCourse ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Purchase Status</Text>
+          <Text style={styles.meta}>
+            Enrollment: {enrolled ? "confirmed" : "not confirmed"}
+          </Text>
+          <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
+          <Text style={styles.meta}>Refund: {refundStatus}</Text>
+          <Text style={styles.meta}>Payment support: {disputeStatus}</Text>
+          {!hasPaidPurchase ? (
+            <Text style={styles.meta}>
+              No completed payment is recorded for this course.
+            </Text>
+          ) : null}
+          <Pressable
+            disabled={saving}
+            onPress={refreshPaymentStatus}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Refresh Status</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Purchase Status</Text>
-        <Text style={styles.meta}>Enrollment: {enrolled ? "confirmed" : "pending"}</Text>
-        <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
-        <Text style={styles.meta}>
-          Refund: {String(enrollment?.refundStatus || "none")}
+        <Text style={styles.cardTitle}>Your progress</Text>
+        <Text style={styles.meta} accessibilityLabel="Course lesson progress">
+          {completedLessonCount} of {lessons.length} lessons complete
         </Text>
-        <Text style={styles.meta}>
-          Dispute: {String(enrollment?.disputeStatus || "none")}
-        </Text>
-        <Text style={styles.meta}>
-          Earnings: {String(enrollment?.earningsStatus || "pending_webhook")}
-        </Text>
-        <Pressable
-          disabled={saving}
-          onPress={refreshPaymentStatus}
-          style={styles.secondaryBtn}
-        >
-          <Text style={styles.secondaryText}>Refresh Status</Text>
+        <View style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${lessons.length ? Math.round((completedLessonCount / lessons.length) * 100) : 0}%`
+              }
+            ]}
+          />
+        </View>
+        <Pressable onPress={askAIAboutCourse} style={styles.secondaryBtn}>
+          <Text style={styles.secondaryText}>Ask AI About This Course</Text>
         </Pressable>
       </View>
 
@@ -422,8 +801,8 @@ export default function CourseDetailScreen({ route, navigation }) {
         {access.canCreateCourses ? (
           <Pressable
             disabled={
-              (access.maxLessonsPerCourse !== null &&
-                lessons.length >= access.maxLessonsPerCourse)
+              access.maxLessonsPerCourse !== null &&
+              lessons.length >= access.maxLessonsPerCourse
             }
             onPress={addLesson}
             style={[
@@ -439,19 +818,29 @@ export default function CourseDetailScreen({ route, navigation }) {
         {lessons.map((lesson, index) => (
           <View key={rowId(lesson) || lessonTitle(lesson, index)} style={styles.row}>
             <Text style={styles.rowTitle}>{lessonTitle(lesson, index)}</Text>
+            {completedLessonIds.has(rowId(lesson)) ? (
+              <Text style={styles.badge}>Complete</Text>
+            ) : null}
             <Text style={styles.meta}>
-              {lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""}{" "}
+              {lesson.content ? "Text" : ""} {lessonHasMedia(lesson) ? "Video" : ""}{" "}
               {lesson.pdfUrl ? "PDF" : ""} {lesson.audioUrl ? "Audio" : ""}
             </Text>
             <View style={styles.actions}>
               <Pressable
-                disabled={
-                  !enrolled && Number(course?.priceCents || course?.price || 0) > 0
-                }
+                disabled={!canOpenLessons}
                 onPress={() => openLesson(lesson)}
-                style={styles.secondaryBtn}
+                style={[styles.secondaryBtn, !canOpenLessons && styles.disabled]}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canOpenLessons }}
+                accessibilityLabel={
+                  canOpenLessons
+                    ? `Open lesson ${lessonTitle(lesson, index)}`
+                    : `Lesson ${lessonTitle(lesson, index)} locked until payment is confirmed`
+                }
               >
-                <Text style={styles.secondaryText}>Open Lesson</Text>
+                <Text style={styles.secondaryText}>
+                  {canOpenLessons ? "Open Lesson" : "Locked — Payment Required"}
+                </Text>
               </Pressable>
               {access.canCreateCourses && navigation?.navigate ? (
                 <Pressable onPress={() => editLesson(lesson)} style={styles.secondaryBtn}>
@@ -464,16 +853,196 @@ export default function CourseDetailScreen({ route, navigation }) {
         {!lessons.length ? <Text style={styles.meta}>No lessons returned.</Text> : null}
       </View>
 
-      <PersonalFeedPlacement placement="middle" routeKey="personal_course_detail" longContent />
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Course resources</Text>
+        {[...documents, ...mediaAssets].map((resource, index) => {
+          const url = String(
+            resource?.storageUrl || resource?.url || resource?.documentUrl || ""
+          );
+          return (
+            <View
+              key={rowId(resource) || `${resource?.title || "resource"}-${index}`}
+              style={styles.row}
+            >
+              <Text style={styles.rowTitle}>
+                {resource?.title || resource?.fileName || `Resource ${index + 1}`}
+              </Text>
+              {resource?.description ? (
+                <Text style={styles.body}>{resource.description}</Text>
+              ) : null}
+              {url ? (
+                <Pressable
+                  onPress={() => Linking.openURL(url)}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryText}>Open Resource</Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.meta}>Resource is planned but not uploaded yet.</Text>
+              )}
+            </View>
+          );
+        })}
+        {!documents.length && !mediaAssets.length ? (
+          <Text style={styles.meta}>No shared resources attached.</Text>
+        ) : null}
+      </View>
+
+      {course?.forumThreadId || course?.linkedForumThreadIds?.length ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Course discussion</Text>
+          <Text style={styles.meta}>Ask questions and continue the course Q&A.</Text>
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/forum/post/${encodeURIComponent(String(course.forumThreadId || course.linkedForumThreadIds[0]))}`
+              )
+            }
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Open Discussion</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {course?.linkedProductIds?.length ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Related products</Text>
+          {course.linkedProductIds.map((productId) => (
+            <Pressable
+              key={String(productId)}
+              onPress={() => openRelatedProduct(productId)}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>View Product {String(productId)}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Scheduled live sessions</Text>
+        <Text style={styles.meta}>
+          Course lives stay connected to GrowPath Schedule, RSVP status, Notification
+          Center context, and optional My Tasks reminders.
+        </Text>
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open GrowPath Schedule for course lives"
+            onPress={() => router.push("/home/schedule")}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Open Schedule</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Notification Center for course lives"
+            onPress={() => router.push("/home/notifications")}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryText}>Notifications</Text>
+          </Pressable>
+        </View>
+        {liveSessions.map((session, index) => {
+          const sessionKey =
+            rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+          const watchUrl = String(
+            session?.watchUrl ||
+              session?.meetingUrl ||
+              (session?.twitchChannel
+                ? `https://www.twitch.tv/${session.twitchChannel}`
+                : "")
+          );
+          const twitchChannel = String(session?.twitchChannel || "");
+          const twitchScheduleUrl = twitchChannel
+            ? `https://www.twitch.tv/${twitchChannel}/schedule`
+            : "";
+          const isRsvped = liveRsvpIds.includes(sessionKey);
+          const reminderLabel = String(session?.reminderPlan?.label || "1 hour before");
+          const notificationCount = Array.isArray(session?.notificationPlan)
+            ? session.notificationPlan.length
+            : 0;
+          return (
+            <View key={sessionKey} style={styles.row}>
+              <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
+              <Text style={styles.meta}>
+                {session?.scheduledStart || "Date not scheduled"}
+                {session?.timezone ? ` · ${session.timezone}` : ""}
+              </Text>
+              <Text style={styles.meta}>
+                Reminder: {reminderLabel}
+                {notificationCount
+                  ? ` · ${notificationCount} notification checkpoints`
+                  : " · RSVP notification context"}
+                {isRsvped ? " · Going" : ""}
+              </Text>
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={saving}
+                  onPress={() => toggleLiveRsvp(session, index)}
+                  style={isRsvped ? styles.secondaryBtn : styles.primaryBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${isRsvped ? "Cancel RSVP for" : "RSVP to"} ${session?.title || "course live"}`}
+                >
+                  <Text style={isRsvped ? styles.secondaryText : styles.primaryText}>
+                    {isRsvped ? "Going · Cancel RSVP" : "Remind Me / RSVP"}
+                  </Text>
+                </Pressable>
+                {watchUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Watch ${session?.title || "course live"} on Twitch`}
+                    onPress={() => Linking.openURL(watchUrl)}
+                    style={styles.primaryBtn}
+                  >
+                    <Text style={styles.primaryText}>Watch on Twitch</Text>
+                  </Pressable>
+                ) : null}
+                {twitchScheduleUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Open ${session?.title || "course live"} Twitch schedule`}
+                    onPress={() => Linking.openURL(twitchScheduleUrl)}
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryText}>Twitch Schedule / Follow</Text>
+                  </Pressable>
+                ) : null}
+                {session?.scheduledStart ? (
+                  <Pressable
+                    disabled={saving || liveReminderIds.includes(sessionKey)}
+                    onPress={() => addLiveReminder(session, index)}
+                    style={styles.secondaryBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${session?.title || "live session"} reminder to My Tasks`}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {liveReminderIds.includes(sessionKey)
+                        ? "Reminder task created"
+                        : "Optional: Add Task"}
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
+          );
+        })}
+        {!liveSessions.length ? (
+          <Text style={styles.meta}>No live sessions scheduled.</Text>
+        ) : null}
+      </View>
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_course_detail"
+        longContent
+      />
 
       {activeLesson ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{activeLesson.title || "Lesson"}</Text>
-          {activeLesson.videoUrl ? (
-            <Pressable onPress={() => Linking.openURL(activeLesson.videoUrl)}>
-              <Text style={styles.link}>Open video lesson</Text>
-            </Pressable>
-          ) : null}
+          <LessonMediaCard lesson={activeLesson} compact />
           {activeLesson.pdfUrl ? (
             <Pressable onPress={() => Linking.openURL(activeLesson.pdfUrl)}>
               <Text style={styles.link}>Open PDF lesson</Text>
@@ -487,6 +1056,46 @@ export default function CourseDetailScreen({ route, navigation }) {
           {activeLesson.content ? (
             <Text style={styles.body}>{activeLesson.content}</Text>
           ) : null}
+          {activeLesson.forumThreadId ? (
+            <Pressable
+              onPress={() =>
+                router.push(
+                  `/forum/post/${encodeURIComponent(String(activeLesson.forumThreadId))}`
+                )
+              }
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Discuss This Lesson</Text>
+            </Pressable>
+          ) : null}
+          <Text style={styles.cardTitle}>Private lesson notes</Text>
+          <TextInput
+            value={lessonNote}
+            onChangeText={setLessonNote}
+            placeholder="Write notes you want to keep with this lesson"
+            multiline
+            style={[styles.input, styles.noteInput]}
+            accessibilityLabel="Private lesson notes"
+          />
+          <View style={styles.actions}>
+            <Pressable
+              disabled={saving}
+              onPress={saveLessonNote}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Save Note</Text>
+            </Pressable>
+            <Pressable onPress={askAIAboutCourse} style={styles.secondaryBtn}>
+              <Text style={styles.secondaryText}>Ask AI About This Lesson</Text>
+            </Pressable>
+            <Pressable
+              disabled={saving}
+              onPress={createLessonTask}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>Create Lesson Task</Text>
+            </Pressable>
+          </View>
           <Pressable
             disabled={saving}
             onPress={() => markLessonComplete(activeLesson)}
@@ -527,10 +1136,14 @@ export default function CourseDetailScreen({ route, navigation }) {
           onChangeText={setReportReason}
           placeholder="Reason"
           style={styles.input}
+          accessibilityLabel="Course report reason"
         />
         <Pressable
           disabled={saving || !reportReason.trim()}
           onPress={reportCourse}
+          accessibilityRole="button"
+          accessibilityLabel="Submit course report"
+          accessibilityState={{ disabled: saving || !reportReason.trim() }}
           style={[
             styles.secondaryBtn,
             (!reportReason.trim() || saving) && styles.disabled
@@ -540,79 +1153,89 @@ export default function CourseDetailScreen({ route, navigation }) {
         </Pressable>
       </View>
 
-      {isPaidCourse ? (
+      {!ownsCourse && hasPaidPurchase ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Refunds and Disputes</Text>
+          <Text style={styles.cardTitle}>Refunds and payment support</Text>
+          <Text style={styles.meta}>
+            Refund requests and payment issues are reviewed by GrowPath support. Reporting
+            a payment issue here does not open a bank or card dispute.
+          </Text>
           <TextInput
             value={refundReason}
             onChangeText={setRefundReason}
             placeholder="Refund reason"
             style={styles.input}
+            editable={canRequestRefund && !saving}
+            accessibilityLabel="Course refund reason"
           />
           <Pressable
-            disabled={saving || !refundReason.trim()}
+            disabled={saving || !canRequestRefund || !refundReason.trim()}
             onPress={submitRefund}
             style={[
               styles.secondaryBtn,
-              (!refundReason.trim() || saving) && styles.disabled
+              (!refundReason.trim() || !canRequestRefund || saving) && styles.disabled
             ]}
+            accessibilityRole="button"
           >
-            <Text style={styles.secondaryText}>Request Refund</Text>
+            <Text style={styles.secondaryText}>
+              {refundStatus === "requested"
+                ? "Refund Requested"
+                : refundStatus === "refunded"
+                  ? "Refunded"
+                  : "Request Refund"}
+            </Text>
           </Pressable>
           <TextInput
             value={disputeReason}
             onChangeText={setDisputeReason}
-            placeholder="Dispute reason"
+            placeholder="What is wrong with this payment?"
             style={styles.input}
+            editable={canReportPaymentIssue && !saving}
+            accessibilityLabel="Course payment issue"
           />
           <Pressable
-            disabled={saving || !disputeReason.trim()}
+            disabled={saving || !canReportPaymentIssue || !disputeReason.trim()}
             onPress={submitDispute}
             style={[
               styles.secondaryBtn,
-              (!disputeReason.trim() || saving) && styles.disabled
+              (!disputeReason.trim() || !canReportPaymentIssue || saving) &&
+                styles.disabled
             ]}
+            accessibilityRole="button"
           >
-            <Text style={styles.secondaryText}>Open Dispute</Text>
+            <Text style={styles.secondaryText}>
+              {["reported", "open"].includes(disputeStatus)
+                ? "Payment Issue Reported"
+                : "Report Payment Issue"}
+            </Text>
           </Pressable>
         </View>
       ) : null}
 
-      {access.canCreateCourses || access.canPublishCourses ? (
+      {ownsCourse && access.canPublishCourses ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Creator and Moderation</Text>
-          {access.canCreateCourses ? (
-            <Pressable
-              disabled={saving}
-              onPress={submitReview}
-              style={styles.secondaryBtn}
-            >
-              <Text style={styles.secondaryText}>Submit for Review</Text>
-            </Pressable>
-          ) : null}
-          {access.canPublishCourses ? (
-            <>
-              <Pressable disabled={saving} onPress={approve} style={styles.primaryBtn}>
-                <Text style={styles.primaryText}>Approve Course</Text>
-              </Pressable>
-              <TextInput
-                value={rejectReason}
-                onChangeText={setRejectReason}
-                placeholder="Rejection reason"
-                style={styles.input}
-              />
-              <Pressable
-                disabled={saving || !rejectReason.trim()}
-                onPress={reject}
-                style={[
-                  styles.secondaryBtn,
-                  (!rejectReason.trim() || saving) && styles.disabled
-                ]}
-              >
-                <Text style={styles.secondaryText}>Reject Course</Text>
-              </Pressable>
-            </>
-          ) : null}
+          <Text style={styles.cardTitle}>Course publication</Text>
+          <Text style={styles.meta}>
+            Publish when the learner experience is ready. Unpublish returns the course to
+            a private draft without deleting it.
+          </Text>
+          <Pressable
+            disabled={saving}
+            onPress={course?.isPublished ? unpublishCurrentCourse : publishCurrentCourse}
+            style={[styles.primaryBtn, saving && styles.disabled]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              course?.isPublished ? "Unpublish course" : "Publish course"
+            }
+          >
+            <Text style={styles.primaryText}>
+              {saving
+                ? "Saving..."
+                : course?.isPublished
+                  ? "Unpublish Course"
+                  : "Publish Course"}
+            </Text>
+          </Pressable>
         </View>
       ) : null}
 
@@ -630,7 +1253,11 @@ export default function CourseDetailScreen({ route, navigation }) {
           </Pressable>
         </View>
       ) : null}
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_course_detail" longContent />
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_course_detail"
+        longContent
+      />
     </ScrollView>
   );
 }
@@ -689,5 +1316,13 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
   link: { color: "#166534", fontWeight: "800" },
+  noteInput: { minHeight: 96, textAlignVertical: "top" },
+  progressTrack: {
+    height: 10,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0"
+  },
+  progressFill: { height: "100%", backgroundColor: "#16A34A" },
   disabled: { opacity: 0.5 }
 });

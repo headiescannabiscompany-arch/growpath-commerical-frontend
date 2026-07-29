@@ -195,6 +195,25 @@ describe("API Configuration & Endpoints", () => {
         "/uploads/photo.jpg"
       ]);
     });
+
+    it("savePersonalGrowCropIdentity requires explicit confirmation on the grow endpoint", async () => {
+      await growsApi.savePersonalGrowCropIdentity("grow_1", {
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        cultivar: "Bruce Banner",
+        userConfirmed: true
+      });
+      expect(fetchCalls[0].url.endsWith("/api/personal/grows/grow_1/crop-identity")).toBe(
+        true
+      );
+      expect(fetchCalls[0].options.method).toBe("PATCH");
+      expect(JSON.parse(fetchCalls[0].options.body)).toMatchObject({
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        cultivar: "Bruce Banner",
+        userConfirmed: true
+      });
+    });
   });
 
   describe("Personal Logs API", () => {

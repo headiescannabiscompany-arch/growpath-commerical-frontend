@@ -1,26 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   analyzeDiagnosis,
-  diagnoseImage,
+  diagnoseEvidence,
   getDiagnosisProviderStatus,
   submitDiagnosisFeedback
 } from "@/api/diagnose";
 import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
+import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { createPersonalTask } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
@@ -28,8 +23,14 @@ import {
   normalizeDiagnosisResponse,
   type NormalizedDiagnosis
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
+import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import type { EvidenceAsset } from "@/types/evidence";
+import { providerEvidencePayload } from "@/api/evidence";
+import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -89,6 +90,20 @@ function providerResultSummary(providerResult: unknown): string[] {
   if (data.overallHealth) lines.push(`Overall health: ${data.overallHealth}`);
   if (data.diagnosisClass) lines.push(`Diagnosis class: ${data.diagnosisClass}`);
   if (data.urgency) lines.push(`Urgency: ${data.urgency}`);
+  if (data.cropIdentity?.commonName) {
+    lines.push(
+      `Draft crop identity: ${data.cropIdentity.commonName}${
+        data.cropIdentity.scientificName ? ` (${data.cropIdentity.scientificName})` : ""
+      }${data.cropIdentity.confidence ? `, ${data.cropIdentity.confidence} confidence` : ""}`
+    );
+  }
+  if (data.imageAnalysis?.performed) {
+    lines.push(
+      data.imageAnalysis.usableForTriage === false
+        ? "Photo review: inspected, but not usable for triage"
+        : `Photo review: ${data.imageAnalysis.photoCount || 1} inspected and usable for cautious triage`
+    );
+  }
   if (Array.isArray(data.likelyIssues)) {
     data.likelyIssues.slice(0, 3).forEach((issue: any, index: number) => {
       const confidence =
@@ -130,26 +145,36 @@ type DiagnosisProviderStatus = {
   mode?: string;
 };
 
-export default function DiagnoseRoute() {
+export default function DiagnoseRoute({
+  workspaceType = "personal",
+  facilityId = ""
+}: {
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
+} = {}) {
   const params = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
   }>();
-  const growId = param(params.growId);
+  const routeGrowId = param(params.growId);
   const initialPlantId = param(params.plantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI);
 
+  const [grows, setGrows] = useState<PersonalGrow[]>([]);
+  const [growId, setGrowId] = useState(routeGrowId);
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [plantId, setPlantId] = useState(initialPlantId);
-  const [cropCommonName, setCropCommonName] = useState("Cannabis");
+  const [cropCommonName, setCropCommonName] = useState("");
   const [scientificName, setScientificName] = useState("");
   const [cultivarOrStrain, setCultivarOrStrain] = useState("");
-  const [stage, setStage] = useState("veg");
-  const [patternLocation, setPatternLocation] = useState("upper new growth");
+  const [stage, setStage] = useState("unknown");
+  const [patternLocation, setPatternLocation] = useState("unknown");
+  const [progression, setProgression] = useState("unknown");
   const [rootMoisture, setRootMoisture] = useState("unknown");
   const [rootConcern, setRootConcern] = useState("");
   const [temp, setTemp] = useState("");
+  const [tempUnit, setTempUnit] = useState<"F" | "C">("F");
   const [rh, setRh] = useState("");
   const [vpd, setVpd] = useState("");
   const [feedEC, setFeedEC] = useState("");
@@ -157,7 +182,7 @@ export default function DiagnoseRoute() {
   const [feedPH, setFeedPH] = useState("");
   const [runoffPH, setRunoffPH] = useState("");
   const [notes, setNotes] = useState("");
-  const [photoUri, setPhotoUri] = useState("");
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [result, setResult] = useState<NormalizedDiagnosis | null>(null);
   const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
   const [followUpAnswer, setFollowUpAnswer] = useState("");
@@ -171,14 +196,58 @@ export default function DiagnoseRoute() {
   const [providerStatusError, setProviderStatusError] = useState("");
 
   useEffect(() => {
+    if (workspaceType !== "personal") return;
+    let mounted = true;
+    listPersonalGrows()
+      .then((rows) => {
+        if (!mounted) return;
+        setGrows(rows);
+        if (!routeGrowId && rows.length) {
+          const active = [...rows]
+            .filter((grow) => grow.status !== "harvested")
+            .sort(
+              (a, b) =>
+                new Date(b.updatedAt || 0).getTime() -
+                new Date(a.updatedAt || 0).getTime()
+            )[0];
+          const fallback = active || rows[0];
+          setGrowId(
+            (current) => current || String(fallback.id || (fallback as any)._id || "")
+          );
+        }
+      })
+      .catch(() => {
+        if (mounted) setGrows([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [routeGrowId, workspaceType]);
+
+  useEffect(() => {
     if (!growId) {
       setPlants([]);
       return;
     }
-    listPersonalPlants({ growId })
+    const request =
+      workspaceType === "facility" && facilityId
+        ? apiRequest(
+            `${endpoints.plants(facilityId)}?growId=${encodeURIComponent(growId)}`
+          ).then((response: any) => {
+            const rows =
+              response?.plants || response?.items || response?.data || response;
+            return Array.isArray(rows) ? rows : [];
+          })
+        : listPersonalPlants({ growId });
+    request
+      .then(async (rows) => {
+        if (rows.length || workspaceType !== "personal") return rows;
+        const allPlants = await listPersonalPlants();
+        return allPlants.filter((plant) => String(plant.growId || "") === growId);
+      })
       .then(setPlants)
       .catch(() => setPlants([]));
-  }, [growId]);
+  }, [facilityId, growId, workspaceType]);
 
   useEffect(() => {
     if (!enabled) {
@@ -208,6 +277,18 @@ export default function DiagnoseRoute() {
     [plantId, plants]
   );
 
+  const selectedGrow = useMemo(
+    () => grows.find((grow) => String(grow.id || (grow as any)._id) === growId),
+    [growId, grows]
+  );
+
+  useEffect(() => {
+    if (!selectedGrow || selectedPlant) return;
+    setCropCommonName(selectedGrow.cropCommonName || selectedGrow.cropTypes?.[0] || "");
+    setScientificName(selectedGrow.scientificName || "");
+    setCultivarOrStrain(selectedGrow.cultivar || selectedGrow.strain || "");
+  }, [selectedGrow, selectedPlant]);
+
   useEffect(() => {
     if (!selectedPlant) return;
     if (selectedPlant.cropCommonName) setCropCommonName(selectedPlant.cropCommonName);
@@ -230,63 +311,67 @@ export default function DiagnoseRoute() {
     };
   }
 
-  async function choosePhoto() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setFeedback("Photo-library permission is required to select an image.");
-      return;
-    }
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 0.8
-    });
-    if (!picked.canceled && picked.assets[0]?.uri) setPhotoUri(picked.assets[0].uri);
-  }
-
-  async function runDiagnosis() {
-    if (!enabled || running || (!notes.trim() && !photoUri)) return;
-    setRunning(true);
-    setFeedback("");
-    try {
-      const pattern = {
+  function currentDiagnosisContext() {
+    return {
+      notes: notes.trim(),
+      stage,
+      cropCommonName: cropCommonName.trim(),
+      scientificName: scientificName.trim(),
+      cultivarOrStrain: cultivarOrStrain.trim(),
+      plantName: selectedPlant?.name,
+      selectedPlantContext: selectedPlantContext(),
+      cropProfileId: selectedPlant?.cropProfileId || undefined,
+      plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+      cultivar:
+        cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
+      pattern: {
         location: patternLocation,
+        progression,
         notes: notes.trim()
-      };
-      const rootZone = {
+      },
+      rootZone: {
         moisture: rootMoisture,
         concern: rootConcern.trim()
-      };
-      const environment = {
+      },
+      environment: {
         temp: temp.trim(),
+        tempUnit,
         rh: rh.trim(),
         vpd: vpd.trim()
-      };
-      const numbers = {
+      },
+      numbers: {
         feedEC: feedEC.trim(),
         runoffEC: runoffEC.trim(),
         feedPH: feedPH.trim(),
         runoffPH: runoffPH.trim()
-      };
-      const context = {
-        notes: notes.trim(),
-        stage,
-        cropCommonName: cropCommonName.trim(),
-        scientificName: scientificName.trim(),
-        cultivarOrStrain: cultivarOrStrain.trim(),
-        plantName: selectedPlant?.name,
-        selectedPlantContext: selectedPlantContext(),
-        cropProfileId: selectedPlant?.cropProfileId || undefined,
-        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
-        cultivar:
-          cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
-        pattern,
-        rootZone,
-        environment,
-        numbers
-      };
-      const response = photoUri
-        ? await diagnoseImage(photoUri, { growId, plantId, context })
+      },
+      workspaceType,
+      facilityId: facilityId || undefined
+    };
+  }
+
+  async function runDiagnosis() {
+    const evidence = providerEvidencePayload(evidenceAssets);
+    const canAnalyzeAttachedPhotos =
+      providerStatus?.configured === true && providerStatus?.imageSupport === true;
+    if (
+      !enabled ||
+      running ||
+      (!notes.trim() && (!evidence.images.length || !canAnalyzeAttachedPhotos))
+    )
+      return;
+    setRunning(true);
+    setFeedback("");
+    try {
+      const context = currentDiagnosisContext();
+      const response = evidence.images.length
+        ? await diagnoseEvidence({
+            growId,
+            plantId,
+            context,
+            photoUrls: evidence.images,
+            evidenceAssetIds: evidence.evidenceAssetIds
+          })
         : await analyzeDiagnosis({ growId, plantId, ...context });
       const normalized = normalizeDiagnosisResponse(response);
       setResult(normalized);
@@ -301,7 +386,7 @@ export default function DiagnoseRoute() {
   async function saveLog() {
     if (!growId || !result) throw new Error("Select a grow before saving a diagnosis.");
     const rejectedTags = rejectedDiagnosisTags(result, acceptedTags);
-    const created = await createPersonalLog({
+    const payload = {
       growId,
       plantId: plantId || undefined,
       diagnosisId: result.id || undefined,
@@ -335,7 +420,14 @@ export default function DiagnoseRoute() {
         acceptedTags,
         rejectedTags
       }
-    });
+    };
+    const created =
+      workspaceType === "facility" && facilityId
+        ? await apiRequest(endpoints.growlogs(facilityId), {
+            method: "POST",
+            body: payload
+          })
+        : await createPersonalLog(payload);
     if (!created) throw new Error("Unable to save diagnosis to the grow journal.");
     setFeedback("Diagnosis saved to grow journal.");
   }
@@ -343,19 +435,27 @@ export default function DiagnoseRoute() {
   async function createTask() {
     if (!growId || !result) throw new Error("Select a grow before creating a task.");
     const followUpDays = diagnosisFollowUpDays(result);
-    const created = await createPersonalTask({
+    const priority: "high" | "medium" = result.severity === "high" ? "high" : "medium";
+    const payload = {
       growId,
       plantId: plantId || undefined,
       linkedGrowId: growId,
       title: `Follow up: ${result.issueSummary}`,
       description: diagnosisTaskDescription(result, acceptedTags),
       dueDate: addDaysIso(followUpDays),
-      priority: result.severity === "high" ? "high" : "medium",
+      priority,
       sourceType: "ai_diagnosis",
       sourceObjectId: result.id || undefined,
       sourceDiagnosisId: result.id || undefined,
       ...diagnosisTaskMetadata(result)
-    });
+    };
+    const created =
+      workspaceType === "facility" && facilityId
+        ? await apiRequest(endpoints.tasks(facilityId), {
+            method: "POST",
+            body: payload
+          })
+        : await createPersonalTask(payload);
     if (!created) throw new Error("Unable to create follow-up task.");
     setFeedback("Follow-up task created.");
   }
@@ -365,21 +465,23 @@ export default function DiagnoseRoute() {
     setRunning(true);
     setFeedback("");
     try {
-      const response = await analyzeDiagnosis({
-        growId,
-        plantId,
-        notes,
-        stage,
-        cropCommonName: cropCommonName.trim(),
-        scientificName: scientificName.trim(),
-        cultivarOrStrain: cultivarOrStrain.trim(),
-        selectedPlantContext: selectedPlantContext(),
-        cropProfileId: selectedPlant?.cropProfileId || undefined,
-        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+      const evidence = providerEvidencePayload(evidenceAssets);
+      const followUpContext = {
+        ...currentDiagnosisContext(),
         priorDiagnosisId: result.id || undefined,
+        priorCropIdentity: result.cropIdentity || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
-      });
+      };
+      const response = evidence.images.length
+        ? await diagnoseEvidence({
+            growId,
+            plantId,
+            context: followUpContext,
+            photoUrls: evidence.images,
+            evidenceAssetIds: evidence.evidenceAssetIds
+          })
+        : await analyzeDiagnosis({ growId, plantId, ...followUpContext });
       const normalized = normalizeDiagnosisResponse(response);
       setResult(normalized);
       setAcceptedTags(normalized.tags);
@@ -421,36 +523,97 @@ export default function DiagnoseRoute() {
           remediation:
             "Confirm the crop species before applying crop-specific diagnosis, nutrient, or IPM recommendations."
         }
-      : result.cropIdentity?.cropProfileMatched
+      : result.cropIdentity?.requiresUserConfirmation
         ? {
-            key: "crop-profile-match",
-            severity:
-              result.cropIdentity.cropProfileCurationStatus === "reviewed"
-                ? ("info" as const)
-                : ("medium" as const),
-            message: `Matched crop profile: ${
-              result.cropProfileSnapshot?.displayName ||
-              result.cropIdentity.commonName ||
-              "crop profile"
-            }`,
+            key: "crop-identity-confirmation",
+            severity: "medium" as const,
+            message: `Draft crop identity: ${
+              result.cropIdentity.commonName || "not identified"
+            }${
+              result.cropIdentity.confidence
+                ? ` (${result.cropIdentity.confidence} confidence)`
+                : ""
+            }. This has not been confirmed by the user.`,
             remediation:
-              result.cropIdentity.cropProfileCurationStatus === "reviewed"
-                ? "Crop-specific defaults are linked to reviewed profile data."
-                : "Profile is stored but still needs license/review confirmation before being treated as verified guidance."
+              result.cropIdentity.clarificationPrompt ||
+              "Confirm or correct the crop species before applying crop-specific guidance."
           }
-        : {
-            key: "crop-profile-missing",
-            severity: "info" as const,
-            message: "No reviewed crop profile matched this diagnosis.",
-            remediation:
-              "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
-          }
+        : result.cropIdentity?.cropProfileMatched
+          ? {
+              key: "crop-profile-match",
+              severity:
+                result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                  ? ("info" as const)
+                  : ("medium" as const),
+              message: `Matched crop profile: ${
+                result.cropProfileSnapshot?.displayName ||
+                result.cropIdentity.commonName ||
+                "crop profile"
+              }`,
+              remediation:
+                result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                  ? "Crop-specific defaults are linked to reviewed profile data."
+                  : "Profile is stored but still needs license/review confirmation before being treated as verified guidance."
+            }
+          : {
+              key: "crop-profile-missing",
+              severity: "info" as const,
+              message: "No reviewed crop profile matched this diagnosis.",
+              remediation:
+                "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
+            }
     : null;
 
   const diagnosisCropContext = diagnosisCropContextState(
     selectedPlantContext(),
     cropCommonName
   );
+  const diagnosisEvidence = providerEvidencePayload(evidenceAssets);
+  const photoAnalysisReady =
+    providerStatus?.configured === true && providerStatus?.imageSupport === true;
+  const measuredValueCount = [temp, rh, vpd, feedEC, runoffEC, feedPH, runoffPH].filter(
+    (value) => value.trim()
+  ).length;
+  const photoOnlyBlocked =
+    Boolean(diagnosisEvidence.images.length) && !notes.trim() && !photoAnalysisReady;
+  const runDisabled =
+    !enabled ||
+    running ||
+    (!notes.trim() && (!diagnosisEvidence.images.length || !photoAnalysisReady));
+  const diagnosisReady = enabled && !running && !runDisabled;
+  const missingStructuredContext = [
+    stage === "unknown" ? "stage" : "",
+    patternLocation === "unknown" ? "pattern location" : ""
+  ].filter(Boolean);
+  const readinessMessage = !enabled
+    ? "This account cannot run AI diagnosis."
+    : running
+      ? "Diagnosis is analyzing the submitted evidence."
+      : !notes.trim() && !diagnosisEvidence.images.length
+        ? "Add written symptom notes or at least one uploaded photo to run diagnosis."
+        : photoOnlyBlocked
+          ? "The current provider cannot inspect attached photos. Add written symptom notes to run cautious text triage."
+          : `Ready with ${notes.trim() ? "written symptoms" : "photo evidence"}${
+              diagnosisEvidence.images.length
+                ? `, ${diagnosisEvidence.images.length} uploaded photo${diagnosisEvidence.images.length === 1 ? "" : "s"}`
+                : ""
+            }. ${
+              missingStructuredContext.length
+                ? `${missingStructuredContext.join(" and ")} ${
+                    missingStructuredContext.length === 1 ? "is" : "are"
+                  } still unknown; select ${
+                    missingStructuredContext.length === 1 ? "it" : "them"
+                  } when possible.`
+                : `Stage is ${stage.replace("_", " ")} and pattern location is ${patternLocation}.`
+            } ${
+              progression === "unknown"
+                ? "Progression is still unknown; select it when possible."
+                : `Progression is ${progression}.`
+            }${
+              measuredValueCount
+                ? ` ${measuredValueCount} measured value${measuredValueCount === 1 ? " is" : "s are"} included.`
+                : " Add environment or pH/EC measurements when available to improve discrimination."
+            }`;
 
   function toggleAcceptedTag(tag: string) {
     setAcceptedTags((current) =>
@@ -467,13 +630,62 @@ export default function DiagnoseRoute() {
       backFallbackHref="/home/personal"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Plant Issue Diagnosis</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Plant Issue Diagnosis
+        </Text>
         <Text style={styles.subtitle}>
           Cautious triage based on the context you provide. Results are possibilities, not
           certainty.
         </Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
-        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        {grows.length ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Grow</Text>
+            <View style={styles.row}>
+              {grows.map((grow, index) => {
+                const id = String(grow.id || (grow as any)._id || "");
+                if (!id) return null;
+                const selected = growId === id;
+                return (
+                  <Pressable
+                    key={id}
+                    style={[styles.pill, selected && styles.pillOn]}
+                    onPress={() => {
+                      setGrowId(id);
+                      setPlantId("");
+                      setResult(null);
+                      setFeedback("");
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select diagnosis grow ${grow.name || index + 1}`}
+                  >
+                    <Text style={[styles.pillText, selected && styles.pillTextOn]}>
+                      {grow.name || `Grow ${index + 1}`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : !growId && workspaceType === "personal" ? (
+          <Text style={styles.feedback}>
+            Create a grow first to connect diagnosis results, logs, plants, and follow-up
+            tasks.
+          </Text>
+        ) : null}
+        {growId ? (
+          <Text style={styles.context}>Grow context: {selectedGrow?.name || growId}</Text>
+        ) : null}
+        {String(cropCommonName).toLowerCase().includes("cannabis") ? (
+          <ContextualWorkflowLinks
+            title="Harvest / maturity mode"
+            helper="Open the existing Harvest Readiness workflow with this grow and plant selected."
+            source="plant_diagnosis"
+            growId={growId}
+            plantId={plantId}
+            workflows={["harvest-readiness"]}
+          />
+        ) : null}
 
         {plants.length ? (
           <View style={styles.section}>
@@ -563,13 +775,14 @@ export default function DiagnoseRoute() {
 
         <Text style={styles.label}>Stage</Text>
         <View style={styles.row}>
-          {["seedling", "veg", "flower", "late_flower"].map((value) => (
+          {["unknown", "seedling", "veg", "flower", "late_flower"].map((value) => (
             <Pressable
               key={value}
               style={[styles.pill, stage === value && styles.pillOn]}
               onPress={() => setStage(value)}
               accessibilityRole="button"
               accessibilityLabel={`Diagnosis stage ${value.replace("_", " ")}`}
+              accessibilityState={{ selected: stage === value }}
             >
               <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
                 {value.replace("_", " ")}
@@ -584,7 +797,7 @@ export default function DiagnoseRoute() {
           value={notes}
           onChangeText={setNotes}
           multiline
-          placeholder="Describe location, spread, recent watering/feed, pH/EC, and environmental changes."
+          placeholder="Describe the exact photo area, leaf, bud, or other target; location, spread, recent watering/feed, pH/EC, and environmental changes."
           accessibilityLabel="Diagnosis notes"
         />
 
@@ -592,6 +805,7 @@ export default function DiagnoseRoute() {
           <Text style={styles.label}>Pattern location</Text>
           <View style={styles.row}>
             {[
+              "unknown",
               "lower old leaves",
               "upper new growth",
               "middle",
@@ -604,12 +818,43 @@ export default function DiagnoseRoute() {
                 onPress={() => setPatternLocation(value)}
                 accessibilityRole="button"
                 accessibilityLabel={`Diagnosis pattern ${value}`}
+                accessibilityState={{ selected: patternLocation === value }}
               >
                 <Text
                   style={[
                     styles.pillText,
                     patternLocation === value && styles.pillTextOn
                   ]}
+                >
+                  {value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Progression</Text>
+          <Text style={styles.subtitle}>
+            How has the symptom changed since you first noticed it?
+          </Text>
+          <View style={styles.row}>
+            {[
+              "unknown",
+              "new today",
+              "stable",
+              "spreading slowly",
+              "spreading quickly"
+            ].map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, progression === value && styles.pillOn]}
+                onPress={() => setProgression(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis progression ${value}`}
+              >
+                <Text
+                  style={[styles.pillText, progression === value && styles.pillTextOn]}
                 >
                   {value}
                 </Text>
@@ -648,13 +893,29 @@ export default function DiagnoseRoute() {
 
         <View style={styles.section}>
           <Text style={styles.label}>Environment</Text>
+          <View style={styles.row}>
+            <Text style={styles.measurementLabel}>Temperature unit</Text>
+            {(["F", "C"] as const).map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, tempUnit === value && styles.pillOn]}
+                onPress={() => setTempUnit(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis temperature unit degrees ${value}`}
+              >
+                <Text style={[styles.pillText, tempUnit === value && styles.pillTextOn]}>
+                  °{value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
           <View style={styles.grid}>
             <TextInput
               style={styles.gridInput}
               value={temp}
               onChangeText={setTemp}
               keyboardType="numeric"
-              placeholder="Temp"
+              placeholder={`Air temperature (°${tempUnit})`}
               accessibilityLabel="Diagnosis temperature"
             />
             <TextInput
@@ -662,7 +923,7 @@ export default function DiagnoseRoute() {
               value={rh}
               onChangeText={setRh}
               keyboardType="numeric"
-              placeholder="RH"
+              placeholder="Relative humidity (%)"
               accessibilityLabel="Diagnosis RH"
             />
             <TextInput
@@ -670,7 +931,7 @@ export default function DiagnoseRoute() {
               value={vpd}
               onChangeText={setVpd}
               keyboardType="numeric"
-              placeholder="VPD"
+              placeholder="VPD (kPa)"
               accessibilityLabel="Diagnosis VPD"
             />
           </View>
@@ -684,7 +945,7 @@ export default function DiagnoseRoute() {
               value={feedEC}
               onChangeText={setFeedEC}
               keyboardType="numeric"
-              placeholder="Feed EC"
+              placeholder="Feed EC (mS/cm)"
               accessibilityLabel="Diagnosis feed EC"
             />
             <TextInput
@@ -692,7 +953,7 @@ export default function DiagnoseRoute() {
               value={runoffEC}
               onChangeText={setRunoffEC}
               keyboardType="numeric"
-              placeholder="Runoff EC"
+              placeholder="Runoff EC (mS/cm)"
               accessibilityLabel="Diagnosis runoff EC"
             />
             <TextInput
@@ -700,7 +961,7 @@ export default function DiagnoseRoute() {
               value={feedPH}
               onChangeText={setFeedPH}
               keyboardType="numeric"
-              placeholder="Feed pH"
+              placeholder="Feed pH (0–14)"
               accessibilityLabel="Diagnosis feed pH"
             />
             <TextInput
@@ -708,41 +969,60 @@ export default function DiagnoseRoute() {
               value={runoffPH}
               onChangeText={setRunoffPH}
               keyboardType="numeric"
-              placeholder="Runoff pH"
+              placeholder="Runoff pH (0–14)"
               accessibilityLabel="Diagnosis runoff pH"
             />
           </View>
         </View>
 
-        <View style={styles.row}>
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={choosePhoto}
-            accessibilityRole="button"
-            accessibilityLabel={
-              photoUri ? "Change diagnosis photo" : "Add diagnosis photo"
-            }
-          >
-            <Text style={styles.secondaryButtonText}>
-              {photoUri ? "Change Photo" : "Add Photo"}
-            </Text>
-          </Pressable>
-          {photoUri ? (
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => setPhotoUri("")}
-              accessibilityRole="button"
-              accessibilityLabel="Remove diagnosis photo"
-            >
-              <Text style={styles.secondaryButtonText}>Remove Photo</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        {workspaceType === "personal" && growId ? (
+          <SavedGrowPhotoEvidencePicker
+            growId={growId}
+            plantId={plantId}
+            purpose="diagnosis"
+            value={evidenceAssets}
+            onChange={setEvidenceAssets}
+            maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+          />
+        ) : null}
+
+        <MediaEvidencePicker
+          aiUsable
+          maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+          allowVideo
+          extractFramesFromVideo
+          maxExtractedVideoFrames={PLANT_REVIEW_PHOTO_LIMIT}
+          maxVideoSeconds={599}
+          purpose="diagnosis"
+          sourceContext={{ growId, plantId, facilityId: facilityId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
         <Text style={styles.photoPolicy}>
           Photos are used for this diagnosis request. They are not used to train GrowPath
           AI models unless you explicitly opt in.
         </Text>
-        {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
+        {photoAnalysisReady ? (
+          <Text style={styles.photoReady}>
+            Photo analysis is connected. You can add up to {PLANT_REVIEW_PHOTO_LIMIT}{" "}
+            photos. Include a zoomed-out whole plant, the symptom pattern, sharp close-ups
+            of both leaf surfaces, and a macro or root-zone view when relevant. If the
+            symptom is a small part of a wider photo, describe the exact target and add a
+            close-up of that area.
+          </Text>
+        ) : (
+          <Text style={styles.photoWarning}>
+            Photo analysis is not connected yet. Attached photos remain evidence, but the
+            current engine uses your written observations and measurements. Describe what
+            is visible in Diagnosis notes to run useful triage.
+          </Text>
+        )}
+        {photoOnlyBlocked ? (
+          <Text style={styles.photoWarning}>
+            Add written symptom notes before running. A photo-only request would otherwise
+            produce a generic result because this provider cannot inspect the image.
+          </Text>
+        ) : null}
 
         {!enabled ? (
           <Text style={styles.locked}>
@@ -758,8 +1038,10 @@ export default function DiagnoseRoute() {
           >
             <Text style={styles.readinessTitle}>
               {providerStatus?.configured
-                ? "Production AI provider ready"
-                : "Production AI provider needs verification"}
+                ? providerStatus.imageSupport
+                  ? "Diagnosis and photo analysis ready"
+                  : "Text diagnosis engine ready"
+                : "Diagnosis provider needs verification"}
             </Text>
             <Text style={styles.readinessText}>
               {providerStatus
@@ -776,15 +1058,22 @@ export default function DiagnoseRoute() {
             ) : null}
           </View>
         ) : null}
-        <Pressable
-          disabled={!enabled || running || (!notes.trim() && !photoUri)}
+        <View
           style={[
-            styles.primaryButton,
-            (!enabled || running || (!notes.trim() && !photoUri)) && styles.disabled
+            styles.readinessPanel,
+            diagnosisReady ? styles.readinessReady : styles.readinessMissing
           ]}
+        >
+          <Text style={styles.readinessTitle}>Diagnosis readiness</Text>
+          <Text style={styles.readinessText}>{readinessMessage}</Text>
+        </View>
+        <Pressable
+          disabled={runDisabled}
+          style={[styles.primaryButton, runDisabled && styles.disabled]}
           onPress={runDiagnosis}
           accessibilityRole="button"
           accessibilityLabel="Run diagnosis"
+          accessibilityHint={readinessMessage}
         >
           <Text style={styles.primaryButtonText}>
             {running ? "Analyzing..." : "Run Diagnosis"}
@@ -798,16 +1087,37 @@ export default function DiagnoseRoute() {
               status={result.source === "unverified" ? "UNVERIFIED SOURCE" : "ANALYSIS"}
               summary={result.explanation}
               metrics={[
+                result.confidence !== "unknown"
+                  ? {
+                      key: "overall-confidence",
+                      label: "Overall confidence",
+                      value: result.confidence.toUpperCase()
+                    }
+                  : result.topCandidateConfidence != null
+                    ? {
+                        key: "top-candidate-confidence",
+                        label: "Top candidate confidence",
+                        value: `${Math.round(result.topCandidateConfidence * 100)}%`
+                      }
+                    : {
+                        key: "overall-confidence",
+                        label: "Overall confidence",
+                        value: "NOT PROVIDED"
+                      },
                 {
-                  key: "confidence",
-                  label: "Confidence",
-                  value: result.confidence.toUpperCase()
+                  key: "health-status",
+                  label: "Health status",
+                  value: (result.overallHealth || result.severity).toUpperCase()
                 },
-                {
-                  key: "severity",
-                  label: "Severity",
-                  value: result.severity.toUpperCase()
-                },
+                ...(result.urgency
+                  ? [
+                      {
+                        key: "action-urgency",
+                        label: "Action urgency",
+                        value: result.urgency.toUpperCase()
+                      }
+                    ]
+                  : []),
                 { key: "source", label: "Source", value: result.source },
                 ...(result.providerModel
                   ? [
@@ -817,13 +1127,26 @@ export default function DiagnoseRoute() {
                         value: result.providerModel
                       }
                     ]
+                  : []),
+                ...(result.imageAnalysis?.requested
+                  ? [
+                      {
+                        key: "photo-analysis",
+                        label: "Photos analyzed",
+                        value: result.imageAnalysis.performed
+                          ? String(result.imageAnalysis.photoCount || 1)
+                          : "Not analyzed"
+                      }
+                    ]
                   : [])
               ]}
               inputs={{
                 stage,
                 patternLocation,
+                progression,
                 rootMoisture,
                 temp,
+                tempUnit,
                 rh,
                 vpd,
                 feedEC,
@@ -867,6 +1190,49 @@ export default function DiagnoseRoute() {
                       }
                     ]
                   : []),
+                ...(result.imageAnalysis?.requested && !result.imageAnalysis.performed
+                  ? [
+                      {
+                        key: "image-analysis-not-performed",
+                        severity: "high" as const,
+                        message:
+                          result.imageAnalysis.reason ||
+                          "Attached photos were not visually analyzed.",
+                        remediation:
+                          "Use the written findings as preliminary triage only. Add detailed symptom notes or rerun when photo analysis is available."
+                      }
+                    ]
+                  : []),
+                ...(result.imageAnalysis?.performed &&
+                result.imageAnalysis.usableForTriage === false
+                  ? [
+                      {
+                        key: "image-analysis-unusable",
+                        severity: "high" as const,
+                        message:
+                          result.imageAnalysis.qualityIssues?.join(" ") ||
+                          "The provider inspected the photos but could not use them for meaningful triage.",
+                        remediation:
+                          "Replace the photo using the listed quality and coverage guidance before relying on the result."
+                      }
+                    ]
+                  : []),
+                ...(result.imageAnalysis?.performed &&
+                result.imageAnalysis.usableForTriage !== false
+                  ? [
+                      {
+                        key: "image-analysis-performed",
+                        severity: "info" as const,
+                        message: `${result.imageAnalysis.photoCount || 1} submitted photo${
+                          Number(result.imageAnalysis.photoCount || 1) === 1
+                            ? " was"
+                            : "s were"
+                        } inspected by the image-capable diagnosis provider.`,
+                        remediation:
+                          "Compare the listed visible evidence and counter-evidence with the plant in person; a photo result remains cautious triage, not a lab confirmation."
+                      }
+                    ]
+                  : []),
                 ...result.missingData.map((item, index) => ({
                   key: `missing-${index}`,
                   severity: "info" as const,
@@ -878,8 +1244,34 @@ export default function DiagnoseRoute() {
                 ...result.evidence.map((item) => `Observed evidence: ${item}`),
                 ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
               ]}
+              evidenceReview={
+                diagnosisEvidence.images.length || result.imageAnalysis?.requested
+                  ? normalizeEvidenceReview(result.imageAnalysis, {
+                      requested: diagnosisEvidence.images.length > 0,
+                      photoCount: diagnosisEvidence.images.length,
+                      confidence: result.confidence,
+                      evidenceUsed: result.evidence,
+                      counterEvidence: result.counterEvidence,
+                      missingInformation: result.missingData,
+                      limitations: result.limitations || []
+                    })
+                  : null
+              }
+              onAddEvidence={() =>
+                setFeedback(
+                  "Add the requested photos above, then submit the diagnosis follow-up to update this result."
+                )
+              }
               details={
                 <View style={styles.providerPanel}>
+                  <Text style={styles.providerTitle}>ETGU and GPT verification</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.verification?.status || "Comparison unavailable"}
+                  </Text>
+                  <Text style={styles.providerLine}>
+                    {result.verification?.note ||
+                      "This result did not include a separate rule-versus-provider comparison."}
+                  </Text>
                   <Text style={styles.providerTitle}>Provider output</Text>
                   <Text style={styles.providerMeta}>
                     {result.providerName || result.source || "unverified provider"}
@@ -896,6 +1288,63 @@ export default function DiagnoseRoute() {
                       Provider output was not supplied as a separate structured payload.
                     </Text>
                   )}
+                  <Text style={styles.providerTitle}>Draft crop identity</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.cropIdentity?.commonName || "Not identified"}
+                    {result.cropIdentity?.scientificName
+                      ? ` | ${result.cropIdentity.scientificName}`
+                      : ""}
+                    {result.cropIdentity?.confidence
+                      ? ` | ${result.cropIdentity.confidence} confidence`
+                      : ""}
+                  </Text>
+                  <Text style={styles.providerLine}>
+                    {result.cropIdentity?.source === "visual_suggestion"
+                      ? "Suggested from the submitted photo evidence. Confirm or correct the crop before treating it as saved crop context."
+                      : result.cropIdentity?.source === "user_context"
+                        ? "Taken from the crop context supplied with this diagnosis."
+                        : result.cropIdentity?.commonName &&
+                            result.cropIdentity.commonName !== "unspecified"
+                          ? "Returned with the supplied or saved diagnosis context; review the confirmation notice before applying crop-specific guidance."
+                          : "The submitted evidence did not support a useful crop suggestion."}
+                  </Text>
+                  {result.cropIdentity?.visibleEvidence?.map((line, index) => (
+                    <Text key={`crop-evidence-${index}`} style={styles.providerLine}>
+                      - Visible identity evidence: {line}
+                    </Text>
+                  ))}
+                  {result.cropIdentity?.alternatives?.map((line, index) => (
+                    <Text key={`crop-alternative-${index}`} style={styles.providerLine}>
+                      - Alternative to confirm: {line}
+                    </Text>
+                  ))}
+                  <Text style={styles.providerTitle}>Photo evidence quality</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.imageAnalysis?.performed
+                      ? `${result.imageAnalysis.photoCount || 1} photo${
+                          Number(result.imageAnalysis.photoCount || 1) === 1 ? "" : "s"
+                        } inspected | ${
+                          result.imageAnalysis.usableForTriage === false
+                            ? "replacement needed"
+                            : "usable for cautious triage"
+                        }`
+                      : "No image inspection was recorded"}
+                  </Text>
+                  {result.imageAnalysis?.observedFeatures?.map((line, index) => (
+                    <Text key={`photo-feature-${index}`} style={styles.providerLine}>
+                      - Visible feature: {line}
+                    </Text>
+                  ))}
+                  {result.imageAnalysis?.qualityIssues?.map((line, index) => (
+                    <Text key={`photo-quality-${index}`} style={styles.providerLine}>
+                      - Replace or improve: {line}
+                    </Text>
+                  ))}
+                  {result.imageAnalysis?.limitations?.map((line, index) => (
+                    <Text key={`photo-limit-${index}`} style={styles.providerLine}>
+                      - Limitation: {line}
+                    </Text>
+                  ))}
                   <Text style={styles.providerTitle}>GrowPath AI reasoning</Text>
                   {result.growPathReasoning.length ? (
                     result.growPathReasoning.map((line) => (
@@ -1062,6 +1511,12 @@ const styles = StyleSheet.create({
   context: { color: "#166534", fontWeight: "700" },
   section: { gap: 7 },
   label: { color: "#334155", fontWeight: "800" },
+  measurementLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "700",
+    alignSelf: "center"
+  },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   pill: {
     borderWidth: 1,
@@ -1103,6 +1558,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#E2E8F0"
   },
   photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
+  photoReady: {
+    color: "#166534",
+    backgroundColor: "#F0FDF4",
+    borderWidth: 1,
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    padding: 10,
+    lineHeight: 19
+  },
+  photoWarning: {
+    color: "#9A3412",
+    backgroundColor: "#FFF7ED",
+    borderWidth: 1,
+    borderColor: "#FDBA74",
+    borderRadius: radius.card,
+    padding: 10,
+    lineHeight: 19
+  },
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

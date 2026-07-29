@@ -34,7 +34,10 @@ export default function CreateVendorGuide({ navigation, route }) {
       return;
     }
     if (priceCents > 0 && !access.canSellPaidCourses) {
-      Alert.alert("Paid guide unavailable", "Paid guides require COURSES_SELL_PAID.");
+      Alert.alert(
+        "Paid guide unavailable",
+        "Paid pricing should be available on every GrowPathAI plan. Refresh your account or contact support@growpathai.com."
+      );
       return;
     }
 
@@ -109,7 +112,10 @@ export default function CreateVendorGuide({ navigation, route }) {
 
       <Text style={styles.label}>Price (USD)</Text>
       {!access.canSellPaidCourses ? (
-        <Text style={styles.help}>Paid guides require COURSES_SELL_PAID.</Text>
+        <Text style={styles.help}>
+          Paid pricing should be available on every plan. Contact support@growpathai.com
+          if it remains unavailable.
+        </Text>
       ) : null}
       <TextInput
         placeholder="0.00"

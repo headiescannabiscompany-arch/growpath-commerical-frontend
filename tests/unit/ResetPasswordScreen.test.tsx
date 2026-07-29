@@ -28,7 +28,10 @@ describe("ResetPasswordScreen", () => {
   });
 
   it("submits a valid reset token and password", async () => {
-    mockResetPassword.mockResolvedValueOnce({ ok: true });
+    mockResetPassword.mockResolvedValueOnce({
+      ok: true,
+      email: "grower@example.com"
+    });
     const screen = render(<ResetPasswordScreen />);
 
     fireEvent.changeText(screen.getByLabelText("New password"), "new-password");
@@ -97,10 +100,7 @@ describe("ResetPasswordScreen", () => {
       const screen = render(<ResetPasswordScreen />);
 
       fireEvent.changeText(screen.getByLabelText("New password"), "new-password");
-      fireEvent.changeText(
-        screen.getByLabelText("Confirm new password"),
-        "new-password"
-      );
+      fireEvent.changeText(screen.getByLabelText("Confirm new password"), "new-password");
       fireEvent.press(screen.getByLabelText("Update password"));
 
       await waitFor(() =>
@@ -132,5 +132,48 @@ describe("ResetPasswordScreen", () => {
     fireEvent.press(screen.getByLabelText("Go to sign in"));
 
     expect(mockReplace).toHaveBeenCalledWith("/login");
+  });
+
+  it("prefills the account email when continuing after a successful reset", async () => {
+    mockResetPassword.mockResolvedValueOnce({
+      ok: true,
+      email: "Grower@Example.com"
+    });
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("New password"), "new-password");
+    fireEvent.changeText(screen.getByLabelText("Confirm new password"), "new-password");
+    fireEvent.press(screen.getByLabelText("Update password"));
+    await waitFor(() =>
+      expect(
+        screen.getByText("Your password has been updated. You can sign in now.")
+      ).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?email=grower%40example.com&reset=success"
+    );
+  });
+
+  it("offers a new link when the reset token expired", async () => {
+    const { ApiError } = require("@/api/apiRequest");
+    mockResetPassword.mockRejectedValueOnce(
+      new ApiError("INVALID_RESET_TOKEN", 400, {
+        message: "Reset token is invalid or expired"
+      })
+    );
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("New password"), "new-password");
+    fireEvent.changeText(screen.getByLabelText("Confirm new password"), "new-password");
+    fireEvent.press(screen.getByLabelText("Update password"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Request another reset link")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Request another reset link"));
+    expect(mockReplace).toHaveBeenCalledWith("/forgot-password");
   });
 });

@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 
@@ -53,8 +54,28 @@ export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Ta
   return listPersonalTasks();
 }
 
-export function getFacilityTasks(facilityId: string): Promise<Task[]> {
-  return getTasks(facilityId);
+export type FacilityTaskFilters = {
+  growId?: string;
+  roomId?: string;
+  assignedToUserId?: string;
+  status?: string;
+};
+
+export async function getFacilityTasks(
+  facilityId: string,
+  filters: FacilityTaskFilters = {}
+): Promise<Task[]> {
+  const params = Object.fromEntries(
+    Object.entries(filters)
+      .filter(([, value]) => value != null && String(value).trim())
+      .map(([key, value]) => [key, String(value).trim()])
+  );
+  const listRes = await apiRequest(endpoints.tasks(facilityId), {
+    method: "GET",
+    cache: "no-store",
+    params: withFreshnessParam(params)
+  });
+  return normalizeTaskList(listRes);
 }
 
 export function createCustomTask(data: any): Promise<PersonalTask>;
@@ -106,7 +127,16 @@ export type Task = {
   status?: string;
   assignedTo?: string | { id?: string; _id?: string };
   createdAt?: string;
-  // Add fields later as backend schema stabilizes
+  startAt?: string;
+  endAt?: string;
+  recurrence?: Record<string, any> | null;
+  reminderPlan?: Record<string, any> | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
+  history?: Array<Record<string, any>>;
+  [key: `linked${string}Id`]: string | null | undefined;
 };
 
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
@@ -174,6 +204,7 @@ export interface PersonalTask {
   description: string;
   dueDate: string;
   endAt?: string | null;
+  startAt?: string | null;
   allDay?: boolean;
   snoozeUntil?: string | null;
   completed: boolean;
@@ -205,6 +236,7 @@ export interface PersonalTask {
   linkedLessonId?: string | null;
   linkedCourseAssignmentId?: string | null;
   linkedLiveId?: string | null;
+  actionUrl?: string | null;
   linkedAlertId?: string | null;
   linkedSensorAlertId?: string | null;
   linkedFacilityId?: string | null;
@@ -212,6 +244,13 @@ export interface PersonalTask {
   linkedFacilityRunId?: string | null;
   linkedSopId?: string | null;
   linkedForumThreadId?: string | null;
+  assignedToUserId?: string | null;
+  assignedTo?: string | { id?: string; _id?: string } | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
+  history?: Array<Record<string, any>>;
   createdAt: string;
 }
 
@@ -227,7 +266,8 @@ export async function listPersonalTasks(options?: {
   try {
     const listPersonalRes = await apiRequest("/api/personal/tasks", {
       method: "GET",
-      params: options?.growId ? { growId: options.growId } : undefined
+      cache: "no-store",
+      params: withFreshnessParam(options?.growId ? { growId: options.growId } : {})
     });
 
     if (
@@ -253,6 +293,7 @@ export async function createPersonalTask(data: {
   description?: string;
   dueDate?: string;
   endAt?: string | null;
+  startAt?: string | null;
   allDay?: boolean;
   priority?: "low" | "medium" | "high";
   calendarType?: string | null;
@@ -278,12 +319,17 @@ export async function createPersonalTask(data: {
   linkedLessonId?: string | null;
   linkedCourseAssignmentId?: string | null;
   linkedLiveId?: string | null;
+  actionUrl?: string | null;
   linkedAlertId?: string | null;
   linkedFacilityId?: string | null;
   linkedRoomId?: string | null;
   linkedFacilityRunId?: string | null;
   linkedSopId?: string | null;
   linkedForumThreadId?: string | null;
+  requiresProof?: boolean;
+  requiresApproval?: boolean;
+  proof?: Record<string, any> | null;
+  approval?: Record<string, any> | null;
 }): Promise<PersonalTask | null> {
   try {
     const res: any = await apiRequest("/api/personal/tasks", {

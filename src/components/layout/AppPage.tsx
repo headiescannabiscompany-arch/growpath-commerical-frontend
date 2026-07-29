@@ -36,6 +36,7 @@ const NO_BACK_ROUTE_KEYS = new Set([
   "commercial-grows",
   "commercial-lives",
   "commercial-marketing",
+  "commercial-orders",
   "commercial-product-lines",
   "commercial-products",
   "commercial-profile",
@@ -76,6 +77,7 @@ export default function AppPage({
           mode={ent.mode}
           plan={plan}
           railMode={policy.railMode}
+          routeKey={routeKey}
         />
       </View>
     ) : null;
@@ -102,11 +104,15 @@ export default function AppPage({
             mode={ent.mode}
             plan={plan}
             railMode={bannerPolicy.railMode}
+            routeKey={routeKey}
           />
         </View>
       ) : null}
       <View style={[styles.columns, isWide ? styles.columnsWide : styles.columnsNarrow]}>
-        <View style={styles.main}>
+        <View
+          testID="app-page-main"
+          style={[styles.main, isWide ? styles.mainWide : styles.mainNarrow]}
+        >
           {sanitizeViewChildren(children, "AppPage.main")}
           {bannerPolicy.middle ? (
             <FeedBanner
@@ -115,11 +121,15 @@ export default function AppPage({
               mode={ent.mode}
               plan={plan}
               railMode={bannerPolicy.railMode}
+              routeKey={routeKey}
             />
           ) : null}
         </View>
         {rail ? (
-          <View style={[styles.rail, !isWide && styles.railNarrow]}>
+          <View
+            testID="app-page-rail"
+            style={[styles.rail, isWide ? styles.railWide : styles.railNarrow]}
+          >
             {sanitizeViewChildren(rail, "AppPage.rail")}
           </View>
         ) : null}
@@ -132,6 +142,7 @@ export default function AppPage({
             mode={ent.mode}
             plan={plan}
             railMode={bannerPolicy.railMode}
+            routeKey={routeKey}
           />
         </View>
       ) : null}
@@ -173,19 +184,34 @@ const styles = StyleSheet.create({
     flexDirection: "column"
   },
   main: {
-    flex: 2,
     gap: 16
   },
+  mainWide: {
+    flex: 2,
+    minWidth: 0
+  },
+  mainNarrow: {
+    flexGrow: 0,
+    flexShrink: 0,
+    width: "100%"
+  },
   rail: {
-    flex: 1,
     minWidth: 260,
     maxWidth: 360,
     gap: 16
+  },
+  railWide: {
+    flex: 1
   },
   railStack: {
     gap: 16
   },
   railNarrow: {
-    marginTop: 12
+    flexGrow: 0,
+    flexShrink: 0,
+    marginTop: 12,
+    maxWidth: "100%",
+    minWidth: 0,
+    width: "100%"
   }
 });

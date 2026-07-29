@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
@@ -20,11 +20,13 @@ import {
 } from "@/api/tasks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
 
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
@@ -260,6 +262,17 @@ function taskSourcePath(task: PersonalTask, growId: string) {
       growId ||
       ""
   );
+  if (sourceType === "tool_run") {
+    const toolRunId = String(
+      task.sourceObjectId || task.sourceToolRunId || task.linkedToolRunId || ""
+    );
+    return savedRunSourceHref({
+      toolRunId,
+      growId,
+      sourceContext: "task",
+      sourceTaskId: getRowId(task)
+    });
+  }
   return sourceObjectHref({
     ...task,
     sourceType,
@@ -394,6 +407,17 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#F8FAFC"
   },
+  focusedCard: {
+    borderColor: "#166534",
+    borderWidth: 2,
+    backgroundColor: "#F0FDF4"
+  },
+  focusedLabel: {
+    color: "#166534",
+    fontWeight: "800",
+    fontSize: 12,
+    marginBottom: 6
+  },
   taskTitle: { fontWeight: "700", color: "#0F172A" },
   taskMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
   actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
@@ -431,8 +455,15 @@ const styles = StyleSheet.create({
 export default function GrowTasksScreen() {
   const entitlements = useEntitlements();
   const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    growId?: string | string[];
+    taskId?: string | string[];
+  }>();
+  const rawGrowId = params.growId;
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const focusedTaskId = useMemo(() => coerceParam(params.taskId), [params.taskId]);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrolledTaskIdRef = useRef("");
 
   const [tasks, setTasks] = useState<PersonalTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -450,6 +481,18 @@ export default function GrowTasksScreen() {
   const [newReminderNote, setNewReminderNote] = useState("");
   const [newRecurrenceRule, setNewRecurrenceRule] = useState("");
   const [feedback, setFeedback] = useState("");
+
+  const orderedTasks = useMemo(() => {
+    if (!focusedTaskId) return tasks;
+    return [...tasks].sort((left, right) => {
+      const leftFocused = getRowId(left) === focusedTaskId ? 1 : 0;
+      const rightFocused = getRowId(right) === focusedTaskId ? 1 : 0;
+      return rightFocused - leftFocused;
+    });
+  }, [focusedTaskId, tasks]);
+  const focusedTaskMissing = Boolean(
+    focusedTaskId && !loading && !tasks.some((task) => getRowId(task) === focusedTaskId)
+  );
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -470,6 +513,7 @@ export default function GrowTasksScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      scrolledTaskIdRef.current = "";
       load();
     }, [load])
   );
@@ -523,7 +567,11 @@ export default function GrowTasksScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      ref={scrollRef}
+      style={styles.container}
+      contentContainerStyle={styles.content}
+    >
       <Text style={styles.title}>Tasks</Text>
       <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
       <PersonalFeedPlacement
@@ -532,6 +580,20 @@ export default function GrowTasksScreen() {
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="tasks" />
+
+      <ContextualWorkflowLinks
+        title="Task planning tools"
+        helper="Build watering, feeding, topdress, milestone, and grow-calendar tasks with this grow already selected."
+        source="grow_tasks"
+        growId={growId}
+        workflows={[
+          "auto-grow-calendar",
+          "watering",
+          "feeding-schedule",
+          "topdress",
+          "timeline-planner"
+        ]}
+      />
 
       {canWriteTasks ? (
         <View style={styles.form}>
@@ -657,6 +719,15 @@ export default function GrowTasksScreen() {
       )}
 
       {feedback ? <Text style={styles.taskMeta}>{feedback}</Text> : null}
+      {focusedTaskMissing ? (
+        <View style={[styles.card, styles.focusedCard]}>
+          <Text style={styles.taskTitle}>Linked task unavailable</Text>
+          <Text style={styles.taskMeta}>
+            This task may have been archived or removed. The remaining grow tasks are
+            shown below.
+          </Text>
+        </View>
+      ) : null}
       <PersonalFeedPlacement
         placement="middle"
         routeKey="personal_grows_growid_tasks"
@@ -672,8 +743,9 @@ export default function GrowTasksScreen() {
           <Text style={styles.taskMeta}>No tasks yet.</Text>
         </View>
       ) : (
-        tasks.map((task) => {
+        orderedTasks.map((task) => {
           const id = getRowId(task);
+          const focused = Boolean(focusedTaskId && id === focusedTaskId);
           const done = Boolean(task?.completed);
           const source = taskSource(task);
           const links = taskLinks(task);
@@ -682,7 +754,26 @@ export default function GrowTasksScreen() {
           const showLinkedObjectPath =
             linkedObjectPath && (!sourcePath || linkedObjectPath !== sourcePath);
           return (
-            <View key={id || `${task.title}-${task.dueDate}`} style={styles.card}>
+            <View
+              key={id || `${task.title}-${task.dueDate}`}
+              style={[styles.card, focused && styles.focusedCard]}
+              onLayout={(event) => {
+                if (!focused || scrolledTaskIdRef.current === focusedTaskId) return;
+                scrolledTaskIdRef.current = focusedTaskId;
+                scrollRef.current?.scrollTo({
+                  y: Math.max(0, event.nativeEvent.layout.y - 16),
+                  animated: false
+                });
+              }}
+            >
+              {focused ? (
+                <Text
+                  style={styles.focusedLabel}
+                  accessibilityLabel={`Focused task ${task?.title || "Untitled task"}. Opened from Journal`}
+                >
+                  Opened from Journal
+                </Text>
+              ) : null}
               <Text style={styles.taskTitle}>
                 {done ? "Done: " : ""}
                 {task?.title || "Untitled task"}

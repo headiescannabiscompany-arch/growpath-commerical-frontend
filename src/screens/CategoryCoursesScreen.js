@@ -89,7 +89,8 @@ export default function CategoryCoursesScreen({ route, navigation }) {
                   <Text
                     style={{ color: "gray", fontSize: 12, marginTop: 4, marginLeft: 8 }}
                   >
-                    Upgrade to Pro to access paid courses
+                    Paid courses are available on Free. Sign in or refresh access to
+                    continue.
                   </Text>
                 )}
               </>

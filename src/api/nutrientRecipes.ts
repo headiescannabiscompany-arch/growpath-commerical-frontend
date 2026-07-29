@@ -12,6 +12,20 @@ export type NutrientRecipe = {
   previousVersionId?: string | null;
   clonedFromRecipeId?: string | null;
   growId?: string | null;
+  facilityId?: string | null;
+  commercialAccountId?: string | null;
+  recipeType?:
+    | "feed"
+    | "soil_mix"
+    | "dry_blend"
+    | "topdress"
+    | "foliar"
+    | "tea"
+    | "facility_sop"
+    | "commercial_formula";
+  purpose?: string;
+  linkedProductId?: string | null;
+  linkedBatchId?: string | null;
   stage: string;
   medium: string;
   batchVolume: number;
@@ -23,6 +37,8 @@ export type NutrientRecipe = {
   measuredPH?: number | null;
   sourceConfidence?: Record<string, any>;
   sourceRecords?: SourceRecord[];
+  directions?: string;
+  applicationRate?: string;
   mixingOrder?: string[];
   calculation?: Record<string, any>;
   notes?: string;
@@ -30,6 +46,16 @@ export type NutrientRecipe = {
   archivedAt?: string | null;
   useCount?: number;
   lastUsedAt?: string | null;
+};
+
+export type RecipeComparison = {
+  leftRecipeId: string;
+  rightRecipeId: string;
+  sameRecipeFamily: boolean;
+  versionChange: number;
+  fieldChanges: Array<{ field: string; left: any; right: any }>;
+  ingredientChanges: Array<{ ingredient: string; left: any; right: any }>;
+  calculationChanges: { left: Record<string, any>; right: Record<string, any> };
 };
 
 export async function listNutrientRecipes(growId?: string): Promise<NutrientRecipe[]> {
@@ -77,6 +103,39 @@ export async function cloneNutrientRecipe(id: string, name?: string) {
     }
   );
   return (res?.recipe ?? res?.data?.recipe) as NutrientRecipe;
+}
+
+export async function compareNutrientRecipes(
+  leftRecipeId: string,
+  rightRecipeId: string
+): Promise<RecipeComparison> {
+  const res: any = await apiRequest("/api/tools/recipes/compare", {
+    method: "POST",
+    body: { recipeIds: [leftRecipeId, rightRecipeId] }
+  });
+  return res?.comparison ?? res?.data?.comparison;
+}
+
+export async function convertRecipeToProductDraft(
+  id: string,
+  payload: Record<string, any> = {}
+) {
+  const res: any = await apiRequest(
+    `/api/tools/recipes/${encodeURIComponent(id)}/product-draft`,
+    { method: "POST", body: payload }
+  );
+  return res?.product ?? res?.data?.product;
+}
+
+export async function convertRecipeToProductionBatch(
+  id: string,
+  payload: Record<string, any> = {}
+) {
+  const res: any = await apiRequest(
+    `/api/tools/recipes/${encodeURIComponent(id)}/production-batch`,
+    { method: "POST", body: payload }
+  );
+  return res?.batch ?? res?.data?.batch;
 }
 
 export async function recordNutrientRecipeUse(

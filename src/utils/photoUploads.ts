@@ -2,14 +2,38 @@ import { uploadImage } from "@/api/uploads";
 import { API_URL } from "@/api/apiRequest";
 
 export function isPersistedImageUri(uri: string) {
-  return /^https?:\/\//i.test(uri) || uri.startsWith("/uploads/");
+  return (
+    /^https?:\/\//i.test(uri) ||
+    uri.startsWith("/uploads/") ||
+    uri.startsWith("/api/videos/uploads/")
+  );
 }
 
 export function resolveImageUri(uri: string | null | undefined) {
-  const value = String(uri || "").trim();
+  const value = String(uri || "")
+    .trim()
+    .replace(/\\/g, "/");
   if (!value) return "";
-  if (/^(https?:|file:|data:|blob:)/i.test(value)) return value;
-  if (value.startsWith("/uploads/")) return `${API_URL}${value}`;
+  if (/^(file:|data:|blob:)/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      const api = API_URL ? new URL(API_URL) : null;
+      const pointsAtLocalApi = ["localhost", "127.0.0.1", "0.0.0.0"].includes(
+        parsed.hostname
+      );
+      if (api && pointsAtLocalApi && !["localhost", "127.0.0.1"].includes(api.hostname)) {
+        return `${api.origin}${parsed.pathname}${parsed.search}`;
+      }
+    } catch {
+      return value;
+    }
+    return value;
+  }
+  const apiOrigin = String(API_URL || "").replace(/\/+$/, "");
+  if (value.startsWith("/uploads/")) return `${apiOrigin}${value}`;
+  if (value.startsWith("/api/videos/uploads/")) return `${apiOrigin}${value}`;
+  if (value.startsWith("uploads/")) return `${apiOrigin}/${value}`;
   return value;
 }
 

@@ -18,19 +18,94 @@ import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AlertRow = Record<string, any>;
 type FilterKey = "active" | "today" | "critical" | "resolved";
+type AlertSourceMode = "alerts" | "notifications";
 
 function asArray(res: any): AlertRow[] {
   if (Array.isArray(res)) return res;
   if (Array.isArray(res?.alerts)) return res.alerts;
+  if (Array.isArray(res?.notifications)) return res.notifications;
   if (Array.isArray(res?.items)) return res.items;
   if (Array.isArray(res?.data?.alerts)) return res.data.alerts;
+  if (Array.isArray(res?.data?.notifications)) return res.data.notifications;
   if (Array.isArray(res?.data?.items)) return res.data.items;
   if (Array.isArray(res?.data)) return res.data;
   return [];
 }
 
+export function alertFromNotification(row: AlertRow): AlertRow {
+  const data = row?.data && typeof row.data === "object" ? row.data : {};
+  const source = row?.source && typeof row.source === "object" ? row.source : {};
+  const sourceModel = String(source.model || "").toLowerCase();
+  const linkedTaskId =
+    row.linkedTaskId ||
+    data.linkedTaskId ||
+    data.taskId ||
+    (sourceModel === "task" ? source.id : undefined);
+  const linkedSensorAlertId =
+    row.linkedSensorAlertId || data.linkedSensorAlertId || data.sensorAlertId;
+  const sourceType = String(
+    row.sourceType ||
+      data.sourceType ||
+      (linkedTaskId ? "task" : linkedSensorAlertId ? "sensor_alert" : "notification")
+  ).toLowerCase();
+  const sourceId =
+    row.sourceId ||
+    data.sourceId ||
+    linkedTaskId ||
+    linkedSensorAlertId ||
+    source.id ||
+    "";
+  const read = Boolean(
+    row.read || row.readAt || String(row.status || "").toLowerCase() === "read"
+  );
+  const dataFacilityId = String(data.facilityId || "");
+
+  return {
+    ...data,
+    ...row,
+    id: row.id || row._id,
+    message: row.message || row.body || data.message || data.body || "",
+    severity:
+      row.severity ||
+      data.severity ||
+      (["task", "sensor_alert", "alert"].includes(sourceType) ? "warning" : "info"),
+    status: read ? "resolved" : "active",
+    workspaceType:
+      row.workspaceType ||
+      data.workspaceType ||
+      (dataFacilityId && !dataFacilityId.startsWith("personal:")
+        ? "facility"
+        : "personal"),
+    sourceType,
+    sourceId,
+    linkedTaskId,
+    linkedSensorAlertId,
+    _notificationBacked: true
+  };
+}
+
 function idOf(alert: AlertRow) {
   return String(alert.id || alert._id || "");
+}
+
+function readableAssignee(alert: AlertRow) {
+  const assignedObject =
+    alert.assignedTo && typeof alert.assignedTo === "object" ? alert.assignedTo : {};
+  const preferred = [
+    alert.assignedToName,
+    alert.assigneeName,
+    alert.assignedToEmail,
+    alert.assigneeEmail,
+    assignedObject.displayName,
+    assignedObject.name,
+    assignedObject.email,
+    typeof alert.assignedTo === "string" ? alert.assignedTo : ""
+  ].find((value) => value !== undefined && value !== null && String(value).trim());
+  if (preferred && !/^\s*[a-f0-9]{24}\s*$/i.test(String(preferred))) {
+    return String(preferred).trim();
+  }
+  const identifier = String(alert.assignedToUserId || "").trim();
+  return identifier.includes("@") ? identifier : "";
 }
 
 function isResolved(alert: AlertRow) {
@@ -51,6 +126,12 @@ function isToday(alert: AlertRow) {
 }
 
 function sourceHref(alert: AlertRow) {
+  if (String(alert.sourceType || "").toLowerCase() === "setup") {
+    const workspace = String(alert.workspaceType || "personal").toLowerCase();
+    if (workspace === "facility") return "/home/facility";
+    if (workspace === "commercial") return "/home/commercial";
+    return "/home/personal";
+  }
   return sourceObjectHref(alert);
 }
 
@@ -65,6 +146,13 @@ function askAiHref(alert: AlertRow) {
     return `/home/commercial?ai=alerts&alertId=${id}&sourceType=${sourceType}`;
   }
   return `/home/personal/ai?alertId=${id}&sourceType=${sourceType}`;
+}
+
+function taskCollectionHref(alert: AlertRow) {
+  const workspace = String(alert.workspaceType || "personal").toLowerCase();
+  if (workspace === "facility") return "/home/facility/tasks";
+  if (workspace === "commercial") return "/home/commercial/tasks";
+  return "/home/personal/tasks";
 }
 
 function sourceReference(alert: AlertRow) {
@@ -203,6 +291,8 @@ export default function AlertCenterRoute() {
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
+  const [notice, setNotice] = useState("");
+  const [sourceMode, setSourceMode] = useState<AlertSourceMode>("alerts");
   const [filter, setFilter] = useState<FilterKey>("active");
   const [snoozeUntil, setSnoozeUntil] = useState("");
   const [reminder, setReminder] = useState("");
@@ -212,12 +302,23 @@ export default function AlertCenterRoute() {
   async function loadAlerts() {
     setLoading(true);
     setFeedback("");
+    setNotice("");
     try {
       const res = await apiRequest(endpoints.alertsGlobal, { method: "GET" });
       setAlerts(asArray(res));
+      setSourceMode("alerts");
     } catch {
-      setAlerts([]);
-      setFeedback("Unable to load alerts.");
+      try {
+        const res = await apiRequest("/api/notifications", { method: "GET" });
+        setAlerts(asArray(res).map(alertFromNotification));
+        setSourceMode("notifications");
+        setNotice(
+          "Showing live notification-backed alerts. Mark Read and Create Task use your saved notification records."
+        );
+      } catch {
+        setAlerts([]);
+        setFeedback("Unable to load alerts or notification records.");
+      }
     } finally {
       setLoading(false);
     }
@@ -266,6 +367,29 @@ export default function AlertCenterRoute() {
     if (!id) return;
     setFeedback("");
     try {
+      if (alert._notificationBacked) {
+        if (patch.status !== "resolved") {
+          setFeedback("This action is not available for notification-backed alerts.");
+          return;
+        }
+        await apiRequest(`/api/notifications/${encodeURIComponent(id)}/read`, {
+          method: "POST"
+        });
+        setAlerts((current) =>
+          current.map((item) =>
+            idOf(item) === id
+              ? {
+                  ...item,
+                  read: true,
+                  readAt: new Date().toISOString(),
+                  status: "resolved"
+                }
+              : item
+          )
+        );
+        setFeedback("Notification marked read.");
+        return;
+      }
       await apiRequest(endpoints.alertGlobal(id), {
         method: "PATCH",
         body: patch
@@ -282,6 +406,7 @@ export default function AlertCenterRoute() {
     if (!id) return;
     setFeedback("");
     try {
+      const notificationBacked = Boolean(alert._notificationBacked);
       await apiRequest(endpoints.tasksGlobal, {
         method: "POST",
         body: {
@@ -290,11 +415,19 @@ export default function AlertCenterRoute() {
           description: alert.message || alert.description || "",
           dueAt: snoozeUntil.trim() || undefined,
           priority: isCritical(alert) ? "critical" : "normal",
-          sourceType: "alert",
+          sourceType: notificationBacked ? "notification" : "alert",
           sourceId: id,
-          linkedAlertId: id,
-          alertSourceType: alert.sourceType || undefined,
-          alertSourceId: sourceReference(alert) || undefined,
+          ...(notificationBacked
+            ? {
+                linkedNotificationId: id,
+                notificationSourceType: alert.sourceType || undefined,
+                notificationSourceId: sourceReference(alert) || undefined
+              }
+            : {
+                linkedAlertId: id,
+                alertSourceType: alert.sourceType || undefined,
+                alertSourceId: sourceReference(alert) || undefined
+              }),
           ...alertTaskMetadata(alert),
           ...linkedFieldsForAlertSource(alert),
           ...storefrontMetadata(alert),
@@ -313,8 +446,13 @@ export default function AlertCenterRoute() {
   }
 
   function renderAlert(alert: AlertRow) {
-    const href = sourceHref(alert);
+    const notificationBacked = Boolean(alert._notificationBacked);
+    const notificationTask =
+      notificationBacked && String(alert.sourceType || "").toLowerCase() === "task";
+    const href = notificationTask ? taskCollectionHref(alert) : sourceHref(alert);
+    const sourceActionLabel = notificationTask ? "Open Tasks" : "View Source";
     const aiHref = askAiHref(alert);
+    const assignedToLabel = readableAssignee(alert);
     const isFocused = Boolean(
       focusedAlertId &&
       (focusedAlertId === idOf(alert) || focusedAlertId === String(alert.sourceId || ""))
@@ -343,10 +481,35 @@ export default function AlertCenterRoute() {
             .filter(Boolean)
             .join(" | ")}
         </Text>
+        {assignedToLabel ? (
+          <Text style={styles.meta}>Assigned to {assignedToLabel}</Text>
+        ) : null}
         <View style={styles.actionRow}>
+          {!notificationBacked ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Assign alert"
+              style={[styles.secondaryButton, !assignee.trim() && styles.disabledButton]}
+              disabled={!assignee.trim()}
+              onPress={() =>
+                void patchAlert(
+                  alert,
+                  {
+                    assignedToUserId: assignee.trim(),
+                    assignedAt: new Date().toISOString()
+                  },
+                  "Alert assigned."
+                )
+              }
+            >
+              <Text style={styles.secondaryText}>Assign</Text>
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Resolve alert"
+            accessibilityLabel={
+              notificationBacked ? "Mark notification read" : "Resolve alert"
+            }
             style={styles.secondaryButton}
             onPress={() =>
               void patchAlert(
@@ -356,25 +519,29 @@ export default function AlertCenterRoute() {
               )
             }
           >
-            <Text style={styles.secondaryText}>Resolve</Text>
+            <Text style={styles.secondaryText}>
+              {notificationBacked ? "Mark Read" : "Resolve"}
+            </Text>
           </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Snooze alert"
-            style={styles.secondaryButton}
-            onPress={() =>
-              void patchAlert(
-                alert,
-                {
-                  status: "snoozed",
-                  snoozedUntil: snoozeUntil.trim() || undefined
-                },
-                "Alert snoozed."
-              )
-            }
-          >
-            <Text style={styles.secondaryText}>Snooze</Text>
-          </Pressable>
+          {!notificationBacked ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Snooze alert"
+              style={styles.secondaryButton}
+              onPress={() =>
+                void patchAlert(
+                  alert,
+                  {
+                    status: "snoozed",
+                    snoozedUntil: snoozeUntil.trim() || undefined
+                  },
+                  "Alert snoozed."
+                )
+              }
+            >
+              <Text style={styles.secondaryText}>Snooze</Text>
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create task from alert"
@@ -386,15 +553,17 @@ export default function AlertCenterRoute() {
           {href ? (
             <Link href={href as any} asChild>
               <Pressable accessibilityRole="link" style={styles.ghostButton}>
-                <Text style={styles.ghostText}>View Source</Text>
+                <Text style={styles.ghostText}>{sourceActionLabel}</Text>
               </Pressable>
             </Link>
           ) : null}
-          <Link href={aiHref as any} asChild>
-            <Pressable accessibilityRole="link" style={styles.ghostButton}>
-              <Text style={styles.ghostText}>Ask AI</Text>
-            </Pressable>
-          </Link>
+          {!notificationBacked ? (
+            <Link href={aiHref as any} asChild>
+              <Pressable accessibilityRole="link" style={styles.ghostButton}>
+                <Text style={styles.ghostText}>Ask AI</Text>
+              </Pressable>
+            </Link>
+          ) : null}
         </View>
       </View>
     );
@@ -405,8 +574,9 @@ export default function AlertCenterRoute() {
       <Text style={styles.kicker}>GrowPath alerts</Text>
       <Text style={styles.title}>Alert Center</Text>
       <Text style={styles.subtitle}>
-        Resolve, snooze, or turn alerts into source-linked tasks across storefront,
-        product, course, live, grow, sensor, and facility workflows.
+        {sourceMode === "notifications"
+          ? "Review live notification records, mark them read, or create source-linked follow-up tasks."
+          : "Resolve, snooze, or turn alerts into source-linked tasks across storefront, product, course, live, grow, sensor, and facility workflows."}
       </Text>
       <View style={styles.metricGrid}>
         {alertStats.map((item) => (
@@ -427,7 +597,11 @@ export default function AlertCenterRoute() {
       </View>
 
       <View style={styles.panel}>
-        <Text style={styles.formTitle}>Alert Schedule Actions</Text>
+        <Text style={styles.formTitle}>
+          {sourceMode === "notifications"
+            ? "Follow-up Task Schedule"
+            : "Alert Schedule Actions"}
+        </Text>
         <SchedulePicker
           dueDate={snoozeUntil}
           reminder={reminder}
@@ -436,11 +610,15 @@ export default function AlertCenterRoute() {
           onReminderChange={setReminder}
           onRecurrenceChange={setRecurrence}
           accessibilityPrefix="Alert center"
-          dueDatePlaceholder="Snooze/task due date"
+          dueDatePlaceholder={
+            sourceMode === "notifications"
+              ? "Follow-up task due date"
+              : "Snooze/task due date"
+          }
         />
         <TextInput
           style={styles.input}
-          placeholder="Assign task to user id or email"
+          placeholder="Assign created task to team member email"
           value={assignee}
           onChangeText={setAssignee}
           accessibilityLabel="Alert task assignee"
@@ -464,6 +642,7 @@ export default function AlertCenterRoute() {
         ))}
       </View>
 
+      {notice ? <Text style={styles.notice}>{notice}</Text> : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {loading ? (
@@ -527,6 +706,15 @@ const styles = StyleSheet.create({
   filterChipActive: { backgroundColor: "#166534", borderColor: "#166534" },
   filterText: { color: "#334155", fontSize: 12, fontWeight: "900" },
   filterTextActive: { color: "#FFFFFF" },
+  notice: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    color: "#1E3A8A",
+    fontWeight: "800",
+    padding: 10
+  },
   feedback: {
     backgroundColor: "#ECFDF5",
     borderColor: "#A7F3D0",
@@ -582,6 +770,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   secondaryText: { color: "#FFFFFF", fontWeight: "900" },
+  disabledButton: { opacity: 0.45 },
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",

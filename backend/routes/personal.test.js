@@ -30,6 +30,7 @@ const mockGrowLog = {
 
 const mockPlant = {
   find: jest.fn(),
+  findOne: jest.fn(),
   create: jest.fn()
 };
 
@@ -44,6 +45,10 @@ const mockToolRun = {
   find: jest.fn(),
   exists: jest.fn(),
   updateOne: jest.fn()
+};
+
+const mockGrowpathModuleRecord = {
+  find: jest.fn()
 };
 
 const mockDiagnosis = {
@@ -89,6 +94,7 @@ jest.mock("../models/GrowLog", () => mockGrowLog);
 jest.mock("../models/Plant", () => mockPlant);
 jest.mock("../models/Task", () => mockTask);
 jest.mock("../models/ToolRun", () => mockToolRun);
+jest.mock("../models/GrowpathModuleRecord", () => mockGrowpathModuleRecord);
 jest.mock("../models/Diagnosis", () => mockDiagnosis);
 jest.mock("../models/DiagnosisFeedback", () => mockDiagnosisFeedback);
 jest.mock("../models/HarvestBatch", () => mockHarvestBatch);
@@ -155,7 +161,65 @@ describe("Personal grow workspace routes", () => {
     mockToolRun.updateOne.mockResolvedValue({});
     mockDiagnosis.updateOne.mockResolvedValue({});
     mockPlantGrowthProfile.find.mockReturnValue(leanChain([]));
+    mockGrowpathModuleRecord.find.mockReturnValue(leanChain([]));
     app = createApp();
+  });
+
+  test("saves explicitly confirmed crop identity to an owned plant", async () => {
+    const plant = doc({
+      _id: PLANT_ID,
+      userId: TEST_USER,
+      growId: GROW_ID,
+      name: "Plant 1"
+    });
+    mockPlant.findOne.mockResolvedValue(plant);
+    mockPlantGrowthProfile.findOneAndUpdate.mockResolvedValue(
+      doc({
+        _id: "507f1f77bcf86cd799439099",
+        plantId: PLANT_ID,
+        confirmationStatus: "user_confirmed"
+      })
+    );
+
+    const res = await request(app)
+      .patch(`/api/personal/plants/${PLANT_ID}/crop-identity`)
+      .send({
+        growId: GROW_ID,
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        commonNames: ["Cannabis"],
+        cultivar: "Bruce Banner",
+        userConfirmed: true,
+        sourceToolRunId: TOOL_RUN_ID
+      });
+
+    expect(res.status).toBe(200);
+    expect(mockPlant.findOne).toHaveBeenCalledWith({
+      _id: PLANT_ID,
+      $or: [{ userId: TEST_USER }, { user: expect.any(Object) }],
+      deletedAt: null
+    });
+    expect(plant).toMatchObject({
+      cropCommonName: "Cannabis",
+      scientificName: "Cannabis sativa",
+      commonNames: ["Cannabis"],
+      cultivar: "Bruce Banner",
+      strain: "Bruce Banner",
+      cropIdentity: expect.objectContaining({
+        confirmationStatus: "user_confirmed",
+        sourceToolRunId: TOOL_RUN_ID
+      })
+    });
+    expect(plant.save).toHaveBeenCalled();
+    expect(mockPlantGrowthProfile.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ plantId: PLANT_ID }),
+      expect.objectContaining({
+        confirmedScientificName: "Cannabis sativa",
+        cultivarName: "Bruce Banner",
+        confirmationStatus: "user_confirmed"
+      }),
+      expect.objectContaining({ upsert: true })
+    );
   });
 
   test("creates grow-scoped logs, normalizes photo metadata, and links source records", async () => {
@@ -784,6 +848,46 @@ describe("Personal grow workspace routes", () => {
         }
       ])
     );
+    mockGrowpathModuleRecord.find.mockReturnValue(
+      leanChain([
+        {
+          _id: "507f1f77bcf86cd799439021",
+          userId: TEST_USER,
+          growId: GROW_ID,
+          plantId: PLANT_ID,
+          recordType: "crop_steering_entry",
+          title: "P1 steering entry",
+          inputs: { projectId: "project-1" },
+          outputs: {
+            pressureLevel: "high",
+            recoveryStatus: "recovered",
+            logSummary: "Generative P1 entry recovered."
+          },
+          tags: ["recovery_strong"],
+          warnings: [],
+          recommendations: [],
+          createdAt: "2026-06-04T12:30:00.000Z"
+        },
+        {
+          _id: "507f1f77bcf86cd799439022",
+          userId: TEST_USER,
+          growId: GROW_ID,
+          plantId: PLANT_ID,
+          recordType: "ph_ec_check",
+          title: "pH / EC range check",
+          inputs: { projectId: "project-1" },
+          outputs: {
+            runoffECStatus: "high",
+            runoffPHStatus: "low",
+            logSummary: "Runoff pH and EC warning."
+          },
+          tags: ["ph-ec-check"],
+          warnings: ["Runoff EC high"],
+          recommendations: ["Retest"],
+          createdAt: "2026-06-04T12:20:00.000Z"
+        }
+      ])
+    );
     mockDiagnosis.find.mockReturnValue(
       leanChain([
         {
@@ -889,6 +993,12 @@ describe("Personal grow workspace routes", () => {
         "photo_added",
         "task_completed",
         "tool_run_created",
+        "crop_steering_entry_logged",
+        "high_pressure_steering_event",
+        "positive_recovery_logged",
+        "ph_ec_check_logged",
+        "runoff_ec_warning",
+        "runoff_ph_warning",
         "diagnosis_created",
         "diagnosis_feedback",
         "harvest_batch_created",

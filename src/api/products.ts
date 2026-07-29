@@ -14,6 +14,15 @@ export type Product = {
   category?: string;
   shortDescription?: string;
   fullDescription?: string;
+  npk?: string;
+  labelNpk?: string;
+  guaranteedAnalysis?: string;
+  ingredients?: string[];
+  directions?: string;
+  applicationRate?: string;
+  warnings?: string[];
+  documentUrls?: string[];
+  batchLot?: string;
   productLineId?: string;
   linkedProductLineId?: string;
   linkedRecipeId?: string | null;
@@ -36,6 +45,9 @@ export type Product = {
   externalPurchaseUrl?: string;
   stripeProductId?: string;
   stripePriceId?: string;
+  regulatedCannabis?: boolean;
+  isCannabis?: boolean;
+  productType?: string;
   status?: "draft" | "published";
   createdAt?: string;
   updatedAt?: string;

@@ -100,7 +100,7 @@ describe("ipmGptVerification", () => {
     });
   });
 
-  test("keeps pending verification when no provider is configured", async () => {
+  test("reports that verification was not run when no provider is configured", async () => {
     const outputs = {
       gptVerification: {
         provider: "gpt",
@@ -111,6 +111,12 @@ describe("ipmGptVerification", () => {
 
     await expect(
       applyIpmGptVerification(outputs, { config: { provider: "disabled" } })
-    ).resolves.toBe(outputs);
+    ).resolves.toMatchObject({
+      gptVerification: {
+        status: "not_configured",
+        agreementStatus: "not_run",
+        mediaAnalysisPerformed: false
+      }
+    });
   });
 });

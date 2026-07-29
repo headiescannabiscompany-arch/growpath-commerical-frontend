@@ -94,7 +94,26 @@ describe("Personal grows route", () => {
 
     const res = await request(createApp())
       .post("/api/personal/grows")
-      .send({ name: "Flower Tent", stage: "flower", cultivar: "Test cultivar" });
+      .send({
+        name: "Flower Tent",
+        stage: "flower",
+        cultivar: "Test cultivar",
+        growTags: ["Cannabis", "Indoor"],
+        growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+        cropTypes: ["Cannabis"],
+        environmentTypes: ["Indoor"],
+        growingMethods: ["Living Soil / No-Till"],
+        draftSource: "ai_assistant",
+        planning: {
+          startType: "clone",
+          plantCount: 4,
+          vegLengthWeeks: 5,
+          expectedFlowerDays: 63,
+          createStarterCalendar: true
+        },
+        germinationDate: "2026-01-03",
+        expectedHarvestDate: "2026-04-15"
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.grow).toMatchObject({
@@ -114,7 +133,21 @@ describe("Personal grows route", () => {
         name: "Flower Tent",
         stage: "flower",
         strain: "Test cultivar",
-        cultivar: "Test cultivar"
+        cultivar: "Test cultivar",
+        growTags: ["Cannabis", "Indoor"],
+        cropTypes: ["Cannabis"],
+        environmentTypes: ["Indoor"],
+        growingMethods: ["Living Soil / No-Till"],
+        draftSource: "ai_assistant",
+        planning: {
+          startType: "clone",
+          plantCount: 4,
+          vegLengthWeeks: 5,
+          expectedFlowerDays: 63,
+          createStarterCalendar: true
+        },
+        germinationDate: new Date("2026-01-03"),
+        expectedHarvestDate: new Date("2026-04-15")
       })
     );
   });
@@ -159,6 +192,60 @@ describe("Personal grows route", () => {
       deletedAt: null
     });
     expect(grow.save).toHaveBeenCalled();
+  });
+
+  test("saves explicitly confirmed crop identity to the owned grow", async () => {
+    const grow = doc({
+      _id: GROW_ID,
+      userId: TEST_USER,
+      name: "Flower Tent",
+      growTags: ["Indoor"],
+      cropTypes: [],
+      growInterests: { environment: ["Indoor"] }
+    });
+    grow.markModified = jest.fn();
+    mockGrow.findOne.mockResolvedValue(grow);
+
+    const res = await request(createApp())
+      .patch(`/api/personal/grows/${GROW_ID}/crop-identity`)
+      .send({
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        commonNames: ["Cannabis", "hemp"],
+        cultivar: "Bruce Banner",
+        confidence: "medium",
+        sourceToolRunId: "toolrun-1",
+        userConfirmed: true
+      });
+
+    expect(res.status).toBe(200);
+    expect(grow).toMatchObject({
+      cropCommonName: "Cannabis",
+      scientificName: "Cannabis sativa",
+      commonNames: ["Cannabis", "hemp"],
+      cultivar: "Bruce Banner",
+      strain: "Bruce Banner",
+      cropTypes: ["Cannabis"],
+      growTags: ["Indoor", "Cannabis"],
+      growInterests: { environment: ["Indoor"], crops: ["Cannabis"] },
+      cropIdentity: expect.objectContaining({
+        confirmationStatus: "user_confirmed",
+        confirmationSource: "species_crop_id_tool",
+        sourceToolRunId: "toolrun-1"
+      })
+    });
+    expect(grow.markModified).toHaveBeenCalledWith("growInterests");
+    expect(grow.save).toHaveBeenCalled();
+  });
+
+  test("rejects unconfirmed crop identity writes", async () => {
+    const res = await request(createApp())
+      .patch(`/api/personal/grows/${GROW_ID}/crop-identity`)
+      .send({ cropCommonName: "Cannabis", userConfirmed: false });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe("CONFIRMATION_REQUIRED");
+    expect(mockGrow.findOne).not.toHaveBeenCalled();
   });
 
   test("runs Bruce Banner live pack through personal grow creation and external photo attachment", async () => {

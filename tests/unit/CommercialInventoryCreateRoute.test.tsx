@@ -13,16 +13,22 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("@/api/endpoints", () => ({
   endpoints: {
     commercial: {
-      inventory: "/api/commercial/inventory"
+      inventory: "/api/commercial/inventory",
+      products: "/api/commercial/products"
     }
   }
 }));
 
-jest.mock("expo-router", () => ({
-  useRouter: () => ({
-    replace: mockReplace
-  })
-}));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ children, href }: any) =>
+      React.cloneElement(React.Children.only(children), { href }),
+    useRouter: () => ({
+      replace: mockReplace
+    })
+  };
+});
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
@@ -46,7 +52,22 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("CommercialInventoryCreateRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    mockApiRequest.mockResolvedValue({ id: "inventory-1" });
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/products" && !options) {
+        return Promise.resolve({
+          products: [{ id: "product-1", name: "Living Soil Base" }]
+        });
+      }
+      if (path === "/api/commercial/grows" && !options) {
+        return Promise.resolve({
+          grows: [{ id: "grow-1", name: "Bloom Formula Trial" }]
+        });
+      }
+      if (path === "/api/commercial/inventory" && options?.method === "POST") {
+        return Promise.resolve({ id: "inventory-1" });
+      }
+      return Promise.resolve({});
+    });
   });
 
   it("creates commercial inventory with item type, location, and linked records", async () => {
@@ -83,18 +104,20 @@ describe("CommercialInventoryCreateRoute", () => {
       screen.getByLabelText("Commercial inventory item category"),
       "soil"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory item type"),
-      "product"
-    );
+    fireEvent.press(screen.getByLabelText("Commercial inventory item type: Product"));
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item location"),
       "Rack A"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked product"),
-      "product-1"
+    await waitFor(() =>
+      expect(screen.getByLabelText("Linked product: Living Soil Base")).toBeTruthy()
     );
+    fireEvent.press(screen.getByLabelText("Linked product: Living Soil Base"));
+    fireEvent.press(
+      screen.getByLabelText("Linked product trial evidence run: Bloom Formula Trial")
+    );
+    expect(screen.queryByLabelText("Commercial inventory linked product")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced inventory record fields"));
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory linked ingredient"),
       "ingredient-1"
@@ -102,10 +125,6 @@ describe("CommercialInventoryCreateRoute", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory linked genetics"),
       "genetics-1"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked product trial evidence run"),
-      "grow-1"
     );
 
     fireEvent.press(screen.getByLabelText("Create commercial inventory item"));

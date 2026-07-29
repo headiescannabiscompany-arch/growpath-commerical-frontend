@@ -12,10 +12,16 @@ import { Link } from "expo-router";
 
 import {
   createProductTrial,
+  fetchProducts,
   fetchProductLines,
+  fetchProductTrialEvidenceRuns,
   fetchProductTrials,
+  fetchSoilNutrientBatches,
+  type CommercialProduct,
   type ProductLine,
-  type ProductTrial
+  type ProductTrial,
+  type ProductTrialEvidenceRun,
+  type SoilNutrientBatch
 } from "@/api/commercialWorkflows";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -28,21 +34,111 @@ function idOf(item: AnyRec, index: number) {
   return String(item.id ?? item._id ?? `trial-${index}`);
 }
 
-function productLineRecordId(line: ProductLine) {
-  return String(line.id ?? line._id ?? line.name ?? "").trim();
-}
-
 function linkedEvidenceRunId(trial: ProductTrial) {
   return String(trial.growId ?? "").trim();
 }
 
+type RecordChoice = {
+  id: string;
+  label: string;
+};
+
+function recordId(record: AnyRec) {
+  return String(record.id ?? record._id ?? "").trim();
+}
+
+function choice(
+  record: AnyRec,
+  index: number,
+  labelKeys: string[],
+  fallback: string
+): RecordChoice | null {
+  const id = recordId(record);
+  if (!id) return null;
+  const label =
+    labelKeys.map((key) => String(record[key] ?? "").trim()).find(Boolean) ||
+    `${fallback} ${index + 1}`;
+  return { id, label };
+}
+
+function RecordPicker({
+  choices,
+  createHref,
+  createLabel,
+  label,
+  onChange,
+  selectedId
+}: {
+  choices: RecordChoice[];
+  createHref: string;
+  createLabel: string;
+  label: string;
+  onChange: (id: string) => void;
+  selectedId: string;
+}) {
+  return (
+    <View style={styles.recordPicker}>
+      <Text style={styles.selectorLabel}>{label}</Text>
+      {choices.length ? (
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={`${label} choices`}
+          style={styles.selectorActions}
+        >
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityLabel={`${label}: Not linked yet`}
+            accessibilityState={{ checked: !selectedId }}
+            onPress={() => onChange("")}
+            style={[styles.outlineButton, !selectedId && styles.selectedButton]}
+          >
+            <Text style={styles.outlineText}>Not linked yet</Text>
+          </Pressable>
+          {choices.slice(0, 8).map((item) => (
+            <Pressable
+              key={`${label}-${item.id}`}
+              accessibilityRole="radio"
+              accessibilityLabel={`${label}: ${item.label}`}
+              accessibilityState={{ checked: selectedId === item.id }}
+              onPress={() => onChange(item.id)}
+              style={[
+                styles.outlineButton,
+                selectedId === item.id && styles.selectedButton
+              ]}
+            >
+              <Text style={styles.outlineText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyPicker}>
+          <Text style={styles.muted}>No saved {label.toLowerCase()} records yet.</Text>
+          <Link href={createHref as any} asChild>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={createLabel}
+              style={styles.outlineButton}
+            >
+              <Text style={styles.outlineText}>{createLabel}</Text>
+            </Pressable>
+          </Link>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function CommercialTrialsRoute() {
   const [trials, setTrials] = useState<ProductTrial[]>([]);
+  const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
+  const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
+  const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
 
   const [trialName, setTrialName] = useState("");
   const [purpose, setPurpose] = useState("");
@@ -59,12 +155,19 @@ export default function CommercialTrialsRoute() {
     setLoading(true);
     setError(null);
     try {
-      const [nextTrials, nextLines] = await Promise.all([
-        fetchProductTrials(),
-        fetchProductLines()
-      ]);
+      const [nextTrials, nextProducts, nextLines, nextBatches, nextEvidenceRuns] =
+        await Promise.all([
+          fetchProductTrials(),
+          fetchProducts(),
+          fetchProductLines(),
+          fetchSoilNutrientBatches(),
+          fetchProductTrialEvidenceRuns()
+        ]);
       setTrials(nextTrials);
+      setProducts(nextProducts);
       setProductLines(nextLines);
+      setBatches(nextBatches);
+      setEvidenceRuns(nextEvidenceRuns);
     } catch (err) {
       setError(err);
       setTrials([]);
@@ -76,6 +179,23 @@ export default function CommercialTrialsRoute() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const productChoices = products
+    .map((record, index) => choice(record, index, ["name"], "Product"))
+    .filter((item): item is RecordChoice => !!item);
+  const productLineChoices = productLines
+    .map((record, index) => choice(record, index, ["name"], "Product line"))
+    .filter((item): item is RecordChoice => !!item);
+  const batchChoices = batches
+    .map((record, index) =>
+      choice(record, index, ["batchName", "name", "batchCode"], "Batch")
+    )
+    .filter((item): item is RecordChoice => !!item);
+  const evidenceRunChoices = evidenceRuns
+    .map((record, index) =>
+      choice(record, index, ["name", "growName", "cultivar"], "Evidence run")
+    )
+    .filter((item): item is RecordChoice => !!item);
 
   async function createTrial() {
     const name = trialName.trim();
@@ -123,7 +243,9 @@ export default function CommercialTrialsRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text style={styles.title}>Product Trials</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Product Trials
+          </Text>
           <Text style={styles.subtitle}>
             Track product effectiveness over time by linking products, formulas, batches,
             and product trial evidence runs.
@@ -152,7 +274,9 @@ export default function CommercialTrialsRoute() {
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Trial</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create Product Trial
+        </Text>
         <Text style={styles.body}>
           Trial record: connect CommercialProduct, ProductLine, SoilNutrientBatch, Recipe,
           and an underlying evidence run before using the result as public proof.
@@ -171,65 +295,93 @@ export default function CommercialTrialsRoute() {
           placeholder="seedling_safety, veg_performance, flower_performance..."
           style={styles.input}
         />
-        <View style={styles.grid}>
-          <TextInput
-            value={productId}
-            onChangeText={setProductId}
-            accessibilityLabel="Trial product id"
-            placeholder="Product id"
-            autoCapitalize="none"
-            style={[styles.input, styles.gridInput]}
+        <View style={styles.pickerGrid}>
+          <RecordPicker
+            label="Trial product"
+            choices={productChoices}
+            selectedId={productId}
+            onChange={setProductId}
+            createHref="/home/commercial/products/new"
+            createLabel="Create Product"
           />
-          <TextInput
-            value={productLineId}
-            onChangeText={setProductLineId}
-            accessibilityLabel="Trial product line id"
-            placeholder="Product line id, or choose below"
-            autoCapitalize="none"
-            style={[styles.input, styles.gridInput]}
+          <RecordPicker
+            label="Trial product line"
+            choices={productLineChoices}
+            selectedId={productLineId}
+            onChange={setProductLineId}
+            createHref="/home/commercial/product-lines"
+            createLabel="Create Product Line"
           />
-          {productLines.length ? (
-            <View style={styles.lineSelector}>
-              <Text style={styles.selectorLabel}>Choose Product Line</Text>
-              <View style={styles.selectorActions}>
-                {productLines.slice(0, 4).map((line) => {
-                  const id = productLineRecordId(line);
-                  const name = line.name || "Product line";
-                  return (
-                    <Pressable
-                      key={`trial-line-${id || name}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Use trial product line ${name}`}
-                      onPress={() => setProductLineId(id)}
-                      style={[
-                        styles.outlineButton,
-                        productLineId === id && styles.selectedButton
-                      ]}
-                    >
-                      <Text style={styles.outlineText}>{name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
-          <TextInput
-            value={batchId}
-            onChangeText={setBatchId}
-            accessibilityLabel="Trial batch id"
-            placeholder="Batch id"
-            autoCapitalize="none"
-            style={[styles.input, styles.gridInput]}
+          <RecordPicker
+            label="Trial batch"
+            choices={batchChoices}
+            selectedId={batchId}
+            onChange={setBatchId}
+            createHref="/home/commercial/batch-planner"
+            createLabel="Create Product Batch"
           />
-          <TextInput
-            value={growId}
-            onChangeText={setGrowId}
-            accessibilityLabel="Trial evidence run id"
-            placeholder="Evidence run id"
-            autoCapitalize="none"
-            style={[styles.input, styles.gridInput]}
+          <RecordPicker
+            label="Trial evidence run"
+            choices={evidenceRunChoices}
+            selectedId={growId}
+            onChange={setGrowId}
+            createHref="/home/commercial/evidence-runs/new"
+            createLabel="Create Evidence Run"
           />
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            showAdvancedRecordIds
+              ? "Hide advanced trial record ID fields"
+              : "Show advanced trial record ID fields"
+          }
+          accessibilityState={{ expanded: showAdvancedRecordIds }}
+          onPress={() => setShowAdvancedRecordIds((current) => !current)}
+          style={styles.advancedToggle}
+        >
+          <Text style={styles.advancedToggleText}>
+            {showAdvancedRecordIds
+              ? "Hide advanced record IDs"
+              : "Use advanced record IDs"}
+          </Text>
+        </Pressable>
+        {showAdvancedRecordIds ? (
+          <View style={styles.grid}>
+            <TextInput
+              value={productId}
+              onChangeText={setProductId}
+              accessibilityLabel="Trial product id"
+              placeholder="Product id"
+              autoCapitalize="none"
+              style={[styles.input, styles.gridInput]}
+            />
+            <TextInput
+              value={productLineId}
+              onChangeText={setProductLineId}
+              accessibilityLabel="Trial product line id"
+              placeholder="Product line id, or choose below"
+              autoCapitalize="none"
+              style={[styles.input, styles.gridInput]}
+            />
+            <TextInput
+              value={batchId}
+              onChangeText={setBatchId}
+              accessibilityLabel="Trial batch id"
+              placeholder="Batch id"
+              autoCapitalize="none"
+              style={[styles.input, styles.gridInput]}
+            />
+            <TextInput
+              value={growId}
+              onChangeText={setGrowId}
+              accessibilityLabel="Trial evidence run id"
+              placeholder="Evidence run id"
+              autoCapitalize="none"
+              style={[styles.input, styles.gridInput]}
+            />
+          </View>
+        ) : null}
         <View style={styles.grid}>
           <TextInput
             value={cropType}
@@ -276,7 +428,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product Trials</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Product Trials
+        </Text>
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
@@ -288,7 +442,7 @@ export default function CommercialTrialsRoute() {
               const evidenceRunId = linkedEvidenceRunId(trial);
               return (
                 <View key={idOf(trial, index)} style={styles.row}>
-                  <Text style={styles.rowTitle}>
+                  <Text accessibilityRole="header" aria-level={3} style={styles.rowTitle}>
                     {trial.trialName || trial.name || "Untitled trial"}
                   </Text>
                   <Text style={styles.muted}>
@@ -344,7 +498,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Evidence collection loop</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence collection loop
+        </Text>
         <Text style={styles.body}>
           A trial should collect structured data through the same evidence-run operating
           system used by Pro users, then attach those records to the product/product line
@@ -368,7 +524,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Claim guard</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Claim guard
+        </Text>
         <Text style={styles.body}>
           Commercial trial summaries must not overclaim. Separate observed results,
           cautious interpretation, missing data, and marketing-safe public copy.
@@ -388,7 +546,9 @@ export default function CommercialTrialsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Publishable result</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Publishable result
+        </Text>
         <Text style={styles.body}>
           When a trial has enough evidence, create a feed campaign, storefront proof
           point, course lesson, or Forum/Q&A support answer from the trial summary.
@@ -444,15 +604,22 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 86, textAlignVertical: "top" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   gridInput: { flexBasis: "31%", flexGrow: 1, minWidth: 150 },
-  lineSelector: {
+  pickerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10
+  },
+  recordPicker: {
     borderColor: "#BBF7D0",
     borderRadius: radius.card,
     borderWidth: 1,
-    flexBasis: "31%",
+    flexBasis: "47%",
     flexGrow: 1,
-    minWidth: 180,
+    minWidth: 240,
     padding: 10
   },
+  emptyPicker: { alignItems: "flex-start", gap: 8, marginTop: 8 },
   selectorLabel: {
     color: "#166534",
     fontSize: 11,
@@ -460,6 +627,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  advancedToggle: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 8
+  },
+  advancedToggleText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    textDecorationLine: "underline"
+  },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",

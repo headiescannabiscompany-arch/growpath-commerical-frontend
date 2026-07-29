@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { buildTimelinePlan } from "@/features/personal/tools/advancedPlanning";
@@ -141,12 +142,13 @@ export default function TimelinePlannerScreen() {
           />
         ) : (
           <>
-            <Text style={styles.label}>Start date</Text>
-            <TextInput
+            <CalendarDateField
               accessibilityLabel="Timeline start date"
-              style={styles.input}
+              label="Start date"
+              placeholder="Choose timeline start date"
               value={startDate}
-              onChangeText={setStartDate}
+              onChange={setStartDate}
+              optional={false}
             />
             <Text style={styles.label}>Veg weeks</Text>
             <TextInput

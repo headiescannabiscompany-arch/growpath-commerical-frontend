@@ -10,10 +10,17 @@ import {
   View
 } from "react-native";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
+import {
+  canonicalGrowInterestTag,
+  flattenGrowInterests,
+  groupTagsByTier,
+  normalizeInterestList
+} from "../utils/growInterests";
 import CourseDetailScreen from "./CourseDetailScreen";
 
 function normalizeList(payload) {
@@ -24,15 +31,79 @@ function normalizeList(payload) {
   return [];
 }
 
+function mergeCourses(...lists) {
+  const merged = new Map();
+  lists.flat().forEach((course) => {
+    const id = String(course?._id || course?.id || "");
+    if (!id) return;
+    merged.set(id, { ...(merged.get(id) || {}), ...course });
+  });
+  return Array.from(merged.values());
+}
+
+export function courseInterestTags(course) {
+  const structured =
+    course?.growInterests && !Array.isArray(course.growInterests)
+      ? flattenGrowInterests(course.growInterests)
+      : normalizeInterestList(course?.growInterests);
+  return Array.from(
+    new Set([
+      ...structured,
+      ...normalizeInterestList(course?.tags),
+      ...normalizeInterestList(course?.interestTags),
+      canonicalGrowInterestTag(course?.cropType)
+    ])
+  ).filter(Boolean);
+}
+
+export function matchesCourseInterests(course, userInterests) {
+  const tags = courseInterestTags(course).map(canonicalGrowInterestTag).filter(Boolean);
+  if (!tags.length || !userInterests.length) return true;
+  const normalizedUserInterests = userInterests
+    .map(canonicalGrowInterestTag)
+    .filter(Boolean);
+  const courseCrops = groupTagsByTier(tags).crops || [];
+  const userCrops = groupTagsByTier(normalizedUserInterests).crops || [];
+  if (
+    courseCrops.length &&
+    userCrops.length &&
+    !courseCrops.some((crop) => userCrops.includes(crop))
+  ) {
+    return false;
+  }
+  const selected = new Set(normalizedUserInterests.map((item) => item.toLowerCase()));
+  return tags.some((tag) => selected.has(tag.toLowerCase()));
+}
+
+function coursePriceLabel(course) {
+  const cents = Number(course?.priceCents || 0);
+  if (Number.isFinite(cents) && cents > 0) return `$${(cents / 100).toFixed(2)}`;
+  const dollars = Number(course?.price || 0);
+  return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
+}
+
+function isPublishedCourse(course) {
+  return Boolean(
+    course?.isPublished ||
+    ["published", "active", "public"].includes(String(course?.status || "").toLowerCase())
+  );
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
   const requestedCourseId = Array.isArray(params?.courseId)
     ? params.courseId[0]
     : params?.courseId;
+  const checkoutResult = Array.isArray(params?.checkout)
+    ? params.checkout[0]
+    : params?.checkout;
   const ent = useEntitlements();
+  const auth = useAuth();
   const access = getLearningAccess(ent);
-  const canInvite = !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
+  const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
+  const canCreateCourses = isSignedIn && access.canCreateCourses;
+  const canInvite = isSignedIn && !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -54,11 +125,36 @@ export default function CoursesScreen({ navigation } = {}) {
       setErr("");
 
       try {
-        const data = await apiRequest("/api/courses");
-        const list = normalizeList(data);
+        const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
+          apiRequest("/api/courses"),
+          canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([]),
+          apiRequest("/api/commercial/courses/public")
+        ]);
+        if (
+          publicResult.status === "rejected" &&
+          ownedResult.status === "rejected" &&
+          commercialResult.status === "rejected"
+        ) {
+          throw publicResult.reason;
+        }
+        const list = mergeCourses(
+          publicResult.status === "fulfilled" ? normalizeList(publicResult.value) : [],
+          ownedResult.status === "fulfilled"
+            ? normalizeList(ownedResult.value).map((course) => ({
+                ...course,
+                _viewerOwnsCourse: true
+              }))
+            : [],
+          commercialResult.status === "fulfilled"
+            ? normalizeList(commercialResult.value)
+            : []
+        );
+        const publicationScoped = isSignedIn ? list : list.filter(isPublishedCourse);
         const filtered = access.canSeePaidCourses
-          ? list
-          : list.filter((c) => (c?.priceCents || 0) === 0);
+          ? publicationScoped
+          : publicationScoped.filter(
+              (c) => Number(c?.priceCents || 0) === 0 && Number(c?.price || 0) === 0
+            );
         if (alive) setCourses(filtered);
       } catch (e) {
         const msg = String(e?.message || e || "Failed to load courses");
@@ -72,7 +168,7 @@ export default function CoursesScreen({ navigation } = {}) {
     return () => {
       alive = false;
     };
-  }, [access.canSeePaidCourses, access.canViewCourses]);
+  }, [access.canSeePaidCourses, access.canViewCourses, canCreateCourses, isSignedIn]);
 
   useEffect(() => {
     if (!requestedCourseId || selectedCourse || courses.length === 0) return;
@@ -107,8 +203,19 @@ export default function CoursesScreen({ navigation } = {}) {
   const paidCourseCount = useMemo(() => countPaidCourses(courses), [courses]);
   const paidLimitReached =
     access.maxPaidCourses !== null && paidCourseCount >= access.maxPaidCourses;
+  const userInterests = useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
 
   function openCourse(course) {
+    if (course?.sourceType === "commercial_course" && course?.storefrontSlug) {
+      const id = String(course?._id || course?.id || "");
+      router.push(
+        `/store/${encodeURIComponent(course.storefrontSlug)}/courses/${encodeURIComponent(id)}`
+      );
+      return;
+    }
     if (navigation?.navigate) {
       navigation.navigate("CourseDetail", { course, id: course?._id || course?.id });
       return;
@@ -135,7 +242,9 @@ export default function CoursesScreen({ navigation } = {}) {
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
-          route={{ params: { course: selectedCourse, id: selectedId } }}
+          route={{
+            params: { course: selectedCourse, id: selectedId, checkout: checkoutResult }
+          }}
           navigation={navigation}
         />
       </View>
@@ -144,8 +253,38 @@ export default function CoursesScreen({ navigation } = {}) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Courses</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Courses
+      </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
+
+      {!isSignedIn ? (
+        <View style={styles.publicCard}>
+          <Text style={styles.cardTitle}>Published course catalog</Text>
+          <Text style={styles.meta}>
+            Browse courses that their creators have published. Sign in or create a free
+            account before authoring, enrolling, purchasing, or saving learner progress.
+          </Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Sign in for courses"
+              onPress={() => router.push("/login")}
+              style={styles.btn}
+            >
+              <Text style={styles.btnText}>Sign in</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Create a free account for courses"
+              onPress={() => router.push("/register")}
+              style={styles.btn}
+            >
+              <Text style={styles.secondaryBtnText}>Create free account</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {!access.canViewCourses ? (
         <View style={styles.lockedCard}>
@@ -164,37 +303,64 @@ export default function CoursesScreen({ navigation } = {}) {
       {err ? <Text style={styles.error}>{err}</Text> : null}
 
       {!loading && !err && courses.length === 0 ? (
-        <Text style={styles.meta}>No courses found</Text>
+        <Text style={styles.meta}>
+          {isSignedIn ? "No courses found" : "No published courses yet"}
+        </Text>
       ) : null}
 
       {courses.map((item, idx) => (
         <Pressable
           key={String(item?._id || item?.id || idx)}
           style={styles.card}
+          disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Text style={styles.cardTitle}>{String(item?.title || item?.name || "Untitled")}</Text>
-          {hasAnalytics ? <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text> : null}
-          {access.canPublishCourses && item?.isPublished ? (
+          <Text style={styles.cardTitle}>
+            {String(item?.title || item?.name || "Untitled")}
+          </Text>
+          <Text style={styles.statusText}>
+            {isPublishedCourse(item) ? "Published" : "Draft"}
+          </Text>
+          <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
+          {courseInterestTags(item).length ? (
+            <Text style={styles.meta}>
+              Grow interests: {courseInterestTags(item).join(" | ")}
+            </Text>
+          ) : (
+            <Text style={styles.meta}>Grow interests: General</Text>
+          )}
+          {!matchesCourseInterests(item, userInterests) ? (
+            <Text style={styles.lockedText}>
+              Hidden from your learning path until you add a matching grow interest.
+            </Text>
+          ) : null}
+          {hasAnalytics ? (
+            <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
+          ) : null}
+          {isSignedIn && access.canPublishCourses && item?.isPublished ? (
             <Pressable accessibilityRole="button" style={styles.smallBtn}>
               <Text style={styles.smallBtnText}>Unpublish</Text>
             </Pressable>
           ) : null}
-          <Text style={styles.link}>Open details</Text>
+          <Text style={styles.link}>
+            {matchesCourseInterests(item, userInterests)
+              ? "Open details"
+              : "Outside your grow interests"}
+          </Text>
         </Pressable>
       ))}
 
-      {access.canCreateCourses ? (
+      {canCreateCourses ? (
         <>
           <View style={styles.builderCard}>
             <Text style={styles.cardTitle}>Course Builder Workflow</Text>
             <Text style={styles.meta}>
-              Basics, curriculum, documents/media, optional live sessions, linked
-              products/grows/forum, pricing/access, preview, then publish.
+              Start with the basics, build lessons, add media or a live session, choose
+              who can access it, preview the learner experience, and publish when ready.
             </Text>
             <Text style={styles.meta}>
-              Limits should be enforced by course count, storage MB/GB, video storage,
-              document storage, live sessions per month, and live-session duration.
+              GrowPath keeps course media, live sessions, pricing, and linked grow or
+              forum resources together in this workflow.
             </Text>
           </View>
           <Text style={styles.meta}>
@@ -203,13 +369,12 @@ export default function CoursesScreen({ navigation } = {}) {
               ? "unlimited"
               : `${paidCourseCount}/${access.maxPaidCourses}`}
           </Text>
-          <Text style={styles.meta}>Storage used: 0 MB / plan limit</Text>
-          <Text style={styles.meta}>Live sessions this month: 0 / plan limit</Text>
-          <Text style={styles.meta}>Uploaded video storage: 0 GB / plan limit</Text>
+          <Text style={styles.meta}>Course media: ready for uploads</Text>
+          <Text style={styles.meta}>Live sessions this month: 0 scheduled</Text>
         </>
       ) : null}
 
-      {access.canCreateCourses ? (
+      {canCreateCourses ? (
         <Pressable
           accessibilityRole="button"
           disabled={paidLimitReached && access.canSellPaidCourses}
@@ -223,10 +388,6 @@ export default function CoursesScreen({ navigation } = {}) {
         </Pressable>
       ) : null}
 
-      {access.canCreateCourses && !access.canSellPaidCourses ? (
-        <Text style={styles.meta}>Paid course sales require `COURSES_SELL_PAID`.</Text>
-      ) : null}
-
       <PersonalFeedPlacement placement="middle" routeKey="personal_courses" longContent />
 
       {canInvite ? (
@@ -238,7 +399,11 @@ export default function CoursesScreen({ navigation } = {}) {
             onChangeText={setInviteName}
             placeholder="Invite user name"
           />
-          <Pressable accessibilityRole="button" style={styles.inviteBtn} onPress={handleInvite}>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.inviteBtn}
+            onPress={handleInvite}
+          >
             <Text style={styles.inviteText}>Invite</Text>
           </Pressable>
           {inviteMessage ? <Text style={styles.meta}>{inviteMessage}</Text> : null}
@@ -250,12 +415,15 @@ export default function CoursesScreen({ navigation } = {}) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  content: { paddingBottom: 32 },
+  container: { flex: 1, padding: 14, backgroundColor: "#FFFFFF" },
+  content: { paddingBottom: 48, minHeight: "100%" },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
+  lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
+  statusText: { color: "#166534", fontWeight: "800", marginTop: 4 },
+  priceText: { color: "#0F172A", fontWeight: "900", marginTop: 4 },
   card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   cardTitle: { fontWeight: "800" },
   btn: { marginTop: 10, paddingVertical: 10 },
@@ -267,6 +435,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0FDF4",
     marginTop: 10
   },
+  publicCard: {
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    padding: 12,
+    backgroundColor: "#F0FDF4",
+    marginBottom: 10
+  },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   btnDisabled: { opacity: 0.5 },
   btnText: {
     backgroundColor: "#166534",
@@ -276,6 +453,17 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingHorizontal: 14,
     paddingVertical: 10,
+    alignSelf: "flex-start"
+  },
+  secondaryBtnText: {
+    borderColor: "#166534",
+    borderWidth: 1,
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     alignSelf: "flex-start"
   },
   link: { color: "#166534", fontWeight: "800", marginTop: 8 },

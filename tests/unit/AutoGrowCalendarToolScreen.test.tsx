@@ -107,9 +107,22 @@ describe("AutoGrowCalendarToolRoute", () => {
   it("creates tasks from the generated grow calendar schedule", async () => {
     const screen = render(<AutoGrowCalendarToolRoute />);
 
-    fireEvent.changeText(
-      screen.getByLabelText("Auto Grow Calendar Start date YYYY-MM-DD"),
-      "2026-07-07"
+    fireEvent.press(screen.getByLabelText("Auto Grow Calendar Start date"));
+    fireEvent(
+      screen.getByLabelText("Auto Grow Calendar Start date year"),
+      "valueChange",
+      2026
+    );
+    fireEvent(
+      screen.getByLabelText("Auto Grow Calendar Start date month"),
+      "valueChange",
+      7
+    );
+    fireEvent.press(
+      screen.getByLabelText("Auto Grow Calendar Start date day 2026-07-07")
+    );
+    fireEvent.press(
+      screen.getByLabelText("Auto Grow Calendar Start date use selected date")
     );
     fireEvent.press(screen.getByLabelText("Run Auto Grow Calendar"));
 

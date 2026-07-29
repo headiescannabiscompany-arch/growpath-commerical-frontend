@@ -10,16 +10,22 @@ import {
   Pressable,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { createForumPost } from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
+import GrowInterestPicker from "@/components/GrowInterestPicker";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { INTEREST_TIERS } from "@/config/interests";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { LockedScreen } from "@/entitlements/LockedScreen";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
-import { flattenTierSelections } from "@/utils/growInterests";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "@/utils/growInterests";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -31,6 +37,17 @@ type SelectedPhoto = {
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    title?: string | string[];
+    body?: string | string[];
+    growTags?: string | string[];
+    photos?: string | string[];
+    growId?: string | string[];
+    plantId?: string | string[];
+    diagnosisId?: string | string[];
+    toolRunId?: string | string[];
+    purpose?: string | string[];
+  }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -48,26 +65,52 @@ export default function ForumNewPostRoute() {
         ? "Facility"
         : "User";
 
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const valueOf = (value: string | string[] | undefined) =>
+    String(Array.isArray(value) ? value[0] || "" : value || "");
+  const sharedTags = valueOf(params.growTags)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const sharedPhotos = valueOf(params.photos)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const growId = valueOf(params.growId);
+  const plantId = valueOf(params.plantId);
+  const diagnosisId = valueOf(params.diagnosisId);
+  const toolRunId = valueOf(params.toolRunId);
+  const purpose = valueOf(params.purpose) || "discussion";
+  const profileInterests =
+    auth.user?.growInterests || (buildEmptyTierSelection() as Record<string, string[]>);
+  const initialInterests: Record<string, string[]> = sharedTags.length
+    ? (groupTagsByTier(sharedTags) as Record<string, string[]>)
+    : {
+        ...(buildEmptyTierSelection() as Record<string, string[]>),
+        crops: [...(profileInterests.crops || [])]
+      };
+  const interestOptionsOverride = Object.fromEntries(
+    INTEREST_TIERS.map((tier) => [
+      tier.id,
+      Array.from(
+        new Set([
+          ...(auth.user?.growInterests?.[tier.id] || []),
+          ...(initialInterests[tier.id] || [])
+        ])
+      )
+    ]).filter(([, values]) => (values as string[]).length)
+  ) as Record<string, string[]>;
+
+  const [title, setTitle] = useState(valueOf(params.title));
+  const [body, setBody] = useState(valueOf(params.body));
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
-  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
-  const [interestSelections, setInterestSelections] = useState<Record<string, string[]>>(
-    {}
+  const [photos, setPhotos] = useState<SelectedPhoto[]>(
+    sharedPhotos.slice(0, 10).map((uri) => ({ uri }))
   );
+  const [interestSelections, setInterestSelections] =
+    useState<Record<string, string[]>>(initialInterests);
 
   const selectedInterests = flattenTierSelections(interestSelections);
-
-  function toggleInterest(tierId: string, option: string) {
-    setInterestSelections((current) => {
-      const values = Array.isArray(current[tierId]) ? current[tierId] : [];
-      const nextValues = values.includes(option)
-        ? values.filter((item) => item !== option)
-        : [...values, option];
-      return { ...current, [tierId]: nextValues };
-    });
-  }
 
   const pickPhotos = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -78,34 +121,43 @@ export default function ForumNewPostRoute() {
     const picked = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
+      selectionLimit: Math.max(10 - photos.length, 1),
       allowsEditing: false,
       quality: 0.85
     });
     if (picked.canceled) return;
-    setPhotos((current) => [
-      ...current,
-      ...picked.assets
-        .filter((asset) => asset.uri)
-        .map((asset) => ({
-          uri: asset.uri,
-          width: asset.width ?? null,
-          height: asset.height ?? null,
-          mimeType: asset.mimeType ?? null
-        }))
-    ]);
-    setFeedback("");
-  }, []);
+    setPhotos((current) =>
+      [
+        ...current,
+        ...picked.assets
+          .filter((asset) => asset.uri)
+          .map((asset) => ({
+            uri: asset.uri,
+            width: asset.width ?? null,
+            height: asset.height ?? null,
+            mimeType: asset.mimeType ?? null
+          }))
+      ].slice(0, 10)
+    );
+    setFeedback(photos.length + picked.assets.length > 10 ? "Maximum 10 photos." : "");
+  }, [photos.length]);
 
   const submit = useCallback(async () => {
     if (!canPost) return;
     const nextTitle = title.trim();
     const nextBody = body.trim();
     if (!nextTitle || !nextBody) return;
+    if (!interestSelections.crops?.length) {
+      setFeedback(
+        "Select at least one Tier 1 crop. Add missing choices under Profile → Grow Interests."
+      );
+      return;
+    }
 
     setSubmitting(true);
     setFeedback("");
     try {
-      await createForumPost({
+      const created = await createForumPost({
         title: nextTitle,
         body: nextBody,
         authorType,
@@ -113,9 +165,28 @@ export default function ForumNewPostRoute() {
         workspaceContext,
         photos: photos.map((photo) => photo.uri),
         tags: selectedInterests,
-        growInterests: selectedInterests
+        growInterests: selectedInterests,
+        ...(growId ? { growId } : {}),
+        ...(plantId ? { plantId } : {}),
+        ...(diagnosisId ? { diagnosisId } : {}),
+        ...(toolRunId ? { toolRunId } : {})
       });
-      router.replace("/home/personal/forum");
+      if (created?.isHidden || created?.moderationStatus === "held") {
+        setFeedback(
+          created?.moderationNotice ||
+            "This post is hidden while a human moderator reviews it."
+        );
+        return;
+      }
+      const createdId = String(created?._id || created?.id || "");
+      router.replace(
+        createdId
+          ? {
+              pathname: "/forum/post",
+              params: { id: createdId, ...(growId ? { growId } : {}) }
+            }
+          : "/forum"
+      );
     } catch (error: any) {
       setFeedback(error?.message || "Unable to create discussion.");
     } finally {
@@ -131,17 +202,35 @@ export default function ForumNewPostRoute() {
     router,
     selectedInterests,
     title,
-    workspaceContext
+    workspaceContext,
+    growId,
+    interestSelections.crops?.length,
+    plantId,
+    diagnosisId,
+    toolRunId
   ]);
 
   const disabled = !title.trim() || !body.trim() || submitting || !canPost;
 
+  if (!canPost) {
+    return (
+      <ScreenBoundary
+        name="personal.forum.newPost"
+        showBack
+        backFallbackHref="/home/personal/community"
+      >
+        <LockedScreen
+          title="Forum posting unavailable"
+          message="Free accounts can read discussions and replies. Upgrade to Pro to create posts and comments."
+          actionLabel="Back to Forum"
+          onAction={() => router.replace("/home/personal/community" as any)}
+        />
+      </ScreenBoundary>
+    );
+  }
+
   return (
-    <ScreenBoundary
-      name="personal.forum.newPost"
-      showBack
-      backFallbackHref="/home/personal/forum"
-    >
+    <ScreenBoundary name="personal.forum.newPost" showBack backFallbackHref="/forum">
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View>
           <Text style={styles.title}>New Discussion</Text>
@@ -156,13 +245,6 @@ export default function ForumNewPostRoute() {
           />
         </View>
 
-        {!canPost ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Posting unavailable</Text>
-            <Text style={styles.cardText}>This account does not have `FORUM_POST`.</Text>
-          </View>
-        ) : null}
-
         <View style={styles.identityCard}>
           <Text style={styles.identityTitle}>Posting as {identityLabel}</Text>
           <Text style={styles.identityText}>Workspace: {workspaceContext}</Text>
@@ -171,6 +253,28 @@ export default function ForumNewPostRoute() {
             outreach.
           </Text>
         </View>
+
+        {purpose !== "discussion" || growId || plantId || diagnosisId || toolRunId ? (
+          <View style={styles.contextCard}>
+            <Text style={styles.contextTitle}>
+              {purpose === "diagnosis"
+                ? "Diagnosis help request"
+                : purpose === "grow_update"
+                  ? "Grow update"
+                  : "Attached context"}
+            </Text>
+            <Text style={styles.identityText}>
+              {[
+                growId && `Grow ${growId}`,
+                plantId && `Plant ${plantId}`,
+                diagnosisId && `Diagnosis ${diagnosisId}`,
+                toolRunId && `Tool run ${toolRunId}`
+              ]
+                .filter(Boolean)
+                .join(" | ") || "Add photos and details so replies can be specific."}
+            </Text>
+          </View>
+        ) : null}
 
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
@@ -193,35 +297,17 @@ export default function ForumNewPostRoute() {
         />
 
         <View style={styles.interestCard}>
-          <Text style={styles.cardTitle}>Grow interests</Text>
-          <Text style={styles.cardText}>
-            Add crop, environment, method, technique, goal, constraint, or experience tags
-            so the right growers can find this discussion.
-          </Text>
-          {INTEREST_TIERS.map((tier) => (
-            <View key={tier.id} style={styles.interestGroup}>
-              <Text style={styles.interestLabel}>{tier.label}</Text>
-              <View style={styles.tagRow}>
-                {tier.options.map((option) => {
-                  const selected = Boolean(interestSelections[tier.id]?.includes(option));
-                  return (
-                    <Pressable
-                      key={option}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Toggle grow interest ${option}`}
-                      onPress={() => toggleInterest(tier.id, option)}
-                      disabled={submitting || !canPost}
-                      style={[styles.tag, selected && styles.tagSelected]}
-                    >
-                      <Text style={[styles.tagText, selected && styles.tagTextSelected]}>
-                        {option}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
+          <GrowInterestPicker
+            title="Post audience — Grow Interests"
+            helperText="Tier 1 is required. Choose from the interests saved in your profile; lower tiers such as Hydroponics or Living Soil narrow who sees this post."
+            value={interestSelections}
+            onChange={setInterestSelections}
+            enabledTierIds={INTEREST_TIERS.map((tier) => tier.id)}
+            tierOptionsOverride={interestOptionsOverride}
+            collapsible={false}
+            showEmptyTiers
+            emptyTierText="No choices saved. Add this tier under Profile > Grow Interests, then return to your post."
+          />
           {selectedInterests.length ? (
             <Text style={styles.photoCount}>
               {selectedInterests.length} grow interest tag
@@ -332,16 +418,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   bodyInput: { minHeight: 150, textAlignVertical: "top" },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#F8FAFC",
-    gap: 6
-  },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  cardText: { color: "#475569", lineHeight: 20 },
   identityCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
@@ -351,6 +427,14 @@ const styles = StyleSheet.create({
   },
   identityTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   identityText: { color: "#475569", fontSize: 13, fontWeight: "700", marginTop: 4 },
+  contextCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 12
+  },
+  contextTitle: { color: "#166534", fontSize: 15, fontWeight: "900" },
   interestCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",

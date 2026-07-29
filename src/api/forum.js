@@ -1,40 +1,65 @@
 import { ApiError, apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
-export function listPosts() {
-  return apiRequest(apiRoutes.FORUM.LIST);
+export function listPosts(filters = {}) {
+  return apiRequest(apiRoutes.FORUM.LIST, { params: filters });
+}
+
+export function listForumCategories() {
+  return apiRequest("/api/forum/categories");
+}
+
+export function assistForumDraft(content) {
+  return apiRequest("/api/forum/assist", {
+    method: "POST",
+    body: { content }
+  });
+}
+
+export function assistForumThread(id) {
+  return apiRequest(`/api/forum/${encodeURIComponent(id)}/assist`, { method: "POST" });
+}
+
+export function createForumTask(id, input = {}) {
+  return apiRequest(`/api/forum/${encodeURIComponent(id)}/create-task`, {
+    method: "POST",
+    body: input
+  });
 }
 
 export function getPost(id) {
   return apiRequest(apiRoutes.FORUM.DETAIL(id));
 }
 
-export function getLatestPosts(page = 1, tier1 = [], tags = []) {
+export function getLatestPosts(page = 1, tier1 = [], tags = [], filters = {}) {
   return apiRequest(apiRoutes.FORUM.LATEST, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
-      tags: tags && tags.length ? tags.join(",") : undefined
+      tags: tags && tags.length ? tags.join(",") : undefined,
+      ...filters
     }
   });
 }
 
-export function getTrendingPosts(page = 1, tier1 = [], tags = []) {
+export function getTrendingPosts(page = 1, tier1 = [], tags = [], filters = {}) {
   return apiRequest(apiRoutes.FORUM.TRENDING, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
-      tags: tags && tags.length ? tags.join(",") : undefined
+      tags: tags && tags.length ? tags.join(",") : undefined,
+      ...filters
     }
   });
 }
 
-export function getFollowingPosts(page = 1, tier1 = [], tags = []) {
+export function getFollowingPosts(page = 1, tier1 = [], tags = [], filters = {}) {
   return apiRequest(apiRoutes.FORUM.FOLLOWING, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
-      tags: tags && tags.length ? tags.join(",") : undefined
+      tags: tags && tags.length ? tags.join(",") : undefined,
+      ...filters
     }
   }).catch((err) => {
     if (err instanceof ApiError && err.status === 500) {
@@ -76,10 +101,10 @@ export function unlikePost(id) {
   return apiRequest(apiRoutes.FORUM.UNLIKE(id), { method: "POST" });
 }
 
-export function addComment(id, text, parentId = null) {
+export function addComment(id, text, parentId = null, identity = {}) {
   return apiRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
-    body: { text, parentId }
+    body: { text, parentId, ...identity }
   });
 }
 

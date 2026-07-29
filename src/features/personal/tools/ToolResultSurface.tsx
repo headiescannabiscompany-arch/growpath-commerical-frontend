@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
+import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
+import type { EvidenceReview } from "@/features/personal/evidence/evidenceReview";
+
 export type ToolResultSeverity = "info" | "low" | "medium" | "high";
 
 export type ToolResultMetric = {
@@ -46,6 +49,8 @@ type ToolResultSurfaceProps = {
   contextMessage?: string;
   footerMessage?: string;
   details?: React.ReactNode;
+  evidenceReview?: EvidenceReview | null;
+  onAddEvidence?: () => void | Promise<void>;
   copyPayload?: unknown;
   onReuseInputs?: () => void | Promise<void>;
   onAskAI?: () => void | Promise<void>;
@@ -171,6 +176,8 @@ export default function ToolResultSurface({
   contextMessage,
   footerMessage,
   details,
+  evidenceReview,
+  onAddEvidence,
   copyPayload,
   onReuseInputs,
   onAskAI
@@ -346,6 +353,10 @@ export default function ToolResultSurface({
       ))}
 
       {details ? <View style={styles.section}>{details}</View> : null}
+
+      {evidenceReview ? (
+        <EvidenceReviewPanel review={evidenceReview} onAddEvidence={onAddEvidence} />
+      ) : null}
 
       {recommendations.length ? (
         <View style={styles.section}>

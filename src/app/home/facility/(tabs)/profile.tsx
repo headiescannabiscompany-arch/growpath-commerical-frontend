@@ -18,6 +18,8 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import CannabisContentControls from "@/components/account/CannabisContentControls";
 
 type AnyRec = Record<string, any>;
 
@@ -26,18 +28,44 @@ function asArray(res: any): AnyRec[] {
   if (Array.isArray(res?.items)) return res.items;
   if (Array.isArray(res?.data)) return res.data;
   if (Array.isArray(res?.facilities)) return res.facilities;
+  if (Array.isArray(res?.data?.facilities)) return res.data.facilities;
+  if (Array.isArray(res?.data?.items)) return res.data.items;
   return [];
+}
+
+function unwrapRecord(res: any): AnyRec | null {
+  const value = res?.data?.user ?? res?.user ?? res?.data ?? res;
+  return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
 function renderKV(obj: AnyRec | null, key: string) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
+  const displayValue =
+    key === "createdAt" && !Number.isNaN(Date.parse(String(v)))
+      ? new Date(String(v)).toLocaleDateString()
+      : key === "role" || key === "plan"
+        ? String(v)
+            .toLowerCase()
+            .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase())
+        : typeof v === "string"
+          ? v
+          : JSON.stringify(v);
 
   return (
     <View style={styles.kv} key={key}>
-      <Text style={styles.k}>{key}</Text>
-      <Text style={styles.v}>{typeof v === "string" ? v : JSON.stringify(v)}</Text>
+      <Text style={styles.k}>
+        {(
+          {
+            displayName: "Display name",
+            legalName: "Legal name",
+            createdAt: "Created",
+            license: "License number"
+          } as Record<string, string>
+        )[key] || key.replace(/Id$/, " ID")}
+      </Text>
+      <Text style={styles.v}>{displayValue}</Text>
     </View>
   );
 }
@@ -66,7 +94,7 @@ function ProfileAction({
 export default function FacilityProfileRoute() {
   const router = useRouter();
   const auth = useAuth();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -94,18 +122,31 @@ export default function FacilityProfileRoute() {
       try {
         clearError();
 
-        const [meRes, facilitiesRes] = await Promise.all([
-          apiRequest(endpoints.me, { method: "GET" }),
-          apiRequest(endpoints.facilities, { method: "GET" })
+        const [meResult, facilitiesResult] = await Promise.allSettled([
+          apiRequest(endpoints.me, { method: "GET", timeoutMs: 10000 }),
+          apiRequest(endpoints.facilities, { method: "GET", timeoutMs: 10000 })
         ]);
 
-        setMe(meRes ?? null);
+        setMe(
+          meResult.status === "fulfilled"
+            ? unwrapRecord(meResult.value)
+            : (auth.user ?? null)
+        );
 
-        const facilities = asArray(facilitiesRes);
+        const facilities =
+          facilitiesResult.status === "fulfilled" ? asArray(facilitiesResult.value) : [];
         const found =
-          facilities.find((f) => String(f?.id ?? f?._id) === String(facilityId)) ?? null;
+          facilities.find(
+            (f) =>
+              String(f?.id ?? f?._id ?? f?.facilityId) === String(facilityId) ||
+              String(f?.facilityId ?? "") === String(facilityId)
+          ) ?? null;
 
         setFacility(found);
+
+        if (meResult.status === "rejected" && facilitiesResult.status === "rejected") {
+          handleApiError(meResult.reason);
+        }
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -113,7 +154,7 @@ export default function FacilityProfileRoute() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [auth.user, facilityId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -131,37 +172,14 @@ export default function FacilityProfileRoute() {
 
   const meKeys = useMemo(() => {
     if (!me) return [];
-    const preferred = [
-      "id",
-      "_id",
-      "email",
-      "name",
-      "displayName",
-      "plan",
-      "role",
-      "createdAt"
-    ];
-    const rest = Object.keys(me)
-      .filter((k) => !preferred.includes(k))
-      .sort();
-    return [...preferred.filter((k) => k in me), ...rest];
+    const preferred = ["email", "name", "displayName", "plan", "role", "createdAt"];
+    return preferred.filter((k) => k in me);
   }, [me]);
 
   const facilityKeys = useMemo(() => {
     if (!facility) return [];
-    const facilityPreferred = [
-      "id",
-      "_id",
-      "name",
-      "legalName",
-      "license",
-      "state",
-      "createdAt"
-    ];
-    const facilityRest = Object.keys(facility)
-      .filter((k) => !facilityPreferred.includes(k))
-      .sort();
-    return [...facilityPreferred.filter((k) => k in facility), ...facilityRest];
+    const facilityPreferred = ["name", "legalName", "license", "state", "createdAt"];
+    return facilityPreferred.filter((k) => k in facility);
   }, [facility]);
 
   return (
@@ -203,14 +221,16 @@ export default function FacilityProfileRoute() {
               accessibilityLabel="Open account profile"
               onPress={() => router.push("/profile" as any)}
             />
+            <ProfileAction
+              label="Plans & billing"
+              accessibilityLabel="Manage facility plan and billing"
+              onPress={() => router.push("/offers" as any)}
+            />
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Selected Facility</Text>
-          <Text style={styles.muted}>
-            facilityId: {facilityId ? String(facilityId) : "(none)"}
-          </Text>
+          <Text style={styles.h1}>Facility</Text>
 
           {facility ? (
             <View style={styles.kvWrap}>
@@ -218,19 +238,69 @@ export default function FacilityProfileRoute() {
             </View>
           ) : (
             <Text style={styles.muted}>
-              No facility record found from /api/facilities.
+              Facility details are unavailable right now. Pull to refresh or switch
+              facilities.
             </Text>
           )}
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Me</Text>
+          <Text style={styles.h1}>Account</Text>
 
           {me ? (
             <View style={styles.kvWrap}>{meKeys.map((k) => renderKV(me, k))}</View>
           ) : (
-            <Text style={styles.muted}>No /api/me data.</Text>
+            <Text style={styles.muted}>Account details are unavailable right now.</Text>
           )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.h1}>AI usage</Text>
+          <TokenBalanceWidget
+            interactive={false}
+            workspaceType="facility"
+            facilityId={String(facilityId || "")}
+            workspaceName={String(
+              facility?.name || selectedFacility?.name || "Selected Facility"
+            )}
+          />
+        </View>
+
+        <CannabisContentControls />
+
+        <View style={styles.card}>
+          <Text style={styles.h1}>Facility setup</Text>
+          <Text style={styles.muted}>
+            Manage the people, sensor connections, training, and community attached to
+            this workspace.
+          </Text>
+          <View style={styles.actionRow}>
+            <ProfileAction
+              label="Team"
+              accessibilityLabel="Open facility team"
+              onPress={() => router.push("/home/facility/team" as any)}
+            />
+            <ProfileAction
+              label="Pulse / TrolMaster"
+              accessibilityLabel="Open facility integrations"
+              onPress={() => router.push("/home/facility/integrations" as any)}
+            />
+            <ProfileAction
+              label="Courses"
+              accessibilityLabel="Open courses"
+              onPress={() => router.push("/courses" as any)}
+            />
+            <ProfileAction
+              label="Videos"
+              accessibilityLabel="Open Facility video library"
+              onPress={() => router.push("/videos?tab=library" as any)}
+            />
+            <ProfileAction
+              label="Forum"
+              accessibilityLabel="Open forum"
+              onPress={() => router.push("/forum" as any)}
+            />
+          </View>
         </View>
 
         <Pressable

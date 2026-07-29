@@ -17,6 +17,11 @@ const CAP = {
   COURSES_BOOST_1: "courses.feed_boost.1",
   COURSES_BOOST_2: "courses.feed_boost.2",
   COURSES_REVIEW_REQUIRED: "courses.review.required",
+  // Shared videos
+  VIDEOS_VIEW: "videos.view",
+  VIDEOS_UPLOAD: "videos.upload",
+  VIDEOS_PUBLISH: "videos.publish",
+  VIDEOS_MANAGE: "videos.manage",
   // Tools
   TOOL_SOIL: "tools.soil",
   TOOL_NPK: "tools.npk",
@@ -42,24 +47,55 @@ const CAP = {
   TASKS_WRITE: "TASKS_WRITE"
 };
 
+const VIDEO_GB = 1024 * 1024 * 1024;
 const LIMITS_BY_PLAN = {
-  free: { maxPaidCourses: 1, maxLessonsPerCourse: 7 },
-  pro: { maxPaidCourses: 3, maxLessonsPerCourse: 20 },
-  creator_plus: { maxPaidCourses: null, maxLessonsPerCourse: null },
-  commercial: { maxPaidCourses: null, maxLessonsPerCourse: null },
-  facility: { maxPaidCourses: null, maxLessonsPerCourse: null }
+  free: {
+    maxPaidCourses: 1,
+    maxLessonsPerCourse: 7,
+    videoStorageBytes: 500 * 1024 * 1024
+  },
+  pro: {
+    maxPaidCourses: 3,
+    maxLessonsPerCourse: 20,
+    videoStorageBytes: 10 * VIDEO_GB
+  },
+  creator_plus: {
+    maxPaidCourses: null,
+    maxLessonsPerCourse: null,
+    videoStorageBytes: 25 * VIDEO_GB
+  },
+  commercial: {
+    maxPaidCourses: null,
+    maxLessonsPerCourse: null,
+    videoStorageBytes: 50 * VIDEO_GB
+  },
+  facility: {
+    maxPaidCourses: null,
+    maxLessonsPerCourse: null,
+    videoStorageBytes: 100 * VIDEO_GB
+  }
 };
 
 const PLAN_CAPS = {
   free: new Set([
+    CAP.VIDEOS_VIEW,
+    CAP.VIDEOS_UPLOAD,
+    CAP.VIDEOS_PUBLISH,
+    CAP.VIDEOS_MANAGE,
     CAP.COURSES_CREATE,
+    CAP.COURSES_SELL_PAID,
     CAP.TOOL_SOIL,
     CAP.TOOL_NPK,
     CAP.TOOL_VPD,
     CAP.COURSES_REVIEW_REQUIRED
   ]),
   pro: new Set([
+    CAP.VIDEOS_VIEW,
+    CAP.VIDEOS_UPLOAD,
+    CAP.VIDEOS_PUBLISH,
+    CAP.VIDEOS_MANAGE,
     CAP.COURSES_CREATE,
+    CAP.COURSES_SELL_PAID,
     CAP.TOOL_SOIL,
     CAP.TOOL_NPK,
     CAP.TOOL_VPD,
@@ -73,6 +109,10 @@ const PLAN_CAPS = {
     CAP.COURSES_REVIEW_REQUIRED
   ]),
   creator_plus: new Set([
+    CAP.VIDEOS_VIEW,
+    CAP.VIDEOS_UPLOAD,
+    CAP.VIDEOS_PUBLISH,
+    CAP.VIDEOS_MANAGE,
     CAP.COURSES_CREATE,
     CAP.COURSES_SELL_PAID,
     CAP.COURSES_CERTS,
@@ -88,6 +128,10 @@ const PLAN_CAPS = {
     CAP.TOOL_PHENO_MATRIX
   ]),
   commercial: new Set([
+    CAP.VIDEOS_VIEW,
+    CAP.VIDEOS_UPLOAD,
+    CAP.VIDEOS_PUBLISH,
+    CAP.VIDEOS_MANAGE,
     ...Array.from(
       new Set([
         CAP.COURSES_CREATE,
@@ -110,6 +154,10 @@ const PLAN_CAPS = {
     CAP.COMM_LEADS
   ]),
   facility: new Set([
+    CAP.VIDEOS_VIEW,
+    CAP.VIDEOS_UPLOAD,
+    CAP.VIDEOS_PUBLISH,
+    CAP.VIDEOS_MANAGE,
     ...Array.from(
       new Set([
         CAP.COURSES_CREATE,
@@ -154,6 +202,9 @@ const MODE_REQUIRED_CAPS = {
 };
 
 const FACILITY_ROLE_GATES = {
+  [CAP.VIDEOS_UPLOAD]: ["OWNER", "MANAGER", "STAFF"],
+  [CAP.VIDEOS_PUBLISH]: ["OWNER", "MANAGER"],
+  [CAP.VIDEOS_MANAGE]: ["OWNER", "MANAGER"],
   [CAP.TASKS_WRITE]: ["OWNER", "MANAGER", "STAFF"],
   [CAP.FAC_SOPS]: ["OWNER", "MANAGER"],
   [CAP.FAC_TASK_VERIFY]: ["OWNER", "MANAGER"],

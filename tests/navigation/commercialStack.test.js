@@ -23,14 +23,14 @@ describe("CommercialStack", () => {
     expect(source).toContain("../app/home/commercial/evidence-runs/new");
     expect(source).not.toContain('../app/home/commercial/grows"');
     expect(source).not.toContain("../app/home/commercial/grows/[growId]");
-    expect(source).toContain(
-      'name="CommercialEvidenceRuns"\n        component={CommercialEvidenceRunsRoute}'
+    expect(source).toMatch(
+      /name="CommercialEvidenceRuns"\s+component={CommercialEvidenceRunsRoute}/
     );
-    expect(source).toContain(
-      'name="NewCommercialEvidenceRun"\n        component={NewCommercialEvidenceRunRoute}'
+    expect(source).toMatch(
+      /name="NewCommercialEvidenceRun"\s+component={NewCommercialEvidenceRunRoute}/
     );
-    expect(source).toContain(
-      'name="CommercialEvidenceRunDetail"\n        component={CommercialEvidenceRunDetailRoute}'
+    expect(source).toMatch(
+      /name="CommercialEvidenceRunDetail"\s+component={CommercialEvidenceRunDetailRoute}/
     );
     expect(source).toContain(
       '<Stack.Screen name="CommercialGrows" component={CommercialEvidenceRunsRoute} />'
@@ -38,8 +38,8 @@ describe("CommercialStack", () => {
     expect(source).toContain(
       '<Stack.Screen name="NewCommercialGrow" component={NewCommercialEvidenceRunRoute} />'
     );
-    expect(source).toContain(
-      'name="CommercialGrowDetail"\n        component={CommercialEvidenceRunDetailRoute}'
+    expect(source).toMatch(
+      /name="CommercialGrowDetail"\s+component={CommercialEvidenceRunDetailRoute}/
     );
   });
 
@@ -49,11 +49,11 @@ describe("CommercialStack", () => {
     expect(source).toContain("../app/home/commercial/inventory/[id]");
     expect(source).not.toContain("../app/home/commercial/inventory-create");
     expect(source).not.toContain("../app/home/commercial/inventory-item/[id]");
-    expect(source).toContain(
-      'name="CommercialInventoryCreate"\n        component={CommercialInventoryCreateRoute}'
+    expect(source).toMatch(
+      /name="CommercialInventoryCreate"\s+component={CommercialInventoryCreateRoute}/
     );
-    expect(source).toContain(
-      'name="CommercialInventoryItemDetail"\n        component={CommercialInventoryItemDetailRoute}'
+    expect(source).toMatch(
+      /name="CommercialInventoryItemDetail"\s+component={CommercialInventoryItemDetailRoute}/
     );
   });
 });

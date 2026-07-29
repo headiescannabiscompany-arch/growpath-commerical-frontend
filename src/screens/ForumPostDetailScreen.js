@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Alert
+  Alert,
+  Linking
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -23,7 +24,9 @@ import {
   savePost,
   unsavePost,
   reportPost,
-  savePostToGrowLog
+  savePostToGrowLog,
+  assistForumThread,
+  createForumTask
 } from "../api/forum";
 import { applyLikeMetadata, userHasLiked } from "../utils/posts.js";
 import { useAuth } from "@/auth/AuthContext";
@@ -32,12 +35,16 @@ import { radius } from "../theme/theme";
 
 export function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
-  const { user: authUser, capabilities } = useAuth();
+  const auth = useAuth();
+  const { user: authUser, ctx } = auth;
+  const capabilities = ctx?.capabilities || auth.capabilities || {};
+  const mode = ctx?.mode || auth.mode || "personal";
   const currentUserId = authUser?._id ?? authUser?.id ?? null;
   const queryClient = useQueryClient();
 
   const [myComment, setMyComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [assistantResult, setAssistantResult] = useState(null);
 
   const { data: post, isLoading: loadingPost } = useQuery({
     queryKey: ["forum-post", id],
@@ -95,7 +102,16 @@ export function ForumPostDetailScreen({ route, navigation }) {
   });
 
   const commentMutation = useMutation({
-    mutationFn: (text) => addComment(id, text),
+    mutationFn: (text) =>
+      addComment(id, text, null, {
+        authorType:
+          mode === "commercial"
+            ? "commercial"
+            : mode === "facility"
+              ? "facility"
+              : "user",
+        linkedFacilityId: post?.context?.facilityId || undefined
+      }),
     onSuccess: () => {
       setMyComment("");
       queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
@@ -153,6 +169,27 @@ export function ForumPostDetailScreen({ route, navigation }) {
     }
   }
 
+  async function handleCreateTask() {
+    try {
+      const response = await createForumTask(id, {
+        title: `Follow up: ${post?.title || post?.content || "Forum discussion"}`,
+        priority: "medium"
+      });
+      Alert.alert("Task created", response?.task?.title || "Forum follow-up created.");
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Failed to create Forum task.");
+    }
+  }
+
+  async function handleAssistant() {
+    try {
+      const response = await assistForumThread(id);
+      setAssistantResult(response?.suggestions || null);
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Forum assistant is unavailable.");
+    }
+  }
+
   async function handleReport() {
     Alert.alert(
       "Report Post",
@@ -206,6 +243,18 @@ export function ForumPostDetailScreen({ route, navigation }) {
   if (!post) return null;
 
   const author = post.user || post.author || null;
+  const identityType = post.authorIdentity?.type || "user";
+  const identityLabel =
+    identityType === "commercial"
+      ? "Brand"
+      : identityType === "facility"
+        ? "Facility"
+        : identityType === "moderator"
+          ? "Moderator"
+          : "Member";
+  const contextLinks = Object.entries(post.context || {}).filter(([, value]) =>
+    Boolean(value)
+  );
 
   return (
     <ScreenContainer scroll>
@@ -213,6 +262,9 @@ export function ForumPostDetailScreen({ route, navigation }) {
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>
             {author?.username || author?.displayName || author?.name || "Unknown User"}
+          </Text>
+          <Text style={styles.identityLabel}>
+            {post.authorIdentity?.displayName || identityLabel} | {identityLabel}
           </Text>
           <Text style={styles.timestamp}>
             {new Date(post.createdAt).toLocaleDateString()}
@@ -222,7 +274,11 @@ export function ForumPostDetailScreen({ route, navigation }) {
           <FollowButton userId={author?._id} />
         </View>
       </View>
-      <Text style={styles.content}>{post.content}</Text>
+      <Text style={styles.threadType}>
+        {(post.category || "general").replace(/_/g, " ")} |{" "}
+        {(post.postType || "discussion").replace(/_/g, " ")}
+      </Text>
+      <Text style={styles.content}>{post.content || post.body || post.title}</Text>
       {post.photos &&
         post.photos.map((p, i) => (
           <Image key={i} source={{ uri: resolveImageUrl(p) }} style={styles.photo} />
@@ -237,6 +293,30 @@ export function ForumPostDetailScreen({ route, navigation }) {
         </View>
       )}
       {post.strain ? <Text style={styles.strain}>Strain: {post.strain}</Text> : null}
+      {Array.isArray(post.documents) && post.documents.length ? (
+        <View style={styles.contextBox}>
+          <Text style={styles.contextTitle}>Documents</Text>
+          {post.documents.map((document) => (
+            <TouchableOpacity
+              key={`${document.name}-${document.url}`}
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(document.url)}
+            >
+              <Text style={styles.documentLink}>{document.name || "Open document"}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : null}
+      {contextLinks.length ? (
+        <View style={styles.contextBox}>
+          <Text style={styles.contextTitle}>Discussion context</Text>
+          {contextLinks.map(([key, value]) => (
+            <Text key={key} style={styles.contextText}>
+              {key.replace(/Id$|Slug$/g, "").replace(/([A-Z])/g, " $1")}: {String(value)}
+            </Text>
+          ))}
+        </View>
+      ) : null}
 
       <View style={styles.actions}>
         {capabilities?.canUseForum && (
@@ -267,7 +347,37 @@ export function ForumPostDetailScreen({ route, navigation }) {
             <Text style={styles.actionBtn}>🚩 Report</Text>
           </TouchableOpacity>
         )}
+
+        {capabilities?.canPostForum && (
+          <TouchableOpacity onPress={handleCreateTask}>
+            <Text style={styles.actionBtn}>Create Task</Text>
+          </TouchableOpacity>
+        )}
+
+        {capabilities?.canUseForum && (
+          <TouchableOpacity onPress={handleAssistant}>
+            <Text style={styles.actionBtn}>Ask AI</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+      {assistantResult ? (
+        <View style={styles.contextBox} accessibilityLabel="Forum AI suggestions">
+          <Text style={styles.contextTitle}>
+            {assistantResult.providerLabel || "Forum assistant"}
+          </Text>
+          <Text style={styles.contextText}>{assistantResult.summary}</Text>
+          {Array.isArray(assistantResult.tasks) && assistantResult.tasks.length ? (
+            <Text style={styles.contextText}>
+              Suggested tasks:{" "}
+              {assistantResult.tasks.map((task) => task.title).join(" | ")}
+            </Text>
+          ) : null}
+          <Text style={styles.contextText}>
+            Review suggestions before creating tasks or changing the discussion.
+          </Text>
+        </View>
+      ) : null}
 
       <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
 
@@ -329,6 +439,14 @@ const styles = StyleSheet.create({
   },
   username: { fontWeight: "700", fontSize: 18, marginBottom: 4 },
   timestamp: { color: "#666", fontSize: 12, marginBottom: 10 },
+  identityLabel: { color: "#047857", fontSize: 12, fontWeight: "700" },
+  threadType: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 8,
+    textTransform: "capitalize"
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -367,6 +485,18 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginBottom: 10
   },
+  contextBox: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 5,
+    marginBottom: 10,
+    padding: 10
+  },
+  contextTitle: { color: "#0F172A", fontWeight: "800" },
+  contextText: { color: "#475569", fontSize: 12, textTransform: "capitalize" },
+  documentLink: { color: "#0369A1", fontSize: 13, fontWeight: "700" },
   actions: {
     flexDirection: "row",
     marginBottom: 20,

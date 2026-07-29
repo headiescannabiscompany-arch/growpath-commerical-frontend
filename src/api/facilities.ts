@@ -33,7 +33,10 @@ function normalizeFacilitiesResponse(response: any): Facility[] {
   return rows.map(normalizeFacility).filter(Boolean) as Facility[];
 }
 
-export async function createFacility(data: { name: string }): Promise<Facility> {
+export async function createFacility(data: {
+  name: string;
+  businessType?: string;
+}): Promise<Facility> {
   const response = await apiRequest("/api/facilities", {
     method: "POST",
     body: data

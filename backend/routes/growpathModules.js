@@ -1,10 +1,28 @@
 "use strict";
 
 const express = require("express");
+const mongoose = require("mongoose");
 
 const GrowpathModuleRecord = require("../models/GrowpathModuleRecord");
+const Plant = require("../models/Plant");
+const PlantGrowthProfile = require("../models/PlantGrowthProfile");
+const stableObjectIdFromAny = require("../helpers/stableObjectIdFromAny");
 
 const router = express.Router();
+
+const STEERING_PHENO_TAGS = new Set([
+  "dryback_tolerant",
+  "dryback_sensitive",
+  "high_light_tolerant",
+  "light_sensitive",
+  "ec_tolerant",
+  "ec_sensitive",
+  "ph_sensitive",
+  "recovery_strong",
+  "recovery_poor",
+  "generative_steering_candidate",
+  "vegetative_recovery_candidate"
+]);
 
 const RECORD_TYPES = [
   "soil_builder_recipe",
@@ -115,6 +133,48 @@ function listQuery(req, userId) {
   return query;
 }
 
+async function syncSteeringPhenoTags({ userId, payload }) {
+  if (payload.recordType !== "crop_steering_entry") return [];
+  const plantId = String(payload.plantId || payload.phenoPlantId || "");
+  if (!mongoose.isValidObjectId(plantId)) return [];
+  const tags = stringArray(payload.tags).filter((tag) => STEERING_PHENO_TAGS.has(tag));
+  if (!tags.length) return [];
+  const user = stableObjectIdFromAny(userId);
+  const plant = await Plant.findOne({
+    _id: plantId,
+    $or: [{ user }, { userId: String(userId) }],
+    deletedAt: null
+  }).lean();
+  if (!plant) return [];
+  const growId = mongoose.isValidObjectId(String(payload.growId || ""))
+    ? new mongoose.Types.ObjectId(String(payload.growId))
+    : null;
+  if (
+    growId &&
+    plant.growId &&
+    String(plant.growId) !== String(growId) &&
+    !(plant.growIds || []).some((value) => String(value) === String(growId))
+  ) {
+    return [];
+  }
+  const update = {
+    $setOnInsert: {
+      user,
+      plantId: plant._id,
+      confirmationStatus: "unknown"
+    },
+    $addToSet: { phenoTags: { $each: tags } }
+  };
+  if (growId) update.$set = { growId };
+  await PlantGrowthProfile.findOneAndUpdate({ user, plantId: plant._id }, update, {
+    upsert: true,
+    new: true,
+    runValidators: true,
+    setDefaultsOnInsert: true
+  });
+  return tags;
+}
+
 router.get("/types", (_req, res) => {
   res.json({ items: RECORD_TYPES });
 });
@@ -146,7 +206,8 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ message: "Unsupported recordType" });
     }
     const item = await GrowpathModuleRecord.create({ ...payload, userId });
-    return res.status(201).json({ item: dto(item) });
+    const syncedPhenoTags = await syncSteeringPhenoTags({ userId, payload });
+    return res.status(201).json({ item: dto(item), syncedPhenoTags });
   } catch (error) {
     next(error);
   }

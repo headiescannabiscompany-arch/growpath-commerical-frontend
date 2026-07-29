@@ -12,7 +12,10 @@ export type FacilityTaskAccess = {
 };
 
 function canAssignRole(role: unknown) {
-  return role === "OWNER" || role === "MANAGER";
+  const normalized = String(role || "")
+    .trim()
+    .toUpperCase();
+  return normalized === "OWNER" || normalized === "MANAGER";
 }
 
 export function getFacilityTaskAccess({

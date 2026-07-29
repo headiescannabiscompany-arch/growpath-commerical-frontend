@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, renderAsync, waitFor } from "@testing-library/react-native";
 
 import HarvestReadinessToolRoute from "@/app/home/personal/(tabs)/tools/harvest-readiness";
 
@@ -8,15 +8,81 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
+const mockAnalyzeTrichomePhotos = jest.fn();
+const mockListPersonalGrows = jest.fn();
+const mockListEvidenceAssets = jest.fn();
+const mockSavedGrowPhotoEvidencePicker = jest.fn();
+let mockRouteParams: Record<string, string> = { growId: "grow-1" };
+
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Pressable, Text, View } = require("react-native");
+  const asset = (index: number) => ({
+    id: `evidence-${index}`,
+    _id: `64b00000000000000000000${index}`,
+    assetType: "photo",
+    originalUri: `file:///trichomes-${index}.jpg`,
+    durableUrl: `/uploads/trichomes-${index}.jpg`,
+    mimeType: "image/jpeg",
+    growId: "grow-1",
+    source: "library",
+    purpose: "harvest",
+    uploadStatus: "uploaded",
+    aiUsable: true,
+    qualityWarnings: []
+  });
+  return ({ onChange }: any) =>
+    React.createElement(
+      View,
+      { accessibilityLabel: "Media evidence picker" },
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add one harvest evidence photo",
+          onPress: () => onChange([asset(1)])
+        },
+        React.createElement(Text, null, "Add One Photo")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add complete harvest photo set",
+          onPress: () => onChange([asset(1), asset(2), asset(3), asset(4)])
+        },
+        React.createElement(Text, null, "Add Complete Photo Set")
+      )
+    );
+});
+
+jest.mock("@/components/media/SavedGrowPhotoEvidencePicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return (props: any) => {
+    mockSavedGrowPhotoEvidencePicker(props);
+    return React.createElement(View, { accessibilityLabel: "Saved grow photo evidence" });
+  };
+});
+
+jest.mock("@/api/evidence", () => {
+  const actual = jest.requireActual("@/api/evidence");
+  return {
+    ...actual,
+    listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args)
+  };
+});
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useLocalSearchParams: () => mockRouteParams,
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
     push: jest.fn(),
     replace: jest.fn()
   })
+}));
+
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -67,9 +133,20 @@ jest.mock("@/api/harvestBatches", () => ({
   updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
 }));
 
+jest.mock("@/api/harvestVision", () => ({
+  analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
+}));
+
+async function renderHarvestReadinessTool() {
+  return renderAsync(<HarvestReadinessToolRoute />);
+}
+
 describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockRouteParams = { growId: "grow-1" };
+    mockListPersonalGrows.mockImplementation(() => new Promise(() => {}));
+    mockListEvidenceAssets.mockResolvedValue([]);
     mockRunCalculator.mockResolvedValue({
       outputs: {
         readinessStatus: "approaching_window",
@@ -111,17 +188,265 @@ describe("HarvestReadinessToolRoute", () => {
       linkedToolRunIds: ["toolrun-old"]
     });
     mockUpdateHarvestBatch.mockResolvedValue({ id: "harvest-1" });
+    mockAnalyzeTrichomePhotos.mockResolvedValue({
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.12,
+      cloudy: 0.73,
+      amber: 0.15,
+      confidence: 0.81,
+      dominant: "cloudy",
+      visibleTraits: ["Intact opaque gland heads"],
+      evidence: ["Mostly opaque gland heads"],
+      recommendation: "Confirm across additional bud sites.",
+      limitations: [],
+      qualityChecks: {
+        focus: "usable",
+        glare: "localized",
+        lighting: "neutral",
+        headVisibility: "sufficient",
+        roleCoverage: "complete"
+      },
+      imageFindings: [
+        {
+          imageIndex: 1,
+          role: "top_macro",
+          usableForDistribution: true,
+          trichomeRichRegion: "center calyx",
+          excludedReason: "",
+          focus: "sharp",
+          glare: "localized",
+          visibleHeadDetail: "sufficient"
+        }
+      ],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imageDetail: "high",
+      imagesAnalyzed: 4,
+      evidenceUsed: [
+        "64b000000000000000000001",
+        "64b000000000000000000002",
+        "64b000000000000000000003",
+        "64b000000000000000000004"
+      ],
+      analysisId: "usage-harvest-1",
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 58,
+      creditStatus: "charged"
+    });
+  });
+
+  it("lets a user select a grow before choosing trichome photos", async () => {
+    mockRouteParams = {};
+    mockListPersonalGrows.mockResolvedValue([
+      { id: "grow-1", name: "Flower Tent" },
+      { id: "grow-2", name: "Second Run" }
+    ]);
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() => expect(screen.getByText("Flower Tent")).toBeTruthy());
+    expect(screen.getByText("Select a grow before analyzing a photo.")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Select grow Flower Tent"));
+    await waitFor(() =>
+      expect(screen.queryByText("Select a grow before analyzing a photo.")).toBeNull()
+    );
+  });
+
+  it("shows actionable photo requirements before the user chooses media", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    expect(screen.getByText("Photo checklist before analysis")).toBeTruthy();
+    expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
+    expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
+    expect(screen.getByText(/neutral white light/i)).toBeTruthy();
+    expect(
+      screen.getByText(/even 12 wide photos cannot replace three true macros/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/No trichome evidence is ready/i)).toBeTruthy();
+    expect(mockSavedGrowPhotoEvidencePicker).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        purpose: "harvest",
+        maxPhotos: 12
+      })
+    );
+  });
+
+  it("restores durable harvest evidence after a page or account-session reload", async () => {
+    mockListEvidenceAssets.mockResolvedValue(
+      [1, 2, 3, 4].map((index) => ({
+        id: `restored-${index}`,
+        _id: `64c00000000000000000000${index}`,
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: `/uploads/restored-${index}.jpg`,
+        durableUrl: `/uploads/restored-${index}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }))
+    );
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Restored 4 saved harvest photos for this grow.")
+      ).toBeTruthy()
+    );
+    expect(mockListEvidenceAssets).toHaveBeenCalledWith({ growId: "grow-1" });
+
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          evidenceAssetIds: [
+            "64c000000000000000000001",
+            "64c000000000000000000002",
+            "64c000000000000000000003",
+            "64c000000000000000000004"
+          ]
+        })
+      )
+    );
+  });
+
+  it("blocks an incomplete photo set without spending a credit", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add one harvest evidence photo"));
+
+    expect(screen.getByText(/Add 3 more photos/i)).toBeTruthy();
+    expect(screen.getByText(/no AI credit will be used yet/i)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
+  it("analyzes a complete evidence set before filling trichome percentages", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          evidenceAssetIds: [
+            "64b000000000000000000001",
+            "64b000000000000000000002",
+            "64b000000000000000000003",
+            "64b000000000000000000004"
+          ]
+        })
+      )
+    );
+    expect(screen.getByDisplayValue("73")).toBeTruthy();
+    expect(screen.getByDisplayValue("15")).toBeTruthy();
+    expect(screen.getByDisplayValue("12")).toBeTruthy();
+    expect(screen.getByText("Qualified macro evidence")).toBeTruthy();
+    expect(screen.getByText("Confirm across additional bud sites.")).toBeTruthy();
+    expect(screen.getByText("Set quality checks")).toBeTruthy();
+    expect(screen.getByText("Per-photo zoom review")).toBeTruthy();
+    expect(screen.getByText(/best region: center calyx/i)).toBeTruthy();
+    expect(screen.getByText(/Provider image detail: high/i)).toBeTruthy();
+    expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
+    expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
+    expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();
+  });
+
+  it("explains when better photos are needed without filling readiness fields", async () => {
+    mockAnalyzeTrichomePhotos.mockResolvedValue({
+      photoUsable: false,
+      imageQuality: "limited",
+      clear: null,
+      cloudy: null,
+      amber: null,
+      confidence: 0.24,
+      dominant: "uncertain",
+      visibleTraits: ["Pistils visible; gland heads blurred"],
+      evidence: [],
+      recommendation: "Move closer and stabilize the camera.",
+      limitations: ["Trichome heads are out of focus."],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: ["64b000000000000000000001"],
+      analysisId: "usage-harvest-2",
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 57,
+      creditStatus: "charged"
+    });
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Better photos needed — no percentages filled")
+      ).toBeTruthy()
+    );
+    expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
+    expect(screen.getByText("Limitation: Trichome heads are out of focus.")).toBeTruthy();
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
+  });
+
+  it("turns analysis-service failures into retake guidance without filling fields", async () => {
+    mockAnalyzeTrichomePhotos.mockRejectedValue(
+      new Error("The photo-analysis service is unavailable.")
+    );
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(screen.getByText(/Photo analysis did not run/i)).toBeTruthy()
+    );
+    expect(screen.getByText(/No trichome fields were filled/i)).toBeTruthy();
+    expect(
+      screen.getAllByText(/top, middle, and lower bud sites/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Harvest photo analysis result")).toBeNull();
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
   });
 
   it("creates harvest decision tasks from the saved readiness ToolRun", async () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
-    fireEvent.changeText(screen.getByLabelText("Harvest Readiness AI Flower day"), "56");
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Trichome sample location"),
+      screen.getByLabelText("Harvest Readiness Estimate Flower day"),
+      "56"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Trichome sample location"),
       "top and lower buds"
     );
-    fireEvent.press(screen.getByLabelText("Run Harvest Readiness AI"));
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -129,12 +454,15 @@ describe("HarvestReadinessToolRoute", () => {
         expect.objectContaining({
           growId: "grow-1",
           flowerDay: "56",
-          sampleLocation: "top and lower buds"
+          sampleLocation: "top and lower buds",
+          budSwell: "",
+          smellNotes: "",
+          trichomeSource: "manual_entry"
         })
       )
     );
     await waitFor(() =>
-      expect(screen.getByText("Harvest Readiness AI result")).toBeTruthy()
+      expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
 
     fireEvent.press(screen.getByText("Create Harvest Decision Tasks"));
@@ -186,21 +514,36 @@ describe("HarvestReadinessToolRoute", () => {
   });
 
   it("saves harvest readiness review to a harvest batch record", async () => {
-    const screen = render(<HarvestReadinessToolRoute />);
+    const screen = await renderHarvestReadinessTool();
 
-    fireEvent.changeText(screen.getByLabelText("Harvest Readiness AI Flower day"), "56");
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Trichome sample location"),
+      screen.getByLabelText("Harvest Readiness Estimate Flower day"),
+      "56"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Trichome sample location"),
       "top and lower buds"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness AI Harvest batch ID (optional)"),
+      screen.getByLabelText("Harvest Readiness Estimate Cloudy %"),
+      "65"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Amber %"),
+      "8"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Clear %"),
+      "10"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Harvest batch ID (optional)"),
       "harvest-1"
     );
-    fireEvent.press(screen.getByLabelText("Run Harvest Readiness AI"));
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
 
     await waitFor(() =>
-      expect(screen.getByText("Harvest Readiness AI result")).toBeTruthy()
+      expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
 
     fireEvent.press(screen.getByText("Save Harvest Review"));

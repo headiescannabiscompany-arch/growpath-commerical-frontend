@@ -52,6 +52,7 @@ function createPreflightRoot() {
 
   [
     "scripts/scan-release.cjs",
+    "scripts/verify-codex-workflow.cjs",
     "scripts/audit-full-surface.cjs",
     "scripts/full-scan.mjs",
     "scripts/verify-sentry-dsn.cjs",
@@ -126,6 +127,7 @@ describe("release preflight", () => {
     const names = readLog(tempRoot).map((entry) => entry.name);
     expect(names).toEqual([
       "scripts/scan-release.cjs",
+      "scripts/verify-codex-workflow.cjs",
       "scripts/audit-full-surface.cjs",
       "scripts/full-scan.mjs",
       "scripts/inventory-ui-routes.cjs",
@@ -157,7 +159,7 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(readLog(tempRoot)[25].argv).toEqual(
+    expect(readLog(tempRoot)[26].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -168,12 +170,13 @@ describe("release preflight", () => {
         "backend/routes/integrations.test.js"
       ])
     );
-    expect(readLog(tempRoot)[26].argv).toEqual(
+    expect(readLog(tempRoot)[27].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
         "tests/release.record-evidence.test.js",
+        "tests/codex.workflow.test.js",
         "tests/release.preflight.test.js",
         "tests/contracts/v1.release.matrix.test.js",
         "tests/release.live-urls.test.js",
@@ -198,6 +201,7 @@ describe("release preflight", () => {
     const log = readLog(tempRoot);
     expect(log.map((entry) => entry.name)).toEqual([
       "scripts/scan-release.cjs",
+      "scripts/verify-codex-workflow.cjs",
       "scripts/audit-full-surface.cjs",
       "scripts/full-scan.mjs",
       "scripts/scan-release.cjs",
@@ -232,9 +236,9 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(log[2].argv).toEqual(["--strict"]);
-    expect(log[3].strict).toBe("1");
-    expect(log[28].argv).toEqual(
+    expect(log[3].argv).toEqual(["--strict"]);
+    expect(log[4].strict).toBe("1");
+    expect(log[29].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -245,12 +249,13 @@ describe("release preflight", () => {
         "backend/routes/integrations.test.js"
       ])
     );
-    expect(log[29].argv).toEqual(
+    expect(log[30].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
         "tests/release.record-evidence.test.js",
+        "tests/codex.workflow.test.js",
         "tests/release.preflight.test.js",
         "tests/contracts/v1.release.matrix.test.js",
         "tests/release.live-urls.test.js",
@@ -261,7 +266,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[30]).toEqual(
+    expect(log[31]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

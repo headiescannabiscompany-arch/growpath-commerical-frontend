@@ -59,6 +59,12 @@ jest.mock("@/api/commercialAnalytics", () => ({
     mockRecordCommercialAnalyticsEvent(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } })
+}));
+
+jest.mock("@/components/ReportModal", () => () => null);
+
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: "personal",
@@ -218,7 +224,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/feed");
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/community");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     expect(screen.getByText("Website")).toBeTruthy();
@@ -296,7 +302,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     await waitFor(() =>
       expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
@@ -308,6 +314,49 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("shows dispensary inventory with website and pickup handoff but no checkout", async () => {
+    mockFetchPublicStorefront.mockResolvedValue({
+      ...publicPayload,
+      storefront: {
+        name: "Example Dispensary",
+        description: "Licensed adult-use dispensary.",
+        storefrontType: "dispensary",
+        city: "Boston",
+        stateCode: "MA",
+        websiteUrl: "https://dispensary.example.com/menu",
+        pickupAvailable: true,
+        pickupInstructions: "Bring a valid government-issued ID."
+      },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          category: "cannabis",
+          regulatedCannabis: true,
+          stripePriceId: "price_must_not_be_used",
+          inventoryItem: { quantity: 8, unit: "jars" },
+          externalPurchaseUrl: "https://dispensary.example.com/menu/flower",
+          pickupAvailable: true
+        }
+      ]
+    });
+    const screen = render(<PublicStorefrontRoute />);
+
+    await waitFor(() => expect(screen.getByText("Example Dispensary")).toBeTruthy());
+    expect(screen.getByText("Boston, MA")).toBeTruthy();
+    expect(screen.getByText("8 jars available")).toBeTruthy();
+    expect(
+      screen.getByText("In-store pickup available · Bring a valid government-issued ID.")
+    ).toBeTruthy();
+    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(screen.queryByLabelText("Buy Licensed Flower")).toBeNull();
+    expect(
+      screen.getByText(
+        "No GrowPath checkout · use the dispensary website or in-store pickup"
+      )
+    ).toBeTruthy();
   });
 
   it("loads the /storefront/:slug public alias through the same storefront route", async () => {
@@ -388,11 +437,13 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();
+    expect(screen.getByText("Report Product")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Report Veg Mix" })).toBeTruthy();
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Similar Storefronts")).toBeTruthy();
@@ -463,6 +514,45 @@ describe("public commercial routes", () => {
     expect(screen.getByText("External Link")).toBeTruthy();
   });
 
+  it("keeps dispensary product detail external and inventory-only", async () => {
+    mockRouteParams = {
+      slug: "example-dispensary",
+      productId: "flower-1",
+      courseId: "course-1"
+    };
+    mockFetchPublicStorefront.mockResolvedValue({
+      storefront: {
+        name: "Example Dispensary",
+        storefrontType: "dispensary",
+        websiteUrl: "https://dispensary.example.com/menu",
+        pickupAvailable: true,
+        pickupInstructions: "Pickup during posted store hours."
+      },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          category: "cannabis",
+          regulatedCannabis: true,
+          stripePriceId: "price_must_not_be_used",
+          inventoryCount: 4
+        }
+      ]
+    });
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("example-dispensary")
+    );
+    expect(screen.getByText("4 units available")).toBeTruthy();
+    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(
+      screen.getByText("In-store pickup available · Pickup during posted store hours.")
+    ).toBeTruthy();
+    expect(screen.queryByText("Buy")).toBeNull();
+    expect(screen.getByText(/GrowPath does not verify licensing/)).toBeTruthy();
+  });
+
   it("loads a public storefront course detail with checkout and connected context", async () => {
     const screen = render(<PublicStorefrontCourseRoute />);
 
@@ -493,7 +583,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Course Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Course Directory")).toBeTruthy();
@@ -522,6 +612,23 @@ describe("public commercial routes", () => {
         storefrontSlug: "living-soil-labs",
         source: "public_storefront_course"
       })
+    );
+  });
+
+  it("turns a successful Stripe return into a clear course-unlock handoff", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      courseId: "course-1",
+      checkout: "success",
+      course: "course-1"
+    };
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() => expect(screen.getByText("Payment submitted")).toBeTruthy());
+    expect(screen.getByLabelText("Open purchased course")).toBeTruthy();
+    expect(screen.getByText("Open Purchased Course")).toBeTruthy();
+    expect(mockLinkHrefs).toContain(
+      "/home/personal/courses?courseId=course-1&checkout=success"
     );
   });
 

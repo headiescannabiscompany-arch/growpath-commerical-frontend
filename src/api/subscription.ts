@@ -27,18 +27,36 @@ export async function createCheckoutSession(
     plan: string;
     interval?: string;
     billingInterval?: string;
+    successUrl?: string;
+    cancelUrl?: string;
+    giftMode?: boolean;
+    giftRecipientEmail?: string;
+    giftRecipientName?: string;
+    giftMessage?: string;
+    giftTerm?: string;
   } = { plan: "pro", interval: "monthly" }
 ) {
   const origin = currentOrigin();
+  const successUrl =
+    data.successUrl || (origin ? `${origin}/offers?subscription=success` : "");
+  const cancelUrl =
+    data.cancelUrl || (origin ? `${origin}/offers?subscription=canceled` : "");
   const body = {
     plan: data.plan || "pro",
     interval: data.interval || data.billingInterval || "monthly",
-    ...(origin
-      ? {
-          successUrl: `${origin}/offers?subscription=success`,
-          cancelUrl: `${origin}/offers?subscription=canceled`
-        }
-      : {})
+    paymentMethodTypes: ["card"],
+    disallowBankDebits: true,
+    ...(successUrl ? { successUrl } : {}),
+    ...(cancelUrl ? { cancelUrl } : {}),
+    ...(data.giftMode ? { giftMode: true } : {}),
+    ...(data.giftRecipientEmail
+      ? { giftRecipientEmail: data.giftRecipientEmail.trim().toLowerCase() }
+      : {}),
+    ...(data.giftRecipientName
+      ? { giftRecipientName: data.giftRecipientName.trim() }
+      : {}),
+    ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
+    ...(data.giftTerm ? { giftTerm: data.giftTerm } : {})
   };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",

@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
-import { createPost } from "../api/forum";
+import { assistForumDraft, createPost } from "../api/forum";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import {
   buildEmptyTierSelection,
@@ -31,12 +31,18 @@ const categoryOptions = [
   { key: "diagnostics", label: "Diagnostics", desc: "Ask for help identifying issues" },
   { key: "training", label: "Training", desc: "Techniques, LST/HST, shaping" },
   { key: "harvest", label: "Harvest", desc: "Drying, curing, post-harvest" },
-  { key: "gear", label: "Gear & Setup", desc: "Lights, tents, hardware" }
+  { key: "gear", label: "Gear & Setup", desc: "Lights, tents, hardware" },
+  { key: "product_qna", label: "Product Q&A", desc: "Product support discussion" },
+  { key: "course", label: "Course", desc: "Course and lesson discussion" },
+  { key: "live_qna", label: "Live Q&A", desc: "Live event questions" },
+  { key: "facility", label: "Facility Internal", desc: "Facility member discussion" }
 ];
 
 export default function ForumNewPostScreen({ route, navigation }) {
   const queryClient = useQueryClient();
-  const { user, mode } = useAuth();
+  const auth = useAuth();
+  const { user, ctx } = auth;
+  const mode = ctx?.mode || auth.mode || "personal";
   const photosFromLog = route.params?.photos || [];
   const notesFromLog = route.params?.content || "";
   const strainFromLog = route.params?.strain || "";
@@ -47,24 +53,53 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const isFacility = workspaceContext === "facility";
   const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
   const growId = route.params?.growId || null;
+  const context = {
+    linkedGrowId: growId,
+    linkedPlantId: route.params?.plantId || route.params?.linkedPlantId || null,
+    linkedToolRunId: route.params?.toolRunId || route.params?.linkedToolRunId || null,
+    linkedRecipeId: route.params?.recipeId || route.params?.linkedRecipeId || null,
+    linkedProductId: route.params?.productId || route.params?.linkedProductId || null,
+    linkedCourseId: route.params?.courseId || route.params?.linkedCourseId || null,
+    linkedLessonId: route.params?.lessonId || route.params?.linkedLessonId || null,
+    linkedLiveId: route.params?.liveId || route.params?.linkedLiveId || null,
+    linkedStorefrontSlug:
+      route.params?.storefrontSlug || route.params?.linkedStorefrontSlug || null,
+    linkedFacilityId:
+      route.params?.facilityId ||
+      route.params?.linkedFacilityId ||
+      ctx?.facilityId ||
+      null,
+    linkedRoomId: route.params?.roomId || route.params?.linkedRoomId || null,
+    linkedTaskId: route.params?.taskId || route.params?.linkedTaskId || null,
+    linkedAlertId: route.params?.alertId || route.params?.linkedAlertId || null
+  };
   const defaultPickerExpansion = Boolean(route.params?.expandInterestPicker);
 
   const [content, setContent] = useState(notesFromLog);
+  const [title, setTitle] = useState(route.params?.title || "");
   const [photos, setPhotos] = useState(photosFromLog);
   const [strain, setStrain] = useState(strainFromLog);
   const [growInterestSelections, setGrowInterestSelections] = useState(
     initialGrowTags.length ? groupTagsByTier(initialGrowTags) : buildEmptyTierSelection()
   );
 
-  const allowedPostTypes = ["education", "discussion", "course", "product_qna", "live_qna"];
+  const allowedPostTypes = [
+    "education",
+    "discussion",
+    "course",
+    "product_qna",
+    "live_qna"
+  ];
   const safeInitialType = useMemo(
     () => (allowedPostTypes.includes(initialPostType) ? initialPostType : "education"),
     [initialPostType]
   );
   const [postType, setPostType] = useState(safeInitialType);
 
-  const [category, setCategory] = useState("general");
+  const [category, setCategory] = useState(route.params?.category || "general");
   const [loading, setLoading] = useState(false);
+  const [assisting, setAssisting] = useState(false);
+  const [assistantFeedback, setAssistantFeedback] = useState("");
 
   // ... rest of state
 
@@ -111,20 +146,26 @@ export default function ForumNewPostScreen({ route, navigation }) {
       const uploadedPhotos = await persistImageUris(photos);
 
       const payload = {
+        title: title.trim() || undefined,
         content,
         photos: uploadedPhotos,
         tags: finalTags,
+        growInterests: finalTags,
         strain,
         category,
         growLogId,
-        postType: isCommercial || isFacility ? postType : "discussion",
+        postType,
         authorType: isCommercial ? "commercial" : isFacility ? "facility" : "user",
         authorId: isCommercial
           ? user?.business?.id || user?.business?._id || user?._id || null
           : isFacility
             ? user?.facility?.id || user?.facility?._id || user?._id || null
-          : user?._id || null,
-        workspaceContext: workspaceContext
+            : user?._id || null,
+        workspaceContext: workspaceContext,
+        documents: Array.isArray(route.params?.documents) ? route.params.documents : [],
+        visibility:
+          route.params?.visibility === "facilityOnly" ? "facilityOnly" : "public",
+        ...context
       };
 
       await createPost(payload);
@@ -141,6 +182,27 @@ export default function ForumNewPostScreen({ route, navigation }) {
     } catch (err) {
       setLoading(false);
       Alert.alert("Error", err.message);
+    }
+  }
+
+  async function handleAssist() {
+    if (!content.trim() || assisting) return;
+    try {
+      setAssisting(true);
+      const response = await assistForumDraft(content.trim());
+      const suggestions = response?.suggestions || {};
+      if (suggestions.title) setTitle(String(suggestions.title));
+      if (suggestions.category) setCategory(String(suggestions.category));
+      if (Array.isArray(suggestions.tags) && suggestions.tags.length) {
+        setGrowInterestSelections(groupTagsByTier(suggestions.tags));
+      }
+      setAssistantFeedback(
+        `${suggestions.providerLabel || "Forum assistant"}. Review every suggestion before posting.${suggestions.summary ? ` Summary: ${suggestions.summary}` : ""}`
+      );
+    } catch (error) {
+      setAssistantFeedback(error?.message || "Forum assistant is unavailable.");
+    } finally {
+      setAssisting(false);
     }
   }
 
@@ -161,12 +223,32 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
       {/* TEXT INPUT */}
       <TextInput
+        style={styles.input}
+        placeholder="Discussion title"
+        value={title}
+        onChangeText={setTitle}
+        accessibilityLabel="Forum discussion title"
+      />
+      <TextInput
         style={[styles.input, styles.textBox]}
         placeholder="Share an update..."
         multiline
         value={content}
         onChangeText={setContent}
       />
+      <TouchableOpacity
+        onPress={handleAssist}
+        disabled={assisting || !content.trim()}
+        style={styles.assistButton}
+        accessibilityLabel="Suggest Forum title category tags summary and tasks"
+      >
+        <Text style={styles.assistButtonText}>
+          {assisting ? "Reviewing..." : "Ask AI for structure"}
+        </Text>
+      </TouchableOpacity>
+      {assistantFeedback ? (
+        <Text style={styles.assistantFeedback}>{assistantFeedback}</Text>
+      ) : null}
 
       {/* CATEGORY */}
       <Text style={styles.label}>Category</Text>
@@ -175,25 +257,27 @@ export default function ForumNewPostScreen({ route, navigation }) {
         showsHorizontalScrollIndicator={false}
         style={{ marginBottom: 16 }}
       >
-        {categoryOptions.map((cat) => (
-          <TouchableOpacity
-            key={cat.key}
-            onPress={() => setCategory(cat.key)}
-            style={[
-              styles.categoryButton,
-              category === cat.key && styles.categoryButtonActive
-            ]}
-          >
-            <Text
-              style={
-                category === cat.key ? styles.categoryTextActive : styles.categoryText
-              }
+        {categoryOptions
+          .filter((cat) => cat.key !== "facility" || isFacility)
+          .map((cat) => (
+            <TouchableOpacity
+              key={cat.key}
+              onPress={() => setCategory(cat.key)}
+              style={[
+                styles.categoryButton,
+                category === cat.key && styles.categoryButtonActive
+              ]}
             >
-              {cat.label}
-            </Text>
-            <Text style={styles.categoryDesc}>{cat.desc}</Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={
+                  category === cat.key ? styles.categoryTextActive : styles.categoryText
+                }
+              >
+                {cat.label}
+              </Text>
+              <Text style={styles.categoryDesc}>{cat.desc}</Text>
+            </TouchableOpacity>
+          ))}
       </ScrollView>
 
       {(isCommercial || isFacility) && (
@@ -223,9 +307,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
                       ? "Product support question"
                       : type === "live_qna"
                         ? "Live event question"
-                      : type === "course"
-                        ? "Course discussion"
-                        : "Start a discussion"}
+                        : type === "course"
+                          ? "Course discussion"
+                          : "Start a discussion"}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -292,6 +376,23 @@ const styles = StyleSheet.create({
   textBox: {
     height: 140,
     textAlignVertical: "top"
+  },
+  assistButton: {
+    alignItems: "center",
+    borderColor: "#0F766E",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 8,
+    padding: 10
+  },
+  assistButtonText: { color: "#0F766E", fontWeight: "800" },
+  assistantFeedback: {
+    backgroundColor: "#F0FDFA",
+    color: "#115E59",
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 12,
+    padding: 10
   },
   label: {
     fontWeight: "600",

@@ -42,13 +42,15 @@ describe("FirstSetupRooms", () => {
 
     await waitFor(() =>
       expect(mockMutateAsync).toHaveBeenCalledWith([
-        { name: "Flower Room" },
-        { name: "Veg Room" },
-        { name: "Mother Room" },
-        { name: "Greenhouse" },
-        { name: "Dry/Cure Room" }
+        { name: "Flower Room", roomType: "flower", trackingMode: "batch" },
+        { name: "Veg Room", roomType: "vegetative", trackingMode: "batch" },
+        { name: "Mother Room", roomType: "mother", trackingMode: "batch" },
+        { name: "Greenhouse", roomType: "greenhouse", trackingMode: "batch" },
+        { name: "Dry/Cure Room", roomType: "drying", trackingMode: "batch" }
       ])
     );
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/onboarding/start-grow"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/onboarding/start-grow")
+    );
   });
 });

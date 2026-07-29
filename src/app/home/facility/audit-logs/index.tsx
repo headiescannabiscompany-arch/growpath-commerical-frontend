@@ -7,6 +7,11 @@ import { useFacility } from "@/state/useFacility";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import {
+  formatFacilityAuditAction,
+  formatFacilityAuditDetails,
+  formatFacilityAuditTimestamp
+} from "@/utils/facilityAuditPresentation";
 
 type AuditLogListItem = AuditLog & {
   id?: string;
@@ -14,6 +19,8 @@ type AuditLogListItem = AuditLog & {
   logId?: string;
   type?: string;
   message?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 function pickId(x: AuditLogListItem, idx: number) {
@@ -24,6 +31,23 @@ function getErrorMessage(e: unknown, fallback: string) {
   return normalizeApiError(e).message || fallback;
 }
 
+function AuditLogsHeading() {
+  return (
+    <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+      Audit Logs
+    </Text>
+  );
+}
+
+function AuditLogsStatus({ message }: { message: string }) {
+  return (
+    <View style={styles.container}>
+      <AuditLogsHeading />
+      <Text>{message}</Text>
+    </View>
+  );
+}
+
 export default function FacilityAuditLogsIndexRoute() {
   const { selectedId } = useFacility();
   const { logs, isLoading, isRefreshing, error, refetch } = useAuditLogs(selectedId);
@@ -32,23 +56,11 @@ export default function FacilityAuditLogsIndexRoute() {
     [logs]
   );
 
-  if (!selectedId)
-    return (
-      <View style={styles.container}>
-        <Text>Select a facility first.</Text>
-      </View>
-    );
-  if (isLoading)
-    return (
-      <View style={styles.container}>
-        <Text>Loading audit logs...</Text>
-      </View>
-    );
+  if (!selectedId) return <AuditLogsStatus message="Select a facility first." />;
+  if (isLoading) return <AuditLogsStatus message="Loading audit logs..." />;
   if (error)
     return (
-      <View style={styles.container}>
-        <Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text>
-      </View>
+      <AuditLogsStatus message={getErrorMessage(error, "Failed to load audit logs.")} />
     );
 
   return (
@@ -60,16 +72,30 @@ export default function FacilityAuditLogsIndexRoute() {
       refreshing={Boolean(isRefreshing)}
       data={items}
       keyExtractor={pickId}
-      ListHeaderComponent={<Text style={styles.h1}>Audit Logs</Text>}
+      ListHeaderComponent={<AuditLogsHeading />}
       ListEmptyComponent={<Text style={styles.empty}>No audit logs yet.</Text>}
       renderItem={({ item, index }) => {
         const id = pickId(item, index);
         return (
           <View style={styles.card}>
             <Text style={styles.title}>
-              {String(item?.action || item?.type || "Event")}
+              {formatFacilityAuditAction(item?.action || item?.type)}
             </Text>
-            <Text style={styles.sub}>{String(item?.details || item?.message || "")}</Text>
+            <Text style={styles.sub}>
+              {formatFacilityAuditDetails(
+                item?.action || item?.type,
+                item?.details ?? item?.message
+              ) || "Facility event recorded."}
+            </Text>
+            {formatFacilityAuditTimestamp(
+              item?.timestamp || item?.createdAt || item?.updatedAt
+            ) ? (
+              <Text style={styles.meta}>
+                {formatFacilityAuditTimestamp(
+                  item?.timestamp || item?.createdAt || item?.updatedAt
+                )}
+              </Text>
+            ) : null}
             <Link
               href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
               style={styles.link}
@@ -98,6 +124,7 @@ const styles = StyleSheet.create({
   },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
+  meta: { color: "#64748B", fontSize: 12 },
   link: { color: "#2563eb", fontWeight: "700" },
   empty: { opacity: 0.7 }
 });

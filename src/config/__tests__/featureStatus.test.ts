@@ -154,7 +154,7 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ai_diagnosis"].capabilityKey).toBe("DIAGNOSE_AI");
     expect(byKey["tools.ai_assistant"].capabilityKey).toBe("AI_ASSISTANT");
     expect(byKey["tools.feeding_schedule"].capabilityKey).toBe("FEEDING_SCHEDULE");
-    expect(byKey["tools.harvest_estimator"].capabilityKey).toBe("TOOL_HARVEST_ESTIMATOR");
+    expect(byKey["tools.harvest_estimator"]).toBeUndefined();
     expect(byKey["tools.timeline_planner"].capabilityKey).toBe("TOOL_TIMELINE_PLANNER");
     expect(byKey["tools.pdf_export"].capabilityKey).toBe("TOOL_PDF_EXPORT");
     expect(byKey["tools.pheno_matrix"].capabilityKey).toBe("TOOL_PHENO_MATRIX");
@@ -162,14 +162,10 @@ describe("personal feature status manifest", () => {
 
   test("exposes only release-ready module routes without exposing fake redirects", () => {
     const releaseRoutes = {
-      "tools.vpd": "/home/personal/tools/vpd",
-      "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
       "tools.ppfd_dli": "/home/personal/tools/ppfd",
-      "tools.bud_rot_risk": "/home/personal/tools/bud-rot-risk",
-      "tools.npk_recipe": "/home/personal/tools/npk",
+      "tools.mix_builders": "/home/personal/tools/recipe-builder",
       "tools.ai_diagnosis": "/home/personal/diagnose",
-      "tools.ai_assistant": "/home/personal/ai",
-      "tools.integrations": "/home/personal/tools/integrations"
+      "tools.ai_assistant": "/home/personal/ai"
     };
 
     const navigable = getNavigablePersonalTools();
@@ -183,25 +179,7 @@ describe("personal feature status manifest", () => {
   });
 
   test("exposes approved beta tools only when beta surfaces are enabled", () => {
-    const approvedBetaTools = [
-      "tools.soil_builder",
-      "tools.dry_amendment_mix",
-      "tools.topdress_planner",
-      "tools.ph_ec_adjustment",
-      "tools.crop_steering_projects",
-      "tools.stress_testing",
-      "tools.pheno_hunting",
-      "tools.genetics_inventory",
-      "tools.tissue_culture",
-      "tools.dry_cure_guard",
-      "tools.clone_rooting",
-      "tools.ipm_scout",
-      "tools.species_crop_identification",
-      "tools.harvest_readiness_ai",
-      "tools.run_comparison",
-      "tools.auto_grow_calendar",
-      "tools.soil_nutrient_batch_planner"
-    ];
+    const approvedBetaTools = ["tools.ipm_scout", "tools.species_crop_identification"];
 
     const defaultNavigable = getNavigablePersonalTools();
     const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
@@ -214,8 +192,114 @@ describe("personal feature status manifest", () => {
     }
   });
 
+  test("routes task, grow, internal calculator, export, and commercial utilities outside AI Tools", () => {
+    const hiddenFromAiTools = [
+      "tools.integrations",
+      "tools.vpd",
+      "tools.dew_point_guard",
+      "tools.ph_ec_adjustment",
+      "tools.topdress_planner",
+      "tools.pdf_export",
+      "tools.soil_nutrient_batch_planner"
+    ];
+    const aiTools = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    for (const key of hiddenFromAiTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature?.href).toBeTruthy();
+      expect(feature?.hubVisible).toBe(false);
+      expect(aiTools).not.toContain(feature);
+    }
+
+    expect(
+      personalToolFeatures.find((item) => item.key === "tools.ppfd_dli")?.hubVisible
+    ).not.toBe(false);
+  });
+
+  test("keeps builder components and supporting nutrient tools behind one hub entry", () => {
+    const supportingTools = [
+      "tools.npk_recipe",
+      "tools.soil_builder",
+      "tools.product_ingredient_library",
+      "tools.nutrient_chemistry",
+      "tools.nutrient_source_comparison",
+      "tools.dry_amendment_mix",
+      "tools.topdress_planner"
+    ];
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    for (const key of supportingTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature?.href).toBeTruthy();
+      expect(feature?.hubVisible).toBe(false);
+      expect(hub).not.toContain(feature);
+    }
+  });
+
+  test("keeps the soil and nutrient batch planner in Commercial only", () => {
+    const feature = personalToolFeatures.find(
+      (item) => item.key === "tools.soil_nutrient_batch_planner"
+    ) as FeatureDefinition | undefined;
+    const personalHub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+
+    expect(feature?.status).toBe("beta");
+    expect(feature?.hubVisible).toBe(false);
+    expect(feature?.href).toBe("/home/commercial/tools/soil-nutrient-batch");
+    expect(personalHub).not.toContain(feature);
+  });
+
+  test("keeps grow lifecycle workflows in grow workspaces instead of the generic hub", () => {
+    const workspaceOnly = [
+      "tools.watering",
+      "tools.feeding_schedule",
+      "tools.timeline_planner",
+      "tools.pheno_matrix",
+      "tools.crop_steering_projects",
+      "tools.stress_testing",
+      "tools.pheno_hunting",
+      "tools.genetics_inventory",
+      "tools.tissue_culture",
+      "tools.dry_cure_guard",
+      "tools.clone_rooting",
+      "tools.auto_grow_calendar",
+      "tools.run_comparison"
+    ];
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    for (const key of workspaceOnly) {
+      const feature = personalToolFeatures.find(
+        (item) => item.key === key
+      ) as FeatureDefinition;
+      expect(feature?.hubVisible).toBe(false);
+      expect(feature?.href).toBeTruthy();
+      expect(hub).not.toContain(feature);
+    }
+  });
+
+  test("keeps the harvest calculator in Personal Tools and linked cannabis grow surfaces", () => {
+    const harvest = personalToolFeatures.find(
+      (item) => item.key === "tools.harvest_readiness_ai"
+    ) as FeatureDefinition;
+    const hub = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    const growOverview = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/personal/(tabs)/grows/[growId]/index.tsx"),
+      "utf8"
+    );
+    const growTools = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/personal/(tabs)/grows/[growId]/tools.tsx"),
+      "utf8"
+    );
+
+    expect(harvest.title).toBe("Harvest Readiness Calculator");
+    expect(harvest.hubVisible).toBe(true);
+    expect(harvest.href).toBe("/home/personal/tools/harvest-readiness");
+    expect(hub).toContain(harvest);
+    expect(growOverview).toContain('workflows={["harvest-readiness"]}');
+    expect(growTools).toContain('"/home/personal/tools/harvest-readiness"');
+    expect(growTools).toContain("{ cannabisOnly: true }");
+  });
+
   test("keeps removed/internal-only tools out of the user-facing app", () => {
-    const removedTools = ["tools.crop_steering", "tools.inventory"];
+    const removedTools = ["tools.bud_rot_risk", "tools.crop_steering", "tools.inventory"];
     const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
     for (const key of removedTools) {
       const feature = personalToolFeatures.find((item) => item.key === key);
@@ -228,23 +312,35 @@ describe("personal feature status manifest", () => {
   test("places tools in their release categories", () => {
     const byKey = Object.fromEntries(
       personalToolFeatures.map((feature) => [feature.key, feature])
-    );
+    ) as Record<string, FeatureDefinition>;
 
     expect(byKey["tools.ai_diagnosis"].area).toBe("plant_health");
     expect(byKey["tools.ai_assistant"].area).toBe("plant_health");
     expect(byKey["tools.ai_assistant"].status).toBe("release");
     expect(byKey["tools.ai_assistant"].href).toBe("/home/personal/ai");
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
+    expect(byKey["tools.mix_builders"].area).toBe("water_nutrients");
+    expect(byKey["tools.mix_builders"].title).toBe("Soil & Nutrient Mix Builders");
+    expect(byKey["tools.mix_builders"].href).toBe("/home/personal/tools/recipe-builder");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
+    expect(byKey["tools.npk_recipe"].title).toBe("Nutrient Mix Builder");
+    expect(byKey["tools.npk_recipe"].href).toBe("/home/personal/tools/npk");
+    expect(byKey["tools.npk_recipe"].hubVisible).toBe(false);
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");
+    expect(byKey["tools.soil_builder"].title).toBe("Soil Mix Builder");
     expect(byKey["tools.soil_builder"].status).toBe("beta");
     expect(byKey["tools.soil_builder"].href).toBe("/home/personal/tools/soil-builder");
+    expect(byKey["tools.soil_builder"].hubVisible).toBe(false);
     expect(byKey["tools.dry_amendment_mix"].status).toBe("beta");
     expect(byKey["tools.topdress_planner"].status).toBe("beta");
     expect(byKey["tools.ph_ec_adjustment"].status).toBe("beta");
     expect(byKey["tools.dry_cure_guard"].status).toBe("beta");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
     expect(byKey["tools.product_ingredient_library"].status).toBe("release");
+    expect(byKey["tools.product_ingredient_library"].title).toBe(
+      "Products & Label Library"
+    );
+    expect(byKey["tools.product_ingredient_library"].hubVisible).toBe(false);
     expect(byKey["tools.product_ingredient_library"].href).toBe(
       "/home/personal/tools/ingredient-library"
     );
@@ -265,8 +361,9 @@ describe("personal feature status manifest", () => {
       "/home/personal/tools/tissue-culture"
     );
     expect(byKey["tools.soil_nutrient_batch_planner"].status).toBe("beta");
+    expect(byKey["tools.soil_nutrient_batch_planner"].hubVisible).toBe(false);
     expect(byKey["tools.soil_nutrient_batch_planner"].href).toBe(
-      "/home/personal/tools/soil-nutrient-batch"
+      "/home/commercial/tools/soil-nutrient-batch"
     );
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
     expect(byKey["tools.crop_steering_projects"].status).toBe("beta");

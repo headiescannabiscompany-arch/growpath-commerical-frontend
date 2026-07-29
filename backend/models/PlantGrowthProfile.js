@@ -68,6 +68,7 @@ const PlantGrowthProfileSchema = new mongoose.Schema(
     sizeMetrics: { type: mongoose.Schema.Types.Mixed, default: {} },
     timingAdjustments: { type: mongoose.Schema.Types.Mixed, default: {} },
     waterUseProfile: { type: mongoose.Schema.Types.Mixed, default: {} },
+    phenoTags: { type: [String], default: [] },
     stressSensitivities: { type: [String], default: [] },
     pestDiseaseSensitivities: { type: [String], default: [] },
     notes: { type: String, default: "" },

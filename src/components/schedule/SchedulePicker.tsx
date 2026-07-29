@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
 
 type SchedulePickerProps = {
@@ -8,6 +9,7 @@ type SchedulePickerProps = {
   reminder: string;
   recurrence: string;
   allDay?: boolean;
+  dateTime?: boolean;
   timezone?: string;
   lightsOnTime?: string;
   lightsOffTime?: string;
@@ -58,6 +60,7 @@ export default function SchedulePicker({
   reminder,
   recurrence,
   allDay = false,
+  dateTime = false,
   timezone,
   lightsOnTime,
   lightsOffTime,
@@ -69,7 +72,7 @@ export default function SchedulePicker({
   dueDateAccessibilityLabel,
   reminderAccessibilityLabel,
   recurrenceAccessibilityLabel,
-  dueDatePlaceholder = "YYYY-MM-DD or ISO date",
+  dueDatePlaceholder = "Choose date",
   reminderPlaceholder = "Reminder, e.g. 24 hours before",
   recurrencePlaceholder = "Recurrence, e.g. every 7 days"
 }: SchedulePickerProps) {
@@ -112,7 +115,6 @@ export default function SchedulePicker({
     recurrence ? `Repeats: ${recurrence}` : "Does not repeat",
     `Timezone: ${resolvedTimezone}`
   ].join(" | ");
-
   function clearSchedule() {
     onDueDateChange("");
     onReminderChange("");
@@ -134,16 +136,17 @@ export default function SchedulePicker({
         </Pressable>
       </View>
       <View style={styles.row}>
-        <TextInput
-          style={styles.flexInput}
-          placeholder={dueDatePlaceholder}
-          value={dueDate}
-          onChangeText={onDueDateChange}
-          accessibilityLabel={
-            dueDateAccessibilityLabel || `${accessibilityPrefix} due date`
-          }
-          autoCapitalize="none"
-        />
+        <View style={styles.dateField}>
+          <CalendarDateField
+            value={dueDate}
+            onChange={onDueDateChange}
+            mode={dateTime && !allDay ? "datetime" : "date"}
+            placeholder={dueDatePlaceholder}
+            accessibilityLabel={
+              dueDateAccessibilityLabel || `${accessibilityPrefix} due date`
+            }
+          />
+        </View>
         <TextInput
           style={styles.flexInput}
           placeholder={reminderPlaceholder}
@@ -267,6 +270,7 @@ const styles = StyleSheet.create({
   },
   clearText: { color: "#475569", fontSize: 12, fontWeight: "900" },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  dateField: { flex: 1, minWidth: 220 },
   flexInput: {
     borderColor: "#CBD5E1",
     borderRadius: radius.card,

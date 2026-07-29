@@ -3,6 +3,10 @@
 const express = require("express");
 
 const CommercialRecord = require("../models/CommercialRecord");
+const {
+  normalizeLessonMedia,
+  lessonMediaPublishBlockers
+} = require("../services/lessonMedia");
 
 const router = express.Router();
 
@@ -69,6 +73,59 @@ function requireUser(req, res) {
   return userId;
 }
 
+function facilityContext(req) {
+  return {
+    facilityId: cleanString(req.ctx?.facilityId || req.user?.facilityId),
+    facilityRole: cleanString(
+      req.ctx?.facilityRole || req.user?.facilityRole
+    ).toUpperCase()
+  };
+}
+
+function requireFacilityTransferAccess(req, res, allowedRoles) {
+  const userId = requireUser(req, res);
+  if (!userId) return null;
+  const requestedFacilityId = cleanString(req.params?.facilityId);
+  const context = facilityContext(req);
+  if (!requestedFacilityId || context.facilityId !== requestedFacilityId) {
+    res.status(403).json({
+      success: false,
+      code: "FACILITY_ACCESS_DENIED",
+      message: "The requested facility does not match your active facility membership."
+    });
+    return null;
+  }
+  if (!allowedRoles.includes(context.facilityRole)) {
+    res.status(403).json({
+      success: false,
+      code: "FACILITY_ROLE_DENIED",
+      message: "Your facility role cannot perform this transfer action."
+    });
+    return null;
+  }
+  return { userId, ...context };
+}
+
+function transferValidation(payload) {
+  const errors = [];
+  if (!cleanString(payload.inventoryItemId)) errors.push("inventoryItemId is required");
+  if (!cleanString(payload.itemName)) errors.push("itemName is required");
+  if (!(Number(payload.quantity) > 0)) errors.push("quantity must be greater than zero");
+  if (!(Number(payload.unitPrice) >= 0)) errors.push("unitPrice must be zero or greater");
+  if (!cleanString(payload.recipientName)) errors.push("recipientName is required");
+  if (!cleanString(payload.recipientLicense)) errors.push("recipientLicense is required");
+  if (!cleanString(payload.recipientState)) errors.push("recipientState is required");
+  return errors;
+}
+
+const TRANSFER_TRANSITIONS = {
+  draft: ["approved", "cancelled"],
+  approved: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: []
+};
+
 function baseQuery(userId, recordType) {
   return { userId, recordType, deletedAt: null };
 }
@@ -88,15 +145,72 @@ function createPayload(body) {
 }
 
 function normalizeLesson(body, fallback = {}) {
+  const removeMedia =
+    Object.prototype.hasOwnProperty.call(body || {}, "mediaSource") &&
+    body.mediaSource === null &&
+    !body.videoUrl &&
+    !body.externalVideoUrl;
+  const normalizedMedia = removeMedia
+    ? { mediaSource: null, errors: [] }
+    : normalizeLessonMedia(body?.mediaSource || {}, {
+        legacyUrl:
+          body?.videoUrl ||
+          body?.externalVideoUrl ||
+          fallback.videoUrl ||
+          fallback.externalVideoUrl ||
+          "",
+        fallback: fallback.mediaSource || {}
+      });
+  const mediaSource = normalizedMedia.mediaSource;
   return {
-    ...fallback,
-    id: fallback.id || `lesson-${Date.now()}`,
-    title: cleanString(body?.title || fallback.title || "Untitled lesson"),
-    body: cleanString(body?.body || body?.content || fallback.body || ""),
-    videoUrl: cleanString(body?.videoUrl || fallback.videoUrl || ""),
-    order: Number(body?.order || fallback.order || 1),
-    status: body?.status || fallback.status || "draft"
+    errors: normalizedMedia.errors,
+    lesson: {
+      ...fallback,
+      id: fallback.id || `lesson-${Date.now()}`,
+      title: cleanString(body?.title || fallback.title || "Untitled lesson"),
+      body: cleanString(body?.body || body?.content || fallback.body || ""),
+      content: cleanString(body?.content || body?.body || fallback.content || ""),
+      lessonType: cleanString(body?.lessonType || fallback.lessonType || "video"),
+      videoUrl: mediaSource?.canonicalUrl || "",
+      externalVideoUrl: mediaSource?.canonicalUrl || "",
+      mediaSource,
+      videoAssetId: cleanString(body?.videoAssetId ?? fallback.videoAssetId),
+      pdfUrl: cleanString(body?.pdfUrl || fallback.pdfUrl || ""),
+      audioUrl: cleanString(body?.audioUrl || fallback.audioUrl || ""),
+      imageUrls: Array.isArray(body?.imageUrls)
+        ? body.imageUrls.map(cleanString).filter(Boolean)
+        : fallback.imageUrls || [],
+      documentUrls: Array.isArray(body?.documentUrls)
+        ? body.documentUrls.map(cleanString).filter(Boolean)
+        : fallback.documentUrls || [],
+      relatedProductIds: Array.isArray(body?.relatedProductIds)
+        ? body.relatedProductIds.map(cleanString).filter(Boolean)
+        : fallback.relatedProductIds || [],
+      relatedLiveIds: Array.isArray(body?.relatedLiveIds)
+        ? body.relatedLiveIds.map(cleanString).filter(Boolean)
+        : fallback.relatedLiveIds || [],
+      forumThreadId: cleanString(body?.forumThreadId || fallback.forumThreadId || ""),
+      taskTemplate: body?.taskTemplate || fallback.taskTemplate || null,
+      growTags: Array.isArray(body?.growTags)
+        ? body.growTags.map(cleanString).filter(Boolean)
+        : fallback.growTags || [],
+      order: Number(body?.order || fallback.order || 1),
+      status: body?.status || fallback.status || "draft"
+    }
   };
+}
+
+function sendLessonMediaErrors(res, errors) {
+  return res.status(400).json({
+    success: false,
+    error: { code: "INVALID_LESSON_MEDIA", message: errors.join(" "), details: errors }
+  });
+}
+
+function courseMediaBlockers(course) {
+  return (Array.isArray(course?.lessons) ? course.lessons : []).flatMap((lesson, index) =>
+    lessonMediaPublishBlockers(lesson, index)
+  );
 }
 
 function topLevelFromPayload(recordType, payload) {
@@ -244,8 +358,7 @@ async function resolveAnalyticsOwner(payload, fallbackUserId = "") {
   }
 
   const possibleStorefrontId = cleanString(
-    payload.storefrontId ||
-      (payload.objectType === "storefront" ? payload.objectId : "")
+    payload.storefrontId || (payload.objectType === "storefront" ? payload.objectId : "")
   );
   if (possibleStorefrontId) {
     const storefront = await CommercialRecord.findOne({
@@ -1037,6 +1150,19 @@ router.post("/products/:id/checkout", async (req, res) => {
   const product = dto(await CommercialRecord.findOne(productFilter).lean());
   if (!product)
     return res.status(404).json({ success: false, message: "Product not found" });
+  const regulatedCannabis =
+    product.regulatedCannabis === true ||
+    product.isCannabis === true ||
+    product.productType === "cannabis" ||
+    product.category === "cannabis";
+  if (regulatedCannabis) {
+    return res.status(403).json({
+      success: false,
+      code: "LICENSED_TRANSFER_REQUIRED",
+      message:
+        "Cannabis products cannot use public checkout. Record sales to verified licensed recipients through the facility transfer workflow."
+    });
+  }
   const externalUrl =
     product.externalPurchaseUrl || product.purchaseUrl || product.url || "";
   if (externalUrl) {
@@ -1179,9 +1305,15 @@ router.post("/trials/:id/ai-review", async (req, res) => {
     evidence:
       req.body?.evidence ||
       [
-        trial.effectivenessSummary ? `Effectiveness: ${trial.effectivenessSummary}` : null,
-        trial.harvestQualityNotes ? `Harvest quality: ${trial.harvestQualityNotes}` : null,
-        trial.commercialCropSummary ? `Crop summary: ${trial.commercialCropSummary}` : null
+        trial.effectivenessSummary
+          ? `Effectiveness: ${trial.effectivenessSummary}`
+          : null,
+        trial.harvestQualityNotes
+          ? `Harvest quality: ${trial.harvestQualityNotes}`
+          : null,
+        trial.commercialCropSummary
+          ? `Crop summary: ${trial.commercialCropSummary}`
+          : null
       ].filter(Boolean),
     limitations: req.body?.limitations || [
       "This review is based on saved trial data and user notes."
@@ -1243,9 +1375,11 @@ router.post("/courses/:id/lessons", async (req, res) => {
   );
   if (!course)
     return res.status(404).json({ success: false, message: "Course not found" });
-  const lesson = normalizeLesson(req.body || {}, {
+  const normalized = normalizeLesson(req.body || {}, {
     order: (course.lessons || []).length + 1
   });
+  if (normalized.errors.length) return sendLessonMediaErrors(res, normalized.errors);
+  const lesson = normalized.lesson;
   const lessons = [...(Array.isArray(course.lessons) ? course.lessons : []), lesson];
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId, "course"), _id: req.params.id },
@@ -1265,11 +1399,14 @@ router.patch("/courses/:id/lessons/:lessonId", async (req, res) => {
   );
   if (!course)
     return res.status(404).json({ success: false, message: "Course not found" });
-  const lessons = (course.lessons || []).map((lesson) =>
-    String(lesson.id) === String(req.params.lessonId)
-      ? normalizeLesson(req.body || {}, lesson)
-      : lesson
-  );
+  let lessonErrors = [];
+  const lessons = (course.lessons || []).map((lesson) => {
+    if (String(lesson.id) !== String(req.params.lessonId)) return lesson;
+    const normalized = normalizeLesson(req.body || {}, lesson);
+    lessonErrors = normalized.errors;
+    return normalized.lesson;
+  });
+  if (lessonErrors.length) return sendLessonMediaErrors(res, lessonErrors);
   const lesson = lessons.find((item) => String(item.id) === String(req.params.lessonId));
   if (!lesson)
     return res.status(404).json({ success: false, message: "Lesson not found" });
@@ -1307,6 +1444,24 @@ router.delete("/courses/:id/lessons/:lessonId", async (req, res) => {
 router.post("/courses/:id/publish", async (req, res) => {
   const userId = requireUser(req, res);
   if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({
+      ...baseQuery(userId, "course"),
+      _id: req.params.id
+    }).lean()
+  );
+  if (!course)
+    return res.status(404).json({ success: false, message: "Course not found" });
+  const blockers = courseMediaBlockers(course);
+  if (blockers.length)
+    return res.status(422).json({
+      success: false,
+      error: {
+        code: "LESSON_MEDIA_NOT_READY",
+        message: "Resolve lesson media accessibility and availability before publishing.",
+        details: blockers
+      }
+    });
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId, "course"), _id: req.params.id },
     { status: "published", "payload.status": "published", "payload.isPublished": true },
@@ -1407,7 +1562,190 @@ router.post("/campaigns/:id/click", async (req, res) => {
   res.json({ success: true, clickCount, event, campaign: dto(updated) });
 });
 
+router.get("/facility/:facilityId/transfers", async (req, res) => {
+  const access = requireFacilityTransferAccess(req, res, [
+    "OWNER",
+    "MANAGER",
+    "STAFF",
+    "VIEWER"
+  ]);
+  if (!access) return;
+  const rows = await CommercialRecord.find({
+    recordType: "facilityTransfer",
+    "payload.facilityId": access.facilityId,
+    deletedAt: null
+  })
+    .sort({ createdAt: -1 })
+    .limit(250)
+    .lean();
+  const transfers = (rows || []).map(dto);
+  return res.json({ success: true, transfers, orders: transfers, items: transfers });
+});
+
+router.post("/facility/:facilityId/transfers", async (req, res) => {
+  const access = requireFacilityTransferAccess(req, res, ["OWNER", "MANAGER"]);
+  if (!access) return;
+  const errors = transferValidation(req.body || {});
+  if (errors.length) {
+    return res.status(400).json({ success: false, code: "VALIDATION_ERROR", errors });
+  }
+  const now = new Date().toISOString();
+  const payload = {
+    ...createPayload(req.body),
+    facilityId: access.facilityId,
+    orderType: "licensed_cannabis_transfer",
+    status: "draft",
+    total: Math.round(Number(req.body.quantity) * Number(req.body.unitPrice) * 100) / 100,
+    inventoryMovementStatus: "not_required",
+    auditEvents: [
+      {
+        action: "transfer_created",
+        actorUserId: access.userId,
+        actorRole: access.facilityRole,
+        at: now,
+        toStatus: "draft"
+      }
+    ]
+  };
+  const created = await CommercialRecord.create({
+    userId: access.userId,
+    recordType: "facilityTransfer",
+    name: cleanString(payload.itemName),
+    title: cleanString(payload.itemName),
+    status: "draft",
+    payload
+  });
+  return res
+    .status(201)
+    .json({ success: true, transfer: dto(created), item: dto(created) });
+});
+
+router.post("/facility/:facilityId/transfers/:id/transition", async (req, res) => {
+  const requestedStatus = cleanString(req.body?.status).toLowerCase();
+  const roles =
+    requestedStatus === "approved" || requestedStatus === "cancelled"
+      ? ["OWNER", "MANAGER"]
+      : ["OWNER", "MANAGER", "STAFF"];
+  const access = requireFacilityTransferAccess(req, res, roles);
+  if (!access) return;
+  const query = {
+    recordType: "facilityTransfer",
+    "payload.facilityId": access.facilityId,
+    _id: req.params.id,
+    deletedAt: null
+  };
+  const current = dto(await CommercialRecord.findOne(query).lean());
+  if (!current)
+    return res.status(404).json({ success: false, message: "Transfer not found" });
+  const allowed = TRANSFER_TRANSITIONS[current.status] || [];
+  if (!allowed.includes(requestedStatus)) {
+    return res.status(409).json({
+      success: false,
+      code: "INVALID_STATUS_TRANSITION",
+      message: `Cannot change transfer from ${current.status} to ${requestedStatus}.`
+    });
+  }
+  if (requestedStatus === "delivered" && current.inventoryMovementStatus !== "applied") {
+    return res.status(409).json({
+      success: false,
+      code: "INVENTORY_MOVEMENT_PENDING",
+      message: "Confirm the shipment inventory deduction before marking it delivered."
+    });
+  }
+  const now = new Date().toISOString();
+  const movementId =
+    requestedStatus === "shipped"
+      ? current.inventoryMovementId || `transfer:${req.params.id}:shipment`
+      : current.inventoryMovementId;
+  const auditEvents = [
+    ...(Array.isArray(current.auditEvents) ? current.auditEvents : []),
+    {
+      action: `transfer_${requestedStatus}`,
+      actorUserId: access.userId,
+      actorRole: access.facilityRole,
+      at: now,
+      fromStatus: current.status,
+      toStatus: requestedStatus
+    }
+  ];
+  const fields = {
+    status: requestedStatus,
+    auditEvents,
+    ...(requestedStatus === "shipped"
+      ? {
+          shippedAt: now,
+          inventoryMovementId: movementId,
+          inventoryMovementStatus: "pending"
+        }
+      : {}),
+    ...(requestedStatus === "delivered" ? { deliveredAt: now } : {})
+  };
+  const updated = await CommercialRecord.findOneAndUpdate(
+    query,
+    {
+      status: requestedStatus,
+      $set: Object.fromEntries(
+        Object.entries(fields).map(([key, value]) => [`payload.${key}`, value])
+      )
+    },
+    { new: true }
+  ).lean();
+  return res.json({ success: true, transfer: dto(updated), item: dto(updated) });
+});
+
+router.post(
+  "/facility/:facilityId/transfers/:id/inventory-confirmed",
+  async (req, res) => {
+    const access = requireFacilityTransferAccess(req, res, ["OWNER", "MANAGER", "STAFF"]);
+    if (!access) return;
+    const query = {
+      recordType: "facilityTransfer",
+      "payload.facilityId": access.facilityId,
+      _id: req.params.id,
+      deletedAt: null
+    };
+    const current = dto(await CommercialRecord.findOne(query).lean());
+    if (!current)
+      return res.status(404).json({ success: false, message: "Transfer not found" });
+    if (
+      current.status !== "shipped" ||
+      current.inventoryMovementStatus !== "pending" ||
+      cleanString(req.body?.movementId) !== cleanString(current.inventoryMovementId)
+    ) {
+      return res.status(409).json({
+        success: false,
+        code: "INVENTORY_CONFIRMATION_REJECTED",
+        message:
+          "This inventory movement is not pending or the movement ID does not match."
+      });
+    }
+    const now = new Date().toISOString();
+    const auditEvents = [
+      ...(Array.isArray(current.auditEvents) ? current.auditEvents : []),
+      {
+        action: "inventory_deduction_confirmed",
+        actorUserId: access.userId,
+        actorRole: access.facilityRole,
+        at: now
+      }
+    ];
+    const updated = await CommercialRecord.findOneAndUpdate(
+      query,
+      {
+        $set: {
+          "payload.inventoryMovementStatus": "applied",
+          "payload.inventoryAppliedAt": now,
+          "payload.auditEvents": auditEvents
+        }
+      },
+      { new: true }
+    ).lean();
+    return res.json({ success: true, transfer: dto(updated), item: dto(updated) });
+  }
+);
+
 router.get("/orders", (req, res) => listRecords(req, res, "order", "orders"));
+router.post("/orders", (req, res) => createRecord(req, res, "order", "order", "draft"));
 router.patch("/orders/:id", (req, res) => updateRecord(req, res, "order", "order"));
 
 router.get("/links", (req, res) => listRecords(req, res, "link", "links"));
@@ -1597,7 +1935,8 @@ router.get("/analytics/overview", async (req, res) => {
       current.lastEventAt = eventTime;
     }
     const eventType = cleanString(event.payload?.eventType || event.name || "");
-    if (eventType && !current.eventTypes.includes(eventType)) current.eventTypes.push(eventType);
+    if (eventType && !current.eventTypes.includes(eventType))
+      current.eventTypes.push(eventType);
     map.set(cleanKey, current);
   };
   const topBreakdownRows = (map) =>

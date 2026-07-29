@@ -5,8 +5,10 @@ import StoreIndex from "@/app/store";
 
 const mockPush = jest.fn();
 const mockSearchPublicStorefronts = jest.fn();
+const mockRequestCurrentCoordinates = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockParams: Record<string, string> = {};
+let mockMode = "personal";
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -22,6 +24,14 @@ jest.mock("expo-router", () => {
 
 jest.mock("@/api/storefront", () => ({
   searchPublicStorefronts: (...args: any[]) => mockSearchPublicStorefronts(...args)
+}));
+
+jest.mock("@/utils/locationSearch", () => ({
+  requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ mode: mockMode })
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -40,6 +50,7 @@ describe("StoreIndex", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockSearchPublicStorefronts.mockReset();
+    mockRequestCurrentCoordinates.mockReset();
     mockLinkHrefs.length = 0;
     mockSearchPublicStorefronts.mockResolvedValue({
       storefronts: [
@@ -51,6 +62,11 @@ describe("StoreIndex", () => {
       ]
     });
     mockParams = {};
+    mockMode = "personal";
+    mockRequestCurrentCoordinates.mockResolvedValue({
+      latitude: 42.3601,
+      longitude: -71.0589
+    });
   });
 
   it("opens public storefront first and keeps profile secondary from a slug", () => {
@@ -97,21 +113,85 @@ describe("StoreIndex", () => {
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
   });
 
+  it("searches dispensaries by state without offering GrowPath checkout", async () => {
+    mockSearchPublicStorefronts.mockResolvedValueOnce({
+      storefronts: [
+        {
+          name: "Example Dispensary",
+          slug: "example-dispensary",
+          storefrontType: "dispensary",
+          city: "Boston",
+          stateCode: "MA"
+        }
+      ]
+    });
+    const screen = render(<StoreIndex />);
+
+    fireEvent.changeText(screen.getByLabelText("Dispensary state"), "ma");
+    fireEvent.press(screen.getByText("Search by State"));
+
+    await waitFor(() =>
+      expect(mockSearchPublicStorefronts).toHaveBeenCalledWith({
+        storefrontType: "dispensary",
+        stateCode: "MA",
+        latitude: undefined,
+        longitude: undefined,
+        radiusMiles: undefined,
+        limit: 25
+      })
+    );
+    expect(screen.getByText("Example Dispensary")).toBeTruthy();
+    expect(screen.getByText("Boston, MA")).toBeTruthy();
+    expect(
+      screen.getByText("Inventory only · dispensary website or in-store pickup")
+    ).toBeTruthy();
+    expect(screen.queryByText("Buy")).toBeNull();
+    expect(mockLinkHrefs).toContain("/store/example-dispensary");
+  });
+
+  it("uses current location for distance-ranked dispensary discovery", async () => {
+    mockSearchPublicStorefronts.mockResolvedValueOnce({
+      storefronts: [
+        {
+          name: "Nearby Dispensary",
+          slug: "nearby-dispensary",
+          storefrontType: "dispensary",
+          distanceMiles: 4.25
+        }
+      ]
+    });
+    const screen = render(<StoreIndex />);
+
+    fireEvent.press(screen.getByLabelText("Use my location to find dispensaries"));
+
+    await waitFor(() =>
+      expect(mockSearchPublicStorefronts).toHaveBeenCalledWith({
+        storefrontType: "dispensary",
+        stateCode: undefined,
+        latitude: 42.3601,
+        longitude: -71.0589,
+        radiusMiles: 25,
+        limit: 25
+      })
+    );
+    expect(screen.getByText("4.3 miles away")).toBeTruthy();
+  });
+
   it("links commercial storefront management to the canonical commercial workspace", () => {
+    mockMode = "commercial";
     render(<StoreIndex />);
 
     expect(mockLinkHrefs).toContain("/home/commercial/storefront");
     expect(mockLinkHrefs).not.toContain("/storefront");
   });
 
-  it("routes public discovery offers through offers instead of marketplace", () => {
+  it("does not expose owner controls or GrowPath plan offers to personal users", () => {
     const screen = render(<StoreIndex />);
 
-    expect(screen.getByText("Storefront offers")).toBeTruthy();
-    expect(screen.getByText("View Offers")).toBeTruthy();
-    expect(mockLinkHrefs).toContain("/offers");
-    expect(mockLinkHrefs).not.toContain("/marketplace");
-    expect(screen.queryByText("Marketplace")).toBeNull();
-    expect(screen.queryByText("Open Marketplace")).toBeNull();
+    expect(screen.queryByText("Storefront offers")).toBeNull();
+    expect(screen.queryByText("View Offers")).toBeNull();
+    expect(screen.queryByText("Manage Storefront")).toBeNull();
+    expect(mockLinkHrefs).not.toContain("/offers");
+    expect(mockLinkHrefs).not.toContain("/home/commercial/storefront");
   });
 });

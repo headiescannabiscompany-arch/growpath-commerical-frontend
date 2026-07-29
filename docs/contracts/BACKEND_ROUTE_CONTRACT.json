@@ -115,6 +115,20 @@
         { "method": "GET", "path": "/list" },
         { "method": "POST", "path": "/:id/enroll" }
       ]
+    },
+    {
+      "id": "videos",
+      "basePath": "/api/videos",
+      "file": "backend/routes/videos.js",
+      "testFile": "backend/routes/videos.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/discover" },
+        { "method": "GET", "path": "/" },
+        { "method": "POST", "path": "/" },
+        { "method": "GET", "path": "/:id" },
+        { "method": "PATCH", "path": "/:id" },
+        { "method": "DELETE", "path": "/:id" }
+      ]
     }
   ]
 }

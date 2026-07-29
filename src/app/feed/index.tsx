@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
@@ -14,15 +14,21 @@ import {
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { submitReport } from "@/api/reports";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
 import {
   createCommercialFeedCampaign,
+  fetchFeedCampaignAnalytics,
   listCommercialFeedCampaigns,
+  recordFeedCampaignEvent,
   type CommercialFeedCampaign,
-  type CommercialFeedCampaignType
+  type CommercialFeedCampaignType,
+  type FeedCampaignAnalytics,
+  type FeedCampaignPlacement
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import {
   facilitySalesPolicyText,
@@ -37,6 +43,16 @@ const COMMERCIAL_TYPES: CommercialFeedCampaignType[] = [
   "drop",
   "education"
 ];
+const CAMPAIGN_FILTERS: Array<{
+  value: "all" | CommercialFeedCampaignType;
+  label: string;
+}> = [
+  { value: "all", label: "All campaigns" },
+  { value: "update", label: "Updates" },
+  { value: "listing", label: "Product listings" },
+  { value: "drop", label: "Launches & live events" },
+  { value: "education", label: "Education" }
+];
 const FACILITY_TYPES: CommercialFeedCampaignType[] = ["education"];
 type CampaignKind =
   | "product_ad"
@@ -45,6 +61,18 @@ type CampaignKind =
   | "storefront_ad"
   | "facility_outreach"
   | "general_campaign";
+
+type DestinationOption = {
+  id: string;
+  label: string;
+  detail?: string;
+};
+
+type DestinationOptions = {
+  courses: DestinationOption[];
+  lives: DestinationOption[];
+  forumThreads: DestinationOption[];
+};
 
 const COMMERCIAL_CAMPAIGN_KINDS: CampaignKind[] = [
   "product_ad",
@@ -64,12 +92,56 @@ const campaignKindLabels: Record<CampaignKind, string> = {
   general_campaign: "General campaign"
 };
 
+const PLACEMENT_OPTIONS: FeedCampaignPlacement[] = [
+  "feed",
+  "home_hero",
+  "home_top",
+  "home_middle",
+  "home_bottom",
+  "page_top",
+  "page_middle",
+  "page_bottom",
+  "course",
+  "tool",
+  "forum",
+  "product",
+  "facility",
+  "commercial"
+];
+
+const placementLabels: Record<FeedCampaignPlacement, string> = {
+  feed: "All Feed placements",
+  home_hero: "Home hero",
+  home_top: "Home top",
+  home_middle: "Home middle",
+  home_bottom: "Home bottom",
+  page_top: "Page top",
+  page_middle: "Page middle",
+  page_bottom: "Page bottom",
+  course: "Courses",
+  tool: "Tools",
+  forum: "Forum",
+  product: "Products",
+  facility: "Facility",
+  commercial: "Commercial"
+};
+
 function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedCampaignType {
   if (kind === "product_ad") return "listing";
   if (kind === "course_ad") return "education";
   if (kind === "live_ad") return "drop";
   if (kind === "facility_outreach") return "education";
   return "update";
+}
+
+function canonicalCampaignType(kind: CampaignKind) {
+  return kind.replace(/_ad$|_outreach$|_campaign$/g, "") as
+    | "product"
+    | "course"
+    | "live"
+    | "storefront"
+    | "facility"
+    | "general";
 }
 
 function campaignReadinessWarnings({
@@ -81,7 +153,10 @@ function campaignReadinessWarnings({
   storefrontSlug,
   linkedForumThreadId,
   externalLinkUrl,
-  imageUrl
+  imageUrl,
+  campaignStart,
+  campaignEnd,
+  placements
 }: {
   campaignKind: CampaignKind;
   linkedProductId: string;
@@ -92,6 +167,9 @@ function campaignReadinessWarnings({
   linkedForumThreadId: string;
   externalLinkUrl: string;
   imageUrl: string;
+  campaignStart: string;
+  campaignEnd: string;
+  placements: FeedCampaignPlacement[];
 }) {
   const warnings: string[] = [];
   const hasDestination =
@@ -122,7 +200,30 @@ function campaignReadinessWarnings({
     warnings.push("Add at least one destination before promoting broadly.");
   }
   if (!imageUrl.trim()) {
-    warnings.push("Add an image or creative before publishing a polished campaign.");
+    warnings.push("Add an image or creative before publishing.");
+  }
+  if (externalLinkUrl.trim() && !/^https?:\/\//i.test(externalLinkUrl.trim())) {
+    warnings.push("External destination must start with http:// or https://.");
+  }
+  const start = campaignStart.trim() ? new Date(campaignStart.trim()) : null;
+  const end = campaignEnd.trim() ? new Date(campaignEnd.trim()) : null;
+  if (start && Number.isNaN(start.getTime())) {
+    warnings.push("Campaign start date is invalid.");
+  }
+  if (end && Number.isNaN(end.getTime())) {
+    warnings.push("Campaign end date is invalid.");
+  }
+  if (
+    start &&
+    end &&
+    !Number.isNaN(start.getTime()) &&
+    !Number.isNaN(end.getTime()) &&
+    end <= start
+  ) {
+    warnings.push("Campaign end must be after its start.");
+  }
+  if (!placements.length) {
+    warnings.push("Select at least one campaign placement.");
   }
   return warnings;
 }
@@ -188,6 +289,139 @@ function splitTags(value: string) {
     .filter(Boolean);
 }
 
+function recordsFromEnvelope(value: any, keys: string[]) {
+  if (Array.isArray(value)) return value;
+  for (const key of keys) {
+    if (Array.isArray(value?.[key])) return value[key];
+    if (Array.isArray(value?.data?.[key])) return value.data[key];
+  }
+  if (Array.isArray(value?.items)) return value.items;
+  if (Array.isArray(value?.data?.items)) return value.data.items;
+  if (Array.isArray(value?.data)) return value.data;
+  return [];
+}
+
+function destinationOptionsFromRecords(
+  value: any,
+  keys: string[],
+  idKeys: string[],
+  labelKeys: string[],
+  detailKeys: string[] = []
+): DestinationOption[] {
+  const seen = new Set<string>();
+  return recordsFromEnvelope(value, keys)
+    .map((record: any) => {
+      const id = idKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      const label = labelKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      const detail = detailKeys
+        .map((key) => record?.[key])
+        .find((candidate) => typeof candidate === "string" && candidate.trim());
+      if (!id || !label || seen.has(id.trim())) return null;
+      seen.add(id.trim());
+      return {
+        id: id.trim(),
+        label: label.trim(),
+        detail: detail?.trim()
+      };
+    })
+    .filter((option: DestinationOption | null): option is DestinationOption =>
+      Boolean(option)
+    )
+    .slice(0, 12);
+}
+
+function mergeDestinationOptions(...lists: DestinationOption[][]) {
+  const options = new Map<string, DestinationOption>();
+  for (const option of lists.flat()) {
+    if (!options.has(option.id)) options.set(option.id, option);
+  }
+  return Array.from(options.values()).slice(0, 12);
+}
+
+function DestinationPickerGroup({
+  title,
+  kind,
+  options,
+  selectedId,
+  loading,
+  onChange
+}: {
+  title: string;
+  kind: string;
+  options: DestinationOption[];
+  selectedId: string;
+  loading: boolean;
+  onChange: (id: string) => void;
+}) {
+  const selected = options.find((option) => option.id === selectedId);
+  return (
+    <View style={styles.destinationGroup} accessibilityLabel={`${title} destinations`}>
+      <Text style={styles.destinationTitle}>{title}</Text>
+      {loading ? (
+        <View style={styles.destinationLoading}>
+          <ActivityIndicator size="small" />
+          <Text style={styles.linkBoxText}>Loading {kind.toLowerCase()} choices...</Text>
+        </View>
+      ) : options.length ? (
+        <View style={styles.destinationGrid}>
+          {options.map((option) => {
+            const isSelected = option.id === selectedId;
+            return (
+              <Pressable
+                key={option.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${isSelected ? "Remove" : "Select"} ${kind} ${option.label}`}
+                onPress={() => onChange(isSelected ? "" : option.id)}
+                style={[
+                  styles.destinationCard,
+                  isSelected ? styles.destinationCardSelected : null
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.destinationCardTitle,
+                    isSelected ? styles.destinationCardTitleSelected : null
+                  ]}
+                >
+                  {option.label}
+                </Text>
+                {option.detail ? (
+                  <Text
+                    style={[
+                      styles.destinationCardDetail,
+                      isSelected ? styles.destinationCardDetailSelected : null
+                    ]}
+                  >
+                    {option.detail}
+                  </Text>
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : (
+        <Text style={styles.emptyDestinationText}>
+          No public {kind.toLowerCase()} records are available yet.
+        </Text>
+      )}
+      {selected ? (
+        <Text style={styles.selectedDestinationText}>
+          Selected {kind.toLowerCase()}: {selected.label}
+        </Text>
+      ) : selectedId ? (
+        <Text style={styles.selectedDestinationText}>
+          A manual {kind.toLowerCase()} reference is selected.
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 function campaignDestination(post: CommercialFeedCampaign) {
   const storefrontSlug = campaignStorefrontSlug(post);
   if (post.linkedProductId) {
@@ -247,7 +481,7 @@ function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedForumThreadId) {
     return {
       label: "Open Forum Q&A",
-      href: `/forum/post/${encodeURIComponent(String(post.linkedForumThreadId))}`
+      href: `/forum/post?id=${encodeURIComponent(String(post.linkedForumThreadId))}`
     };
   }
   const externalLink = post.externalLinks?.find((link) => String(link?.url || "").trim());
@@ -257,7 +491,10 @@ function campaignDestination(post: CommercialFeedCampaign) {
       href: String(externalLink.url)
     };
   }
-  return null;
+  return {
+    label: "View Outreach",
+    href: `/feed?campaignId=${encodeURIComponent(String(post.id))}`
+  };
 }
 
 export default function CommercialFeedRoute() {
@@ -303,12 +540,27 @@ export default function CommercialFeedRoute() {
   const [campaignEnd, setCampaignEnd] = useState("");
   const [campaignReminder, setCampaignReminder] = useState("24 hours before");
   const [campaignRecurrence, setCampaignRecurrence] = useState("");
+  const [placements, setPlacements] = useState<FeedCampaignPlacement[]>(
+    isFacility ? ["facility"] : ["feed"]
+  );
+  const [ctaLabel, setCtaLabel] = useState("Open");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [creatingSetupTask, setCreatingSetupTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
+  const [analytics, setAnalytics] = useState<FeedCampaignAnalytics | null>(null);
+  const [hiddenCampaignIds, setHiddenCampaignIds] = useState<string[]>([]);
+  const [destinationOptions, setDestinationOptions] = useState<DestinationOptions>({
+    courses: [],
+    lives: [],
+    forumThreads: []
+  });
+  const [destinationOptionsLoading, setDestinationOptionsLoading] = useState(false);
+  const [destinationOptionsError, setDestinationOptionsError] = useState("");
+  const [showAdvancedReferences, setShowAdvancedReferences] = useState(false);
+  const recordedImpressions = useRef(new Set<string>());
 
   useEffect(() => {
     if (!allowedTypes.includes(type)) setType(allowedTypes[0]);
@@ -331,11 +583,14 @@ export default function CommercialFeedRoute() {
     storefrontSlug,
     linkedForumThreadId,
     externalLinkUrl,
-    imageUrl
+    imageUrl,
+    campaignStart,
+    campaignEnd,
+    placements
   });
   const canCreate =
     canManageCampaigns && title.trim().length > 0 && body.trim().length > 0 && !creating;
-  const canPublishCampaign = canCreate && (isFacility || readinessWarnings.length === 0);
+  const canPublishCampaign = canCreate && readinessWarnings.length === 0;
 
   const helper = useMemo(
     () =>
@@ -360,6 +615,14 @@ export default function CommercialFeedRoute() {
           limit: 30
         });
         setItems(res.items);
+        if (canManageCampaigns) {
+          try {
+            const campaignAnalytics = await fetchFeedCampaignAnalytics();
+            setAnalytics(campaignAnalytics);
+          } catch {
+            setAnalytics(null);
+          }
+        }
       } catch (e) {
         setError(e);
       } finally {
@@ -367,12 +630,100 @@ export default function CommercialFeedRoute() {
         setRefreshing(false);
       }
     },
-    [canAccess, filterType, q]
+    [canAccess, canManageCampaigns, filterType, q]
   );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadDestinationOptions = useCallback(async () => {
+    if (!canAccess || !canManageCampaigns || !isFacility) return;
+    setDestinationOptionsLoading(true);
+    setDestinationOptionsError("");
+    const [courseResult, commercialCourseResult, liveResult, forumResult] =
+      await Promise.allSettled([
+        apiRequest("/api/courses"),
+        apiRequest("/api/commercial/courses/public"),
+        apiRequest("/api/lives"),
+        apiRequest("/api/forum/feed/latest", { params: { page: 1 } })
+      ]);
+    const next = {
+      courses: mergeDestinationOptions(
+        courseResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              courseResult.value,
+              ["courses", "publishedCourses"],
+              ["id", "_id", "courseId", "slug"],
+              ["title", "name"],
+              ["shortDescription", "category", "status"]
+            )
+          : [],
+        commercialCourseResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              commercialCourseResult.value,
+              ["courses", "commercialCourses"],
+              ["id", "_id", "courseId", "slug"],
+              ["title", "name"],
+              ["shortDescription", "category", "status"]
+            )
+          : []
+      ),
+      lives:
+        liveResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              liveResult.value,
+              ["lives", "sessions", "liveEvents"],
+              ["id", "_id", "sessionId", "liveId"],
+              ["title", "name"],
+              ["scheduledStart", "startsAt", "status"]
+            )
+          : [],
+      forumThreads:
+        forumResult.status === "fulfilled"
+          ? destinationOptionsFromRecords(
+              forumResult.value,
+              ["posts", "threads", "forumPosts"],
+              ["id", "_id", "postId", "threadId"],
+              ["title", "subject"],
+              ["categoryName", "category", "createdAt"]
+            )
+          : []
+    };
+    setDestinationOptions(next);
+    const optionResults = [courseResult, commercialCourseResult, liveResult, forumResult];
+    const failedCount = optionResults.filter(
+      (result) => result.status === "rejected"
+    ).length;
+    if (failedCount) {
+      setDestinationOptionsError(
+        failedCount === optionResults.length
+          ? "Destination choices could not be loaded. Advanced references remain available."
+          : "Some destination choices could not be loaded. You can refresh or use an advanced reference."
+      );
+    }
+    setDestinationOptionsLoading(false);
+  }, [canAccess, canManageCampaigns, isFacility]);
+
+  useEffect(() => {
+    void loadDestinationOptions();
+  }, [loadDestinationOptions]);
+
+  useEffect(() => {
+    for (const campaign of items) {
+      if (
+        !campaign.id ||
+        hiddenCampaignIds.includes(campaign.id) ||
+        recordedImpressions.current.has(campaign.id)
+      )
+        continue;
+      recordedImpressions.current.add(campaign.id);
+      void recordFeedCampaignEvent(campaign.id, {
+        eventType: "impression",
+        placement: "feed"
+      }).catch(() => undefined);
+    }
+  }, [hiddenCampaignIds, items]);
 
   async function createCampaign() {
     if (!canPublishCampaign || !canManageCampaigns) return;
@@ -397,6 +748,13 @@ export default function CommercialFeedRoute() {
         campaignKind,
         authorType: isFacility ? "facility" : "commercial",
         workspaceType: isFacility ? "facility" : "commercial",
+        ownerType: isFacility ? "facility" : "commercial",
+        facilityId: isFacility ? ent.facilityId || undefined : undefined,
+        campaignType: canonicalCampaignType(campaignKind),
+        status:
+          campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+            ? "scheduled"
+            : "active",
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
@@ -417,7 +775,9 @@ export default function CommercialFeedRoute() {
         recurrenceRule: campaignRecurrence.trim() || undefined,
         externalLinks: cleanExternalUrl
           ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
-          : undefined
+          : undefined,
+        placements,
+        cta: { label: ctaLabel.trim() || cleanExternalLabel || "Open", kind: "open" }
       });
       setTitle("");
       setBody("");
@@ -438,6 +798,8 @@ export default function CommercialFeedRoute() {
       setCampaignEnd("");
       setCampaignReminder("24 hours before");
       setCampaignRecurrence("");
+      setPlacements(isFacility ? ["facility"] : ["feed"]);
+      setCtaLabel("Open");
       setFeedback(
         isFacility ? "Facility outreach campaign published." : "Feed campaign published."
       );
@@ -553,7 +915,43 @@ export default function CommercialFeedRoute() {
         endsAt: post.endsAt
       }
     }).catch(() => undefined);
+    void recordFeedCampaignEvent(post.id, {
+      eventType: "click",
+      placement: "feed",
+      targetUrl: destination.href,
+      growInterests: post.growInterests
+    }).catch(() => undefined);
     router.push(destination.href as any);
+  }
+
+  function hideCampaign(post: CommercialFeedCampaign) {
+    setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
+    void recordFeedCampaignEvent(post.id, {
+      eventType: "hide",
+      placement: "feed"
+    }).catch(() => undefined);
+  }
+
+  async function reportCampaign(post: CommercialFeedCampaign) {
+    setFeedback("");
+    try {
+      await submitReport({
+        contentType: "commercialPost",
+        contentId: post.id,
+        contentTitle: post.title || "Feed campaign",
+        targetUrl: `/feed?campaignId=${encodeURIComponent(post.id)}`,
+        reason: "Reported from Feed by a viewer"
+      });
+      setHiddenCampaignIds((current) => [...new Set([...current, post.id])]);
+      setFeedback("Campaign reported and hidden from this view.");
+      void recordFeedCampaignEvent(post.id, {
+        eventType: "report",
+        placement: "feed",
+        reportReason: "viewer_report"
+      }).catch(() => undefined);
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to submit the campaign report.");
+    }
   }
 
   if (!ent.ready) return null;
@@ -570,7 +968,7 @@ export default function CommercialFeedRoute() {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title}>
           {isFacility
             ? "Facility Outreach"
             : isCommercial
@@ -599,11 +997,18 @@ export default function CommercialFeedRoute() {
             live, storefront, or support Q&A thread. Keep threaded conversation in
             Forum/Q&A.
           </Text>
-          <View style={styles.chipRow}>
+          <View
+            style={styles.chipRow}
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Campaign type"
+          >
             {allowedCampaignKinds.map((option) => (
               <Pressable
                 key={option}
                 onPress={() => setCampaignKind(option)}
+                accessibilityRole="radio"
+                aria-checked={campaignKind === option}
+                accessibilityState={{ checked: campaignKind === option }}
                 accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
                 style={[styles.chip, campaignKind === option && styles.chipSelected]}
               >
@@ -632,7 +1037,7 @@ export default function CommercialFeedRoute() {
             placeholder={
               isFacility
                 ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
-                : "What do you want to share?"
+                : "Campaign message, offer, announcement, or educational promotion"
             }
             multiline
             accessibilityLabel="Feed campaign body"
@@ -658,83 +1063,173 @@ export default function CommercialFeedRoute() {
             placeholder="Location (optional)"
             accessibilityLabel="Feed campaign location"
           />
-          {!isFacility ? (
+          {canManageCampaigns ? (
             <View style={styles.linkBox}>
-              <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
+              <Text style={styles.linkBoxTitle}>Destination and creative</Text>
               <Text style={styles.linkBoxText}>
-                Attach product, course, live, evidence run, storefront, external purchase
-                context, or a Forum/Q&A thread so users can move from the ad into the
-                right public surface.
+                Link a real public destination and add campaign creative. Facility
+                outreach can link education, lives, or Forum/Q&A, but cannot publish
+                direct sales campaigns.
               </Text>
-              <TextInput
-                value={linkedProductId}
-                onChangeText={setLinkedProductId}
-                style={styles.input}
-                placeholder="Linked product ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked product"
-              />
-              <TextInput
-                value={linkedProductLineId}
-                onChangeText={setLinkedProductLineId}
-                style={styles.input}
-                placeholder="Linked product line ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked product line"
-              />
-              <TextInput
-                value={linkedCourseId}
-                onChangeText={setLinkedCourseId}
-                style={styles.input}
-                placeholder="Linked course ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked course"
-              />
-              <TextInput
-                value={linkedLiveId}
-                onChangeText={setLinkedLiveId}
-                style={styles.input}
-                placeholder="Linked live ID or slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked live"
-              />
-              <TextInput
-                value={linkedGrowId}
-                onChangeText={setLinkedGrowId}
-                style={styles.input}
-                placeholder="Linked evidence run ID"
-                autoCapitalize="none"
-                accessibilityLabel="Linked evidence run"
-              />
-              <TextInput
-                value={linkedForumThreadId}
-                onChangeText={setLinkedForumThreadId}
-                style={styles.input}
-                placeholder="Linked Forum/Q&A thread ID"
-                autoCapitalize="none"
-                accessibilityLabel="Linked forum thread"
-              />
-              <TextInput
-                value={storefrontSlug}
-                onChangeText={setStorefrontSlug}
-                style={styles.input}
-                placeholder="Storefront slug"
-                autoCapitalize="none"
-                accessibilityLabel="Linked storefront slug"
-              />
+              {isFacility ? (
+                <>
+                  <DestinationPickerGroup
+                    title="Public courses"
+                    kind="Course"
+                    options={destinationOptions.courses}
+                    selectedId={linkedCourseId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedCourseId}
+                  />
+                  <DestinationPickerGroup
+                    title="Public live events"
+                    kind="Live event"
+                    options={destinationOptions.lives}
+                    selectedId={linkedLiveId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedLiveId}
+                  />
+                  <DestinationPickerGroup
+                    title="Forum/Q&A threads"
+                    kind="Forum thread"
+                    options={destinationOptions.forumThreads}
+                    selectedId={linkedForumThreadId}
+                    loading={destinationOptionsLoading}
+                    onChange={setLinkedForumThreadId}
+                  />
+                  {destinationOptionsError ? (
+                    <Text style={styles.warningText}>{destinationOptionsError}</Text>
+                  ) : null}
+                  <View style={styles.imageTools}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Refresh campaign destination choices"
+                      disabled={destinationOptionsLoading}
+                      onPress={loadDestinationOptions}
+                      style={[
+                        styles.secondaryButton,
+                        destinationOptionsLoading ? styles.disabled : null
+                      ]}
+                    >
+                      <Text style={styles.secondaryButtonText}>
+                        {destinationOptionsLoading
+                          ? "Loading choices..."
+                          : "Refresh choices"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${showAdvancedReferences ? "Hide" : "Show"} advanced destination references`}
+                      onPress={() => setShowAdvancedReferences((current) => !current)}
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryButtonText}>
+                        {showAdvancedReferences
+                          ? "Hide advanced references"
+                          : "Advanced references"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : null}
+              {!isFacility || showAdvancedReferences ? (
+                <View
+                  style={
+                    isFacility
+                      ? styles.advancedReferenceBox
+                      : styles.manualReferenceFields
+                  }
+                >
+                  {isFacility ? (
+                    <>
+                      <Text style={styles.linkBoxTitle}>
+                        Advanced destination references
+                      </Text>
+                      <Text style={styles.linkBoxText}>
+                        Use these only when a valid published record is missing from the
+                        choices above. The campaign still links to the saved record.
+                      </Text>
+                    </>
+                  ) : null}
+                  {!isFacility ? (
+                    <>
+                      <TextInput
+                        value={linkedProductId}
+                        onChangeText={setLinkedProductId}
+                        style={styles.input}
+                        placeholder="Linked product ID or slug"
+                        autoCapitalize="none"
+                        accessibilityLabel="Linked product"
+                      />
+                      <TextInput
+                        value={linkedProductLineId}
+                        onChangeText={setLinkedProductLineId}
+                        style={styles.input}
+                        placeholder="Linked product line ID or slug"
+                        autoCapitalize="none"
+                        accessibilityLabel="Linked product line"
+                      />
+                    </>
+                  ) : null}
+                  <TextInput
+                    value={linkedCourseId}
+                    onChangeText={setLinkedCourseId}
+                    style={styles.input}
+                    placeholder="Linked course ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked course"
+                  />
+                  <TextInput
+                    value={linkedLiveId}
+                    onChangeText={setLinkedLiveId}
+                    style={styles.input}
+                    placeholder="Linked live ID or slug"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked live"
+                  />
+                  {!isFacility ? (
+                    <TextInput
+                      value={linkedGrowId}
+                      onChangeText={setLinkedGrowId}
+                      style={styles.input}
+                      placeholder="Linked evidence run ID"
+                      autoCapitalize="none"
+                      accessibilityLabel="Linked evidence run"
+                    />
+                  ) : null}
+                  <TextInput
+                    value={linkedForumThreadId}
+                    onChangeText={setLinkedForumThreadId}
+                    style={styles.input}
+                    placeholder="Linked Forum/Q&A thread ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Linked forum thread"
+                  />
+                  {!isFacility ? (
+                    <TextInput
+                      value={storefrontSlug}
+                      onChangeText={setStorefrontSlug}
+                      style={styles.input}
+                      placeholder="Storefront slug"
+                      autoCapitalize="none"
+                      accessibilityLabel="Linked storefront slug"
+                    />
+                  ) : null}
+                </View>
+              ) : null}
               <TextInput
                 value={imageUrl}
                 onChangeText={setImageUrl}
                 style={styles.input}
                 placeholder="Campaign image URL or uploaded creative"
                 autoCapitalize="none"
-                accessibilityLabel="Commercial feed campaign image URL"
+                accessibilityLabel="Feed campaign image URL"
               />
               <View style={styles.imageTools}>
                 <Pressable
                   onPress={pickCampaignImage}
                   accessibilityRole="button"
-                  accessibilityLabel="Upload commercial feed campaign image"
+                  accessibilityLabel="Upload feed campaign image"
                   style={styles.secondaryButton}
                   disabled={creating}
                 >
@@ -744,7 +1239,7 @@ export default function CommercialFeedRoute() {
                   <Pressable
                     onPress={() => setImageUrl("")}
                     accessibilityRole="button"
-                    accessibilityLabel="Clear commercial feed campaign image"
+                    accessibilityLabel="Clear feed campaign image"
                     style={styles.secondaryButton}
                     disabled={creating}
                   >
@@ -757,7 +1252,7 @@ export default function CommercialFeedRoute() {
                   source={{ uri: resolveImageUri(imageUrl) }}
                   style={styles.postImagePreview}
                   resizeMode="cover"
-                  accessibilityLabel="Commercial feed campaign image preview"
+                  accessibilityLabel="Feed campaign image preview"
                 />
               ) : null}
               {readinessWarnings.length ? (
@@ -789,6 +1284,13 @@ export default function CommercialFeedRoute() {
               )}
               <View style={styles.twoColumn}>
                 <TextInput
+                  value={ctaLabel}
+                  onChangeText={setCtaLabel}
+                  style={[styles.input, styles.columnInput]}
+                  placeholder="CTA label"
+                  accessibilityLabel="Campaign CTA label"
+                />
+                <TextInput
                   value={externalLinkLabel}
                   onChangeText={setExternalLinkLabel}
                   style={[styles.input, styles.columnInput]}
@@ -805,12 +1307,54 @@ export default function CommercialFeedRoute() {
                 />
               </View>
               <View style={styles.linkBox}>
+                <Text style={styles.linkBoxTitle}>Audience and placements</Text>
+                <Text style={styles.linkBoxText}>
+                  Grow interests above tune relevance. Select where this campaign is
+                  eligible to appear; All Feed placements keeps it broadly eligible.
+                </Text>
+                <View
+                  style={styles.chipRow}
+                  role="group"
+                  accessibilityLabel="Campaign placements"
+                >
+                  {PLACEMENT_OPTIONS.filter(
+                    (option) => !isFacility || option !== "commercial"
+                  ).map((option) => {
+                    const selected = placements.includes(option);
+                    return (
+                      <Pressable
+                        key={option}
+                        accessibilityRole="checkbox"
+                        aria-checked={selected}
+                        accessibilityState={{ checked: selected }}
+                        onPress={() =>
+                          setPlacements((current) =>
+                            selected
+                              ? current.filter((value) => value !== option)
+                              : [...current, option]
+                          )
+                        }
+                        accessibilityLabel={`${selected ? "Remove" : "Add"} ${placementLabels[option]} placement`}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                      >
+                        <Text
+                          style={[styles.chipText, selected && styles.chipTextSelected]}
+                        >
+                          {placementLabels[option]}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+              <View style={styles.linkBox}>
                 <Text style={styles.linkBoxTitle}>Campaign schedule</Text>
                 <Text style={styles.linkBoxText}>
                   Schedule launch timing, reminders, and recurring outreach using the
                   shared GrowPath scheduler.
                 </Text>
                 <SchedulePicker
+                  dateTime
                   dueDate={campaignStart}
                   reminder={campaignReminder}
                   recurrence={campaignRecurrence}
@@ -825,52 +1369,44 @@ export default function CommercialFeedRoute() {
                   reminderPlaceholder="Campaign reminder"
                   recurrencePlaceholder="Campaign recurrence"
                 />
-                <TextInput
+                <CalendarDateField
+                  mode="datetime"
+                  label="Campaign end"
                   value={campaignEnd}
-                  onChangeText={setCampaignEnd}
-                  style={styles.input}
-                  placeholder="Campaign end date/time"
-                  autoCapitalize="none"
+                  onChange={setCampaignEnd}
+                  placeholder="Choose campaign end date and time"
                   accessibilityLabel="Feed campaign schedule end"
                 />
               </View>
             </View>
           ) : null}
-          {isFacility ? (
-            <View style={styles.linkBox}>
-              <Text style={styles.linkBoxTitle}>Outreach schedule</Text>
-              <Text style={styles.linkBoxText}>
-                Schedule facility outreach, reminders, and recurring professional
-                education using the shared GrowPath scheduler.
+          <View style={styles.reviewBox} accessibilityLabel="Campaign review">
+            <Text style={styles.linkBoxTitle}>Review before publishing</Text>
+            <Text style={styles.linkBoxText}>
+              {campaignKindLabels[campaignKind]} · {placements.length} placement
+              {placements.length === 1 ? "" : "s"} · {splitTags(growInterests).length}{" "}
+              grow interest{splitTags(growInterests).length === 1 ? "" : "s"}
+            </Text>
+            <Text style={styles.linkBoxText}>
+              CTA: {ctaLabel.trim() || externalLinkLabel.trim() || "Open"} · Will publish
+              as:{" "}
+              {campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+                ? "Scheduled"
+                : "Active"}
+            </Text>
+            {readinessWarnings.length ? (
+              <Text style={styles.warningText}>
+                Publishing blocked: {readinessWarnings.join(" ")}
               </Text>
-              <SchedulePicker
-                dueDate={campaignStart}
-                reminder={campaignReminder}
-                recurrence={campaignRecurrence}
-                onDueDateChange={setCampaignStart}
-                onReminderChange={setCampaignReminder}
-                onRecurrenceChange={setCampaignRecurrence}
-                accessibilityPrefix="Feed campaign schedule"
-                dueDateAccessibilityLabel="Feed campaign schedule start"
-                reminderAccessibilityLabel="Feed campaign reminder"
-                recurrenceAccessibilityLabel="Feed campaign recurrence"
-                dueDatePlaceholder="Campaign start date/time"
-                reminderPlaceholder="Campaign reminder"
-                recurrencePlaceholder="Campaign recurrence"
-              />
-              <TextInput
-                value={campaignEnd}
-                onChangeText={setCampaignEnd}
-                style={styles.input}
-                placeholder="Campaign end date/time"
-                autoCapitalize="none"
-                accessibilityLabel="Feed campaign schedule end"
-              />
-            </View>
-          ) : null}
+            ) : (
+              <Text style={styles.readyText}>Ready to publish.</Text>
+            )}
+          </View>
           <Pressable
             onPress={createCampaign}
             disabled={!canPublishCampaign}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canPublishCampaign }}
             accessibilityLabel={
               isFacility ? "Publish facility outreach" : "Publish feed campaign"
             }
@@ -890,23 +1426,61 @@ export default function CommercialFeedRoute() {
 
       {error ? <InlineError error={error} /> : null}
 
+      {canManageCampaigns && analytics ? (
+        <View style={styles.card} accessibilityLabel="Feed campaign analytics">
+          <Text style={styles.cardTitle}>Campaign Analytics</Text>
+          <View style={styles.metricRow}>
+            {[
+              ["Impressions", analytics.totals.impressions],
+              ["Clicks", analytics.totals.clicks],
+              ["Conversions", analytics.totals.conversions],
+              ["Hidden", analytics.totals.hides],
+              ["Reports", analytics.totals.reports]
+            ].map(([label, value]) => (
+              <View key={String(label)} style={styles.metricCard}>
+                <Text style={styles.metricValue}>{String(value)}</Text>
+                <Text style={styles.metricLabel}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          {analytics.placements.slice(0, 4).map((row) => (
+            <Text key={`placement-${row.key}`} style={styles.linkBoxText}>
+              {placementLabels[row.key as FeedCampaignPlacement] || row.key}:{" "}
+              {row.impressions} impressions {" · "}
+              {row.clicks} clicks {" · "}
+              {row.conversions} conversions
+            </Text>
+          ))}
+          {analytics.growInterests.slice(0, 4).map((row) => (
+            <Text key={`interest-${row.key}`} style={styles.linkBoxText}>
+              Grow interest {row.key}: {row.impressions} impressions {" · "}
+              {row.clicks} clicks
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.filters}>
         <Text style={styles.filterLabel}>Filter</Text>
-        <View style={styles.chipRow}>
-          {["all", ...COMMERCIAL_TYPES].map((option) => (
+        <View
+          style={styles.chipRow}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Campaign filters"
+        >
+          {CAMPAIGN_FILTERS.map(({ value, label }) => (
             <Pressable
-              key={option}
-              onPress={() => setFilterType(option)}
-              accessibilityLabel={`Filter feed by ${option}`}
-              style={[styles.chip, filterType === option && styles.chipSelected]}
+              key={value}
+              onPress={() => setFilterType(value)}
+              accessibilityRole="radio"
+              aria-checked={filterType === value}
+              accessibilityState={{ checked: filterType === value }}
+              accessibilityLabel={`Filter campaigns by ${label}`}
+              style={[styles.chip, filterType === value && styles.chipSelected]}
             >
               <Text
-                style={[
-                  styles.chipText,
-                  filterType === option && styles.chipTextSelected
-                ]}
+                style={[styles.chipText, filterType === value && styles.chipTextSelected]}
               >
-                {option}
+                {label}
               </Text>
             </Pressable>
           ))}
@@ -915,9 +1489,9 @@ export default function CommercialFeedRoute() {
           value={q}
           onChangeText={setQ}
           style={styles.input}
-          placeholder="Search feed"
+          placeholder="Search campaigns"
           autoCapitalize="none"
-          accessibilityLabel="Search feed"
+          accessibilityLabel="Search campaigns"
         />
       </View>
 
@@ -937,120 +1511,140 @@ export default function CommercialFeedRoute() {
         </View>
       ) : null}
 
-      {items.map((post) => {
-        const destination = campaignDestination(post);
-        const isCampaignFocused = Boolean(
-          focusedCampaignId && focusedCampaignId === post.id
-        );
-        const isLiveFocused = Boolean(
-          focusedLiveId && focusedLiveId === String(post.linkedLiveId || "")
-        );
-        const isFocused = isCampaignFocused || isLiveFocused;
-        return (
-          <View
-            key={post.id}
-            accessibilityLabel={
-              isCampaignFocused
-                ? `Selected feed campaign ${post.id}`
-                : isLiveFocused
-                  ? `Selected feed live ${focusedLiveId}`
-                  : undefined
-            }
-            style={[styles.post, isFocused ? styles.postFocused : null]}
-          >
-            <View style={styles.postHeader}>
-              <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
-              <Text style={styles.engagements}>
-                {campaignEngagementCount(post)} campaign engagements
-              </Text>
-            </View>
-            <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
-            {campaignImage(post) ? (
-              <Image
-                source={{ uri: campaignImage(post) }}
-                style={styles.feedImage}
-                resizeMode="cover"
-                accessibilityLabel={`${post.title || "Feed campaign"} image`}
-              />
-            ) : null}
-            <Text style={styles.postBody}>{post.body}</Text>
-            {post.tags.length ? (
-              <Text style={styles.tags}>
-                {post.tags.map((tag) => `#${tag}`).join(" ")}
-              </Text>
-            ) : null}
-            {post.growInterests.length ? (
-              <Text style={styles.interests}>
-                Interests: {post.growInterests.join(", ")}
-              </Text>
-            ) : null}
-            {post.linkedProductId ||
-            post.linkedProductLineId ||
-            post.linkedCourseId ||
-            post.linkedLiveId ||
-            campaignEvidenceRunId(post) ||
-            post.linkedForumThreadId ||
-            campaignStorefrontSlug(post) ||
-            post.startsAt ||
-            post.endsAt ||
-            post.externalLinks?.length ? (
-              <View style={styles.linkMetaRow}>
-                {post.linkedProductId ? (
-                  <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
-                ) : null}
-                {post.linkedProductLineId ? (
-                  <Text style={styles.linkMeta}>
-                    Product line: {post.linkedProductLineId}
-                  </Text>
-                ) : null}
-                {post.linkedCourseId ? (
-                  <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
-                ) : null}
-                {post.linkedLiveId ? (
-                  <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
-                ) : null}
-                {campaignEvidenceRunId(post) ? (
-                  <Text style={styles.linkMeta}>
-                    Evidence run: {campaignEvidenceRunId(post)}
-                  </Text>
-                ) : null}
-                {post.linkedForumThreadId ? (
-                  <Text style={styles.linkMeta}>
-                    Forum/Q&A: {post.linkedForumThreadId}
-                  </Text>
-                ) : null}
-                {campaignStorefrontSlug(post) ? (
-                  <Text style={styles.linkMeta}>
-                    Store: {campaignStorefrontSlug(post)}
-                  </Text>
-                ) : null}
-                {post.startsAt ? (
-                  <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>
-                ) : null}
-                {post.endsAt ? (
-                  <Text style={styles.linkMeta}>Ends: {post.endsAt}</Text>
-                ) : null}
-                {post.externalLinks?.map((link) => (
-                  <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
-                    {link.label}: {link.url}
-                  </Text>
-                ))}
+      {items
+        .filter((post) => !hiddenCampaignIds.includes(post.id))
+        .map((post) => {
+          const destination = campaignDestination(post);
+          const isCampaignFocused = Boolean(
+            focusedCampaignId && focusedCampaignId === post.id
+          );
+          const isLiveFocused = Boolean(
+            focusedLiveId && focusedLiveId === String(post.linkedLiveId || "")
+          );
+          const isFocused = isCampaignFocused || isLiveFocused;
+          return (
+            <View
+              key={post.id}
+              accessibilityLabel={
+                isCampaignFocused
+                  ? `Selected feed campaign ${post.id}`
+                  : isLiveFocused
+                    ? `Selected feed live ${focusedLiveId}`
+                    : undefined
+              }
+              style={[styles.post, isFocused ? styles.postFocused : null]}
+            >
+              <View style={styles.postHeader}>
+                <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
+                <Text style={styles.engagements}>
+                  {campaignEngagementCount(post)} campaign engagements
+                </Text>
               </View>
-            ) : null}
-            {destination ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
-                onPress={() => openCampaignDestination(post, destination)}
-                style={styles.ctaButton}
-              >
-                <Text style={styles.ctaButtonText}>{destination.label}</Text>
-              </Pressable>
-            ) : null}
-            <Text style={styles.meta}>{campaignMeta(post)}</Text>
-          </View>
-        );
-      })}
+              <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
+              {campaignImage(post) ? (
+                <Image
+                  source={{ uri: campaignImage(post) }}
+                  style={styles.feedImage}
+                  resizeMode="cover"
+                  accessibilityLabel={`${post.title || "Feed campaign"} image`}
+                />
+              ) : null}
+              <Text style={styles.postBody}>{post.body}</Text>
+              {post.tags.length ? (
+                <Text style={styles.tags}>
+                  {post.tags.map((tag) => `#${tag}`).join(" ")}
+                </Text>
+              ) : null}
+              {post.growInterests.length ? (
+                <Text style={styles.interests}>
+                  Interests: {post.growInterests.join(", ")}
+                </Text>
+              ) : null}
+              {post.linkedProductId ||
+              post.linkedProductLineId ||
+              post.linkedCourseId ||
+              post.linkedLiveId ||
+              campaignEvidenceRunId(post) ||
+              post.linkedForumThreadId ||
+              campaignStorefrontSlug(post) ||
+              post.startsAt ||
+              post.endsAt ||
+              post.externalLinks?.length ? (
+                <View style={styles.linkMetaRow}>
+                  {post.linkedProductId ? (
+                    <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
+                  ) : null}
+                  {post.linkedProductLineId ? (
+                    <Text style={styles.linkMeta}>
+                      Product line: {post.linkedProductLineId}
+                    </Text>
+                  ) : null}
+                  {post.linkedCourseId ? (
+                    <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
+                  ) : null}
+                  {post.linkedLiveId ? (
+                    <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
+                  ) : null}
+                  {campaignEvidenceRunId(post) ? (
+                    <Text style={styles.linkMeta}>
+                      Evidence run: {campaignEvidenceRunId(post)}
+                    </Text>
+                  ) : null}
+                  {post.linkedForumThreadId ? (
+                    <Text style={styles.linkMeta}>
+                      Forum/Q&A: {post.linkedForumThreadId}
+                    </Text>
+                  ) : null}
+                  {campaignStorefrontSlug(post) ? (
+                    <Text style={styles.linkMeta}>
+                      Store: {campaignStorefrontSlug(post)}
+                    </Text>
+                  ) : null}
+                  {post.startsAt ? (
+                    <Text style={styles.linkMeta}>Starts: {post.startsAt}</Text>
+                  ) : null}
+                  {post.endsAt ? (
+                    <Text style={styles.linkMeta}>Ends: {post.endsAt}</Text>
+                  ) : null}
+                  {post.externalLinks?.map((link) => (
+                    <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
+                      {link.label}: {link.url}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              {destination ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
+                  onPress={() => openCampaignDestination(post, destination)}
+                  style={styles.ctaButton}
+                >
+                  <Text style={styles.ctaButtonText}>{destination.label}</Text>
+                </Pressable>
+              ) : null}
+              <View style={styles.imageTools}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Hide ${post.title || "campaign"}`}
+                  onPress={() => hideCampaign(post)}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Hide</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Report ${post.title || "campaign"}`}
+                  onPress={() => void reportCampaign(post)}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Report</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.meta}>{campaignMeta(post)}</Text>
+            </View>
+          );
+        })}
     </ScrollView>
   );
 }
@@ -1074,6 +1668,15 @@ const styles = StyleSheet.create({
     padding: 14
   },
   cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
+  metricRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  metricCard: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: radius.card,
+    minWidth: 105,
+    padding: 10
+  },
+  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  metricLabel: { color: "#64748B", fontSize: 11, fontWeight: "800" },
   input: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
@@ -1094,6 +1697,35 @@ const styles = StyleSheet.create({
   },
   linkBoxTitle: { color: "#0F172A", fontWeight: "900" },
   linkBoxText: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
+  destinationGroup: { gap: 7, marginTop: 4 },
+  destinationTitle: { color: "#334155", fontSize: 13, fontWeight: "900" },
+  destinationLoading: { alignItems: "center", flexDirection: "row", gap: 8 },
+  destinationGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  destinationCard: {
+    backgroundColor: "white",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    minWidth: 180,
+    paddingHorizontal: 11,
+    paddingVertical: 9
+  },
+  destinationCardSelected: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
+  destinationCardTitle: { color: "#0F172A", fontWeight: "900" },
+  destinationCardTitleSelected: { color: "white" },
+  destinationCardDetail: { color: "#64748B", fontSize: 11, marginTop: 3 },
+  destinationCardDetailSelected: { color: "#CCFBF1" },
+  emptyDestinationText: { color: "#64748B", fontSize: 12, fontStyle: "italic" },
+  selectedDestinationText: { color: "#0F766E", fontSize: 12, fontWeight: "900" },
+  advancedReferenceBox: {
+    backgroundColor: "white",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    padding: 10
+  },
+  manualReferenceFields: { gap: 8 },
   imageTools: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   secondaryButton: {
     alignItems: "center",
@@ -1116,6 +1748,14 @@ const styles = StyleSheet.create({
   warningBox: { gap: 4 },
   warningText: { color: "#92400E", fontSize: 12, fontWeight: "800" },
   readyText: { color: "#166534", fontSize: 12, fontWeight: "900" },
+  reviewBox: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#86EFAC",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 6,
+    padding: 10
+  },
   twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   columnInput: { flex: 1, minWidth: 180 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

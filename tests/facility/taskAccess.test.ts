@@ -28,7 +28,8 @@ describe("facility task UI capability access", () => {
   });
 
   it("only owners and managers can assign tasks", () => {
-    const can = (capability: string | string[]) => capability === CAPABILITY_KEYS.TASKS_WRITE;
+    const can = (capability: string | string[]) =>
+      capability === CAPABILITY_KEYS.TASKS_WRITE;
 
     expect(getFacilityTaskAccess({ can, facilityRole: "OWNER" }).canAssignTask).toBe(
       true
@@ -38,6 +39,9 @@ describe("facility task UI capability access", () => {
     );
     expect(getFacilityTaskAccess({ can, facilityRole: "STAFF" }).canAssignTask).toBe(
       false
+    );
+    expect(getFacilityTaskAccess({ can, facilityRole: "owner" }).canAssignTask).toBe(
+      true
     );
   });
 });

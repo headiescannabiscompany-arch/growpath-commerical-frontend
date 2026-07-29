@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -27,8 +27,10 @@ import { createPersonalTask } from "@/api/tasks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 type CommentRow = {
   id?: string;
@@ -39,6 +41,8 @@ type CommentRow = {
   author?: any;
   user?: any;
   createdAt?: string;
+  photos?: string[];
+  attachments?: any[];
 };
 
 function getId(params: Record<string, any>): string {
@@ -61,19 +65,63 @@ function bodyOf(row: any) {
   return String(row?.body || row?.content || row?.text || "");
 }
 
+function commentPhotos(row: CommentRow): string[] {
+  const structured = [row?.photos, row?.attachments]
+    .filter(Array.isArray)
+    .flat()
+    .map(photoUri)
+    .filter(Boolean);
+  const embedded = bodyOf(row)
+    .split(/\s+/)
+    .filter((value) => /^https?:\/\//i.test(value) || value.startsWith("/uploads/"));
+  return Array.from(new Set([...structured, ...embedded]))
+    .map((uri: string) => resolveImageUri(uri))
+    .filter((uri: string): uri is string => Boolean(uri));
+}
+
+function visibleCommentBody(row: CommentRow) {
+  const photoSet = new Set(commentPhotos(row));
+  return bodyOf(row)
+    .split("\n")
+    .filter((line) => !photoSet.has(resolveImageUri(line.trim())))
+    .join("\n")
+    .trim();
+}
+
 function titleOf(post: SocialPost | null) {
   return String(post?.title || post?.text || post?.content || post?.body || "Forum post");
 }
 
-function photosOf(post: SocialPost | null) {
+function photoUri(value: any) {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+  return String(
+    value.url ||
+      value.uri ||
+      value.src ||
+      value.storageUrl ||
+      value.imageUrl ||
+      value.photoUrl ||
+      value.path ||
+      ""
+  );
+}
+
+function photosOf(post: SocialPost | null): string[] {
   if (!post) return [];
   const rows = [
     post.photos,
     post.photoUrls,
+    (post as any).imageUrls,
+    (post as any).media,
+    (post as any).attachments,
     post.images,
     post.imageUrl ? [post.imageUrl] : []
   ].find((value) => Array.isArray(value) && value.length);
-  return (rows || []).map((uri) => resolveImageUri(uri)).filter(Boolean);
+  return ((rows || []) as unknown[])
+    .map(photoUri)
+    .map((uri: string) => resolveImageUri(uri))
+    .filter((uri: string): uri is string => Boolean(uri));
 }
 
 function likedByViewer(post: SocialPost | null) {
@@ -91,6 +139,26 @@ function likeTotal(post: SocialPost | null) {
   return Array.isArray(post.likes) ? post.likes.length : 0;
 }
 
+function tagsOf(post: SocialPost | null) {
+  if (!post) return [];
+  const interests = (post as any).growInterests;
+  const structured =
+    interests && !Array.isArray(interests)
+      ? flattenGrowInterests(interests)
+      : normalizeInterestList(interests);
+  return Array.from(
+    new Set([
+      ...structured,
+      ...normalizeInterestList((post as any).growTags),
+      ...normalizeInterestList((post as any).tags)
+    ])
+  );
+}
+
+function ForumImage({ uri, style, label }: { uri: string; style: any; label: string }) {
+  return <ExpandableForumImage uri={uri} style={style} label={label} />;
+}
+
 export default function ForumPostDetailRoute() {
   const params = useLocalSearchParams();
   const id = getId(params as any);
@@ -102,6 +170,7 @@ export default function ForumPostDetailRoute() {
   const [post, setPost] = useState<SocialPost | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentText, setCommentText] = useState("");
+  const [commentPhotoUris, setCommentPhotoUris] = useState<string[]>([]);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -172,18 +241,55 @@ export default function ForumPostDetailRoute() {
   async function submitComment() {
     const targetId = loadedId || id;
     const text = commentText.trim();
-    if (!targetId || !text || !canPost) return;
+    if (!targetId || (!text && !commentPhotoUris.length) || !canPost) return;
     setSaving(true);
     setFeedback("");
     try {
-      await addForumComment(targetId, text);
+      const created: any = await addForumComment(
+        targetId,
+        text || "Photo comment",
+        commentPhotoUris
+      );
+      if (created?.isHidden || created?.moderationStatus === "held") {
+        setFeedback(
+          created?.moderationNotice ||
+            "This comment is hidden while a human moderator reviews it."
+        );
+        return;
+      }
       setCommentText("");
+      setCommentPhotoUris([]);
       const nextComments = await listForumComments(targetId);
       setComments(nextComments);
     } catch (error: any) {
       setFeedback(error?.message || "Unable to add comment.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function pickCommentPhotos() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setFeedback("Photo-library permission is required to add comment photos.");
+      return;
+    }
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: Math.max(10 - commentPhotoUris.length, 1),
+      allowsEditing: false,
+      quality: 0.8
+    });
+    if (picked.canceled) return;
+    setCommentPhotoUris((current) =>
+      [...current, ...picked.assets.map((asset) => asset.uri).filter(Boolean)].slice(
+        0,
+        10
+      )
+    );
+    if (commentPhotoUris.length + picked.assets.length > 10) {
+      setFeedback("Maximum 10 comment photos.");
     }
   }
 
@@ -264,11 +370,7 @@ export default function ForumPostDetailRoute() {
   }
 
   return (
-    <ScreenBoundary
-      name="personal.forum.postDetail"
-      showBack
-      backFallbackHref="/home/personal/forum"
-    >
+    <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -311,15 +413,28 @@ export default function ForumPostDetailRoute() {
                     : ""}
                 </Text>
                 {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
+                {tagsOf(post).length ? (
+                  <View style={styles.tagRow}>
+                    {tagsOf(post).map((tag) => (
+                      <Text key={tag} style={styles.tag}>
+                        {tag}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+                {(post as any).growId || (post as any).linkedGrowId ? (
+                  <Text style={styles.contextText}>
+                    Attached grow: {(post as any).growId || (post as any).linkedGrowId}
+                  </Text>
+                ) : null}
                 {photosOf(post).length ? (
                   <View style={styles.photoGrid}>
                     {photosOf(post).map((photo, index) => (
-                      <Image
+                      <ForumImage
                         key={`${photo}-${index}`}
-                        source={{ uri: photo }}
+                        uri={photo}
                         style={styles.postPhoto}
-                        resizeMode="cover"
-                        accessibilityLabel={`Forum post photo ${index + 1}`}
+                        label={`Forum post photo ${index + 1}`}
                       />
                     ))}
                   </View>
@@ -407,11 +522,47 @@ export default function ForumPostDetailRoute() {
                   accessibilityLabel="Forum comment"
                 />
                 <Pressable
-                  disabled={!commentText.trim() || saving}
+                  disabled={saving}
+                  onPress={pickCommentPhotos}
+                  style={[styles.secondaryBtn, saving && styles.disabled]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Attach forum comment photos"
+                >
+                  <Text style={styles.secondaryText}>
+                    {commentPhotoUris.length ? "Add more photos" : "Attach photo"}
+                  </Text>
+                </Pressable>
+                {commentPhotoUris.length ? (
+                  <View style={styles.photoGrid}>
+                    {commentPhotoUris.map((uri, index) => (
+                      <View key={`${uri}-${index}`}>
+                        <ForumImage
+                          uri={resolveImageUri(uri)}
+                          style={styles.commentPhoto}
+                          label={`Forum comment draft photo ${index + 1}`}
+                        />
+                        <Pressable
+                          onPress={() =>
+                            setCommentPhotoUris((current) =>
+                              current.filter((_, itemIndex) => itemIndex !== index)
+                            )
+                          }
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove forum comment photo ${index + 1}`}
+                        >
+                          <Text style={styles.dangerText}>Remove</Text>
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+                <Pressable
+                  disabled={(!commentText.trim() && !commentPhotoUris.length) || saving}
                   onPress={submitComment}
                   style={[
                     styles.primaryBtn,
-                    (!commentText.trim() || saving) && styles.disabled
+                    ((!commentText.trim() && !commentPhotoUris.length) || saving) &&
+                      styles.disabled
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel="Submit forum comment"
@@ -429,9 +580,21 @@ export default function ForumPostDetailRoute() {
                 style={styles.comment}
               >
                 <Text style={styles.rowTitle}>{authorName(comment)}</Text>
-                <Text style={styles.cardText}>
-                  {bodyOf(comment) || "No comment text."}
-                </Text>
+                {visibleCommentBody(comment) ? (
+                  <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
+                ) : null}
+                {commentPhotos(comment).length ? (
+                  <View style={styles.photoGrid}>
+                    {commentPhotos(comment).map((photo, index) => (
+                      <ForumImage
+                        key={`${photo}-${index}`}
+                        uri={photo}
+                        style={styles.commentPhoto}
+                        label={`Forum comment photo ${index + 1}`}
+                      />
+                    ))}
+                  </View>
+                ) : null}
               </View>
             ))}
             {!comments.length ? (
@@ -455,13 +618,33 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 36, gap: 12 },
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   body: { color: "#334155", lineHeight: 21, marginTop: 10 },
-  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
+  photoGrid: { alignItems: "center", gap: 10, marginTop: 8, width: "100%" },
   postPhoto: {
-    width: 160,
-    height: 120,
+    width: "100%",
+    maxWidth: 720,
+    aspectRatio: 4 / 3,
+    alignSelf: "center",
     borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
+  imageFallback: { alignItems: "center", justifyContent: "center", padding: 8 },
+  imageFallbackText: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  tag: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 999,
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
+    paddingHorizontal: 9,
+    paddingVertical: 4
+  },
+  contextText: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 4 },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -491,6 +674,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   commentInput: { minHeight: 90, textAlignVertical: "top" },
+  commentPhoto: {
+    width: "100%",
+    maxWidth: 560,
+    aspectRatio: 4 / 3,
+    alignSelf: "center",
+    borderRadius: radius.card,
+    backgroundColor: "#E2E8F0"
+  },
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

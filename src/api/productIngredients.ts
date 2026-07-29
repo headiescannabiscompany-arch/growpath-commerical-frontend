@@ -49,16 +49,23 @@ export type ProductIngredient = {
   releaseSpeed?: "immediate" | "fast" | "medium" | "slow" | "unknown";
   releaseWindow?: string;
   cost?: number | null;
+  costUnit?: string;
   supplier?: string;
   organicOrSynthetic?: string;
   documentUrl?: string;
+  documentUrls?: string[];
   photoUrl?: string;
+  photoUrls?: string[];
+  evidenceAssetIds?: string[];
   applicationNotes?: string;
   micronutrientNotes?: string;
   sourceType?: string;
   confidence?: "low" | "medium" | "high";
   sourceUrl?: string;
   sourceRecords?: SourceRecord[];
+  labelExtraction?: Record<string, any> | null;
+  labelVerifiedByUser?: boolean;
+  labelVerifiedAt?: string | null;
   favorite?: boolean;
   archivedAt?: string | null;
 };
@@ -114,4 +121,12 @@ export async function archiveProductIngredient(id: string): Promise<boolean> {
     method: "DELETE"
   });
   return Boolean(res?.archived ?? res?.data?.archived);
+}
+
+export async function extractIngredientLabel(evidenceAssetId: string) {
+  const res: any = await apiRequest("/api/feeding/label", {
+    method: "POST",
+    body: { evidenceAssetId }
+  });
+  return res?.data ?? res;
 }

@@ -1,4 +1,5 @@
 import type {
+  GrowpathModuleAgreementStatus,
   GrowpathModuleRecordInput,
   GrowpathModuleRecordType
 } from "@/api/growpathModules";
@@ -46,6 +47,23 @@ function compactStrings(values: unknown[]) {
     .filter(Boolean);
 }
 
+function normalizeAgreementStatus(
+  ...values: unknown[]
+): GrowpathModuleAgreementStatus | undefined {
+  const status = firstString(...values).toLowerCase();
+  if (status === "conflict") return "conflicts";
+  if (
+    status === "agrees" ||
+    status === "partially_agrees" ||
+    status === "conflicts" ||
+    status === "insufficient_data" ||
+    status === "not_run"
+  ) {
+    return status;
+  }
+  return undefined;
+}
+
 export function buildModuleRecordInput({
   tool,
   title,
@@ -85,12 +103,12 @@ export function buildModuleRecordInput({
       : undefined;
   const agreementStatus =
     recordType === "ipm_scout"
-      ? firstString(
+      ? normalizeAgreementStatus(
           outputs.agreementStatus,
           outputs.gptVerification?.agreementStatus,
           outputs.gptVerification?.agreement,
           outputs.verificationStatus
-        ) || undefined
+        )
       : undefined;
 
   return {
@@ -107,6 +125,12 @@ export function buildModuleRecordInput({
     status: "active",
     growId: growId || inputs.growId || undefined,
     plantId: plantId || inputs.plantId || undefined,
+    phenoPlantId:
+      firstString(
+        inputs.phenoPlantId,
+        recordType === "crop_steering_entry" ? plantId || inputs.plantId : ""
+      ) || undefined,
+    geneticsId: firstString(inputs.geneticsId) || undefined,
     cropProfileId: cropProfileId || inputs.cropProfileId || undefined,
     cropIdentity: cropIdentity || inputs.cropIdentity || null,
     selectedPlantContext: selectedPlantContext || inputs.selectedPlantContext || null,
@@ -119,7 +143,16 @@ export function buildModuleRecordInput({
     warnings: compactStrings([outputs.warnings, outputs.stageTimingWarnings]),
     recommendations: compactStrings([outputs.recommendations, outputs.nextChecks]),
     confidence: firstString(outputs.confidence, outputs.sourceConfidence) || null,
-    limitations: compactStrings([outputs.limitations, outputs.missingData]),
+    limitations: compactStrings([
+      outputs.limitations,
+      outputs.missingData,
+      outputs.missingInformation
+    ]),
+    methodIds: compactStrings([outputs.methodIds]),
+    sourceIds: compactStrings([outputs.sourceIds]),
+    citations: Array.isArray(outputs.citations) ? outputs.citations : [],
+    disagreements: Array.isArray(outputs.disagreements) ? outputs.disagreements : [],
+    sourceRecords: Array.isArray(outputs.sourceRecords) ? outputs.sourceRecords : [],
     tags: compactStrings([
       tool,
       outputs.tags,

@@ -2,16 +2,39 @@ const {
   CAP,
   can,
   canInFacilityRole,
+  computeEntitlements,
   hasCap,
   requireCapability,
   requireCapabilityMiddleware
 } = require("./entitlements");
 
 describe("backend entitlement capability checks", () => {
-  test("hasCap only passes when the capability is present", () => {
-    expect(hasCap({ capabilities: [CAP.TASKS_WRITE] }, CAP.TASKS_WRITE)).toBe(
-      true
+  test("free accounts can sell paid courses within their plan limits", () => {
+    const entitlements = computeEntitlements({
+      plan: "free",
+      mode: "personal",
+      appRole: "user"
+    });
+
+    expect(entitlements.capabilities).toContain(CAP.COURSES_CREATE);
+    expect(entitlements.capabilities).toContain(CAP.COURSES_SELL_PAID);
+    expect(entitlements.capabilities).toEqual(
+      expect.arrayContaining([
+        CAP.VIDEOS_VIEW,
+        CAP.VIDEOS_UPLOAD,
+        CAP.VIDEOS_PUBLISH,
+        CAP.VIDEOS_MANAGE
+      ])
     );
+    expect(entitlements.limits).toMatchObject({
+      maxPaidCourses: 1,
+      maxLessonsPerCourse: 7,
+      videoStorageBytes: 500 * 1024 * 1024
+    });
+  });
+
+  test("hasCap only passes when the capability is present", () => {
+    expect(hasCap({ capabilities: [CAP.TASKS_WRITE] }, CAP.TASKS_WRITE)).toBe(true);
     expect(hasCap({ capabilities: [] }, CAP.TASKS_WRITE)).toBe(false);
   });
 
@@ -20,17 +43,15 @@ describe("backend entitlement capability checks", () => {
     expect(canInFacilityRole(CAP.TASKS_WRITE, "STAFF")).toBe(true);
     expect(canInFacilityRole(CAP.TASKS_WRITE, "VIEWER")).toBe(false);
     expect(
-      can(
-        { capabilities: [CAP.TASKS_WRITE], facilityRole: "MANAGER" },
-        CAP.TASKS_WRITE
-      )
+      can({ capabilities: [CAP.TASKS_WRITE], facilityRole: "MANAGER" }, CAP.TASKS_WRITE)
     ).toBe(true);
     expect(
-      can(
-        { capabilities: [CAP.TASKS_WRITE], facilityRole: "VIEWER" },
-        CAP.TASKS_WRITE
-      )
+      can({ capabilities: [CAP.TASKS_WRITE], facilityRole: "VIEWER" }, CAP.TASKS_WRITE)
     ).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_UPLOAD, "STAFF")).toBe(true);
+    expect(canInFacilityRole(CAP.VIDEOS_PUBLISH, "STAFF")).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_MANAGE, "VIEWER")).toBe(false);
+    expect(canInFacilityRole(CAP.VIDEOS_VIEW, "VIEWER")).toBe(true);
   });
 
   test("requireCapability returns a 403 error when disabled", () => {

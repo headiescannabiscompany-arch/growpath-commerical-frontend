@@ -60,18 +60,29 @@ type ExportSummary = {
     pendingSteps: number;
     runsMissingSteps: number;
   };
+  deviationEvidence?: {
+    totalDeviations: number;
+    openDeviations: number;
+    resolvedDeviations: number;
+    cancelledDeviations: number;
+  };
 };
 
-function buildReadinessSummary(
+export function buildReadinessSummary(
   counts: Record<string, number>,
-  sopEvidence: ExportSummary["sopEvidence"]
+  sopEvidence: ExportSummary["sopEvidence"],
+  deviationEvidence?: ExportSummary["deviationEvidence"]
 ): ExportSummary["readiness"] {
   const issues: string[] = [];
-  const deviations = Number(counts.deviations || 0);
+  const openDeviations = Number(
+    deviationEvidence?.openDeviations ?? counts.deviations ?? 0
+  );
   const pendingSteps = Number(sopEvidence?.pendingSteps || 0);
   const runsMissingSteps = Number(sopEvidence?.runsMissingSteps || 0);
 
-  if (deviations > 0) issues.push(`${deviations} deviation record(s) in packet`);
+  if (openDeviations > 0) {
+    issues.push(`${openDeviations} open deviation record(s) in packet`);
+  }
   if (pendingSteps > 0) issues.push(`${pendingSteps} SOP checklist step(s) pending`);
   if (runsMissingSteps > 0) {
     issues.push(`${runsMissingSteps} SOP run(s) missing checklist evidence`);
@@ -114,9 +125,39 @@ function StatTile({
   );
 }
 
+export function formatMissedComplianceCount(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? value : "Not tracked";
+}
+
+export function facilityComplianceExportFilename(
+  facilityName: unknown,
+  facilityId?: string | null
+) {
+  const candidate = String(facilityName || "").trim();
+  const readableName =
+    candidate && candidate !== facilityId ? candidate : "selected-facility";
+  const slug = readableName
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `${slug || "selected-facility"}-compliance-export.json`;
+}
+
+export function facilityComplianceExportFilenameFromSources(
+  packetFacilityName: unknown,
+  selectedFacilityName: unknown,
+  facilityId?: string | null
+) {
+  const packetName = String(packetFacilityName || "").trim();
+  return facilityComplianceExportFilename(packetName || selectedFacilityName, facilityId);
+}
+
 export default function FacilityReportsTab() {
   const router = useRouter();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
   const handleApiError = useMemo(
@@ -169,7 +210,11 @@ export default function FacilityReportsTab() {
     try {
       clearError();
       const packet = await getFacilityComplianceExport(facilityId);
-      const filename = `facility-${facilityId}-compliance-export.json`;
+      const filename = facilityComplianceExportFilenameFromSources(
+        packet.facilityName,
+        selectedFacility?.name,
+        facilityId
+      );
       const json = JSON.stringify(packet, null, 2);
       const counts = packet.counts || {};
       const totalRecords = Object.values(counts).reduce(
@@ -182,8 +227,13 @@ export default function FacilityReportsTab() {
         generatedAt: packet.generatedAt,
         totalRecords,
         counts,
-        readiness: buildReadinessSummary(counts, packet.evidenceSummary?.sopRuns),
-        sopEvidence: packet.evidenceSummary?.sopRuns
+        readiness: buildReadinessSummary(
+          counts,
+          packet.evidenceSummary?.sopRuns,
+          packet.evidenceSummary?.deviations
+        ),
+        sopEvidence: packet.evidenceSummary?.sopRuns,
+        deviationEvidence: packet.evidenceSummary?.deviations
       });
 
       if (typeof document !== "undefined") {
@@ -345,6 +395,29 @@ export default function FacilityReportsTab() {
                 </View>
               </View>
             ) : null}
+            {exportSummary.deviationEvidence ? (
+              <View style={styles.evidencePanel}>
+                <Text style={styles.evidenceTitle}>Deviation evidence status</Text>
+                <View style={styles.grid}>
+                  <StatTile
+                    label="Total deviations"
+                    value={exportSummary.deviationEvidence.totalDeviations}
+                  />
+                  <StatTile
+                    label="Open deviations"
+                    value={exportSummary.deviationEvidence.openDeviations}
+                  />
+                  <StatTile
+                    label="Resolved deviations"
+                    value={exportSummary.deviationEvidence.resolvedDeviations}
+                  />
+                  <StatTile
+                    label="Cancelled deviations"
+                    value={exportSummary.deviationEvidence.cancelledDeviations}
+                  />
+                </View>
+              </View>
+            ) : null}
           </View>
         ) : null}
 
@@ -384,7 +457,7 @@ export default function FacilityReportsTab() {
                 <StatTile label="Logs" value={report.compliance?.totalLogs ?? 0} />
                 <StatTile
                   label="Missed"
-                  value={report.compliance?.missedLast7d ?? 0}
+                  value={formatMissedComplianceCount(report.compliance?.missedLast7d)}
                   detail="last 7 days"
                 />
               </View>

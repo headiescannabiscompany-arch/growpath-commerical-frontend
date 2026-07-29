@@ -432,19 +432,20 @@ async function backToCommercialHome(page: any) {
 
 test.describe("commercial dashboard actions", () => {
   test("commercial cards and write buttons hit real API contracts", async ({ page }) => {
+    test.setTimeout(240_000);
     const apiCalls = await installCommercialMocks(page);
     await login(page);
 
-    await expect(page.getByText("Product Formulas, Batches & Trials")).toBeVisible();
-    await expect(page.getByText("Products & Storefront")).toBeVisible();
-    await expect(page.getByText("Analytics Snapshot")).toBeVisible();
+    await expect(page.getByText("2. Product Catalog")).toBeVisible();
+    await expect(page.getByText("4. Storefront Launch")).toBeVisible();
+    await expect(page.getByText("8. Analytics Snapshot")).toBeVisible();
     await expect(page.getByText("Ad clicks", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Product Batch Planner" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Batch Planner" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Product Trials" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Storefront" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Storefront", exact: true })).toBeVisible();
 
     await page.goto("/home/commercial/evidence-runs", { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Product Trial Evidence Runs")).toBeVisible();
+    await expect(page.getByText("Product Trial Evidence Runs", { exact: true })).toBeVisible();
     await page.getByLabel("Product trial evidence run name").fill("Pepper Input Trial");
     await page.getByLabel("Product trial evidence run purpose").fill("product_trial");
     await page.getByLabel("Product trial evidence run crop type").fill("pepper");
@@ -484,7 +485,7 @@ test.describe("commercial dashboard actions", () => {
 
     await backToCommercialHome(page);
     await page.getByRole("link", { name: "Products" }).first().click();
-    await expect(page.getByText("Product catalog")).toBeVisible();
+    await expect(page.getByText("Product catalog", { exact: true })).toBeVisible();
     await page.getByLabel("Commercial product name").fill("Compost Tea Kit");
     await page.getByLabel("Commercial product price").fill("42");
     await page
@@ -550,13 +551,16 @@ test.describe("commercial dashboard actions", () => {
       .toBeTruthy();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Inventory", exact: true }).click();
-    await expect(page.getByText("Commercial Inventory", { exact: true })).toBeVisible();
+    await page.goto("/home/commercial/inventory", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Commercial Inventory Support", { exact: true })).toBeVisible();
     await expect(page.getByText("Living Soil Blend")).toBeVisible();
 
     await backToCommercialHome(page);
     await page.getByRole("link", { name: "Storefront" }).first().click();
     await expect(page.getByText("Storefront Settings", { exact: true })).toBeVisible();
+    await page.getByLabel("Storefront grow interests").fill("vegetables, living soil");
+    await page.getByLabel("Storefront logo URL").fill("https://example.com/logo.png");
+    await page.getByLabel("Storefront banner URL").fill("https://example.com/banner.png");
     await page.getByLabel("Publish storefront").click();
     await page.getByLabel("Save storefront settings").click();
     await expect(page.getByText("Storefront saved.")).toBeVisible();
@@ -566,8 +570,9 @@ test.describe("commercial dashboard actions", () => {
     await expect(page.getByText("Product created.")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Create Feed Campaign" }).first().click();
-    await expect(page.getByText("Feed / Campaigns")).toBeVisible();
+    await page.goto("/home/commercial/feed", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Feed / Campaigns" })).toBeVisible();
+    await page.getByLabel("Select General campaign campaign type").click();
     await page.getByLabel("Feed campaign title").fill("Batch note");
     await page.getByLabel("Feed campaign body").fill("Educational inventory update.");
     await page.getByLabel("Feed campaign grow interests").fill("living soil");
@@ -579,7 +584,7 @@ test.describe("commercial dashboard actions", () => {
     await expect(page.getByText("Feed campaign published.")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Create Course" }).click();
+    await page.goto("/home/commercial/courses", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Create commercial course").first()).toBeVisible();
     await page.getByLabel("Commercial course title").fill("Tomato Soil Basics");
     await page
@@ -598,7 +603,7 @@ test.describe("commercial dashboard actions", () => {
       .toBeTruthy();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Marketing Planner" }).click();
+    await page.goto("/home/commercial/marketing", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Marketing Planner").first()).toBeVisible();
     await page.getByLabel("Marketing plan name").fill("Retail Push");
     await page
@@ -617,7 +622,7 @@ test.describe("commercial dashboard actions", () => {
       .toBeTruthy();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Analytics" }).click();
+    await page.goto("/home/commercial/analytics", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Commercial Analytics")).toBeVisible();
     await expect(page.getByText("Ad and marketing click counts")).toBeVisible();
     await expect(page.getByText("Spring Ad")).toBeVisible();

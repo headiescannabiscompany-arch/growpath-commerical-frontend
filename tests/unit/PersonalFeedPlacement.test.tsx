@@ -12,6 +12,10 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockEntitlements
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { growInterests: { methods: ["Living Soil"] } } })
+}));
+
 describe("PersonalFeedPlacement", () => {
   beforeEach(() => {
     mockEntitlements.mode = "personal";
@@ -31,9 +35,14 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
     expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText("Living Soil Labs: full-spectrum soil")).toBeTruthy();
-    expect(screen.getByText("Living Soil Labs: nutrient program")).toBeTruthy();
-    expect(screen.getByText("Living Soil Labs: terpene-minded inputs")).toBeTruthy();
+    expect(screen.getByText("Explore grower storefronts")).toBeTruthy();
+    expect(screen.getByText("Learn from grower courses")).toBeTruthy();
+    expect(screen.getByText("Plan the next grow")).toBeTruthy();
+    expect(
+      screen.getAllByText(
+        "Want to see fewer ads? Paid accounts get at least 50% fewer ads."
+      ).length
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("renders top and bottom placements for short free personal pages", () => {
@@ -76,7 +85,7 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.queryByLabelText("Recommended campaigns placement")).toBeNull();
   });
 
-  it("renders promo campaign placements for the main personal landing page", () => {
+  it("limits the free main personal landing page to top and bottom promotions", () => {
     render(
       <>
         <PersonalFeedPlacement placement="top" routeKey="home" longContent />
@@ -86,8 +95,8 @@ describe("PersonalFeedPlacement", () => {
     );
 
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
-    expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
+    expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
-    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(2);
   });
 });

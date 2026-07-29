@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import Storefront from "@/app/home/commercial/storefront";
 import StorefrontEdit from "@/app/home/commercial/storefront/edit";
@@ -111,7 +111,6 @@ function apiResponseFor(path: string, options?: any) {
           status: "draft",
           imageUrl: "https://example.com/soil.jpg",
           shortDescription: "Base soil blend for veg.",
-          price: 29,
           category: "soil_mix",
           linkedRecipeId: "recipe-1"
         },
@@ -257,13 +256,20 @@ describe("Storefront route", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("Featured Courses")).toBeTruthy();
-    expect(screen.getByText("View as User: Store Page")).toBeTruthy();
-    expect(screen.getByText("View as User: Storefront Alias")).toBeTruthy();
-    expect(screen.getByText("Legacy brand profile")).toBeTruthy();
-    expect(screen.getByText("View as User: Legacy Profile")).toBeTruthy();
-    expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
-    expect(screen.getByTestId("link-/storefront/grow-shop")).toBeTruthy();
-    expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
+    expect(screen.getByText("Storefront Launch Actions")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/products/new")).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront")
+    ).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
+    expect(screen.getAllByTestId("link-/home/commercial/feed").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("link-/home/commercial/orders")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/analytics")).toBeTruthy();
+    expect(screen.getByText("View Public Store")).toBeTruthy();
+    expect(screen.queryByText("Legacy brand profile")).toBeNull();
+    expect(screen.getAllByTestId("link-/store/grow-shop").length).toBeGreaterThan(0);
+    expect(screen.queryByTestId("link-/storefront/grow-shop")).toBeNull();
+    expect(screen.queryByTestId("link-/brands/grow-shop")).toBeNull();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0);
@@ -272,7 +278,7 @@ describe("Storefront route", () => {
       screen.getAllByText(/Interests living soil, dry amendments/).length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Open Line")).toBeTruthy();
-    expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
+    expect(screen.getByText("View Public Store")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/product-lines/line-1")).toBeTruthy();
     expect(
       screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
@@ -283,10 +289,12 @@ describe("Storefront route", () => {
     ).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("link-/forum/post/thread-course")).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-course")).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
     expect(screen.getByText("Open Live")).toBeTruthy();
-    expect(screen.getAllByTestId("link-/forum/post/thread-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("link-/forum/post?id=thread-1").length).toBeGreaterThan(
+      0
+    );
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
@@ -300,6 +308,7 @@ describe("Storefront route", () => {
       screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByText("Price TBD | soil_mix")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Missing grow interests")).toBeTruthy();
@@ -522,6 +531,146 @@ describe("Storefront route", () => {
         })
       )
     );
+    const createCall = mockApiRequest.mock.calls.find(
+      ([requestPath, options]) =>
+        requestPath === "/api/commercial/products" && options?.method === "POST"
+    );
+    expect(createCall?.[1]?.body?.price).toBeUndefined();
+    expect(createCall?.[1]?.body?.currency).toBeUndefined();
+  });
+
+  it("configures a dispensary for location discovery and external or pickup handoff", async () => {
+    const screen = render(<Storefront />);
+
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
+
+    expect(screen.getByText(/GrowPath will not provide cannabis checkout/)).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Dispensary city"), "Boston");
+    fireEvent.changeText(screen.getByLabelText("Dispensary state"), "ma");
+    fireEvent.changeText(screen.getByLabelText("Dispensary latitude"), "42.3601");
+    fireEvent.changeText(screen.getByLabelText("Dispensary longitude"), "-71.0589");
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront website URL"),
+      "https://dispensary.example.com/menu"
+    );
+    fireEvent.press(screen.getByLabelText("Dispensary offers in-store pickup"));
+    fireEvent.changeText(
+      screen.getByLabelText("Dispensary pickup instructions"),
+      "Bring a valid government-issued ID."
+    );
+    fireEvent.press(screen.getByLabelText("Save storefront settings"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/storefront",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            storefrontType: "dispensary",
+            city: "Boston",
+            stateCode: "MA",
+            latitude: 42.3601,
+            longitude: -71.0589,
+            websiteUrl: "https://dispensary.example.com/menu",
+            pickupAvailable: true,
+            pickupInstructions: "Bring a valid government-issued ID."
+          })
+        })
+      )
+    );
+
+    expect(screen.queryByLabelText("Product Stripe price ID")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Licensed Flower");
+    fireEvent.changeText(screen.getByLabelText("Product category"), "cannabis");
+    fireEvent.changeText(
+      screen.getByLabelText("Product external purchase URL"),
+      "https://dispensary.example.com/menu/flower"
+    );
+    fireEvent.press(screen.getByLabelText("Product is regulated cannabis"));
+    fireEvent.press(screen.getByLabelText("Product available for in-store pickup"));
+    fireEvent.changeText(
+      screen.getByLabelText("Product pickup instructions"),
+      "Pickup during posted store hours."
+    );
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            name: "Licensed Flower",
+            regulatedCannabis: true,
+            externalPurchaseUrl: "https://dispensary.example.com/menu/flower",
+            pickupAvailable: true,
+            pickupInstructions: "Pickup during posted store hours.",
+            stripeProductId: undefined,
+            stripePriceId: undefined
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Product handoff path")).toBeTruthy();
+    expect(screen.queryByText("Stripe connection")).toBeNull();
+  });
+
+  it("disables public preview links until a real slug exists", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (options) return apiResponseFor(path, options);
+      if (path === "/api/commercial/storefront") {
+        return Promise.resolve({
+          storefront: {
+            id: "store-empty",
+            name: "",
+            slug: "",
+            isPublished: false
+          }
+        });
+      }
+      if (path === "/api/commercial/products") {
+        return Promise.resolve({ products: [] });
+      }
+      if (path === "/api/commercial/product-lines") {
+        return Promise.resolve({ productLines: [] });
+      }
+      if (path === "/api/commercial/courses") {
+        return Promise.resolve({ courses: [] });
+      }
+      if (path === "/api/commercial/lives") {
+        return Promise.resolve({ lives: [] });
+      }
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({ items: [] });
+      }
+      if (path === "/api/commercial/inventory") {
+        return Promise.resolve({ inventory: [] });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<Storefront />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Add a public slug to create the public store URL.")
+      ).toBeTruthy()
+    );
+
+    expect(screen.queryByTestId("link-/store/your-brand")).toBeNull();
+    expect(screen.queryByText("https://growpathai.com/store/your-brand")).toBeNull();
+    expect(
+      screen.getByLabelText("View as User unavailable. Add a public slug first.").props
+        .accessibilityState?.disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("View Public Store unavailable. Add a public slug first.")
+        .props.accessibilityState?.disabled
+    ).toBe(true);
   });
 
   it("redirects the legacy root storefront route to the commercial workspace", () => {

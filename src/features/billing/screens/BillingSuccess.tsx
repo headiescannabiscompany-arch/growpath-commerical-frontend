@@ -3,6 +3,12 @@ import { ActivityIndicator, Text, View } from "react-native";
 
 import { getSubscriptionStatus } from "../../../api/subscription";
 
+const CONFIRMED_STATUSES = new Set(["active", "trial", "trialing"]);
+
+function isConfirmedStatus(value: unknown) {
+  return CONFIRMED_STATUSES.has(String(value || "").toLowerCase());
+}
+
 export default function BillingSuccess() {
   const [status, setStatus] = useState<any>(null);
   const [error, setError] = useState("");
@@ -17,7 +23,7 @@ export default function BillingSuccess() {
           if (!alive) return;
           setStatus(next);
           const subscriptionStatus = next?.status || next?.subscriptionStatus;
-          if (subscriptionStatus === "active") return;
+          if (isConfirmedStatus(subscriptionStatus)) return;
         } catch (err: any) {
           if (!alive) return;
           setError(err?.message || "Unable to confirm subscription.");
@@ -32,13 +38,20 @@ export default function BillingSuccess() {
   }, []);
 
   const subscriptionStatus = status?.status || status?.subscriptionStatus || "pending";
-  const active = subscriptionStatus === "active";
+  const active = isConfirmedStatus(subscriptionStatus);
+  const trialing = ["trial", "trialing"].includes(
+    String(subscriptionStatus).toLowerCase()
+  );
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
       {!active ? <ActivityIndicator /> : null}
       <Text style={{ fontSize: 22, fontWeight: "bold", textAlign: "center" }}>
-        {active ? "Subscription confirmed" : "Payment received, waiting for confirmation"}
+        {active
+          ? trialing
+            ? "Trial confirmed"
+            : "Subscription confirmed"
+          : "Checkout completed, waiting for confirmation"}
       </Text>
       <Text style={{ marginTop: 12, textAlign: "center" }}>
         Status: {subscriptionStatus}. Features unlock only after the backend confirms the

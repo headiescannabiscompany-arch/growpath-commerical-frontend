@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -10,9 +11,14 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "../api/apiRequest";
+import { listPersonalGrows } from "../api/grows";
+import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 import { radius } from "../theme/theme";
+import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
+import ReportModal from "../components/ReportModal";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -25,11 +31,18 @@ export default function LiveSessionScreen({ route }) {
   }, [params.sessionId, params.id]);
 
   const entitlements = useEntitlements();
+  const auth = useAuth();
   const canModerate = entitlements.can(CAPABILITY_KEYS.LIVE_SESSION_MODERATE);
 
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [err, setErr] = useState("");
+  const [savingReminder, setSavingReminder] = useState(false);
+  const [reminderCreated, setReminderCreated] = useState(false);
+  const [rsvped, setRsvped] = useState(false);
+  const [savingRsvp, setSavingRsvp] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -61,10 +74,23 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
+  useEffect(() => {
+    let alive = true;
+    apiRequest(`/api/lives/${encodeURIComponent(sessionId)}/rsvp`, { method: "GET" })
+      .then((result) => {
+        if (alive) setRsvped(Boolean(result?.rsvped));
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [sessionId]);
+
   const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
   const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
+  const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
   const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
   const relatedProductId = session?.relatedProductId || session?.productId || "";
   const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
@@ -102,7 +128,7 @@ export default function LiveSessionScreen({ route }) {
         ? `/courses?courseId=${encodeURIComponent(String(relatedCourseId))}`
         : "";
   const forumHref = forumThreadId
-    ? `/forum/post/${encodeURIComponent(String(forumThreadId))}`
+    ? `/forum/post?id=${encodeURIComponent(String(forumThreadId))}`
     : "";
   const campaignBaseHref =
     campaignWorkspace === "commercial"
@@ -113,6 +139,95 @@ export default function LiveSessionScreen({ route }) {
   const feedHref = feedCampaignId
     ? `${campaignBaseHref}?campaignId=${encodeURIComponent(String(feedCampaignId))}`
     : "";
+  const ownerId = String(
+    session?.owner?.id || session?.owner?._id || session?.ownerId || session?.userId || ""
+  );
+  const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
+  const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
+
+  useEffect(() => {
+    if (!session || !storefrontSlug) return;
+    void recordCommercialAnalyticsEvent({
+      eventType: "live_view",
+      objectType: "live",
+      objectId: String(session?._id || session?.id || sessionId),
+      storefrontSlug: String(storefrontSlug),
+      metadata: { growInterests: session?.growInterests || [] }
+    });
+  }, [session, sessionId, storefrontSlug]);
+
+  async function createAttendanceReminder() {
+    if (!startsAt || savingReminder || reminderCreated) return;
+    setSavingReminder(true);
+    try {
+      const grows = await listPersonalGrows();
+      const linkedGrowId = String(session?.linkedGrowId || session?.growId || "");
+      const grow =
+        grows.find((item) => String(item?.id || item?._id) === linkedGrowId) ||
+        grows.find(
+          (item) => String(item?.status || "active").toLowerCase() === "active"
+        ) ||
+        grows[0];
+      const growId = String(grow?.id || grow?._id || "");
+      if (!growId) {
+        Alert.alert(
+          "Build a grow first",
+          "Create a grow so GrowPath has a workspace for this live-session reminder."
+        );
+        return;
+      }
+
+      const task = await createPersonalTask({
+        growId,
+        linkedGrowId: growId,
+        linkedLiveId: String(session?._id || session?.id || sessionId),
+        actionUrl: watchUrl || null,
+        title: `Attend live: ${String(session?.title || "GrowPath session")}`,
+        description: String(session?.description || "Open the GrowPath live session."),
+        dueDate: String(startsAt),
+        allDay: false,
+        priority: "high",
+        calendarType: "live_session",
+        sourceType: "live_reminder",
+        sourceObjectId: String(session?._id || session?.id || sessionId),
+        reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+      });
+      if (!task) throw new Error("The reminder could not be saved.");
+      setReminderCreated(true);
+    } catch (error) {
+      Alert.alert(
+        "Reminder not saved",
+        String(error?.message || error || "Please try again.")
+      );
+    } finally {
+      setSavingReminder(false);
+    }
+  }
+
+  async function toggleRsvp() {
+    if (savingRsvp) return;
+    setSavingRsvp(true);
+    try {
+      const result = await apiRequest(
+        `/api/lives/${encodeURIComponent(sessionId)}/rsvp`,
+        { method: rsvped ? "DELETE" : "POST", body: rsvped ? undefined : {} }
+      );
+      setRsvped(Boolean(result?.rsvped));
+      if (!rsvped && storefrontSlug) {
+        void recordCommercialAnalyticsEvent({
+          eventType: "live_rsvp",
+          objectType: "live",
+          objectId: String(session?._id || session?.id || sessionId),
+          storefrontSlug: String(storefrontSlug),
+          metadata: { growInterests: session?.growInterests || [] }
+        });
+      }
+    } catch (error) {
+      Alert.alert("RSVP not saved", String(error?.message || error || "Try again."));
+    } finally {
+      setSavingRsvp(false);
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -133,6 +248,7 @@ export default function LiveSessionScreen({ route }) {
       ) : null}
 
       {err ? <Text style={styles.error}>{err}</Text> : null}
+      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {session ? (
         <View style={styles.card}>
@@ -157,11 +273,12 @@ export default function LiveSessionScreen({ route }) {
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
 
-          {twitchChannel ? (
+          {twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
               <LiveSessionTwitchEmbed
-                twitchChannel={twitchChannel}
-                chatEnabled={Boolean(session.chatEnabled)}
+                twitchChannel={twitchVodId || twitchChannel}
+                embedType={twitchVodId ? "vod" : "live"}
+                chatEnabled={!twitchVodId && Boolean(session.chatEnabled)}
               />
             </View>
           ) : (
@@ -223,10 +340,62 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.btn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_watch_click",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(watchUrl).catch(() => {});
               }}
             >
               <Text style={styles.btnText}>Watch on Twitch</Text>
+            </Pressable>
+          ) : null}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={rsvped ? "Cancel live RSVP" : "RSVP to live"}
+            disabled={savingRsvp}
+            style={rsvped ? styles.secondaryBtn : styles.btn}
+            onPress={toggleRsvp}
+          >
+            <Text style={rsvped ? styles.secondaryBtnText : styles.btnText}>
+              {savingRsvp
+                ? "Saving RSVP..."
+                : rsvped
+                  ? "Going · Cancel RSVP"
+                  : "RSVP / Remind Me"}
+            </Text>
+          </Pressable>
+
+          {startsAt ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={savingReminder || reminderCreated}
+              style={[styles.secondaryBtn, reminderCreated && styles.completedBtn]}
+              onPress={createAttendanceReminder}
+            >
+              <Text style={styles.secondaryBtnText}>
+                {reminderCreated
+                  ? "Reminder task created"
+                  : savingReminder
+                    ? "Creating reminder..."
+                    : "Add live reminder to My Tasks"}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {canReport ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Report ${String(session.title || "live session")}`}
+              style={styles.secondaryBtn}
+              onPress={() => setReportVisible(true)}
+            >
+              <Text style={styles.secondaryBtnText}>Report Live Session</Text>
             </Pressable>
           ) : null}
 
@@ -235,6 +404,14 @@ export default function LiveSessionScreen({ route }) {
               accessibilityRole="button"
               style={styles.secondaryBtn}
               onPress={() => {
+                if (storefrontSlug) {
+                  void recordCommercialAnalyticsEvent({
+                    eventType: "live_replay_view",
+                    objectType: "live",
+                    objectId: String(session?._id || session?.id || sessionId),
+                    storefrontSlug: String(storefrontSlug)
+                  });
+                }
                 Linking.openURL(String(replayUrl)).catch(() => {});
               }}
             >
@@ -257,6 +434,17 @@ export default function LiveSessionScreen({ route }) {
           ) : null}
         </View>
       ) : null}
+      <ReportModal
+        visible={reportVisible}
+        onClose={() => setReportVisible(false)}
+        contentType="liveSession"
+        contentId={sessionId}
+        contentTitle={String(session?.title || "Live session")}
+        targetUrl={`/live-session?sessionId=${encodeURIComponent(sessionId)}`}
+        onSuccess={() =>
+          setFeedback("Live-session report submitted for administrator review.")
+        }
+      />
     </ScrollView>
   );
 }
@@ -281,6 +469,14 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
+  feedback: {
+    backgroundColor: "#F0FDF4",
+    borderRadius: radius.card,
+    color: "#166534",
+    fontWeight: "700",
+    marginBottom: 10,
+    padding: 10
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: radius.card,
@@ -338,5 +534,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingVertical: 11
   },
-  secondaryBtnText: { color: "#0F172A", fontWeight: "900" }
+  secondaryBtnText: { color: "#0F172A", fontWeight: "900" },
+  completedBtn: { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" }
 });

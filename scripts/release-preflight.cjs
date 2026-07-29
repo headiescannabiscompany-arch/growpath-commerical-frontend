@@ -53,6 +53,7 @@ function writeStrictEvidence() {
 
 async function main() {
   run("release scan", process.execPath, ["scripts/scan-release.cjs"]);
+  run("Codex workflow contract", process.execPath, ["scripts/verify-codex-workflow.cjs"]);
   run("full frontend/backend surface audit", process.execPath, [
     "scripts/audit-full-surface.cjs"
   ]);
@@ -150,6 +151,7 @@ async function main() {
     "tests/release.scan.test.js",
     "tests/release.go-no-go.test.js",
     "tests/release.record-evidence.test.js",
+    "tests/codex.workflow.test.js",
     "tests/release.preflight.test.js",
     "tests/contracts/v1.release.matrix.test.js",
     "tests/release.live-urls.test.js",

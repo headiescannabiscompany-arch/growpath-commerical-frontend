@@ -13,13 +13,17 @@ import {
 import {
   archiveProductIngredient,
   createProductIngredient,
+  extractIngredientLabel,
   listProductIngredients,
   updateProductIngredient,
-  type ProductIngredient
+  type ProductIngredient,
+  type SourceRecord
 } from "@/api/productIngredients";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { radius } from "@/theme/theme";
+import type { EvidenceAsset } from "@/types/evidence";
 
 type Draft = {
   name: string;
@@ -88,6 +92,39 @@ function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function normalizeSourceType(value: string): NonNullable<SourceRecord["sourceType"]> {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  const allowed: NonNullable<SourceRecord["sourceType"]>[] = [
+    "extension",
+    "federal",
+    "academic",
+    "api",
+    "manufacturer_label",
+    "manufacturer",
+    "user_entered",
+    "growpath_verified",
+    "ai_assisted",
+    "other"
+  ];
+  return allowed.includes(normalized as NonNullable<SourceRecord["sourceType"]>)
+    ? (normalized as NonNullable<SourceRecord["sourceType"]>)
+    : "other";
+}
+
+function extractedNumber(data: any, keys: string[]) {
+  for (const key of keys) {
+    const value = key.split(".").reduce((current, part) => current?.[part], data);
+    const cleaned = String(value ?? "").replace(/[^0-9.-]/g, "");
+    if (!cleaned) continue;
+    const parsed = Number(cleaned);
+    if (Number.isFinite(parsed)) return String(parsed);
+  }
+  return "";
+}
+
 function fromItem(item?: ProductIngredient | null): Draft {
   if (!item) return EMPTY_DRAFT;
   const firstSource = item.sourceRecords?.[0] || null;
@@ -124,12 +161,13 @@ function fromItem(item?: ProductIngredient | null): Draft {
 function payloadFromDraft(draft: Draft) {
   const sourceName = draft.sourceName.trim();
   const sourceUrl = draft.sourceUrl.trim();
-  const sourceRecords =
+  const sourceType = normalizeSourceType(draft.sourceType || "user_entered");
+  const sourceRecords: SourceRecord[] =
     sourceName || sourceUrl || draft.citation.trim()
       ? [
           {
             sourceName: sourceName || draft.name.trim(),
-            sourceType: draft.sourceType.trim() || "user_entered",
+            sourceType,
             url: sourceUrl,
             citation: draft.citation.trim(),
             license: draft.license.trim(),
@@ -159,7 +197,7 @@ function payloadFromDraft(draft: Draft) {
     photoUrl: draft.photoUrl.trim(),
     applicationNotes: draft.applicationNotes.trim(),
     micronutrientNotes: draft.micronutrientNotes.trim(),
-    sourceType: draft.sourceType.trim() || "user_entered",
+    sourceType,
     confidence: draft.confidence,
     sourceUrl,
     sourceRecords,
@@ -174,6 +212,11 @@ export default function IngredientLibraryRoute() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [labelEvidence, setLabelEvidence] = useState<EvidenceAsset[]>([]);
+  const [labelExtraction, setLabelExtraction] = useState<Record<string, any> | null>(
+    null
+  );
+  const [labelVerifiedByUser, setLabelVerifiedByUser] = useState(false);
 
   const selected = useMemo(
     () => items.find((item) => idFor(item) === selectedId) || null,
@@ -201,12 +244,17 @@ export default function IngredientLibraryRoute() {
   function startNew() {
     setSelectedId("");
     setDraft(EMPTY_DRAFT);
+    setLabelEvidence([]);
+    setLabelExtraction(null);
+    setLabelVerifiedByUser(false);
     setFeedback("");
   }
 
   function selectItem(item: ProductIngredient) {
     setSelectedId(idFor(item));
     setDraft(fromItem(item));
+    setLabelExtraction(item.labelExtraction || null);
+    setLabelVerifiedByUser(Boolean(item.labelVerifiedByUser));
     setFeedback("");
   }
 
@@ -217,7 +265,19 @@ export default function IngredientLibraryRoute() {
     }
     setSaving(true);
     try {
-      const payload = payloadFromDraft(draft);
+      const uploadedEvidence = labelEvidence.filter(
+        (asset) => asset.uploadStatus === "uploaded"
+      );
+      const payload = {
+        ...payloadFromDraft(draft),
+        evidenceAssetIds: uploadedEvidence.map((asset) => asset._id || asset.id),
+        photoUrls: uploadedEvidence
+          .map((asset) => asset.durableUrl)
+          .filter((url): url is string => Boolean(url)),
+        labelExtraction,
+        labelVerifiedByUser,
+        labelVerifiedAt: labelVerifiedByUser ? new Date().toISOString() : null
+      };
       const saved = selectedId
         ? await updateProductIngredient(selectedId, payload)
         : await createProductIngredient(payload);
@@ -227,6 +287,51 @@ export default function IngredientLibraryRoute() {
       setFeedback(selectedId ? "Ingredient updated." : "Ingredient created.");
     } catch (error: any) {
       setFeedback(error?.message || "Unable to save ingredient.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function analyzeLabel() {
+    const asset = labelEvidence.find(
+      (item) => item.assetType === "photo" && item.uploadStatus === "uploaded"
+    );
+    const evidenceAssetId = String(asset?._id || asset?.id || "");
+    if (!evidenceAssetId) {
+      setFeedback("Upload a clear label photo before analysis.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const response = await extractIngredientLabel(evidenceAssetId);
+      const data = response?.nutrientData || {};
+      setLabelExtraction(data);
+      setLabelVerifiedByUser(false);
+      setDraft((current) => ({
+        ...current,
+        name: String(data.productName || data.name || current.name),
+        brand: String(data.brand || data.manufacturer || current.brand),
+        n:
+          extractedNumber(data, ["labelNPK.N", "npk.N", "guaranteedAnalysis.nitrogen"]) ||
+          current.n,
+        p:
+          extractedNumber(data, [
+            "labelNPK.P",
+            "npk.P",
+            "guaranteedAnalysis.phosphate"
+          ]) || current.p,
+        k:
+          extractedNumber(data, ["labelNPK.K", "npk.K", "guaranteedAnalysis.potash"]) ||
+          current.k,
+        photoUrl: asset?.durableUrl || current.photoUrl,
+        sourceType: "manufacturer",
+        confidence: "medium"
+      }));
+      setFeedback(
+        "GPT-assisted label extraction filled the draft. Verify every value against the label before saving."
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to analyze the label photo.");
     } finally {
       setSaving(false);
     }
@@ -270,13 +375,13 @@ export default function IngredientLibraryRoute() {
 
   return (
     <ScreenBoundary
-      title="Product / Ingredient Library"
+      title="Products & Label Library"
       showBack
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Product / Ingredient Library</Text>
+          <Text style={styles.title}>Products & Label Library</Text>
           <Text style={styles.subtitle}>
             Manage user-entered nutrients, amendments, soil inputs, and source confidence.
             Guaranteed analysis is stored as label N-P2O5-K2O; elemental conversions
@@ -387,6 +492,42 @@ export default function IngredientLibraryRoute() {
           <Text style={styles.sectionTitle}>
             {selected ? "Edit ingredient" : "Create ingredient"}
           </Text>
+
+          <MediaEvidencePicker
+            aiUsable
+            maxPhotos={10}
+            allowVideo={false}
+            purpose="product"
+            value={labelEvidence}
+            onChange={setLabelEvidence}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Analyze ingredient label with AI"
+            disabled={saving}
+            onPress={analyzeLabel}
+            style={[styles.secondary, saving && styles.disabled]}
+          >
+            <Text style={styles.secondaryText}>Analyze Label with AI</Text>
+          </Pressable>
+          <Text style={styles.meta}>
+            AI extraction is a draft. User-entered, label-verified values override generic
+            catalog assumptions.
+          </Text>
+          {labelExtraction ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Confirm extracted label values"
+              onPress={() => setLabelVerifiedByUser((current) => !current)}
+              style={[styles.chip, labelVerifiedByUser && styles.chipOn]}
+            >
+              <Text style={[styles.chipText, labelVerifiedByUser && styles.chipTextOn]}>
+                {labelVerifiedByUser
+                  ? "Label values confirmed"
+                  : "Confirm values against label"}
+              </Text>
+            </Pressable>
+          ) : null}
 
           <Field
             label="Name"

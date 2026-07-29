@@ -3,6 +3,10 @@
 const express = require("express");
 
 const CommercialRecord = require("../models/CommercialRecord");
+const {
+  normalizeLessonMedia,
+  lessonMediaPublishBlockers
+} = require("../services/lessonMedia");
 
 const router = express.Router();
 
@@ -88,15 +92,72 @@ function coursePayload(body) {
 }
 
 function normalizeLesson(body, fallback = {}) {
+  const removeMedia =
+    Object.prototype.hasOwnProperty.call(body || {}, "mediaSource") &&
+    body.mediaSource === null &&
+    !body.videoUrl &&
+    !body.externalVideoUrl;
+  const normalizedMedia = removeMedia
+    ? { mediaSource: null, errors: [] }
+    : normalizeLessonMedia(body?.mediaSource || {}, {
+        legacyUrl:
+          body?.videoUrl ||
+          body?.externalVideoUrl ||
+          fallback.videoUrl ||
+          fallback.externalVideoUrl ||
+          "",
+        fallback: fallback.mediaSource || {}
+      });
+  const mediaSource = normalizedMedia.mediaSource;
   return {
-    ...fallback,
-    id: fallback.id || `lesson-${Date.now()}`,
-    title: cleanString(body?.title || fallback.title || "Untitled lesson"),
-    body: cleanString(body?.body || body?.content || fallback.body || ""),
-    videoUrl: cleanString(body?.videoUrl || fallback.videoUrl || ""),
-    order: Number(body?.order || fallback.order || 1),
-    status: body?.status || fallback.status || "draft"
+    errors: normalizedMedia.errors,
+    lesson: {
+      ...fallback,
+      id: fallback.id || `lesson-${Date.now()}`,
+      title: cleanString(body?.title || fallback.title || "Untitled lesson"),
+      body: cleanString(body?.body || body?.content || fallback.body || ""),
+      content: cleanString(body?.content || body?.body || fallback.content || ""),
+      lessonType: cleanString(body?.lessonType || fallback.lessonType || "video"),
+      videoUrl: mediaSource?.canonicalUrl || "",
+      externalVideoUrl: mediaSource?.canonicalUrl || "",
+      mediaSource,
+      videoAssetId: cleanString(body?.videoAssetId ?? fallback.videoAssetId),
+      pdfUrl: cleanString(body?.pdfUrl || fallback.pdfUrl || ""),
+      audioUrl: cleanString(body?.audioUrl || fallback.audioUrl || ""),
+      imageUrls: Array.isArray(body?.imageUrls)
+        ? body.imageUrls.map(cleanString).filter(Boolean)
+        : fallback.imageUrls || [],
+      documentUrls: Array.isArray(body?.documentUrls)
+        ? body.documentUrls.map(cleanString).filter(Boolean)
+        : fallback.documentUrls || [],
+      relatedProductIds: Array.isArray(body?.relatedProductIds)
+        ? body.relatedProductIds.map(cleanString).filter(Boolean)
+        : fallback.relatedProductIds || [],
+      relatedLiveIds: Array.isArray(body?.relatedLiveIds)
+        ? body.relatedLiveIds.map(cleanString).filter(Boolean)
+        : fallback.relatedLiveIds || [],
+      forumThreadId: cleanString(body?.forumThreadId || fallback.forumThreadId || ""),
+      taskTemplate: body?.taskTemplate || fallback.taskTemplate || null,
+      growTags: Array.isArray(body?.growTags)
+        ? body.growTags.map(cleanString).filter(Boolean)
+        : fallback.growTags || [],
+      order: Number(body?.order || fallback.order || 1),
+      status: body?.status || fallback.status || "draft"
+    }
   };
+}
+
+function sendLessonMediaErrors(res, errors) {
+  return res.status(400).json({
+    success: false,
+    error: { code: "INVALID_LESSON_MEDIA", message: errors.join(" "), details: errors }
+  });
+}
+
+function courseMediaBlockers(course) {
+  return (Array.isArray(course?.lessons) ? course.lessons : []).flatMap((lesson, index) =>
+    lessonMediaPublishBlockers(lesson, index)
+  );
 }
 
 async function findOwnedCourseByLesson(userId, lessonId) {
@@ -259,11 +320,14 @@ router.put("/lesson/:lessonId", async (req, res) => {
   if (!courseRow)
     return res.status(404).json({ success: false, message: "Lesson not found" });
   const course = dto(courseRow);
-  const lessons = (course.lessons || []).map((lesson) =>
-    String(lesson.id) === String(req.params.lessonId)
-      ? normalizeLesson(req.body || {}, lesson)
-      : lesson
-  );
+  let lessonErrors = [];
+  const lessons = (course.lessons || []).map((lesson) => {
+    if (String(lesson.id) !== String(req.params.lessonId)) return lesson;
+    const normalized = normalizeLesson(req.body || {}, lesson);
+    lessonErrors = normalized.errors;
+    return normalized.lesson;
+  });
+  if (lessonErrors.length) return sendLessonMediaErrors(res, lessonErrors);
   const updated = await updateCourseLessons(userId, course.id, lessons);
   const lesson = lessons.find((item) => String(item.id) === String(req.params.lessonId));
   res.json({ success: true, lesson, course: dto(updated) });
@@ -363,6 +427,64 @@ router.get("/mine", async (req, res) => {
   });
 });
 
+router.get("/mine/live-events", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const [enrollments, ownedCourses, rsvps] = await Promise.all([
+    CommercialRecord.find({
+      userId,
+      recordType: "courseEnrollment",
+      deletedAt: null,
+      status: "active"
+    }).lean(),
+    CommercialRecord.find(baseQuery(userId)).lean(),
+    CommercialRecord.find({
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      status: "active"
+    }).lean()
+  ]);
+  const enrolledIds = (enrollments || []).map((row) =>
+    String(row.payload?.courseId || "")
+  );
+  const enrolledCourses = enrolledIds.length
+    ? await CommercialRecord.find({
+        _id: { $in: enrolledIds },
+        recordType: "course",
+        deletedAt: null
+      }).lean()
+    : [];
+  const rsvpKeys = new Set(
+    (rsvps || []).map(
+      (row) =>
+        `${String(row.payload?.courseId || "")}:${String(row.payload?.sessionId || "")}`
+    )
+  );
+  const courses = [...(ownedCourses || []), ...(enrolledCourses || [])];
+  const seen = new Set();
+  const liveEvents = [];
+  for (const row of courses) {
+    const course = dto(row);
+    if (!course || seen.has(course.id)) continue;
+    seen.add(course.id);
+    for (const session of Array.isArray(course.liveSessions) ? course.liveSessions : []) {
+      const sessionId = String(session.id || session._id || session.scheduledStart || "");
+      liveEvents.push({
+        ...session,
+        id: sessionId,
+        sessionId,
+        courseId: course.id,
+        courseTitle: course.title || course.name,
+        workspaceType: "personal",
+        sourceType: "course_live",
+        rsvped: rsvpKeys.has(`${course.id}:${sessionId}`)
+      });
+    }
+  }
+  res.json({ success: true, liveEvents, items: liveEvents });
+});
+
 router.post("/create", createCourseRecord);
 
 router.get("/:id", async (req, res) => {
@@ -409,9 +531,11 @@ router.post("/:id/lesson", async (req, res) => {
   );
   if (!course)
     return res.status(404).json({ success: false, message: "Course not found" });
-  const lesson = normalizeLesson(req.body || {}, {
+  const normalized = normalizeLesson(req.body || {}, {
     order: (course.lessons || []).length + 1
   });
+  if (normalized.errors.length) return sendLessonMediaErrors(res, normalized.errors);
+  const lesson = normalized.lesson;
   const lessons = [...(Array.isArray(course.lessons) ? course.lessons : []), lesson];
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId), _id: req.params.id },
@@ -457,6 +581,98 @@ router.get("/:id/enrollment-status", async (req, res) => {
     }).lean()
   );
   res.json({ success: true, enrolled: Boolean(enrollment), enrollment });
+});
+
+router.get("/:id/live-rsvps", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const rows = await CommercialRecord.find({
+    userId,
+    recordType: "courseLiveRsvp",
+    deletedAt: null,
+    "payload.courseId": req.params.id,
+    status: "active"
+  }).lean();
+  res.json({
+    success: true,
+    sessionIds: (rows || [])
+      .map((row) => String(row.payload?.sessionId || ""))
+      .filter(Boolean)
+  });
+});
+
+router.post("/:id/lives/:sessionId/rsvp", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({
+      _id: req.params.id,
+      recordType: "course",
+      deletedAt: null
+    }).lean()
+  );
+  if (!course)
+    return res.status(404).json({ success: false, message: "Course not found" });
+  const session = (course.liveSessions || []).find(
+    (item) =>
+      String(item.id || item._id || item.scheduledStart || "") ===
+      String(req.params.sessionId)
+  );
+  if (!session)
+    return res.status(404).json({ success: false, message: "Live session not found" });
+  const payload = {
+    courseId: req.params.id,
+    sessionId: req.params.sessionId,
+    title: session.title || course.title || "Course live",
+    scheduledStart: session.scheduledStart || null,
+    scheduledEnd: session.scheduledEnd || null,
+    timezone: session.timezone || "UTC",
+    watchUrl:
+      session.watchUrl ||
+      session.meetingUrl ||
+      (session.twitchChannel ? `https://www.twitch.tv/${session.twitchChannel}` : ""),
+    reminderPlan: req.body?.reminderPlan ||
+      session.reminderPlan || {
+        label: "1 hour before",
+        channels: ["in_app"]
+      },
+    rsvpedAt: new Date().toISOString()
+  };
+  const row = await CommercialRecord.findOneAndUpdate(
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      "payload.courseId": req.params.id,
+      "payload.sessionId": req.params.sessionId
+    },
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      name: payload.title,
+      title: payload.title,
+      status: "active",
+      payload
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  ).lean();
+  res.status(201).json({ success: true, rsvped: true, rsvp: dto(row) });
+});
+
+router.delete("/:id/lives/:sessionId/rsvp", async (req, res) => {
+  const userId = requireUser(req, res);
+  if (!userId) return;
+  await CommercialRecord.findOneAndUpdate(
+    {
+      userId,
+      recordType: "courseLiveRsvp",
+      deletedAt: null,
+      "payload.courseId": req.params.id,
+      "payload.sessionId": req.params.sessionId
+    },
+    { status: "canceled", deletedAt: new Date() }
+  );
+  res.json({ success: true, rsvped: false });
 });
 
 router.post("/:id/review", async (req, res) => {
@@ -534,6 +750,25 @@ router.put("/:id/submit-for-review", async (req, res) => {
 router.put("/:id/approve", async (req, res) => {
   const userId = requireUser(req, res);
   if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({
+      recordType: "course",
+      deletedAt: null,
+      _id: req.params.id
+    }).lean()
+  );
+  if (!course)
+    return res.status(404).json({ success: false, message: "Course not found" });
+  const blockers = courseMediaBlockers(course);
+  if (blockers.length)
+    return res.status(422).json({
+      success: false,
+      error: {
+        code: "LESSON_MEDIA_NOT_READY",
+        message: "Resolve lesson media accessibility and availability before approval.",
+        details: blockers
+      }
+    });
   const updated = await CommercialRecord.findOneAndUpdate(
     { recordType: "course", deletedAt: null, _id: req.params.id },
     { status: "published", "payload.status": "published", "payload.isPublished": true },
@@ -564,6 +799,21 @@ router.put("/:id/reject", async (req, res) => {
 router.put("/:id/publish", async (req, res) => {
   const userId = requireUser(req, res);
   if (!userId) return;
+  const course = dto(
+    await CommercialRecord.findOne({ ...baseQuery(userId), _id: req.params.id }).lean()
+  );
+  if (!course)
+    return res.status(404).json({ success: false, message: "Course not found" });
+  const blockers = courseMediaBlockers(course);
+  if (blockers.length)
+    return res.status(422).json({
+      success: false,
+      error: {
+        code: "LESSON_MEDIA_NOT_READY",
+        message: "Resolve lesson media accessibility and availability before publishing.",
+        details: blockers
+      }
+    });
   const updated = await CommercialRecord.findOneAndUpdate(
     { ...baseQuery(userId), _id: req.params.id },
     { status: "published", "payload.status": "published", "payload.isPublished": true },

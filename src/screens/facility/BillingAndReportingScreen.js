@@ -18,7 +18,8 @@ import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
 import { useFacilityReport } from "../../hooks/useFacilityReport";
 import {
   FACILITY_PLAN_PRICE_DISPLAY,
-  formatPlanBillingNote
+  formatPlanBillingNote,
+  formatPlanPrice
 } from "../../constants/pricing";
 import { radius } from "../../theme/theme";
 
@@ -32,6 +33,7 @@ async function openCheckoutUrl(url) {
 
 export default function BillingAndReportingScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const [billingInterval, setBillingInterval] = useState("monthly");
   const { activeFacilityId } = useFacility();
   const facilityId = activeFacilityId;
 
@@ -94,7 +96,7 @@ export default function BillingAndReportingScreen() {
       return;
     }
     try {
-      const res = await startCheckout();
+      const res = await startCheckout(billingInterval);
       const checkoutUrl = res?.checkoutUrl ?? res?.url;
       if (checkoutUrl) {
         await openCheckoutUrl(checkoutUrl);
@@ -221,6 +223,27 @@ export default function BillingAndReportingScreen() {
                   {formatPlanBillingNote("facility", "yearly")}
                 </Text>
               </View>
+              {!(["active", "trialing"].includes(statusText)) ? (
+                <View style={styles.intervalRow}>
+                  {["monthly", "yearly"].map((interval) => (
+                    <TouchableOpacity
+                      key={interval}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Choose Facility ${interval} billing`}
+                      onPress={() => setBillingInterval(interval)}
+                      style={[
+                        styles.intervalButton,
+                        billingInterval === interval && styles.intervalButtonActive
+                      ]}
+                    >
+                      <Text style={styles.intervalButtonText}>
+                        {interval === "monthly" ? "Monthly" : "Yearly"} -{" "}
+                        {formatPlanPrice("facility", interval)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : null}
             </View>
 
             {statusText === "active" || statusText === "trialing" ? (
@@ -411,6 +434,27 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontSize: 12,
     marginTop: 4
+  },
+  intervalRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16
+  },
+  intervalButton: {
+    borderColor: "#94a3b8",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  intervalButtonActive: {
+    backgroundColor: "#e0f2fe",
+    borderColor: "#0284c7"
+  },
+  intervalButtonText: {
+    color: "#0f172a",
+    fontWeight: "700"
   },
   button: {
     paddingVertical: 14,

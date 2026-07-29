@@ -32,8 +32,8 @@ describe("legacy commercial Forum/Q&A groups screen", () => {
   it("renders featured groups from loaded data and avoids corrupted glyphs", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
 
-    expect(source).toContain("availableGuilds\n                  .filter");
-    expect(source).not.toContain("browseGuilds\n                  .filter");
+    expect(source).toMatch(/availableGuilds\s*\.filter/);
+    expect(source).not.toMatch(/browseGuilds\s*\.filter/);
     expect(source).not.toContain("ð");
     expect(source).not.toContain("â");
   });

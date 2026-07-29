@@ -22,6 +22,8 @@ const model = read("backend/models/NutrientRecipe.js");
 const route = read("backend/routes/tools.js");
 const api = read("src/api/nutrientRecipes.ts");
 const screen = read("src/app/home/personal/(tabs)/tools/npk.tsx");
+const featureStatus = read("src/config/featureStatus.ts");
+const scienceBasis = read("src/features/personal/tools/MixBuilderScienceBasis.tsx");
 const routeTest = read("backend/routes/tools.test.js");
 const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
 
@@ -68,11 +70,23 @@ const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
   ["use route", /router\.post\("\/recipes\/:id\/use"/],
   ["active list filter", /active: true/],
   ["grow ownership check", /if \(growId && !\(await ownsGrow\(uid, growId\)\)\)/],
-  ["update recalculates", /recipe\.calculation = calculators\.calculateNpkRecipe\(input\)/],
-  ["revision versioning", /version: previous\.version \+ 1[\s\S]*previousVersionId: String\(previous\._id\)/],
+  [
+    "update recalculates",
+    /recipe\.calculation = calculators\.calculateNpkRecipe\(input\)/
+  ],
+  [
+    "revision versioning",
+    /version: previous\.version \+ 1[\s\S]*previousVersionId: String\(previous\._id\)/
+  ],
   ["clone provenance", /clonedFromRecipeId: String\(source\._id\)/],
-  ["use creates ToolRun", /const toolRun = await createRun\(req, "npk_recipe", input, outputs\)/],
-  ["use count update", /recipe\.lastUsedAt = new Date\(\)[\s\S]*recipe\.useCount = Number\(recipe\.useCount \|\| 0\) \+ 1/]
+  [
+    "use creates ToolRun",
+    /const toolRun = await createRun\(req, "npk_recipe", input, outputs\)/
+  ],
+  [
+    "use count update",
+    /recipe\.lastUsedAt = new Date\(\)[\s\S]*recipe\.useCount = Number\(recipe\.useCount \|\| 0\) \+ 1/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("tools recipe route", route, pattern, description);
 });
@@ -101,15 +115,42 @@ const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
   "Create Recipe Task Plan",
   "Convert to Product Draft"
 ].forEach((text) => {
-  requireText("NPK tool screen", screen, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), text);
+  requireText(
+    "NPK tool screen",
+    screen,
+    new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    text
+  );
 });
+
+requireText(
+  "NPK tool screen",
+  screen,
+  /Nutrient Mix Builder[\s\S]*MixBuilderScienceBasis variant="nutrient"/,
+  "canonical Nutrient Mix Builder with shared science basis"
+);
+requireText(
+  "personal tool manifest",
+  featureStatus,
+  /key: "tools\.npk_recipe"[\s\S]*title: "Nutrient Mix Builder"[\s\S]*href: "\/home\/personal\/tools\/npk"/,
+  "canonical nutrient builder route"
+);
+requireText(
+  "mix builder science basis",
+  scienceBasis,
+  /verified product labels[\s\S]*water analysis[\s\S]*does not prove product superiority[\s\S]*Unknown values remain assumptions/,
+  "nutrient evidence and uncertainty policy"
+);
 
 [
   ["update/archive test", /updates and archives nutrient recipes/],
   ["create test", /creates a nutrient recipe/],
   ["revision test", /revises a recipe using authenticated ownership/],
   ["clone test", /clones a recipe using authenticated ownership/],
-  ["use test", /records nutrient recipe use as a linked ToolRun and feeding history event/]
+  [
+    "use test",
+    /records nutrient recipe use as a linked ToolRun and feeding history event/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("backend recipe tests", routeTest, pattern, description);
 });
@@ -124,7 +165,12 @@ const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
   "creates a source-linked NPK recipe task plan",
   "converts calculated recipes into commercial-ready product draft fields"
 ].forEach((text) => {
-  requireText("NPK UI tests", uiTest, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), text);
+  requireText(
+    "NPK UI tests",
+    uiTest,
+    new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    text
+  );
 });
 
 if (!process.exitCode) {

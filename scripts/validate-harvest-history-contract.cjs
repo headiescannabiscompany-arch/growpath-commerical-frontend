@@ -20,6 +20,7 @@ function requireText(label, contents, pattern, description) {
 
 const toolsRoute = read("backend/routes/tools.js");
 const calculators = read("backend/services/toolCalculators.js");
+const runComparisonHistory = read("backend/services/runComparisonHistory.js");
 const harvestModel = read("backend/models/HarvestBatch.js");
 const personalRoute = read("backend/routes/personal.js");
 const harvestApi = read("src/api/harvestBatches.ts");
@@ -29,6 +30,14 @@ const modulePersistence = read("src/features/personal/tools/moduleRecordPersiste
 const toolRunsApi = read("src/api/toolRuns.ts");
 const exportScreen = read("src/app/home/personal/(tabs)/tools/pdf-export.tsx");
 const advancedPlanning = read("src/features/personal/tools/advancedPlanning.ts");
+const featureStatus = read("src/config/featureStatus.ts");
+const productionWebExport = read("scripts/export-production-web.cjs");
+const growOverview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
+const growTools = read("src/app/home/personal/(tabs)/grows/[growId]/tools.tsx");
+const growRouteUtils = read("src/features/grows/routeUtils.ts");
+const runComparisonWorkspace = read(
+  "src/features/personal/tools/RunComparisonWorkspace.tsx"
+);
 
 const screens = {
   harvest: read("src/app/home/personal/(tabs)/tools/harvest-readiness.tsx"),
@@ -39,6 +48,7 @@ const screens = {
 
 const tests = {
   backendTools: read("backend/routes/tools.test.js"),
+  backendRunComparison: read("backend/routes/tools.test.js"),
   personalBackend: read("backend/routes/personal.test.js"),
   harvestApi: read("tests/unit/harvestBatches-api.test.ts"),
   harvest: read("tests/unit/HarvestReadinessToolScreen.test.tsx"),
@@ -64,7 +74,12 @@ const tests = {
     `${route} ToolRun-backed calculator route`
   );
   requireText("tool calculators", calculators, new RegExp(`function ${fn}\\b`), fn);
-  requireText("tool calculator exports", calculators, new RegExp(`\\b${fn}\\b`), `${fn} export`);
+  requireText(
+    "tool calculator exports",
+    calculators,
+    new RegExp(`\\b${fn}\\b`),
+    `${fn} export`
+  );
 });
 
 [
@@ -76,15 +91,54 @@ const tests = {
   ["dry/cure overdry risk", /calculateDryCureGuard[\s\S]*overdryRisk/],
   ["dry/cure dew point", /calculateDryCureGuard[\s\S]*dewPointF/],
   ["dry/cure tasks", /calculateDryCureGuard[\s\S]*taskSuggestions/],
-  ["run comparison best/worst", /calculateRunComparison[\s\S]*bestRun[\s\S]*worstRun/],
+  [
+    "run comparison objective without hidden overall score",
+    /calculateRunComparison[\s\S]*objectiveLeader[\s\S]*not an overall best-run ranking/
+  ],
   ["run comparison missing data", /calculateRunComparison[\s\S]*missingData/],
   ["run comparison next-run tasks", /calculateRunComparison[\s\S]*tasksToCreate/],
+  [
+    "run comparison causation limit",
+    /calculateRunComparison[\s\S]*cannot establish causation/
+  ],
   ["auto calendar stage timeline", /calculateAutoGrowCalendar[\s\S]*stageTimeline/],
   ["auto calendar task schedule", /calculateAutoGrowCalendar[\s\S]*taskSchedule/],
-  ["auto calendar harvest windows", /calculateAutoGrowCalendar[\s\S]*plantSpecificHarvestWindows/]
+  [
+    "auto calendar harvest windows",
+    /calculateAutoGrowCalendar[\s\S]*plantSpecificHarvestWindows/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("tool calculators", calculators, pattern, description);
 });
+
+[
+  ["owned saved-grow history loader", /buildRunComparisonHistory/],
+  [
+    "two-to-five grow selection",
+    /Select at least two saved grows[\s\S]*no more than five/
+  ],
+  ["saved logs and tasks", /GrowLog\.find[\s\S]*Task\.find/],
+  ["saved ToolRuns and diagnoses", /ToolRun\.find[\s\S]*Diagnosis\.find/],
+  [
+    "saved module records and telemetry",
+    /GrowpathModuleRecord\.find[\s\S]*TelemetrySource\.find/
+  ],
+  ["synthetic telemetry exclusion", /synthetic !== true/]
+].forEach(([description, pattern]) => {
+  requireText(
+    "run comparison history service",
+    runComparisonHistory,
+    pattern,
+    description
+  );
+});
+
+requireText(
+  "tools route",
+  toolsRoute,
+  /router\.post\("\/run-comparison\/from-grows"[\s\S]*buildRunComparisonHistory/,
+  "owned saved-grow comparison route"
+);
 
 [
   ["harvest batch model", /HarvestBatchSchema/],
@@ -150,16 +204,47 @@ const tests = {
 
 [
   ["harvest ToolRun screen", screens.harvest, /tool="harvest-readiness"/],
+  [
+    "harvest photo checklist",
+    screens.harvest,
+    /HARVEST_PHOTO_CHECKLIST[\s\S]*Photo checklist before analysis/
+  ],
+  ["harvest photo failure status", screens.harvest, /Photo analysis did not run/],
+  [
+    "harvest photo failure leaves fields unchanged",
+    screens.harvest,
+    /No trichome fields were filled/
+  ],
   ["harvest decision tasks", screens.harvest, /Create Harvest Decision Tasks/],
   ["harvest batch save", screens.harvest, /Save Harvest Review[\s\S]*updateHarvestBatch/],
-  ["harvest schedule metadata", screens.harvest, /harvest_readiness_recheck[\s\S]*dry_cure_setup/],
+  [
+    "harvest schedule metadata",
+    screens.harvest,
+    /harvest_readiness_recheck[\s\S]*dry_cure_setup/
+  ],
   ["dry/cure ToolRun screen", screens.dryCure, /tool="dry-cure-guard"/],
   ["dry/cure monitoring tasks", screens.dryCure, /Create Dry\/Cure Monitoring Tasks/],
-  ["dry/cure harvest batch save", screens.dryCure, /Save to Harvest Batch[\s\S]*updateHarvestBatch/],
-  ["dry/cure schedule metadata", screens.dryCure, /dry_cure_condition_check[\s\S]*dry_cure_outcome_notes/],
-  ["run comparison ToolRun screen", screens.runComparison, /tool="run-comparison"/],
-  ["run comparison next-run tasks", screens.runComparison, /Create Next-Run Tasks/],
-  ["run comparison schedule metadata", screens.runComparison, /run_comparison_followup/],
+  [
+    "dry/cure harvest batch save",
+    screens.dryCure,
+    /Save to Harvest Batch[\s\S]*updateHarvestBatch/
+  ],
+  [
+    "dry/cure schedule metadata",
+    screens.dryCure,
+    /dry_cure_condition_check[\s\S]*dry_cure_outcome_notes/
+  ],
+  [
+    "run comparison shared saved-history workspace",
+    screens.runComparison,
+    /RunComparisonWorkspace/
+  ],
+  [
+    "run comparison next-run tasks",
+    runComparisonWorkspace,
+    /Create Reviewed Next-Run Tasks/
+  ],
+  ["run comparison schedule metadata", runComparisonWorkspace, /run_comparison_followup/],
   ["auto calendar ToolRun screen", screens.autoCalendar, /tool="auto-grow-calendar"/],
   ["auto calendar task action", screens.autoCalendar, /Create Calendar Tasks/],
   ["auto calendar schedule metadata", screens.autoCalendar, /grow_milestone/]
@@ -168,7 +253,45 @@ const tests = {
 });
 
 [
-  ["export screen loads records", /listPersonalLogs[\s\S]*listPersonalTasks[\s\S]*listPersonalPlants[\s\S]*listToolRuns/],
+  [
+    "Personal Tools harvest calculator entry",
+    featureStatus,
+    /tools\.harvest_readiness_ai[\s\S]*title: "Harvest Readiness Calculator"[\s\S]*href: "\/home\/personal\/tools\/harvest-readiness"[\s\S]*hubVisible: true/
+  ],
+  [
+    "production harvest readiness fallback",
+    productionWebExport,
+    /"home\/personal\/tools\/harvest-readiness"/
+  ],
+  [
+    "cannabis grow overview harvest entry",
+    growOverview,
+    /cannabisGrow[\s\S]*grow_detail_harvest[\s\S]*workflows=\{\["harvest-readiness"\]\}/
+  ],
+  [
+    "cannabis grow tools harvest entry",
+    growTools,
+    /Harvest readiness calculator[\s\S]*\/home\/personal\/tools\/harvest-readiness[\s\S]*cannabisOnly: true/
+  ],
+  [
+    "attached cannabis workflow compatibility",
+    growRouteUtils,
+    /CANNABIS_WORKFLOW_IDS[\s\S]*harvest-readiness[\s\S]*hasCannabisWorkflowEvidence/
+  ],
+  [
+    "legacy cannabis grow compatibility",
+    growRouteUtils,
+    /hasStructuredContext[\s\S]*grow\.strain[\s\S]*grow\.cultivar/
+  ]
+].forEach(([description, contents, pattern]) => {
+  requireText("harvest discovery", contents, pattern, description);
+});
+
+[
+  [
+    "export screen loads records",
+    /listPersonalLogs[\s\S]*listPersonalTasks[\s\S]*listPersonalPlants[\s\S]*listToolRuns/
+  ],
   ["export rows", /buildExportRows/],
   ["CSV export", /exportToCsv[\s\S]*Export CSV/],
   ["export package copy", /Export package[\s\S]*CSV export is available now/],
@@ -185,19 +308,65 @@ const tests = {
   ["ToolRun export rows", /type: "tool_run"/],
   ["harvest timeline milestones", /Harvest window[\s\S]*Dry complete[\s\S]*Cure check/]
 ].forEach(([description, pattern]) => {
-  requireText("advanced planning export/report helpers", advancedPlanning, pattern, description);
+  requireText(
+    "advanced planning export/report helpers",
+    advancedPlanning,
+    pattern,
+    description
+  );
 });
 
 [
-  ["dry/cure backend test", tests.backendTools, /runs dry\/cure guard without treating temperatures above 68F as automatic failure/],
-  ["run/calendar backend test", tests.backendTools, /runs run comparison and auto grow calendar tools/],
-  ["harvest readiness backend test", tests.backendTools, /runs genetics inventory and harvest readiness tools[\s\S]*harvestTask/],
-  ["harvest batch backend test", tests.personalBackend, /creates, lists, updates, and archives harvest batches with dry\/cure records/],
-  ["harvest batch API test", tests.harvestApi, /creates, lists, updates, and archives harvest\/dry-cure records/],
-  ["harvest UI tests", tests.harvest, /Create Harvest Decision Tasks[\s\S]*saves harvest readiness review to a harvest batch record/],
-  ["dry/cure UI tests", tests.dryCure, /creates dry\/cure monitoring tasks[\s\S]*saves dry\/cure readings to a harvest batch record/],
-  ["run comparison UI tests", tests.runComparison, /creates next-run tasks from run comparison output/],
-  ["auto calendar UI tests", tests.autoCalendar, /creates tasks from the generated grow calendar schedule/],
+  [
+    "dry/cure backend test",
+    tests.backendTools,
+    /runs dry\/cure guard without treating temperatures above 68F as automatic failure/
+  ],
+  [
+    "run/calendar backend test",
+    tests.backendTools,
+    /runs run comparison and auto grow calendar tools/
+  ],
+  [
+    "harvest readiness backend test",
+    tests.backendTools,
+    /runs genetics inventory and harvest readiness tools[\s\S]*harvestTask/
+  ],
+  [
+    "harvest batch backend test",
+    tests.personalBackend,
+    /creates, lists, updates, and archives harvest batches with dry\/cure records/
+  ],
+  [
+    "harvest batch API test",
+    tests.harvestApi,
+    /creates, lists, updates, and archives harvest\/dry-cure records/
+  ],
+  [
+    "harvest UI tests",
+    tests.harvest,
+    /Create Harvest Decision Tasks[\s\S]*saves harvest readiness review to a harvest batch record/
+  ],
+  [
+    "dry/cure UI tests",
+    tests.dryCure,
+    /creates dry\/cure monitoring tasks[\s\S]*saves dry\/cure readings to a harvest batch record/
+  ],
+  [
+    "run comparison UI tests",
+    tests.runComparison,
+    /compares selected owned saved grows without demo rows and creates linked actions/
+  ],
+  [
+    "saved-history run comparison backend test",
+    tests.backendRunComparison,
+    /builds and saves a cautious report from owned saved histories/
+  ],
+  [
+    "auto calendar UI tests",
+    tests.autoCalendar,
+    /creates tasks from the generated grow calendar schedule/
+  ],
   ["export route test", tests.exportRoute, /uses shared back behavior on PDF \/ Export/],
   ["harvest helper tests", tests.planning, /estimates a harvest readiness window/]
 ].forEach(([description, contents, pattern]) => {

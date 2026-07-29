@@ -3,11 +3,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
+  CommercialProduct,
   CommercialGrow,
   createCommercialGrow,
   fetchCommercialGrows,
   fetchProductLines,
-  ProductLine
+  fetchProducts,
+  fetchSoilNutrientBatches,
+  ProductLine,
+  SoilNutrientBatch
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -52,10 +56,6 @@ function growId(grow: CommercialGrow) {
   return grow.id || grow._id || grow.name || grow.growName || "grow";
 }
 
-function productLineId(line: ProductLine) {
-  return String(line.id || line._id || line.name || "").trim();
-}
-
 function parseCount(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
@@ -71,6 +71,105 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+type RecordChoice = {
+  id: string;
+  label: string;
+};
+
+function recordChoice(
+  record: Record<string, any>,
+  index: number,
+  labelKeys: string[],
+  fallback: string
+): RecordChoice | null {
+  const id = String(record.id ?? record._id ?? "").trim();
+  if (!id) return null;
+  const label =
+    labelKeys.map((key) => String(record[key] ?? "").trim()).find(Boolean) ||
+    `${fallback} ${index + 1}`;
+  return { id, label };
+}
+
+function RecordPicker({
+  choices,
+  createHref,
+  createLabel,
+  emptyLabel,
+  label,
+  onChange,
+  selectedId
+}: {
+  choices: RecordChoice[];
+  createHref: string;
+  createLabel: string;
+  emptyLabel: string;
+  label: string;
+  onChange: (id: string) => void;
+  selectedId: string;
+}) {
+  return (
+    <View style={styles.recordPicker}>
+      <Text style={styles.selectorLabel}>{label}</Text>
+      {choices.length ? (
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={`${label} choices`}
+          style={styles.selectorActions}
+        >
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityLabel={`${label}: Not linked yet`}
+            accessibilityState={{ checked: !selectedId }}
+            onPress={() => onChange("")}
+            style={[styles.action, !selectedId && styles.selectedAction]}
+          >
+            <Text style={styles.actionText}>Not linked yet</Text>
+          </Pressable>
+          {choices.slice(0, 8).map((item) => (
+            <Pressable
+              key={`${label}-${item.id}`}
+              accessibilityRole="radio"
+              accessibilityLabel={`${label}: ${item.label}`}
+              accessibilityState={{ checked: selectedId === item.id }}
+              onPress={() => onChange(item.id)}
+              style={[styles.action, selectedId === item.id && styles.selectedAction]}
+            >
+              <Text style={styles.actionText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyPicker}>
+          <Text style={styles.muted}>No saved {emptyLabel} yet.</Text>
+          <ActionLink href={createHref} label={createLabel} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+const SHARE_STATUS_CHOICES: Array<{
+  id: GrowForm["publicShareStatus"];
+  label: string;
+  help: string;
+}> = [
+  {
+    id: "private",
+    label: "Private",
+    help: "Keep this run inside the Commercial workspace."
+  },
+  {
+    id: "evidence_building",
+    label: "Evidence building",
+    help: "Collect and review evidence before using it publicly."
+  },
+  {
+    id: "public_ready",
+    label: "Public ready",
+    help: "Mark the reviewed run as ready to support public material."
+  }
+];
+
 export default function CommercialGrowsRoute({
   routeKey = "commercial-grows"
 }: {
@@ -79,11 +178,14 @@ export default function CommercialGrowsRoute({
   const auth = useAuth();
   const ent = useEntitlements();
   const [grows, setGrows] = useState<CommercialGrow[]>([]);
+  const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
   const [form, setForm] = useState<GrowForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
 
   const activeCount = useMemo(
     () => grows.filter((grow) => (grow.status || "active") === "active").length,
@@ -93,17 +195,44 @@ export default function CommercialGrowsRoute({
     () => grows.filter((grow) => grow.publicShareStatus === "public_ready").length,
     [grows]
   );
+  const productChoices = useMemo(
+    () =>
+      products
+        .map((record, index) => recordChoice(record, index, ["name"], "Product"))
+        .filter((item): item is RecordChoice => !!item),
+    [products]
+  );
+  const productLineChoices = useMemo(
+    () =>
+      productLines
+        .map((record, index) => recordChoice(record, index, ["name"], "Product line"))
+        .filter((item): item is RecordChoice => !!item),
+    [productLines]
+  );
+  const batchChoices = useMemo(
+    () =>
+      batches
+        .map((record, index) =>
+          recordChoice(record, index, ["batchName", "name", "batchCode"], "Batch")
+        )
+        .filter((item): item is RecordChoice => !!item),
+    [batches]
+  );
 
   async function loadGrows() {
     setLoading(true);
     setError(null);
     try {
-      const [nextGrows, nextLines] = await Promise.all([
+      const [nextGrows, nextProducts, nextLines, nextBatches] = await Promise.all([
         fetchCommercialGrows(),
-        fetchProductLines()
+        fetchProducts(),
+        fetchProductLines(),
+        fetchSoilNutrientBatches()
       ]);
       setGrows(nextGrows);
+      setProducts(nextProducts);
       setProductLines(nextLines);
+      setBatches(nextBatches);
     } catch (err) {
       setError(err);
     } finally {
@@ -160,7 +289,9 @@ export default function CommercialGrowsRoute({
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Product Trial Evidence Runs</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Product Trial Evidence Runs
+            </Text>
             <Text style={styles.subtitle}>
               Commercial accounts use grow records only when they support product trials,
               formula tests, demos, and evidence-backed public reporting.
@@ -183,7 +314,9 @@ export default function CommercialGrowsRoute({
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence run overview
+        </Text>
         <Text style={styles.body}>
           Use evidence runs to track plants, logs, tasks, photos, diagnosis, crop
           steering, dry/cure, and run-to-run comparisons. Commercial metadata links the
@@ -210,7 +343,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Trial Evidence Run</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create Product Trial Evidence Run
+        </Text>
         <Text style={styles.body}>
           Start with trial anchors, then add brand and product context: product line,
           product, batch, formula version, purpose, and public-share intent.
@@ -260,54 +395,6 @@ export default function CommercialGrowsRoute({
             style={styles.input}
           />
           <TextInput
-            value={form.productId}
-            onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            accessibilityLabel="Product trial evidence run product id"
-            placeholder="Linked product ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.productLineId}
-            onChangeText={(productLineId) =>
-              setForm((prev) => ({ ...prev, productLineId }))
-            }
-            accessibilityLabel="Product trial evidence run product line id"
-            placeholder="Linked product line ID, or choose below"
-            style={styles.input}
-          />
-          {productLines.length ? (
-            <View style={styles.lineSelector}>
-              <Text style={styles.selectorLabel}>Choose Product Line</Text>
-              <View style={styles.selectorActions}>
-                {productLines.slice(0, 4).map((line) => {
-                  const id = productLineId(line);
-                  const name = line.name || "Product line";
-                  return (
-                    <Pressable
-                      key={`evidence-line-${id || name}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Use evidence run product line ${name}`}
-                      onPress={() => setForm((prev) => ({ ...prev, productLineId: id }))}
-                      style={[
-                        styles.action,
-                        form.productLineId === id && styles.selectedAction
-                      ]}
-                    >
-                      <Text style={styles.actionText}>{name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
-          <TextInput
-            value={form.batchId}
-            onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
-            accessibilityLabel="Product trial evidence run batch id"
-            placeholder="Linked batch ID"
-            style={styles.input}
-          />
-          <TextInput
             value={form.formulaVersion}
             onChangeText={(formulaVersion) =>
               setForm((prev) => ({ ...prev, formulaVersion }))
@@ -317,6 +404,82 @@ export default function CommercialGrowsRoute({
             style={styles.input}
           />
         </View>
+        <View style={styles.pickerGrid}>
+          <RecordPicker
+            label="Evidence run product"
+            choices={productChoices}
+            selectedId={form.productId}
+            onChange={(productId) => setForm((prev) => ({ ...prev, productId }))}
+            emptyLabel="products"
+            createHref="/home/commercial/products/new"
+            createLabel="Create Product"
+          />
+          <RecordPicker
+            label="Evidence run product line"
+            choices={productLineChoices}
+            selectedId={form.productLineId}
+            onChange={(productLineId) => setForm((prev) => ({ ...prev, productLineId }))}
+            emptyLabel="product lines"
+            createHref="/home/commercial/product-lines"
+            createLabel="Create Product Line"
+          />
+          <RecordPicker
+            label="Evidence run product batch"
+            choices={batchChoices}
+            selectedId={form.batchId}
+            onChange={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
+            emptyLabel="product batches"
+            createHref="/home/commercial/batch-planner"
+            createLabel="Create Product Batch"
+          />
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            showAdvancedRecordIds
+              ? "Hide advanced evidence run record ID fields"
+              : "Show advanced evidence run record ID fields"
+          }
+          accessibilityState={{ expanded: showAdvancedRecordIds }}
+          onPress={() => setShowAdvancedRecordIds((current) => !current)}
+          style={styles.advancedToggle}
+        >
+          <Text style={styles.advancedToggleText}>
+            {showAdvancedRecordIds
+              ? "Hide advanced record IDs"
+              : "Use advanced record IDs"}
+          </Text>
+        </Pressable>
+        {showAdvancedRecordIds ? (
+          <View style={styles.formGrid}>
+            <TextInput
+              value={form.productId}
+              onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
+              accessibilityLabel="Product trial evidence run product id"
+              placeholder="Product ID"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            <TextInput
+              value={form.productLineId}
+              onChangeText={(productLineId) =>
+                setForm((prev) => ({ ...prev, productLineId }))
+              }
+              accessibilityLabel="Product trial evidence run product line id"
+              placeholder="Product line ID"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            <TextInput
+              value={form.batchId}
+              onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
+              accessibilityLabel="Product trial evidence run batch id"
+              placeholder="Product batch ID"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+          </View>
+        ) : null}
         <TextInput
           value={form.measurementPlan}
           onChangeText={(measurementPlan) =>
@@ -335,6 +498,33 @@ export default function CommercialGrowsRoute({
           placeholder="Notes and public-share context"
           style={[styles.input, styles.textArea]}
         />
+        <View style={styles.sharePicker}>
+          <Text style={styles.selectorLabel}>Public share status</Text>
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Product trial evidence run public share status"
+            style={styles.shareChoices}
+          >
+            {SHARE_STATUS_CHOICES.map((choice) => (
+              <Pressable
+                key={choice.id}
+                accessibilityRole="radio"
+                accessibilityLabel={`Public share status: ${choice.label}`}
+                accessibilityState={{ checked: form.publicShareStatus === choice.id }}
+                onPress={() =>
+                  setForm((prev) => ({ ...prev, publicShareStatus: choice.id }))
+                }
+                style={[
+                  styles.shareChoice,
+                  form.publicShareStatus === choice.id && styles.selectedAction
+                ]}
+              >
+                <Text style={styles.actionText}>{choice.label}</Text>
+                <Text style={styles.choiceHelp}>{choice.help}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
@@ -350,34 +540,20 @@ export default function CommercialGrowsRoute({
               {saving ? "Creating..." : "Create Evidence Run"}
             </Text>
           </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Toggle product trial evidence run public share status"
-            onPress={() =>
-              setForm((prev) => ({
-                ...prev,
-                publicShareStatus:
-                  prev.publicShareStatus === "public_ready"
-                    ? "private"
-                    : prev.publicShareStatus === "private"
-                      ? "evidence_building"
-                      : "public_ready"
-              }))
-            }
-            style={styles.action}
-          >
-            <Text style={styles.actionText}>Share: {form.publicShareStatus}</Text>
-          </Pressable>
         </View>
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current product trial evidence runs</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Current product trial evidence runs
+        </Text>
         {grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (
               <View key={growId(grow)} style={styles.growRow}>
-                <Text style={styles.growTitle}>{grow.name || grow.growName}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.growTitle}>
+                  {grow.name || grow.growName}
+                </Text>
                 <Text style={styles.growMeta}>
                   {[
                     grow.purpose,
@@ -419,7 +595,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Pro workflow retained</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Advanced planning tools
+        </Text>
         <Text style={styles.body}>
           Commercial users should not lose Pro grow behavior. Evidence runs remain the
           evidence anchor for plant records, logs, tool runs, tasks, photos, and reports
@@ -431,7 +609,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Evidence-to-claim guardrails
+        </Text>
         <Text style={styles.body}>
           Evidence runs add product, batch, formula, and public-report context on top of
           the connected run workspace. The private evidence-run record remains the source
@@ -455,7 +635,9 @@ export default function CommercialGrowsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Trial setup checklist</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Trial setup checklist
+        </Text>
         <Text style={styles.body}>
           A commercial trial should start with enough context to compare results later.
           Missing setup context makes public claims weaker.
@@ -594,14 +776,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
-  lineSelector: {
+  pickerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  recordPicker: {
     borderColor: "#BBF7D0",
     borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
-    minWidth: 220,
+    flexBasis: 260,
+    minWidth: 250,
     padding: 9
   },
+  emptyPicker: { alignItems: "flex-start", gap: 8 },
   selectorLabel: {
     color: "#166534",
     fontSize: 11,
@@ -609,6 +799,46 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  advancedToggle: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 4
+  },
+  advancedToggleText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    textDecorationLine: "underline"
+  },
+  sharePicker: {
+    borderColor: "#BBF7D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  shareChoices: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8
+  },
+  shareChoice: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexBasis: 220,
+    flexGrow: 1,
+    padding: 10
+  },
+  choiceHelp: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4
+  },
   primaryAction: {
     backgroundColor: "#166534",
     borderRadius: radius.card,

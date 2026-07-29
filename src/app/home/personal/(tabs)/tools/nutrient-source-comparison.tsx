@@ -9,6 +9,25 @@ function listSummary(value: unknown) {
   return Array.isArray(value) && value.length ? value.slice(0, 4).join(", ") : "";
 }
 
+function parseCandidateSources(value: string) {
+  if (!value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return value
+      .split("\n")
+      .map((line) => {
+        const [name, analysis, releaseClass, cost, secondaryNutrients, lotId] = line
+          .split(",")
+          .map((part) => part.trim());
+        if (!name) return null;
+        return { name, analysis, releaseClass, cost, secondaryNutrients, lotId };
+      })
+      .filter(Boolean);
+  }
+}
+
 function nutrientSourceTaskPlan(outputs: Record<string, any>) {
   const nutrient = String(outputs.nutrient || "nutrient");
   const bestChoice = String(outputs.bestChoiceByIntent || "best-fit source");
@@ -77,11 +96,36 @@ export default function NutrientSourceComparisonToolScreen() {
       toolKey="nutrient-source-comparison"
       title="Nutrient Source Comparison"
       subtitle="Compare source speed, pH effects, secondary nutrients, and poor-fit use cases."
+      aiPrefill={{
+        buttonLabel: "Fill comparison from ingredient catalog",
+        clearUnfilled: true,
+        buildMessage: () =>
+          `Prefill this Nutrient Source Comparison from the selected grow's verified ingredient/product catalog, label photos/extractions, guaranteed analyses, lots, costs, water profile, medium, stage, recipes, prior applications, pH/EC outcomes, and plant response. Return JSON only with exactly these string keys: nutrient, intent, medium, stage, candidateSources, waterContext, comparisonNotes. candidateSources must be a JSON-array string or lines containing name, guaranteed analysis, release class/window, cost, secondary nutrients, and lot ID. Never invent products, analyses, chemical forms, lots, costs, solubility, or release rates. Leave unknowns blank. In comparisonNotes distinguish label N-P2O5-K2O from elemental contribution, fast/medium/slow availability, pH/EC effects, nitrogen/carbon context, mobility, water compatibility, K/Ca/Mg antagonism, timing fit, uncertainty, and whether a lab/label check is still needed.`
+      }}
       fields={[
         { key: "nutrient", label: "Nutrient", defaultValue: "calcium" },
         { key: "intent", label: "Intent", defaultValue: "fast_correction" },
         { key: "medium", label: "Medium", defaultValue: "living_soil" },
-        { key: "stage", label: "Stage", defaultValue: "veg" }
+        { key: "stage", label: "Stage", defaultValue: "veg" },
+        {
+          key: "candidateSources",
+          label:
+            "Candidate sources: name, analysis, release, cost, secondary nutrients, lot ID",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "waterContext",
+          label: "Water profile / alkalinity context (optional)",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "comparisonNotes",
+          label: "Evidence and comparison questions (optional)",
+          defaultValue: "",
+          multiline: true
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
@@ -89,7 +133,10 @@ export default function NutrientSourceComparisonToolScreen() {
         nutrient: values.nutrient,
         intent: values.intent,
         medium: values.medium,
-        stage: values.stage
+        stage: values.stage,
+        candidateSources: parseCandidateSources(values.candidateSources),
+        waterContext: values.waterContext || undefined,
+        comparisonNotes: values.comparisonNotes || undefined
       })}
       buildMetrics={(outputs) => [
         {

@@ -56,6 +56,16 @@ describe("API Wrappers Unit Tests", () => {
     fetchCalls = [];
   });
 
+  it("Environment API: uses the mounted rule-review endpoint", async () => {
+    await environmentApi.analyzeEnvironment({
+      stage: "veg",
+      tempDayC: 25,
+      humidity: 60
+    });
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith("/api/tools/environment-analysis")).toBe(true);
+  });
+
   it("Users API: followUser uses POST and correct path", async () => {
     await usersApi.followUser("u1");
     expect(fetchCalls[0].options.method).toBe("POST");
@@ -67,6 +77,26 @@ describe("API Wrappers Unit Tests", () => {
     expect(fetchCalls[0].options.method).toBe("POST");
     expect(fetchCalls[0].url.endsWith(ROUTES.USER.BIO)).toBe(true);
     expect(JSON.parse(fetchCalls[0].options.body).bio).toBe("New bio");
+  });
+
+  it("Reports API: sends authenticated exact-content context to the moderation endpoint", async () => {
+    await reportsApi.submitReport({
+      contentType: "video",
+      contentId: "video-1",
+      contentTitle: "Living soil walkthrough",
+      targetUrl: "/videos/video-1",
+      reason: "Misleading claim"
+    });
+
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith(ROUTES.REPORTS.SUBMIT)).toBe(true);
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      contentType: "video",
+      contentId: "video-1",
+      contentTitle: "Living soil walkthrough",
+      targetUrl: "/videos/video-1",
+      reason: "Misleading claim"
+    });
   });
 
   it("Courses API: enrollInCourse uses POST", async () => {
@@ -82,27 +112,84 @@ describe("API Wrappers Unit Tests", () => {
   });
 
   it("Subscription API: createCheckoutSession starts Stripe checkout via POST", async () => {
-    await subscriptionApi.createCheckoutSession({
-      plan: "commercial",
-      interval: "yearly"
-    });
-    expect(fetchCalls[0].options.method).toBe("POST");
-    expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
-      true
-    );
-    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
-      plan: "commercial",
-      interval: "yearly"
-    });
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession({
+        plan: "commercial",
+        interval: "yearly"
+      });
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
+        true
+      );
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "commercial",
+        interval: "yearly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/offers?subscription=success",
+        cancelUrl: "https://app.example/offers?subscription=canceled"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
+  });
+
+  it("Subscription API: createCheckoutSession forwards gift metadata and custom URLs", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession({
+        plan: "pro",
+        interval: "monthly",
+        giftMode: true,
+        giftRecipientEmail: "Friend@Example.com",
+        giftRecipientName: "Friend Name",
+        giftMessage: "Happy growing!",
+        giftTerm: "yearly",
+        successUrl: "https://app.example/home/personal/upgrade?gift=success",
+        cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
+      });
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "pro",
+        interval: "monthly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/home/personal/upgrade?gift=success",
+        cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled",
+        giftMode: true,
+        giftRecipientEmail: "friend@example.com",
+        giftRecipientName: "Friend Name",
+        giftMessage: "Happy growing!",
+        giftTerm: "yearly"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
   });
 
   it("Subscription API: createCheckoutSession defaults legacy callers to pro monthly", async () => {
-    await subscriptionApi.createCheckoutSession();
-    expect(fetchCalls[0].options.method).toBe("POST");
-    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
-      plan: "pro",
-      interval: "monthly"
-    });
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await subscriptionApi.createCheckoutSession();
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+        plan: "pro",
+        interval: "monthly",
+        paymentMethodTypes: ["card"],
+        disallowBankDebits: true,
+        successUrl: "https://app.example/offers?subscription=success",
+        cancelUrl: "https://app.example/offers?subscription=canceled"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
   });
 
   it("Course payments API: startCourseCheckout uses canonical Stripe checkout", async () => {
@@ -214,6 +301,23 @@ describe("API Wrappers Unit Tests", () => {
     expect(
       fetchCalls[0].url.endsWith(
         "/api/commercial/storefront/public?q=soil&similarTo=seller+store&limit=12"
+      )
+    ).toBe(true);
+  });
+
+  it("Commercial API: public dispensary search supports state and distance", async () => {
+    await storefrontApi.searchPublicStorefronts({
+      storefrontType: "dispensary",
+      stateCode: "MA",
+      latitude: 42.3601,
+      longitude: -71.0589,
+      radiusMiles: 25,
+      limit: 25
+    });
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith(
+        "/api/commercial/storefront/public?storefrontType=dispensary&state=MA&latitude=42.3601&longitude=-71.0589&radiusMiles=25&limit=25"
       )
     ).toBe(true);
   });

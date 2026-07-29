@@ -10,8 +10,9 @@ import {
   saveToolRunToLog,
   type ToolRun
 } from "@/api/toolRuns";
+import { listPersonalGrows } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam } from "@/features/grows/routeUtils";
+import { coerceParam, findGrowById, isCannabisGrow } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
 import ToolResultSurface, {
   type ToolResultAction,
@@ -64,6 +65,76 @@ const styles = StyleSheet.create({
 function withGrow(path: string, growId: string) {
   return `${path}?growId=${encodeURIComponent(growId)}`;
 }
+
+type GrowWorkspaceItem = readonly [
+  label: string,
+  path: string,
+  options?: { cannabisOnly?: boolean }
+];
+
+type GrowWorkspaceGroup = {
+  title: string;
+  items: readonly GrowWorkspaceItem[];
+};
+
+const GROW_WORKSPACE_GROUPS = [
+  {
+    title: "Plan & schedule",
+    items: [
+      ["Grow lifecycle plan", "/home/personal/tools/auto-grow-calendar"],
+      ["Tasks", "tasks"]
+    ]
+  },
+  {
+    title: "Water, feed & environment",
+    items: [
+      ["Watering plan", "/home/personal/tools/watering"],
+      ["Feeding schedule", "/home/personal/tools/feeding-schedule"],
+      ["Soil & nutrient mix builders", "/home/personal/tools/recipe-builder"],
+      ["Environment review", "/home/personal/tools/environment-analysis"],
+      ["Crop steering", "/home/personal/tools/crop-steering-project"],
+      ["Stress / recovery", "/home/personal/tools/stress-test"]
+    ]
+  },
+  {
+    title: "Grow data & reports",
+    items: [
+      ["Data integrations", "/home/personal/tools/integrations"],
+      ["Export grow report", "/home/personal/tools/pdf-export"],
+      ["Saved results", "/home/personal/tools/saved-runs"]
+    ]
+  },
+  {
+    title: "Plant health & propagation",
+    items: [
+      ["Ask AI", "/home/personal/ai"],
+      ["Plant Diagnose", "/home/personal/diagnose"],
+      ["IPM Scout", "/home/personal/tools/ipm-scout"],
+      ["Clone rooting", "/home/personal/tools/clone-rooting"]
+    ]
+  },
+  {
+    title: "Genetics & selection",
+    items: [
+      ["Genetics records", "/home/personal/tools/genetics-inventory"],
+      ["Pheno hunt", "/home/personal/tools/pheno-hunt"],
+      ["Pheno matrix", "/home/personal/tools/pheno-matrix"],
+      ["Tissue culture", "/home/personal/tools/tissue-culture"]
+    ]
+  },
+  {
+    title: "Harvest & post-harvest",
+    items: [
+      [
+        "Harvest readiness calculator",
+        "/home/personal/tools/harvest-readiness",
+        { cannabisOnly: true }
+      ],
+      ["Dry / cure", "/home/personal/tools/dry-cure-guard", { cannabisOnly: true }],
+      ["Compare runs", "compare"]
+    ]
+  }
+] as const satisfies readonly GrowWorkspaceGroup[];
 
 function toolRunContextLabel(run: any) {
   const context = run?.selectedPlantContext || run?.cropIdentity || {};
@@ -118,14 +189,19 @@ export default function GrowToolsScreen() {
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [cannabisGrow, setCannabisGrow] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       let mounted = true;
       (async () => {
-        const rows = await listToolRuns({ growId });
+        const [rows, grows] = await Promise.all([
+          listToolRuns({ growId }),
+          listPersonalGrows()
+        ]);
         if (!mounted) return;
         setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
+        setCannabisGrow(isCannabisGrow(findGrowById(grows, growId), rows));
       })();
       return () => {
         mounted = false;
@@ -171,9 +247,10 @@ export default function GrowToolsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Grow Tools</Text>
+      <Text style={styles.title}>Grow Intelligence</Text>
       <Text style={styles.subtitle}>
-        Run tools in this grow context and save outputs.
+        Plan and operate this grow with its plants, history, evidence, tasks, and saved
+        results already attached.
       </Text>
       <PersonalFeedPlacement
         placement="top"
@@ -183,13 +260,14 @@ export default function GrowToolsScreen() {
       <GrowWorkspaceNav growId={growId} active="tools" />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Open full tools hub</Text>
+        <Text style={styles.cardTitle}>AI tool library</Text>
         <Text style={styles.cardText}>
-          All tool groups are available with this grow pre-selected.
+          Open Ask AI, plant diagnosis, PPFD/DLI analysis, and the soil and nutrient mix
+          builders with this grow selected.
         </Text>
         <Link href={withGrow("/home/personal/tools", growId)} asChild>
           <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Open tools hub</Text>
+            <Text style={styles.actionText}>Open AI tools</Text>
           </Pressable>
         </Link>
         <Link href={withGrow("/home/personal/tools/saved-runs", growId)} asChild>
@@ -200,40 +278,32 @@ export default function GrowToolsScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Quick tools</Text>
-        <Text style={styles.cardText}>Jump directly to common workflows.</Text>
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-          <Link href={withGrow("/home/personal/tools/vpd", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>VPD</Text>
-            </Pressable>
-          </Link>
-          <Link href={withGrow("/home/personal/tools/watering", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>Watering</Text>
-            </Pressable>
-          </Link>
-          <Link href={withGrow("/home/personal/tools/npk", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>Recipe Builder</Text>
-            </Pressable>
-          </Link>
-          <Link href={withGrow("/home/personal/tools/pheno-matrix", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>Pheno Matrix</Text>
-            </Pressable>
-          </Link>
-          <Link href={withGrow("/home/personal/tools/harvest-readiness", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>Harvest Readiness</Text>
-            </Pressable>
-          </Link>
-          <Link href={withGrow("/home/personal/tools/pdf-export", growId)} asChild>
-            <Pressable style={styles.action}>
-              <Text style={styles.actionText}>Export Grow Data</Text>
-            </Pressable>
-          </Link>
-        </View>
+        <Text style={styles.cardTitle}>Grow workflows</Text>
+        {GROW_WORKSPACE_GROUPS.map((group) => {
+          const visibleItems = group.items.filter(
+            ([, , options]) => !options?.cannabisOnly || cannabisGrow
+          );
+          if (!visibleItems.length) return null;
+          return (
+            <View key={group.title} style={{ marginTop: 12 }}>
+              <Text style={styles.cardTitle}>{group.title}</Text>
+              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                {visibleItems.map(([label, path]) => {
+                  const href = path.startsWith("/")
+                    ? withGrow(path, growId)
+                    : `/home/personal/grows/${encodeURIComponent(growId)}/${path}`;
+                  return (
+                    <Link key={label} href={href as any} asChild>
+                      <Pressable style={styles.action}>
+                        <Text style={styles.actionText}>{label}</Text>
+                      </Pressable>
+                    </Link>
+                  );
+                })}
+              </View>
+            </View>
+          );
+        })}
         <Text style={styles.recentTitle}>Recent tool runs</Text>
         {recent.length === 0 ? (
           <Text style={styles.recentRow}>No saved runs yet.</Text>

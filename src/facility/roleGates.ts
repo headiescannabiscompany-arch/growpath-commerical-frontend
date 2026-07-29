@@ -82,11 +82,11 @@ export function can(role: FacilityRole | null | undefined, action: Action): bool
       return role === "OWNER" || role === "MANAGER"; // adjust if needed
 
     case "TEAM_INVITE":
-      return role === "OWNER" || role === "MANAGER";
+      return role === "OWNER";
     case "TEAM_UPDATE_ROLE":
-      return role === "OWNER" || role === "MANAGER";
+      return role === "OWNER";
     case "TEAM_REMOVE":
-      return role === "OWNER" || role === "MANAGER";
+      return role === "OWNER";
 
     default:
       return false;

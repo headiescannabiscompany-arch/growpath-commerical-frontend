@@ -3,14 +3,35 @@
 import { apiRequest } from "./apiRequest";
 // import type { ApiError } from "./errors"; // Removed as unused
 
+export type NotificationPreferences = {
+  pushEnabled?: boolean;
+  taskReminders?: boolean;
+  forumReplies?: boolean;
+  forumMentions?: boolean;
+  videoActivity?: boolean;
+  courseAndLiveUpdates?: boolean;
+  commerceUpdates?: boolean;
+  facilityAlerts?: boolean;
+};
+
 export type AuthUser = {
   id: string;
+  _id?: string;
+  name?: string;
   email: string;
   displayName: string;
   role: "user" | "creator" | "admin";
   plan: string | null;
   subscriptionStatus: string | null;
+  trialUsed?: boolean;
+  trialPlansUsed?: Array<"pro" | "commercial" | "facility">;
   emailVerified?: boolean;
+  growInterests?: Record<string, string[]>;
+  ageBand?: "13_17" | "18_20" | "21_plus" | "unknown";
+  cannabisEligible?: boolean;
+  cannabisVisibility?: "show" | "hide";
+  parentalLockEnabled?: boolean;
+  notificationPreferences?: NotificationPreferences;
 };
 
 export type SignupBody = {
@@ -20,6 +41,8 @@ export type SignupBody = {
   password: string;
   plan?: "free" | "pro" | "commercial" | "facility";
   mode?: "personal" | "commercial" | "facility";
+  dateOfBirth?: string;
+  showCannabisContent?: boolean;
 };
 
 export type LoginBody = {
@@ -59,6 +82,7 @@ export type ForgotPasswordResponse = {
 
 export type ResetPasswordResponse = {
   ok: true;
+  email?: string;
 };
 
 function currentOrigin() {
@@ -85,7 +109,8 @@ function normalizeSignupArgs(a: SignupBody | string, b?: string, c?: string): Si
     email: String(a || ""),
     password: String(b || ""),
     displayName: String(c || ""),
-    name: String(c || "")
+    name: String(c || ""),
+    dateOfBirth: ""
   };
 }
 
@@ -182,6 +207,22 @@ export async function resetPassword(
     auth: false,
     body: { token, password }
   }) as Promise<ResetPasswordResponse>;
+}
+
+export function updateContentControls(body: {
+  cannabisVisibility: "show" | "hide";
+  parentalLockEnabled?: boolean;
+  currentPin?: string;
+  newPin?: string;
+}) {
+  return apiRequest<{
+    ok: true;
+    contentControls: {
+      cannabisVisibility: "show" | "hide";
+      parentalLockEnabled: boolean;
+      cannabisEligible: boolean;
+    };
+  }>("/api/me/content-controls", { method: "PATCH", body });
 }
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */

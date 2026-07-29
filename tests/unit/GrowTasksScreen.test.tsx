@@ -8,6 +8,7 @@ const mockDeletePersonalTask = jest.fn();
 const mockListPersonalTasks = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
 let mockCanUseTaskReminders = true;
+let mockTaskId = "";
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
@@ -30,7 +31,7 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
-    useLocalSearchParams: () => ({ growId: "grow-task-1" }),
+    useLocalSearchParams: () => ({ growId: "grow-task-1", taskId: mockTaskId }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,
@@ -59,6 +60,7 @@ describe("GrowTasksScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockCanUseTaskReminders = true;
+    mockTaskId = "";
     mockListPersonalTasks.mockResolvedValue([
       {
         id: "task-open-1",
@@ -167,7 +169,7 @@ describe("GrowTasksScreen", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
-        "Grow task link /home/personal/tools/saved-runs?toolRunId=run-1"
+        "Grow task link /home/personal/tools/saved-runs?toolRunId=run-1&growId=grow-task-1&sourceContext=task&sourceTaskId=task-done-1"
       )
     ).toBeTruthy();
     expect(screen.getByLabelText("Grow task link /store?q=batch-linked-1")).toBeTruthy();
@@ -214,6 +216,8 @@ describe("GrowTasksScreen", () => {
     const screen = render(<GrowTasksScreen />);
 
     await waitFor(() => expect(screen.getByText("Tasks")).toBeTruthy());
+    expect(screen.getByText("Task planning tools")).toBeTruthy();
+    expect(screen.getByLabelText("Topdress Planner from grow_tasks")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Task title"), "Inspect sensor alert");
     fireEvent.press(screen.getByLabelText("Set task source sensor_alert"));
     fireEvent.changeText(screen.getByLabelText("Task source object"), "sensor-alert-2");
@@ -275,7 +279,11 @@ describe("GrowTasksScreen", () => {
     expect(screen.queryByLabelText("Set task source sop")).toBeNull();
     fireEvent.changeText(screen.getByLabelText("Task title"), "Check soil moisture");
     fireEvent.changeText(screen.getByLabelText("Task description"), "Before watering.");
-    fireEvent.changeText(screen.getByLabelText("Task due date"), "2026-07-03");
+    fireEvent.press(screen.getByLabelText("Task due date"));
+    fireEvent(screen.getByLabelText("Task due date year"), "valueChange", 2026);
+    fireEvent(screen.getByLabelText("Task due date month"), "valueChange", 7);
+    fireEvent.press(screen.getByLabelText("Task due date day 2026-07-03"));
+    fireEvent.press(screen.getByLabelText("Task due date use selected date"));
     fireEvent.press(screen.getByLabelText("Set task priority high"));
     fireEvent.press(screen.getByLabelText("Set task source product_batch"));
     fireEvent.changeText(screen.getByLabelText("Task source object"), "batch-1");
@@ -321,5 +329,17 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Task reminders are Pro")).toBeTruthy();
     expect(screen.queryByLabelText("Task title")).toBeNull();
     expect(screen.queryByLabelText("Complete task")).toBeNull();
+  });
+
+  it("focuses the exact task opened from a source link", async () => {
+    mockTaskId = "task-done-1";
+
+    const screen = render(<GrowTasksScreen />);
+
+    await waitFor(() => expect(screen.getByText("Opened from Journal")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Focused task Review VPD result. Opened from Journal")
+    ).toBeTruthy();
+    expect(screen.getAllByText(/Review VPD result/)[0]).toBeTruthy();
   });
 });

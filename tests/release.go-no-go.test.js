@@ -59,6 +59,7 @@ function writeValidEvidence(tempRoot, overrides = {}) {
         "privacy",
         "terms",
         "support",
+        "personal-grow-deep-link",
         "delete-account",
         "api-health",
         "api-ready",
@@ -162,11 +163,15 @@ function writeValidEvidence(tempRoot, overrides = {}) {
 }
 
 function runGate(tempRoot) {
-  return spawnSync(process.execPath, [path.join(tempRoot, "scripts", "release-go-no-go.cjs")], {
-    cwd: tempRoot,
-    encoding: "utf8",
-    env: process.env
-  });
+  return spawnSync(
+    process.execPath,
+    [path.join(tempRoot, "scripts", "release-go-no-go.cjs")],
+    {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: process.env
+    }
+  );
 }
 
 describe("release go/no-go gate", () => {
@@ -211,6 +216,7 @@ describe("release go/no-go gate", () => {
           "privacy",
           "terms",
           "support",
+          "personal-grow-deep-link",
           "delete-account",
           "api-health",
           "api-ready",

@@ -1,10 +1,16 @@
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 
 export interface ToolRun {
   id?: string;
   _id?: string;
   growId?: string;
   plantId?: string | null;
+  facilityId?: string | null;
+  roomId?: string | null;
+  productId?: string | null;
+  batchId?: string | null;
+  courseId?: string | null;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -28,11 +34,18 @@ export interface ToolRun {
   recommendations?: string[];
   warnings?: string[];
   confidence?: string | null;
+  methodIds?: string[];
+  sourceIds?: string[];
+  citations?: Array<Record<string, any>>;
+  disagreements?: Array<Record<string, any>>;
+  limitations?: string[];
   linkedLogId?: string | null;
+  linkedTimelineEventId?: string | null;
   linkedTaskIds?: string[];
   linkedTaskId?: string | null;
   linkedDiagnosisId?: string | null;
   linkedRecipeId?: string | null;
+  linkedModuleRecordId?: string | null;
   immutableSnapshot?: Record<string, any> | null;
   createdAt?: string;
 }
@@ -63,6 +76,44 @@ export type CalculatorTool =
   | "species-crop-id"
   | "crop-steering-project"
   | "pheno-hunt";
+
+export type RunComparisonScope =
+  | "whole_run"
+  | "vegetative"
+  | "flowering_fruiting"
+  | "harvest_final"
+  | "post_harvest";
+
+export type RunComparisonObjective =
+  | "balanced_review"
+  | "yield"
+  | "final_quality"
+  | "issue_reduction"
+  | "task_execution"
+  | "cycle_time";
+
+export type SavedGrowComparisonInput = {
+  growIds: string[];
+  referenceGrowId?: string;
+  scope?: RunComparisonScope;
+  objective?: RunComparisonObjective;
+  title?: string;
+  notes?: string;
+};
+
+export async function compareSavedGrows(input: SavedGrowComparisonInput) {
+  const response: any = await apiRequest("/api/tools/run-comparison/from-grows", {
+    method: "POST",
+    body: {
+      ...input,
+      growId: input.referenceGrowId || input.growIds[0]
+    }
+  });
+  return {
+    toolRun: normalizeToolRun(response?.toolRun || response?.data?.toolRun),
+    outputs: response?.outputs || response?.data?.outputs || {}
+  };
+}
 
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
@@ -129,6 +180,11 @@ export function normalizeToolRun(row: any): ToolRun {
           toolType: normalized.toolType,
           growId: row?.growId || null,
           plantId: normalized.plantId || null,
+          facilityId: row?.facilityId || null,
+          roomId: row?.roomId || null,
+          productId: row?.productId || null,
+          batchId: row?.batchId || null,
+          courseId: row?.courseId || null,
           cropProfileId: normalized.cropProfileId || null,
           cropIdentity: normalized.cropIdentity || null,
           selectedPlantContext: normalized.selectedPlantContext || null,
@@ -233,7 +289,8 @@ export async function listToolRuns(options?: {
     if (options?.includeArchived) params.includeArchived = "true";
     const res: any = await apiRequest("/api/tools", {
       method: "GET",
-      params: Object.keys(params).length ? params : undefined
+      cache: "no-store",
+      params: withFreshnessParam(params)
     });
     const rows = Array.isArray(res)
       ? res
@@ -301,6 +358,11 @@ export async function createToolRun(payload: {
   toolType: string;
   growId?: string;
   plantId?: string;
+  facilityId?: string;
+  roomId?: string;
+  productId?: string;
+  batchId?: string;
+  courseId?: string;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -324,6 +386,11 @@ export async function createToolRun(payload: {
       sourceType: payload.sourceType || "manual_tool_run",
       sourceObjectId: payload.sourceObjectId || null,
       plantId: payload.plantId || payload.selectedPlantContext?.id || undefined,
+      facilityId: payload.facilityId || undefined,
+      roomId: payload.roomId || undefined,
+      productId: payload.productId || undefined,
+      batchId: payload.batchId || undefined,
+      courseId: payload.courseId || undefined,
       cropProfileId:
         payload.cropProfileId ||
         payload.selectedPlantContext?.cropProfileId ||

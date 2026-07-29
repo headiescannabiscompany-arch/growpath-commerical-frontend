@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import NewGrowScreen from "@/app/home/personal/(tabs)/grows/new";
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 const mockAppendGrowPhotos = jest.fn();
 const mockListPersonalGrows = jest.fn();
@@ -11,11 +12,41 @@ const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
 let mockLimits: Record<string, number> = {};
 
+function chooseDate(
+  screen: ReturnType<typeof render>,
+  accessibilityLabel: string,
+  value: string
+) {
+  const [year, month] = value.split("-").map(Number);
+  fireEvent.press(screen.getByLabelText(accessibilityLabel));
+  fireEvent(screen.getByLabelText(`${accessibilityLabel} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${accessibilityLabel} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${accessibilityLabel} day ${value}`));
+  fireEvent.press(screen.getByLabelText(`${accessibilityLabel} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    replace: mockReplace
+    replace: mockReplace,
+    push: mockPush
   }),
+  useLocalSearchParams: () => ({}),
+  usePathname: () => "/home/personal/grows/new",
   Link: ({ children }: any) => children
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      id: "personal-pro-user",
+      growInterests: {
+        crops: ["Fruit Trees & Bushes"],
+        environment: ["Outdoor"],
+        methods: ["Organic (Amended Soil)"],
+        experience: ["Intermediate"]
+      }
+    }
+  })
 }));
 
 jest.mock("expo-image-picker", () => ({
@@ -76,30 +107,27 @@ describe("NewGrowScreen access", () => {
   });
 
   it("locks grow creation after the free one-grow limit is used", async () => {
-    mockEntitlementsCan.mockImplementation(
-      (capability) => capability !== "GROWS_PERSONAL_WRITE"
-    );
+    mockEntitlementsCan.mockReturnValue(true);
     mockLimits = { maxGrows: 1 };
     mockListPersonalGrows.mockResolvedValue([{ id: "grow-1" }]);
 
     render(<NewGrowScreen />);
 
-    await waitFor(() => expect(screen.getByText("Create grows with Pro")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Free grow limit reached")).toBeTruthy());
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     expect(
       screen.getByText(
-        "Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
+        "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
       )
     ).toBeTruthy();
+    expect(mockListPersonalGrows).toHaveBeenCalled();
     fireEvent.press(screen.getByText("Back to grows"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows");
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
   it("lets free personal users create their first grow within the limit", async () => {
-    mockEntitlementsCan.mockImplementation(
-      (capability) => capability !== "GROWS_PERSONAL_WRITE"
-    );
+    mockEntitlementsCan.mockReturnValue(true);
     mockLimits = { maxGrows: 1 };
     mockListPersonalGrows.mockResolvedValue([]);
 
@@ -108,7 +136,7 @@ describe("NewGrowScreen access", () => {
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
-    fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    chooseDate(screen, "Anchor date", "2026-01-01");
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
@@ -128,8 +156,25 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("Grow Planner / Auto Calendar")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Plant count")).toBeTruthy();
+    expect(screen.getByLabelText("Veg length (weeks)")).toBeTruthy();
+    expect(screen.getByLabelText("Expected flower days")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "Bruce Banner Auto");
-    fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    chooseDate(screen, "Anchor date", "2026-01-01");
+    fireEvent.press(screen.getByLabelText("Show advanced fields"));
+    chooseDate(screen, "Start date", "2026-01-01");
+    chooseDate(screen, "Germination date", "2026-01-03");
+    chooseDate(screen, "Clone cut date", "2026-01-04");
+    chooseDate(screen, "Transplant date", "2026-01-15");
+    chooseDate(screen, "Flip date", "2026-02-14");
+    chooseDate(screen, "Flower day 1", "2026-02-15");
+    chooseDate(screen, "Expected harvest date", "2026-04-15");
+    chooseDate(screen, "Actual harvest date", "2026-04-20");
+    chooseDate(screen, "Dry start date", "2026-04-20");
+    chooseDate(screen, "Cure start date", "2026-04-30");
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
@@ -139,12 +184,24 @@ describe("NewGrowScreen access", () => {
         method: "POST",
         body: expect.objectContaining({
           name: "Bruce Banner Auto",
-          anchorDate: "2026-01-01"
+          anchorDate: "2026-01-01",
+          startDate: "2026-01-01",
+          germinationDate: "2026-01-03",
+          cloneCutDate: "2026-01-04",
+          transplantDate: "2026-01-15",
+          flipDate: "2026-02-14",
+          flowerDay1Date: "2026-02-15",
+          expectedHarvestDate: "2026-04-15",
+          actualHarvestDate: "2026-04-20",
+          dryStartDate: "2026-04-20",
+          cureStartDate: "2026-04-30"
         })
       })
     );
-    expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining("/home/personal/grows")
+    await waitFor(() =>
+      expect(screen.getByText("Grow created: Bruce Banner Auto")).toBeTruthy()
     );
+    fireEvent.press(screen.getByText("Open Grow Dashboard"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
   });
 });

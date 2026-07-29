@@ -6,15 +6,27 @@ import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-nativ
 import {
   addCommercialCourseLesson,
   CommercialCourse,
+  deleteCommercialCourseLesson,
   fetchCommercialCourse,
   fetchProductLines,
   publishCommercialCourse,
   ProductLine,
-  updateCommercialCourse
+  updateCommercialCourse,
+  updateCommercialCourseLesson
 } from "@/api/commercialWorkflows";
+import { uploadCourseMedia } from "@/api/uploads";
 import { InlineError } from "@/components/InlineError";
+import LessonMediaCard from "@/components/learning/LessonMediaCard";
+import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import {
+  emptyLessonMediaDraft,
+  lessonMediaDraftFromLesson,
+  lessonMediaPublishIssues,
+  prepareLessonMediaSubmission
+} from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
@@ -51,6 +63,11 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
   if (!course.lessons?.length) warnings.push("add lesson");
+  course.lessons?.forEach((lesson, index) => {
+    lessonMediaPublishIssues(lesson).forEach((issue) =>
+      warnings.push(`lesson ${index + 1}: ${issue}`)
+    );
+  });
   if (course.access === "paid") {
     if (!Number(course.price)) warnings.push("add paid price");
     if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
@@ -60,6 +77,7 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
 }
 
 function blocksCoursePublish(warning: string) {
+  if (warning.startsWith("lesson ")) return true;
   return [
     "add description",
     "add grow interests",
@@ -94,7 +112,8 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialCourseDetailRoute({ route }: { route?: any } = {}) {
-  const params = useLocalSearchParams<{ courseId?: string }>();
+  const params = useLocalSearchParams<{ courseId?: string; preview?: string }>();
+  const learnerPreview = cleanId(params.preview || route?.params?.preview) === "1";
   const courseId = useMemo(
     () => cleanId(params.courseId || route?.params?.courseId || route?.params?.id),
     [params.courseId, route?.params?.courseId, route?.params?.id]
@@ -118,7 +137,11 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonBody, setLessonBody] = useState("");
   const [lessonType, setLessonType] = useState("video");
-  const [lessonExternalVideoUrl, setLessonExternalVideoUrl] = useState("");
+  const [lessonMediaDraft, setLessonMediaDraft] = useState(() => emptyLessonMediaDraft());
+  const [lessonVideoFile, setLessonVideoFile] = useState<any>(null);
+  const [lessonVideoAssetId, setLessonVideoAssetId] = useState("");
+  const [editingLessonId, setEditingLessonId] = useState("");
+  const [deleteLessonId, setDeleteLessonId] = useState("");
   const [lessonDocumentUrls, setLessonDocumentUrls] = useState("");
   const [lessonRelatedProductIds, setLessonRelatedProductIds] = useState("");
   const [lessonRelatedLiveIds, setLessonRelatedLiveIds] = useState("");
@@ -232,11 +255,38 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setMessage("");
     setError(null);
     try {
-      const updated = await addCommercialCourseLesson(courseId, {
+      const previewMedia = lessonVideoFile
+        ? null
+        : prepareLessonMediaSubmission(lessonMediaDraft, lessonMediaDraft.originalUrl);
+      if (previewMedia?.errors.length) {
+        throw new Error(previewMedia.errors.join(" "));
+      }
+      const uploadedVideo = lessonVideoFile
+        ? await uploadCourseMedia(lessonVideoFile)
+        : null;
+      const preparedMedia = uploadedVideo
+        ? prepareLessonMediaSubmission(
+            {
+              ...lessonMediaDraft,
+              sourceType: "growpath_upload",
+              availabilityStatus: "available",
+              lastCheckedAt: new Date().toISOString(),
+              allowEmbed: false
+            },
+            uploadedVideo.url
+          )
+        : previewMedia;
+      const lessonPayload = {
         title: lessonTitle.trim(),
         body: lessonBody.trim(),
         lessonType: lessonType.trim() || "video",
-        externalVideoUrl: lessonExternalVideoUrl.trim() || undefined,
+        videoUrl: preparedMedia?.videoUrl || (editingLessonId ? "" : undefined),
+        externalVideoUrl:
+          preparedMedia?.externalVideoUrl || (editingLessonId ? "" : undefined),
+        mediaSource: preparedMedia?.mediaSource || (editingLessonId ? null : undefined),
+        videoAssetId: editingLessonId
+          ? lessonVideoAssetId
+          : lessonVideoAssetId || undefined,
         documentUrls: splitIds(lessonDocumentUrls),
         relatedProductIds: splitIds(lessonRelatedProductIds),
         relatedLiveIds: splitIds(lessonRelatedLiveIds),
@@ -263,19 +313,109 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             }
           : undefined,
         status: "draft"
-      });
+      };
+      const updated = editingLessonId
+        ? await updateCommercialCourseLesson(courseId, editingLessonId, lessonPayload)
+        : await addCommercialCourseLesson(courseId, lessonPayload);
       hydrate(updated);
       setLessonTitle("");
       setLessonBody("");
       setLessonType("video");
-      setLessonExternalVideoUrl("");
+      setLessonMediaDraft(emptyLessonMediaDraft());
+      setLessonVideoFile(null);
+      setLessonVideoAssetId("");
+      setEditingLessonId("");
       setLessonDocumentUrls("");
       setLessonRelatedProductIds("");
       setLessonRelatedLiveIds("");
       setLessonForumThreadId("");
       setLessonTaskTitle("");
       setLessonTaskDueOffsetDays("");
-      setMessage("Lesson added.");
+      setMessage(editingLessonId ? "Lesson updated." : "Lesson added.");
+    } catch (err) {
+      setError(err);
+    } finally {
+      setAddingLesson(false);
+    }
+  }
+
+  async function pickLessonVideo() {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        throw new Error("Photo-library permission is required to upload a lesson video.");
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 1
+      });
+      if (!result.canceled && result.assets?.[0]) {
+        setLessonVideoFile(result.assets[0]);
+        setLessonVideoAssetId("");
+        setLessonMediaDraft((current) => ({
+          ...current,
+          sourceType: "growpath_upload",
+          originalUrl: "",
+          availabilityStatus: "unchecked",
+          lastCheckedAt: "",
+          allowEmbed: false
+        }));
+      }
+    } catch (err) {
+      setError(err);
+    }
+  }
+
+  function editLesson(lesson: any) {
+    setEditingLessonId(cleanId(lesson.id || lesson._id));
+    setDeleteLessonId("");
+    setLessonTitle(lesson.title || "");
+    setLessonBody(lesson.body || lesson.content || "");
+    setLessonType(lesson.lessonType || "video");
+    setLessonMediaDraft(lessonMediaDraftFromLesson(lesson));
+    setLessonVideoFile(null);
+    setLessonVideoAssetId(lesson.videoAssetId || "");
+    setLessonDocumentUrls((lesson.documentUrls || []).join(", "));
+    setLessonRelatedProductIds((lesson.relatedProductIds || []).join(", "));
+    setLessonRelatedLiveIds((lesson.relatedLiveIds || []).join(", "));
+    setLessonForumThreadId(lesson.forumThreadId || "");
+    setLessonTaskTitle(lesson.taskTemplate?.title || "");
+    setLessonTaskDueOffsetDays(
+      lesson.taskTemplate?.dueOffsetDays === undefined
+        ? ""
+        : String(lesson.taskTemplate.dueOffsetDays)
+    );
+    setMessage(`Editing ${lesson.title || "lesson"}.`);
+  }
+
+  function cancelLessonEdit() {
+    setEditingLessonId("");
+    setDeleteLessonId("");
+    setLessonTitle("");
+    setLessonBody("");
+    setLessonType("video");
+    setLessonMediaDraft(emptyLessonMediaDraft());
+    setLessonVideoFile(null);
+    setLessonVideoAssetId("");
+    setLessonDocumentUrls("");
+    setLessonRelatedProductIds("");
+    setLessonRelatedLiveIds("");
+    setLessonForumThreadId("");
+    setLessonTaskTitle("");
+    setLessonTaskDueOffsetDays("");
+  }
+
+  async function removeLesson(lessonId: string) {
+    if (!courseId || !lessonId) return;
+    setAddingLesson(true);
+    setMessage("");
+    setError(null);
+    try {
+      const updated = await deleteCommercialCourseLesson(courseId, lessonId);
+      hydrate(updated);
+      if (editingLessonId === lessonId) cancelLessonEdit();
+      setDeleteLessonId("");
+      setMessage("Lesson removed. A linked Video Library item was not deleted.");
     } catch (err) {
       setError(err);
     } finally {
@@ -320,6 +460,86 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   });
   const publishBlocked = setupWarnings.some(blocksCoursePublish);
 
+  if (learnerPreview) {
+    return (
+      <AppPage
+        routeKey="commercial-course-learner-preview"
+        backFallbackHref="/home/commercial/courses"
+        longContent
+        header={
+          <View style={styles.header}>
+            <Text style={styles.kicker}>Learner preview</Text>
+            <Text style={styles.title}>{courseTitle(course)}</Text>
+            <Text style={styles.subtitle}>
+              Review the course as a learner will see it. Authoring controls are hidden in
+              preview mode.
+            </Text>
+            <View style={styles.actions}>
+              <ActionLink
+                href={`/home/commercial/courses/${encodeURIComponent(courseId)}`}
+                label="Return to Course Editor"
+              />
+              <ActionLink href="/home/commercial/courses" label="All Courses" />
+            </View>
+          </View>
+        }
+      >
+        {loading ? <Text style={styles.muted}>Loading learner preview...</Text> : null}
+        {error ? <InlineError error={error} /> : null}
+        {course ? (
+          <>
+            <AppCard>
+              <Text style={styles.kicker}>Course overview</Text>
+              <Text style={styles.title}>{course.title || "Untitled course"}</Text>
+              {course.bannerUrl ? (
+                <Image
+                  accessibilityLabel="Course learner preview banner"
+                  source={{ uri: resolveImageUri(course.bannerUrl) }}
+                  style={styles.bannerPreview}
+                  resizeMode="cover"
+                />
+              ) : null}
+              <Text style={styles.body}>
+                {course.description || "No description yet."}
+              </Text>
+              <View style={styles.detailGrid}>
+                <DetailRow label="Category" value={course.category} />
+                <DetailRow label="Grow interests" value={course.growInterests} />
+                <DetailRow label="Access" value={course.access} />
+                <DetailRow label="Status" value={course.status} />
+                <DetailRow label="Lessons" value={lessons.length} />
+              </View>
+            </AppCard>
+
+            <AppCard>
+              <Text style={styles.cardTitle}>Course lessons</Text>
+              {lessons.length ? (
+                <View style={styles.list}>
+                  {lessons.map((lesson, index) => (
+                    <View
+                      key={String(lesson.id || lesson._id || index)}
+                      style={styles.row}
+                    >
+                      <Text style={styles.rowTitle}>
+                        {lesson.title || `Lesson ${index + 1}`}
+                      </Text>
+                      {lesson.body ? (
+                        <Text style={styles.body}>{lesson.body}</Text>
+                      ) : null}
+                      <LessonMediaCard lesson={lesson} compact />
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.muted}>No learner lessons are available yet.</Text>
+              )}
+            </AppCard>
+          </>
+        ) : null}
+      </AppPage>
+    );
+  }
+
   return (
     <AppPage
       routeKey="commercial-course-detail"
@@ -344,6 +564,27 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       {loading ? <Text style={styles.muted}>Loading commercial course...</Text> : null}
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
+
+      {learnerPreview && course ? (
+        <AppCard>
+          <Text style={styles.kicker}>Learner preview</Text>
+          <Text style={styles.title}>{course.title || "Untitled course"}</Text>
+          {course.bannerUrl ? (
+            <Image
+              accessibilityLabel="Course learner preview banner"
+              source={{ uri: resolveImageUri(course.bannerUrl) }}
+              style={styles.bannerPreview}
+              resizeMode="cover"
+            />
+          ) : null}
+          <Text style={styles.body}>{course.description || "No description yet."}</Text>
+          <Text style={styles.muted}>
+            {lessons.length
+              ? `${lessons.length} lessons available in this course outline.`
+              : "No learner lessons are available yet."}
+          </Text>
+        </AppCard>
+      ) : null}
 
       <AppCard>
         <Text style={styles.cardTitle}>Course Record</Text>
@@ -647,6 +888,56 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                       .join(" | ")}
                   </Text>
                 ) : null}
+                <View style={styles.actions}>
+                  <Pressable
+                    accessibilityLabel={`Edit lesson ${lesson.title || index + 1}`}
+                    accessibilityRole="button"
+                    disabled={addingLesson}
+                    onPress={() => editLesson(lesson)}
+                    style={styles.secondaryAction}
+                  >
+                    <Text style={styles.secondaryActionText}>Edit</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityLabel={`Remove lesson ${lesson.title || index + 1}`}
+                    accessibilityRole="button"
+                    disabled={addingLesson}
+                    onPress={() => setDeleteLessonId(cleanId(lesson.id || lesson._id))}
+                    style={styles.dangerAction}
+                  >
+                    <Text style={styles.dangerActionText}>Remove</Text>
+                  </Pressable>
+                </View>
+                {deleteLessonId === cleanId(lesson.id || lesson._id) ? (
+                  <View style={styles.warningBox}>
+                    <Text style={styles.warningTitle}>Remove this lesson?</Text>
+                    <Text style={styles.warningText}>
+                      The lesson will be removed from the course. A reusable Video Library
+                      item will remain available.
+                    </Text>
+                    <View style={styles.actions}>
+                      <Pressable
+                        accessibilityLabel={`Confirm removal of lesson ${lesson.title || index + 1}`}
+                        accessibilityRole="button"
+                        disabled={addingLesson}
+                        onPress={() =>
+                          void removeLesson(cleanId(lesson.id || lesson._id))
+                        }
+                        style={styles.dangerAction}
+                      >
+                        <Text style={styles.dangerActionText}>Confirm Remove</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={addingLesson}
+                        onPress={() => setDeleteLessonId("")}
+                        style={styles.secondaryAction}
+                      >
+                        <Text style={styles.secondaryActionText}>Keep Lesson</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
               </View>
             ))}
           </View>
@@ -668,6 +959,29 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           style={[styles.input, styles.textArea]}
           value={lessonBody}
         />
+        <LessonMediaSourceEditor
+          value={lessonMediaDraft}
+          onChange={setLessonMediaDraft}
+          disabled={addingLesson}
+          onPickUpload={pickLessonVideo}
+          pendingUploadName={lessonVideoFile?.fileName || lessonVideoFile?.name || ""}
+          onRemove={() => {
+            setLessonVideoFile(null);
+            setLessonVideoAssetId("");
+            setLessonMediaDraft(emptyLessonMediaDraft());
+          }}
+        />
+        <VideoLibraryPicker
+          selectedId={lessonVideoAssetId}
+          disabled={addingLesson}
+          onSelect={(video) => {
+            setLessonVideoFile(null);
+            setLessonVideoAssetId(video?.id || "");
+            setLessonMediaDraft(
+              video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
+            );
+          }}
+        />
         <View style={styles.formGrid}>
           <TextInput
             accessibilityLabel="Commercial course lesson type"
@@ -682,14 +996,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             placeholder="Related product IDs"
             style={styles.input}
             value={lessonRelatedProductIds}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson external video URL"
-            autoCapitalize="none"
-            onChangeText={setLessonExternalVideoUrl}
-            placeholder="External video URL"
-            style={styles.input}
-            value={lessonExternalVideoUrl}
           />
           <TextInput
             accessibilityLabel="Commercial course lesson documents"
@@ -740,9 +1046,24 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           ]}
         >
           <Text style={styles.primaryActionText}>
-            {addingLesson ? "Adding..." : "Add Lesson"}
+            {addingLesson
+              ? "Saving..."
+              : editingLessonId
+                ? "Save Lesson Changes"
+                : "Add Lesson"}
           </Text>
         </Pressable>
+        {editingLessonId ? (
+          <Pressable
+            accessibilityLabel="Cancel lesson edit"
+            accessibilityRole="button"
+            disabled={addingLesson}
+            onPress={cancelLessonEdit}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryActionText}>Cancel Edit</Text>
+          </Pressable>
+        ) : null}
       </AppCard>
 
       <AppCard>
@@ -906,6 +1227,16 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   secondaryActionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
+  dangerAction: {
+    alignSelf: "flex-start",
+    borderColor: "#DC2626",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  dangerActionText: { color: "#B91C1C", fontSize: 13, fontWeight: "900" },
   disabled: { opacity: 0.55 },
   success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
   warningBox: {

@@ -2,8 +2,19 @@ import React, { useState } from "react";
 import { Modal, View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { submitReport } from "../api/reports";
 import { radius } from "../theme/theme";
+import ReportBugButton from "./ReportBugButton";
 
-const ReportModal = ({ visible, onClose, contentType, contentId, token, onSuccess }) => {
+const ReportModal = ({
+  visible,
+  onClose,
+  contentType,
+  contentId,
+  contentTitle,
+  targetUrl,
+  parentPostId,
+  token,
+  onSuccess
+}) => {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -12,7 +23,15 @@ const ReportModal = ({ visible, onClose, contentType, contentId, token, onSucces
     setLoading(true);
     setError("");
     try {
-      await submitReport({ contentType, contentId, reason, token });
+      await submitReport({
+        contentType,
+        contentId,
+        contentTitle,
+        targetUrl,
+        parentPostId,
+        reason,
+        token
+      });
       setReason("");
       onSuccess && onSuccess();
       onClose();
@@ -40,6 +59,7 @@ const ReportModal = ({ visible, onClose, contentType, contentId, token, onSucces
             onChangeText={setReason}
             editable={!loading}
             multiline
+            accessibilityLabel="Report reason"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.buttonRow}>
@@ -49,6 +69,9 @@ const ReportModal = ({ visible, onClose, contentType, contentId, token, onSucces
               onPress={handleSubmit}
               disabled={loading || !reason.trim()}
             />
+          </View>
+          <View style={styles.reportBug}>
+            <ReportBugButton location="Report content popup" />
           </View>
         </View>
       </View>
@@ -91,7 +114,8 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between"
-  }
+  },
+  reportBug: { marginTop: 14, alignItems: "flex-end" }
 });
 
 export default ReportModal;

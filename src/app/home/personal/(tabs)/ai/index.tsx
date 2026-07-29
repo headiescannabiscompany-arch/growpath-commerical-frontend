@@ -8,12 +8,28 @@ import { listPersonalPlants } from "@/api/plants";
 import { createPersonalTask, listPersonalTasks } from "@/api/tasks";
 import { getDiagnosisHistory } from "@/api/diagnose";
 import { listToolRuns } from "@/api/toolRuns";
+import { listNutrientRecipes } from "@/api/nutrientRecipes";
+import { getTelemetryPoints, listTelemetrySources } from "@/api/telemetry";
+import {
+  getFacilityComplianceExport,
+  type FacilityComplianceExport
+} from "@/api/complianceExport";
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
+import { getFacilityTasks } from "@/api/facilityTasks";
+import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import type { EvidenceAsset } from "@/types/evidence";
 import {
   askPersonalAssistant,
   type AssistantProposedWrite,
-  type AssistantReference
+  type AssistantReference,
+  type AssistantSopRecommendation
 } from "@/api/personalAssistant";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import {
+  STANDARD_SOP_LIBRARY,
+  type StandardSopTemplate
+} from "@/features/sops/standardSopLibrary";
 import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
@@ -51,6 +67,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#FFF7ED"
   },
+  sopCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#C4B5FD",
+    borderRadius: radius.card,
+    marginBottom: 10,
+    backgroundColor: "#F5F3FF"
+  },
+  sopChoice: {
+    borderWidth: 1,
+    borderColor: "#A78BFA",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  sopChoiceText: { color: "#5B21B6", fontWeight: "700", fontSize: 12 },
   actionButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
@@ -103,6 +135,13 @@ const styles = StyleSheet.create({
 type Msg = { role: "user" | "assistant"; text: string };
 type AssistantAction = { label: string; href: string };
 
+const GENERIC_SOP_PROMPT =
+  "Recommend up to three review-only SOP or checklist drafts that fit my selected grow and recorded work. Explain why each is relevant, separate recorded facts from missing information, and do not invent setpoints, chemical rates, legal requirements, or completed actions.";
+
+function sopPrompt(template: StandardSopTemplate) {
+  return `Recommend a review-only SOP/checklist draft based on the "${template.title}" starter (source key ${template.key}, version ${template.version}) and my selected records. Explain why it fits, preserve missing information as unknown, and do not invent setpoints, chemical rates, legal requirements, or completed actions.`;
+}
+
 interface ContextData {
   growCount: number;
   logCount: number;
@@ -115,6 +154,61 @@ interface ContextData {
   toolRuns: any[];
   diagnoses: any[];
   photosMetadata: any[];
+  recipes: any[];
+  environmentHistory: any[];
+  facilityCompliance: FacilityComplianceExport | null;
+}
+
+type FacilityAiPreset = {
+  key: "dew-point" | "compliance" | "inventory" | "harvest";
+  title: string;
+  intro: string;
+  prompt: string;
+  composerHint: string;
+};
+
+const FACILITY_AI_PRESETS: Record<FacilityAiPreset["key"], FacilityAiPreset> = {
+  "dew-point": {
+    key: "dew-point",
+    title: "Dew Point Alert",
+    intro:
+      "Dew point review is loaded. Confirm the room, time window, and sensor readings in the prefilled request before sending.",
+    prompt:
+      "Review this Facility's recorded environment history for condensation and mold risk. Use only measured temperature, relative humidity, dew point, room, and timestamp evidence. Identify missing sensor coverage, risky time windows, and owner-review actions. Do not invent readings or claim a diagnosis.",
+    composerHint: "Review the prefilled dew point request before sending."
+  },
+  compliance: {
+    key: "compliance",
+    title: "Inspection Readiness",
+    intro:
+      "Inspection-readiness evidence is loaded. Review the prefilled request, add any inspection scope or jurisdiction notes, then send it when ready.",
+    prompt:
+      "Review this Facility's current inspection readiness using only the loaded Facility records. Summarize verified evidence for audit logs, deviations, verifications, SOP templates and completed SOP runs, tasks, inventory, and integrations. Separate recorded facts from missing evidence. Identify the three highest-priority gaps and propose owner-review actions. Do not claim legal compliance or invent jurisdiction rules.",
+    composerHint: "Review the prefilled inspection-readiness request before sending."
+  },
+  inventory: {
+    key: "inventory",
+    title: "Inventory Risk",
+    intro:
+      "Inventory-risk review is loaded. Confirm the relevant rooms, time horizon, and reorder assumptions before sending.",
+    prompt:
+      "Review this Facility's recorded inventory for low-stock, missing-count, expiry, and reorder risks. Distinguish recorded quantities from missing par levels or use rates. Prioritize owner-review actions without inventing counts, costs, or supplier timing.",
+    composerHint: "Review the prefilled inventory-risk request before sending."
+  },
+  harvest: {
+    key: "harvest",
+    title: "Harvest Window",
+    intro:
+      "Harvest-window review is loaded. Select the relevant grow and confirm the available stage, photo, and observation evidence before sending.",
+    prompt:
+      "Assess the selected Facility grow's harvest window using only recorded stage, flower age, trichome observations, environment, and photo evidence. State what is missing, give a confidence range, and require owner confirmation before scheduling or changing tasks. Do not invent maturity observations.",
+    composerHint: "Review the prefilled harvest-window request before sending."
+  }
+};
+
+export function facilityAiPresetFor(value: unknown): FacilityAiPreset | null {
+  const key = String(value || "").trim() as FacilityAiPreset["key"];
+  return FACILITY_AI_PRESETS[key] || null;
 }
 
 function parseVpdCommand(
@@ -138,6 +232,52 @@ function parseVpdCommand(
 
   if (!Number.isFinite(tempNum) || !Number.isFinite(rhNum)) return null;
   return { temp: tempNum, unit, rh: rhNum };
+}
+
+function buildGrowDraftAction(text: string): AssistantAction | null {
+  const lower = text.toLowerCase();
+  const wantsGrowDraft =
+    /(build|create|start|plan|set up|setup).*(grow|garden|bed|orchard)/i.test(text) ||
+    /(grow|garden|bed|orchard).*(build|create|start|plan|set up|setup)/i.test(text);
+  if (!wantsGrowDraft) return null;
+
+  const tags = new Set<string>();
+  if (/cannabis|weed|marijuana/.test(lower)) tags.add("Cannabis");
+  if (/fruit tree|orchard|berry|berries|bush/.test(lower)) {
+    tags.add("Fruit Trees & Bushes");
+  }
+  if (/vegetable|veggie|food bed/.test(lower)) tags.add("Vegetables");
+  if (/flower bed|ornamental|flowers/.test(lower)) tags.add("Flowers / Ornamentals");
+  if (/herb/.test(lower)) tags.add("Herbs");
+  if (/houseplant/.test(lower)) tags.add("Houseplants");
+  if (/indoor|tent|grow room/.test(lower)) tags.add("Indoor");
+  if (/outdoor|outside|yard|orchard|garden bed/.test(lower)) tags.add("Outdoor");
+  if (/greenhouse/.test(lower)) tags.add("Greenhouse");
+  if (/raised bed/.test(lower)) tags.add("Raised Beds");
+  if (/hydro/.test(lower)) tags.add("Hydroponics");
+  if (/coco/.test(lower)) tags.add("Coco Coir");
+  if (/living soil|no[- ]till/.test(lower)) tags.add("Living Soil / No-Till");
+
+  const systemPreset = /hydro/.test(lower)
+    ? "hydro"
+    : /coco/.test(lower)
+      ? "coco"
+      : "soil";
+  const query = new URLSearchParams({
+    source: "ai",
+    systemPreset,
+    notes: text
+  });
+  if (tags.size) query.set("growTags", Array.from(tags).join(","));
+  return {
+    label: "Review Build a Grow draft",
+    href: `/home/personal/grows/new?${query.toString()}`
+  };
+}
+
+function mergeAction(actions: AssistantAction[], action: AssistantAction | null) {
+  if (!action || actions.some((item) => item.href === action.href)) return actions;
+  return [action, ...actions];
 }
 
 function rowTime(row: any, keys: string[]) {
@@ -276,43 +416,118 @@ function aiTaskMetadata(payload: Record<string, any>) {
   };
 }
 
-export default function AiScreen() {
+type AiScreenProps = {
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
+};
+
+function envelopeRows(value: any, keys: string[] = []) {
+  if (Array.isArray(value)) return value;
+  for (const key of [...keys, "items", "data", "results"]) {
+    if (Array.isArray(value?.[key])) return value[key];
+  }
+  return [];
+}
+
+export default function AiScreen({
+  workspaceType = "personal",
+  facilityId = ""
+}: AiScreenProps = {}) {
   const router = useRouter();
   const params = useLocalSearchParams<{
     prompt?: string | string[];
     growId?: string | string[];
+    facilityId?: string | string[];
+    preset?: string | string[];
   }>();
   const initialPrompt = firstQueryValue(params.prompt);
   const initialGrowId = firstQueryValue(params.growId);
-  const [draft, setDraft] = useState(initialPrompt);
+  const activeFacilityId = facilityId || firstQueryValue(params.facilityId);
+  const facilityPreset =
+    workspaceType === "facility"
+      ? facilityAiPresetFor(firstQueryValue(params.preset))
+      : null;
+  const defaultAssistantMessage =
+    "Ask about your next task, recent journal, diagnosis, dew point risk, feeding, watering, or try: vpd 78f 60";
+  const [draft, setDraft] = useState(initialPrompt || facilityPreset?.prompt || "");
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      text: "Ask about your next task, recent journal, diagnosis, dew point risk, feeding, watering, or try: vpd 78f 60"
+      text: facilityPreset?.intro || defaultAssistantMessage
     }
   ]);
   const [context, setContext] = useState<ContextData | null>(null);
   const [actions, setActions] = useState<AssistantAction[]>([]);
   const [references, setReferences] = useState<AssistantReference[]>([]);
   const [proposedWrites, setProposedWrites] = useState<AssistantProposedWrite[]>([]);
+  const [sopRecommendations, setSopRecommendations] = useState<
+    AssistantSopRecommendation[]
+  >([]);
   const [selectedGrowId, setSelectedGrowId] = useState(initialGrowId);
   const [sending, setSending] = useState(false);
   const [writeFeedback, setWriteFeedback] = useState("");
+  const [conversationId, setConversationId] = useState("");
+  const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const [providerLabel, setProviderLabel] = useState("");
 
   const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
+
+  useEffect(() => {
+    setDraft(initialPrompt || facilityPreset?.prompt || "");
+    setMessages([
+      {
+        role: "assistant",
+        text: facilityPreset?.intro || defaultAssistantMessage
+      }
+    ]);
+    setActions([]);
+    setReferences([]);
+    setProposedWrites([]);
+    setSopRecommendations([]);
+    setWriteFeedback("");
+    setConversationId("");
+    setProviderLabel("");
+  }, [facilityPreset?.intro, facilityPreset?.key, facilityPreset?.prompt, initialPrompt]);
 
   // Fetch context (grows, logs, tasks) on mount
   useEffect(() => {
     async function loadContext() {
       try {
-        const [grows, plants, logs, tasks, toolRuns, diagnoses] = await Promise.all([
-          listPersonalGrows(),
-          listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
-          listPersonalLogs(),
-          listPersonalTasks(),
-          listToolRuns(),
-          getDiagnosisHistory()
-        ]);
+        const facilityScoped = workspaceType === "facility" && activeFacilityId;
+        const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes] =
+          await Promise.all(
+            facilityScoped
+              ? [
+                  apiRequest(endpoints.grows(activeFacilityId)).then((value) =>
+                    envelopeRows(value, ["grows"])
+                  ),
+                  apiRequest(
+                    `${endpoints.plants(activeFacilityId)}${
+                      selectedGrowId
+                        ? `?growId=${encodeURIComponent(selectedGrowId)}`
+                        : ""
+                    }`
+                  ).then((value) => envelopeRows(value, ["plants"])),
+                  apiRequest(endpoints.growlogs(activeFacilityId)).then((value) =>
+                    envelopeRows(value, ["logs", "growlogs"])
+                  ),
+                  getFacilityTasks(activeFacilityId),
+                  listToolRuns(),
+                  getDiagnosisHistory(),
+                  listNutrientRecipes(selectedGrowId || undefined)
+                ]
+              : [
+                  listPersonalGrows(),
+                  listPersonalPlants(
+                    selectedGrowId ? { growId: selectedGrowId } : undefined
+                  ),
+                  listPersonalLogs(),
+                  listPersonalTasks(),
+                  listToolRuns(),
+                  getDiagnosisHistory(),
+                  listNutrientRecipes(selectedGrowId || undefined)
+                ]
+          );
         const activeGrowId =
           selectedGrowId ||
           String(
@@ -321,6 +536,37 @@ export default function AiScreen() {
         const photosMetadata = logs.flatMap((log: any) =>
           Array.isArray(log.photoMetadata) ? log.photoMetadata : []
         );
+        let facilityCompliance: FacilityComplianceExport | null = null;
+        if (facilityScoped && facilityPreset?.key === "compliance") {
+          try {
+            facilityCompliance = await getFacilityComplianceExport(activeFacilityId);
+          } catch (error) {
+            console.warn("[AI] Facility compliance context unavailable:", error);
+          }
+        }
+        let environmentHistory: any[] = [];
+        if (activeGrowId) {
+          try {
+            const sources = await listTelemetrySources(activeGrowId);
+            const endIso = new Date().toISOString();
+            const startIso = new Date(
+              Date.now() - 14 * 24 * 60 * 60 * 1000
+            ).toISOString();
+            const windows = await Promise.all(
+              sources.slice(0, 5).map((source) =>
+                getTelemetryPoints({
+                  sourceId: source.id,
+                  startIso,
+                  endIso,
+                  limit: 100
+                })
+              )
+            );
+            environmentHistory = windows.flatMap((window) => window.points).slice(-200);
+          } catch (error) {
+            console.warn("[AI] Telemetry context unavailable:", error);
+          }
+        }
 
         setContext({
           growCount: grows.length,
@@ -333,7 +579,10 @@ export default function AiScreen() {
           tasks,
           toolRuns,
           diagnoses,
-          photosMetadata
+          photosMetadata,
+          recipes,
+          environmentHistory,
+          facilityCompliance
         });
         if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
       } catch (err) {
@@ -349,13 +598,16 @@ export default function AiScreen() {
           tasks: [],
           toolRuns: [],
           diagnoses: [],
-          photosMetadata: []
+          photosMetadata: [],
+          recipes: [],
+          environmentHistory: [],
+          facilityCompliance: null
         });
       }
     }
 
     loadContext();
-  }, [selectedGrowId]);
+  }, [activeFacilityId, facilityPreset?.key, selectedGrowId, workspaceType]);
 
   const selectedGrow = useMemo(
     () => context?.grows.find((grow) => String(grow.id || grow._id) === selectedGrowId),
@@ -376,15 +628,37 @@ export default function AiScreen() {
       toolRuns: scoped(context?.toolRuns || []).slice(0, 12),
       diagnoses: scoped(context?.diagnoses || []).slice(0, 12),
       photosMetadata: scoped(context?.photosMetadata || []).slice(0, 20),
-      environmentHistory: [],
-      recipes: [],
-      phenoScores: []
+      environmentHistory: (context?.environmentHistory || []).slice(-100),
+      recipes: scoped(context?.recipes || []).slice(0, 20),
+      phenoScores: [],
+      sopStarterLibrary:
+        workspaceType === "facility"
+          ? []
+          : STANDARD_SOP_LIBRARY.map((template) => ({
+              key: template.key,
+              sourceVersion: template.version
+            })),
+      facilityPreset: facilityPreset?.key || null,
+      facilityCompliance: context?.facilityCompliance
+        ? {
+            generatedAt: context.facilityCompliance.generatedAt,
+            counts: context.facilityCompliance.counts,
+            evidenceSummary: context.facilityCompliance.evidenceSummary || null
+          }
+        : null
     };
   }
 
   async function askBackend(text: string) {
     const res = await askPersonalAssistant({
       message: text,
+      growId: selectedGrowId || undefined,
+      facilityId: activeFacilityId || undefined,
+      workspaceType,
+      conversationId: conversationId || undefined,
+      evidenceAssetIds: evidenceAssets
+        .filter((asset) => asset.uploadStatus === "uploaded" && asset.id)
+        .map((asset) => asset.id),
       context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 
@@ -395,7 +669,52 @@ export default function AiScreen() {
     setActions(Array.isArray(res.actions) ? res.actions : []);
     setReferences(Array.isArray(res.referencedData) ? res.referencedData : []);
     setProposedWrites(Array.isArray(res.proposedWrites) ? res.proposedWrites : []);
+    setSopRecommendations(
+      Array.isArray(res.sopRecommendations) ? res.sopRecommendations : []
+    );
+    setConversationId(res.conversationId || conversationId);
+    setProviderLabel(res.providerLabel || "Limited context answer");
+    setEvidenceAssets([]);
     return res.reply;
+  }
+
+  function reviewSopAsTask(recommendation: AssistantSopRecommendation) {
+    const task: AssistantProposedWrite = {
+      type: "create_task",
+      payload: {
+        growId: selectedGrowId || null,
+        title: `Review: ${recommendation.title}`,
+        description: [
+          "Review-only SOP/checklist draft. Adapt and approve it before use.",
+          recommendation.whyRecommended
+            ? `Why recommended: ${recommendation.whyRecommended}`
+            : "",
+          recommendation.safetyNotes
+            ? `Safety boundary: ${recommendation.safetyNotes}`
+            : "",
+          "",
+          "Checklist:",
+          ...recommendation.checklist.map((step, index) => `${index + 1}. ${step}`),
+          "",
+          "Missing information to resolve:",
+          ...recommendation.missingInformation.map((item) => `- ${item}`)
+        ]
+          .filter((line) => line !== "")
+          .join("\n"),
+        priority: "medium",
+        sourceType: "ai_assistant",
+        sourceObjectId: `sop-starter:${recommendation.key}:v${recommendation.sourceVersion}`
+      }
+    };
+    setProposedWrites((current) => [
+      task,
+      ...current.filter(
+        (item) => item.payload?.sourceObjectId !== task.payload.sourceObjectId
+      )
+    ]);
+    setWriteFeedback(
+      "Review the drafted task below. Nothing is saved until you confirm it."
+    );
   }
 
   async function confirmWrite(write: AssistantProposedWrite) {
@@ -470,10 +789,13 @@ export default function AiScreen() {
     try {
       setReferences([]);
       setProposedWrites([]);
+      setSopRecommendations([]);
       const reply = await askBackend(text);
+      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
-      setActions([]);
+      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      setProviderLabel("Limited context answer - API unavailable");
       setMessages((m) => [
         ...m,
         {
@@ -491,38 +813,86 @@ export default function AiScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
-        <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
+        {workspaceType !== "facility" ? (
+          <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
+        ) : null}
         {context && (
           <View style={styles.contextCard}>
-            <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>
-            <Text style={styles.contextText}>Grows: {context.growCount}</Text>
-            <Text style={styles.contextText}>
-              Plants:{" "}
-              {
-                (selectedGrowId
-                  ? context.plants.filter(
-                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
-                    )
-                  : context.plants
-                ).length
-              }
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              {facilityPreset ? `${facilityPreset.title} Context` : "Context Loaded"}
             </Text>
-            <Text style={styles.contextText}>Logs: {context.logCount}</Text>
-            <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
-            <Text style={styles.contextText}>Tool runs: {context.toolRuns.length}</Text>
-            <Text style={styles.contextText}>Diagnoses: {context.diagnoses.length}</Text>
-            <Text style={styles.contextText}>
-              Crop context:{" "}
-              {cropContextSummary(
-                selectedGrowId
-                  ? context.plants.filter(
-                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
-                    )
-                  : context.plants
-              )}
-            </Text>
-            <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
-            {context.grows.length ? (
+            {facilityPreset?.key === "compliance" ? (
+              context.facilityCompliance ? (
+                <>
+                  <Text style={styles.contextText}>
+                    Audit logs: {context.facilityCompliance.counts.auditLogs ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Deviations: {context.facilityCompliance.counts.deviations ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Verifications: {context.facilityCompliance.counts.verifications ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    SOP templates: {context.facilityCompliance.counts.sopTemplates ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    SOP runs: {context.facilityCompliance.counts.sopRuns ?? 0}
+                  </Text>
+                  <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                  <Text style={styles.contextText}>
+                    Evidence generated:{" "}
+                    {formatDate(context.facilityCompliance.generatedAt)}
+                  </Text>
+                  <Text style={styles.contextText}>
+                    Missing records remain missing evidence; AI cannot certify legal
+                    compliance.
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.contextText}>
+                  Compliance evidence could not be loaded. Refresh or return to Compliance
+                  before requesting a readiness review.
+                </Text>
+              )
+            ) : (
+              <>
+                <Text style={styles.contextText}>Grows: {context.growCount}</Text>
+                <Text style={styles.contextText}>
+                  Plants:{" "}
+                  {
+                    (selectedGrowId
+                      ? context.plants.filter(
+                          (plant) =>
+                            !plant?.growId || String(plant.growId) === selectedGrowId
+                        )
+                      : context.plants
+                    ).length
+                  }
+                </Text>
+                <Text style={styles.contextText}>Logs: {context.logCount}</Text>
+                <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                <Text style={styles.contextText}>
+                  Tool runs: {context.toolRuns.length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Diagnoses: {context.diagnoses.length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Crop context:{" "}
+                  {cropContextSummary(
+                    selectedGrowId
+                      ? context.plants.filter(
+                          (plant) =>
+                            !plant?.growId || String(plant.growId) === selectedGrowId
+                        )
+                      : context.plants
+                  )}
+                </Text>
+                <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
+              </>
+            )}
+            {facilityPreset?.key !== "compliance" && context.grows.length ? (
               <View style={styles.growPicker}>
                 {context.grows.map((grow) => {
                   const id = String(grow.id || grow._id || "");
@@ -544,15 +914,125 @@ export default function AiScreen() {
                   );
                 })}
               </View>
-            ) : null}
+            ) : facilityPreset?.key === "compliance" ? null : workspaceType ===
+              "facility" ? (
+              <Text style={styles.contextText}>
+                No Facility grows are recorded. Facility tasks and operational records
+                remain available to the assistant.
+              </Text>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open AI-assisted Build a Grow"
+                onPress={() => router.push("/home/personal/grows/new?source=ai" as any)}
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionButtonText}>Build your first grow</Text>
+              </Pressable>
+            )}
           </View>
         )}
+        {workspaceType !== "facility" ? (
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              AI procedure recommendations
+            </Text>
+            <Text style={styles.contextText}>
+              Ask AI for a review-only SOP or checklist draft based on the selected grow
+              and recorded evidence. Formal approval, assignment, uploads, and version
+              history remain Facility controls.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Draft recommended procedures"
+              onPress={() => setDraft(GENERIC_SOP_PROMPT)}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionButtonText}>Recommend procedures</Text>
+            </Pressable>
+            <View style={styles.growPicker}>
+              {STANDARD_SOP_LIBRARY.map((template) => (
+                <Pressable
+                  key={template.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Draft ${template.title}`}
+                  onPress={() => setDraft(sopPrompt(template))}
+                  style={styles.sopChoice}
+                >
+                  <Text style={styles.sopChoiceText}>{template.title}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={[styles.contextText, { marginTop: 8 }]}>
+              Choosing a starter only fills the request. Review it before sending; no AI
+              credit or record write occurs until you take the next action.
+            </Text>
+          </View>
+        ) : null}
         {messages.map((m, idx) => (
           <View key={idx} style={styles.msg}>
             <Text style={styles.msgRole}>{m.role.toUpperCase()}</Text>
             <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
+        {providerLabel ? <Text style={styles.hint}>{providerLabel}</Text> : null}
+        {sopRecommendations.length ? (
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              Review-only procedure drafts
+            </Text>
+            <Text style={styles.contextText}>
+              These are starting points, not approved Facility SOPs or legal compliance
+              findings.
+            </Text>
+            {sopRecommendations.map((recommendation) => (
+              <View key={recommendation.key} style={{ marginTop: 12 }}>
+                <Text style={[styles.contextText, styles.contextTitle]}>
+                  {recommendation.title}
+                </Text>
+                <Text style={styles.contextText}>{recommendation.summary}</Text>
+                <Text style={styles.contextText}>
+                  Why: {recommendation.whyRecommended}
+                </Text>
+                {recommendation.checklist.map((step, index) => (
+                  <Text key={`${recommendation.key}-${index}`} style={styles.contextText}>
+                    {index + 1}. {step}
+                  </Text>
+                ))}
+                {recommendation.safetyNotes ? (
+                  <Text style={styles.contextText}>
+                    Safety boundary: {recommendation.safetyNotes}
+                  </Text>
+                ) : null}
+                <Text style={[styles.contextText, styles.contextTitle]}>
+                  Resolve before use
+                </Text>
+                {recommendation.missingInformation.map((item, index) => (
+                  <Text
+                    key={`${recommendation.key}-missing-${index}`}
+                    style={styles.contextText}
+                  >
+                    - {item}
+                  </Text>
+                ))}
+                {selectedGrowId ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Review ${recommendation.title} as a task`}
+                    onPress={() => reviewSopAsTask(recommendation)}
+                    style={styles.actionButton}
+                  >
+                    <Text style={styles.actionButtonText}>Review as grow task</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.contextText}>
+                    Select a grow to turn this draft into a confirmable review task.
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        ) : null}
         <PersonalFeedPlacement placement="middle" routeKey="personal_ai" longContent />
         {actions.length ? (
           <View style={styles.actionCard}>
@@ -614,11 +1094,26 @@ export default function AiScreen() {
       </ScrollView>
 
       <View style={styles.composer}>
+        <MediaEvidencePicker
+          aiUsable
+          maxPhotos={10}
+          allowVideo
+          maxVideoSeconds={30}
+          purpose="other"
+          sourceContext={{ growId: selectedGrowId || undefined }}
+          value={evidenceAssets}
+          onChange={setEvidenceAssets}
+        />
         <TextInput
           style={styles.input}
           value={draft}
           onChangeText={setDraft}
-          placeholder="Type here..."
+          placeholder={
+            facilityPreset ? `Add notes for ${facilityPreset.title}` : "Type here..."
+          }
+          autoComplete="off"
+          textContentType="none"
+          importantForAutofill="no"
           onSubmitEditing={send}
         />
         <Pressable
@@ -630,7 +1125,11 @@ export default function AiScreen() {
         >
           <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>
-        <Text style={styles.hint}>Commands: vpd 78f 60 | vpd 25c 60</Text>
+        <Text style={styles.hint}>
+          {facilityPreset
+            ? facilityPreset.composerHint
+            : "Commands: vpd 78f 60 | vpd 25c 60"}
+        </Text>
       </View>
     </View>
   );

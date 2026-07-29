@@ -24,7 +24,7 @@ import {
   rejectVerification,
   type VerificationRecord
 } from "@/api/verification";
-import { createSOPTemplate, getSOPTemplates, type SOPTemplate } from "@/api/sop";
+import { getSOPTemplates, type SOPTemplate } from "@/api/sop";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -32,6 +32,12 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import {
+  formatFacilityAuditAction,
+  formatFacilityAuditDetails
+} from "@/utils/facilityAuditPresentation";
+
+export { formatFacilityAuditAction, formatFacilityAuditDetails };
 
 function rowId(row: any) {
   return String(row?._id || row?.id || row?.logId || "");
@@ -57,7 +63,14 @@ function openDeviation(row: Deviation) {
 export default function FacilityComplianceTab() {
   const router = useRouter();
   const ent = useEntitlements();
-  const { selectedId: facilityId } = useFacility();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
+
+  const facilityName = useMemo(() => {
+    const selectedName = String(selectedFacility?.name || "").trim();
+    return selectedName && selectedName !== facilityId
+      ? selectedName
+      : "Selected facility";
+  }, [facilityId, selectedFacility?.name]);
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -82,8 +95,6 @@ export default function FacilityComplianceTab() {
   const [deviationTitle, setDeviationTitle] = useState("");
   const [deviationSeverity, setDeviationSeverity] = useState("minor");
   const [deviationDescription, setDeviationDescription] = useState("");
-  const [sopTitle, setSopTitle] = useState("");
-  const [sopContent, setSopContent] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
   const canReadCompliance = Boolean(ent?.can?.(CAPABILITY_KEYS.COMPLIANCE_READ));
@@ -196,32 +207,6 @@ export default function FacilityComplianceTab() {
     }
   }
 
-  async function addSop() {
-    if (!facilityId || !canWriteCompliance || !sopTitle.trim()) return;
-    setSaving(true);
-    setFeedback("");
-    try {
-      const created = await createSOPTemplate(facilityId, {
-        title: sopTitle.trim(),
-        content: sopContent.trim() || "Procedure pending.",
-        version: 1,
-        facilityId
-      });
-      await writeAudit(
-        "COMPLIANCE_SOP_CREATED",
-        `SOP ${rowId(created) || sopTitle.trim()} created in facility ${facilityId}`
-      );
-      setSopTitle("");
-      setSopContent("");
-      setFeedback("SOP template created.");
-      await load({ refresh: true });
-    } catch (e) {
-      handleApiError(e);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function verify(recordId: string) {
     if (!facilityId || !recordId || !canWriteCompliance) return;
     setSaving(true);
@@ -288,7 +273,7 @@ export default function FacilityComplianceTab() {
               Facility-scoped primitives for deviations, SOPs, verification, and audit
               events.
             </Text>
-            <Text style={styles.ownerLine}>Facility: {facilityId || "none"}</Text>
+            <Text style={styles.ownerLine}>Facility: {facilityName}</Text>
           </View>
           {loading ? <ActivityIndicator /> : null}
         </View>
@@ -325,7 +310,7 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Inspection workflow</Text>
+              <Text style={styles.cardTitle}>Inspection readiness</Text>
               <Text style={styles.muted}>
                 Use the current compliance counts to export evidence, run AI readiness,
                 and keep SOP run proof current.
@@ -500,32 +485,18 @@ export default function FacilityComplianceTab() {
               <Text style={styles.cardTitle}>SOP Templates</Text>
               {canWriteCompliance ? (
                 <View style={styles.form}>
-                  <TextInput
-                    accessibilityLabel="SOP title"
-                    value={sopTitle}
-                    onChangeText={setSopTitle}
-                    style={styles.input}
-                    placeholder="SOP title"
-                  />
-                  <TextInput
-                    accessibilityLabel="SOP procedure summary"
-                    value={sopContent}
-                    onChangeText={setSopContent}
-                    style={[styles.input, styles.multiline]}
-                    multiline
-                    placeholder="Procedure summary"
-                  />
+                  <Text style={styles.muted}>
+                    Create and revise SOPs in the Library so every active version has an
+                    executable checklist, explicit review, and Facility-scoped supporting
+                    documents.
+                  </Text>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Create SOP template"
-                    onPress={addSop}
-                    disabled={saving || !sopTitle.trim()}
-                    style={[
-                      styles.primaryBtn,
-                      (saving || !sopTitle.trim()) && styles.disabled
-                    ]}
+                    accessibilityLabel="Open SOP Library"
+                    onPress={() => router.push("/home/facility/sop-runs/presets" as any)}
+                    style={styles.primaryBtn}
                   >
-                    <Text style={styles.primaryText}>Create SOP</Text>
+                    <Text style={styles.primaryText}>Open SOP Library</Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -577,9 +548,13 @@ export default function FacilityComplianceTab() {
                     key={`${log.timestamp || index}-${log.action}`}
                     style={styles.row}
                   >
-                    <Text style={styles.rowTitle}>{log.action || "Audit event"}</Text>
+                    <Text style={styles.rowTitle}>
+                      {formatFacilityAuditAction(log.action)}
+                    </Text>
                     <Text style={styles.rowMeta}>
-                      {log.details || log.timestamp || ""}
+                      {formatFacilityAuditDetails(log.action, log.details) ||
+                        log.timestamp ||
+                        ""}
                     </Text>
                   </View>
                 ))

@@ -28,6 +28,15 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
+let mockGrowInterests = {};
+let mockAuthState = {
+  isAuthed: true,
+  user: { id: "course-user", growInterests: mockGrowInterests }
+};
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => mockAuthState
+}));
 
 jest.mock("@/entitlements", () => ({
   __esModule: true,
@@ -53,7 +62,10 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   clear: jest.fn()
 }));
 
-import CoursesScreen from "../src/screens/CoursesScreen.js";
+import CoursesScreen, {
+  courseInterestTags,
+  matchesCourseInterests
+} from "../src/screens/CoursesScreen.js";
 
 // All plan/role logic is now capability-driven in the app. These tests simulate plan switching via UI, but assertions should reflect capability-driven gating.
 
@@ -82,6 +94,11 @@ const mockCourses = [
 
 beforeEach(() => {
   mockUseEntitlements.mockReset();
+  mockGrowInterests = {};
+  mockAuthState = {
+    isAuthed: true,
+    user: { id: "course-user", growInterests: mockGrowInterests }
+  };
   inviteOk = true;
   global.fetch = jest.fn(async (url) => {
     const u = String(url || "");
@@ -94,9 +111,17 @@ beforeEach(() => {
     }
     if (u.includes("/api/invite")) {
       if (inviteOk) {
-        return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ success: true })
+        };
       }
-      return { ok: false, status: 400, text: async () => JSON.stringify({ error: "Failed" }) };
+      return {
+        ok: false,
+        status: 400,
+        text: async () => JSON.stringify({ error: "Failed" })
+      };
     }
     return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
   });
@@ -111,6 +136,17 @@ describe("CoursesScreen QA (capability-driven)", () => {
       </NavigationContainer>
     );
   };
+
+  it("canonicalizes legacy crop types and rejects courses for a different selected crop", () => {
+    const tomatoCourse = { cropType: "Tomatoes", tags: ["Outdoor"] };
+    expect(courseInterestTags(tomatoCourse)).toEqual(
+      expect.arrayContaining(["Vegetables", "Outdoor"])
+    );
+    expect(matchesCourseInterests(tomatoCourse, ["Vegetables", "Indoor"])).toBe(true);
+    expect(
+      matchesCourseInterests(tomatoCourse, ["Fruit Trees & Bushes", "Outdoor"])
+    ).toBe(false);
+  });
 
   it("shows only free courses if cannot see paid courses", async () => {
     mockUseEntitlements.mockReturnValue({
@@ -140,6 +176,37 @@ describe("CoursesScreen QA (capability-driven)", () => {
     });
   });
 
+  it("keeps signed-out course discovery published-only and removes authoring controls", async () => {
+    mockAuthState = { isAuthed: false, user: null };
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: { maxPaidCourses: 1 },
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COURSES_CREATE" ||
+        cap === "COURSES_SELL_PAID" ||
+        cap === "PUBLISH_COURSES"
+    });
+
+    const { getByText, getByLabelText, queryByText } = await renderWithNav();
+
+    await waitFor(() => expect(getByText("Free Course")).toBeTruthy());
+    expect(queryByText("Pro Course")).toBeNull();
+    expect(getByText("Published course catalog")).toBeTruthy();
+    expect(getByLabelText("Sign in for courses")).toBeTruthy();
+    expect(getByLabelText("Create a free account for courses")).toBeTruthy();
+    expect(queryByText("Course Builder Workflow")).toBeNull();
+    expect(queryByText("Create Course")).toBeNull();
+    expect(queryByText("Unpublish")).toBeNull();
+    expect(
+      global.fetch.mock.calls.some(([url]) =>
+        String(url || "").includes("/api/courses/mine")
+      )
+    ).toBe(false);
+  });
+
   it("shows course creation controls for a free creator with paid-course limits", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
@@ -155,23 +222,24 @@ describe("CoursesScreen QA (capability-driven)", () => {
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
       expect(getByText("Paid course limit: 1/1")).toBeTruthy();
-      expect(getByText("Storage used: 0 MB / plan limit")).toBeTruthy();
-      expect(getByText("Live sessions this month: 0 / plan limit")).toBeTruthy();
-      expect(getByText("Uploaded video storage: 0 GB / plan limit")).toBeTruthy();
+      expect(getByText("Course media: ready for uploads")).toBeTruthy();
+      expect(getByText("Live sessions this month: 0 scheduled")).toBeTruthy();
+      expect(getByText("Course Builder Workflow")).toBeTruthy();
     });
   });
 
-  it("lets free course viewers start a course draft even without explicit create capability", async () => {
+  it("lets free course creators sell paid courses within limits", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
       limits: { maxPaidCourses: 1 },
-      can: (cap) => cap === "COURSES_VIEW"
+      can: (cap) =>
+        cap === "COURSES_VIEW" || cap === "COURSES_CREATE" || cap === "COURSES_SELL_PAID"
     });
-    const { getByText } = await renderWithNav();
+    const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
-      expect(getByText("Paid course sales require `COURSES_SELL_PAID`.")).toBeTruthy();
+      expect(queryByText("Paid course sales require `COURSES_SELL_PAID`.")).toBeNull();
     });
   });
 
@@ -198,9 +266,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "personal",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "PUBLISH_COURSES"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -214,9 +280,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "COMMERCIAL_HOME"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "COMMERCIAL_HOME"
     });
     inviteOk = true;
     const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
@@ -237,9 +301,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" ||
-        cap === "SEE_PAID_COURSES" ||
-        cap === "COMMERCIAL_HOME"
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "COMMERCIAL_HOME"
     });
     inviteOk = false;
     const { getByText, findByText, queryByText } = await renderWithNav();

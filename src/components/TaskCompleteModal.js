@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { radius } from "../theme/theme";
+import ReportBugButton from "./ReportBugButton";
 
 export default function TaskCompleteModal({ visible, onClose }) {
   return (
@@ -19,6 +20,7 @@ export default function TaskCompleteModal({ visible, onClose }) {
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>OK</Text>
           </TouchableOpacity>
+          <ReportBugButton location="Task complete popup" />
         </View>
       </View>
     </Modal>

@@ -73,11 +73,20 @@ export default function PdfExportScreen() {
   }
 
   return (
-    <ScreenBoundary title="PDF / Export" showBack backFallbackHref="/home/personal/tools">
+    <ScreenBoundary
+      title="Grow Reports & Export"
+      showBack
+      backFallbackHref={
+        growId
+          ? `/home/personal/grows/${encodeURIComponent(growId)}/timeline`
+          : "/home/personal/profile"
+      }
+    >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>CSV Export</Text>
+        <Text style={styles.title}>Grow Reports & Export</Text>
         <Text style={styles.subtitle}>
-          Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
+          Gather grow logs, tasks, plants, and tool runs into an export-ready dataset. CSV
+          is available now; PDF reports stay attached to the grow records they summarize.
         </Text>
         <PersonalFeedPlacement
           placement="top"
@@ -88,7 +97,7 @@ export default function PdfExportScreen() {
 
         {!enabled ? (
           <LockedToolCard
-            title="PDF / Export"
+            title="Grow Reports & Export"
             capability={CAPABILITY_KEYS.TOOL_PDF_EXPORT}
             description="Enable this capability to prepare grow records for export."
           />

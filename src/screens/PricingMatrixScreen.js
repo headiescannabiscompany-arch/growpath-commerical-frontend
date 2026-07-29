@@ -17,7 +17,7 @@ const plans = [
       "Manual grow logs",
       "Basic tools (VPD, pH, light targets)",
       "Forum access",
-      "Limited AI Diagnose (tokens/soft caps)"
+      "Limited weekly AI credits"
     ]
   },
   {
@@ -55,7 +55,7 @@ const plans = [
       "Compliance-friendly exports",
       "Role-based access (manager/staff/read-only)",
       "Central calendar across rooms",
-      "Unlimited AI diagnostics for facility plants"
+      "Highest weekly AI-credit allowance"
     ]
   }
 ];

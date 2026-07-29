@@ -245,6 +245,27 @@ describe("AlertCenterRoute", () => {
               sourceType: "storefront",
               linkedStorefrontSlug: "living-soil-labs",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-21",
+              title: "Finish account setup",
+              severity: "info",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "setup",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-22",
+              title: "Facility training assignment overdue",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "course_assignment",
+              sourceId: "training-assignment-1",
+              linkedCourseId: "training-course-1",
+              linkedLessonId: "training-lesson-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -271,7 +292,7 @@ describe("AlertCenterRoute", () => {
       screen.getByLabelText("Alert link /home/commercial/products/product-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/tasks/task-1")).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /forum/post/thread-sop")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /forum/post?id=thread-sop")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/grows/run-1")).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/facility/sop-runs/sop-1")
@@ -327,6 +348,14 @@ describe("AlertCenterRoute", () => {
       )
     ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /store/living-soil-labs")).toBeTruthy();
+    expect(screen.getByText("Finish account setup")).toBeTruthy();
+    expect(screen.getByText("Facility training assignment overdue")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/personal")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/facility/sop-runs/training-course-1?lessonId=training-lesson-1&assignmentId=training-assignment-1"
+      )
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(
@@ -363,7 +392,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(19);
+    expect(createButtons).toHaveLength(21);
     fireEvent.press(createButtons[5]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -532,6 +561,20 @@ describe("AlertCenterRoute", () => {
       )
     );
 
+    fireEvent.press(screen.getAllByLabelText("Assign alert")[0]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/alerts/alert-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            assignedToUserId: "owner-1",
+            assignedAt: expect.any(String)
+          })
+        })
+      )
+    );
+
     fireEvent.press(screen.getAllByLabelText("Resolve alert")[0]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -556,5 +599,93 @@ describe("AlertCenterRoute", () => {
         })
       )
     );
+  });
+
+  it("uses real notification records when the legacy alert endpoint is unavailable", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/alerts" && options?.method === "GET") {
+        return Promise.reject(new Error("Route not found"));
+      }
+      if (path === "/api/notifications" && options?.method === "GET") {
+        return Promise.resolve({
+          notifications: [
+            {
+              id: "notification-1",
+              title: "Task assigned",
+              body: "Assigned: Verify Facility persistence",
+              channel: "in_app",
+              read: false,
+              data: {
+                facilityId: "facility-1",
+                taskId: "task-7",
+                assignedToUserId: "6a563b7f2fb9f669d2319f8a"
+              },
+              source: { model: "Task", id: "task-7" },
+              createdAt: new Date().toISOString()
+            }
+          ]
+        });
+      }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-created" } });
+      }
+      if (
+        path === "/api/notifications/notification-1/read" &&
+        options?.method === "POST"
+      ) {
+        return Promise.resolve({ success: true });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<AlertCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Task assigned")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "Showing live notification-backed alerts. Mark Read and Create Task use your saved notification records."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Follow-up Task Schedule")).toBeTruthy();
+    expect(screen.queryByText("Unable to load alerts.")).toBeNull();
+    expect(screen.queryByLabelText("Assign alert")).toBeNull();
+    expect(screen.queryByLabelText("Snooze alert")).toBeNull();
+    expect(screen.queryByText("Ask AI")).toBeNull();
+    expect(screen.queryByText(/Assigned to 6a563b7f2fb9f669d2319f8a/)).toBeNull();
+    expect(
+      screen.getByText(
+        "Review live notification records, mark them read, or create source-linked follow-up tasks."
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/tasks")).toBeTruthy();
+    expect(screen.getByText("Open Tasks")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Create task from alert"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "facility",
+            sourceType: "notification",
+            sourceId: "notification-1",
+            linkedNotificationId: "notification-1",
+            notificationSourceType: "task",
+            notificationSourceId: "task-7",
+            linkedTaskId: "task-7"
+          })
+        })
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("Mark notification read"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/notifications/notification-1/read",
+        { method: "POST" }
+      )
+    );
+    expect(screen.getByText("Notification marked read.")).toBeTruthy();
   });
 });

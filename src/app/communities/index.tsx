@@ -10,7 +10,13 @@ import {
   View
 } from "react-native";
 
-import { joinGuild, leaveGuild, listGuilds, type Guild } from "@/api/communitySocial";
+import {
+  createGuild,
+  joinGuild,
+  leaveGuild,
+  listGuilds,
+  type Guild
+} from "@/api/communitySocial";
 import { useAuth } from "@/auth/AuthContext";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -55,6 +61,12 @@ export default function Communities() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [savingId, setSavingId] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
+  const [groupTopics, setGroupTopics] = useState("");
+  const [groupIsPublic, setGroupIsPublic] = useState(true);
   const [error, setError] = useState<UiErrorState | null>(null);
   const [feedback, setFeedback] = useState("");
 
@@ -124,6 +136,40 @@ export default function Communities() {
     }
   }
 
+  async function submitGroup() {
+    const name = groupName.trim();
+    const description = groupDescription.trim();
+    if (!name || !description || creating) return;
+
+    setCreating(true);
+    setFeedback("");
+    try {
+      setError(null);
+      await createGuild({
+        name,
+        description,
+        topics: groupTopics
+          .split(",")
+          .map((topic) => topic.trim())
+          .filter(Boolean),
+        isPublic: groupIsPublic
+      });
+      setGroupName("");
+      setGroupDescription("");
+      setGroupTopics("");
+      setGroupIsPublic(true);
+      setShowCreate(false);
+      await load({ refresh: true });
+      setFeedback(
+        `${name} was created. You can now invite growers and start discussions.`
+      );
+    } catch (e) {
+      setError(mapApiError.toInlineError(e));
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
     <AppPage
       routeKey="communities"
@@ -149,6 +195,121 @@ export default function Communities() {
         }
         contentContainerStyle={styles.inner}
       >
+        <AppCard style={styles.createCard}>
+          <View style={styles.createHeader}>
+            <View style={styles.createIntro}>
+              <Text style={styles.cardTitle}>Start a Forum group</Text>
+              <Text style={styles.cardDesc}>
+                Create a focused space for a crop, method, product, course, or grow
+                workflow.
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                showCreate ? "Cancel creating forum group" : "Create forum group"
+              }
+              accessibilityState={{ expanded: showCreate }}
+              onPress={() => setShowCreate((current) => !current)}
+              style={[styles.actionButton, showCreate && styles.secondaryButton]}
+            >
+              <Text style={styles.actionText}>
+                {showCreate ? "Cancel" : "Create Group"}
+              </Text>
+            </Pressable>
+          </View>
+
+          {showCreate ? (
+            <View style={styles.createForm}>
+              <Text style={styles.fieldLabel}>Group name</Text>
+              <TextInput
+                value={groupName}
+                onChangeText={setGroupName}
+                accessibilityLabel="Forum group name"
+                maxLength={80}
+                placeholder="Example: Living Soil Builders"
+                style={styles.input}
+              />
+
+              <Text style={styles.fieldLabel}>Description</Text>
+              <TextInput
+                value={groupDescription}
+                onChangeText={setGroupDescription}
+                accessibilityLabel="Forum group description"
+                maxLength={500}
+                multiline
+                numberOfLines={4}
+                placeholder="What should growers discuss and learn here?"
+                style={[styles.input, styles.textArea]}
+              />
+
+              <Text style={styles.fieldLabel}>Topics</Text>
+              <TextInput
+                value={groupTopics}
+                onChangeText={setGroupTopics}
+                accessibilityLabel="Forum group topics"
+                maxLength={240}
+                placeholder="living soil, compost, amendments"
+                style={styles.input}
+              />
+              <Text style={styles.fieldHelp}>Separate topics with commas.</Text>
+
+              <Text style={styles.fieldLabel}>Who can discover this group?</Text>
+              <View accessibilityRole="radiogroup" style={styles.privacyRow}>
+                {[
+                  {
+                    value: true,
+                    label: "Public",
+                    detail: "Any signed-in grower can find and join it."
+                  },
+                  {
+                    value: false,
+                    label: "Private",
+                    detail: "Only invited growers can join it."
+                  }
+                ].map((option) => {
+                  const selected = groupIsPublic === option.value;
+                  return (
+                    <Pressable
+                      key={option.label}
+                      accessibilityRole="radio"
+                      accessibilityLabel={`${option.label} forum group`}
+                      accessibilityState={{ checked: selected }}
+                      onPress={() => setGroupIsPublic(option.value)}
+                      style={[
+                        styles.privacyOption,
+                        selected && styles.privacyOptionSelected
+                      ]}
+                    >
+                      <Text style={styles.privacyTitle}>{option.label}</Text>
+                      <Text style={styles.fieldHelp}>{option.detail}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Save new forum group"
+                accessibilityState={{
+                  disabled: !groupName.trim() || !groupDescription.trim() || creating
+                }}
+                disabled={!groupName.trim() || !groupDescription.trim() || creating}
+                onPress={() => void submitGroup()}
+                style={[
+                  styles.actionButton,
+                  (!groupName.trim() || !groupDescription.trim() || creating) &&
+                    styles.disabledButton
+                ]}
+              >
+                <Text style={styles.actionText}>
+                  {creating ? "Creating..." : "Create Forum Group"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </AppCard>
+
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summary.total}</Text>
@@ -254,6 +415,66 @@ const styles = StyleSheet.create({
   inner: {
     gap: 14,
     paddingBottom: 28
+  },
+  createCard: {
+    gap: 12
+  },
+  createHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 14,
+    justifyContent: "space-between"
+  },
+  createIntro: {
+    flex: 1,
+    minWidth: 220
+  },
+  createForm: {
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
+    gap: 8,
+    paddingTop: 14
+  },
+  fieldLabel: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900",
+    marginTop: 4
+  },
+  fieldHelp: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17
+  },
+  textArea: {
+    minHeight: 96,
+    textAlignVertical: "top"
+  },
+  privacyRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  privacyOption: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 210,
+    padding: 12
+  },
+  privacyOptionSelected: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#2563EB",
+    borderWidth: 2
+  },
+  privacyTitle: {
+    color: "#0F172A",
+    fontSize: 14,
+    fontWeight: "900",
+    marginBottom: 2
   },
   feedback: {
     backgroundColor: "#DCFCE7",

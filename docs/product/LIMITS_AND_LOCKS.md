@@ -38,32 +38,38 @@ Free users cannot access:
 Everything else remains available on Free WITH LIMITS:
 - Grows / plants / logs
 - Tools (VPD, etc.)
-- Forum read/post (unless you choose to gate posting)
+- Forum reading; posting and commenting are disabled at launch
 - Courses browsing (paid courses may be hidden or shown but locked at purchase)
 - AI assistant (limited by quotas)
 
 ---
 
 ## Limits (Free vs Pro)
-These are locked for v1.
+The runtime source of truth is `src/config/freePolicy.ts` plus
+`src/config/planLimits.ts`. Do not publish older daily-call or retention claims that
+are not enforced by those contracts.
 
 ### Free limits
-- grows: 3
-- plants per grow: 12
-- logs per grow: 200
-- photo uploads: 30 / month
-- AI calls: 10 / day
-- retention: 90 days
+- tracked grows: 1
+- tracked plants: 1
+- AI credits: 5 per week
+- provider-backed text help: 1 credit per completed request
+- provider-backed photo diagnosis: 3 credits per completed request
+- published paid courses: 1
+- lessons per course: 7
+- upload storage: 500 MB
+- Forum posts/comments: read-only at launch (`0` writes per day)
+
+Rule-based calculators and fallbacks do not consume AI credits.
 
 ### Pro limits
-- grows: 50
-- plants per grow: 200
-- logs per grow: 10,000
-- photo uploads: 300 / month
-- AI calls: 100 / day
-- retention: 730 days
+- tracked grows: 10
+- tracked plants: 50
+- published paid courses: 5
+- lessons per course: 20
 
-Rule: Free and Pro share features; Pro increases limits and unlocks a small list (paid course visibility, analytics, advanced diagnose) if you want.
+Rule: Free and Pro share the core Personal surface. Pro raises limits and unlocks
+the explicitly gated paid capabilities.
 
 ---
 

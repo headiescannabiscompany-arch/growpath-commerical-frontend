@@ -4,6 +4,7 @@ export type FacilityComplianceExport = {
   success: boolean;
   exportType: "facility_compliance_packet";
   facilityId: string;
+  facilityName?: string;
   generatedAt: string;
   requestedBy?: string | null;
   filters: {
@@ -22,6 +23,12 @@ export type FacilityComplianceExport = {
       skippedSteps: number;
       pendingSteps: number;
       runsMissingSteps: number;
+    };
+    deviations?: {
+      totalDeviations: number;
+      openDeviations: number;
+      resolvedDeviations: number;
+      cancelledDeviations: number;
     };
   };
   collections: Record<string, unknown>;

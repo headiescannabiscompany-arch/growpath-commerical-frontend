@@ -20,8 +20,15 @@ import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
+import {
+  coerceParam,
+  findGrowById,
+  fmtDate,
+  isCannabisGrow
+} from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -87,6 +94,30 @@ function timelinePreviewHref(event: PersonalGrowTimelineEvent) {
   return sourceObjectHref({ ...(event as any), workspaceType: "personal" });
 }
 
+function shareGrowHref(grow: PersonalGrow | null, growId: string) {
+  const tags = Array.from(
+    new Set([
+      ...(Array.isArray(grow?.growTags) ? grow.growTags : []),
+      ...Object.values(grow?.growInterests || {}).flat()
+    ])
+  );
+  const photos = Array.isArray(grow?.photos) ? grow.photos : [];
+  const query = new URLSearchParams({
+    growId,
+    title: `Grow update: ${grow?.name || "My grow"}`,
+    body: [
+      grow?.cultivar ? `Cultivar / variety: ${grow.cultivar}` : "",
+      grow?.status ? `Status: ${grow.status}` : "",
+      grow?.notes || "Sharing an update from my GrowPath grow workspace."
+    ]
+      .filter(Boolean)
+      .join("\n")
+  });
+  if (tags.length) query.set("growTags", tags.join(","));
+  if (photos.length) query.set("photos", photos.join(","));
+  return `/home/personal/forum/new-post?${query.toString()}`;
+}
+
 function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
   const href = timelinePreviewHref(event);
   const content = (
@@ -120,13 +151,14 @@ function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
   return <View style={styles.timelineItem}>{content}</View>;
 }
 
-export default function GrowOverviewScreen() {
+function GrowOverviewContent() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
   const [grow, setGrow] = useState<PersonalGrow | null>(null);
   const [counts, setCounts] = useState({ logs: 0, tasks: 0, runs: 0 });
   const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
+  const [cannabisGrow, setCannabisGrow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -148,6 +180,7 @@ export default function GrowOverviewScreen() {
       ]);
       const current = findGrowById(grows, growId);
       setGrow(current);
+      setCannabisGrow(isCannabisGrow(current, runs));
       setCounts({
         logs: Array.isArray(logs) ? logs.length : 0,
         tasks: Array.isArray(tasks) ? tasks.length : 0,
@@ -158,6 +191,7 @@ export default function GrowOverviewScreen() {
     } catch {
       setError("Failed to load grow workspace.");
       setGrow(null);
+      setCannabisGrow(false);
       setCounts({ logs: 0, tasks: 0, runs: 0 });
       setTimeline([]);
     } finally {
@@ -181,7 +215,9 @@ export default function GrowOverviewScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 28 }}>
-      <Text style={styles.title}>{grow?.name || "Grow Workspace"}</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        {grow?.name || "Grow Workspace"}
+      </Text>
       <Text style={styles.subtitle}>
         Status: {grow?.status || "active"} | Updated: {fmtDate(grow?.updatedAt)}
       </Text>
@@ -212,6 +248,26 @@ export default function GrowOverviewScreen() {
           </View>
         </View>
       </View>
+
+      {cannabisGrow ? (
+        <ContextualWorkflowLinks
+          title="Pheno / Genetics"
+          helper="Compare plants with this grow already selected. Results save through the same shared ToolRun workflow."
+          source="grow_detail_pheno"
+          growId={growId}
+          workflows={["pheno-matrix"]}
+        />
+      ) : null}
+
+      {cannabisGrow ? (
+        <ContextualWorkflowLinks
+          title="Harvest / Diagnosis"
+          helper="Use maturity observations and photos, then create a harvest recheck task from the saved result."
+          source="grow_detail_harvest"
+          growId={growId}
+          workflows={["harvest-readiness"]}
+        />
+      ) : null}
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Recent timeline</Text>
@@ -252,12 +308,33 @@ export default function GrowOverviewScreen() {
         </Link>
         <Link href={`/home/personal/grows/${growId}/tools`} asChild>
           <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Run Tool</Text>
+            <Text style={styles.actionText}>Grow Intelligence</Text>
           </Pressable>
         </Link>
         <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Add Task</Text>
+          </Pressable>
+        </Link>
+        <Link
+          href={`/home/personal/tools/integrations?growId=${encodeURIComponent(growId)}`}
+          asChild
+        >
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Data Integrations</Text>
+          </Pressable>
+        </Link>
+        <Link
+          href={`/home/personal/tools/pdf-export?growId=${encodeURIComponent(growId)}`}
+          asChild
+        >
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Export Report</Text>
+          </Pressable>
+        </Link>
+        <Link href={shareGrowHref(grow, growId) as any} asChild>
+          <Pressable style={styles.action} accessibilityLabel="Share grow to forum">
+            <Text style={styles.actionText}>Share Grow</Text>
           </Pressable>
         </Link>
       </View>
@@ -269,5 +346,17 @@ export default function GrowOverviewScreen() {
         longContent
       />
     </ScrollView>
+  );
+}
+
+export default function GrowOverviewScreen() {
+  return (
+    <ScreenBoundary
+      title="Grow overview"
+      showBack
+      backFallbackHref="/home/personal/grows"
+    >
+      <GrowOverviewContent />
+    </ScreenBoundary>
   );
 }

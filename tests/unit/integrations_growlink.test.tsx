@@ -223,21 +223,30 @@ describe("Data Integrations Growlink flow", () => {
       expect(mockPullGrowlinkCurrentReadings).toHaveBeenCalledWith("source-new")
     );
 
-    fireEvent.changeText(
-      screen.getByPlaceholderText("History start ISO"),
-      "2026-06-22T00:00:00.000Z"
-    );
-    fireEvent.changeText(
-      screen.getByPlaceholderText("History end ISO"),
-      "2026-06-22T14:00:00.000Z"
-    );
+    const startLabel = "Growlink history start";
+    fireEvent.press(screen.getByLabelText(startLabel));
+    fireEvent(screen.getByLabelText(`${startLabel} year`), "valueChange", 2026);
+    fireEvent(screen.getByLabelText(`${startLabel} month`), "valueChange", 6);
+    fireEvent.press(screen.getByLabelText(`${startLabel} day 2026-06-22`));
+    fireEvent(screen.getByLabelText(`${startLabel} hour`), "valueChange", 0);
+    fireEvent(screen.getByLabelText(`${startLabel} minute`), "valueChange", 0);
+    fireEvent.press(screen.getByLabelText(`${startLabel} use selected date`));
+
+    const endLabel = "Growlink history end";
+    fireEvent.press(screen.getByLabelText(endLabel));
+    fireEvent(screen.getByLabelText(`${endLabel} year`), "valueChange", 2026);
+    fireEvent(screen.getByLabelText(`${endLabel} month`), "valueChange", 6);
+    fireEvent.press(screen.getByLabelText(`${endLabel} day 2026-06-22`));
+    fireEvent(screen.getByLabelText(`${endLabel} hour`), "valueChange", 14);
+    fireEvent(screen.getByLabelText(`${endLabel} minute`), "valueChange", 0);
+    fireEvent.press(screen.getByLabelText(`${endLabel} use selected date`));
     fireEvent.press(screen.getAllByText("Pull history")[0]);
 
     await waitFor(() =>
       expect(mockPullGrowlinkHistoricalWindow).toHaveBeenCalledWith(
         "source-new",
-        "2026-06-22T00:00:00.000Z",
-        "2026-06-22T14:00:00.000Z"
+        "2026-06-22T00:00",
+        "2026-06-22T14:00"
       )
     );
   });

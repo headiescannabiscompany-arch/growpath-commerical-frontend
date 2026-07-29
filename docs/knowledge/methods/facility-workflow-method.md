@@ -1,0 +1,88 @@
+# Facility Workflow
+
+Facility outreach analytics use the same recorded Feed campaign events as Commercial while remaining facility scoped. Measure education/outreach impressions, clicks, explicit conversions, hides, and reports without introducing direct-sales claims or exposing viewer identity in owner-facing summaries.
+
+Facility outreach destinations must be selected from readable public course, live-event, and Forum/Q&A records whenever those lists are available. Show record titles instead of internal identifiers, preserve the selected canonical identifier in the campaign payload, and keep manual identifiers or slugs behind an explicitly labeled advanced fallback. A failure in one destination list must not erase the other lists or prevent an authorized operator from using a known valid reference.
+
+Facility Forum participation uses the shared discussion engine with membership-verified Facility identity and Facility/room/SOP-adjacent context links. Facility-only discussion must remain scoped to the selected Facility and must not become public commercial advertising.
+
+Facility-internal Forum reads and writes require an active membership for the selected Facility. Public education remains a separate public Forum thread; internal room and operational discussion must use `facilityOnly` visibility and exact Facility context.
+
+Facility Forum replies, mentions, unanswered internal questions, and task creation remain Facility scoped. AI suggestions are review-only and cannot create operational tasks, change records, or invent room/SOP context without user confirmation.
+
+Facility Forum reports may enter the shared platform moderation queue without changing Facility visibility. Repeated reports from the same account for the same post are idempotent and cannot increase an automatic hold threshold. Moderator hide, restore, soft-remove, lock, pin, and move actions require platform authorization and an auditable case history; moderation must never make Facility-only content public.
+
+A Facility-scoped report must be stored before administrator-email delivery. Notification links may open the exact content only through its existing authorization boundary and may focus the corresponding platform moderation case; email failure never removes the report or changes Facility visibility.
+
+Hidden and soft-removed Facility Forum posts must be removed from every eligible feed projection without changing their Facility-only scope. Restore must reapply the existing visibility boundary, locked threads must reject all reply-write paths, and soft removal must preserve the post, evidence snapshot, case history, and platform audit records for review and reversal.
+
+Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, tasks, inventory, sensors, audit and compliance-style records. It is not the commercial storefront workspace and must not pretend to work without a selected facility.
+
+A Facility room with no grow remains a valid operational record. Its grow view must offer the supported grow-start workflow instead of referring vaguely to backend records. When the operator enters grow setup from one room, preselect only that exact room; never silently attach a new grow to every Facility room. Keep room-card actions precise: a grow-list action must say it opens grows, while equipment and batch-cycle setup remains in the room workspace.
+
+Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
+
+Facility invitation acceptance is also a read-after-write boundary. After creating an active membership, expose that membership in the canonical session without changing the human's primary Personal or Commercial account, force a fresh session read, select the invited Facility, and wait for Facility mode before routing. Facility role capabilities use the selected Facility's active or trialing subscription, not the invited human's separate personal plan.
+
+Facility AI credits belong to the selected Facility subscription. Balance display, provider-work reservation, failed-call refund, and the weekly usage ledger must all resolve the same authorized Facility identifier. A Facility AI request must fail when Facility context is missing or unauthorized and must never fall back to displaying, debiting, or refunding the individual member's Personal or Commercial credit balance. Personal and Commercial credit balances remain individual-account scoped outside Facility mode.
+
+For a legacy active Facility with no Facility subscription record, the backend may materialize the missing Facility balance only when the owner still has an effective active or trialing Facility-plan entitlement. Existing Facility subscription state remains authoritative, including canceled or delinquent state. Migration creates a new Facility-owned allowance and must never copy, display, debit, or refund the owner's individual balance.
+
+Facility membership does not replace the human's individual account. After ordinary sign-in, a human with both individual and Facility access must choose which workspace to enter, even when one choice matches the saved current preference. The same eligible choices remain available later through Switch Workspace; changing workspaces must not require another account or another login.
+
+`/account/workspace` and `/account/mode` are production direct-entry and hard-reload routes. The production export and hosting fallback must serve the application for both routes instead of returning an HTTP 404.
+
+Facility member removal is a consequential owner action and must use a functional confirmation on every supported platform. Web must not rely on native-only `Alert` button callbacks. Identify the exact target by readable name, email, and role when available, execute the removal only after explicit confirmation, refresh the canonical team list, and retain historical task and audit records. Never allow an owner to remove the last owner membership.
+
+Facility task queues and detail screens must show named team members, named rooms, readable task metadata, and semantic linked-record actions. Queue rows link directly to the selected task through a stable, accessible route. Raw database fields, Facility IDs, user IDs, room IDs, source-object IDs, and JSON records are not the primary operational interface. Assignment and room changes use the Facility's actual selectable records; manual linked-record references are advanced fallback controls only.
+
+Facility task, SOP, room, grow, compliance, and scheduling dates use the shared date picker with direct year, month, and day selection. Timed records also expose hour and minute selection. Persist stable ISO date or local date-time values while presenting readable dates; never require an ordinary Facility operator to type an ISO date string.
+
+Facility inventory detail screens must present readable stock, reorder, SKU, and record-time information without exposing raw database envelopes or internal identifiers. Authorized owners and managers must be able to remove duplicate, test, or mistakenly created inventory through an explicit confirmation step; ordinary stock changes belong in the quantity-adjustment workflow.
+
+Facility workspace headings, operational summaries, and downloaded evidence filenames must identify the selected Facility by its readable name. If the name is not available, use a neutral label such as `Selected facility`; never substitute the internal Facility identifier as user-facing context or as a downloaded filename.
+
+Facility AI template links must open a visibly specialized workflow instead of a generic grow assistant. A template may prefill a review request but must not submit it or spend AI credits until the operator chooses Send. Inspection-readiness context must use record-backed audit, deviation, verification, SOP, task, inventory, and integration evidence; missing evidence stays missing, and AI must never certify legal compliance or invent jurisdiction rules.
+
+Facility AI prompts and parental-control PIN fields must opt out of account-credential autofill. The AI composer is ordinary user-authored text, and the parental PIN is a separate one-time-style control value; neither field may invite a browser or device password manager to insert a saved GrowPath email or password.
+
+Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
+
+Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.
+
+Facility analytics are selected-facility scoped and record-backed. Task and training completion come from stored task outcomes; SOP compliance comes from applicable recorded steps; alerts come from explicit sensor/environment alert events; batches come from BatchCycle history. Room stability may be reported only when a room-linked environment event explicitly records an in-range or out-of-range state. Keep rooms with missing or ambiguous evidence in an unknown bucket rather than assuming stability.
+
+When the legacy global alert service is unavailable, Facility Alert Center may present record-backed in-app notifications as the live alert stream. Notification-backed items may be marked read, opened at their preserved source, or converted into a source-linked task. Because notification records can outlive a deleted task, task-backed notifications open the current Facility task collection instead of promising an exact detail record that may no longer exist. Do not show assign, snooze, or AI actions for those items unless a server-backed operation and the exact notification context are available. Alert cards may show a readable assignee name or email, never a raw account identifier.
+
+Facility reports must count stored active tasks, accepted memberships, compliance logs, and automation records for the selected Facility. If the data model does not record whether a scheduled compliance check was missed, show that metric as not tracked rather than zero. Compliance summaries should translate audit actions and structured details into readable labels while leaving the full immutable record available in the audit-log view; do not expose raw internal identifier arrays in the summary card. Export readiness must distinguish open deviations from resolved or cancelled history. Retain resolved deviations as evidence, but do not label a packet as needing cleanup merely because resolved history exists.
+
+Facility deviations require a stable, user-facing reference that cannot collide when separate Facilities create their first or concurrent records. Deviation reads and writes remain Facility scoped, while persistence failures must pass through the API error boundary and return a controlled error; a duplicate or invalid record must never terminate the shared service.
+
+The primary Audit Logs list and entity-history list must use the same readable action and detail summaries. Audit detail must lead with that readable action, evidence summary, recorded time, and available named actor/role before exposing the immutable payload. Raw JSON, entity IDs, and identifier arrays belong only in the deliberately opened immutable-detail view, never in the scannable operational list.
+
+Facility SOP runs require a visible title and checklist evidence source: either an approved selected template or at least one owner-entered one-off step. Empty runs cannot become inspection evidence. Every step must be reviewed as done or skipped before completion, and completed runs are locked against checklist mutation. Run details and comparisons must present readable evidence summaries and step differences; raw database identifiers and JSON envelopes belong in controlled audit exports, not the primary Facility workflow. Run comparison must use two distinct user-selected saved runs and human-readable titles; owners and staff must never need to copy or type internal run identifiers.
+
+The Facility SOP Library may provide setpoint-free standard starter templates for common operational checks. A starter is an editable baseline, not an automatically installed policy, legal-compliance claim, treatment direction, or facility approval. An owner or manager must review and customize its title, category, checklist, safety/escalation notes, responsibilities, and attachments before saving it as the active Facility version. Never insert crop measurements, chemical rates, jurisdiction rules, release criteria, or unseen conditions into a starter.
+
+Facility SOP documents are supporting references, not substitutes for executable evidence. Accept only bounded PDF, Word, text, or scanned JPG/PNG uploads from an authorized Facility owner or manager; store the asset against the selected Facility, verify attachment ownership again when saving the template, and prevent cross-Facility reuse. Every active template still requires at least one explicit checklist step. Revising a template creates a new active version while preserving the prior version for historical runs and audit evidence; retiring a template hides it from new runs without deleting its history.
+
+Retirement must be available from the active SOP Library to an authorized owner or manager and must use an explicit cross-platform confirmation. Name the exact SOP, explain that it will be removed from new runs, and preserve prior versions, completed runs, attachments, and audit evidence. Do not label this operation as deletion. Creating, revising, and retiring a Facility SOP must each append a Facility-scoped audit event with a readable SOP title and version so the lifecycle is visible without exposing raw identifiers in the primary audit list.
+
+Personal and Commercial AI may reuse the same starter structure only as a clearly labeled
+review-only recommendation. Those workspaces do not gain Facility approval, assignment,
+upload, versioning, run-evidence, retirement, or audit controls. A recommended draft may
+become a grow review task only after explicit user confirmation; it cannot create or alter
+a Facility SOP. The shared starter baseline must use workspace-neutral language so a
+non-Facility recommendation does not silently acquire a Facility plan, rating scale,
+approved limit, deviation process, label, or responsible Facility role. Facility-specific
+terms belong only in the owner/manager customization or selected Facility records.
+
+Sensor and controller integrations begin read-only. Store provider credentials only in encrypted backend fields and expose only configured/encrypted state, never secret values. Each connection must declare provider capabilities, connection status, structured errors, and last-sync state; an adapter is incomplete until it implements connection testing, device discovery, and data pulling. Control/setpoint writes require a separately reviewed future permission scope.
+
+Import setup is a reviewed sequence: select provider, save encrypted credentials, test the connection, fetch provider structure, preview devices and metrics, edit room/zone mappings, then confirm. Only Facility owners and managers may confirm Facility mappings. Confirmation records the proposed structure; it does not itself create rooms, zones, alerts, dashboards, or controller actions.
+
+After confirmation, an owner or manager may explicitly auto-build Facility rooms and durable integration spaces. Builds must be idempotent and retain read-only devices/streams; generated alert and dashboard definitions remain drafts until separately reviewed and activated.
+
+Support separate Clone, Tissue Culture, Seedling, Vegetative, Flower, Mother, Dry, Cure and Cold Storage purposes. A seedling area may be a dedicated room or a tracked rack/zone in veg. Layout recommendations are optional and evidence/environment driven. Keep every AI retrieval facility scoped.
+
+Synthetic Facility QA uses a two-phase evidence lifecycle. Seed readiness may include private test/staging-only accounts, broad synthetic boundary profiles, executable QA checklists, and deterministic telemetry while records still have a planned seed state. Scenario-run results, browser evidence, persistence checks, and cross-role acceptance are post-seed evidence and must never be fabricated as a prerequisite to creating the records they test. Synthetic QA approval does not authorize production identifiers, publication, product claims, operational setpoints, external media, or source-rights decisions.

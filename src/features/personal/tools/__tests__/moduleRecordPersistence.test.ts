@@ -20,6 +20,28 @@ describe("moduleRecordPersistence", () => {
     expect(getModuleRecordTypeForTool("vpd")).toBeNull();
   });
 
+  test("links crop steering entries to the selected plant pheno context", () => {
+    const record = buildModuleRecordInput({
+      tool: "crop-steering-project",
+      title: "P1 steering response",
+      growId: "grow-1",
+      plantId: "plant-1",
+      inputs: { projectId: "project-1", geneticsId: "genetics-1" },
+      outputs: { phenoTags: ["dryback_tolerant", "recovery_strong"] },
+      toolRun: { id: "run-1" } as any
+    });
+
+    expect(record).toEqual(
+      expect.objectContaining({
+        recordType: "crop_steering_entry",
+        plantId: "plant-1",
+        phenoPlantId: "plant-1",
+        geneticsId: "genetics-1",
+        tags: expect.arrayContaining(["dryback_tolerant", "recovery_strong"])
+      })
+    );
+  });
+
   test("builds a durable pheno hunt module record from calculator inputs and outputs", () => {
     const payload = buildModuleRecordInput({
       tool: "pheno-hunt",

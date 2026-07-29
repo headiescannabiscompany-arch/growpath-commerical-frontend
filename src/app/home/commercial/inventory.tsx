@@ -80,17 +80,12 @@ export default function CommercialInventoryRoute() {
   const ent = useEntitlements();
   const canCreate = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
 
-  const apiErr: any = useApiErrorHandler();
-  const resolved = useMemo(() => {
-    const error = apiErr?.error ?? apiErr?.[0] ?? null;
-    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
-    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
-    return { error, handleApiError, clearError };
-  }, [apiErr]);
+  const mapApiError = useApiErrorHandler();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<any>(null);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -98,7 +93,7 @@ export default function CommercialInventoryRoute() {
       else setLoading(true);
 
       try {
-        resolved.clearError();
+        setError(null);
 
         // Commercial inventory endpoints vary by backend; try known shapes, then fall back safely.
         const path =
@@ -109,13 +104,13 @@ export default function CommercialInventoryRoute() {
         const res = await apiRequest(path, { method: "GET" });
         setItems(asArray(res));
       } catch (e) {
-        resolved.handleApiError(e);
+        setError(mapApiError(e));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [resolved]
+    [mapApiError]
   );
 
   useEffect(() => {
@@ -148,14 +143,19 @@ export default function CommercialInventoryRoute() {
   return (
     <ScreenBoundary title="Inventory Support">
       <View style={styles.container}>
-        {resolved.error ? <InlineError error={resolved.error} /> : null}
+        {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Commercial Inventory Support</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            Commercial Inventory Support
+          </Text>
           <View style={styles.headerActions}>
             <Text style={styles.muted}>{items.length} items</Text>
             {canCreate ? (
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Create inventory support record"
+                accessibilityHint="Opens the form for a new Commercial inventory support record"
                 onPress={() => router.push("/home/commercial/inventory/new")}
                 style={styles.createBtn}
               >
@@ -172,6 +172,9 @@ export default function CommercialInventoryRoute() {
           </View>
         ) : null}
 
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Stock overview
+        </Text>
         <View style={styles.summaryCard}>
           <View>
             <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
@@ -192,7 +195,9 @@ export default function CommercialInventoryRoute() {
         </View>
 
         <View style={styles.guideCard}>
-          <Text style={styles.guideTitle}>Inventory support scope</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.guideTitle}>
+            Inventory support scope
+          </Text>
           <Text style={styles.guideText}>
             Track stock behind products, batches/lots, ingredients, packaging, genetics,
             equipment, courses, services, and retail items. Product records still hold
@@ -200,6 +205,9 @@ export default function CommercialInventoryRoute() {
           </Text>
         </View>
 
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Inventory records
+        </Text>
         <FlatList
           data={sorted}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
@@ -241,7 +249,12 @@ export default function CommercialInventoryRoute() {
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
                 <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.rowTitle}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (
@@ -280,6 +293,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
   headerRow: { gap: 4 },
   h1: { fontSize: 22, fontWeight: "900" },
+  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
   muted: { opacity: 0.7 },
 
   headerActions: {

@@ -8,6 +8,7 @@ import {
   updateCommercialGrow
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -140,6 +141,24 @@ export default function CommercialGrowDetailRoute({
         <Text style={styles.muted}>Loading product trial evidence run...</Text>
       ) : null}
       {error ? <InlineError error={error} /> : null}
+
+      <CommercialContextualTools
+        title="Analyze this evidence run"
+        source="commercial_evidence_run_detail"
+        growId={growId}
+        productId={String(grow?.productId || "")}
+        productLineId={String(grow?.productLineId || "")}
+        batchId={String(grow?.batchId || "")}
+        prompt={`Review the evidence run ${titleFor(grow)} using its crop, measurements, observations, and commercial claim context.`}
+        tools={[
+          "ask-ai",
+          "diagnose",
+          "environment",
+          "recipe-builder",
+          "harvest-readiness",
+          "report"
+        ]}
+      />
 
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Context</Text>

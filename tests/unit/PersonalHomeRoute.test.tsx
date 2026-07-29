@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { render, waitFor } from "@testing-library/react-native";
 
 import PersonalHomeRoute from "@/app/home/personal/(tabs)";
@@ -152,6 +153,10 @@ describe("PersonalHomeRoute", () => {
     await waitFor(() => expect(screen.getByText("Blue Dream Run")).toBeTruthy());
 
     expect(screen.getByText("Personal workspace")).toBeTruthy();
+    expect(
+      StyleSheet.flatten(screen.getByText("grower@example.com | pro plan").props.style)
+        .color
+    ).toBe("#475569");
     expect(screen.getByText("Personal command center")).toBeTruthy();
     expect(screen.getByText("Stage")).toBeTruthy();
     expect(screen.getAllByText("Open tasks").length).toBeGreaterThan(0);
@@ -160,9 +165,18 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Latest tool")).toBeTruthy();
     expect(screen.getByText("VPD")).toBeTruthy();
     expect(screen.getByText("Check VPD after lights on")).toBeTruthy();
-    expect(screen.getByText("Run Tool")).toBeTruthy();
+    expect(screen.getByText("Open AI Tools")).toBeTruthy();
     expect(screen.getByText("Diagnose")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Discover Storefronts")).toBeTruthy();
+    expect(screen.getByText("Commercial Feed")).toBeTruthy();
+    expect(screen.getByText("My Videos")).toBeTruthy();
+    expect(screen.getByText("Lives")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
+    expect(screen.queryByText("Field Studies")).toBeNull();
+    expect(screen.queryByText("Public Plant Map")).toBeNull();
+    expect(screen.getByText("Discover")).toBeTruthy();
+    expect(screen.getByText("Grow Analytics")).toBeTruthy();
     expect(screen.queryByText("Community")).toBeNull();
   });
 });

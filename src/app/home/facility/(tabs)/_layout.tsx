@@ -11,6 +11,7 @@ export function shouldHideFacilityTabBar(pathname = "") {
     pathname.includes("/ai-template") ||
     pathname.includes("/inventory/new") ||
     pathname.includes("/inventory/") ||
+    pathname.includes("/tools/") ||
     pathname.includes("/CreateInventoryItemScreen") ||
     pathname.includes("/InventoryItemDetailScreen")
   );
@@ -59,66 +60,51 @@ export default function FacilityTabsLayout() {
         name="dashboard"
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
-      <Tabs.Screen
-        name="grows"
-        options={{ title: "Grows", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen
-        name="plants"
-        options={{ title: "Plants", href: compactTabs ? null : undefined }}
-      />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen
-        name="integrations"
-        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen
-        name="logs"
-        options={{ title: "Logs", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="grows" options={{ title: "Grows", href: null }} />
+      <Tabs.Screen name="plants" options={{ title: "Plants", href: null }} />
+      <Tabs.Screen name="logs" options={{ title: "Journal", href: null }} />
       <Tabs.Screen
         name="inventory"
         options={{ title: "Inventory", href: compactTabs ? null : undefined }}
       />
-      <Tabs.Screen
-        name="reports"
-        options={{ title: "Reports", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen
-        name="compliance"
-        options={{
-          title: "Compliance",
-          tabBarLabel: compactTabs ? "Comp" : "Compliance"
-        }}
-      />
+      <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen
         name="sop-runs"
         options={{ title: "SOPs", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen
-        name="audit-logs"
-        options={{ title: "Audit", href: compactTabs ? null : undefined }}
+        name="compliance"
+        options={{
+          title: "Compliance",
+          tabBarLabel: compactTabs ? "Comp" : "Compliance",
+          href: compactTabs ? null : undefined
+        }}
       />
+      <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen
         name="team"
         options={{ title: "Team", href: compactTabs ? null : undefined }}
       />
+      <Tabs.Screen name="reports" options={{ title: "Reports", href: null }} />
+      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null }} />
       <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile", href: compactTabs ? null : undefined }}
+        name="integrations"
+        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
-      <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />
+      <Tabs.Screen name="ai-ask" options={{ title: "AI", tabBarLabel: "AI" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", tabBarLabel: "Profile" }}
+      />
       <Tabs.Screen
         name="ai-diagnosis-photo"
         options={{ title: "Trichome Analysis", tabBarButton: () => null }}
       />
       <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen
-        name="ai-validation"
-        options={{ title: "AI QA", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="ai-validation" options={{ title: "AI QA", href: null }} />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
         options={{ href: null, title: "Create Inventory Item" }}
@@ -126,6 +112,43 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen
         name="InventoryItemDetailScreen"
         options={{ href: null, title: "Inventory Item" }}
+      />
+      <Tabs.Screen
+        name="tools/environment"
+        options={{ href: null, title: "Environment Review" }}
+      />
+      <Tabs.Screen name="tools/pulse" options={{ href: null, title: "Connect Pulse" }} />
+      <Tabs.Screen
+        name="tools/history-import"
+        options={{ href: null, title: "Import Grow History" }}
+      />
+      <Tabs.Screen
+        name="tools/recipe-builder"
+        options={{ href: null, title: "Soil & Nutrient Mix Builders" }}
+      />
+      <Tabs.Screen
+        name="tools/dry-amendment-mix"
+        options={{ href: null, title: "Dry Amendment Mix" }}
+      />
+      <Tabs.Screen
+        name="tools/ingredient-library"
+        options={{ href: null, title: "Ingredients" }}
+      />
+      <Tabs.Screen
+        name="tools/npk"
+        options={{ href: null, title: "Nutrient Mix Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/soil-builder"
+        options={{ href: null, title: "Soil Mix Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/feeding-schedule"
+        options={{ href: null, title: "Feeding Schedule" }}
+      />
+      <Tabs.Screen
+        name="tools/harvest-readiness"
+        options={{ href: null, title: "Harvest Readiness" }}
       />
     </Tabs>
   );

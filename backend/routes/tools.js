@@ -14,6 +14,7 @@ const calculators = require("../services/toolCalculators");
 const { CHEMISTRY_PRESETS } = require("../services/nutrientChemistry");
 const createAutomationEvent = require("../services/createAutomationEvent");
 const { applyIpmGptVerification } = require("../services/ipmGptVerification");
+const { buildRunComparisonHistory } = require("../services/runComparisonHistory");
 
 const router = express.Router();
 
@@ -676,8 +677,38 @@ calculatorRoute(
 );
 calculatorRoute("/stress-test", "stress_test", calculators.calculateStressTest);
 calculatorRoute("/clone-rooting", "clone_rooting", calculators.calculateCloneRooting);
+router.post("/run-comparison/from-grows", async (req, res, next) => {
+  try {
+    const input = await buildRunComparisonHistory({
+      userId: getRawUserId(req),
+      growIds: req.body?.growIds,
+      referenceGrowId: req.body?.referenceGrowId || req.body?.growId,
+      scope: req.body?.scope,
+      objective: req.body?.objective,
+      title: req.body?.title,
+      notes: req.body?.notes
+    });
+    req.body = { ...req.body, growId: input.referenceGrowId };
+    const outputs = calculators.calculateRunComparison(input);
+    const toolRun = await createRun(req, "run_comparison", input, outputs);
+    await emitToolAutomationEvent(req, "run_comparison", toolRun, outputs);
+    return res.status(201).json({ toolRun: toolRunDto(toolRun), outputs });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({
+        message: error.message,
+        code: error.code || "RUN_COMPARISON_FAILED"
+      });
+    }
+    return next(error);
+  }
+});
 calculatorRoute("/run-comparison", "run_comparison", calculators.calculateRunComparison);
-calculatorRoute("/auto-grow-calendar", "auto_grow_calendar", calculators.calculateAutoGrowCalendar);
+calculatorRoute(
+  "/auto-grow-calendar",
+  "auto_grow_calendar",
+  calculators.calculateAutoGrowCalendar
+);
 calculatorRoute("/tissue-culture", "tissue_culture", calculators.calculateTissueCulture);
 calculatorRoute(
   "/soil-nutrient-batch",
@@ -712,9 +743,21 @@ calculatorRoute(
   "species_crop_id",
   calculators.calculateSpeciesCropIdentification
 );
-calculatorRoute("/genetics-inventory", "genetics_inventory", calculators.calculateGeneticsInventory);
-calculatorRoute("/harvest-readiness", "harvest_readiness", calculators.calculateHarvestReadiness);
-calculatorRoute("/personal-inventory", "personal_inventory", calculators.calculatePersonalInventory);
+calculatorRoute(
+  "/genetics-inventory",
+  "genetics_inventory",
+  calculators.calculateGeneticsInventory
+);
+calculatorRoute(
+  "/harvest-readiness",
+  "harvest_readiness",
+  calculators.calculateHarvestReadiness
+);
+calculatorRoute(
+  "/personal-inventory",
+  "personal_inventory",
+  calculators.calculatePersonalInventory
+);
 calculatorRoute(
   "/crop-steering-project",
   "crop_steering_project",

@@ -6,7 +6,7 @@ type Persona = {
   requestedPlan: "free" | "pro" | "commercial" | "facility";
   subscriptionStatus: "free" | "active";
   mode: "personal" | "commercial" | "facility";
-  facilityRole?: "OWNER" | "MANAGER";
+  facilityRole?: "OWNER" | "MANAGER" | "STAFF" | "VIEWER";
 };
 
 const PERSONAS: Record<string, Persona> = {
@@ -53,6 +53,22 @@ const PERSONAS: Record<string, Persona> = {
     subscriptionStatus: "active",
     mode: "facility",
     facilityRole: "OWNER"
+  },
+  facilityStaff: {
+    key: "facility-staff",
+    email: "facility-staff@example.com",
+    requestedPlan: "facility",
+    subscriptionStatus: "active",
+    mode: "facility",
+    facilityRole: "STAFF"
+  },
+  facilityViewer: {
+    key: "facility-viewer",
+    email: "facility-viewer@example.com",
+    requestedPlan: "facility",
+    subscriptionStatus: "active",
+    mode: "facility",
+    facilityRole: "VIEWER"
   }
 };
 
@@ -65,6 +81,10 @@ function capabilitiesFor(persona: Persona) {
   const paidPersonal =
     persona.subscriptionStatus === "active" &&
     ["pro", "commercial", "facility"].includes(persona.requestedPlan);
+  const facilityManager = ["OWNER", "MANAGER"].includes(persona.facilityRole || "VIEWER");
+  const facilityWorker = [...["OWNER", "MANAGER", "STAFF"]].includes(
+    persona.facilityRole || "VIEWER"
+  );
   return {
     GROWS_PERSONAL_VIEW: true,
     GROWS_PERSONAL_WRITE: paidPersonal,
@@ -82,6 +102,7 @@ function capabilitiesFor(persona: Persona) {
     TOOL_PDF_EXPORT: paidPersonal,
     TOOL_PHENO_MATRIX: paidPersonal,
     FEEDING_SCHEDULE: paidPersonal,
+    TASK_REMINDERS: paidPersonal,
     COURSES_VIEW: true,
     COURSES_CREATE: true,
     COURSES_SELL_PAID: true,
@@ -97,14 +118,25 @@ function capabilitiesFor(persona: Persona) {
     STORE_FRONT_VIEW: persona.mode === "commercial" || persona.mode === "facility",
     FACILITY_ACCESS: persona.mode === "facility",
     TASKS_READ: persona.mode === "facility",
-    TASKS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    TASKS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityWorker,
     GROWS_READ: persona.mode === "facility",
-    GROWS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    GROWS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     PLANTS_READ: persona.mode === "facility",
-    PLANTS_WRITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    PLANTS_WRITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     INVENTORY_READ: persona.mode === "facility",
     INVENTORY_WRITE:
-      persona.mode === "facility" && persona.subscriptionStatus === "active",
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     COMPLIANCE_READ: persona.mode === "facility",
     COMPLIANCE_WRITE:
       persona.mode === "facility" && persona.subscriptionStatus === "active",
@@ -113,13 +145,17 @@ function capabilitiesFor(persona: Persona) {
     SOP_RUNS_WRITE:
       persona.mode === "facility" && persona.subscriptionStatus === "active",
     TEAM_VIEW: persona.mode === "facility",
-    TEAM_INVITE: persona.mode === "facility" && persona.subscriptionStatus === "active",
+    TEAM_INVITE:
+      persona.mode === "facility" &&
+      persona.subscriptionStatus === "active" &&
+      facilityManager,
     ROOMS_EQUIPMENT_STAFF: persona.mode === "facility"
   };
 }
 
 async function installRoleMocks(page: any, persona: Persona) {
   const token = `${persona.key}-token`;
+  let paidCourseEnrolled = false;
 
   await page.addInitScript(
     ({ authToken, mode }) => {
@@ -146,7 +182,16 @@ async function installRoleMocks(page: any, persona: Persona) {
       email: persona.email,
       displayName: persona.email.split("@")[0],
       plan: persona.requestedPlan,
-      subscriptionStatus: persona.subscriptionStatus
+      subscriptionStatus: persona.subscriptionStatus,
+      growInterests:
+        persona.mode === "personal"
+          ? {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"],
+              experience: ["Intermediate"]
+            }
+          : {}
     },
     ctx: {
       mode: persona.mode,
@@ -199,6 +244,12 @@ async function installRoleMocks(page: any, persona: Persona) {
             id: "grow-walkthrough-1",
             name: "Walkthrough Grow",
             status: "vegetating",
+            growTags: ["Cannabis", "Indoor", "Living Soil / No-Till"],
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
             updatedAt: "2026-07-10T00:00:00.000Z"
           }
         ]
@@ -222,6 +273,21 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/personal/logs/log-walkthrough-1") {
+      return fulfillJson(route, {
+        log: {
+          id: "log-walkthrough-1",
+          growId: "grow-walkthrough-1",
+          title: "Walkthrough photo log",
+          notes: "Leaf check with photo.",
+          photos: ["/uploads/walkthrough-leaf.jpg"],
+          date: "2026-07-10",
+          createdAt: "2026-07-10T00:00:00.000Z",
+          updatedAt: "2026-07-10T00:00:00.000Z"
+        }
+      });
+    }
+
     if (method === "GET" && path === "/api/personal/plants") {
       return fulfillJson(route, {
         plants: [
@@ -234,6 +300,263 @@ async function installRoleMocks(page: any, persona: Persona) {
       return fulfillJson(route, {
         tasks: [{ id: "task-walkthrough-1", title: "Check canopy", completed: false }]
       });
+    }
+
+    if (method === "GET" && path === "/api/courses") {
+      return fulfillJson(route, {
+        courses: [
+          {
+            id: "course-published-1",
+            title: "Indoor Living Soil Basics",
+            summary: "A published course matched to this grower's interests.",
+            status: "published",
+            isPublished: true,
+            priceCents: 0,
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
+            lessons: []
+          },
+          {
+            id: "course-paid-buyer",
+            userId: "another-course-creator",
+            title: "Paid Indoor Course",
+            summary: "A paid course used to verify checkout and lesson access.",
+            status: "published",
+            isPublished: true,
+            priceCents: 2900,
+            price: 29,
+            access: "paid",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"]
+            },
+            lessons: [{ id: "paid-lesson-1", title: "Paid Lesson" }]
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/mine") {
+      return fulfillJson(route, {
+        courses: [
+          {
+            id: "course-new",
+            title: "Recorded Course Draft",
+            summary: "The draft remains visible after creation.",
+            status: "draft",
+            isPublished: false,
+            priceCents: 1900,
+            price: 19,
+            access: "paid",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"]
+            },
+            lessons: []
+          }
+        ]
+      });
+    }
+
+    if (
+      method === "POST" &&
+      (path === "/api/courses/create" || path === "/api/courses")
+    ) {
+      const body = request.postDataJSON();
+      return fulfillJson(
+        route,
+        {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          summary: "The draft remains visible after creation.",
+          status: "draft",
+          priceCents: body?.priceCents || 0,
+          price: body?.price || 0,
+          access: body?.access || "free",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        },
+        201
+      );
+    }
+
+    if (method === "GET" && path === "/api/courses/course-new") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          summary: "The draft remains visible after creation.",
+          status: "draft",
+          priceCents: 1900,
+          price: 19,
+          access: "paid",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/course-paid-buyer") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-paid-buyer",
+          userId: "another-course-creator",
+          title: "Paid Indoor Course",
+          summary: "A paid course used to verify checkout and lesson access.",
+          status: "published",
+          isPublished: true,
+          priceCents: 2900,
+          price: 29,
+          access: "paid",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: [{ id: "paid-lesson-1", title: "Paid Lesson" }]
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/courses/course-paid-buyer/enrollment-status") {
+      return fulfillJson(route, {
+        enrolled: paidCourseEnrolled,
+        isEnrolled: paidCourseEnrolled,
+        paymentStatus: paidCourseEnrolled ? "paid" : "not_started"
+      });
+    }
+
+    if (method === "GET" && path === "/api/payments/course/course-paid-buyer/status") {
+      return fulfillJson(route, {
+        enrolled: paidCourseEnrolled,
+        isEnrolled: paidCourseEnrolled,
+        paymentStatus: paidCourseEnrolled ? "paid" : "not_started"
+      });
+    }
+
+    if (method === "POST" && path === "/api/payments/checkout/course-paid-buyer") {
+      paidCourseEnrolled = true;
+      return fulfillJson(route, {
+        url: "http://localhost:8095/home/personal/courses?courseId=course-paid-buyer&checkout=success"
+      });
+    }
+
+    if (method === "PUT" && path === "/api/courses/course-new") {
+      const body = request.postDataJSON();
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          status: "draft",
+          priceCents: body?.priceCents || 0,
+          price: body?.price || 0,
+          access: body?.access || "free",
+          growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
+          lessons: []
+        }
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/courses/course-new/enrollment-status" ||
+        path === "/api/courses/course-new/reviews")
+    ) {
+      return fulfillJson(route, { enrolled: false, reviews: [] });
+    }
+
+    if (method === "POST" && path === "/api/courses/course-new/lesson") {
+      return fulfillJson(route, {
+        course: {
+          id: "course-new",
+          title: "Recorded Course Draft",
+          status: "draft",
+          lessons: [{ id: "lesson-new", title: "Recorded Lesson" }]
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/forum/feed/latest") {
+      return fulfillJson(route, {
+        posts: [
+          {
+            id: "forum-walkthrough-1",
+            title: "Indoor leaf help",
+            body: "The newest leaves are curling after the room warmed up.",
+            author: { displayName: "Walkthrough Grower" },
+            commentCount: 2,
+            growId: "grow-walkthrough-1",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"],
+              methods: ["Living Soil / No-Till"]
+            },
+            photos: ["/uploads/forum-missing-photo.jpg"],
+            createdAt: "2026-07-12T00:00:00.000Z"
+          },
+          {
+            id: "forum-orchard-1",
+            title: "Orchard pruning notes",
+            body: "A fruit tree discussion that should stay outside this interest feed.",
+            growInterests: { crops: ["Fruit Trees"], environment: ["Outdoor"] }
+          }
+        ]
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/forum/forum-walkthrough-1" || path === "/api/forum/forum-created-1")
+    ) {
+      return fulfillJson(route, {
+        post: {
+          id: path.endsWith("forum-created-1")
+            ? "forum-created-1"
+            : "forum-walkthrough-1",
+          title: path.endsWith("forum-created-1")
+            ? "Recorded grow update"
+            : "Indoor leaf help",
+          body: "Shared from the Personal Pro walkthrough with grow context.",
+          author: { displayName: "Walkthrough Grower" },
+          growId: "grow-walkthrough-1",
+          growInterests: {
+            crops: ["Cannabis"],
+            environment: ["Indoor"],
+            methods: ["Living Soil / No-Till"]
+          },
+          photos: ["/uploads/forum-detail-missing.jpg"]
+        }
+      });
+    }
+
+    if (
+      method === "GET" &&
+      (path === "/api/forum/forum-walkthrough-1/comments" ||
+        path === "/api/forum/forum-created-1/comments")
+    ) {
+      return fulfillJson(route, {
+        comments: [
+          {
+            id: "comment-walkthrough-1",
+            text: "Check the lights-off humidity window too.",
+            author: { displayName: "Helpful Grower" },
+            photos: ["/uploads/forum-comment-missing.jpg"]
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/forum/create") {
+      return fulfillJson(
+        route,
+        {
+          post: {
+            id: "forum-created-1",
+            title: "Recorded grow update",
+            growId: "grow-walkthrough-1"
+          }
+        },
+        201
+      );
     }
 
     if (method === "GET" && path === "/api/commercial/products") {
@@ -350,6 +673,45 @@ async function installRoleMocks(page: any, persona: Persona) {
       });
     }
 
+    if (method === "GET" && path === "/api/facility/facility-walkthrough-1/transfers") {
+      return fulfillJson(route, {
+        orders: [
+          {
+            id: "transfer-walkthrough-1",
+            facilityId: "facility-walkthrough-1",
+            orderType: "licensed_cannabis_transfer",
+            status: "approved",
+            inventoryItemId: "inventory-walkthrough-1",
+            itemName: "Cultivar lot 24-A",
+            lotNumber: "LOT-24-A",
+            quantity: 5,
+            unit: "lb",
+            unitPrice: 900,
+            total: 4500,
+            recipientName: "Licensed Example Dispensary",
+            recipientLicense: "D-100",
+            recipientState: "ME",
+            manifestNumber: "MAN-24-A"
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && path === "/api/facility/facility-walkthrough-1/inventory") {
+      return fulfillJson(route, {
+        items: [
+          {
+            id: "inventory-walkthrough-1",
+            name: "Cultivar lot 24-A",
+            sku: "LOT-24-A",
+            lotNumber: "LOT-24-A",
+            quantity: 20,
+            unit: "lb"
+          }
+        ]
+      });
+    }
+
     if (
       method === "GET" &&
       (path === "/api/facilities" || path === "/api/facilities/mine")
@@ -394,7 +756,7 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/personal/tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByRole("heading", { name: "Tools / AI" })).toBeVisible();
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open personal Ask AI" })).toBeVisible();
     await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
     await expect(page.getByText("VPD Calculator")).toBeVisible();
     await expect(page.getByText("Upgrade to unlock").first()).toBeVisible();
@@ -403,18 +765,64 @@ test.describe("role walkthrough matrix", () => {
       waitUntil: "domcontentloaded"
     });
     await expectNoNotFound(page);
-    await expect(page.getByText(/Upgrade to save journal entries/i)).toBeVisible();
+    await expect(page.getByLabel("Attach log photos")).toBeVisible();
+
+    await page.goto("/courses/create?from=/home/personal/courses", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByLabel("Set a paid course fee")).toBeEnabled();
+    await page.getByLabel("Set a paid course fee").click();
+    await page.getByLabel("Course price USD").fill("9.00");
+    await expect(page.getByText("Learners will see: $9.00")).toBeVisible();
+    await expect(page.getByText("Paid course limit: 1")).toBeVisible();
   });
 
-  test("personal pro can open Ask AI, diagnosis, and photo log controls", async ({
-    page
-  }) => {
+  test("personal pro contextual workflow crawler", async ({ page }) => {
     await installRoleMocks(page, PERSONAS.personalPro);
 
     await page.goto("/home/personal/tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open personal Ask AI" })).toBeVisible();
     await expect(page.getByText("Ask grow questions")).toBeVisible();
+
+    await page.goto("/home/personal/grows/new", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Grow Planner / Auto Calendar")).toBeVisible();
+    await expect(page.getByLabel("Plant count")).toBeVisible();
+
+    await page.goto("/home/personal/tasks", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Planning workflows")).toBeVisible();
+    await expect(
+      page.getByLabel("Watering Planner from personal_tasks_calendar")
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Feeding Schedule from personal_tasks_calendar")
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Timeline Planner from personal_tasks_calendar")
+    ).toBeVisible();
+
+    await page.goto("/home/personal/grows/grow-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Pheno / Genetics")).toBeVisible();
+    await expect(page.getByText("Harvest / Diagnosis")).toBeVisible();
+
+    await page.goto("/home/personal/grows/grow-walkthrough-1/timeline", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Timeline report")).toBeVisible();
+    await expect(page.getByLabel("Export Grow Report from grow_timeline")).toBeVisible();
+
+    await page.goto("/home/personal/logs/log-walkthrough-1", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Log report")).toBeVisible();
 
     await page.goto("/home/personal/ai", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
@@ -423,12 +831,89 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/personal/diagnose", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByText(/Add Photo|Change Photo/i).first()).toBeVisible();
+    await expect(page.getByText("Harvest / maturity mode")).toBeVisible();
 
     await page.goto("/home/personal/logs/new?growId=grow-walkthrough-1&focus=photos", {
       waitUntil: "domcontentloaded"
     });
     await expectNoNotFound(page);
     await expect(page.getByLabel("Attach log photos")).toBeVisible();
+
+    await page.goto("/home/personal/courses", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Indoor Living Soil Basics")).toBeVisible();
+    await expect(page.getByText("Recorded Course Draft")).toBeVisible();
+    await expect(page.getByText("Draft", { exact: true })).toBeVisible();
+
+    await page.goto("/courses/create?from=/home/personal/courses", {
+      waitUntil: "domcontentloaded"
+    });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Course grow interests")).toBeVisible();
+    await page.getByLabel("Course title").fill("Recorded Course Draft");
+    await page.getByLabel("Set a paid course fee").click();
+    await page.getByLabel("Course price USD").fill("19.00");
+    await expect(page.getByText("Learners will see: $19.00")).toBeVisible();
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByText("Create Draft").click();
+    await expect(page).toHaveURL(/home\/personal\/courses(?:\?|$)/);
+    await expect(page.getByText("Recorded Course Draft").first()).toBeVisible();
+    await expect(page.getByLabel("Edit course price USD")).toHaveValue("19.00");
+    await page.getByLabel("Edit course price USD").fill("24.00");
+    await page.getByLabel("Save course fee").click();
+    await expect(page.getByText("Course fee saved: $24.00.")).toBeVisible();
+    await expect(page.getByText("Add Lesson")).toBeVisible();
+
+    await page.getByText("Add Lesson").click();
+    await expect(page).toHaveURL(/courses\/add-lesson\?courseId=course-new/);
+    await expect(page.getByText("Add Lesson").first()).toBeVisible();
+    await page.getByPlaceholder("Title").fill("Recorded Lesson");
+    await page.getByText("Save Lesson").click();
+    await expect(page).toHaveURL(/home\/personal\/courses/);
+
+    await page.goto("/home/personal/courses?courseId=course-paid-buyer", {
+      waitUntil: "domcontentloaded"
+    });
+    await expect(page.getByText("$29.00 | published")).toBeVisible();
+    await expect(page.getByText("Start Checkout")).toBeVisible();
+    await page.getByText("Start Checkout").click();
+    await expect(page).toHaveURL(/courseId=course-paid-buyer&checkout=success/);
+    await expect(
+      page.getByText("Payment confirmed. This course is unlocked.")
+    ).toBeVisible();
+    await expect(page.getByText("Enrolled", { exact: true })).toBeVisible();
+    await expect(page.getByText("Paid Lesson")).toBeVisible();
+
+    await page.goto("/home/personal/forum", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Ask for Diagnosis Help")).toBeVisible();
+    await expect(page.getByText("Share a Grow Update")).toBeVisible();
+    await expect(page.getByText("Indoor leaf help")).toBeVisible();
+    await expect(page.getByText("Orchard pruning notes")).toBeHidden();
+
+    await page.getByLabel("Show all forum posts").click();
+    await expect(page.getByText("Orchard pruning notes")).toBeVisible();
+    await page.getByText("Indoor leaf help").click();
+    await expect(page).toHaveURL(/forum\/post\/forum-walkthrough-1/);
+    await expect(page.getByText("Attached grow: grow-walkthrough-1")).toBeVisible();
+    await expect(page.getByLabel("Attach forum comment photos")).toBeVisible();
+    await expect(
+      page.getByText("Check the lights-off humidity window too.")
+    ).toBeVisible();
+
+    await page.goto(
+      "/home/personal/forum/new-post?purpose=grow_update&growId=grow-walkthrough-1",
+      { waitUntil: "domcontentloaded" }
+    );
+    await expect(page.getByText("Grow update", { exact: true })).toBeVisible();
+    await page.getByLabel("Forum post title").fill("Recorded grow update");
+    await page
+      .getByLabel("Forum post body")
+      .fill("A healthy canopy update shared directly from my active grow.");
+    await page.getByLabel("Publish forum post").click();
+    await expect(page).toHaveURL(/forum\/post\/forum-created-1/);
+    await expect(page.getByText("Recorded grow update")).toBeVisible();
+    await expect(page.getByText("Attached grow: grow-walkthrough-1")).toBeVisible();
   });
 
   test("commercial free keeps commercial shell but shows free plan constraints", async ({
@@ -499,6 +984,48 @@ test.describe("role walkthrough matrix", () => {
     await expect(page.getByLabel("Upload marketing plan ad image")).toBeVisible();
   });
 
+  test("commercial paid routes stay inside the commercial workspace", async ({
+    page
+  }) => {
+    await installRoleMocks(page, PERSONAS.commercialPaid);
+
+    const routes = [
+      "/home/commercial",
+      "/home/commercial/storefront",
+      "/home/commercial/products",
+      "/home/commercial/courses",
+      "/home/commercial/lives",
+      "/home/commercial/feed",
+      "/home/commercial/orders",
+      "/home/commercial/analytics",
+      "/home/commercial/profile",
+      "/home/commercial/batch-planner",
+      "/home/commercial/product-lines",
+      "/home/commercial/trials",
+      "/home/commercial/community",
+      "/home/commercial/marketing",
+      "/home/commercial/inventory",
+      "/home/commercial/evidence-runs",
+      "/home/commercial/tasks",
+      "/home/commercial/tools/ask-ai?growId=grow-walkthrough-1",
+      "/home/commercial/tools/diagnose?growId=grow-walkthrough-1",
+      "/home/commercial/tools/environment?growId=grow-walkthrough-1",
+      "/home/commercial/tools/recipe-builder?growId=grow-walkthrough-1",
+      "/home/commercial/tools/harvest-readiness?growId=grow-walkthrough-1",
+      "/home/commercial/tools/report?growId=grow-walkthrough-1"
+    ];
+
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expectNoNotFound(page);
+      const pathname = route.split("?")[0];
+      await expect(page).toHaveURL(
+        new RegExp(`${pathname.replaceAll("/", "\\/")}(?:[/?#]|$)`)
+      );
+      await expect(page.getByText("Commercial workflow")).toHaveCount(0);
+    }
+  });
+
   test("facility free reaches facility shell and AI entry without paid write controls", async ({
     page
   }) => {
@@ -511,8 +1038,8 @@ test.describe("role walkthrough matrix", () => {
 
     await page.goto("/home/facility/ai-tools", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
-    await expect(page.getByText("AI Tools")).toBeVisible();
-    await expect(page.getByText("Ask AI")).toBeVisible();
+    await expect(page.getByText("Facility AI")).toBeVisible();
+    await expect(page.getByText("AI usage")).toBeVisible();
   });
 
   test("facility paid reaches compliance and Ask AI workflow surfaces", async ({
@@ -527,5 +1054,83 @@ test.describe("role walkthrough matrix", () => {
     await page.goto("/home/facility/compliance", { waitUntil: "domcontentloaded" });
     await expectNoNotFound(page);
     await expect(page.getByText(/Compliance/i).first()).toBeVisible();
+  });
+
+  test("facility paid routes stay inside the facility workspace", async ({ page }) => {
+    await installRoleMocks(page, PERSONAS.facilityPaid);
+
+    const routes = [
+      "/home/facility/dashboard",
+      "/home/facility/rooms",
+      "/home/facility/grows",
+      "/home/facility/plants",
+      "/home/facility/logs",
+      "/home/facility/inventory",
+      "/home/facility/transfers",
+      "/home/facility/tasks",
+      "/home/facility/sop-runs",
+      "/home/facility/compliance",
+      "/home/facility/audit-logs",
+      "/home/facility/team",
+      "/home/facility/reports",
+      "/home/facility/integrations",
+      "/home/facility/profile",
+      "/home/facility/ai-ask",
+      "/home/facility/ai-template",
+      "/home/facility/ai-validation",
+      "/home/facility/ai-diagnosis-photo"
+    ];
+
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expectNoNotFound(page);
+      await expect(page).toHaveURL(
+        new RegExp(`${route.replaceAll("/", "\\/")}(?:[/?#]|$)`)
+      );
+      await expect(page.getByText("Paid facility workflow")).toHaveCount(0);
+    }
+  });
+
+  test("facility staff and viewer keep role-appropriate operations and community access", async ({
+    page
+  }) => {
+    for (const persona of [PERSONAS.facilityStaff, PERSONAS.facilityViewer]) {
+      await installRoleMocks(page, persona);
+      for (const route of [
+        "/home/facility/dashboard",
+        "/home/facility/grows",
+        "/home/facility/plants",
+        "/home/facility/logs",
+        "/home/facility/integrations",
+        "/home/facility/feed",
+        "/forum",
+        "/courses"
+      ]) {
+        await page.goto(route, { waitUntil: "domcontentloaded" });
+        await expectNoNotFound(page);
+      }
+    }
+  });
+
+  test("facility licensed sales use transfer records instead of public checkout", async ({
+    page
+  }) => {
+    await installRoleMocks(page, PERSONAS.facilityPaid);
+    await page.goto("/home/facility/transfers", { waitUntil: "domcontentloaded" });
+    await expectNoNotFound(page);
+    await expect(page.getByText("Licensed sales & transfers")).toBeVisible();
+    await expect(page.getByText(/no public cannabis checkout/i)).toBeVisible();
+    await expect(page.getByText("Licensed Example Dispensary")).toBeVisible();
+    await expect(page.getByText("$4,500.00").first()).toBeVisible();
+    await expect(page.getByText("Mark shipped & deduct inventory")).toBeVisible();
+  });
+
+  test("facility viewer sees licensed transfers read only", async ({ page }) => {
+    await installRoleMocks(page, PERSONAS.facilityViewer);
+    await page.goto("/home/facility/transfers?facilityRole=VIEWER", {
+      waitUntil: "domcontentloaded"
+    });
+    await expect(page.getByText(/viewer role can view shipment records/i)).toBeVisible();
+    await expect(page.getByText("New licensed transfer")).toHaveCount(0);
   });
 });

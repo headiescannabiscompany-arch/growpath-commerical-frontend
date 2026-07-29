@@ -14,14 +14,16 @@ import { radius } from "@/theme/theme";
 import { useBulkCreateRooms, useRooms } from "../hooks";
 
 const DEFAULT_ROOMS = [
-  "Flower Room",
-  "Veg Room",
-  "Mother Room",
-  "Greenhouse",
-  "Dry/Cure Room"
+  { name: "Flower Room", roomType: "flower" },
+  { name: "Veg Room", roomType: "vegetative" },
+  { name: "Mother Room", roomType: "mother" },
+  { name: "Greenhouse", roomType: "greenhouse" },
+  { name: "Dry/Cure Room", roomType: "drying" }
 ];
 
-type RoomDraft = { name: string; error: string };
+const ROOM_TYPES = ["flower", "vegetative", "mother", "greenhouse", "drying", "other"];
+
+type RoomDraft = { name: string; roomType: string; error: string };
 type ProgressState = { current: number; total: number; failed: number[] };
 
 function normalizeRoomNames(rooms: RoomDraft[]) {
@@ -40,7 +42,7 @@ export default function FirstSetupRooms() {
   const bulkCreate = useBulkCreateRooms();
 
   const [rooms, setRooms] = useState<RoomDraft[]>(
-    DEFAULT_ROOMS.map((name) => ({ name, error: "" }))
+    DEFAULT_ROOMS.map((room) => ({ ...room, error: "" }))
   );
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState<ProgressState>({
@@ -69,7 +71,7 @@ export default function FirstSetupRooms() {
   }
 
   function addRoom() {
-    setRooms((current) => [...current, { name: "", error: "" }]);
+    setRooms((current) => [...current, { name: "", roomType: "other", error: "" }]);
     setFeedback("");
   }
 
@@ -89,7 +91,7 @@ export default function FirstSetupRooms() {
         error = "Room name required";
         valid = false;
       }
-      return { name: normalized[index], error };
+      return { ...room, name: normalized[index], error };
     });
     setRooms(next);
     return valid;
@@ -101,7 +103,11 @@ export default function FirstSetupRooms() {
     setFeedback("");
     setProgress({ current: 0, total: rooms.length, failed: [] });
     try {
-      const payload = normalizeRoomNames(rooms).map((name) => ({ name }));
+      const payload = normalizeRoomNames(rooms).map((name, index) => ({
+        name,
+        roomType: rooms[index].roomType,
+        trackingMode: "batch"
+      }));
       const results = await bulkCreate.mutateAsync(payload);
       const failed = results
         .map((result, index) => (!result.success ? index : null))
@@ -157,6 +163,35 @@ export default function FirstSetupRooms() {
                 editable={!creating}
                 returnKeyType="done"
               />
+              <View style={styles.typeRow}>
+                {ROOM_TYPES.map((roomType) => (
+                  <Pressable
+                    key={`${index}-${roomType}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set room ${index + 1} type to ${roomType}`}
+                    onPress={() =>
+                      setRooms((current) =>
+                        current.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, roomType } : item
+                        )
+                      )
+                    }
+                    style={[
+                      styles.typeButton,
+                      room.roomType === roomType && styles.typeButtonSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.typeButtonText,
+                        room.roomType === roomType && styles.typeButtonTextSelected
+                      ]}
+                    >
+                      {roomType}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
               {room.error ? <Text style={styles.error}>{room.error}</Text> : null}
             </View>
             <Pressable
@@ -263,6 +298,18 @@ const styles = StyleSheet.create({
     gap: 10
   },
   inputWrap: { flex: 1, gap: 6 },
+  typeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  typeButton: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#cbd5e1",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
+  typeButtonSelected: { backgroundColor: "#166534", borderColor: "#166534" },
+  typeButtonText: { color: "#475569", fontSize: 11, fontWeight: "800" },
+  typeButtonTextSelected: { color: "#ffffff" },
   label: {
     color: "#334155",
     fontSize: 12,

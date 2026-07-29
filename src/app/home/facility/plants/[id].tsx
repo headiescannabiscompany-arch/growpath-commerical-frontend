@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
+import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -162,12 +163,24 @@ export default function FacilityPlantDetail() {
         ) : null}
 
         {item ? (
-          <View style={styles.card}>
-            <Text style={styles.h1}>{pickTitle(item)}</Text>
-            <Text style={styles.muted}>ID: {String(id)}</Text>
+          <>
+            <FacilityContextualTools
+              title="Plant tools"
+              tools={["ask-ai", "diagnose", "environment", "harvest-readiness"]}
+              source="facility-plant-detail"
+              facilityId={facilityId ?? undefined}
+              plantId={String(id)}
+              growId={String(item.growId ?? "")}
+              roomId={String(item.roomId ?? "")}
+              prompt={`Review ${pickTitle(item)} and recommend the next facility action.`}
+            />
+            <View style={styles.card}>
+              <Text style={styles.h1}>{pickTitle(item)}</Text>
+              <Text style={styles.muted}>ID: {String(id)}</Text>
 
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
-          </View>
+              <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            </View>
+          </>
         ) : null}
       </ScrollView>
     </ScreenBoundary>

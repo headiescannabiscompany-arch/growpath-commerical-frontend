@@ -7,6 +7,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTask = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockListPersonalGrows = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -19,11 +20,7 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({
-    plan: "pro",
-    mode: "personal",
-    can: () => true
-  })
+  useEntitlements: () => ({ plan: "pro", mode: "personal", can: () => true })
 }));
 
 jest.mock("@/components/feed/FeedBanner", () => {
@@ -51,6 +48,10 @@ jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args)
 }));
 
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+}));
+
 jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
 }));
@@ -61,28 +62,109 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+const title = "Tissue Culture Batch Review";
+
+function fillRequired(screen: ReturnType<typeof render>) {
+  fireEvent.changeText(screen.getByLabelText(`${title} Project name`), "MAC1 TC");
+  fireEvent.changeText(screen.getByLabelText(`${title} Batch number`), "TC-042");
+  fireEvent.press(screen.getByLabelText(`${title} Workflow lane: Production line`));
+  fireEvent.press(screen.getByLabelText(`${title} Stage: Initiation (Stage 1)`));
+  fireEvent.press(
+    screen.getByLabelText(`${title} Direct inspection status: Mixed visible condition`)
+  );
+  const observationLabel = `${title} Observation date/time`;
+  fireEvent.press(screen.getByLabelText(observationLabel));
+  fireEvent(screen.getByLabelText(`${observationLabel} year`), "valueChange", 2026);
+  fireEvent(screen.getByLabelText(`${observationLabel} month`), "valueChange", 7);
+  fireEvent.press(screen.getByLabelText(`${observationLabel} day 2026-07-21`));
+  fireEvent(screen.getByLabelText(`${observationLabel} hour`), "valueChange", 14);
+  fireEvent(screen.getByLabelText(`${observationLabel} minute`), "valueChange", 30);
+  fireEvent.press(screen.getByLabelText(`${observationLabel} use selected date`));
+  fireEvent.changeText(
+    screen.getByLabelText(`${title} Observation source`),
+    "Ailda direct count at rack TC-2"
+  );
+  fireEvent.changeText(screen.getByLabelText(`${title} Total vessels`), "12");
+  fireEvent.changeText(screen.getByLabelText(`${title} Contaminated vessels`), "3");
+  fireEvent.changeText(
+    screen.getByLabelText(`${title} Fungal-like appearance vessels`),
+    "1"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText(`${title} Browning / oxidized vessels`),
+    "2"
+  );
+  fireEvent.changeText(screen.getByLabelText(`${title} Stalled vessels`), "2");
+  fireEvent.changeText(screen.getByLabelText(`${title} Rooted vessels`), "4");
+}
+
 describe("TissueCultureToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockListPersonalGrows.mockReturnValue(new Promise(() => {}));
     mockRunCalculator.mockResolvedValue({
       outputs: {
+        methodIds: ["tissue-culture"],
+        sourceIds: [
+          "usda-ars-hemp-tissue-culture-protocol-2025",
+          "frontiers-2021-drug-type-cannabis-tc"
+        ],
         projectName: "MAC1 TC",
+        assessmentStatus: "partial_measured_batch_review",
         projectStatus: "needs_attention",
-        contaminationRate: 12.5,
-        rootingRate: 40,
-        acclimationRate: 25,
-        costTracking: {
-          totalProjectCost: 120,
-          costPerAcclimatedPlant: 40
+        workflowLane: "production",
+        stage: "initiation",
+        vesselStatus: {
+          total: 12,
+          contaminated: 3,
+          fungalLikeAppearance: 1,
+          rooted: 4,
+          contaminationPercent: 25,
+          fungalLikeAppearancePercent: 8.3,
+          rootedPercent: 33.3
         },
+        rootingRate: 33.3,
+        acclimationRate: null,
+        protocolSurvivalRate: null,
+        releaseReview: {
+          status: "blocked",
+          automaticRelease: false,
+          blockers: ["visible contamination requires isolation and disposition"]
+        },
+        missingInformation: ["SOP version", "media preparation or lot ID"],
+        costTracking: { totalProjectCost: 120 },
+        costPerSurvivingPlant: null,
         diagnosisRecord: {
-          likelyFailureModes: [{ issue: "possible media contamination" }]
+          likelyFailureModes: [
+            {
+              key: "visible-contamination-pattern",
+              severity: "high",
+              issue: "Visible contamination-like growth requires isolation.",
+              evidence: "3/12 vessels were recorded.",
+              nextChecks: ["Map the pattern by vessel and media lot."]
+            }
+          ]
         },
+        mediaAnalysis: {
+          requested: false,
+          performed: false,
+          limitations: ["Visible patterns cannot identify a microorganism."]
+        },
+        limitations: ["This workflow does not automatically release material."],
         nextTransferTasks: [
           {
-            title: "Transfer clean TC vessels",
+            title: "Review transfer readiness: TC-042",
             priority: "high",
             dueInDays: 10
+          }
+        ],
+        generatedCalendar: [
+          {
+            title: "Confirm isolation and disposition: TC-042",
+            dueInDays: 1,
+            priority: "high",
+            sourceStage: "contamination_disposition",
+            description: "Recount isolated vessels and document final disposition."
           }
         ]
       },
@@ -97,26 +179,42 @@ describe("TissueCultureToolRoute", () => {
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
-      taskIds: ["task-1", "task-2", "task-3", "task-4"]
+      taskIds: ["task-1", "task-2", "task-3"]
     });
   });
 
-  it("creates tissue culture workflow tasks from the saved ToolRun", async () => {
+  it("starts blank and refuses to create a fake batch", () => {
     const screen = render(<TissueCultureToolRoute />);
 
-    fireEvent.changeText(screen.getByLabelText("Tissue Culture Project name"), "MAC1 TC");
-    fireEvent.changeText(screen.getByLabelText("Tissue Culture Batch number"), "TC-042");
+    expect(screen.getByLabelText(`${title} Project name`).props.value).toBe("");
+    expect(screen.getByLabelText(`${title} Total vessels`).props.value).toBe("");
+    fireEvent.press(screen.getByLabelText(`Run ${title}`));
+
+    expect(screen.getByText(/Complete the required fields: Project name/i)).toBeTruthy();
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+  });
+
+  it("submits measured evidence and creates traceable workflow tasks", async () => {
+    const screen = render(<TissueCultureToolRoute />);
+    fillRequired(screen);
+    fireEvent.changeText(screen.getByLabelText(`${title} Transfer cycle`), "5");
     fireEvent.changeText(
-      screen.getByLabelText("Tissue Culture Contaminated vessels"),
-      "3"
+      screen.getByLabelText(`${title} Owner-recorded maximum production transfers`),
+      "8"
     );
-    fireEvent.changeText(screen.getByLabelText("Tissue Culture Media cost"), "40");
     fireEvent.changeText(
-      screen.getByLabelText("Tissue Culture Vessel / supply cost"),
-      "30"
+      screen.getByLabelText(`${title} Next transfer review due in days`),
+      "10"
     );
-    fireEvent.changeText(screen.getByLabelText("Tissue Culture Labor cost"), "50");
-    fireEvent.press(screen.getByLabelText("Run Tissue Culture"));
+    fireEvent.changeText(screen.getByLabelText(`${title} Technician / owner`), "Ailda");
+    fireEvent.changeText(screen.getByLabelText(`${title} Media cost`), "40");
+    fireEvent.changeText(screen.getByLabelText(`${title} Vessel / supply cost`), "30");
+    fireEvent.changeText(screen.getByLabelText(`${title} Labor cost`), "50");
+    fireEvent.changeText(
+      screen.getByLabelText(`${title} Sterilization method / protocol`),
+      "Validated surface protocol"
+    );
+    fireEvent.press(screen.getByLabelText(`Run ${title}`));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -125,16 +223,27 @@ describe("TissueCultureToolRoute", () => {
           growId: "grow-1",
           projectName: "MAC1 TC",
           batchNumber: "TC-042",
+          workflowLane: "production",
+          stage: "initiation",
+          inspectionStatus: "mixed",
+          observedAt: "2026-07-21T14:30",
+          observationSource: "Ailda direct count at rack TC-2",
+          vessels: "12",
           contaminatedVessels: "3",
+          fungalLikeVessels: "1",
+          transferCycle: "5",
+          maxProductionTransfers: "8",
+          transfersDueDays: "10",
+          technicianOwner: "Ailda",
           mediaCost: "40",
           vesselSupplyCost: "30",
-          laborCost: "50"
+          laborCost: "50",
+          sterilizationMethod: "Validated surface protocol"
         })
       )
     );
-    await waitFor(() => expect(screen.getByText("Tissue Culture result")).toBeTruthy());
-
-    fireEvent.press(screen.getByText("Create TC Workflow Tasks"));
+    await waitFor(() => expect(screen.getByText(`${title} result`)).toBeTruthy());
+    fireEvent.press(screen.getByText("Create TC Evidence Tasks"));
 
     await waitFor(() =>
       expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
@@ -142,53 +251,40 @@ describe("TissueCultureToolRoute", () => {
           growId: "grow-1",
           toolKey: "tissue-culture",
           toolRunId: "toolrun-1",
-          input: expect.objectContaining({
-            projectName: "MAC1 TC",
-            batchNumber: "TC-042"
-          }),
+          input: expect.objectContaining({ batchNumber: "TC-042" }),
           output: expect.objectContaining({
-            projectStatus: "needs_attention"
+            assessmentStatus: "partial_measured_batch_review"
           }),
-          tasks: [
+          tasks: expect.arrayContaining([
             expect.objectContaining({
-              title: "Review contamination and browning: TC-042",
+              title: "Review TC release evidence: TC-042",
               priority: "high",
               allDay: true,
               calendarType: "tissue_culture_workflow",
-              sourceStage: "initiation",
-              reminderPlan: expect.objectContaining({
-                channels: ["in_app"],
-                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
-              }),
-              description: expect.stringContaining("possible media contamination")
+              sourceStage: "tc_release_review",
+              description: expect.stringContaining("Blocked by")
             }),
             expect.objectContaining({
-              title: "Transfer clean TC vessels",
-              priority: "high",
-              calendarType: "tissue_culture_workflow",
-              sourceStage: "initiation"
+              title: "Review transfer readiness: TC-042",
+              dueDate: expect.any(String),
+              sourceStage: "tc_transfer_review"
             }),
             expect.objectContaining({
-              title: "Record rooting and acclimation counts: TC-042",
-              sourceStage: "rooting_acclimation_review"
-            }),
-            expect.objectContaining({
-              title: "Update TC SOP notes: TC-042",
-              sourceStage: "sop_media_review"
+              title: "Confirm isolation and disposition: TC-042",
+              sourceStage: "contamination_disposition"
             })
-          ]
+          ])
         })
       )
     );
   });
 
-  it("creates default tissue culture follow-up task with shared Schedule metadata", async () => {
+  it("creates a default follow-up from the recorded schedule", async () => {
     const screen = render(<TissueCultureToolRoute />);
+    fillRequired(screen);
+    fireEvent.press(screen.getByLabelText(`Run ${title}`));
 
-    fireEvent.press(screen.getByLabelText("Run Tissue Culture"));
-
-    await waitFor(() => expect(screen.getByText("Tissue Culture result")).toBeTruthy());
-
+    await waitFor(() => expect(screen.getByText(`${title} result`)).toBeTruthy());
     fireEvent.press(screen.getByText("Create Follow-up Task"));
 
     await waitFor(() =>
@@ -197,16 +293,13 @@ describe("TissueCultureToolRoute", () => {
           growId: "grow-1",
           toolKey: "tissue-culture",
           toolRunId: "toolrun-1",
-          title: "Transfer clean TC vessels",
+          title: "Review transfer readiness: TC-042",
           priority: "high",
+          dueDate: expect.any(String),
           allDay: true,
           calendarType: "tissue_culture_workflow",
-          sourceStage: "transfer_review",
-          reminderPlan: expect.objectContaining({
-            channels: ["in_app"],
-            reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
-          }),
-          description: expect.stringContaining("Review vessel IDs")
+          sourceStage: "tc_transfer_review",
+          description: expect.stringContaining("Recount the batch")
         })
       )
     );

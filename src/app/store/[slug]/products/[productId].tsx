@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -14,11 +15,22 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { checkoutProduct } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import { useAuth } from "@/auth/AuthContext";
+import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
+import {
+  isDispensaryStorefront,
+  isRegulatedCannabisProduct,
+  publicInventorySummary,
+  publicProductCanCheckout,
+  publicProductExternalUrl,
+  publicProductPickupAvailable,
+  publicProductPickupInstructions
+} from "@/utils/regulatedCommerce";
 
 function asArray(value: any) {
   return Array.isArray(value) ? value : [];
@@ -44,21 +56,22 @@ function campaignHref(campaign: any) {
   return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
 }
 
-function productCanCheckout(product: any) {
-  return Boolean(
-    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
-  );
+function productCanCheckout(product: any, storefront?: any) {
+  return publicProductCanCheckout(product, storefront);
 }
 
 function lineKey(line: any) {
   return String(line?.id || line?._id || line?.lineId || line?.slug || "");
 }
 
-function money(product: any) {
+function money(product: any, storefront?: any) {
   const cents = Number(product?.priceCents || 0);
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
   const price = Number(product?.price || 0);
-  return price > 0 ? `$${price.toFixed(2)}` : "Free";
+  if (price > 0) return `$${price.toFixed(2)}`;
+  return isDispensaryStorefront(storefront) || isRegulatedCannabisProduct(product)
+    ? "Check dispensary for price"
+    : "Free";
 }
 
 function normalize(value: string) {
@@ -115,7 +128,7 @@ function publicProductUrl(slug: string, product: any) {
 
 function forumThreadHref(thread: any) {
   const id = String(thread?.id || thread?._id || thread?.threadId || "");
-  return id ? `/forum/post/${encodeURIComponent(id)}` : "/forum";
+  return id ? `/forum/post?id=${encodeURIComponent(id)}` : "/forum";
 }
 
 function publicLinks(storefront: any) {
@@ -158,6 +171,7 @@ function trackCommercialClick(payload: Record<string, any>) {
 
 export default function PublicProductRoute() {
   const params = useLocalSearchParams<{ slug?: string; productId?: string }>();
+  const auth = useAuth();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedProductId = useMemo(
     () => String(params.productId || "").trim(),
@@ -176,6 +190,7 @@ export default function PublicProductRoute() {
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [reportVisible, setReportVisible] = useState(false);
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -337,9 +352,12 @@ export default function PublicProductRoute() {
     }
   }
 
-  const externalUrl =
-    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
-  const canCheckout = productCanCheckout(product);
+  const externalUrl = publicProductExternalUrl(product, storefront);
+  const canCheckout = productCanCheckout(product, storefront);
+  const licensedTransferOnly = isRegulatedCannabisProduct(product);
+  const dispensaryStorefront = isDispensaryStorefront(storefront);
+  const pickupAvailable = publicProductPickupAvailable(product, storefront);
+  const pickupInstructions = publicProductPickupInstructions(product, storefront);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
   const links = publicLinks(storefront);
   const specs = product?.specs || {};
@@ -378,6 +396,14 @@ export default function PublicProductRoute() {
         <>
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
           <AppCard>
+            {product.imageUrl ? (
+              <Image
+                source={{ uri: product.imageUrl }}
+                style={styles.productImage}
+                resizeMode="cover"
+                accessibilityLabel={`${product.name || "Product"} image`}
+              />
+            ) : null}
             <Text style={styles.cardTitle}>{product.name || "Product"}</Text>
             {product.description ? (
               <Text style={styles.bodyText}>{product.description}</Text>
@@ -390,7 +416,29 @@ export default function PublicProductRoute() {
                 Interests: {publicGrowInterests(product).join(", ")}
               </Text>
             ) : null}
-            <Text style={styles.price}>{money(product)}</Text>
+            <Text style={styles.price}>{money(product, storefront)}</Text>
+            {dispensaryStorefront ? (
+              <Text style={styles.inventory}>{publicInventorySummary(product)}</Text>
+            ) : null}
+
+            {licensedTransferOnly && dispensaryStorefront ? (
+              <Text style={styles.warning}>
+                GrowPath does not verify licensing or process cannabis checkout. Confirm
+                availability, eligibility, and pickup requirements with the dispensary.
+              </Text>
+            ) : licensedTransferOnly ? (
+              <Text style={styles.warning}>
+                Catalog only. Cannabis sales are not available through public checkout.
+                Licensed commercial recipients must complete verification and transfer
+                paperwork directly with the facility.
+              </Text>
+            ) : null}
+            {pickupAvailable ? (
+              <Text style={styles.pickup}>
+                In-store pickup available
+                {pickupInstructions ? ` · ${pickupInstructions}` : ""}
+              </Text>
+            ) : null}
 
             <View style={styles.actionRow}>
               {canCheckout ? (
@@ -405,7 +453,7 @@ export default function PublicProductRoute() {
                   </Text>
                 </Pressable>
               ) : null}
-              {externalUrl ? (
+              {externalUrl && (!licensedTransferOnly || dispensaryStorefront) ? (
                 <Pressable
                   accessibilityLabel={`Open external product ${product?.name || "product"}`}
                   style={styles.secondaryButton}
@@ -422,10 +470,15 @@ export default function PublicProductRoute() {
                     void openUrl(String(externalUrl));
                   }}
                 >
-                  <Text style={styles.secondaryButtonText}>External Link</Text>
+                  <Text style={styles.secondaryButtonText}>
+                    {dispensaryStorefront ? "Dispensary Website" : "External Link"}
+                  </Text>
                 </Pressable>
               ) : null}
-              {!canCheckout && !externalUrl ? (
+              {!licensedTransferOnly &&
+              !dispensaryStorefront &&
+              !canCheckout &&
+              !externalUrl ? (
                 <Text style={styles.meta}>
                   Checkout is not available for this product.
                 </Text>
@@ -433,6 +486,16 @@ export default function PublicProductRoute() {
               <Pressable style={styles.secondaryButton} onPress={shareProduct}>
                 <Text style={styles.secondaryButtonText}>Share Product</Text>
               </Pressable>
+              {auth.isAuthed ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Report ${product?.name || "product"}`}
+                  style={styles.secondaryButton}
+                  onPress={() => setReportVisible(true)}
+                >
+                  <Text style={styles.secondaryButtonText}>Report Product</Text>
+                </Pressable>
+              ) : null}
             </View>
           </AppCard>
 
@@ -518,8 +581,25 @@ export default function PublicProductRoute() {
                 label="Release timing"
                 value={specs.releaseCurve || specs.releaseTimeline}
               />
+              <SpecRow label="Batch / lot" value={product?.batchLot || specs.batchLot} />
               <SpecRow label="Warnings" value={specs.warnings} />
             </View>
+            {asArray(product?.documentUrls || specs.documentUrls).length ? (
+              <View style={styles.actionRow}>
+                {asArray(product?.documentUrls || specs.documentUrls).map(
+                  (url: string, index: number) => (
+                    <Pressable
+                      key={`${url}-${index}`}
+                      accessibilityLabel={`Open product document ${index + 1}`}
+                      style={styles.secondaryButton}
+                      onPress={() => void openUrl(String(url))}
+                    >
+                      <Text style={styles.secondaryButtonText}>Document {index + 1}</Text>
+                    </Pressable>
+                  )
+                )}
+              </View>
+            ) : null}
           </AppCard>
 
           {relatedCourses.length ? (
@@ -748,6 +828,17 @@ export default function PublicProductRoute() {
           ) : null}
         </>
       )}
+      <ReportModal
+        visible={reportVisible}
+        onClose={() => setReportVisible(false)}
+        contentType="storefrontProduct"
+        contentId={productId}
+        contentTitle={product?.name || "Product"}
+        targetUrl={product ? publicProductUrl(slug, product) : ""}
+        onSuccess={() =>
+          setFeedback("Product report submitted for administrator review.")
+        }
+      />
     </AppPage>
   );
 }
@@ -765,9 +856,17 @@ const styles = StyleSheet.create({
     padding: 8
   },
   cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
+  productImage: {
+    borderRadius: radius.card,
+    height: 260,
+    marginBottom: 14,
+    width: "100%"
+  },
   bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
   meta: { color: "#64748B", lineHeight: 19 },
   interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
+  inventory: { color: "#166534", fontSize: 14, fontWeight: "900", marginTop: 4 },
+  pickup: { color: "#166534", fontWeight: "800", lineHeight: 20 },
   price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
   warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
   specGrid: { gap: 8 },

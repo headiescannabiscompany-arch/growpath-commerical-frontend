@@ -1,3 +1,6 @@
+import { sourceObjectHref } from "@/utils/sourceLinks";
+import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
+
 export type GrowTimelineKind = "log" | "tool_run" | "task";
 
 export type GrowTimelineItem = {
@@ -10,6 +13,28 @@ export type GrowTimelineItem = {
   completed?: boolean;
   raw: unknown;
 };
+
+export function growJournalItemHref(item: GrowTimelineItem, growId: string) {
+  if (item.kind === "tool_run") {
+    return savedRunSourceHref({
+      toolRunId: item.id,
+      growId,
+      sourceContext: "journal"
+    });
+  }
+
+  const sourceTypeByKind = {
+    log: "grow_log",
+    task: "task"
+  } as const;
+
+  return sourceObjectHref({
+    sourceType: sourceTypeByKind[item.kind],
+    sourceId: item.id,
+    growId,
+    workspaceType: "personal"
+  });
+}
 
 function rowId(row: any, fallback: string) {
   return String(row?._id || row?.id || fallback);

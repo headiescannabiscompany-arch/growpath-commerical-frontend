@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SoilBuilderToolScreen from "@/app/home/personal/(tabs)/tools/soil-builder";
 
@@ -7,6 +7,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockCreateProduct = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockCreateSoilNutrientBatch = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -59,6 +60,10 @@ jest.mock("@/api/products", () => ({
   createProduct: (...args: any[]) => mockCreateProduct(...args)
 }));
 
+jest.mock("@/api/commercialWorkflows", () => ({
+  createSoilNutrientBatch: (...args: any[]) => mockCreateSoilNutrientBatch(...args)
+}));
+
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
   saveToolRunAndCreateTask: jest.fn(),
@@ -83,6 +88,7 @@ describe("SoilBuilderToolScreen", () => {
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
+    mockCreateSoilNutrientBatch.mockResolvedValue({ id: "batch-1", status: "planned" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -90,24 +96,53 @@ describe("SoilBuilderToolScreen", () => {
     });
   });
 
+  it("shows the canonical soil mix builder and its evidence limits", async () => {
+    const screen = render(<SoilBuilderToolScreen />);
+    await act(async () => {});
+
+    expect(screen.getAllByText("Soil Mix Builder").length).toBeGreaterThan(0);
+    expect(screen.getByText("Soil mix science and evidence")).toBeTruthy();
+    expect(screen.getByText(/soil\/substrate lab tests/)).toBeTruthy();
+    expect(screen.getByText(/remain uncertain without testing/)).toBeTruthy();
+  });
+
+  it("converts the calculated soil formula into a production batch", async () => {
+    const screen = render(<SoilBuilderToolScreen />);
+    fireEvent.press(screen.getByLabelText("Run Soil Mix Builder"));
+    await waitFor(() => expect(screen.getByText("Soil Mix Builder result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Production Batch"));
+
+    await waitFor(() =>
+      expect(mockCreateSoilNutrientBatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          batchName: "Living soil mix batch",
+          trialGrowId: "grow-1",
+          linkedToolRunId: "toolrun-1",
+          status: "planned"
+        })
+      )
+    );
+  });
+
   it("sends target profile, release timing, and rest/cook assumptions to the soil calculator", async () => {
     const screen = render(<SoilBuilderToolScreen />);
 
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      screen.getByLabelText("Soil Mix Builder Target label N-P2O5-K2O"),
       "3-1-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Target release curve"),
+      screen.getByLabelText("Soil Mix Builder Target release curve"),
       "1-1-1 slow base plus fast nitrogen"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Compost uncertainty"),
+      screen.getByLabelText("Soil Mix Builder Compost uncertainty"),
       "high - compost only estimated"
     );
-    fireEvent.changeText(screen.getByLabelText("Soil Builder Rest/cook days"), "28");
+    fireEvent.changeText(screen.getByLabelText("Soil Mix Builder Rest/cook days"), "28");
 
-    fireEvent.press(screen.getByLabelText("Run Soil Builder"));
+    fireEvent.press(screen.getByLabelText("Run Soil Mix Builder"));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
@@ -121,6 +156,15 @@ describe("SoilBuilderToolScreen", () => {
           restCookDays: 28,
           mineralSupport: "gypsum, basalt, oyster shell",
           biologySupport: "worm castings, microbial inoculant, moisture activation",
+          universalSoilScience: expect.stringContaining(
+            "not intended to replace agronomists"
+          ),
+          soilRecipeReference: expect.stringMatching(
+            /Cannabis Living Soil Standard[\s\S]*Penny Saver Soil[\s\S]*Biochar is not part[\s\S]*Living Soil[\s\S]*No-Till Soil/
+          ),
+          scientificNotes: expect.stringContaining("reference material"),
+          nutrientPhilosophy: expect.stringContaining("not intended to mimic soluble"),
+          soilHealthScoreModel: expect.stringContaining("Biological Diversity"),
           amendments: expect.arrayContaining([
             expect.objectContaining({
               name: "Alfalfa meal",
@@ -137,7 +181,7 @@ describe("SoilBuilderToolScreen", () => {
       )
     );
 
-    await waitFor(() => expect(screen.getByText("Soil Builder result")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Soil Mix Builder result")).toBeTruthy());
     expect(
       screen.getByText(
         "Soil nutrient availability is an estimate until lab-tested; compost/castings add uncertainty."
@@ -161,6 +205,11 @@ describe("SoilBuilderToolScreen", () => {
             releaseCurve: { summary: "fast N plus slow P base" },
             restCookDays: 21,
             compostUncertainty: "high - compost only estimated",
+            universalSoilScience: expect.stringContaining("different soil ecosystems"),
+            soilRecipeReference: expect.stringContaining("Penny Saver Soil"),
+            scientificNotes: expect.stringContaining("Basalt rock dust"),
+            nutrientPhilosophy: expect.stringContaining("preserve the recipe first"),
+            soilHealthScoreModel: expect.stringContaining("Reuse Readiness"),
             directions: expect.arrayContaining([
               expect.stringContaining("Confirm base media"),
               expect.stringContaining("complete rest/cook review")
@@ -182,13 +231,13 @@ describe("SoilBuilderToolScreen", () => {
     const screen = render(<SoilBuilderToolScreen />);
 
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      screen.getByLabelText("Soil Mix Builder Target label N-P2O5-K2O"),
       "3-1-1"
     );
-    fireEvent.changeText(screen.getByLabelText("Soil Builder Rest/cook days"), "28");
-    fireEvent.press(screen.getByLabelText("Run Soil Builder"));
+    fireEvent.changeText(screen.getByLabelText("Soil Mix Builder Rest/cook days"), "28");
+    fireEvent.press(screen.getByLabelText("Run Soil Mix Builder"));
 
-    await waitFor(() => expect(screen.getByText("Soil Builder result")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Soil Mix Builder result")).toBeTruthy());
 
     fireEvent.press(screen.getByText("Create Recipe Timeline Tasks"));
 
@@ -236,32 +285,40 @@ describe("SoilBuilderToolScreen", () => {
     );
   });
 
-  it("builds an AI soil recipe brief without replacing calculator math", () => {
+  it("builds an AI soil recipe brief without replacing calculator math", async () => {
     const screen = render(<SoilBuilderToolScreen />);
+    await act(async () => {});
 
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Target label N-P2O5-K2O"),
+      screen.getByLabelText("Soil Mix Builder Target label N-P2O5-K2O"),
       "3-1-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Target release curve"),
+      screen.getByLabelText("Soil Mix Builder Target release curve"),
       "1-1-1 slow base plus fast nitrogen"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Soil Builder Compost uncertainty"),
+      screen.getByLabelText("Soil Mix Builder Compost uncertainty"),
       "high - lab test missing"
     );
 
-    fireEvent.press(screen.getByLabelText("Ask AI to build soil recipe"));
+    fireEvent.press(screen.getByLabelText("Ask AI to build soil mix"));
 
-    expect(screen.getByText("AI soil recipe brief")).toBeTruthy();
+    expect(screen.getByText("AI soil mix brief")).toBeTruthy();
     expect(screen.getByText(/Target label N-P2O5-K2O: 3-1-1/)).toBeTruthy();
     expect(
       screen.getByText(/Target release logic: 1-1-1 slow base plus fast nitrogen/)
     ).toBeTruthy();
     expect(screen.getByText(/Compost uncertainty: high - lab test missing/)).toBeTruthy();
+    expect(screen.getByText(/Universal Soil Science/)).toBeTruthy();
+    expect(screen.getByText(/Cannabis Living Soil Standard v1/)).toBeTruthy();
+    expect(screen.getByText(/Penny Saver Soil/)).toBeTruthy();
+    expect(screen.getByText(/Soil Health Score Model/)).toBeTruthy();
+    expect(screen.getByText(/Do not redesign locked formulas/)).toBeTruthy();
     expect(
-      screen.getByText(/call the Soil Builder calculator for final nutrient estimates/)
+      screen.getByText(
+        /call the Soil Mix Builder calculator for final nutrient estimates/
+      )
     ).toBeTruthy();
   });
 });

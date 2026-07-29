@@ -5,7 +5,12 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${port}`;
 const systemChrome =
   process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === "1" ? { channel: "chrome" } : {};
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === "1";
-const video = process.env.PLAYWRIGHT_DISABLE_VIDEO === "1" ? "off" : "retain-on-failure";
+const video =
+  process.env.PLAYWRIGHT_DISABLE_VIDEO === "1"
+    ? "off"
+    : process.env.PLAYWRIGHT_RECORD_VIDEO === "1"
+      ? "on"
+      : "retain-on-failure";
 
 export default defineConfig({
   testDir: "e2e",

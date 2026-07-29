@@ -28,6 +28,7 @@ import { listTeamMembers } from "@/api/team";
 import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 type Tone = "green" | "amber" | "blue" | "violet" | "red" | "slate" | "cyan" | "orange";
@@ -80,7 +81,9 @@ function dotToneStyle(tone: Tone) {
 
 export default function FacilityDashboardTab() {
   const router = useRouter();
-  const { selectedId: facilityId } = useFacility();
+  const entitlements = useEntitlements();
+  const facilityRole = String(entitlements.facilityRole || "VIEWER").toUpperCase();
+  const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const { width } = useWindowDimensions();
   const isTablet = width >= 760;
   const isDesktop = width >= 1040;
@@ -201,20 +204,6 @@ export default function FacilityDashboardTab() {
   const quick = useMemo(
     () => [
       {
-        label: "Open tasks",
-        value: counts.tasks,
-        to: "/home/facility/tasks",
-        tone: "amber" as Tone,
-        hint: "Work queue"
-      },
-      {
-        label: "Plants",
-        value: counts.plants,
-        to: "/home/facility/plants",
-        tone: "green" as Tone,
-        hint: `${counts.grows} grows`
-      },
-      {
         label: "Rooms",
         value: counts.rooms,
         to: "/home/facility/rooms",
@@ -222,11 +211,39 @@ export default function FacilityDashboardTab() {
         hint: `${counts.batchCycles} batches`
       },
       {
+        label: "Grows",
+        value: counts.grows,
+        to: "/home/facility/grows",
+        tone: "green" as Tone,
+        hint: "Active runs"
+      },
+      {
+        label: "Plants",
+        value: counts.plants,
+        to: "/home/facility/plants",
+        tone: "green" as Tone,
+        hint: "Plant records"
+      },
+      {
         label: "Inventory",
         value: counts.inventory,
         to: "/home/facility/inventory",
         tone: "violet" as Tone,
         hint: "Tracked items"
+      },
+      {
+        label: "Open tasks",
+        value: counts.tasks,
+        to: "/home/facility/tasks",
+        tone: "amber" as Tone,
+        hint: "Work queue"
+      },
+      {
+        label: "SOPs",
+        value: counts.sops,
+        to: "/home/facility/sop-runs",
+        tone: "cyan" as Tone,
+        hint: "Procedures"
       },
       {
         label: "Verifications",
@@ -241,13 +258,6 @@ export default function FacilityDashboardTab() {
         to: "/home/facility/audit-logs",
         tone: "slate" as Tone,
         hint: "Evidence trail"
-      },
-      {
-        label: "SOPs",
-        value: counts.sops,
-        to: "/home/facility/sop-runs",
-        tone: "cyan" as Tone,
-        hint: "Procedures"
       },
       {
         label: "Team",
@@ -299,6 +309,14 @@ export default function FacilityDashboardTab() {
     ];
   }, [counts, insights]);
 
+  const visibleQuick = useMemo(
+    () =>
+      facilityRole === "VIEWER"
+        ? quick.filter((item) => !["Team", "Inventory"].includes(item.label))
+        : quick,
+    [facilityRole, quick]
+  );
+
   const actionRows = useMemo(
     () => [
       { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai-ask" },
@@ -306,6 +324,11 @@ export default function FacilityDashboardTab() {
         label: "Export packet",
         detail: "Reports and audit evidence",
         to: "/home/facility/reports"
+      },
+      {
+        label: "Facility analytics",
+        detail: "Room stability, SOPs, alerts, batches, and training",
+        to: "/home/facility/analytics"
       },
       {
         label: "SOP operations",
@@ -316,6 +339,46 @@ export default function FacilityDashboardTab() {
         label: "Room board",
         detail: "Rooms, batches, and access",
         to: "/home/facility/rooms"
+      },
+      {
+        label: "Connect sensors",
+        detail: "Pulse, TrolMaster, and room data",
+        to: "/home/facility/integrations"
+      },
+      {
+        label: "Facility feed",
+        detail: "Updates, products, and public-facing activity",
+        to: "/home/facility/feed"
+      },
+      {
+        label: "Storefront",
+        detail: "Public catalog; no public cannabis checkout",
+        to: "/storefront"
+      },
+      {
+        label: "Sales & transfers",
+        detail: "Licensed recipients, manifests, shipments, and totals",
+        to: "/home/facility/transfers"
+      }
+    ],
+    []
+  );
+
+  const learningRows = useMemo(
+    () => [
+      {
+        label: "Forum / Q&A",
+        detail: "Ask operators, compare approaches, and share facility knowledge.",
+        action: "Open forum",
+        to: "/forum",
+        tone: "blue" as Tone
+      },
+      {
+        label: "Courses",
+        detail: "Open team training, facility learning, and course resources.",
+        action: "Browse courses",
+        to: "/courses",
+        tone: "violet" as Tone
       }
     ],
     []
@@ -347,7 +410,7 @@ export default function FacilityDashboardTab() {
             </Text>
             <Text style={[styles.h1, isTv ? styles.h1Tv : null]}>Operations Live</Text>
             <Text style={[styles.muted, isTv ? styles.mutedTv : null]}>
-              {facilityId ? String(facilityId) : "(none)"}
+              {String(selectedFacility?.name || "Facility operations")}
             </Text>
           </View>
           <View style={styles.heroStats}>
@@ -361,6 +424,35 @@ export default function FacilityDashboardTab() {
               <Text style={styles.pulseValue}>{String(counts.tasks)}</Text>
               <Text style={styles.pulseLabel}>Tasks</Text>
             </View>
+          </View>
+        </View>
+
+        <View style={styles.learningSection}>
+          <View style={styles.learningHeader}>
+            <Text style={styles.sectionTitle}>Learning &amp; community</Text>
+            <Text style={styles.learningHint}>Quick access for your facility team</Text>
+          </View>
+          <View style={styles.learningGrid}>
+            {learningRows.map((row) => (
+              <Pressable
+                key={row.label}
+                accessibilityRole="button"
+                accessibilityLabel={row.action}
+                onPress={() => router.push(row.to as any)}
+                style={({ pressed }) => [
+                  styles.learningCard,
+                  { width: isTablet ? "48.5%" : "100%" },
+                  tileToneStyle(row.tone),
+                  pressed && styles.pressed
+                ]}
+              >
+                <View style={styles.learningCopy}>
+                  <Text style={styles.learningTitle}>{row.label}</Text>
+                  <Text style={styles.learningDetail}>{row.detail}</Text>
+                </View>
+                <Text style={styles.learningAction}>{row.action} →</Text>
+              </Pressable>
+            ))}
           </View>
         </View>
 
@@ -385,7 +477,7 @@ export default function FacilityDashboardTab() {
               </Pressable>
             </View>
             <View style={styles.grid}>
-              {quick.map((q) => (
+              {visibleQuick.map((q) => (
                 <Pressable
                   key={q.label}
                   accessibilityRole="button"
@@ -502,6 +594,42 @@ const styles = StyleSheet.create({
   },
   pulseValue: { color: "white", fontSize: 20, fontWeight: "900" },
   pulseLabel: { color: "#a7f3d0", fontSize: 12, fontWeight: "800", marginTop: 3 },
+
+  learningSection: {
+    backgroundColor: "white",
+    borderColor: "#d7ddd2",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 14
+  },
+  learningHeader: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  learningHint: { color: "#64748b", fontSize: 12, fontWeight: "700" },
+  learningGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  learningCard: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    justifyContent: "space-between",
+    minHeight: 112,
+    padding: 14
+  },
+  learningCopy: { marginBottom: 14 },
+  learningTitle: { color: "#111827", fontSize: 17, fontWeight: "900" },
+  learningDetail: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 5
+  },
+  learningAction: { color: "#1d4ed8", fontSize: 13, fontWeight: "900" },
 
   loading: { paddingVertical: 18, alignItems: "center" },
   contentGrid: { gap: 14 },

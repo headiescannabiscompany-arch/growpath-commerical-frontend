@@ -9,6 +9,8 @@ export default function CommercialTabsLayout() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const compactTabs = width < 760;
+  const compactSecondaryHref = (route: string) =>
+    compactTabs && pathname !== `/home/commercial/${route}` ? null : undefined;
   const hideTabBar =
     pathname.includes("/inventory-create") ||
     pathname.includes("/inventory/new") ||
@@ -24,7 +26,8 @@ export default function CommercialTabsLayout() {
     pathname.includes("/courses/") ||
     pathname.includes("/batch-planner/") ||
     pathname.includes("/product-lines/") ||
-    pathname.includes("/trials/");
+    pathname.includes("/trials/") ||
+    pathname.includes("/tools/");
 
   const tabBarStyle = hideTabBar
     ? { display: "none" as const }
@@ -50,7 +53,14 @@ export default function CommercialTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
+        tabBarIconStyle: { display: "none" },
+        tabBarLabelPosition: "beside-icon",
+        tabBarLabelStyle: {
+          fontSize: compactTabs ? 11 : 12,
+          fontWeight: "700",
+          marginStart: 0,
+          marginEnd: 0
+        },
         tabBarStyle
       }}
     >
@@ -59,10 +69,10 @@ export default function CommercialTabsLayout() {
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen
-        name="grows"
+        name="grows/index"
         options={{ title: "Product Trial Evidence Runs", href: null }}
       />
-      <Tabs.Screen name="storefront" options={{ title: "Storefront" }} />
+      <Tabs.Screen name="storefront/index" options={{ title: "Storefront" }} />
       <Tabs.Screen
         name="storefront/edit"
         options={{ href: null, title: "Edit Storefront" }}
@@ -71,29 +81,74 @@ export default function CommercialTabsLayout() {
         name="storefront/preview"
         options={{ href: null, title: "Storefront Preview" }}
       />
-      <Tabs.Screen name="products" options={{ title: "Products" }} />
-      <Tabs.Screen name="courses" options={{ title: "Courses" }} />
-      <Tabs.Screen name="lives" options={{ title: "Lives" }} />
-      <Tabs.Screen name="feed" options={{ title: "Feed / Campaigns" }} />
-      <Tabs.Screen name="orders" options={{ title: "Orders" }} />
+      <Tabs.Screen name="products/index" options={{ title: "Products" }} />
+      <Tabs.Screen
+        name="feed"
+        options={{
+          title: "Feed / Campaigns",
+          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
+        name="courses"
+        options={{ title: "Courses", href: compactSecondaryHref("courses") }}
+      />
+      <Tabs.Screen
+        name="lives"
+        options={{ title: "Lives", href: compactSecondaryHref("lives") }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: "Orders",
+          href: compactSecondaryHref("orders"),
+          headerShown: false
+        }}
+      />
       <Tabs.Screen
         name="inventory"
-        options={{ title: "Inventory Support", href: null }}
+        options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Analytics", href: compactTabs ? null : undefined }}
+        options={{
+          title: "Analytics",
+          href: compactSecondaryHref("analytics"),
+          headerShown: false
+        }}
       />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", href: compactSecondaryHref("profile") }}
+      />
+      <Tabs.Screen
+        name="tools/index"
+        options={{ title: "Tools", href: compactSecondaryHref("tools") }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: "More",
+          href: compactTabs ? undefined : null,
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"
-        options={{ title: "Product Batches", href: null }}
+        options={{ title: "Product Batches", href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="product-lines"
-        options={{ title: "Product Lines", href: null }}
+        options={{ title: "Product Lines", href: null, headerShown: false }}
       />
-      <Tabs.Screen name="trials" options={{ title: "Product Trials", href: null }} />
+      <Tabs.Screen
+        name="trials"
+        options={{ title: "Product Trials", href: null, headerShown: false }}
+      />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks", href: null }} />
+      <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
       <Tabs.Screen name="community" options={{ title: "Forum / Q&A", href: null }} />
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
       <Tabs.Screen
@@ -108,19 +163,31 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="grows/new"
-        options={{ href: null, title: "Create Product Trial Evidence Run" }}
+        options={{
+          href: null,
+          title: "Create Product Trial Evidence Run",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="grows/[growId]"
         options={{ href: null, title: "Product Trial Evidence Run Detail" }}
       />
       <Tabs.Screen
-        name="evidence-runs"
-        options={{ href: null, title: "Product Trial Evidence Runs" }}
+        name="evidence-runs/index"
+        options={{
+          href: null,
+          title: "Product Trial Evidence Runs",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="evidence-runs/new"
-        options={{ href: null, title: "Create Product Trial Evidence Run" }}
+        options={{
+          href: null,
+          title: "Create Product Trial Evidence Run",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="evidence-runs/[id]"
@@ -131,6 +198,10 @@ export default function CommercialTabsLayout() {
         options={{ href: null, title: "Create Product" }}
       />
       <Tabs.Screen
+        name="products/import"
+        options={{ href: null, title: "Import Storefront Items" }}
+      />
+      <Tabs.Screen
         name="products/[productId]"
         options={{ href: null, title: "Product Detail" }}
       />
@@ -138,6 +209,41 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="batch-planner/[batchId]" options={{ href: null }} />
       <Tabs.Screen name="product-lines/[lineId]" options={{ href: null }} />
       <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />
+      <Tabs.Screen name="tools/ask-ai" options={{ href: null, title: "Ask AI" }} />
+      <Tabs.Screen name="tools/diagnose" options={{ href: null, title: "Diagnose" }} />
+      <Tabs.Screen
+        name="tools/environment"
+        options={{ href: null, title: "Environment Review" }}
+      />
+      <Tabs.Screen
+        name="tools/recipe-builder"
+        options={{ href: null, title: "Soil & Nutrient Mix Builders" }}
+      />
+      <Tabs.Screen
+        name="tools/npk"
+        options={{ href: null, title: "Nutrient Mix Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/soil-builder"
+        options={{ href: null, title: "Soil Mix Builder" }}
+      />
+      <Tabs.Screen
+        name="tools/dry-amendment-mix"
+        options={{ href: null, title: "Dry Amendment Mix" }}
+      />
+      <Tabs.Screen
+        name="tools/ingredient-library"
+        options={{ href: null, title: "Ingredients" }}
+      />
+      <Tabs.Screen
+        name="tools/harvest-readiness"
+        options={{ href: null, title: "Harvest Readiness" }}
+      />
+      <Tabs.Screen
+        name="tools/soil-nutrient-batch"
+        options={{ href: null, title: "Soil & Nutrient Batch Planner" }}
+      />
+      <Tabs.Screen name="tools/report" options={{ href: null, title: "Export Report" }} />
     </Tabs>
   );
 }

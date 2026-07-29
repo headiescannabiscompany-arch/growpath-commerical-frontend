@@ -31,6 +31,11 @@ jest.mock("expo-router", () => {
   const { Text } = require("react-native");
   return {
     useLocalSearchParams: () => ({ growId: "grow-1" }),
+    useRouter: () => ({
+      back: jest.fn(),
+      replace: jest.fn(),
+      canGoBack: () => false
+    }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,
@@ -68,6 +73,8 @@ describe("GrowOverviewScreen", () => {
         id: "grow-1",
         name: "Connected Run",
         status: "flowering",
+        growTags: ["Cannabis", "Indoor"],
+        growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
         updatedAt: "2026-07-07T00:00:00.000Z"
       }
     ]);
@@ -128,6 +135,12 @@ describe("GrowOverviewScreen", () => {
     );
 
     expect(screen.getByText("Connected Run")).toBeTruthy();
+    expect(screen.getByText("Pheno / Genetics")).toBeTruthy();
+    expect(screen.getByText("Harvest / Diagnosis")).toBeTruthy();
+    expect(screen.getByLabelText("Pheno Matrix from grow_detail_pheno")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Harvest Readiness from grow_detail_harvest")
+    ).toBeTruthy();
     expect(screen.getByText("Batch follow-up saved")).toBeTruthy();
     expect(screen.getByText("Topdress follow-up")).toBeTruthy();
     expect(screen.getByText("Course campaign attached")).toBeTruthy();
@@ -139,5 +152,29 @@ describe("GrowOverviewScreen", () => {
       screen.getByLabelText("Overview link /feed?campaignId=campaign-linked-1")
     ).toBeTruthy();
     expect(screen.queryByLabelText("Overview link /home/personal/logs/log-1")).toBeNull();
+  });
+
+  it("restores harvest links from saved cannabis workflow evidence on a legacy grow", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Legacy grow",
+        updatedAt: "2026-07-20T00:00:00.000Z"
+      }
+    ]);
+    mockListToolRuns.mockResolvedValue([
+      {
+        id: "run-harvest",
+        growId: "grow-1",
+        toolName: "harvest_readiness"
+      }
+    ]);
+
+    const screen = render(<GrowOverviewScreen />);
+
+    await waitFor(() => expect(screen.getByText("Harvest / Diagnosis")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Harvest Readiness from grow_detail_harvest")
+    ).toBeTruthy();
   });
 });

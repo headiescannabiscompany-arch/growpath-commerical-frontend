@@ -7,6 +7,7 @@ const mockListToolRuns = jest.fn();
 const mockGetToolRun = jest.fn();
 const mockSaveToolRunToLog = jest.fn();
 const mockCreateTaskFromToolRun = jest.fn();
+const mockListPersonalGrows = jest.fn();
 
 jest.mock("@/api/toolRuns", () => ({
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
@@ -15,11 +16,24 @@ jest.mock("@/api/toolRuns", () => ({
   createTaskFromToolRun: (...args: any[]) => mockCreateTaskFromToolRun(...args)
 }));
 
-jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
-  useRouter: () => ({ push: jest.fn() }),
-  Link: ({ children }: any) => children
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
+
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    useLocalSearchParams: () => ({ growId: "grow-1" }),
+    useRouter: () => ({ push: jest.fn() }),
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        View,
+        { accessibilityLabel: `grow-link-${String(href)}` },
+        children
+      )
+  };
+});
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -68,6 +82,13 @@ describe("GrowToolsScreen", () => {
     });
     mockSaveToolRunToLog.mockResolvedValue({ ok: true });
     mockCreateTaskFromToolRun.mockResolvedValue({ ok: true });
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        growTags: ["Cannabis"],
+        growInterests: { crops: ["Cannabis"] }
+      }
+    ]);
   });
 
   it("reloads and renders saved tool run results from the grow workspace", async () => {
@@ -76,6 +97,19 @@ describe("GrowToolsScreen", () => {
     await waitFor(() =>
       expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
     );
+    expect(screen.getByText("Harvest readiness calculator")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "grow-link-/home/personal/tools/harvest-readiness?growId=grow-1"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("grow-link-/home/personal/tools/integrations?growId=grow-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("grow-link-/home/personal/tools/pdf-export?growId=grow-1")
+    ).toBeTruthy();
+    expect(screen.queryByText("pH / EC")).toBeNull();
     expect(screen.getByText("dew_point_guard | 2026-06-30")).toBeTruthy();
     expect(screen.getByText("Blueberry #1 | Blueberry")).toBeTruthy();
 
@@ -98,5 +132,46 @@ describe("GrowToolsScreen", () => {
 
     fireEvent.press(screen.getByText("Create Task"));
     await waitFor(() => expect(mockCreateTaskFromToolRun).toHaveBeenCalledWith("run-1"));
+  });
+
+  it("keeps cannabis harvest workflows out of non-cannabis grows", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        growTags: ["Blueberry", "Outdoor"],
+        growInterests: { crops: ["Fruit Trees & Bushes"] }
+      }
+    ]);
+
+    const screen = render(<GrowToolsScreen />);
+
+    await waitFor(() => expect(mockListPersonalGrows).toHaveBeenCalled());
+    expect(screen.queryByText("Harvest readiness calculator")).toBeNull();
+    expect(screen.queryByText("Dry / cure")).toBeNull();
+    expect(screen.getByText("Compare runs")).toBeTruthy();
+  });
+
+  it("restores harvest workflows for a legacy grow with saved cannabis evidence", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Legacy grow"
+      }
+    ]);
+    mockListToolRuns.mockResolvedValue([
+      {
+        id: "run-harvest",
+        growId: "grow-1",
+        toolName: "harvest_readiness",
+        createdAt: "2026-07-20T00:00:00.000Z"
+      }
+    ]);
+
+    const screen = render(<GrowToolsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Harvest readiness calculator")).toBeTruthy()
+    );
+    expect(screen.getByText("Dry / cure")).toBeTruthy();
   });
 });

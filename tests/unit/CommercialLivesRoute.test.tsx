@@ -1,9 +1,23 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import CommercialLivesRoute from "@/app/home/commercial/lives";
 
 const mockApiRequest = jest.fn();
+
+function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
+  const [date, time] = value.split("T");
+  const [year, month] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent(screen.getByLabelText(`${label} hour`), "valueChange", hour);
+  fireEvent(screen.getByLabelText(`${label} minute`), "valueChange", minute);
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -18,7 +32,15 @@ jest.mock("expo-router", () => {
 });
 
 jest.mock("@/components/InlineError", () => ({
-  InlineError: () => null
+  InlineError: ({ error }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      Text,
+      null,
+      `${error?.code || "ERROR"} ${error?.message || ""}`
+    );
+  }
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -65,6 +87,24 @@ describe("CommercialLivesRoute", () => {
           ]
         });
       }
+      if (path === "/api/twitch/status") {
+        return Promise.resolve({
+          configured: true,
+          connection: {
+            status: "connected",
+            broadcasterId: "12345",
+            broadcasterLogin: "growpath",
+            broadcasterName: "GrowPath",
+            eventSubStatus: "connected"
+          }
+        });
+      }
+      if (path === "/api/twitch/connect" && options?.method === "POST") {
+        return Promise.resolve({
+          configured: true,
+          authorizationUrl: "https://id.twitch.tv/oauth2/authorize?state=test"
+        });
+      }
       if (path === "/api/commercial/lives" && options?.method === "POST") {
         return Promise.resolve({ live: { id: "live-new", ...options.body } });
       }
@@ -73,12 +113,39 @@ describe("CommercialLivesRoute", () => {
       }
       return Promise.resolve({});
     });
+    jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("schedules lives with course, product, feed, forum, replay, and reminder links", async () => {
     const screen = render(<CommercialLivesRoute />);
 
     await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+
+    expect(screen.getByText("Shared Schedule")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
+    expect(screen.getByText("GrowPath · EventSub Connected")).toBeTruthy();
+    expect(screen.getByLabelText("Disconnect Twitch")).toBeTruthy();
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial live visibility to Public"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
+    expect(
+      screen.queryByRole("textbox", {
+        name: "Commercial live Twitch EventSub status"
+      })
+    ).toBeNull();
+    expect(screen.getByLabelText("Commercial live Twitch EventSub status")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Connect Twitch with OAuth"));
+    await waitFor(() =>
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        "https://id.twitch.tv/oauth2/authorize?state=test"
+      )
+    );
 
     expect(screen.getByText("Soil Mix Demo")).toBeTruthy();
     expect(screen.getByLabelText("Selected commercial live live-1")).toBeTruthy();
@@ -88,7 +155,7 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText(/Forum\/Q&A thread-1/)).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText(/Channel ID 12345/)).toBeTruthy();
-    expect(screen.getByText(/EventSub connected/)).toBeTruthy();
+    expect(screen.getAllByText(/EventSub Connected/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Embed https:\/\/player.twitch.tv\/\?channel=growpath/)
     ).toBeTruthy();
@@ -162,14 +229,7 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live Twitch embed URL"),
       "https://player.twitch.tv/?channel=livingsoillabs"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial live Twitch EventSub status"),
-      "connected"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial live scheduled start"),
-      "2026-07-17T21:00:00Z"
-    );
+    chooseDateTime(screen, "Commercial live scheduled start", "2026-07-17T21:00");
     fireEvent.changeText(
       screen.getByLabelText("Commercial live reminder"),
       "1 hour before"
@@ -200,7 +260,14 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live replay URL"),
       "https://twitch.tv/videos/veg"
     );
-    fireEvent.press(screen.getByLabelText("Set commercial live visibility enrolled"));
+    fireEvent.press(
+      screen.getByLabelText("Set commercial live visibility to Enrolled learners")
+    );
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial live visibility to Enrolled learners"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     fireEvent.press(screen.getByLabelText("Schedule commercial live"));
 
     await waitFor(() =>
@@ -210,7 +277,7 @@ describe("CommercialLivesRoute", () => {
           title: "Friday mix demo",
           description: "Build a 3-1-1 veg mix with live questions.",
           thumbnailUrl: "https://example.com/friday-live.jpg",
-          scheduledStart: "2026-07-17T21:00:00Z",
+          scheduledStart: "2026-07-17T21:00",
           timezone: "America/New_York",
           reminderPreference: "1 hour before",
           recurrenceRule: "weekly",
@@ -249,10 +316,7 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Commercial live title"),
       "Incomplete scheduled live"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial live scheduled start"),
-      "2026-07-20T18:00:00Z"
-    );
+    chooseDateTime(screen, "Commercial live scheduled start", "2026-07-20T18:00");
 
     expect(
       screen.getByLabelText("Schedule commercial live").props.accessibilityState?.disabled
@@ -261,5 +325,36 @@ describe("CommercialLivesRoute", () => {
       "/api/commercial/lives",
       expect.objectContaining({ method: "POST" })
     );
+  });
+
+  it("treats a missing Twitch status route as unavailable setup guidance", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/lives" && !options) {
+        return Promise.resolve({ lives: [] });
+      }
+      if (path === "/api/twitch/status") {
+        return Promise.reject(
+          Object.assign(new Error("Not found"), {
+            code: "NOT_FOUND",
+            status: 404
+          })
+        );
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialLivesRoute />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Twitch OAuth is not configured on this deployment.")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText(/NOT_FOUND/)).toBeNull();
+    expect(screen.queryByText(/^Not found$/)).toBeNull();
+    expect(
+      screen.getByLabelText("Connect Twitch with OAuth").props.accessibilityState
+        ?.disabled
+    ).toBe(true);
   });
 });

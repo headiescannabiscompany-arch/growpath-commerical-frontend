@@ -1,16 +1,22 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Href, Link, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { listPersonalGrows } from "@/api/grows";
+import { useAuth } from "@/auth/AuthContext";
 import FeedBanner from "@/components/feed/FeedBanner";
 import {
   FeatureArea,
   FeatureDefinition,
+  PREVIEW_TOOL_STATUS,
   getNavigablePersonalTools
 } from "@/config/featureStatus";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
+import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
+import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -52,6 +58,19 @@ const styles = StyleSheet.create({
   cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
   locked: { fontSize: 12, color: "#991B1B", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+  badge: {
+    borderRadius: 999,
+    backgroundColor: "#E2E8F0",
+    color: "#334155",
+    fontSize: 11,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  detail: { marginTop: 8, color: "#475569", fontSize: 12, lineHeight: 18 },
+  detailLabel: { fontWeight: "800", color: "#334155" },
   link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" },
   lockedText: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#991B1B" },
   utilityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
@@ -73,7 +92,9 @@ function coerceParam(value?: string | string[]) {
 }
 
 function hrefWithGrow(path: string, growId: string) {
-  return growId ? `${path}?growId=${encodeURIComponent(growId)}` : path;
+  if (!growId) return path;
+  const glue = path.includes("?") ? "&" : "?";
+  return `${path}${glue}growId=${encodeURIComponent(growId)}`;
 }
 
 const AREA_ORDER: FeatureArea[] = [
@@ -91,7 +112,7 @@ const AREA_ORDER: FeatureArea[] = [
 const AREA_LABELS: Record<FeatureArea, string> = {
   personal_navigation: "Navigation",
   environment: "Environment",
-  water_nutrients: "Recipe / Nutrients",
+  water_nutrients: "Soil & Nutrient Science",
   plant_health: "Plant Health & AI",
   crop_management: "Crop Management",
   planning_records: "Planning & Records",
@@ -102,6 +123,42 @@ const AREA_LABELS: Record<FeatureArea, string> = {
 };
 
 const PRIMARY_TOOL_KEYS = new Set(["tools.ai_assistant", "tools.ai_diagnosis"]);
+const CORE_TOOL_KEYS = new Set(["tools.mix_builders", "tools.ppfd_dli"]);
+const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
+  "tools.crop_steering_projects",
+  "tools.pheno_hunting",
+  "tools.pheno_matrix",
+  "tools.dry_cure_guard",
+  "tools.clone_rooting",
+  "tools.genetics_inventory",
+  "tools.auto_grow_calendar",
+  "tools.harvest_readiness_ai"
+]);
+const SOIL_FOCUSED_TOOL_KEYS = new Set([
+  "tools.soil_builder",
+  "tools.dry_amendment_mix",
+  "tools.topdress_planner",
+  "tools.soil_nutrient_batch_planner"
+]);
+
+function toolMatchesInterests(
+  tool: FeatureDefinition,
+  interests: string[],
+  cannabisAccountContext = false
+) {
+  const selected = new Set(interests.map((item) => item.toLowerCase()));
+  const growsCannabis =
+    cannabisAccountContext || selected.has("cannabis") || selected.has("hemp");
+  const soilMethod = Array.from(selected).some((item) =>
+    /soil|no-till|organic|amended/.test(item)
+  );
+  const hydroOnly =
+    (selected.has("hydroponics") || selected.has("aeroponics")) && !soilMethod;
+
+  if (CANNABIS_FOCUSED_TOOL_KEYS.has(tool.key) && !growsCannabis) return false;
+  if (SOIL_FOCUSED_TOOL_KEYS.has(tool.key) && hydroOnly) return false;
+  return true;
+}
 
 function ToolCard({
   tool,
@@ -115,6 +172,30 @@ function ToolCard({
   const href = tool.acceptsGrowContext
     ? hrefWithGrow(tool.href || "", growId)
     : tool.href || "";
+  const experience = tool.experience;
+  const modeLabel = experience
+    ? {
+        ai: "AI analysis",
+        ai_assisted: "AI-assisted + calculated",
+        calculated: "Calculated",
+        guided: "Guided workflow",
+        library: "Reusable library"
+      }[experience.mode]
+    : "";
+  const creditLabel = experience
+    ? experience.aiCredits === "required"
+      ? "Uses AI credits"
+      : experience.aiCredits === "optional"
+        ? "AI credits only when AI runs"
+        : "No AI credits"
+    : "";
+  const growLabel = experience
+    ? experience.grow === "required"
+      ? "Grow required"
+      : experience.grow === "optional"
+        ? "Grow optional"
+        : "No grow needed"
+    : "";
 
   return (
     <View style={[styles.card, !enabled && styles.cardLocked]}>
@@ -123,6 +204,23 @@ function ToolCard({
         {!enabled ? <Text style={styles.locked}>Locked</Text> : null}
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>
+      {experience ? (
+        <>
+          <View style={styles.badgeRow}>
+            <Text style={styles.badge}>{modeLabel}</Text>
+            <Text style={styles.badge}>{creditLabel}</Text>
+            <Text style={styles.badge}>{growLabel}</Text>
+          </View>
+          <Text style={styles.detail}>
+            <Text style={styles.detailLabel}>Bring: </Text>
+            {experience.inputSummary}
+          </Text>
+          <Text style={styles.detail}>
+            <Text style={styles.detailLabel}>You get: </Text>
+            {experience.outputSummary}
+          </Text>
+        </>
+      ) : null}
       {enabled ? (
         <Link href={href as Href} style={styles.link} asChild>
           <Text>Open</Text>
@@ -135,16 +233,65 @@ function ToolCard({
 }
 
 export default function ToolsHubScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, devPlan: rawDevPlan } = useLocalSearchParams<{
+    growId?: string | string[];
+    devPlan?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const devPlan = useMemo(() => coerceParam(rawDevPlan).toLowerCase(), [rawDevPlan]);
   const entitlements = useEntitlements();
-  const plan = entitlements.plan || "free";
-  const isFreePlan = String(plan).toLowerCase() === "free";
-  const tools = useMemo(
-    () => getNavigablePersonalTools({ allowBetaSurfaces: !isFreePlan }),
-    [isFreePlan]
+  const auth = useAuth();
+  const devPaidOverride = hasLocalPaidPreviewOverride(devPlan);
+  const plan = devPaidOverride ? "pro" : entitlements.plan || "free";
+  const isFreePlan = !devPaidOverride && String(plan).toLowerCase() === "free";
+  const [activeGrowInterests, setActiveGrowInterests] = useState<string[]>([]);
+  const profileInterests = useMemo(
+    () => flattenGrowInterests(auth.user?.growInterests || {}),
+    [auth.user?.growInterests]
+  );
+  useEffect(() => {
+    let alive = true;
+    if (!growId) {
+      setActiveGrowInterests([]);
+      return () => {
+        alive = false;
+      };
+    }
+    listPersonalGrows()
+      .then((grows) => {
+        if (!alive) return;
+        const grow = grows.find(
+          (item: any) => String(item?.id || item?._id || "") === growId
+        );
+        const tags = [
+          ...normalizeInterestList((grow as any)?.growTags),
+          ...flattenGrowInterests((grow as any)?.growInterests || {})
+        ];
+        setActiveGrowInterests(Array.from(new Set(tags)));
+      })
+      .catch(() => {
+        if (alive) setActiveGrowInterests([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [growId]);
+  const selectedInterests = activeGrowInterests.length
+    ? activeGrowInterests
+    : profileInterests;
+  const cannabisAccountContext =
+    String(
+      (auth.user as any)?.contentControls?.cannabisVisibility || ""
+    ).toLowerCase() === "show" ||
+    /\b(cannabis|hemp)\b/i.test(String((auth.user as any)?.accountPurpose || ""));
+  const tools = getNavigablePersonalTools({ allowBetaSurfaces: true }).filter((tool) =>
+    toolMatchesInterests(tool, selectedInterests, cannabisAccountContext)
   );
   const primaryTools = tools.filter((tool) => PRIMARY_TOOL_KEYS.has(tool.key));
+  const coreTools = tools.filter((tool) => CORE_TOOL_KEYS.has(tool.key));
+  const libraryTools = tools.filter(
+    (tool) => !PRIMARY_TOOL_KEYS.has(tool.key) && !CORE_TOOL_KEYS.has(tool.key)
+  );
   const bannerPolicy = getFeedBannerPolicy({
     routeKey: "personal_tools_hub",
     plan,
@@ -155,16 +302,18 @@ export default function ToolsHubScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tools / AI</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          AI Tools
+        </Text>
         <Text style={styles.subtitle}>
-          Ask AI, diagnose plants, build recipes, analyze environment risk, and save
-          outputs back to a grow.
+          Ask AI, diagnose plants, analyze measured light, build soil and nutrient mixes,
+          and save useful outputs back to a grow.
         </Text>
         <View style={styles.context}>
           <Text style={styles.contextText}>
             {isFreePlan
-              ? "Free plan: Ask AI and Plant Diagnose are available with limited AI tokens."
-              : "AI token balance and usage are managed from Profile."}
+              ? "Free plan: Ask AI and Plant Diagnose include a limited weekly AI-credit allowance."
+              : "AI-credit balance and usage are managed from Profile."}
           </Text>
         </View>
         {growId ? (
@@ -172,35 +321,14 @@ export default function ToolsHubScreen() {
             <Text style={styles.contextText}>Grow context active: {growId}</Text>
           </View>
         ) : null}
-        <View style={styles.utilityRow}>
-          <Link href={hrefWithGrow("/home/personal/ai", growId) as Href} asChild>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open personal Ask AI"
-              style={styles.utilityButton}
-            >
-              <Text style={styles.utilityText}>Ask AI</Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
-            asChild
-          >
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Saved Runs</Text>
-            </Pressable>
-          </Link>
-          <Link href={"/home/personal/tools/npk" as Href} asChild>
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Recipes</Text>
-            </Pressable>
-          </Link>
-          <Link href={"/home/personal/tools/ingredient-library" as Href} asChild>
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Ingredients</Text>
-            </Pressable>
-          </Link>
-        </View>
+        {selectedInterests.length ? (
+          <View style={styles.context}>
+            <Text style={styles.contextText}>
+              Workflow interests: {selectedInterests.join(" | ")}
+            </Text>
+          </View>
+        ) : null}
+        <TokenBalanceWidget />
       </View>
 
       {bannerPolicy.top ? (
@@ -221,16 +349,54 @@ export default function ToolsHubScreen() {
               key={tool.key}
               tool={tool}
               growId={growId}
-              enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+              enabled={
+                devPaidOverride ||
+                !tool.capabilityKey ||
+                entitlements.can(tool.capabilityKey) ||
+                PRIMARY_TOOL_KEYS.has(tool.key)
+              }
             />
           ))}
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Core Workflows</Text>
+        <View style={styles.grid}>
+          {coreTools.map((tool) => (
+            <ToolCard
+              key={tool.key}
+              tool={tool}
+              growId={growId}
+              enabled={
+                devPaidOverride ||
+                !tool.capabilityKey ||
+                entitlements.can(tool.capabilityKey)
+              }
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Saved AI & Tool Results</Text>
+        <View style={styles.utilityRow}>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
+            asChild
+          >
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Saved Runs</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Tool Library</Text>
+      </View>
       {AREA_ORDER.map((area, index) => {
-        const areaTools = tools.filter(
-          (tool) => tool.area === area && !PRIMARY_TOOL_KEYS.has(tool.key)
-        );
+        const areaTools = libraryTools.filter((tool) => tool.area === area);
         if (!areaTools.length) return null;
 
         return (
@@ -252,7 +418,11 @@ export default function ToolsHubScreen() {
                     key={tool.key}
                     tool={tool}
                     growId={growId}
-                    enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+                    enabled={
+                      devPaidOverride ||
+                      (!(tool.status === PREVIEW_TOOL_STATUS && isFreePlan) &&
+                        (!tool.capabilityKey || entitlements.can(tool.capabilityKey)))
+                    }
                   />
                 ))}
               </View>

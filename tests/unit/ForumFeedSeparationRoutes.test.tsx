@@ -10,23 +10,44 @@ import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 const mockListForumPosts = jest.fn();
 const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
+const mockListForumComments = jest.fn();
+const mockAddForumComment = jest.fn();
 const mockCreateForumPost = jest.fn();
+const mockCreateGuild = jest.fn();
 const mockReplace = jest.fn();
+let mockGrowInterests: Record<string, string[]> = {};
+let mockCanForumPost = true;
+let mockAuthState: any = {
+  isAuthed: true,
+  user: {
+    id: "user-1",
+    email: "grower@growpathai.com",
+    growInterests: mockGrowInterests
+  }
+};
 
 jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
-    Link: ({ children, href }: { children: React.ReactNode; href: string }) =>
-      React.createElement(
+    Link: ({ children, href }: { children: React.ReactNode; href: any }) => {
+      const value =
+        typeof href === "string"
+          ? href
+          : `${href.pathname}?${new URLSearchParams(href.params || {}).toString()}`;
+      return React.createElement(
         Text,
-        { testID: `link-${href}`, accessibilityLabel: `link-${href}` },
+        { testID: `link-${value}`, accessibilityLabel: `link-${value}` },
         children
-      ),
+      );
+    },
     useRouter: () => ({
       back: jest.fn(),
+      push: jest.fn(),
       replace: mockReplace
-    })
+    }),
+    usePathname: () => "/forum",
+    useLocalSearchParams: () => ({})
   };
 });
 
@@ -40,16 +61,25 @@ jest.mock("@/api/communitySocial", () => ({
   listForumPosts: (...args: any[]) => mockListForumPosts(...args),
   listGuilds: (...args: any[]) => mockListGuilds(...args),
   listNotifications: (...args: any[]) => mockListNotifications(...args),
+  listForumComments: (...args: any[]) => mockListForumComments(...args),
+  addForumComment: (...args: any[]) => mockAddForumComment(...args),
   markAllNotificationsRead: jest.fn(),
   markNotificationRead: jest.fn(),
   joinGuild: jest.fn(),
   leaveGuild: jest.fn(),
+  createGuild: (...args: any[]) => mockCreateGuild(...args),
   createForumPost: (...args: any[]) => mockCreateForumPost(...args),
   postId: (post: any) => post.id || post._id || post.title
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "user-1", email: "grower@growpathai.com" } })
+  useAuth: () =>
+    mockAuthState.isAuthed === false
+      ? mockAuthState
+      : {
+          ...mockAuthState,
+          user: { ...mockAuthState.user, growInterests: mockGrowInterests }
+        }
 }));
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -91,7 +121,7 @@ jest.mock("@/entitlements", () => ({
   },
   useEntitlements: () => ({
     mode: "personal",
-    can: () => true
+    can: (capability: string) => (capability === "forum_post" ? mockCanForumPost : true)
   })
 }));
 
@@ -101,7 +131,20 @@ describe("Forum and feed separation copy", () => {
     mockListForumPosts.mockResolvedValue([]);
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
+    mockListForumComments.mockResolvedValue([]);
+    mockAddForumComment.mockResolvedValue({ id: "comment-new" });
     mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
+    mockCreateGuild.mockResolvedValue({ id: "group-new" });
+    mockCanForumPost = true;
+    mockGrowInterests = { crops: ["Cannabis"], environment: ["Indoor"] };
+    mockAuthState = {
+      isAuthed: true,
+      user: {
+        id: "user-1",
+        email: "grower@growpathai.com",
+        growInterests: mockGrowInterests
+      }
+    };
   });
 
   it("frames the forum as discussion while feed placements stay campaigns", async () => {
@@ -109,25 +152,73 @@ describe("Forum and feed separation copy", () => {
 
     await waitFor(() => expect(mockListForumPosts).toHaveBeenCalled());
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("New Discussion")).toBeTruthy();
+    expect(screen.getByText("Forum Feed")).toBeTruthy();
+    expect(screen.getByText(/tagged by grow interests/)).toBeTruthy();
     expect(screen.getByText(/Discussion, Q&A, grow help/)).toBeTruthy();
     expect(screen.getByText(/campaign ads, not forum threads/)).toBeTruthy();
+  });
+
+  it("shows a retryable forum error instead of an empty feed", async () => {
+    mockListForumPosts.mockRejectedValueOnce(new Error("Network down"));
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() => expect(screen.getByText("Forum could not load")).toBeTruthy());
+    expect(screen.getByText("Network down")).toBeTruthy();
+    expect(screen.getByLabelText("Retry loading forum posts")).toBeTruthy();
+    expect(screen.queryByText("No posts yet.")).toBeNull();
+  });
+
+  it("shows a truthful signed-out Forum gate without calling the protected feed", async () => {
+    mockAuthState = { isAuthed: false, user: null };
+
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Sign in to browse Forum / Q&A")).toBeTruthy()
+    );
+    expect(mockListForumPosts).not.toHaveBeenCalled();
+    expect(screen.getByTestId("link-/login")).toBeTruthy();
+    expect(screen.getByTestId("link-/register")).toBeTruthy();
+    expect(screen.queryByText("Forum could not load")).toBeNull();
+    expect(screen.queryByText("Not authenticated")).toBeNull();
+    expect(screen.queryByLabelText("Show forum posts for my grow interests")).toBeNull();
   });
 
   it("keeps the new forum post composer out of Feed / Campaigns", () => {
     const screen = render(<ForumNewPostRoute />);
 
-    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByText("Shared Back /forum")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Posting as User")).toBeTruthy();
     expect(screen.getByText("Workspace: personal")).toBeTruthy();
-    expect(screen.getByText("Grow interests")).toBeTruthy();
-    expect(screen.getByText("What You Grow")).toBeTruthy();
-    expect(screen.getByText("Environment")).toBeTruthy();
+    expect(screen.getByText("Post audience — Grow Interests")).toBeTruthy();
+    expect(screen.getByText(/Tier 1: What You Grow/)).toBeTruthy();
+    expect(screen.getByText(/Environment/)).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+  });
+
+  it("replaces the Free write form with a truthful read-only recovery", () => {
+    mockCanForumPost = false;
+
+    const screen = render(<ForumNewPostRoute />);
+
+    expect(screen.getByText("Forum posting unavailable")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Free accounts can read discussions and replies. Upgrade to Pro to create posts and comments."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Forum post title")).toBeNull();
+    expect(screen.queryByLabelText("Toggle grow interest Cannabis")).toBeNull();
+    expect(screen.queryByLabelText("Publish forum post")).toBeNull();
+
+    fireEvent.press(screen.getByText("Back to Forum"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/community");
   });
 
   it("stores personal forum posts with user author identity", async () => {
@@ -138,8 +229,8 @@ describe("Forum and feed separation copy", () => {
       screen.getByLabelText("Forum post body"),
       "What changed before this issue?"
     );
-    fireEvent.press(screen.getByLabelText("Toggle grow interest Cannabis"));
-    fireEvent.press(screen.getByLabelText("Toggle grow interest Indoor"));
+    expect(screen.getByLabelText("Toggle grow interest Cannabis")).toBeTruthy();
+    expect(screen.getByLabelText("Toggle grow interest Indoor")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Publish forum post"));
 
     await waitFor(() =>
@@ -150,17 +241,20 @@ describe("Forum and feed separation copy", () => {
         authorId: "user-1",
         workspaceContext: "personal",
         photos: [],
-        tags: ["Cannabis", "Indoor"],
-        growInterests: ["Cannabis", "Indoor"]
+        tags: ["Cannabis"],
+        growInterests: ["Cannabis"]
       })
     );
-    expect(mockReplace).toHaveBeenCalledWith("/home/personal/forum");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/forum/post",
+      params: { id: "thread-new" }
+    });
   });
 
   it("keeps forum guidelines as a nested forum page with shared back behavior", () => {
     const screen = render(<ForumCodeRoute />);
 
-    expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
+    expect(screen.getByText("Shared Back /forum")).toBeTruthy();
     expect(screen.getByText("Forum Guidelines")).toBeTruthy();
   });
 
@@ -205,37 +299,154 @@ describe("Forum and feed separation copy", () => {
     expect(screen.queryByText("Guild")).toBeNull();
   });
 
+  it("creates a forum group from the canonical directory", async () => {
+    const screen = render(<CommunitiesDirectoryRoute />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Create forum group"));
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group name"),
+      "Living Soil Builders"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group description"),
+      "Compare soil-building methods and evidence."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Forum group topics"),
+      "living soil, compost, amendments"
+    );
+    fireEvent.press(screen.getByLabelText("Private forum group"));
+    fireEvent.press(screen.getByLabelText("Save new forum group"));
+
+    await waitFor(() =>
+      expect(mockCreateGuild).toHaveBeenCalledWith({
+        name: "Living Soil Builders",
+        description: "Compare soil-building methods and evidence.",
+        topics: ["living soil", "compost", "amendments"],
+        isPublic: false
+      })
+    );
+    expect(mockListGuilds.mock.calls.length).toBeGreaterThan(1);
+    expect(screen.getByText(/Living Soil Builders was created/)).toBeTruthy();
+  });
+
   it("opens personal forum list posts through the shared forum detail route", async () => {
     mockListForumPosts.mockResolvedValue([
       {
         id: "thread-grow-help",
         title: "Leaf help",
         body: "What changed?",
-        growInterests: ["Cannabis", "Indoor"]
+        growInterests: ["Cannabis", "Indoor"],
+        commentCount: 2,
+        attachments: [{ url: "/uploads/forum-leaf.jpg" }]
+      }
+    ]);
+    mockListForumComments.mockResolvedValue([
+      {
+        id: "comment-leaf",
+        text: "Check the leaf underside and compare again tomorrow.",
+        author: { name: "Soil Helper" }
       }
     ]);
 
     const screen = render(<ForumRoute />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByTestId("link-/home/personal/forum/post/thread-grow-help")
-      ).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("Leaf help")).toBeTruthy());
+    expect(screen.queryByTestId("link-/forum/post?id=thread-grow-help")).toBeNull();
     expect(screen.getByText("Cannabis")).toBeTruthy();
     expect(screen.getByText("Indoor")).toBeTruthy();
+    const photo = screen.getByLabelText("Expand forum post photo 1");
+    expect(photo).toBeTruthy();
+    fireEvent.press(photo);
+    expect(screen.getByLabelText("Close expanded forum photo")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Show 2 replies for Leaf help"));
+    await waitFor(() =>
+      expect(mockListForumComments).toHaveBeenCalledWith("thread-grow-help")
+    );
+    expect(
+      screen.getByText("Check the leaf underside and compare again tomorrow.")
+    ).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-grow-help")).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText("Reply to Leaf help"), "I will compare.");
+    fireEvent.press(screen.getByLabelText("Post reply to Leaf help"));
+    await waitFor(() =>
+      expect(mockAddForumComment).toHaveBeenCalledWith(
+        "thread-grow-help",
+        "I will compare."
+      )
+    );
+  });
+
+  it("defaults to matching grow interests while keeping an all-discussions escape hatch", async () => {
+    mockGrowInterests = { crops: ["Fruit Trees"], environment: ["Outdoor"] };
+    mockListForumPosts.mockResolvedValue([
+      {
+        id: "orchard",
+        title: "Apple pruning",
+        growInterests: { crops: ["Fruit Trees"] }
+      },
+      { id: "cannabis", title: "Indoor cannabis", growInterests: { crops: ["Cannabis"] } }
+    ]);
+
+    const screen = render(<ForumRoute />);
+    await waitFor(() => expect(screen.getByText("Apple pruning")).toBeTruthy());
+    expect(screen.queryByText("Indoor cannabis")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Show all forum posts"));
+    expect(screen.getByText("Indoor cannabis")).toBeTruthy();
   });
 
   it("opens community forum previews through the shared forum detail route", async () => {
     mockListForumPosts.mockResolvedValue([
-      { id: "thread-community-help", title: "Community help", body: "Need advice" }
+      {
+        id: "thread-community-help",
+        title: "Community help",
+        body: "Need advice",
+        author: { displayName: "GrowPath Gardener" },
+        createdAt: "2026-07-21T12:00:00Z",
+        growInterests: ["Living Soil"],
+        photoUrls: ["/uploads/community-help.jpg"],
+        likeCount: 4,
+        commentCount: 2
+      }
+    ]);
+    mockListForumComments.mockResolvedValue([
+      {
+        id: "community-comment",
+        text: "Add the latest environment readings.",
+        author: { name: "GrowPath Helper" }
+      }
     ]);
 
     const screen = render(<CommunityTab />);
 
+    await waitFor(() => expect(screen.getByText("Community help")).toBeTruthy());
+    expect(screen.queryByTestId("link-/forum/post?id=thread-community-help")).toBeNull();
+    expect(screen.getByText("Start a Discussion")).toBeTruthy();
+    expect(screen.getByText("Forum videos")).toBeTruthy();
+    expect(screen.getByText("Forum lives")).toBeTruthy();
+    expect(screen.getByText("Open Video Library")).toBeTruthy();
+    expect(screen.getByText("Browse Videos")).toBeTruthy();
+    expect(screen.getByText("Open Lives")).toBeTruthy();
+    expect(screen.getByText("Latest discussions")).toBeTruthy();
+    expect(screen.getByText("GrowPath Gardener")).toBeTruthy();
+    expect(screen.getByText("Living Soil")).toBeTruthy();
+    expect(screen.getByText("4 likes")).toBeTruthy();
+    expect(screen.getByText("Show 2 replies")).toBeTruthy();
+    expect(screen.getByLabelText("Community help photo 1")).toBeTruthy();
+    expect(screen.getByText("Explore beyond the Forum")).toBeTruthy();
+    expect(screen.getByLabelText("Public Storefronts")).toBeTruthy();
+    expect(screen.getByLabelText("Chronological Feed")).toBeTruthy();
+    expect(screen.getByLabelText("Marketplace & Offers")).toBeTruthy();
+    expect(screen.getByLabelText("Browse Discovery Directory")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Show 2 replies for Community help"));
     await waitFor(() =>
-      expect(screen.getByTestId("link-/forum/post/thread-community-help")).toBeTruthy()
+      expect(mockListForumComments).toHaveBeenCalledWith("thread-community-help")
     );
+    expect(screen.getByText("Add the latest environment readings.")).toBeTruthy();
+    expect(screen.getByTestId("link-/forum/post?id=thread-community-help")).toBeTruthy();
   });
 
   it("uses forum group wording for personal membership fallbacks", async () => {

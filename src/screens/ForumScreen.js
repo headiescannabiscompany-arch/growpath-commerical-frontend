@@ -12,12 +12,18 @@ import {
   Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import AppShell from "../components/AppShell.js";
 import FollowButton from "../components/FollowButton.js";
 import ForumFilters from "../components/ForumFilters.js";
-import { getLatestPosts, getTrendingPosts, getFollowingPosts } from "../api/forum.js";
+import {
+  getLatestPosts,
+  getTrendingPosts,
+  getFollowingPosts,
+  listForumCategories,
+  listPosts
+} from "../api/forum.js";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
 import { resolveImageUrl } from "../utils/images.js";
 import { useAuth } from "@/auth/AuthContext";
@@ -34,8 +40,11 @@ import { shouldAutoFetchMore } from "../utils/forumFeed.js";
 import { radius } from "../theme/theme";
 
 export default function ForumScreen() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const { user, ctx } = auth;
+  const workspaceMode = ctx?.mode || auth.mode || "personal";
   const [mode, setMode] = useState("latest");
+  const [category, setCategory] = useState("all");
   const [activeFilters, setActiveFilters] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const navigation = useNavigation();
@@ -53,6 +62,23 @@ export default function ForumScreen() {
 
   const tierOneConfig = getTier1Metadata();
   const TIER1_TAGS = new Set(tierOneConfig?.options || []);
+  const isFacility = workspaceMode === "facility";
+  const facilityId = String(
+    ctx?.facilityId ||
+      user?.selectedFacilityId ||
+      user?.facilityId ||
+      user?.facility?.id ||
+      user?.facility?._id ||
+      ""
+  );
+  const { data: categoryData } = useQuery({
+    queryKey: ["forum-categories"],
+    queryFn: listForumCategories,
+    staleTime: 60_000
+  });
+  const categories = Array.isArray(categoryData?.categories)
+    ? categoryData.categories
+    : [];
 
   const normalizedUserInterests = useMemo(() => {
     if (!user?.growInterests) return {};
@@ -92,15 +118,31 @@ export default function ForumScreen() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteQuery({
-      queryKey: ["forumPosts", mode, tier1Filters, otherTierFilters],
+      queryKey: [
+        "forumPosts",
+        mode,
+        category,
+        facilityId,
+        tier1Filters,
+        otherTierFilters
+      ],
       queryFn: ({ pageParam = 1 }) => {
         const page = typeof pageParam === "number" ? pageParam : 1;
+        if (category === "facility" && isFacility && facilityId) {
+          return listPosts({
+            page,
+            visibility: "facilityOnly",
+            facilityId,
+            category: "facility"
+          });
+        }
+        const filters = category === "all" ? {} : { category };
         if (mode === "latest") {
-          return getLatestPosts(page, tier1Filters, otherTierFilters);
+          return getLatestPosts(page, tier1Filters, otherTierFilters, filters);
         } else if (mode === "trending") {
-          return getTrendingPosts(page, tier1Filters, otherTierFilters);
+          return getTrendingPosts(page, tier1Filters, otherTierFilters, filters);
         } else {
-          return getFollowingPosts(page, tier1Filters, otherTierFilters);
+          return getFollowingPosts(page, tier1Filters, otherTierFilters, filters);
         }
       },
       getNextPageParam: (lastPage, allPages) => {
@@ -149,18 +191,33 @@ export default function ForumScreen() {
 
   const handleCreatePost = useCallback(() => {
     pendingScrollToTop.current = true;
+    const params = {
+      category: category === "all" ? "general" : category,
+      postType:
+        category === "product_qna"
+          ? "product_qna"
+          : category === "course"
+            ? "course"
+            : category === "live_qna"
+              ? "live_qna"
+              : "discussion",
+      ...(category === "facility" && facilityId
+        ? { visibility: "facilityOnly", facilityId, workspace: "facility" }
+        : {})
+    };
     if (canNavigateByName("new-post")) {
-      rootNavigation.navigate("new-post");
+      rootNavigation.navigate("new-post", params);
       return;
     }
     if (canNavigateByName("ForumNewPost")) {
-      rootNavigation.navigate("ForumNewPost");
+      rootNavigation.navigate("ForumNewPost", params);
       return;
     }
-  }, [canNavigateByName, rootNavigation]);
+  }, [canNavigateByName, category, facilityId, rootNavigation]);
 
   function renderPost({ item }) {
-    const authorType = item.authorType || item.user?.type || "user";
+    const authorType =
+      item.authorIdentity?.type || item.authorType || item.user?.type || "user";
     const workspace = item.workspaceContext || item.workspace || "personal";
     const identityLabel =
       authorType === "business" || authorType === "commercial"
@@ -176,7 +233,11 @@ export default function ForumScreen() {
           : "Personal";
     const avatarUri = resolveImageUrl(item.user?.avatar);
     const displayName =
-      item.author?.displayName || item.user?.displayName || item.user?.name || "Anonymous";
+      item.authorIdentity?.displayName ||
+      item.author?.displayName ||
+      item.user?.displayName ||
+      item.user?.name ||
+      "Anonymous";
     return (
       <TouchableOpacity
         style={styles.card}
@@ -237,6 +298,10 @@ export default function ForumScreen() {
             ))}
           </View>
         )}
+        <Text style={styles.threadType}>
+          {(item.category || "general").replace(/_/g, " ")} |{" "}
+          {(item.postType || "discussion").replace(/_/g, " ")}
+        </Text>
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             Likes {Array.isArray(item.likes) ? item.likes.length : item.likes || 0}
@@ -279,8 +344,8 @@ export default function ForumScreen() {
                 </Text>
                 <Text style={{ color: "#222", fontSize: 13 }}>
                   Discussion, grow help, course questions, product Q&A, and live Q&A
-                  belong here. Feed / Campaigns is for commercial and facility
-                  outreach, ads, products, courses, lives, and storefront promotion.
+                  belong here. Feed / Campaigns is for commercial and facility outreach,
+                  ads, products, courses, lives, and storefront promotion.
                 </Text>
               </View>
               <View style={styles.guildHeader}>
@@ -309,6 +374,36 @@ export default function ForumScreen() {
                 </View>
               </View>
               <View style={styles.header}>
+                <Text style={styles.categoryHeading}>Browse categories</Text>
+                <View style={styles.categoryRow}>
+                  {[
+                    { key: "all", threadCount: null },
+                    ...categories.filter((item) => item.key !== "facility"),
+                    ...(isFacility ? [{ key: "facility", threadCount: null }] : [])
+                  ].map((item) => (
+                    <TouchableOpacity
+                      key={item.key}
+                      accessibilityLabel={`Browse Forum category ${item.key}`}
+                      onPress={() => setCategory(item.key)}
+                      style={[
+                        styles.categoryChip,
+                        category === item.key && styles.categoryChipActive
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          category === item.key && styles.categoryChipTextActive
+                        ]}
+                      >
+                        {item.key === "all" ? "All" : item.key.replace(/_/g, " ")}
+                        {typeof item.threadCount === "number"
+                          ? ` (${item.threadCount})`
+                          : ""}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
                 <View style={styles.tabRow}>
                   <TouchableOpacity
                     onPress={() => changeMode("latest")}
@@ -555,6 +650,18 @@ const styles = StyleSheet.create({
     color: "#888",
     marginRight: 16
   },
+  threadType: { color: "#64748B", fontSize: 12, fontWeight: "700", marginTop: 6 },
+  categoryHeading: { color: "#334155", fontSize: 13, fontWeight: "800" },
+  categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginVertical: 8 },
+  categoryChip: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  categoryChipActive: { backgroundColor: "#166534" },
+  categoryChipText: { color: "#334155", fontSize: 12, fontWeight: "700" },
+  categoryChipTextActive: { color: "#FFFFFF" },
   tab: {
     flex: 1,
     paddingVertical: 10,

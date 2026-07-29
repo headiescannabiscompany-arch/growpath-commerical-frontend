@@ -200,30 +200,43 @@ export default function FacilityInventoryTab() {
           </View>
         </View>
 
-        <View style={styles.summaryCard}>
-          <View>
-            <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
-              {outOfStock}
-            </Text>
-            <Text style={styles.summaryLabel}>out of stock</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open sales and transfers"
+          onPress={() => router.push("/home/facility/transfers" as any)}
+          style={styles.ghostButton}
+        >
+          <Text style={styles.ghostText}>Sales & licensed transfers</Text>
+        </Pressable>
+
+        {sorted.length ? (
+          <View style={styles.summaryCard}>
+            <View>
+              <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
+                {outOfStock}
+              </Text>
+              <Text style={styles.summaryLabel}>out of stock</Text>
+            </View>
+            <View>
+              <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
+                {lowStock}
+              </Text>
+              <Text style={styles.summaryLabel}>low stock</Text>
+            </View>
+            <View>
+              <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
+                {missingSku}
+              </Text>
+              <Text style={styles.summaryLabel}>missing SKU</Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
-              {lowStock}
-            </Text>
-            <Text style={styles.summaryLabel}>low stock</Text>
-          </View>
-          <View>
-            <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
-              {missingSku}
-            </Text>
-            <Text style={styles.summaryLabel}>missing SKU</Text>
-          </View>
-        </View>
+        ) : null}
 
         {!canWriteInventory ? (
           <Text style={styles.lockedText}>
-            Inventory changes unlock after facility checkout is active.
+            Your facility role or plan does not allow inventory changes. Viewers remain
+            read-only; owners and managers can manage stock when inventory access is
+            active.
           </Text>
         ) : (
           <Pressable

@@ -10,6 +10,21 @@ const mockLogout = jest.fn();
 const mockRetryMe = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockUpdateContentControls = jest.fn();
+let mockEntitlementsPlan = "free";
+const mockUser = {
+  id: "user-1",
+  email: "grower@example.com",
+  displayName: "Grower",
+  role: "user",
+  plan: "free",
+  subscriptionStatus: "free",
+  emailVerified: true,
+  ageBand: "21_plus",
+  cannabisEligible: true,
+  cannabisVisibility: "show",
+  parentalLockEnabled: true
+};
 
 jest.mock("@/api/users", () => ({
   deleteAccount: (...args: any[]) => mockDeleteAccount(...args),
@@ -18,20 +33,13 @@ jest.mock("@/api/users", () => ({
 }));
 
 jest.mock("@/api/auth", () => ({
-  requestEmailVerification: jest.fn()
+  requestEmailVerification: jest.fn(),
+  updateContentControls: (...args: any[]) => mockUpdateContentControls(...args)
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: {
-      id: "user-1",
-      email: "grower@example.com",
-      displayName: "Grower",
-      role: "user",
-      plan: "free",
-      subscriptionStatus: "free",
-      emailVerified: true
-    },
+    user: mockUser,
     logout: (...args: any[]) => mockLogout(...args),
     retryMe: (...args: any[]) => mockRetryMe(...args)
   })
@@ -39,7 +47,7 @@ jest.mock("@/auth/AuthContext", () => ({
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
-    plan: "free",
+    plan: mockEntitlementsPlan,
     mode: "personal"
   })
 }));
@@ -48,7 +56,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
     push: mockPush
-  })
+  }),
+  usePathname: () => "/profile"
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -63,6 +72,12 @@ jest.mock("@/components/layout/AppCard", () => {
   return ({ children }: any) => React.createElement(View, null, children);
 });
 
+jest.mock("@/components/TokenBalanceWidget", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return () => React.createElement(Text, null, "10 of 10 AI tokens");
+});
+
 describe("Profile privacy controls", () => {
   beforeEach(() => {
     mockDeleteAccount.mockReset();
@@ -71,17 +86,27 @@ describe("Profile privacy controls", () => {
     mockRetryMe.mockReset();
     mockReplace.mockReset();
     mockPush.mockReset();
+    mockUpdateContentControls.mockReset();
+    mockEntitlementsPlan = "free";
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
+    mockUpdateContentControls.mockResolvedValue({
+      ok: true,
+      contentControls: {
+        cannabisVisibility: "hide",
+        parentalLockEnabled: true,
+        cannabisEligible: true
+      }
+    });
   });
 
   it("requires typed confirmation before initiating account deletion", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(
-      (_title, _message, buttons) => {
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((_title, _message, buttons) => {
         const destructive = buttons?.find((button) => button.style === "destructive");
         destructive?.onPress?.();
-      }
-    );
+      });
 
     const screen = render(<Profile />);
 
@@ -111,5 +136,43 @@ describe("Profile privacy controls", () => {
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
+
+  it("shows a Pro account the shared upgrade action for higher plans", () => {
+    mockEntitlementsPlan = "pro";
+    const screen = render(<Profile />);
+    expect(screen.getByText("Upgrade Plans")).toBeTruthy();
+    expect(screen.getByText("Manage Billing")).toBeTruthy();
+  });
+
+  it("shows a Free account the shared upgrade action", () => {
+    const screen = render(<Profile />);
+
+    expect(screen.getByText("Upgrade Plans")).toBeTruthy();
+    expect(screen.getByText("Manage Billing")).toBeTruthy();
+  });
+
+  it("describes push delivery as device-based rather than phone-based", () => {
+    const screen = render(<Profile />);
+
+    expect(screen.getByText(/registered device/)).toBeTruthy();
+  });
+
+  it("lets an adult account hide cannabis without entering the parental PIN", async () => {
+    const screen = render(<Profile />);
+    expect(screen.getByLabelText("Parental content control PIN").props).toMatchObject({
+      autoComplete: "one-time-code",
+      textContentType: "oneTimeCode",
+      importantForAutofill: "no"
+    });
+    fireEvent.press(screen.getByLabelText("Hide cannabis content"));
+
+    await waitFor(() =>
+      expect(mockUpdateContentControls).toHaveBeenCalledWith({
+        cannabisVisibility: "hide",
+        currentPin: ""
+      })
+    );
+    expect(mockRetryMe).toHaveBeenCalled();
   });
 });

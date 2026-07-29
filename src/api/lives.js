@@ -9,6 +9,18 @@ export function getLive(id) {
   return apiRequest(apiRoutes.LIVES.DETAIL(id));
 }
 
+export function getLiveRsvp(id) {
+  return apiRequest(apiRoutes.LIVES.RSVP(id));
+}
+
+export function rsvpLive(id) {
+  return apiRequest(apiRoutes.LIVES.RSVP(id), { method: "POST", body: {} });
+}
+
+export function cancelLiveRsvp(id) {
+  return apiRequest(apiRoutes.LIVES.RSVP(id), { method: "DELETE" });
+}
+
 export function createLive(data) {
   return apiRequest(apiRoutes.LIVES.CREATE, {
     method: "POST",

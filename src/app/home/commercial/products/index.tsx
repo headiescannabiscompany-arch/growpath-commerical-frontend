@@ -5,6 +5,7 @@ import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-nativ
 
 import { apiRequest } from "@/api/apiRequest";
 import { createProduct, fetchProducts, Product } from "@/api/products";
+import { fetchStorefront } from "@/api/storefront";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -28,9 +29,12 @@ type ProductForm = {
   ingredients: string;
   directions: string;
   applicationRate: string;
+  documentUrls: string;
+  batchLot: string;
   externalPurchaseUrl: string;
   stripeProductId: string;
   stripePriceId: string;
+  regulatedCannabis: boolean;
   status: "draft" | "published";
 };
 
@@ -49,9 +53,12 @@ const EMPTY_FORM: ProductForm = {
   ingredients: "",
   directions: "",
   applicationRate: "",
+  documentUrls: "",
+  batchLot: "",
   externalPurchaseUrl: "",
   stripeProductId: "",
   stripePriceId: "",
+  regulatedCannabis: false,
   status: "draft"
 };
 
@@ -107,7 +114,9 @@ function hasProductSpecs(form: ProductForm) {
     form.guaranteedAnalysis,
     form.ingredients,
     form.directions,
-    form.applicationRate
+    form.applicationRate,
+    form.documentUrls,
+    form.batchLot
   ].some(hasText);
 }
 
@@ -134,13 +143,18 @@ function formPublishBlockers(form: ProductForm) {
   if (!Number(form.price)) blockers.push("add price");
   if (!hasText(form.unitSize)) blockers.push("add size/weight");
   if (!splitList(form.growInterests).length) blockers.push("add grow interests");
-  if (!hasText(form.externalPurchaseUrl) && !hasText(form.stripePriceId)) {
+  if (
+    !form.regulatedCannabis &&
+    !hasText(form.externalPurchaseUrl) &&
+    !hasText(form.stripePriceId)
+  ) {
     blockers.push("add checkout link or Stripe price");
   }
   return blockers;
 }
 
 function parsePrice(value: string) {
+  if (!value.trim()) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
@@ -163,6 +177,7 @@ export default function CommercialProductsRoute({
   const auth = useAuth();
   const ent = useEntitlements();
   const [products, setProducts] = useState<Product[]>([]);
+  const [storefrontSlug, setStorefrontSlug] = useState("");
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -191,7 +206,12 @@ export default function CommercialProductsRoute({
     setLoading(true);
     setError(null);
     try {
-      setProducts(await fetchProducts());
+      const [nextProducts, storefront] = await Promise.all([
+        fetchProducts(),
+        fetchStorefront().catch(() => null)
+      ]);
+      setProducts(nextProducts);
+      setStorefrontSlug(String(storefront?.slug || ""));
     } catch (err) {
       setError(err);
     } finally {
@@ -205,6 +225,7 @@ export default function CommercialProductsRoute({
 
   async function submitProduct() {
     if (!form.name.trim()) return;
+    const price = parsePrice(form.price);
     setSaving(true);
     setError(null);
     try {
@@ -215,14 +236,17 @@ export default function CommercialProductsRoute({
         shortDescription: form.shortDescription.trim(),
         description: form.shortDescription.trim(),
         imageUrl: imageUrl || undefined,
-        price: parsePrice(form.price),
-        currency: form.currency.trim() || "USD",
+        price,
+        currency: price === undefined ? undefined : form.currency.trim() || "USD",
         sku: form.sku.trim(),
         unitSize: form.unitSize.trim() || undefined,
         growInterests: splitList(form.growInterests),
         externalPurchaseUrl: form.externalPurchaseUrl.trim(),
         stripeProductId: form.stripeProductId.trim() || undefined,
         stripePriceId: form.stripePriceId.trim() || undefined,
+        regulatedCannabis: form.regulatedCannabis,
+        isCannabis: form.regulatedCannabis,
+        productType: form.regulatedCannabis ? "cannabis" : undefined,
         specs: hasProductSpecs(form)
           ? {
               unitSize: form.unitSize.trim() || undefined,
@@ -231,9 +255,13 @@ export default function CommercialProductsRoute({
               guaranteedAnalysis: form.guaranteedAnalysis.trim() || undefined,
               ingredients: splitList(form.ingredients),
               directions: form.directions.trim() || undefined,
-              applicationRate: form.applicationRate.trim() || undefined
+              applicationRate: form.applicationRate.trim() || undefined,
+              documentUrls: splitList(form.documentUrls),
+              batchLot: form.batchLot.trim() || undefined
             }
           : undefined,
+        documentUrls: splitList(form.documentUrls),
+        batchLot: form.batchLot.trim() || undefined,
         status: form.status
       } as Partial<Product>);
       setForm(EMPTY_FORM);
@@ -331,6 +359,10 @@ export default function CommercialProductsRoute({
             </Text>
           </View>
           <View style={styles.headerActions}>
+            <ActionLink
+              href="/home/commercial/products/import"
+              label="Import CSV / PDF"
+            />
             <ActionLink href="/home/commercial/product-lines" label="Product Lines" />
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
             <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
@@ -386,6 +418,29 @@ export default function CommercialProductsRoute({
             placeholder="Product name"
             style={styles.input}
           />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: form.regulatedCannabis }}
+            accessibilityLabel="Regulated cannabis product"
+            onPress={() =>
+              setForm((prev) => ({
+                ...prev,
+                regulatedCannabis: !prev.regulatedCannabis,
+                externalPurchaseUrl: !prev.regulatedCannabis
+                  ? ""
+                  : prev.externalPurchaseUrl,
+                stripeProductId: !prev.regulatedCannabis ? "" : prev.stripeProductId,
+                stripePriceId: !prev.regulatedCannabis ? "" : prev.stripePriceId
+              }))
+            }
+            style={[styles.classification, form.regulatedCannabis && styles.selected]}
+          >
+            <Text style={styles.classificationTitle}>Regulated cannabis</Text>
+            <Text style={styles.body}>
+              Catalog and licensed facility transfers only. Public checkout links are
+              removed.
+            </Text>
+          </Pressable>
           <TextInput
             value={form.category}
             onChangeText={(category) => setForm((prev) => ({ ...prev, category }))}
@@ -449,39 +504,52 @@ export default function CommercialProductsRoute({
             style={styles.input}
           />
           <TextInput
+            value={form.batchLot}
+            onChangeText={(batchLot) => setForm((prev) => ({ ...prev, batchLot }))}
+            accessibilityLabel="Commercial product batch or lot"
+            placeholder="Current batch / lot identifier"
+            style={styles.input}
+          />
+          <TextInput
             value={form.currency}
             onChangeText={(currency) => setForm((prev) => ({ ...prev, currency }))}
             accessibilityLabel="Commercial product currency"
             placeholder="Currency"
             style={styles.input}
           />
-          <TextInput
-            value={form.externalPurchaseUrl}
-            onChangeText={(externalPurchaseUrl) =>
-              setForm((prev) => ({ ...prev, externalPurchaseUrl }))
-            }
-            accessibilityLabel="Commercial product external purchase URL"
-            placeholder="External purchase URL"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.stripeProductId}
-            onChangeText={(stripeProductId) =>
-              setForm((prev) => ({ ...prev, stripeProductId }))
-            }
-            accessibilityLabel="Commercial product Stripe product ID"
-            placeholder="Stripe product ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.stripePriceId}
-            onChangeText={(stripePriceId) =>
-              setForm((prev) => ({ ...prev, stripePriceId }))
-            }
-            accessibilityLabel="Commercial product Stripe price ID"
-            placeholder="Stripe price ID"
-            style={styles.input}
-          />
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.externalPurchaseUrl}
+              onChangeText={(externalPurchaseUrl) =>
+                setForm((prev) => ({ ...prev, externalPurchaseUrl }))
+              }
+              accessibilityLabel="Commercial product external purchase URL"
+              placeholder="External purchase URL"
+              style={styles.input}
+            />
+          ) : null}
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.stripeProductId}
+              onChangeText={(stripeProductId) =>
+                setForm((prev) => ({ ...prev, stripeProductId }))
+              }
+              accessibilityLabel="Commercial product Stripe product ID"
+              placeholder="Stripe product ID"
+              style={styles.input}
+            />
+          ) : null}
+          {!form.regulatedCannabis ? (
+            <TextInput
+              value={form.stripePriceId}
+              onChangeText={(stripePriceId) =>
+                setForm((prev) => ({ ...prev, stripePriceId }))
+              }
+              accessibilityLabel="Commercial product Stripe price ID"
+              placeholder="Stripe price ID"
+              style={styles.input}
+            />
+          ) : null}
         </View>
         <TextInput
           value={form.guaranteedAnalysis}
@@ -507,6 +575,15 @@ export default function CommercialProductsRoute({
           accessibilityLabel="Commercial product directions"
           multiline
           placeholder="Directions for use, storage, and safety notes"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.documentUrls}
+          onChangeText={(documentUrls) => setForm((prev) => ({ ...prev, documentUrls }))}
+          accessibilityLabel="Commercial product document URLs"
+          multiline
+          autoCapitalize="none"
+          placeholder="Label, SDS, COA, or instructions URLs (one per line)"
           style={[styles.input, styles.textArea]}
         />
         <TextInput
@@ -596,6 +673,7 @@ export default function CommercialProductsRoute({
             {products.map((product) => {
               const id = productId(product);
               const missing = productMissingSetup(product);
+              const priceCents = productPrice(product);
               return (
                 <View key={id} style={styles.productRow}>
                   {productImage(product) ? (
@@ -616,6 +694,11 @@ export default function CommercialProductsRoute({
                         product.sku && `SKU ${product.sku}`,
                         ((product as any).unitSize || product.specs?.unitSize) &&
                           `Size ${(product as any).unitSize || product.specs?.unitSize}`,
+                        priceCents > 0
+                          ? `Price $${(priceCents / 100).toFixed(2)} ${String(
+                              product.currency || "USD"
+                            ).toUpperCase()}`
+                          : "Price TBD",
                         product.status || "draft",
                         (product as any).externalPurchaseUrl ? "external link" : null
                       ]
@@ -660,10 +743,17 @@ export default function CommercialProductsRoute({
                       href={`/home/commercial/products/${encodeURIComponent(String(id))}`}
                       label="Open Detail"
                     />
-                    <ActionLink
-                      href={`/store/example-brand/products/${id}`}
-                      label="Public Detail"
-                    />
+                    {storefrontSlug ? (
+                      <ActionLink
+                        href={`/store/${encodeURIComponent(storefrontSlug)}/products/${encodeURIComponent(String(id))}`}
+                        label="Public Detail"
+                      />
+                    ) : (
+                      <ActionLink
+                        href="/home/commercial/storefront"
+                        label="Set Up Storefront"
+                      />
+                    )}
                     <ActionLink href="/home/commercial/feed" label="Create Campaign" />
                   </View>
                 </View>
@@ -676,14 +766,15 @@ export default function CommercialProductsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Public product page workflow</Text>
+        <Text style={styles.cardTitle}>Public product page</Text>
         <Text style={styles.body}>
           Published products should be inspectable from public storefronts and public
           storefront pages. Users should be able to move from feed to storefront to
           product detail to external purchase or support.
         </Text>
         <Text style={styles.bullet}>
-          Public product detail route: /store/your-brand-slug/products/product-id
+          Public product detail URLs use the saved storefront slug and the saved product
+          ID.
         </Text>
         <Text style={styles.bullet}>
           Support product photos, description, price, external purchase link, usage
@@ -928,6 +1019,18 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5
   },
+  classification: {
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    padding: 10
+  },
+  selected: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#D97706",
+    borderWidth: 2
+  },
+  classificationTitle: { color: "#78350F", fontWeight: "900" },
   list: {
     gap: 10,
     marginTop: 12

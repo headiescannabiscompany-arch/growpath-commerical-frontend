@@ -1,6 +1,6 @@
 import { ApiError } from "../apiRequest";
 import { apiRequest } from "../apiRequest";
-import { inviteTeamMember, listTeamMembers } from "../team";
+import { inviteTeamMember, listTeamMembers, removeTeamMember } from "../team";
 
 jest.mock("../apiRequest", () => {
   const actual = jest.requireActual("../apiRequest");
@@ -78,5 +78,18 @@ describe("facility team API compatibility", () => {
         body: { email: "two@example.com", role: "STAFF" }
       }
     );
+  });
+
+  it("removes the selected user through the canonical Facility Team endpoint", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      removed: { userId: "user-2", role: "STAFF" },
+      ok: true
+    });
+
+    await expect(removeTeamMember("facility-1", "user-2")).resolves.toBe(true);
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/facility/facility-1/team/user-2", {
+      method: "DELETE"
+    });
   });
 });

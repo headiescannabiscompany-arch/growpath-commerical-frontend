@@ -9,6 +9,7 @@ export type AppCardProps = {
   subtitle?: string;
   children?: React.ReactNode;
   onPress?: () => void;
+  accessibilityLabel?: string;
 };
 
 export default function AppCard({
@@ -16,10 +17,11 @@ export default function AppCard({
   subtitle,
   children,
   onPress,
+  accessibilityLabel,
   style
 }: AppCardProps) {
   const Inner = (
-    <View style={[styles.card, style]}>
+    <View accessibilityLabel={accessibilityLabel} style={[styles.card, style]}>
       {!!title && <Text style={styles.title}>{title}</Text>}
       {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {!!children && (

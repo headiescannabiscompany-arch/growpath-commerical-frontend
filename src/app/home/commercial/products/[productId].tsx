@@ -11,6 +11,7 @@ import {
 } from "@/api/products";
 import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -57,6 +58,7 @@ function priceInputValue(product: Product | null) {
 }
 
 function parsePrice(value: string) {
+  if (!value.trim()) return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
@@ -160,11 +162,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [applicationRate, setApplicationRate] = useState("");
   const [directions, setDirections] = useState("");
   const [warnings, setWarnings] = useState("");
+  const [documentUrls, setDocumentUrls] = useState("");
+  const [batchLot, setBatchLot] = useState("");
   const [growInterests, setGrowInterests] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
   const [stripeProductId, setStripeProductId] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
+  const [regulatedCannabis, setRegulatedCannabis] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -186,11 +191,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setApplicationRate((next as any)?.applicationRate || specs.applicationRate || "");
     setDirections((next as any)?.directions || specs.directions || "");
     setWarnings(formatDetailValue((next as any)?.warnings || specs.warnings));
+    setDocumentUrls(formatDetailValue((next as any)?.documentUrls || specs.documentUrls));
+    setBatchLot((next as any)?.batchLot || specs.batchLot || "");
     setGrowInterests(next?.growInterests?.join(", ") || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
     setStripeProductId(next?.stripeProductId || "");
     setStripePriceId(next?.stripePriceId || "");
+    setRegulatedCannabis(Boolean(next?.regulatedCannabis || next?.isCannabis));
   }, []);
 
   const load = useCallback(async () => {
@@ -235,12 +243,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       applicationRate: applicationRate.trim(),
       directions: directions.trim(),
       warnings: splitList(warnings),
+      documentUrls: splitList(documentUrls),
+      batchLot: batchLot.trim(),
       growInterests: splitList(growInterests),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
-      externalPurchaseUrl: externalPurchaseUrl.trim(),
-      stripeProductId: stripeProductId.trim(),
-      stripePriceId: stripePriceId.trim(),
+      externalPurchaseUrl: regulatedCannabis ? "" : externalPurchaseUrl.trim(),
+      stripeProductId: regulatedCannabis ? "" : stripeProductId.trim(),
+      stripePriceId: regulatedCannabis ? "" : stripePriceId.trim(),
+      regulatedCannabis,
+      isCannabis: regulatedCannabis,
+      productType: regulatedCannabis ? "cannabis" : undefined,
       specs: {
         ...(product?.specs || {}),
         unitSize: unitSize.trim() || product?.specs?.unitSize,
@@ -255,7 +268,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
         warnings: splitList(warnings).length
           ? splitList(warnings)
-          : product?.specs?.warnings
+          : product?.specs?.warnings,
+        documentUrls: splitList(documentUrls),
+        batchLot: batchLot.trim() || (product?.specs as any)?.batchLot
       }
     } as Product;
     const publishMissing = publicFieldMissingSetup(productMissingSetup(nextProduct));
@@ -285,12 +300,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         applicationRate: applicationRate.trim() || undefined,
         directions: directions.trim() || undefined,
         warnings: splitList(warnings),
+        documentUrls: splitList(documentUrls),
+        batchLot: batchLot.trim() || undefined,
         growInterests: splitList(growInterests),
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
-        externalPurchaseUrl: externalPurchaseUrl.trim(),
-        stripeProductId: stripeProductId.trim() || undefined,
-        stripePriceId: stripePriceId.trim() || undefined,
+        externalPurchaseUrl: regulatedCannabis ? "" : externalPurchaseUrl.trim(),
+        stripeProductId: regulatedCannabis ? "" : stripeProductId.trim() || undefined,
+        stripePriceId: regulatedCannabis ? "" : stripePriceId.trim() || undefined,
+        regulatedCannabis,
+        isCannabis: regulatedCannabis,
+        productType: regulatedCannabis ? "cannabis" : undefined,
         specs: {
           ...(product?.specs || {}),
           unitSize: unitSize.trim() || product?.specs?.unitSize,
@@ -305,7 +325,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           applicationRate: applicationRate.trim() || product?.specs?.applicationRate,
           warnings: splitList(warnings).length
             ? splitList(warnings)
-            : product?.specs?.warnings
+            : product?.specs?.warnings,
+          documentUrls: splitList(documentUrls),
+          batchLot: batchLot.trim() || (product?.specs as any)?.batchLot
         }
       } as Partial<Product>);
       hydrate(res?.product ?? res?.item ?? res);
@@ -362,6 +384,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       {loading ? <Text style={styles.muted}>Loading product...</Text> : null}
       {error ? <InlineError error={error} /> : null}
 
+      <CommercialContextualTools
+        source="commercial_product_detail"
+        productId={productId}
+        productLineId={String((product as any)?.productLineId || "")}
+        prompt={`Review the commercial product ${productTitle(product)} and its linked formula, batch, evidence, and customer guidance.`}
+        tools={["ask-ai", "recipe-builder", "report"]}
+      />
+
       <AppCard>
         <Text style={styles.cardTitle}>Product Record</Text>
         <Text style={styles.body}>
@@ -376,9 +406,19 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             label="Product line"
             value={product?.productLineId || product?.linkedProductLineId}
           />
-          <DetailRow label="Currency" value={product?.currency} />
+          <DetailRow
+            label="Currency"
+            value={productPrice(product) > 0 ? product?.currency : "TBD"}
+          />
           <DetailRow label="Image" value={productImage(product)} />
-          <DetailRow label="Price" value={product?.price ? `$${product.price}` : ""} />
+          <DetailRow
+            label="Price"
+            value={
+              productPrice(product) > 0
+                ? `$${(productPrice(product) / 100).toFixed(2)}`
+                : "TBD"
+            }
+          />
           <DetailRow
             label="Size / weight"
             value={(product as any)?.unitSize || specs.unitSize}
@@ -426,6 +466,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow
             label="Release timing"
             value={specs.releaseCurve || specs.releaseTimeline}
+          />
+          <DetailRow
+            label="Documents"
+            value={(product as any)?.documentUrls || specs.documentUrls}
+          />
+          <DetailRow
+            label="Batch / lot"
+            value={(product as any)?.batchLot || specs.batchLot}
           />
           <DetailRow label="Warnings" value={specs.warnings} />
         </View>
@@ -658,30 +706,60 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             style={styles.input}
             value={growInterests}
           />
-          <TextInput
-            accessibilityLabel="Commercial product detail external URL"
-            autoCapitalize="none"
-            onChangeText={setExternalPurchaseUrl}
-            placeholder="External purchase URL"
-            style={styles.input}
-            value={externalPurchaseUrl}
-          />
-          <TextInput
-            accessibilityLabel="Commercial product detail Stripe product ID"
-            autoCapitalize="none"
-            onChangeText={setStripeProductId}
-            placeholder="Stripe product ID"
-            style={styles.input}
-            value={stripeProductId}
-          />
-          <TextInput
-            accessibilityLabel="Commercial product detail Stripe price ID"
-            autoCapitalize="none"
-            onChangeText={setStripePriceId}
-            placeholder="Stripe price ID"
-            style={styles.input}
-            value={stripePriceId}
-          />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: regulatedCannabis }}
+            accessibilityLabel="Regulated cannabis product"
+            onPress={() => {
+              const next = !regulatedCannabis;
+              setRegulatedCannabis(next);
+              if (next) {
+                setExternalPurchaseUrl("");
+                setStripeProductId("");
+                setStripePriceId("");
+              }
+            }}
+            style={[
+              styles.selectorButton,
+              regulatedCannabis && styles.selectedSelectorButton
+            ]}
+          >
+            <Text style={styles.selectorButtonText}>
+              {regulatedCannabis
+                ? "Regulated cannabis · catalog only"
+                : "Mark as regulated cannabis"}
+            </Text>
+          </Pressable>
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail external URL"
+              autoCapitalize="none"
+              onChangeText={setExternalPurchaseUrl}
+              placeholder="External purchase URL"
+              style={styles.input}
+              value={externalPurchaseUrl}
+            />
+          ) : null}
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail Stripe product ID"
+              autoCapitalize="none"
+              onChangeText={setStripeProductId}
+              placeholder="Stripe product ID"
+              style={styles.input}
+              value={stripeProductId}
+            />
+          ) : null}
+          {!regulatedCannabis ? (
+            <TextInput
+              accessibilityLabel="Commercial product detail Stripe price ID"
+              autoCapitalize="none"
+              onChangeText={setStripePriceId}
+              placeholder="Stripe price ID"
+              style={styles.input}
+              value={stripePriceId}
+            />
+          ) : null}
         </View>
         <TextInput
           accessibilityLabel="Commercial product detail short description"
@@ -729,6 +807,22 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           placeholder="Warnings, stage limits, legal notes, or safety notes"
           style={[styles.input, styles.textArea]}
           value={warnings}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail document URLs"
+          multiline
+          autoCapitalize="none"
+          onChangeText={setDocumentUrls}
+          placeholder="Label, SDS, COA, or instructions URLs (one per line)"
+          style={[styles.input, styles.textArea]}
+          value={documentUrls}
+        />
+        <TextInput
+          accessibilityLabel="Commercial product detail batch or lot"
+          onChangeText={setBatchLot}
+          placeholder="Current batch / lot identifier"
+          style={styles.input}
+          value={batchLot}
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable

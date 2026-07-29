@@ -171,17 +171,19 @@ describe("GrowTimelineScreen", () => {
     ).toHaveLength(2);
     expect(
       screen.getByLabelText(
-        "Timeline source link /home/personal/tools/saved-runs?toolRunId=run-1"
+        "Timeline source link /home/personal/tools/saved-runs?toolRunId=run-1&growId=grow-1&sourceContext=timeline"
       )
     ).toBeTruthy();
-    expect(screen.getByLabelText("Timeline source link /store?q=batch-linked-1")).toBeTruthy();
     expect(
-      screen.getByLabelText("Timeline source link /home/personal/grows/grow-1/tasks")
+      screen.getByLabelText("Timeline source link /store?q=batch-linked-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
-        "Timeline source link /home/personal/grows/grow-1/automation"
+        "Timeline source link /home/personal/grows/grow-1/tasks?taskId=task-1"
       )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Timeline source link /home/personal/grows/grow-1/automation")
     ).toBeTruthy();
   });
 

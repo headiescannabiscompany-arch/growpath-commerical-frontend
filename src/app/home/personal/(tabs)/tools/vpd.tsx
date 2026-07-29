@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -22,6 +22,7 @@ import { buildVpdNotices } from "@/features/personal/tools/vpdNotices";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { getImportedTelemetryToolContext } from "@/api/telemetry";
 
 type VpdModel =
   | { valid: false; vpd: null; tempC: null }
@@ -53,6 +54,35 @@ export default function VpdToolScreen() {
   const [serverResult, setServerResult] = useState<any>(null);
   const [serverRun, setServerRun] = useState<ToolRun | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [telemetryNote, setTelemetryNote] = useState("");
+
+  useEffect(() => {
+    if (!growId) return;
+    let active = true;
+    getImportedTelemetryToolContext({ growId })
+      .then((context) => {
+        if (!active) return;
+        const input = context?.toolInputs?.vpd || {};
+        const temperatureC = Number(input.temperatureC);
+        const rhPct = Number(input.rhPct);
+        if (Number.isFinite(temperatureC) && Number.isFinite(rhPct)) {
+          setUnit("C");
+          setTempText(String(Number(temperatureC.toFixed(2))));
+          setRhText(String(Number(rhPct.toFixed(2))));
+          setTelemetryNote(
+            `Prefilled from ${context.window.pointCount} imported telemetry points. Review the source window before saving.`
+          );
+        }
+      })
+      .catch(() =>
+        setTelemetryNote(
+          "Imported telemetry was unavailable; manual inputs remain unchanged."
+        )
+      );
+    return () => {
+      active = false;
+    };
+  }, [growId]);
 
   const model = useMemo<VpdModel>(() => {
     const temperature = Number(tempText);
@@ -169,6 +199,7 @@ export default function VpdToolScreen() {
           longContent
         />
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        {telemetryNote ? <Text style={styles.context}>{telemetryNote}</Text> : null}
 
         <ToolPlantContextPicker
           plants={plantContext.plants}

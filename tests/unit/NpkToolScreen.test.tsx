@@ -7,13 +7,14 @@ const mockRunCalculator = jest.fn();
 const mockListNutrientRecipes = jest.fn();
 const mockCreateProduct = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockRouterPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
-    push: jest.fn(),
+    push: (...args: any[]) => mockRouterPush(...args),
     replace: jest.fn()
   })
 }));
@@ -157,6 +158,15 @@ describe("NpkToolScreen", () => {
     });
   });
 
+  it("shows the canonical nutrient mix builder and its evidence limits", async () => {
+    const screen = await renderNpkToolScreen();
+
+    expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
+    expect(screen.getByText("Nutrient mix science and evidence")).toBeTruthy();
+    expect(screen.getByText(/verified product labels/)).toBeTruthy();
+    expect(screen.getByText(/does not prove product superiority/)).toBeTruthy();
+  });
+
   it("sends label P2O5/K2O and elemental P/K values to the NPK calculator", async () => {
     const screen = await renderNpkToolScreen();
 
@@ -214,7 +224,7 @@ describe("NpkToolScreen", () => {
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
   });
 
-  it("builds an AI recipe brief from current labels without replacing calculator math", async () => {
+  it("opens grow-aware Ask AI with current labels and deterministic calculator instructions", async () => {
     const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
@@ -224,15 +234,73 @@ describe("NpkToolScreen", () => {
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
 
-    fireEvent.press(screen.getByLabelText("Ask AI to build NPK recipe"));
+    fireEvent.press(screen.getByLabelText("Ask AI to build nutrient mix"));
 
-    expect(screen.getByText("AI recipe brief")).toBeTruthy();
-    expect(
-      screen.getByText(/Final nutrient totals, elemental P\/K conversion/)
-    ).toBeTruthy();
-    expect(screen.getByText(/Recipe: Kelp veg feed/)).toBeTruthy();
-    expect(screen.getByText(/1\. Kelp meal \| 100g \| label 3-1-2/)).toBeTruthy();
-    expect(screen.getByText(/Ask me for label density/)).toBeTruthy();
+    expect(mockRouterPush).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/home\/personal\/ai\?prompt=/)
+    );
+    const href = String(mockRouterPush.mock.calls[0][0]);
+    const prompt = decodeURIComponent(href.split("prompt=")[1].split("&growId=")[0]);
+    expect(prompt).toContain("Recipe: Kelp veg feed");
+    expect(prompt).toContain("1. Kelp meal | 100g | label 3-1-2");
+    expect(prompt).toContain("nutrients.computeDeliveredNPK");
+    expect(href).toContain("growId=grow-1");
+  });
+
+  it("loads GrowPath locked amendment presets with exact densities and label values", async () => {
+    const screen = await renderNpkToolScreen();
+
+    fireEvent.press(screen.getByLabelText("Load Flower amendment preset"));
+
+    expect(screen.getByText(/Flower loaded/)).toBeTruthy();
+    expect(screen.getByText(/Dry mix size is 2 lb/)).toBeTruthy();
+    expect(screen.getByDisplayValue("GrowPath 2-6-4 Flower")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Calculate recipe"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "npk-recipe",
+        expect.objectContaining({
+          batchVolume: 5,
+          batchUnit: "gal",
+          dryMixWeightLb: 2,
+          stage: "flower",
+          medium: "living_soil",
+          recipeMode: "build_dry_blend",
+          targetNpk: { N: 2, P: 6, K: 4 },
+          releaseEnvironment: expect.objectContaining({ livingSoil: true }),
+          products: expect.arrayContaining([
+            expect.objectContaining({
+              name: "Langbeinite",
+              amount: 226.8,
+              unit: "g",
+              densityGml: 1.9172,
+              K2O: 22,
+              Mg: 10.8,
+              S: 22
+            }),
+            expect.objectContaining({
+              name: "Bone Meal",
+              amount: 198.45,
+              densityGml: 0.9586,
+              N: 3,
+              P2O5: 15,
+              Ca: 18
+            }),
+            expect.objectContaining({
+              name: "Greenstone",
+              N: 0,
+              P2O5: 0,
+              K2O: 0,
+              Ca: 2,
+              Mg: 4,
+              Fe: 4
+            })
+          ])
+        })
+      )
+    );
   });
 
   it("creates a source-linked NPK recipe task plan from the saved ToolRun", async () => {

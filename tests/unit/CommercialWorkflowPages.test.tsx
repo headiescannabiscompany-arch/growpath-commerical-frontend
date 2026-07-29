@@ -2,12 +2,14 @@ import React from "react";
 import fs from "fs";
 import path from "path";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import CommercialHome from "@/app/home/commercial";
 import CommercialCommunityRoute from "@/app/home/commercial/community";
 import CommercialCoursesRoute from "@/app/home/commercial/courses";
 import CommercialCourseDetailRoute from "@/app/home/commercial/courses/[courseId]";
 import CommercialMarketingRoute from "@/app/home/commercial/marketing";
+import CommercialMoreRoute from "@/app/home/commercial/more";
 import CommercialOrdersRoute from "@/app/home/commercial/orders";
 import CommercialProductLinesRoute from "@/app/home/commercial/product-lines";
 import CommercialProductLineDetailRoute from "@/app/home/commercial/product-lines/[lineId]";
@@ -28,6 +30,8 @@ const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+
+jest.setTimeout(15000);
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -439,6 +443,7 @@ describe("commercial workflow pages", () => {
               linkedLiveIds: ["live-1"],
               modules: [{ title: "Start here" }],
               lessons: [{ title: "Application rate" }],
+              quizzes: [{ title: "Label check" }],
               tasks: [{ title: "Watch lesson" }],
               status: "draft"
             },
@@ -526,8 +531,14 @@ describe("commercial workflow pages", () => {
             id: "course-1",
             title: "Living Soil Product Use",
             thumbnailUrl: "https://example.com/course-thumb.jpg",
+            bannerUrl: "https://example.com/course-updated-banner.jpg",
+            category: "product_training",
+            description: "Updated product course description.",
+            access: "paid",
             price: 49,
             growInterests: ["living soil"],
+            stripeProductId: "prod_course_updated",
+            stripePriceId: "price_course_updated",
             lessons: [{ id: "lesson-new", ...options.body }]
           },
           lesson: { id: "lesson-new", ...options.body }
@@ -701,7 +712,14 @@ describe("commercial workflow pages", () => {
             brandProfileViews: 33,
             productViews: 75,
             feedClicks: 12,
+            feedImpressions: 120,
+            feedConversions: 8,
             courseStarts: 6,
+            liveViews: 25,
+            liveRsvps: 7,
+            orderCount: 5,
+            orderRevenueCents: 8400,
+            orderRevenueByCurrency: { USD: 8400 },
             forumReplies: 4,
             activeTrials: 3,
             completedTrials: 2,
@@ -737,7 +755,11 @@ describe("commercial workflow pages", () => {
                   count: 9,
                   eventTypes: ["product_external_link_click"]
                 }
-              ]
+              ],
+              courses: [{ key: "course-1", label: "Living Soil 101", count: 6 }],
+              lives: [{ key: "live-1", label: "Soil Q&A", count: 7 }],
+              orders: [{ key: "product-1", label: "Paid product order", count: 5 }],
+              growInterests: [{ key: "living-soil", label: "living-soil", count: 9 }]
             }
           }
         });
@@ -759,9 +781,21 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Storefront: Living Soil Labs /living-soil-labs")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Open Storefront").props.href).toBe(
+      "/home/commercial/storefront"
+    );
+    expect(screen.getByLabelText("Edit Storefront").props.href).toBe(
+      "/home/commercial/storefront/edit"
+    );
+    expect(screen.getByLabelText("View as User").props.href).toBe(
+      "/store/living-soil-labs"
+    );
+    expect(screen.getByLabelText("Add Product").props.href).toBe(
+      "/home/commercial/products/new"
+    );
     expect(
       screen.getByText(
-        "Your storefront is the public brand home base. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe."
+        "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path."
       )
     ).toBeTruthy();
     expect(screen.getByText("Action Items")).toBeTruthy();
@@ -940,7 +974,7 @@ describe("commercial workflow pages", () => {
     expect(screen.queryByText(/Commercial community/)).toBeNull();
     expect(screen.getByText("Open Forum Directory")).toBeTruthy();
     expect(screen.queryByText("Open Communities")).toBeNull();
-    expect(screen.getByText("Support thread workflow")).toBeTruthy();
+    expect(screen.getByText("Turn answers into support content")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
@@ -1025,13 +1059,25 @@ describe("commercial workflow pages", () => {
     const screen = render(<CommercialCoursesRoute />);
 
     expect(screen.getByText("Commercial Course Builder")).toBeTruthy();
-    expect(screen.getByText("Course creation workflow")).toBeTruthy();
+    expect(screen.getByText("Create a course")).toBeTruthy();
     expect(
       screen.getByText(/Commercial courses should add storefront context/)
     ).toBeTruthy();
     expect(screen.getByText("Product education")).toBeTruthy();
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);
+    expect(screen.getByText("Open Full Course Builder")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getAllByProps({
+        href: "/courses/create?from=%2Fhome%2Fcommercial%2Fcourses"
+      }).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/provider-aware GrowPath uploads/)).toBeTruthy();
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial course access to Free"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
@@ -1045,7 +1091,18 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
-    expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Product education .* Beginner .* Free .* Draft/).length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Edit Course").length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 quizzes/)).toBeTruthy();
+    expect(screen.getAllByText("Learner Preview").length).toBeGreaterThan(0);
+    expect(screen.getByText("Course Discussion")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/home/commercial/courses/course-1?preview=1"
+      })
+    ).toBeTruthy();
 
     fireEvent.press(
       screen.getByLabelText("Create setup task for Bloom Topdress Workshop")
@@ -1136,6 +1193,10 @@ describe("commercial workflow pages", () => {
       "https://example.com/label.pdf"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course Forum Q&A thread"),
+      "thread-bloom-course"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course module outline"),
       "How the product works\nApplication timing"
     );
@@ -1144,10 +1205,19 @@ describe("commercial workflow pages", () => {
       "Read the label\nApply and water in"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course quiz outline"),
+      "When should you water in? | Immediately | One week later"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course task checklist"),
       "Watch lesson\nComplete product checklist"
     );
-    fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
+    fireEvent.press(screen.getByLabelText("Set commercial course access to Paid"));
+    expect(
+      screen.getByRole("radio", {
+        name: "Set commercial course access to Paid"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
     expect(screen.getAllByText(/connect Stripe product/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/connect Stripe price/).length).toBeGreaterThan(0);
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
@@ -1184,6 +1254,7 @@ describe("commercial workflow pages", () => {
               "https://example.com/video-2"
             ],
             documentUrls: ["https://example.com/label.pdf"],
+            forumThreadId: "thread-bloom-course",
             modules: [
               expect.objectContaining({ title: "How the product works", sortOrder: 1 }),
               expect.objectContaining({ title: "Application timing", sortOrder: 2 })
@@ -1198,6 +1269,15 @@ describe("commercial workflow pages", () => {
                 title: "Apply and water in",
                 sortOrder: 2,
                 lessonType: "article"
+              })
+            ],
+            quizzes: [
+              expect.objectContaining({
+                title: "When should you water in?",
+                question: "When should you water in?",
+                options: ["Immediately", "One week later"],
+                sortOrder: 1,
+                status: "draft"
               })
             ],
             tasks: [
@@ -1221,6 +1301,22 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+  });
+
+  it("keeps commercial courses usable when optional product-line suggestions fail", async () => {
+    const baseline = mockApiRequest.getMockImplementation();
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/product-lines" && !options) {
+        return Promise.reject(new Error("Product lines unavailable"));
+      }
+      return baseline?.(path, options);
+    });
+
+    const screen = render(<CommercialCoursesRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
+    expect(screen.queryByText("Choose Product Line")).toBeNull();
+    expect(screen.getByText("Create a course")).toBeTruthy();
   });
 
   it("opens and updates commercial course detail with lessons and publish", async () => {
@@ -1346,8 +1442,17 @@ describe("commercial workflow pages", () => {
       "product-1, product-2"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial course lesson external video URL"),
+      screen.getByLabelText("Lesson video page URL"),
       "https://example.com/water-in-demo"
+    );
+    fireEvent.press(screen.getByLabelText("Current availability: Available"));
+    fireEvent.press(
+      screen.getByLabelText("Confirm rights or permission for lesson video")
+    );
+    fireEvent.press(screen.getByLabelText("Captions: Provided"));
+    fireEvent.changeText(
+      screen.getByLabelText("Learner-visible lesson video summary"),
+      "See the water-in sequence and expected soil response."
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson documents"),
@@ -1381,6 +1486,13 @@ describe("commercial workflow pages", () => {
             body: "Water in the topdress and check response.",
             lessonType: "assignment",
             externalVideoUrl: "https://example.com/water-in-demo",
+            mediaSource: expect.objectContaining({
+              sourceType: "other_url",
+              availabilityStatus: "available",
+              creatorRightsConfirmed: true,
+              captionsStatus: "provided",
+              textSummary: "See the water-in sequence and expected soil response."
+            }),
             documentUrls: [
               "https://example.com/water-in-sop.pdf",
               "https://example.com/topdress-chart.pdf"
@@ -1425,13 +1537,30 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("renders the commercial owner learner preview for draft courses", async () => {
+    const screen = render(
+      <CommercialCourseDetailRoute route={{ params: { preview: "1" } }} />
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Living Soil Product Use").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Learner preview")).toBeTruthy();
+    expect(screen.getByLabelText("Course learner preview banner")).toBeTruthy();
+    expect(screen.getByText("Course lessons")).toBeTruthy();
+    expect(screen.getByText("Application rate")).toBeTruthy();
+    expect(screen.queryByLabelText("Save commercial course detail")).toBeNull();
+    expect(screen.queryByLabelText("Add commercial course lesson")).toBeNull();
+    expect(screen.getByText("Return to Course Editor")).toBeTruthy();
+  });
+
   it("creates marketing plans with linked products and click tracking", async () => {
     const screen = render(<CommercialMarketingRoute />);
 
     expect(screen.getByText("Marketing Planner")).toBeTruthy();
     expect(screen.getByText("Content launch planner")).toBeTruthy();
-    expect(screen.getByText("Product drop workflow")).toBeTruthy();
-    expect(screen.getByText("Trial-to-content workflow")).toBeTruthy();
+    expect(screen.getByText("Plan a product launch")).toBeTruthy();
+    expect(screen.getByText("Turn trial results into content")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     await waitFor(() =>
@@ -1467,10 +1596,21 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(screen.getByLabelText("Marketing plan objective"), "traffic");
     fireEvent.changeText(screen.getByLabelText("Marketing plan platform"), "multi");
     fireEvent.changeText(screen.getByLabelText("Marketing plan status"), "scheduled");
-    fireEvent.changeText(
-      screen.getByLabelText("Marketing plan launch date"),
-      "2026-08-01"
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date"));
+    fireEvent(
+      screen.getByLabelText("Marketing plan launch date month"),
+      "valueChange",
+      8,
+      7
     );
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date day 2026-08-01"));
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan launch date use selected date")
+    );
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan reminder preset 1 hour before")
+    );
+    fireEvent.press(screen.getByLabelText("Marketing plan recurrence preset weekly"));
     fireEvent.changeText(screen.getByLabelText("Marketing plan budget"), "150");
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan linked product"),
@@ -1511,6 +1651,8 @@ describe("commercial workflow pages", () => {
             platform: "multi",
             status: "scheduled",
             launchDate: "2026-08-01",
+            reminderPreference: "1 hour before",
+            recurrenceRule: "weekly",
             linkedProductId: "product-2",
             linkedProductLineId: "line-1",
             linkedCourseId: "course-2",
@@ -1559,12 +1701,18 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getAllByText("Products").length).toBeGreaterThan(0);
     expect(screen.getByText("Product catalog")).toBeTruthy();
-    expect(screen.getByText("Public product page workflow")).toBeTruthy();
+    expect(screen.getByText("Public product page")).toBeTruthy();
     expect(
       screen.getByText(
         "Published products should be inspectable from public storefronts and public storefront pages. Users should be able to move from feed to storefront to product detail to external purchase or support."
       )
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Public product detail URLs use the saved storefront slug and the saved product ID."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/your-brand-slug/)).toBeNull();
     expect(
       screen.getByText(
         "Storefront should expose featured products; legacy brand profile remains secondary"
@@ -1642,6 +1790,10 @@ describe("commercial workflow pages", () => {
       "1 cup per cubic foot"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product batch or lot"),
+      "LOT-BLOOM-2026"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product external purchase URL"),
       "https://example.com/bloom"
     );
@@ -1664,6 +1816,10 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial product directions"),
       "Topdress and water in."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product document URLs"),
+      "https://example.com/bloom-label.pdf\nhttps://example.com/bloom-sds.pdf"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product short description"),
@@ -1693,6 +1849,11 @@ describe("commercial workflow pages", () => {
             stripeProductId: "prod_bloom_mix",
             stripePriceId: "price_bloom_mix",
             shortDescription: "Flower topdress blend",
+            documentUrls: [
+              "https://example.com/bloom-label.pdf",
+              "https://example.com/bloom-sds.pdf"
+            ],
+            batchLot: "LOT-BLOOM-2026",
             specs: expect.objectContaining({
               unitSize: "5 lb bag",
               npk: "3-1-1",
@@ -1700,7 +1861,12 @@ describe("commercial workflow pages", () => {
               guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
               ingredients: ["Alfalfa meal", "Fish bone meal"],
               directions: "Topdress and water in.",
-              applicationRate: "1 cup per cubic foot"
+              applicationRate: "1 cup per cubic foot",
+              documentUrls: [
+                "https://example.com/bloom-label.pdf",
+                "https://example.com/bloom-sds.pdf"
+              ],
+              batchLot: "LOT-BLOOM-2026"
             }),
             status: "published"
           })
@@ -1764,6 +1930,32 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+  });
+
+  it("keeps a blank draft product price unset instead of converting it to zero", async () => {
+    const screen = render(<CommercialProductsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Base")).toBeTruthy());
+    expect(screen.getByText(/Price TBD/)).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product name"),
+      "Prelaunch Placeholder"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({ method: "POST" })
+      )
+    );
+    const createCall = mockApiRequest.mock.calls.find(
+      ([requestPath, options]) =>
+        requestPath === "/api/commercial/products" && options?.method === "POST"
+    );
+    expect(createCall?.[1]?.body?.price).toBeUndefined();
+    expect(createCall?.[1]?.body?.currency).toBeUndefined();
   });
 
   it("opens and updates commercial product detail with effectiveness snapshot", async () => {
@@ -1879,6 +2071,14 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product detail warnings"),
       "Compost values are estimates\nDo not overapply"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail document URLs"),
+      "https://example.com/base-label.pdf\nhttps://example.com/base-coa.pdf"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail batch or lot"),
+      "LOT-BASE-2026"
+    );
     fireEvent.press(screen.getByLabelText("Save commercial product detail"));
 
     await waitFor(() =>
@@ -1899,6 +2099,11 @@ describe("commercial workflow pages", () => {
             applicationRate: "2 cups per cubic foot",
             directions: "Mix evenly and rest before transplant.",
             warnings: ["Compost values are estimates", "Do not overapply"],
+            documentUrls: [
+              "https://example.com/base-label.pdf",
+              "https://example.com/base-coa.pdf"
+            ],
+            batchLot: "LOT-BASE-2026",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
             stripeProductId: "prod_product_updated",
@@ -1913,7 +2118,12 @@ describe("commercial workflow pages", () => {
               ingredients: ["Compost", "Kelp meal", "Fish bone meal"],
               directions: "Mix evenly and rest before transplant.",
               applicationRate: "2 cups per cubic foot",
-              warnings: ["Compost values are estimates", "Do not overapply"]
+              warnings: ["Compost values are estimates", "Do not overapply"],
+              documentUrls: [
+                "https://example.com/base-label.pdf",
+                "https://example.com/base-coa.pdf"
+              ],
+              batchLot: "LOT-BASE-2026"
             })
           })
         })
@@ -1979,6 +2189,18 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0)
     );
+    expect(
+      screen
+        .getAllByRole("header", { name: "Product Lines" })
+        .map((heading) => heading.props["aria-level"])
+    ).toEqual([1, 2]);
+    [
+      "Create Product Line",
+      "Line-level public page context",
+      "Brand-type examples"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getByText(/Product family workflow:/)).toBeTruthy();
     expect(screen.getByText("Line-level public page context")).toBeTruthy();
     expect(screen.getByText("Brand-type examples")).toBeTruthy();
@@ -1989,6 +2211,9 @@ describe("commercial workflow pages", () => {
     expect(() => screen.UNSAFE_getByProps({ href: "/storefront" })).toThrow();
 
     await waitFor(() => expect(screen.getByText("Living Soil Line")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Living Soil Line" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Product line name"), "Bloom Line");
@@ -2090,6 +2315,19 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0)
     );
+    expect(
+      screen
+        .getAllByRole("header", { name: "Product Trials" })
+        .map((heading) => heading.props["aria-level"])
+    ).toEqual([1, 2]);
+    [
+      "Create Product Trial",
+      "Evidence collection loop",
+      "Claim guard",
+      "Publishable result"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getByText("Evidence collection loop")).toBeTruthy();
     expect(screen.getByText("Claim guard")).toBeTruthy();
     expect(screen.getByText("Publishable result")).toBeTruthy();
@@ -2103,10 +2341,22 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
-    expect(screen.getByLabelText("Use trial product line Living Soil Line")).toBeTruthy();
+    expect(screen.getByText("Trial product")).toBeTruthy();
+    expect(screen.getByText("Trial product line")).toBeTruthy();
+    expect(screen.getByText("Trial batch")).toBeTruthy();
+    expect(screen.getByText("Trial evidence run")).toBeTruthy();
+    expect(screen.getByLabelText("Trial product: Living Soil Base")).toBeTruthy();
+    expect(screen.getByLabelText("Trial product line: Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Trial batch: Seedling Soil Batch")).toBeTruthy();
+    expect(screen.getByLabelText("Trial evidence run: Bloom Formula Trial")).toBeTruthy();
+    expect(screen.queryByLabelText("Trial product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced trial record ID fields"));
+    expect(screen.getByLabelText("Trial product id")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Seedling Safety" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
     expect(screen.getByText("Open Evidence Run")).toBeTruthy();
     expect(
@@ -2118,10 +2368,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial purpose"),
       "flower_performance"
     );
-    fireEvent.changeText(screen.getByLabelText("Trial product id"), "product-2");
-    fireEvent.press(screen.getByLabelText("Use trial product line Living Soil Line"));
-    fireEvent.changeText(screen.getByLabelText("Trial batch id"), "batch-1");
-    fireEvent.changeText(screen.getByLabelText("Trial evidence run id"), "grow-1");
+    fireEvent.press(screen.getByLabelText("Trial product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Trial product line: Living Soil Line"));
+    fireEvent.press(screen.getByLabelText("Trial batch: Seedling Soil Batch"));
+    fireEvent.press(screen.getByLabelText("Trial evidence run: Bloom Formula Trial"));
     fireEvent.changeText(screen.getByLabelText("Trial plant count"), "8");
     fireEvent.press(screen.getByLabelText("Create product trial"));
 
@@ -2133,7 +2383,7 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             trialName: "Bloom Trial",
             purpose: "flower_performance",
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
             batchId: "batch-1",
             growId: "grow-1",
@@ -2309,22 +2559,43 @@ describe("commercial workflow pages", () => {
   it("manages commercial batches as formula-to-product-to-trial workflow", async () => {
     const screen = render(<CommercialBatchPlannerRoute />);
 
-    expect(screen.getByText("Soil & Nutrient Batch Planner")).toBeTruthy();
-    expect(screen.getByText("Formula-to-product workflow")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Soil & Nutrient Batch Planner" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Commercial batch fields",
+      "Create commercial batch",
+      "Current batches",
+      "From formula to product",
+      "Effectiveness loop",
+      "Naming rule"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
+    expect(screen.getByText("From formula to product")).toBeTruthy();
     expect(screen.getByText("Effectiveness loop")).toBeTruthy();
     expect(screen.getByText("Naming rule")).toBeTruthy();
     expect(screen.getByText("Product Lines")).toBeTruthy();
     expect(screen.getByText("Create Product Draft")).toBeTruthy();
     expect(
-      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
-    ).toBeTruthy();
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/products/new" }).length
+    ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
-    expect(screen.getByLabelText("Use batch product line Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Batch product: Living Soil Base")).toBeTruthy();
+    expect(screen.getByLabelText("Batch product line: Living Soil Line")).toBeTruthy();
+    expect(screen.getByLabelText("Batch evidence run: Bloom Formula Trial")).toBeTruthy();
+    expect(screen.queryByLabelText("Commercial batch product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced batch record ID fields"));
+    expect(screen.getByLabelText("Commercial batch product id")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Seedling Soil Batch" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText(/trial trial-1/)).toBeTruthy();
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
@@ -2332,15 +2603,9 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(screen.getByLabelText("Commercial batch code"), "BB-001");
     fireEvent.changeText(screen.getByLabelText("Commercial batch purpose"), "flower");
     fireEvent.changeText(screen.getByLabelText("Commercial batch formula version"), "v3");
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial batch product id"),
-      "product-2"
-    );
-    fireEvent.press(screen.getByLabelText("Use batch product line Living Soil Line"));
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial batch evidence run id"),
-      "grow-2"
-    );
+    fireEvent.press(screen.getByLabelText("Batch product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Batch product line: Living Soil Line"));
+    fireEvent.press(screen.getByLabelText("Batch evidence run: Bloom Formula Trial"));
     fireEvent.changeText(screen.getByLabelText("Commercial batch volume"), "40");
     fireEvent.changeText(screen.getByLabelText("Commercial batch estimated cost"), "250");
     fireEvent.changeText(
@@ -2367,10 +2632,10 @@ describe("commercial workflow pages", () => {
             batchCode: "BB-001",
             purpose: "flower",
             formulaVersion: "v3",
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
-            linkedTrialId: "grow-2",
-            trialGrowId: "grow-2",
+            linkedTrialId: "grow-1",
+            trialGrowId: "grow-1",
             batchVolume: 40,
             estimatedCost: 250,
             guaranteedAnalysisNotes: "3-1-1 label target",
@@ -2388,8 +2653,8 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText("Formula Evidence")).toBeTruthy();
-    expect(screen.getByText("Linked Commercial Workflow")).toBeTruthy();
-    expect(screen.getByText("Commercial Use Rules")).toBeTruthy();
+    expect(screen.getByText("Connected records")).toBeTruthy();
+    expect(screen.queryByText("Commercial Use Rules")).toBeNull();
     expect(screen.getByText("Evidence run ID")).toBeTruthy();
     expect(screen.getAllByText("trial-1").length).toBeGreaterThan(0);
     expect(
@@ -2479,8 +2744,21 @@ describe("commercial workflow pages", () => {
   it("manages product trial evidence runs as private evidence source for public claims", async () => {
     const screen = render(<CommercialEvidenceRunsRoute />);
 
-    expect(screen.getByText("Product Trial Evidence Runs")).toBeTruthy();
-    expect(screen.getAllByText("Product trial evidence layer").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("header", { name: "Product Trial Evidence Runs" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Evidence run overview",
+      "Create Product Trial Evidence Run",
+      "Current product trial evidence runs",
+      "Advanced planning tools",
+      "Evidence-to-claim guardrails",
+      "Trial setup checklist"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
     expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
@@ -2492,11 +2770,33 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
-    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(screen.getByText("Evidence run product")).toBeTruthy();
+    expect(screen.getByText("Evidence run product line")).toBeTruthy();
+    expect(screen.getByText("Evidence run product batch")).toBeTruthy();
+    expect(screen.getByLabelText("Evidence run product: Living Soil Base")).toBeTruthy();
     expect(
-      screen.getByLabelText("Use evidence run product line Living Soil Line")
+      screen.getByLabelText("Evidence run product line: Living Soil Line")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Evidence run product batch: Seedling Soil Batch")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Public share status: Evidence building").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(screen.queryByLabelText("Product trial evidence run product id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced evidence run record ID fields"));
+    expect(screen.getByLabelText("Product trial evidence run product id")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Product trial evidence run product line id")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Product trial evidence run batch id")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Hide advanced evidence run record ID fields"));
+    expect(screen.queryByLabelText("Product trial evidence run product id")).toBeNull();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Bloom Formula Trial" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(
@@ -2523,16 +2823,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial evidence run plant count"),
       "12"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run product id"),
-      "product-2"
-    );
+    fireEvent.press(screen.getByLabelText("Evidence run product: Living Soil Base"));
+    fireEvent.press(screen.getByLabelText("Evidence run product line: Living Soil Line"));
     fireEvent.press(
-      screen.getByLabelText("Use evidence run product line Living Soil Line")
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run batch id"),
-      "batch-2"
+      screen.getByLabelText("Evidence run product batch: Seedling Soil Batch")
     );
     fireEvent.changeText(
       screen.getByLabelText("Product trial evidence run formula version"),
@@ -2542,6 +2836,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial evidence run measurement plan"),
       "Weekly vigor and pH checks"
     );
+    fireEvent.press(screen.getByLabelText("Public share status: Public ready"));
     fireEvent.press(screen.getByLabelText("Create product trial evidence run"));
 
     await waitFor(() =>
@@ -2556,11 +2851,12 @@ describe("commercial workflow pages", () => {
             cultivar: "Cherokee Purple",
             medium: "raised_bed",
             plantCount: 12,
-            productId: "product-2",
+            productId: "product-1",
             productLineId: "line-1",
-            batchId: "batch-2",
+            batchId: "batch-1",
             formulaVersion: "v2",
             measurementPlan: "Weekly vigor and pH checks",
+            publicShareStatus: "public_ready",
             status: "active"
           })
         })
@@ -2657,10 +2953,57 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
   });
 
+  it("offers creation paths when an evidence run has no records to link", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ grows: [] })
+      .mockResolvedValueOnce({ products: [] })
+      .mockResolvedValueOnce({ productLines: [] })
+      .mockResolvedValueOnce({ batches: [] });
+
+    const screen = render(<NewCommercialEvidenceRunRoute />);
+
+    await waitFor(() => expect(screen.getByText("No saved products yet.")).toBeTruthy());
+    expect(screen.getByText("No saved product lines yet.")).toBeTruthy();
+    expect(screen.getByText("No saved product batches yet.")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/product-lines" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/batch-planner" }).length
+    ).toBeGreaterThan(0);
+  });
+
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
     const screen = render(<CommercialAnalyticsRoute />);
 
-    expect(screen.getByText("Commercial Analytics")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Commercial Analytics" }).props["aria-level"]
+    ).toBe(1);
+    [
+      "Overview Metrics",
+      "Click and View Breakdown",
+      "Top ads / campaigns",
+      "Top products",
+      "Top storefronts",
+      "Top links",
+      "Courses",
+      "Lives",
+      "Paid orders",
+      "Grow interests",
+      "Simple metrics first",
+      "Ad and marketing click counts",
+      "External checkout reality",
+      "Trial and content outcomes"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
+    expect(screen.getAllByRole("header")).toHaveLength(15);
+    expect(
+      screen.getByRole("button", { name: "Refresh commercial analytics" })
+    ).toBeTruthy();
     expect(screen.getByText("Simple metrics first")).toBeTruthy();
     expect(screen.getByText("Ad and marketing click counts")).toBeTruthy();
     expect(screen.getByText("External checkout reality")).toBeTruthy();
@@ -2688,11 +3031,58 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("$84.00").length).toBeGreaterThan(0);
   });
 
+  it("keeps every secondary Commercial workspace reachable from compact navigation", () => {
+    const screen = render(<CommercialMoreRoute />);
+
+    expect(
+      screen.getByRole("header", { name: "More Commercial Workspaces" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    [
+      "Learning and engagement",
+      "Sales and measurement",
+      "Products and production",
+      "Workspace"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
+    [
+      "Courses",
+      "Lives",
+      "Forum / Q&A",
+      "Orders",
+      "Analytics",
+      "Product Lines",
+      "Product Batches",
+      "Product Trials",
+      "Inventory Support",
+      "Profile",
+      "Tools"
+    ].forEach((destination) => {
+      expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();
+    });
+    expect(
+      StyleSheet.flatten(screen.getByRole("link", { name: "Open Courses" }).props.style)
+    ).toEqual(
+      expect.objectContaining({
+        flexBasis: 220,
+        flexShrink: 1,
+        maxWidth: "100%"
+      })
+    );
+  });
+
   it("loads commercial analytics overview including ad clicks", async () => {
     const screen = render(<CommercialAnalyticsRoute />);
 
     await waitFor(() => expect(screen.getByText("Ad clicks")).toBeTruthy());
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
+    expect(screen.getByText("Feed impressions")).toBeTruthy();
+    expect(screen.getByText("Live views")).toBeTruthy();
+    expect(screen.getAllByText("Paid orders").length).toBeGreaterThan(0);
+    expect(screen.getByText("Living Soil 101")).toBeTruthy();
+    expect(screen.getByText("living-soil")).toBeTruthy();
     expect(screen.getByText("Marketing link clicks")).toBeTruthy();
     expect(screen.getByText("19")).toBeTruthy();
     expect(screen.getByText("Brand profile views")).toBeTruthy();
@@ -2703,4 +3093,32 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Shop Veg Mix")).toBeTruthy();
   });
+
+  it("explains a truthful empty analytics state and lets the owner refresh", async () => {
+    const baseline = mockApiRequest.getMockImplementation();
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/analytics/overview") {
+        return Promise.resolve({ overview: {} });
+      }
+      return baseline?.(path, options);
+    });
+    const screen = render(<CommercialAnalyticsRoute />);
+
+    expect(await screen.findByText("No recorded activity yet")).toBeTruthy();
+    expect(
+      screen.getByText(/Draft setup and owner workspace previews are not counted/i)
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Refresh commercial analytics" }));
+    await waitFor(() =>
+      expect(
+        mockApiRequest.mock.calls.filter(
+          ([path]) => path === "/api/commercial/analytics/overview"
+        )
+      ).toHaveLength(2)
+    );
+  });
 });
+
+
+

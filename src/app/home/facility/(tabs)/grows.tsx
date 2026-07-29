@@ -15,7 +15,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 type AnyRec = Record<string, any>;
 
@@ -50,6 +50,10 @@ function pickSubtitle(x: AnyRec): string {
 
 export default function FacilityGrowsTab() {
   const router = useRouter();
+  const { roomId, roomName } = useLocalSearchParams<{
+    roomId?: string;
+    roomName?: string;
+  }>();
   const { selectedId: facilityId } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
@@ -77,7 +81,16 @@ export default function FacilityGrowsTab() {
       try {
         clearError();
         const res = await apiRequest(endpoints.grows(facilityId));
-        setItems(asArray(res));
+        const rows = asArray(res);
+        setItems(
+          roomId
+            ? rows.filter(
+                (row) =>
+                  String(row.roomId ?? row.room?._id ?? row.room?.id ?? "") ===
+                  String(roomId)
+              )
+            : rows
+        );
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -85,7 +98,7 @@ export default function FacilityGrowsTab() {
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId, roomId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -100,14 +113,33 @@ export default function FacilityGrowsTab() {
     const n = items.length;
     return n === 1 ? "1 grow" : `${n} grows`;
   }, [items.length]);
+  const roomLabel = String(roomName || "this room");
+
+  function openStartGrow() {
+    router.push({
+      pathname: "/onboarding/start-grow",
+      params: roomId
+        ? {
+            roomId: String(roomId),
+            roomName: roomLabel
+          }
+        : {}
+    });
+  }
 
   return (
-    <ScreenBoundary title="Grows">
+    <ScreenBoundary
+      title={roomName ? `${roomName} grows` : "Grows"}
+      showBack
+      backFallbackHref="/home/facility/rooms"
+    >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Grows</Text>
+          <Text style={styles.h1}>
+            {roomName ? `${roomName} → Grows` : "Facility Grows"}
+          </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 
@@ -132,10 +164,26 @@ export default function FacilityGrowsTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No grows yet</Text>
-                <Text style={styles.muted}>
-                  {"When grows exist on the backend, they'll show up here."}
+                <Text style={styles.emptyTitle}>
+                  {roomId ? "No grows in this room yet" : "No facility grows yet"}
                 </Text>
+                <Text style={styles.muted}>
+                  {roomId
+                    ? `Start a grow in ${roomLabel} to connect its plants, tasks, logs, and AI context.`
+                    : "Start a grow to connect rooms, plants, tasks, logs, and AI context."}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    roomId ? `Start grow in ${roomLabel}` : "Start facility grow"
+                  }
+                  onPress={openStartGrow}
+                  style={({ pressed }) => [styles.startButton, pressed && styles.pressed]}
+                >
+                  <Text style={styles.startButtonText}>
+                    {roomId ? "Start a grow in this room" : "Start a facility grow"}
+                  </Text>
+                </Pressable>
               </View>
             ) : null
           }
@@ -195,6 +243,14 @@ const styles = StyleSheet.create({
   rowSub: { opacity: 0.7 },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+  emptyTitle: { fontSize: 16, fontWeight: "900" },
+  startButton: {
+    backgroundColor: "#166534",
+    borderRadius: radius.card,
+    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 11
+  },
+  startButtonText: { color: "white", fontWeight: "900" }
 });

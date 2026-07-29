@@ -16,9 +16,9 @@ export function useFacilityBilling(facilityId: string | null) {
   });
 
   const startCheckoutMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: (interval: "monthly" | "yearly" = "monthly") => {
       if (!facilityId) throw new Error("No facility selected");
-      return startFacilityCheckout(facilityId);
+      return startFacilityCheckout(facilityId, interval);
     }
   });
 

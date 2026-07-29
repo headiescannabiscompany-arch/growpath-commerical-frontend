@@ -9,6 +9,19 @@ const mockPush = jest.fn();
 let mockMode = "commercial";
 let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
 
+function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
+  const [date, time] = value.split("T");
+  const [year, month] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent(screen.getByLabelText(`${label} year`), "valueChange", year);
+  fireEvent(screen.getByLabelText(`${label} month`), "valueChange", month);
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent(screen.getByLabelText(`${label} hour`), "valueChange", hour);
+  fireEvent(screen.getByLabelText(`${label} minute`), "valueChange", minute);
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   Redirect: () => null,
   useLocalSearchParams: () => mockRouteParams,
@@ -29,6 +42,7 @@ jest.mock("@/entitlements", () => ({
     ready: true,
     mode: mockMode,
     plan: mockMode,
+    facilityId: mockMode === "facility" ? "facility-1" : null,
     can: () => true
   })
 }));
@@ -93,6 +107,39 @@ describe("CommercialFeedRoute", () => {
     await waitFor(() => expect(screen.getByText("Feed / Campaigns")).toBeTruthy());
 
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
+    expect(
+      screen.getByRole("radio", {
+        name: "Select Product ad campaign type"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
+    expect(
+      screen.getByRole("checkbox", {
+        name: "Remove All Feed placements placement"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
+    expect(screen.getByLabelText("Campaign placements").props.role).toBe("group");
+    expect(
+      screen.getByRole("radio", {
+        name: "Filter campaigns by All campaigns"
+      }).props.accessibilityState?.checked
+    ).toBe(true);
+    expect(screen.getByText("All campaigns")).toBeTruthy();
+    expect(screen.getByText("Updates")).toBeTruthy();
+    expect(screen.getByText("Product listings")).toBeTruthy();
+    expect(screen.getByText("Launches & live events")).toBeTruthy();
+    expect(screen.getByText("Education")).toBeTruthy();
+    expect(screen.getByText(/CTA: Open .* Will publish as: Active/)).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Publish feed campaign"
+      })
+    ).toBeTruthy();
+    expect(
+      screen.getByPlaceholderText(
+        "Campaign message, offer, announcement, or educational promotion"
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Search campaigns")).toBeTruthy();
     expect(screen.getAllByText("Live event ad").length).toBeGreaterThan(0);
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
@@ -111,6 +158,16 @@ describe("CommercialFeedRoute", () => {
     ).toBe(true);
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed/campaign-1/events",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ eventType: "click", placement: "feed" })
+        })
+      )
+    );
 
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
     await waitFor(() =>
@@ -151,14 +208,8 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign grow interests"),
       "living soil, recipe building"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule start"),
-      "2026-07-17T21:00:00Z"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule end"),
-      "2026-07-24T21:00:00Z"
-    );
+    chooseDateTime(screen, "Feed campaign schedule start", "2026-07-17T21:00");
+    chooseDateTime(screen, "Feed campaign schedule end", "2026-07-24T21:00");
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign reminder"),
       "1 hour before"
@@ -186,8 +237,8 @@ describe("CommercialFeedRoute", () => {
             linkedTrialId: "trial-demo-1",
             linkedGrowId: "trial-demo-1",
             growInterests: ["living soil", "recipe building"],
-            campaignStartsAt: "2026-07-17T21:00:00Z",
-            campaignEndsAt: "2026-07-24T21:00:00Z",
+            campaignStartsAt: "2026-07-17T21:00",
+            campaignEndsAt: "2026-07-24T21:00",
             recurrenceRule: "weekly",
             allDay: true,
             calendarType: "commercial_feed_campaign_setup",
@@ -212,12 +263,17 @@ describe("CommercialFeedRoute", () => {
     fireEvent.changeText(screen.getByLabelText("Linked product line"), "line-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
     fireEvent.changeText(
-      screen.getByLabelText("Commercial feed campaign image URL"),
+      screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/demo.jpg"
     );
     await waitFor(() =>
       expect(screen.getByText("Campaign has destination and creative.")).toBeTruthy()
     );
+    fireEvent.press(screen.getByLabelText("Add Tools placement"));
+    fireEvent.changeText(screen.getByLabelText("Campaign CTA label"), "Reserve seat");
+    expect(screen.getByLabelText("Campaign review")).toBeTruthy();
+    expect(screen.getByText(/Live event ad · 2 placements/)).toBeTruthy();
+    expect(screen.getByText(/CTA: Reserve seat/)).toBeTruthy();
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(false);
@@ -243,10 +299,12 @@ describe("CommercialFeedRoute", () => {
           linkedForumThreadId: "thread-q-and-a",
           imageUrl: "https://example.com/demo.jpg",
           creativeImageUrl: "https://example.com/demo.jpg",
-          startsAt: "2026-07-17T21:00:00Z",
-          endsAt: "2026-07-24T21:00:00Z",
+          startsAt: "2026-07-17T21:00",
+          endsAt: "2026-07-24T21:00",
           reminderPreference: "1 hour before",
-          recurrenceRule: "weekly"
+          recurrenceRule: "weekly",
+          placements: ["feed", "tool"],
+          cta: { label: "Reserve seat", kind: "open" }
         })
       })
     );
@@ -260,6 +318,44 @@ describe("CommercialFeedRoute", () => {
     await waitFor(() => expect(screen.getByText("Live soil demo")).toBeTruthy());
 
     expect(screen.getByLabelText("Selected feed live live-1")).toBeTruthy();
+  });
+
+  it("blocks publishing when destination or schedule setup is broken", async () => {
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Feed / Campaigns")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Select General campaign campaign type"));
+    fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "Workshop");
+    fireEvent.changeText(screen.getByLabelText("Feed campaign body"), "Join us live.");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "https://example.com/workshop.jpg"
+    );
+    fireEvent.changeText(screen.getByLabelText("External link URL"), "not-a-url");
+    chooseDateTime(screen, "Feed campaign schedule start", "2099-07-25T12:00");
+    chooseDateTime(screen, "Feed campaign schedule end", "2099-07-24T12:00");
+
+    expect(
+      screen.getAllByText(/External destination must start with/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Campaign end must be after its start/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+    ).toBe(true);
+
+    fireEvent.changeText(
+      screen.getByLabelText("External link URL"),
+      "https://example.com/workshop"
+    );
+    chooseDateTime(screen, "Feed campaign schedule end", "2099-07-26T12:00");
+
+    expect(screen.getByText("Ready to publish.")).toBeTruthy();
+    expect(screen.getByText(/Will publish as: Scheduled/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+    ).toBe(false);
   });
 
   it("focuses exact campaign routes when the API returns campaign id aliases", async () => {
@@ -305,6 +401,11 @@ describe("CommercialFeedRoute", () => {
     expect(
       screen.getByText(/Facility feed campaigns are outreach placements/i)
     ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("No public course records are available yet.")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Linked course")).toBeNull();
+    expect(screen.getByLabelText("Show advanced destination references")).toBeTruthy();
   });
 
   it("lets personal users view campaigns without campaign creation controls", async () => {
@@ -363,6 +464,9 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByText(/Facility account/)).toBeTruthy();
     expect(screen.getByText(/Commercial account/)).toBeTruthy();
     expect(screen.queryByText(/GrowPath member/)).toBeNull();
+    expect(screen.getAllByText("View Outreach")).toHaveLength(2);
+    fireEvent.press(screen.getByLabelText("View Outreach for Facility IPM training"));
+    expect(mockPush).toHaveBeenCalledWith("/feed?campaignId=facility-outreach");
   });
 
   it("creates facility outreach campaigns with facility author identity", async () => {
@@ -380,6 +484,18 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign grow interests"),
       "IPM, facility training"
     );
+    expect(
+      screen.getByLabelText("Publish facility outreach").props.accessibilityState
+        ?.disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Show advanced destination references"));
+    fireEvent.changeText(screen.getByLabelText("Linked course"), "course-ipm-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "https://example.com/ipm-training.jpg"
+    );
+    expect(screen.getByLabelText("Campaign review")).toBeTruthy();
+    expect(screen.getByText("Ready to publish.")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Publish facility outreach"));
 
     await waitFor(() =>
@@ -390,11 +506,111 @@ describe("CommercialFeedRoute", () => {
           campaignKind: "facility_outreach",
           authorType: "facility",
           workspaceType: "facility",
+          ownerType: "facility",
+          facilityId: "facility-1",
+          campaignType: "facility",
           title: "IPM training",
           body: "Public facility training on scout records.",
-          growInterests: ["IPM", "facility training"]
+          growInterests: ["IPM", "facility training"],
+          linkedCourseId: "course-ipm-1",
+          placements: ["facility"],
+          imageUrl: "https://example.com/ipm-training.jpg"
         })
       })
+    );
+  });
+
+  it("selects named public Facility outreach destinations without exposing raw ids", async () => {
+    mockMode = "facility";
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/courses") {
+        return Promise.resolve({
+          courses: [
+            {
+              _id: "course-public-ipm-1",
+              title: "Integrated Pest Management Basics",
+              shortDescription: "Scouting and prevention training"
+            }
+          ]
+        });
+      }
+      if (path === "/api/lives") {
+        return Promise.resolve({
+          lives: [
+            {
+              id: "live-public-1",
+              title: "Weekly Facility Safety Review",
+              status: "scheduled"
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/courses/public") {
+        return Promise.resolve({
+          courses: [
+            {
+              id: "course-commercial-safety-1",
+              title: "Commercial Facility Safety",
+              status: "published"
+            }
+          ]
+        });
+      }
+      if (path === "/api/forum/feed/latest") {
+        return Promise.resolve({
+          posts: [
+            {
+              id: "thread-public-1",
+              title: "Ask an IPM Scout",
+              categoryName: "IPM"
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({ items: [] });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Integrated Pest Management Basics")).toBeTruthy()
+    );
+    expect(screen.getByText("Weekly Facility Safety Review")).toBeTruthy();
+    expect(screen.getByText("Commercial Facility Safety")).toBeTruthy();
+    expect(screen.getByText("Ask an IPM Scout")).toBeTruthy();
+    expect(screen.queryByText("course-public-ipm-1")).toBeNull();
+    expect(screen.queryByLabelText("Linked course")).toBeNull();
+
+    fireEvent.press(
+      screen.getByLabelText("Select Course Integrated Pest Management Basics")
+    );
+    expect(
+      screen.getByText("Selected course: Integrated Pest Management Basics")
+    ).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "IPM training");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign body"),
+      "Public facility training on scout records."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "https://example.com/ipm-training.jpg"
+    );
+    expect(screen.getByText("Ready to publish.")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Publish facility outreach"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ linkedCourseId: "course-public-ipm-1" })
+        })
+      )
     );
   });
 
@@ -429,6 +645,84 @@ describe("CommercialFeedRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("https://example.com/workshop");
   });
 
+  it("shows campaign analytics and records hide/report actions", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-metrics",
+              type: "update",
+              title: "Analytics campaign",
+              body: "Measure this outreach campaign.",
+              tags: [],
+              growInterests: ["vegetables"]
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/feed-analytics") {
+        return Promise.resolve({
+          analytics: {
+            totals: { impressions: 12, clicks: 4, conversions: 2, hides: 1, reports: 1 },
+            campaigns: [],
+            placements: [
+              {
+                key: "feed",
+                impressions: 12,
+                clicks: 4,
+                conversions: 2,
+                hides: 1,
+                reports: 1
+              }
+            ],
+            growInterests: [
+              {
+                key: "vegetables",
+                impressions: 8,
+                clicks: 3,
+                conversions: 1,
+                hides: 0,
+                reports: 0
+              }
+            ]
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Feed campaign analytics")).toBeTruthy()
+    );
+    expect(screen.getByText(/Grow interest vegetables: 8 impressions/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Report Analytics campaign"));
+    await waitFor(() => expect(screen.queryByText("Analytics campaign")).toBeNull());
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/reports",
+        expect.objectContaining({
+          method: "POST",
+          auth: true,
+          body: expect.objectContaining({
+            contentType: "commercialPost",
+            contentId: "campaign-metrics"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/feed/campaign-metrics/events",
+        expect.objectContaining({
+          body: expect.objectContaining({ eventType: "report" })
+        })
+      )
+    );
+  });
+
   it("routes campaign Q&A CTAs through the shared forum route", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/commercial/feed") {
@@ -457,7 +751,7 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Open Forum Q&A for NPK recipe workshop Q&A"));
 
-    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
+    expect(mockPush).toHaveBeenCalledWith("/forum/post?id=thread-qna");
   });
 
   it("routes product and course campaigns through storefront slug aliases when present", async () => {

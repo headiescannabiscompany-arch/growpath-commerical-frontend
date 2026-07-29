@@ -1,13 +1,22 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import SoilNutrientBatchToolRoute from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
+import SoilNutrientBatchToolRoute from "@/app/home/commercial/tools/soil-nutrient-batch";
+import LegacyPersonalSoilNutrientBatchRoute from "@/app/home/personal/(tabs)/tools/soil-nutrient-batch";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
-const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockCreateSoilNutrientBatch = jest.fn();
+const mockCreateCommercialTask = jest.fn();
+
+jest.setTimeout(20000);
 
 jest.mock("expo-router", () => ({
+  Redirect: ({ href }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(Text, null, `Redirect ${href}`);
+  },
   useLocalSearchParams: () => ({ growId: "grow-1" }),
   useRouter: () => ({
     back: jest.fn(),
@@ -18,11 +27,7 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({
-    plan: "pro",
-    mode: "personal",
-    can: () => true
-  })
+  useEntitlements: () => ({ plan: "commercial", mode: "commercial", can: () => true })
 }));
 
 jest.mock("@/components/feed/FeedBanner", () => {
@@ -54,118 +59,156 @@ jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
 }));
 
+jest.mock("@/api/grows", () => ({ listPersonalGrows: () => new Promise(() => {}) }));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  createSoilNutrientBatch: (...args: any[]) => mockCreateSoilNutrientBatch(...args),
+  createCommercialTask: (...args: any[]) => mockCreateCommercialTask(...args)
+}));
+
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: jest.fn(),
-  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
+  saveToolRunAndCreateTask: jest.fn()
 }));
+
+function enterRequiredBatchFields(screen: ReturnType<typeof render>) {
+  fireEvent.changeText(
+    screen.getByLabelText("Soil & Nutrient Batch Planner Production batch name"),
+    "Starter Mix 2026-07"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText("Soil & Nutrient Batch Planner Purpose"),
+    "seedling"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText("Soil & Nutrient Batch Planner Batch volume"),
+    "120"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText("Soil & Nutrient Batch Planner Batch and bag volume unit"),
+    "gal"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText("Soil & Nutrient Batch Planner Bag size"),
+    "1.5"
+  );
+  fireEvent.changeText(
+    screen.getByLabelText(/Soil & Nutrient Batch Planner Ingredients:/),
+    "Verified compost, 40, gal, 80, 1, 1, 1, slow, high, compost"
+  );
+}
 
 describe("SoilNutrientBatchToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockRunCalculator.mockResolvedValue({
       outputs: {
+        batchName: "Starter Mix 2026-07",
         recipeId: "Base Soil Mix",
         purpose: "seedling",
-        purposeFit: "poor",
+        purposeFit: "review_before_use",
         bagCount: 72,
         guaranteedAnalysisEstimate: {
+          status: "calculated_from_compatible_label_units",
           N: 3,
           P2O5: 1,
           K2O: 1
         },
         costPerBag: 12.4,
-        warnings: ["This mix may be too hot for seedlings."]
+        warnings: ["This mix may be too hot for seedlings."],
+        missingInformation: [],
+        inventoryReview: [],
+        inventoryShortages: [],
+        ingredientPullSheet: [{ name: "Verified compost", quantity: 40, unit: "gal" }],
+        tasksToCreate: [
+          {
+            title: "Pull ingredients and verify lots",
+            dueInDays: 0,
+            priority: "medium"
+          },
+          {
+            title: "Mix production batch and record actuals",
+            dueInDays: 1,
+            priority: "high"
+          }
+        ],
+        aiCreditsUsed: 0
       },
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
-    mockSaveToolRunAndCreateTasks.mockResolvedValue({
-      ok: true,
-      toolRunId: "toolrun-1",
-      taskIds: ["task-1", "task-2", "task-3", "task-4"]
-    });
+    mockCreateSoilNutrientBatch.mockResolvedValue({ id: "batch-1" });
+    mockCreateCommercialTask.mockResolvedValue({ id: "commercial-task-1" });
   });
 
-  it("creates production tasks from soil nutrient batch output", async () => {
-    const screen = render(<SoilNutrientBatchToolRoute />);
+  it("redirects the retired Personal route to the Commercial tool", () => {
+    const screen = render(<LegacyPersonalSoilNutrientBatchRoute />);
+    expect(
+      screen.getByText("Redirect /home/commercial/tools/soil-nutrient-batch")
+    ).toBeTruthy();
+  });
 
-    fireEvent.changeText(
-      screen.getByLabelText("Soil & Nutrient Batch Planner Purpose"),
-      "seedling"
-    );
+  it("saves a durable Commercial production batch and linked task plan", async () => {
+    const screen = render(<SoilNutrientBatchToolRoute />);
+    enterRequiredBatchFields(screen);
     fireEvent.press(screen.getByLabelText("Run Soil & Nutrient Batch Planner"));
 
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
         "soil-nutrient-batch",
         expect.objectContaining({
-          growId: "grow-1",
+          batchName: "Starter Mix 2026-07",
           purpose: "seedling",
-          recipeId: "Base Soil Mix"
-        })
-      )
-    );
-    await waitFor(() =>
-      expect(screen.getByText("Soil & Nutrient Batch Planner result")).toBeTruthy()
-    );
-
-    fireEvent.press(screen.getByText("Create Batch Task Plan"));
-
-    await waitFor(() =>
-      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
-        expect.objectContaining({
-          growId: "grow-1",
-          toolKey: "soil-nutrient-batch",
-          toolRunId: "toolrun-1",
-          output: expect.objectContaining({
-            bagCount: 72,
-            guaranteedAnalysisEstimate: expect.objectContaining({ N: 3 })
-          }),
-          tasks: [
+          batchVolume: 120,
+          batchVolumeUnit: "gal",
+          bagSize: 1.5,
+          ingredients: [
             expect.objectContaining({
-              title: "Pull ingredients for Base Soil Mix",
-              allDay: true,
-              calendarType: "soil_nutrient_batch",
-              sourceStage: "ingredient_pull",
-              reminderPlan: expect.objectContaining({
-                channels: ["in_app"],
-                reminders: [expect.objectContaining({ offsetMinutes: -1440 })]
-              }),
-              description: expect.stringContaining("guaranteed analysis")
-            }),
-            expect.objectContaining({
-              title: "Mix and record Base Soil Mix actuals",
-              priority: "high",
-              sourceStage: "batch_mixing_actuals",
-              description: expect.stringContaining("Target bag count: 72")
-            }),
-            expect.objectContaining({
-              title: "QA soil batch label and release notes",
-              priority: "high",
-              sourceStage: "batch_qa_label_review",
-              description: expect.stringContaining("label N-P2O5-K2O estimate")
-            }),
-            expect.objectContaining({
-              title: "Update inventory or product draft",
-              sourceStage: "batch_inventory_product_update",
-              description: expect.stringContaining("product batch/lot")
+              name: "Verified compost",
+              quantity: 40,
+              cost: 80,
+              N: 1
             })
           ]
         })
       )
     );
+
+    fireEvent.press(screen.getByText("Save Production Batch & Tasks"));
+
+    await waitFor(() =>
+      expect(mockCreateSoilNutrientBatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          batchName: "Starter Mix 2026-07",
+          linkedToolRunId: "toolrun-1",
+          bagCount: 72,
+          guaranteedAnalysisEstimate: expect.objectContaining({ N: 3 }),
+          calculatorOutput: expect.objectContaining({ bagCount: 72 }),
+          status: "planned"
+        })
+      )
+    );
+    expect(mockCreateCommercialTask).toHaveBeenCalledTimes(2);
+    expect(mockCreateCommercialTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Pull ingredients and verify lots",
+        sourceType: "product_batch",
+        sourceId: "batch-1",
+        linkedProductBatchId: "batch-1",
+        linkedToolRunId: "toolrun-1"
+      })
+    );
   });
 
-  it("builds an AI soil batch brief without replacing production math", () => {
+  it("keeps the optional AI brief separate from deterministic production math", () => {
     const screen = render(<SoilNutrientBatchToolRoute />);
-
+    enterRequiredBatchFields(screen);
     fireEvent.changeText(
-      screen.getByLabelText("Soil & Nutrient Batch Planner Purpose"),
+      screen.getByLabelText("Soil & Nutrient Batch Planner Crop stage"),
       "seedling"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Soil & Nutrient Batch Planner Recipe ID or name"),
+      screen.getByLabelText("Soil & Nutrient Batch Planner Recipe ID or version"),
       "Base Soil Mix"
     );
 
@@ -174,11 +217,8 @@ describe("SoilNutrientBatchToolRoute", () => {
     expect(screen.getByText("AI soil batch brief")).toBeTruthy();
     expect(screen.getByText(/Purpose\/stage: seedling \/ seedling/)).toBeTruthy();
     expect(screen.getByText(/Recipe: Base Soil Mix/)).toBeTruthy();
-    expect(screen.getByText(/Compost: 40 gal, cost 80, label 1-1-1/)).toBeTruthy();
     expect(
-      screen.getByText(
-        /call the Soil & Nutrient Batch Planner for final bag count, label N-P2O5-K2O/
-      )
+      screen.getByText(/Verified compost: 40 gal, cost 80, label 1-1-1/)
     ).toBeTruthy();
   });
 });

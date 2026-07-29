@@ -5,6 +5,8 @@ import BackendCalculatorToolScreen, {
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { createProduct } from "@/api/products";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { createSoilNutrientBatch } from "@/api/commercialWorkflows";
+import MixBuilderScienceBasis from "@/features/personal/tools/MixBuilderScienceBasis";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -23,12 +25,128 @@ function amendment(
     .map((part) => Number(part.trim()));
   return {
     name,
-    doseRate: n(dose, 0),
+    doseRate: n(dose, 0) ?? 0,
     doseUnit,
     releaseClass,
     guaranteedAnalysis: { N, P2O5, K2O }
   };
 }
+
+const PENNY_SAVER_SOIL_RECIPE = [
+  "GrowPathAI Cannabis Living Soil Standard v1",
+  "",
+  "This is a crop-specific soil specification, not a universal soil philosophy.",
+  "",
+  "Penny Saver Soil",
+  "",
+  "Purpose: affordable biologically active soil intended for one or two Cannabis cycles before being recycled into outdoor beds or gardens.",
+  "",
+  "Base: 1/3 total, split 50% coco coir and 50% peat moss.",
+  "Compost: 1/3 total, equal parts Blue Ribbon Compost, Detroit Worm Castings, and Soil Conditioner.",
+  "Compost split rule: compost ingredients without a specific amount are used evenly within the compost fraction. Biochar is not part of that equal compost split; use it as a separate optional 5-10% fraction when included.",
+  "Aeration: 1/3 total, split 50% perlite and 50% rice hulls.",
+  "",
+  "Rice hulls provide temporary aeration and slowly decompose over approximately one year while contributing plant-available silica.",
+  "",
+  "Mineral package: GrowPathAI 3-3-3 cooked amendment plus basalt rock dust during the initial soil build.",
+  "",
+  "Living Soil",
+  "",
+  "Purpose: reusable biologically active soil emphasizing biological diversity, nutrient cycling, and long-term structure.",
+  "Base: 1/3 total, split 50% coco coir and 50% peat moss.",
+  "Compost: 1/3 total, equal parts vegetable compost, leaf compost, shrub/hardwood compost, Detroit Worm Castings, and weathered mushroom compost.",
+  "Aeration: 1/3 total, split 50% pumice, 25% vermiculite, and 25% rice hulls.",
+  "Design note: rice hulls are replaced during re-amendment because this soil is periodically rebuilt.",
+  "",
+  "No-Till Soil",
+  "",
+  "Purpose: permanent biologically active soil designed to improve through repeated growing cycles with minimal disturbance.",
+  "Base: 1/3 total, split 50% coco coir and 50% peat moss.",
+  "Compost: 1/3 total, equal parts vegetable compost, leaf compost, shrub compost, weathered mushroom compost, and Detroit Worm Castings.",
+  "Charged biochar: 5-10% of total soil volume, biologically charged before incorporation.",
+  "Permanent aeration: 1/3 total, split 50% pumice and 50% expanded clay aggregate.",
+  "Biological mulch: rice hulls are used as renewable surface mulch, not incorporated into the permanent aeration fraction.",
+  "",
+  "Locked formula rule: this is the recipe. Do not redesign it unless the user explicitly asks for a new formula."
+].join("\n");
+
+const UNIVERSAL_SOIL_SCIENCE = [
+  "Universal Soil Science",
+  "",
+  "GrowPathAI is not intended to replace agronomists, soil scientists, laboratory testing, crop consultants, or experienced growers.",
+  "",
+  "GrowPathAI helps growers build healthier soils, understand why those soils work, log changes over time, identify probable nutrient, environmental, and biological issues, learn soil biology and nutrient cycling, and know when laboratory testing or professional consultation is appropriate.",
+  "",
+  "Recommendations are based on available data, observations, grow history, and current scientific understanding.",
+  "",
+  "Laboratory soil tests, tissue analysis, irrigation water analysis, and professional consultation take precedence over estimated values when available.",
+  "",
+  "Soil is a physical, chemical, and biological system. Plant health depends on interactions between roots, microorganisms, minerals, water, and air.",
+  "",
+  "Different species evolved in different soil ecosystems. Soil recipes must be adapted to the species being grown.",
+  "",
+  "Organic matter influences cation exchange capacity, aggregation, water retention, microbial diversity, and nutrient cycling.",
+  "",
+  "Soil structure is as important as nutrient content."
+].join("\n");
+
+const SCIENTIFIC_NOTES = [
+  "Scientific Notes",
+  "",
+  "These notes explain why the recipes were designed this way. They are reference material, not instructions to modify the formulas.",
+  "",
+  "Compost diversity: different compost feedstocks contribute different microbial communities, nutrient profiles, carbon fractions, and decomposition rates. The recipes intentionally combine multiple compost types to diversify biology rather than relying on a single compost source.",
+  "",
+  "Woody compost: finished woody compost provides slower carbon fractions and supports fungal communities. Immature woody materials should be avoided because they can temporarily immobilize nitrogen while decomposing.",
+  "",
+  "Rice hulls: rice hulls provide temporary aeration, renewable organic matter, silica, and gradual decomposition. They are excellent for economical soils but are not permanent structural aeration.",
+  "",
+  "Vermiculite: vermiculite contributes water retention, calcium, magnesium, iron, and cation exchange capacity. It is used because it provides both physical and chemical benefits beyond simple aeration.",
+  "",
+  "Pumice: pumice provides the most durable long-term pore structure of the aeration materials considered.",
+  "",
+  "Clay pebbles: expanded clay provides durable structure but creates larger pore spaces and is generally better suited as a component rather than the entire aeration fraction.",
+  "",
+  "Basalt rock dust: basalt is included as a long-term mineral source and trace element reserve. It is not treated as an immediate fertilizer."
+].join("\n");
+
+const SOIL_HEALTH_SCORE_MODEL = [
+  "Soil Health Score Model",
+  "",
+  "Do not present soil health as a single precise score unless the category grades are also shown.",
+  "",
+  "Use category grades so growers can see which subsystem needs work:",
+  "Biological Diversity",
+  "Physical Structure",
+  "Water Holding",
+  "Drainage",
+  "Aeration Durability",
+  "Carbon Diversity",
+  "CEC",
+  "Macro Nutrients",
+  "Secondary Nutrients",
+  "Micronutrients",
+  "Soil Biology",
+  "Fungal Support",
+  "Bacterial Support",
+  "Long-Term Sustainability",
+  "Reuse Readiness",
+  "",
+  "Overall score may be calculated from the categories, but the category grades are the actionable result."
+].join("\n");
+
+const NUTRIENT_PHILOSOPHY = [
+  "Nutrient Philosophy",
+  "",
+  "The cooked 3-3-3 amendment is the soil's baseline fertility.",
+  "Additional stage-specific amendments steer nutrient availability through the grow.",
+  "",
+  "The stage recipes are based on long-term mineralization, microbial nutrient cycling, cation exchange, calcium management, potassium mobility, and phosphorus timing.",
+  "",
+  "They are not intended to mimic soluble fertilizer schedules.",
+  "",
+  "Instruction to AI: preserve the recipe first. Use this section to explain the design, not to redesign the formula."
+].join("\n");
 
 function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string, any>) {
   const mixName = String(outputs.mixName || payload.mixName || "soil recipe");
@@ -105,9 +223,9 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
     : "No amendment rows entered yet.";
 
   return [
-    "AI Soil Builder brief",
+    "AI Soil Mix Builder brief",
     "",
-    "Role: help the user design the recipe conversationally, but call the Soil Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
+    "Role: help the user design the mix conversationally, but call the Soil Mix Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
     `Goal: ${payload.goal || "not set"}`,
     `Stage/use: ${payload.stage || payload.intendedUse || "not set"}`,
     `Target label N-P2O5-K2O: ${payload.targetNpk || "not set"}`,
@@ -122,7 +240,23 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
     `Rest/cook time: ${payload.restCookDays || 21} days`,
     `Safety notes: ${payload.safetyNotes || "none"}`,
     "",
-    "Explain tradeoffs like fast nitrogen versus slower base nutrition, compost uncertainty, mineral/biology support, seedling hot-mix risk, and whether this should become grow tasks, a facility batch, or a commercial product draft after user approval."
+    "Universal soil science:",
+    payload.universalSoilScience || "none entered",
+    "",
+    "Locked soil recipe reference:",
+    payload.soilRecipeReference || "none entered",
+    "",
+    "Scientific notes:",
+    payload.scientificNotes || "none entered",
+    "",
+    "Nutrient philosophy:",
+    payload.nutrientPhilosophy || "none entered",
+    "",
+    "Soil health score model:",
+    payload.soilHealthScoreModel || "none entered",
+    "",
+    "Explain tradeoffs like fast nitrogen versus slower base nutrition, compost uncertainty, mineral/biology support, seedling hot-mix risk, and whether this should become grow tasks, a facility batch, or a commercial product draft after user approval.",
+    "Do not redesign locked formulas. Treat universal science, science notes, nutrient philosophy, and score categories as explanation/reference material unless the user asks for a new recipe."
   ].join("\n");
 }
 
@@ -131,8 +265,14 @@ export default function SoilBuilderToolScreen() {
     <BackendCalculatorToolScreen
       tool="soil-builder"
       toolKey="soil-builder"
-      title="Soil Builder"
-      subtitle="Build full soil recipes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      title="Soil Mix Builder"
+      subtitle="Build science-based soil mixes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
+      formHeader={<MixBuilderScienceBasis variant="soil" />}
+      aiPrefill={{
+        buttonLabel: "Fill soil recipe from grow records",
+        buildMessage: () =>
+          `Prefill the operational fields of this Soil/Media Builder from the selected grow/plant's saved soil recipe, ingredient catalog and verified analyses, container/batch volume, crop stage and purpose, water profile/alkalinity, irrigation performance, prior soil batches, lab results, and nutrient response. Preserve the locked recipe/science reference text already in the form. Return JSON only using these exact string keys when supported: mixName, goal, targetNpk, targetReleaseCurve, intendedUse, stage, totalVolume, volumeUnit, baseMedia, basePercent, compostPercent, aerationPercent, biocharPercent, compostUncertainty, amendmentName, amendmentDose, amendmentUnit, amendmentAnalysis, amendmentRelease, amendmentNameB, amendmentDoseB, amendmentUnitB, amendmentAnalysisB, amendmentReleaseB, mineralSupport, biologySupport, restCookDays, safetyNotes, waterProfileNotes. Ingredient analyses, doses, percentages, lab values, and volume must come from saved records or verified labels; do not invent them. Model peat/perlite, coco, 1:1:1 Coots-style, living-soil, and no-till mixes according to their actual water holding, drainage, aeration durability, buffering, CEC, carbon/nitrogen behavior, and reuse strategy. In safetyNotes and waterProfileNotes explain uncertainty, compost variability, mineralization timing, K/Ca/Mg antagonism, water alkalinity, and how the recipe changes irrigation assumptions.`
+      }}
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
         { key: "goal", label: "Goal", defaultValue: "medium veg soil" },
@@ -255,10 +395,51 @@ export default function SoilBuilderToolScreen() {
           defaultValue:
             "Compost and castings are estimates unless lab-tested. Avoid hot mixes for seedlings.",
           multiline: true
+        },
+        {
+          key: "waterProfileNotes",
+          label: "Water profile and irrigation behavior (optional)",
+          defaultValue: "",
+          multiline: true
+        },
+        {
+          key: "universalSoilScience",
+          label: "Universal soil science",
+          defaultValue: UNIVERSAL_SOIL_SCIENCE,
+          multiline: true
+        },
+        {
+          key: "soilRecipeReference",
+          label: "Crop-specific soil specification",
+          defaultValue: PENNY_SAVER_SOIL_RECIPE,
+          multiline: true
+        },
+        {
+          key: "scientificNotes",
+          label: "Scientific notes",
+          defaultValue: SCIENTIFIC_NOTES,
+          multiline: true
+        },
+        {
+          key: "nutrientPhilosophy",
+          label: "Nutrient philosophy",
+          defaultValue: NUTRIENT_PHILOSOPHY,
+          multiline: true
+        },
+        {
+          key: "soilHealthScoreModel",
+          label: "Soil health score model",
+          defaultValue: SOIL_HEALTH_SCORE_MODEL,
+          multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(
+        values,
+        { growId, facilityId, commercialAccountId, plantContext }
+      ) => ({
         growId: growId || undefined,
+        facilityId: facilityId || undefined,
+        commercialAccountId: commercialAccountId || undefined,
         ...plantContext.toolRunContext,
         mixName: values.mixName,
         goal: values.goal,
@@ -292,6 +473,12 @@ export default function SoilBuilderToolScreen() {
         biologySupport: values.biologySupport,
         restCookDays: n(values.restCookDays, 21),
         safetyNotes: values.safetyNotes,
+        waterProfileNotes: values.waterProfileNotes || undefined,
+        universalSoilScience: values.universalSoilScience,
+        soilRecipeReference: values.soilRecipeReference,
+        scientificNotes: values.scientificNotes,
+        nutrientPhilosophy: values.nutrientPhilosophy,
+        soilHealthScoreModel: values.soilHealthScoreModel,
         intendedUse: values.intendedUse,
         stage: values.stage
       })}
@@ -380,10 +567,10 @@ export default function SoilBuilderToolScreen() {
       assistantBrief={{
         title: "AI-guided, calculator-verified",
         description:
-          "Ask AI to help shape the soil recipe, collect missing label data, and explain fast/medium/slow release choices. The Soil Builder remains the source of truth for recipe math, warnings, ToolRuns, tasks, and product conversion.",
-        buttonLabel: "Ask AI to Build Soil Recipe",
-        accessibilityLabel: "Ask AI to build soil recipe",
-        briefTitle: "AI soil recipe brief",
+          "Ask AI to help shape the soil mix, collect missing label data, and explain fast/medium/slow release choices. The Soil Mix Builder remains the source of truth for recipe math, warnings, ToolRuns, tasks, and product conversion.",
+        buttonLabel: "Ask AI to Build Soil Mix",
+        accessibilityLabel: "Ask AI to build soil mix",
+        briefTitle: "AI soil mix brief",
         buildBrief: ({ payload }) => buildSoilAssistantBrief(payload)
       }}
       buildActions={({ outputs, payload, toolRun }) => [
@@ -407,6 +594,46 @@ export default function SoilBuilderToolScreen() {
           }
         },
         {
+          key: "create-production-batch",
+          label: "Create Production Batch",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created soil production batch.",
+          onPress: async () => {
+            await createSoilNutrientBatch({
+              batchName: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              name: `${outputs.mixName || payload.mixName || "Soil mix"} batch`,
+              purpose: payload.intendedUse || payload.goal,
+              formulaVersion: String(toolRun?.calculatorVersion || "1"),
+              trialGrowId: payload.growId || undefined,
+              facilityId: payload.facilityId || undefined,
+              linkedToolRunId: toolRun?.id || toolRun?._id || undefined,
+              batchVolume: outputs.totalVolume || payload.totalVolume,
+              batchVolumeUnit: outputs.volumeUnit || payload.volumeUnit,
+              releaseTimelineNotes:
+                outputs.releaseCurve?.summary || payload.targetReleaseCurve,
+              guaranteedAnalysisNotes: outputs.estimatedAmendmentRatio
+                ? JSON.stringify(outputs.estimatedAmendmentRatio)
+                : "Compost and finished-soil analysis require representative lab testing.",
+              ingredientSummary: (payload.amendments || [])
+                .map((item: any) => item.name)
+                .filter(Boolean)
+                .join(", "),
+              mixingInstructions: (outputs.mixingInstructions || []).join(" "),
+              notes: [
+                payload.facilityId ? `Facility: ${payload.facilityId}` : "",
+                `ToolRun: ${toolRun?.id || toolRun?._id || ""}`,
+                payload.compostUncertainty
+                  ? `Compost uncertainty: ${payload.compostUncertainty}`
+                  : ""
+              ]
+                .filter(Boolean)
+                .join("\n"),
+              status: "planned"
+            });
+          }
+        },
+        {
           key: "convert-product-draft",
           label: "Convert to Product Draft",
           variant: "secondary",
@@ -419,7 +646,7 @@ export default function SoilBuilderToolScreen() {
               shortDescription:
                 outputs.purposeFit ||
                 payload.goal ||
-                "Soil recipe created from Soil Builder.",
+                "Soil mix created from Soil Mix Builder.",
               fullDescription: Array.isArray(outputs.mixingInstructions)
                 ? outputs.mixingInstructions.join("\n")
                 : payload.safetyNotes ||
@@ -462,6 +689,11 @@ export default function SoilBuilderToolScreen() {
                 compostUncertainty: payload.compostUncertainty,
                 mineralSupport: payload.mineralSupport,
                 biologySupport: payload.biologySupport,
+                universalSoilScience: payload.universalSoilScience,
+                soilRecipeReference: payload.soilRecipeReference,
+                scientificNotes: payload.scientificNotes,
+                nutrientPhilosophy: payload.nutrientPhilosophy,
+                soilHealthScoreModel: payload.soilHealthScoreModel,
                 warnings: [
                   payload.safetyNotes,
                   ...(Array.isArray(outputs.stageTimingWarnings)

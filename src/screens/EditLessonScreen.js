@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
+import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { updateLesson } from "../api/courses";
+import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { radius } from "../theme/theme";
+import {
+  emptyLessonMediaDraft,
+  lessonMediaDraftFromLesson,
+  prepareLessonMediaSubmission
+} from "@/features/learning/lessonMedia";
 import {
   buildEmptyTierSelection,
   flattenTierSelections,
@@ -22,7 +31,9 @@ export default function EditLessonScreen({ route, navigation }) {
   const [title, setTitle] = useState("");
   const [order, setOrder] = useState("");
   const [content, setContent] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+  const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoAssetId, setVideoAssetId] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
     buildEmptyTierSelection()
@@ -35,7 +46,8 @@ export default function EditLessonScreen({ route, navigation }) {
       setTitle(l.title);
       setOrder(String(l.order || 1));
       setContent(l.content || "");
-      setVideoUrl(l.videoUrl || "");
+      setMediaDraft(lessonMediaDraftFromLesson(l));
+      setVideoAssetId(l.videoAssetId || "");
       setPdfUrl(l.pdfUrl || "");
       setGrowInterestSelections(groupTagsByTier(l.growTags || []));
     } else {
@@ -44,15 +56,60 @@ export default function EditLessonScreen({ route, navigation }) {
     }
   }, []);
 
+  async function pickVideo() {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 1
+      });
+      if (!result.canceled && result.assets[0]) {
+        setVideoFile(result.assets[0]);
+        setVideoAssetId("");
+        setMediaDraft((current) => ({
+          ...current,
+          sourceType: "growpath_upload",
+          originalUrl: "",
+          availabilityStatus: "unchecked",
+          lastCheckedAt: "",
+          allowEmbed: false
+        }));
+      }
+    } catch (_err) {
+      Alert.alert("Error", "Failed to pick video");
+    }
+  }
+
   async function submit() {
     if (!access.canCreateCourses) {
       return Alert.alert("Unavailable", "Editing lessons requires COURSES_CREATE.");
     }
+    const previewMedia = videoFile
+      ? null
+      : prepareLessonMediaSubmission(mediaDraft, mediaDraft.originalUrl);
+    if (previewMedia?.errors.length) {
+      return Alert.alert("Video source needs attention", previewMedia.errors.join(" "));
+    }
+    const uploadedVideo = videoFile ? await uploadCourseMedia(videoFile) : null;
+    const preparedMedia = uploadedVideo
+      ? prepareLessonMediaSubmission(
+          {
+            ...mediaDraft,
+            sourceType: "growpath_upload",
+            availabilityStatus: "available",
+            lastCheckedAt: new Date().toISOString(),
+            allowEmbed: false
+          },
+          uploadedVideo.url
+        )
+      : previewMedia;
     await updateLesson(lessonId, {
       title,
       order: order ? Number(order) : 1,
       content,
-      videoUrl,
+      videoUrl: preparedMedia?.videoUrl || "",
+      externalVideoUrl: preparedMedia?.externalVideoUrl || "",
+      mediaSource: preparedMedia?.mediaSource || null,
+      videoAssetId,
       pdfUrl,
       growTags: flattenTierSelections(growInterestSelections)
     });
@@ -73,13 +130,18 @@ export default function EditLessonScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Edit Lesson</Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" longContent />
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_lesson_edit"
+        longContent
+      />
       {!access.canCreateCourses ? (
         <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
       ) : null}
-      <Text style={styles.helpText}>Course storage: 0 MB / plan limit</Text>
-      <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
-      <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
+      <Text style={styles.helpText}>
+        Replace this lesson video, detach it, or reuse one video from the current
+        workspace library.
+      </Text>
 
       <TextInput
         style={styles.input}
@@ -107,12 +169,28 @@ export default function EditLessonScreen({ route, navigation }) {
         editable={access.canCreateCourses}
       />
 
-      <Text style={styles.label}>Video URL</Text>
-      <TextInput
-        style={styles.input}
-        value={videoUrl}
-        onChangeText={setVideoUrl}
-        editable={access.canCreateCourses}
+      <LessonMediaSourceEditor
+        value={mediaDraft}
+        onChange={setMediaDraft}
+        disabled={!access.canCreateCourses}
+        onPickUpload={pickVideo}
+        pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
+        onRemove={() => {
+          setVideoFile(null);
+          setVideoAssetId("");
+          setMediaDraft(emptyLessonMediaDraft());
+        }}
+      />
+      <VideoLibraryPicker
+        selectedId={videoAssetId}
+        disabled={!access.canCreateCourses}
+        onSelect={(video) => {
+          setVideoFile(null);
+          setVideoAssetId(video?.id || "");
+          setMediaDraft(
+            video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
+          );
+        }}
       />
 
       <Text style={styles.label}>PDF URL</Text>
@@ -131,7 +209,11 @@ export default function EditLessonScreen({ route, navigation }) {
         defaultExpanded
       />
 
-      <PersonalFeedPlacement placement="middle" routeKey="personal_lesson_edit" longContent />
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_lesson_edit"
+        longContent
+      />
 
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
@@ -140,7 +222,11 @@ export default function EditLessonScreen({ route, navigation }) {
       >
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" longContent />
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_lesson_edit"
+        longContent
+      />
     </ScreenContainer>
   );
 }

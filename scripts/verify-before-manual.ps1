@@ -184,7 +184,7 @@ Write-Host "- Feed: confirm campaign cards behave as ads/outreach and CTA button
 Write-Host "- Forum: confirm discussion/Q&A remains separate from feed campaigns."
 Write-Host "- Personal integrations: confirm Growlink preview saves suggested grow spaces with read-only devices, normalized metrics, and sensor streams."
 Write-Host "- Facility: confirm room import preview can create rooms/devices from controller-style names and stores suggested alert/task rules for imported alarm metrics."
-Write-Host "- AI/tool workflows: run Soil Builder, NPK, Dry Amendment, Topdress, IPM Scout, Harvest Readiness, Dry/Cure, Tissue Culture, Clone Rooting, Auto Grow Calendar, Pheno Hunt, Genetics Inventory, Nutrient Source Comparison, pH/EC, Run Comparison, Soil Nutrient Batch, Stress Test, Crop Steering, and Species/Crop ID; confirm each can save ToolRun/log/task where offered."
+Write-Host "- Workflow ownership: AI Tools shows user-facing AI, diagnosis, PPFD/DLI, and mix builders; Tasks owns Topdress and task planners; Grows owns Data Integrations and grow-report export; Profile owns account-wide report export; Commercial alone owns Soil Nutrient Batch. Confirm contextual routes preserve grow scope."
 Write-Host "- Tool task plans: confirm IPM tasks preserve GrowPath AI plus GPT verification context, pH/EC tasks schedule calibration and follow-up, run comparison tasks create repeatable next-run actions, and crop identity tasks update crop-specific targets/tags."
 Write-Host "- Recipe/product workflow: convert a recipe to product draft and verify generated specs stay attached."
 Write-Host "- Task review: confirm ToolRun-created tasks link back to the source grow/tool result and appear in Task Center/Schedule."

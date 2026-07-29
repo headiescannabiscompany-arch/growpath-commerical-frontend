@@ -8,6 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { sendSupportContact, type SupportContactTopic } from "@/api/support";
 import {
@@ -38,16 +39,67 @@ function isLikelyEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+function paramString(value?: string | string[]) {
+  if (Array.isArray(value)) return value[0] || "";
+  return typeof value === "string" ? value : "";
+}
+
+function topicFromParam(value: string): SupportContactTopic | null {
+  return TOPICS.some((item) => item.key === value)
+    ? (value as SupportContactTopic)
+    : null;
+}
+
 export default function SupportPage() {
+  const params = useLocalSearchParams<{
+    topic?: string | string[];
+    name?: string | string[];
+    email?: string | string[];
+    accountEmail?: string | string[];
+    subject?: string | string[];
+    message?: string | string[];
+    workspace?: string | string[];
+    page?: string | string[];
+  }>();
   const [topic, setTopic] = useState<SupportContactTopic>("account");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [workspace, setWorkspace] = useState("");
+  const [page, setPage] = useState("");
   const [company, setCompany] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
+
+  React.useEffect(() => {
+    const nextTopic = topicFromParam(paramString(params.topic));
+    if (nextTopic) setTopic(nextTopic);
+    const nextName = paramString(params.name);
+    const nextEmail = paramString(params.email);
+    const nextAccountEmail = paramString(params.accountEmail);
+    const nextSubject = paramString(params.subject);
+    const nextMessage = paramString(params.message);
+    const nextWorkspace = paramString(params.workspace);
+    const nextPage = paramString(params.page);
+    if (nextName) setName(nextName);
+    if (nextEmail) setEmail(nextEmail);
+    if (nextAccountEmail) setAccountEmail(nextAccountEmail);
+    if (nextSubject) setSubject(nextSubject);
+    if (nextMessage) setMessage(nextMessage);
+    if (nextWorkspace) setWorkspace(nextWorkspace);
+    if (nextPage) setPage(nextPage);
+  }, [
+    params.accountEmail,
+    params.email,
+    params.message,
+    params.name,
+    params.subject,
+    params.topic,
+    params.workspace,
+    params.page
+  ]);
 
   const canSubmit = useMemo(
     () =>
@@ -74,17 +126,21 @@ export default function SupportPage() {
         accountEmail: accountEmail.trim().toLowerCase(),
         subject: subject.trim(),
         message: message.trim(),
+        workspace: workspace.trim(),
+        page: page.trim(),
         company: company.trim()
       });
       if (response.emailSent === false) {
         setFeedback(
-          `Support email delivery is not available right now. Email ${SUPPORT_CONTACTS.general} directly.`
+          response.requestId
+            ? `Support request received in GrowPathAI. Reference: ${response.requestId}. Email delivery is delayed.`
+            : `Support email delivery is not available right now. Email ${SUPPORT_CONTACTS.general} directly.`
         );
         return;
       }
       setFeedback(
-        response.providerMessageId
-          ? `Support request sent. Reference: ${response.providerMessageId}.`
+        response.requestId || response.providerMessageId
+          ? `Support request sent. Reference: ${response.requestId || response.providerMessageId}.`
           : "Support request sent. Check your email for any follow-up."
       );
       setSubject("");

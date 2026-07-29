@@ -23,6 +23,8 @@ export type SupportContactRequest = {
   subject?: string;
   message: string;
   accountEmail?: string;
+  workspace?: string;
+  page?: string;
   company?: string;
 };
 
@@ -31,6 +33,7 @@ export type SupportContactResponse = {
   emailSent?: boolean;
   routedTo?: string;
   providerMessageId?: string | null;
+  requestId?: string | null;
   message?: string;
 };
 

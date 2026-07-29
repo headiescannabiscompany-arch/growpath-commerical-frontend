@@ -21,6 +21,7 @@ type AdCardProps = {
   storefrontSlug?: string;
   imageUrl?: string | null;
   strategyLabel?: string;
+  compact?: boolean;
 };
 
 export default function AdCard({
@@ -31,7 +32,8 @@ export default function AdCard({
   commercialAccountId,
   storefrontSlug,
   imageUrl,
-  strategyLabel
+  strategyLabel,
+  compact = false
 }: AdCardProps) {
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const { width } = useWindowDimensions();
@@ -87,10 +89,20 @@ export default function AdCard({
       accessibilityRole="link"
       accessibilityLabel={`${cta} for ${title}`}
       onPress={openAd}
-      style={[styles.card, compactMedia && resolvedImageUrl ? styles.cardDesktop : null]}
+      style={[
+        styles.card,
+        (compact || compactMedia) && resolvedImageUrl ? styles.cardDesktop : null,
+        compact ? styles.cardCompact : null
+      ]}
     >
       {resolvedImageUrl ? (
-        <View style={[styles.mediaFrame, compactMedia ? styles.mediaDesktop : null]}>
+        <View
+          style={[
+            styles.mediaFrame,
+            compact || compactMedia ? styles.mediaDesktop : null,
+            compact ? styles.mediaCompact : null
+          ]}
+        >
           <Image
             source={{ uri: resolvedImageUrl }}
             style={styles.image}
@@ -105,7 +117,7 @@ export default function AdCard({
           {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
         </View>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.body} numberOfLines={compactMedia ? 2 : undefined}>
+        <Text style={styles.body} numberOfLines={compact || compactMedia ? 2 : undefined}>
           {body}
         </Text>
         <Text style={styles.link}>
@@ -133,6 +145,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row"
   },
+  cardCompact: {
+    padding: 10,
+    shadowOpacity: 0.03,
+    shadowRadius: 10
+  },
   copy: {
     flex: 1,
     minWidth: 0
@@ -140,7 +157,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#EA580C"
+    color: "#C2410C"
   },
   labelRow: {
     alignItems: "center",
@@ -167,6 +184,9 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     marginBottom: 0
   },
+  mediaCompact: {
+    width: 104
+  },
   image: {
     width: "100%",
     height: "100%"
@@ -184,6 +204,6 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#EA580C"
+    color: "#C2410C"
   }
 });

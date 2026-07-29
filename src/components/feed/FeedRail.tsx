@@ -13,20 +13,92 @@ type FeedRailProps = {
   plan?: string | null;
   railMode?: "standard" | "education-only" | "promo-only";
   placement?: "top" | "middle" | "bottom";
+  routeKey?: string;
+  growInterests?: string[];
+  compact?: boolean;
 };
+
+export type FeedSlotKey =
+  | "home_hero"
+  | "home_top"
+  | "home_middle"
+  | "home_bottom"
+  | "page_top"
+  | "page_middle"
+  | "page_bottom"
+  | "course"
+  | "tool"
+  | "forum"
+  | "product"
+  | "facility"
+  | "commercial";
 
 type AdItem = {
   title: string;
   body: string;
   cta: string;
   href: string;
-  storefrontSlug: string;
+  storefrontSlug?: string;
   createdAt: string;
   engagementCount: number;
   clickCount: number;
   promotionCount: number;
+  relevanceScore?: number;
   imageUrl: string;
+  placements?: string[];
+  growInterests?: string[];
 };
+
+const CONTEXT_SLOT_PATTERNS: Array<[RegExp, FeedSlotKey]> = [
+  [/facility/i, "facility"],
+  [/commercial/i, "commercial"],
+  [/course|lesson/i, "course"],
+  [/tool|diagnos|recipe|nutrient|environment|harvest|pheno|clone|tissue/i, "tool"],
+  [/forum|community|question/i, "forum"],
+  [/product|storefront|store/i, "product"]
+];
+
+export function resolveFeedSlotKey(
+  routeKey = "page",
+  placement?: FeedRailProps["placement"]
+): FeedSlotKey {
+  const normalized = String(routeKey || "page");
+  const contextSlot = CONTEXT_SLOT_PATTERNS.find(([pattern]) => pattern.test(normalized));
+  if (contextSlot) return contextSlot[1];
+  if (/^(home|personal_home)$/i.test(normalized)) {
+    return placement ? (`home_${placement}` as FeedSlotKey) : "home_hero";
+  }
+  return `page_${placement || "top"}` as FeedSlotKey;
+}
+
+function normalizedValues(values: string[] = []) {
+  return new Set(
+    values.map((value) => String(value).trim().toLowerCase()).filter(Boolean)
+  );
+}
+
+export function campaignMatchesPlacement(
+  campaign: Pick<CommercialFeedCampaign, "placements">,
+  slotKey: FeedSlotKey
+) {
+  const placements = normalizedValues(campaign.placements || []);
+  if (!placements.size || placements.has("feed")) return true;
+  return placements.has(slotKey);
+}
+
+export function campaignInterestScore(
+  campaignInterests: string[] = [],
+  viewerInterests: string[] = []
+) {
+  const campaign = normalizedValues(campaignInterests);
+  const viewer = normalizedValues(viewerInterests);
+  if (!campaign.size || !viewer.size) return 0;
+  let matches = 0;
+  campaign.forEach((interest) => {
+    if (viewer.has(interest)) matches += 1;
+  });
+  return matches * 25;
+}
 
 function campaignStorefrontSlug(post: CommercialFeedCampaign) {
   return String(
@@ -91,7 +163,7 @@ function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedForumThreadId) {
     return {
       cta: "Open Forum Q&A",
-      href: `/forum/post/${encodeURIComponent(String(post.linkedForumThreadId))}`
+      href: `/forum/post?id=${encodeURIComponent(String(post.linkedForumThreadId))}`
     };
   }
   const externalLink = post.externalLinks?.find((link) => String(link?.url || "").trim());
@@ -122,7 +194,10 @@ function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
     engagementCount: Number((post as any).engagementCount ?? post.likeCount ?? 0),
     clickCount: Number((post as any).clickCount || 0),
     promotionCount: Number((post as any).promotionCount || 0),
-    imageUrl: campaignImage(post)
+    relevanceScore: Number((post as any).relevanceScore || 0),
+    imageUrl: campaignImage(post),
+    placements: post.placements,
+    growInterests: post.growInterests
   };
 }
 
@@ -149,11 +224,10 @@ const EDUCATION_ITEMS = [
 
 const AD_ITEMS = [
   {
-    title: "Living Soil Labs: full-spectrum soil",
-    body: "Living soil and nutrient lines for gardeners across every grow interest.",
-    cta: "View soil line",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Explore grower storefronts",
+    body: "Discover products, courses, and grow education from published GrowPath brands.",
+    cta: "Browse storefronts",
+    href: "/store",
     createdAt: "2026-07-05T10:00:00.000Z",
     engagementCount: 81,
     clickCount: 34,
@@ -162,11 +236,10 @@ const AD_ITEMS = [
       "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80"
   },
   {
-    title: "Living Soil Labs: nutrient program",
-    body: "Build a simple feeding plan around biology, mineral balance, and clean inputs.",
-    cta: "Explore nutrients",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Learn from grower courses",
+    body: "Find courses matched to your crops, growing methods, and experience level.",
+    cta: "Browse courses",
+    href: "/courses",
     createdAt: "2026-07-03T09:30:00.000Z",
     engagementCount: 132,
     clickCount: 62,
@@ -175,11 +248,10 @@ const AD_ITEMS = [
       "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?auto=format&fit=crop&w=900&q=80"
   },
   {
-    title: "Living Soil Labs: starter kits",
-    body: "Starter packs for small indoor gardens, raised beds, and production benches.",
-    cta: "Shop now",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Ask the grower community",
+    body: "Share a grow, photo, diagnosis, or tool result and get contextual help.",
+    cta: "Open forum",
+    href: "/forum",
     createdAt: "2026-06-29T14:15:00.000Z",
     engagementCount: 57,
     clickCount: 11,
@@ -188,11 +260,10 @@ const AD_ITEMS = [
       "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80"
   },
   {
-    title: "Living Soil Labs: terpene-minded inputs",
-    body: "Biology-first amendments for growers chasing aroma, vigor, and resilient roots.",
-    cta: "Compare kits",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Plan the next grow",
+    body: "Use GrowPath planning workflows to connect setup choices, tasks, and calendars.",
+    cta: "Open GrowPath",
+    href: "/home/personal/grows/new",
     createdAt: "2026-07-04T16:45:00.000Z",
     engagementCount: 74,
     clickCount: 8,
@@ -204,11 +275,10 @@ const AD_ITEMS = [
 
 const FACILITY_AD_ITEMS = [
   {
-    title: "Living Soil Labs: production soil programs",
-    body: "Soil and nutrient planning for commercial benches, mothers, and production rooms.",
-    cta: "Visit Storefront",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Discover commercial suppliers",
+    body: "Browse published GrowPath storefronts without leaving the facility workflow.",
+    cta: "Browse storefronts",
+    href: "/store",
     createdAt: "2026-07-05T12:00:00.000Z",
     engagementCount: 44,
     clickCount: 19,
@@ -217,11 +287,10 @@ const FACILITY_AD_ITEMS = [
       "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=900&q=80"
   },
   {
-    title: "Living Soil Labs: bulk amendments",
-    body: "Biology-forward inputs and amendment programs for repeatable production cycles.",
-    cta: "Open store",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Train the cultivation team",
+    body: "Use courses, live sessions, and SOP-linked tasks for repeatable operations.",
+    cta: "Browse courses",
+    href: "/courses",
     createdAt: "2026-07-01T08:00:00.000Z",
     engagementCount: 67,
     clickCount: 9,
@@ -230,11 +299,10 @@ const FACILITY_AD_ITEMS = [
       "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=900&q=80"
   },
   {
-    title: "Living Soil Labs: nutrient line support",
-    body: "Commercial nutrient line context for teams standardizing soil and feed decisions.",
-    cta: "Compare lines",
-    href: "/store/living-soil-labs",
-    storefrontSlug: "living-soil-labs",
+    title: "Connect with the grower community",
+    body: "Share permitted facility updates and participate in crop-focused discussions.",
+    cta: "Open forum",
+    href: "/forum",
     createdAt: "2026-07-04T11:00:00.000Z",
     engagementCount: 36,
     clickCount: 5,
@@ -252,63 +320,83 @@ function rotate<T>(items: T[], offset: number) {
   return [...items.slice(start), ...items.slice(0, start)];
 }
 
-function selectAds(ads: AdItem[], count: number, placement: FeedRailProps["placement"]) {
+export function selectAds(
+  ads: AdItem[],
+  count: number,
+  placement: FeedRailProps["placement"]
+) {
   const placementOffset = PLACEMENT_OFFSET[placement || "top"] || 0;
-  const strategies = [
-    {
-      label: "New",
-      rows: [...ads].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-    },
-    {
-      label: "Popular",
-      rows: [...ads].sort((a, b) => b.engagementCount - a.engagementCount)
-    },
-    {
-      label: "Recommended",
-      rows: [...ads].sort((a, b) => a.clickCount - b.clickCount)
-    },
-    {
-      label: "Fresh",
-      rows: [...ads].sort((a, b) => a.promotionCount - b.promotionCount)
-    }
-  ];
-  const selected: Array<AdItem & { strategyLabel: string }> = [];
-  const usedTitles = new Set<string>();
-
-  for (let index = 0; index < count; index += 1) {
-    const strategy = strategies[(index + placementOffset) % strategies.length];
-    const rows = rotate(strategy.rows, index);
-    const item = rows.find((row) => !usedTitles.has(row.title)) || rows[0];
-    if (item) {
-      selected.push({ ...item, strategyLabel: strategy.label });
-      if (ads.length >= count) usedTitles.add(item.title);
-    }
-  }
-
-  return selected;
+  const rank = (compare: (a: AdItem, b: AdItem) => number): Map<string, number> =>
+    new Map(
+      [...ads].sort(compare).map((item, index) => [`${item.title}|${item.href}`, index])
+    );
+  const newest = rank((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  const mostLiked = rank((a, b) => b.engagementCount - a.engagementCount);
+  const leastClicked = rank((a, b) => a.clickCount - b.clickCount);
+  const leastPromoted = rank((a, b) => a.promotionCount - b.promotionCount);
+  const mostRelevant = rank(
+    (a, b) => Number(b.relevanceScore || 0) - Number(a.relevanceScore || 0)
+  );
+  const ordered = [...ads].sort((a, b) => {
+    const keyA = `${a.title}|${a.href}`;
+    const keyB = `${b.title}|${b.href}`;
+    const score = (key: string) =>
+      Number(newest.get(key)) +
+      Number(mostLiked.get(key)) +
+      Number(leastClicked.get(key)) +
+      Number(leastPromoted.get(key)) +
+      Number(mostRelevant.get(key));
+    return score(keyA) - score(keyB) || keyA.localeCompare(keyB);
+  });
+  const placementLabels = ["New & relevant", "Under-clicked", "Fresh placement"];
+  return rotate(ordered, placementOffset * Math.max(count, 1))
+    .slice(0, count)
+    .map((item) => ({
+      ...item,
+      strategyLabel: placementLabels[placementOffset]
+    }));
 }
 
 export default function FeedRail({
   slots,
   mode,
   railMode = "standard",
-  placement = "top"
+  placement = "top",
+  routeKey = "page",
+  growInterests = [],
+  compact = false
 }: FeedRailProps) {
   const [campaignAds, setCampaignAds] = useState<AdItem[]>([]);
+  const slotKey = resolveFeedSlotKey(routeKey, placement);
+  const growInterestKey = growInterests.join("|");
 
   useEffect(() => {
     let cancelled = false;
-    listCommercialFeedCampaigns({ limit: Math.max(slots * 3, 6), sort: "new" })
+    const activeGrowInterests = growInterestKey.split("|").filter(Boolean);
+    listCommercialFeedCampaigns({
+      limit: Math.max(slots * 10, 20),
+      sort: "new",
+      placement: slotKey
+    })
       .then((res) => {
         if (cancelled) return;
-        const nextAds = res.items.map(mapCampaignToAd).filter((item) => item.title);
+        const nextAds = res.items
+          .filter((campaign) => campaignMatchesPlacement(campaign, slotKey))
+          .map(mapCampaignToAd)
+          .map((item) => ({
+            ...item,
+            relevanceScore:
+              Number(item.relevanceScore || 0) +
+              campaignInterestScore(item.growInterests, activeGrowInterests)
+          }))
+          .filter((item) => item.title);
         if (nextAds.length) setCampaignAds(nextAds);
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [slots]);
+  }, [growInterestKey, slotKey, slots]);
 
   if (!slots || slots <= 0) return null;
 
@@ -355,6 +443,7 @@ export default function FeedRail({
               storefrontSlug={adItem.storefrontSlug}
               imageUrl={adItem.imageUrl}
               strategyLabel={adItem.strategyLabel}
+              compact={compact}
             />
           );
         }
@@ -381,6 +470,7 @@ export default function FeedRail({
             storefrontSlug={adItem.storefrontSlug}
             imageUrl={adItem.imageUrl}
             strategyLabel={adItem.strategyLabel}
+            compact={compact}
           />
         );
       })}

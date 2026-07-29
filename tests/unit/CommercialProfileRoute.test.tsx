@@ -4,17 +4,20 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import CommercialProfileRoute from "@/app/home/commercial/profile";
 
 const mockApiRequest = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    useRouter: () => ({ push: mockPush }),
+    usePathname: () => "/home/commercial/profile"
   };
 });
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: { email: "brand@example.com" }
+    user: { id: "brand-user-1", email: "brand@example.com", displayName: "Brand Owner" }
   })
 }));
 
@@ -49,6 +52,7 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("CommercialProfileRoute", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
+    mockPush.mockReset();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/storefront" && !options) {
         return Promise.resolve({
@@ -83,27 +87,30 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Public storefront discovery")).toBeTruthy();
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
-    expect(screen.getByText("Public storefront: /store/your-brand-slug")).toBeTruthy();
-    expect(screen.getByText("Legacy brand profile: /brands/your-brand-slug")).toBeTruthy();
     expect(
-      screen.getByText("Public product detail: /store/your-brand-slug/products/product-id")
+      screen.getByText("Public storefront: Add a public slug to create this URL.")
     ).toBeTruthy();
-    expect(
-      screen.getByText("Public storefront alias: /storefront/your-brand-slug")
-    ).toBeTruthy();
+    expect(screen.queryByText(/Legacy brand profile:/)).toBeNull();
     expect(
       screen.getByText(
-        "Public product alias: /storefront/your-brand-slug/products/product-id"
+        "Public product detail: Add a public slug and save a product to create this URL."
       )
     ).toBeTruthy();
+    expect(screen.queryByText(/your-brand-slug/)).toBeNull();
+    expect(screen.queryByText(/Public storefront alias:/)).toBeNull();
+    expect(screen.queryByText(/Public product alias:/)).toBeNull();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
+    expect(screen.queryByText("Report Bug")).toBeNull();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
     expect(
-      screen.getByText("Legacy brand profile: /brands/living-soil-labs")
+      screen.getByText(
+        "Public product detail: Save and publish a product to create its URL under /store/living-soil-labs."
+      )
     ).toBeTruthy();
+    expect(screen.queryByText(/Legacy brand profile:/)).toBeNull();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial brand name"),
@@ -158,5 +165,25 @@ describe("CommercialProfileRoute", () => {
         })
       )
     );
+  });
+
+  it("shows the Living Soil Labs starter draft when no storefront exists", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/storefront" && !options) {
+        return Promise.resolve({ storefront: null });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialProfileRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    expect(screen.getAllByDisplayValue("Living Soil Labs").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/starter draft/i)).toBeTruthy();
+    expect(
+      screen.getByDisplayValue(
+        "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them."
+      )
+    ).toBeTruthy();
   });
 });

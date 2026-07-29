@@ -22,239 +22,375 @@ Facility currently has the strongest visual appeal and sense of operational poli
 
 ## P0 - Must Fix Before More Broad Manual QA
 
+0. Knowledge base, source reliability, and GrowPath methods
+   - [x] Create `docs/knowledge` with source, AI-decision, cannabis-visibility, and method policies.
+   - [x] Add diagnosis, pheno, stress, crop-steering, soil/nutrient, clone, TC, harvest/dry/cure, commercial, and facility method documents.
+   - [x] Add app-readable `src/knowledge` source, method, and decision registries.
+   - [x] Require Codex/developers to read relevant methods before tool work.
+   - [ ] Collect the owner’s named websites, domains, preferred authors/channels, reliability tiers, trusted uses, exclusions, and review dates.
+   - [x] Add an admin/editor workflow for reviewing and versioning source entries and internal methods, with admin-only draft/approve/retire actions, immutable revision snapshots, review notes, and platform audit events.
+   - [x] Add runtime retrieval of relevant method snippets and source rules to the shared Ask AI backend path.
+   - [x] Extend the same runtime method/source envelope to Plant Diagnosis, IPM Scout, Clone Rooting, and Harvest Readiness GPT/vision verification endpoints, including fallback and test-mode results.
+   - [x] Persist method IDs, source IDs, citations, disagreements, and limitations with Ask AI conversation answers, ToolRuns, immutable ToolRun snapshots, and durable module records.
+   - [x] Add source freshness/review reminders and prevent stale legal, regulatory, product-label, or device claims from silently driving decisions through review-due enforcement, visible overdue states, current-artifact requirements, and blocked claim types in AI context.
+   - [x] Add outcome-based method review so at least three repeated grow outcomes can create an evidence-linked admin proposal, while acceptance only queues separate editorial work and never silently rewrites a GrowPath method.
+
 1. Commercial navigation clarity
-   - Make Storefront a first-class commercial destination.
-   - Put Storefront prominently on Commercial Dashboard.
-   - Ensure bottom tabs/routes open correct pages, not dashboard again.
-   - Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
-   - Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
+   - [x] Make Storefront a first-class commercial destination.
+   - [x] Put Storefront prominently on Commercial Dashboard with Open, Edit, View as User/Preview, and Add Product actions.
+   - [x] Ensure bottom tabs/routes open correct pages, not dashboard again.
+   - [x] Hide or demote top-level routes that feel disconnected until connected: product trials, batches, product lines, duplicate inventory.
+   - [x] Rename confusing surfaces so Product Lines, Batches/Lots, Trials, and Inventory are clearly related to Products.
 
 2. Storefront-first commercial slice
-   - Add Storefront owner home.
-   - Add View as User / public preview path.
-   - Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
-   - Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
-   - Ensure public/storefront-style page can show products/courses/lives/campaigns even if some data is mocked/empty.
+   - [x] Add Storefront owner home.
+   - [x] Add View as User / public preview path.
+   - [x] Show setup checklist: logo, banner, bio, grow interests, Stripe, first product/course/live, published status.
+   - [x] Make Add Product, Create Course, Schedule Live, Create Feed Campaign, Orders, Analytics easy from Storefront and Dashboard.
+   - [x] Ensure public/storefront-style page can show products/courses/lives/campaigns with honest empty states when no published records exist.
 
 3. Feed vs Forum correction
-   - Replace wording that implies Feed is discussion.
-   - Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
-   - Forum means discussion/Q&A.
-   - Feed cards should look promotional and have CTAs.
-   - Forum threads/comments should remain discussion.
+   - [x] Replace wording that implies Feed is discussion.
+   - [x] Feed / Campaigns means ad/outreach placement by commercial/facility accounts.
+   - [x] Forum means discussion/Q&A.
+   - [x] Feed cards look promotional and always expose a destination or outreach-detail CTA.
+   - [x] Forum threads/comments remain the discussion surface.
 
 4. Free account feed placement rule
-   - Free account pages: top + bottom placement.
-   - Long pages with two or more scroll screens: top + middle + bottom.
-   - Do not repeat the same ad everywhere.
-   - Rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
+   - [x] Free account pages: top + bottom placement.
+   - [x] Long pages with two or more scroll screens: top + middle + bottom.
+   - [x] Do not repeat the same ad across top, middle, and bottom when at least three campaigns are available.
+   - [x] Rank and rotate by newest, most liked, least clicked, least promoted, and relevance when data exists.
 
 5. Back arrows
-   - Every nested page gets a back arrow.
-   - Root pages do not need a back arrow.
-   - Use shared page/header behavior, not one-off custom buttons.
-   - Confirm commercial product/detail/edit/new, course builder/detail, storefront edit/preview, task/detail, grow/plant/detail, facility room/run/detail have back behavior.
+   - [x] Every audited nested page gets a back arrow.
+   - [x] Root pages do not get forced back arrows.
+   - [x] Use shared `AppPage` / `ScreenBoundary` header behavior, not one-off custom buttons.
+   - [x] Confirm commercial product create/detail, course detail, storefront edit/preview, task detail, personal grow/plant workspace, facility room-context detail, and facility SOP-run detail have back behavior with safe fallbacks.
 
 6. Commercial product card and product detail basics
-   - Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
-   - Product appears as a storefront card when published.
-   - Product detail shows professional info and buy CTA if Stripe-ready.
-   - Soil/nutrient/amendment fields are available or planned visibly: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Product create/edit supports image, name, category, description, price, size/weight, grow interests, status.
+   - [x] Product appears as a storefront card when published.
+   - [x] Product detail shows professional info and buy CTA if Stripe-ready, while regulated cannabis stays catalog/verified-transfer only.
+   - [x] Soil/nutrient/amendment fields persist and display: NPK, guaranteed analysis, ingredients, directions, application rate, documents, batch/lot.
+   - [x] Commercial and facility inventory link to the same product record; do not create a duplicate facility storefront product model.
 
 7. Course workflow minimum
-   - Create Course must look and behave like a real button/workflow.
-   - Course create/edit must support thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks eventually.
-   - Courses should appear on storefront and course discovery when published.
+   - [x] Create Course looks and behaves like a real button/workflow.
+   - [x] Course create/edit supports thumbnail/banner, description, category, grow interests, free/paid, modules/lessons, videos/links/documents, products/lives/tasks.
+   - [x] Published commercial courses appear on their published storefront and in course discovery, with discovery opening the canonical storefront course detail.
+   - [x] Commercial and facility educators use the shared course capability; facility-only visibility remains available for private training.
+   - [x] Replace the generic lesson video URL field with a provider-aware media source chooser: GrowPath upload, YouTube, Rumble, Vimeo, and Other video URL. Detect supported providers from pasted URLs, preview the normalized source, and never accept arbitrary iframe/HTML input.
+   - [x] Store normalized lesson-media metadata separately from the original URL: source type, provider video ID/canonical URL, title/thumbnail when available, embed capability, link-only fallback, availability-check status, creator rights confirmation, and last-checked time. Do not imply that GrowPath owns, hosts, or continuously monitors third-party media.
+   - [x] Make third-party playback resilient and honest across web/mobile: use an approved embed only when the provider and content allow it, otherwise show an explicit Open on provider action; preserve lesson text/resources when media is unavailable; warn authors about private, deleted, age-restricted, region-restricted, or embedding-disabled content before publishing.
+   - [x] Require an accessible lesson fallback for every video source: captions or transcript status, a text summary, and a learner-visible external-link fallback. Use privacy-aware click-to-load behavior where third-party embeds set tracking cookies, and distinguish GrowPath lesson progress from provider watch analytics that GrowPath cannot verify.
+   - Production evidence: `docs/qa/COURSE_MEDIA_PRODUCTION_EVIDENCE_2026-07-22.md`.
 
 8. Facility room creation
-   - Facility users must be able to add rooms/greenhouses.
-   - Facility onboarding should guide facility name, type, rooms/zones, crops/batches, staff/tasks, inventory/settings, dashboard walkthrough.
-   - Stock risk should not appear before useful inventory/crop data exists.
+   - [x] Facility owners/managers can add rooms, greenhouses, outdoor beds, seedling rooms or veg racks, clone/tissue-culture/cold-storage spaces, and optional zones.
+   - [x] Facility onboarding captures facility name/type and creates typed starter rooms before continuing into crops/batches; the walkthrough guides staff/tasks, inventory/settings, and dashboard review.
+   - [x] Stock-risk metrics and AI review do not appear before useful inventory data exists.
 
 9. Password reset/login reliability
-   - Password reset flow: email -> link -> valid reset screen -> save password -> login works.
-   - Commercial/facility/pro/free login should not get stuck in loops.
-   - Failed login/server disconnect states should show actionable errors.
+   - [x] Password reset flow works from email -> one-hour link -> valid reset screen -> hashed password save -> email-prefilled sign-in.
+   - [x] Commercial/facility/pro/free login returns through the shared root router without account-tier redirect loops; facility accounts without a selection land on facility selection.
+   - [x] Failed credentials, expired reset links, email-delivery outages, and server/network disconnects show distinct actionable recovery paths.
 
 10. Pricing display
-   - Pro: $10/month, $100/year.
-   - Commercial: $50/month, $500/year.
-   - Facility: $100/month, $1,000/year.
-   - Stripe annual monthly-equivalent copy should be clear and not look contradictory.
+
+- [x] Pro: $10/month, $100/year.
+- [x] Commercial: $50/month, $500/year.
+- [x] Facility: $100/month, $1,000/year.
+- [x] Stripe annual monthly-equivalent copy is clear and does not look contradictory.
 
 ## P1 - Connected Workflow Foundation
 
 11. ToolRun foundation
-   - Confirm all serious tools persist ToolRun records.
-   - ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
-   - Tool outputs can create tasks/logs/timeline events.
+
+- [x] Confirm all serious tools persist ToolRun records.
+- [x] ToolRun can link to grow, plant, log, task, product, batch, facility, room, course.
+- [x] Tool outputs can create tasks/logs/timeline events.
 
 12. Recipe model
-   - Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
-   - Recipe can duplicate/version/compare.
-   - Recipe can convert to commercial product draft or facility production batch.
+
+- [x] Add Recipe object for feed recipes, soil recipes, dry blends, topdress plans, foliar, teas, facility SOP recipes, commercial product formulas.
+- [x] Recipe can duplicate/version/compare.
+- [x] Recipe can convert to commercial product draft or facility production batch.
 
 13. Ingredient library
-   - Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
-   - User-entered label data overrides generic assumptions.
+
+- [x] Save reusable ingredients with guaranteed analysis, density, release speed, cost, supplier, documents/photos.
+- [x] User-entered label data overrides generic assumptions.
 
 14. NPK / Feed Recipe Builder
-   - Multi-input builder with 18-20 rows.
-   - Guaranteed analysis fields.
-   - P2O5/K2O conversions and elemental values.
-   - Dry/liquid calculations, density handling, ppm when appropriate.
-   - Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
-   - AI can collect inputs and call deterministic math engine.
+
+- [x] Multi-input builder with 18-20 rows.
+- [x] Guaranteed analysis fields.
+- [x] P2O5/K2O conversions and elemental values.
+- [x] Dry/liquid calculations, density handling, ppm when appropriate.
+- [x] Target profile mode, dose existing products mode, dry blend mode, soil amendment mode.
+- [x] AI can collect inputs and call deterministic math engine.
 
 15. Soil Builder
-   - Full base mix + amendments + biology/activation + rest/cook timeline.
-   - Fast/medium/slow release chart.
-   - Compost uncertainty warnings.
-   - Save to grow/product/facility batch.
+
+- [x] Full base mix + amendments + biology/activation + rest/cook timeline.
+- [x] Fast/medium/slow release chart.
+- [x] Compost uncertainty warnings.
+- [x] Save to grow/product/facility batch.
 
 16. Dry Amendment Mix Builder
-   - Build concentrated dry blend.
-   - Estimated guaranteed analysis.
-   - Ingredient contribution chart.
-   - Product-ready label fields.
-   - Bag sizes and application directions.
+
+- [x] Build concentrated dry blend.
+- [x] Estimated guaranteed analysis.
+- [x] Ingredient contribution chart.
+- [x] Product-ready label fields.
+- [x] Bag sizes and application directions.
 
 17. Topdress / Re-Amend Planner
-   - Grow/plant/bed specific topdress plan.
-   - Expected release timeline.
-   - Follow-up tasks.
+
+- [x] Grow/plant/bed specific topdress plan.
+- [x] Expected release timeline.
+- [x] Follow-up tasks.
 
 18. IPM Scout GPT verification
-   - Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
-   - Store both answers.
-   - Show agreement/conflict.
-   - Save to grow/facility timelines and create follow-up tasks.
+
+- [x] Same structured scout info goes to GrowPath/local logic and GPT/OpenAI verification.
+- [x] Store both answers.
+- [x] Show agreement/conflict.
+- [x] Save to grow/facility timelines and create follow-up tasks.
 
 19. Pheno Hunting Matrix
-   - Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
-   - Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
+
+- [x] Score vigor, morphology, stress tolerance, pest resistance, early sex, resin, smell/taste, yield, hash value, keeper status.
+- [x] Link selected keepers to clone/mother/tissue culture/commercial genetics/facility stock later.
 
 20. Tissue Culture Tracker
-   - Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
+
+- [x] Explant, sterilization, media, vessel/batch, contamination, multiplication, rooting, acclimation, photos, survival rate.
 
 ## P2 - Task / Calendar / Alerts Engine
 
 21. One Task model
-   - Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
-   - Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
+
+- [x] Links to grow, plant, ToolRun, recipe, course, lesson, live, product, batch, facility, room, SOP, alert.
+- [x] Due date, start/end, reminders, recurrence, priority, assignee, proof, approval, history.
 
 22. Task Center
-   - Today, overdue, upcoming, completed, assigned, source filters.
-   - Commercial tasks: storefront/product/course/live/order setup.
-   - Facility tasks: room/SOP/team/proof/approval.
-   - Personal tasks: grow/course/tool/live reminders.
+
+- [x] Today, overdue, upcoming, completed, assigned, source filters.
+- [x] Commercial tasks: storefront/product/course/live/order setup.
+- [x] Facility tasks: room/SOP/team/proof/approval.
+- [x] Personal tasks: grow/course/tool/live reminders.
 
 23. SchedulePicker
-   - Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
+
+- [x] Shared popup/bottom-sheet calendar for due dates, lives, course assignments, recipe timelines, alert snooze, feed schedule, product launch, facility SOP recurrence.
 
 24. Schedule / Agenda page
-   - Agenda/day/week/month.
-   - Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
+
+- [x] Agenda/day/week/month.
+- [x] Shows tasks, live events, course assignments, feed schedules, product launches, grow milestones, soil ready dates, facility SOPs.
 
 25. Alert Center
-   - Alerts can resolve, snooze, create task, assign, ask AI, view source.
-   - Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
+
+- [x] Alerts can resolve, snooze, create task, assign, ask AI, view source.
+- [x] Setup alerts, sensor alerts, course/live alerts, storefront/product alerts, facility training alerts.
 
 26. Notification engine
-   - In-app first; push/email when configured.
-   - Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
+
+- [x] In-app first; push/email when configured.
+- [x] Task reminders, live reminders, course due/overdue, alert critical/digest, replay available.
 
 ## P3 - Courses and Lives
 
 27. Course builder
-   - Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
+
+- [x] Course basics, thumbnail/banner, modules, lessons, media, linked videos, documents, tasks, products, lives, discussion, Stripe, publish state.
+- [x] Complete the provider-aware lesson media chooser and validation/fallback/accessibility rules defined in Course workflow minimum item 7.
 
 28. Course player
-   - Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
+
+- [x] Lessons, progress, resources, tasks, Ask AI, notes, discussion, related products/lives.
 
 29. Course analytics
-   - Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
+
+- [x] Views, enrollments, sales, progress, drop-off, task completion, live RSVPs, product clicks, questions.
 
 30. Lives
-   - Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
+
+- [x] Lives root, scheduler, Twitch connection, RSVP, embedded live/replay, related course/product/feed/forum, notifications.
 
 31. Twitch
-   - OAuth connection.
-   - Twitch Embed for video/chat where supported.
-   - EventSub for stream online/status.
-   - Replay link/manual VOD first if automatic VOD import is not ready.
+
+- [x] OAuth connection.
+- [x] Twitch Embed for video/chat where supported.
+- [x] EventSub for stream online/status.
+- [x] Replay link/manual VOD first if automatic VOD import is not ready.
 
 ## P4 - Feed Campaign Engine
 
 32. FeedCampaign model
-   - Owner commercial/facility.
-   - Product/course/live/storefront/facility/general campaign.
-   - Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
+
+- [x] Owner commercial/facility.
+- [x] Product/course/live/storefront/facility/general campaign.
+- [x] Creative, CTA, destination, grow interests, targeting, placements, schedule, status.
 
 33. Feed placement engine
-   - Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
-   - Plan-aware placement rules.
-   - Context-aware targeting.
+
+- [x] Slot keys: home hero/top/middle/bottom, page top/middle/bottom, course/tool/forum/product/facility/commercial slots.
+- [x] Plan-aware placement rules.
+- [x] Context-aware targeting.
 
 34. Feed campaign builder
-   - Campaign type, destination, creative, placement, audience, schedule, review.
-   - Prevent publishing if destination is broken or missing setup.
+
+- [x] Campaign type, destination, creative, placement, audience, schedule, review.
+- [x] Prevent publishing if destination is broken or missing setup.
 
 35. Feed analytics
-   - Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
+
+- [x] Impressions, clicks, conversions, hide/report, placement performance, grow interest performance.
 
 ## P5 - Forum / Discussion Engine
 
 36. One discussion engine
-   - Threads/posts/comments/categories/tags/grow interests/media/documents.
-   - Author identity: user, commercial, facility, moderator.
-   - Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
+
+- [x] Threads/posts/comments/categories/tags/grow interests/media/documents.
+- [x] Author identity: user, commercial, facility, moderator.
+- [x] Context links: grow, plant, ToolRun, recipe, product, course, lesson, live, storefront, facility, room, task, alert.
 
 37. Forum home/categories/thread detail/create thread
-   - Discussion/Q&A, not ads.
-   - Product Q&A, course discussion, live Q&A, facility internal threads.
+
+- [x] Discussion/Q&A, not ads.
+- [x] Product Q&A, course discussion, live Q&A, facility internal threads.
 
 38. Forum tasks/alerts/AI
-   - Create task from thread/comment.
-   - Alerts for replies, mentions, unanswered product/course/facility questions.
-   - AI helps title/category/tags/summarize/extract tasks.
+
+- [x] Create task from thread/comment.
+- [x] Alerts for replies, mentions, unanswered product/course/facility questions.
+- [x] AI helps title/category/tags/summarize/extract tasks.
 
 39. Moderation
-   - Report, hide/remove/lock/pin/move, moderation queue, audit trail.
+
+- [x] Report, hide/remove/lock/pin/move, moderation queue, audit trail.
 
 ## P6 - Sensor / Controller Import
 
 40. Integration connector interface
-   - Provider connections with encrypted auth, status, capabilities, last sync, errors.
-   - Read-only first.
+
+- [x] Provider connections with encrypted auth, status, capabilities, last sync, errors.
+- [x] Read-only first.
 
 41. Import wizard
-   - Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
+
+- [x] Provider select, connect, test, fetch structure, preview, room/device mapping, confirm.
 
 42. Auto-build spaces
-   - Personal: grow space/tent/room/devices/streams.
-   - Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
-   - Commercial: product trial spaces or demo/education spaces only when relevant.
+
+- [x] Personal: grow space/tent/room/devices/streams.
+- [x] Facility: facility/rooms/zones/devices/streams/alerts/dashboards.
+- [x] Commercial: product trial spaces or demo/education spaces only when relevant.
 
 43. Metric normalization
-   - air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
+
+- [x] air temp, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, offline/fault.
 
 44. Imported data powers tools
-   - VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
+
+- [x] VPD, Dew Point, Bud Rot Risk, Crop Steering, Watering Planner, dryback, AI summaries, alerts/tasks, run comparisons, product trials, course examples.
 
 ## P7 - Analytics and Data Use
 
 45. No dead fields
-   - Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
+
+- [x] Every collected field must feed display, analytics, AI, search, recommendations, tasks, alerts, or exports.
 
 46. Commercial analytics
-   - Storefront/product/course/live/feed/order/grow-interest analytics from real events.
+
+- [x] Storefront/product/course/live/feed/order/grow-interest analytics from real events.
 
 47. Personal analytics
-   - Grow consistency, tool use, environment history, task completion, run comparisons.
+
+- [x] Grow consistency, tool use, environment history, task completion, run comparisons.
 
 48. Facility analytics
-   - Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
+
+- [x] Room stability, task completion, SOP compliance, sensor alerts, batch/run history, staff/training.
+
+## P8 - QA Seed Data and Real-World Acceptance
+
+49. Governed QA seed-system contract
+
+- [x] Add one machine-readable manifest for plant identification, IPM/diagnosis, Living Soil Labs commerce, and Facility simulation packs.
+- [x] Require non-production environments, deterministic namespaces, idempotent reruns, cleanup support, and no plaintext credentials or tokens.
+- [x] Require image-level source, creator, license, attribution, review date, and commercial-use approval before third-party media can be copied or uploaded.
+- [x] Add planning and strict validation commands so incomplete rights/source records remain visible and cannot be treated as seed-ready.
+
+50. Plant-identification QA pack
+
+- [x] Define a 320-record allocation across 42 cannabis/hemp, food-crop, ornamental, weed, lookalike, and failure-case definitions.
+- [x] Add planning and strict catalog validation that blocks model-training use, unreviewed media, noncommercial/all-rights-reserved copies, missing attribution, duplicate media, quota gaps, and cultivar inference.
+- [ ] Curate 300-500 reviewed images spanning cannabis/hemp stages, food crops, ornamentals, weeds, lookalikes, and failure/no-plant cases.
+- [ ] Record accepted/scientific name, category, life stage, acceptable alternatives, distinguishing features, expected confidence range, source, creator, license, and attribution for every image.
+- [x] Keep crop identification available without a grow, allow clear cannabis/hemp morphology to produce a crop-level draft, and never infer cultivar from appearance. Production Personal Pro evidence on 2026-07-21 passed with one no-grow cannabis flower (`Cannabis` / `Cannabis sativa`, no cultivar) and one no-grow genuine roadside plant (`Mint` working candidate, exact species unconfirmed); see `docs/qa/CROP_IDENTIFICATION_PRODUCTION_EVIDENCE_2026-07-21.md`.
+- [ ] Verify iNaturalist terms and every image license before use; exclude noncommercial/all-rights-reserved media from copied commercial-product fixtures and never use the pack for model training.
+
+51. IPM and plant-diagnosis QA pack
+
+- [x] Define a 252-record allocation across 41 disease, pest/beneficial-lookalike, and abiotic/root-zone case definitions, with at least two reviewed images required per record.
+- [x] Add planning and strict validation for ETGU order, identical GrowPath/GPT evidence envelopes, disagreement persistence, linked-record write-backs, image rights, treatment-source cross-checks, and the no-invented-pesticide rule.
+- [ ] Build disease, pest/beneficial-lookalike, and abiotic-mimic cases with multiple images plus plant, stage, distribution, progression, environment, root-zone, measurements, diagnostic signs, alternatives, confirmation method, urgency, quarantine, scout, and response fields.
+- [ ] Preserve ETGU order: pattern, medium/root zone, environment, measured values, then cautious cause ranking.
+- [ ] Send the same reviewed evidence envelope to GrowPath and GPT, store both answers and disagreements, and link Plant, Grow, Log, ToolRun, Task, and Facility records when context exists.
+- [ ] Treat PlantVillage as a candidate source until repository/dataset licensing and intended commercial QA use are explicitly reviewed; a public repository or “open access” label alone is not approval.
+
+52. Living Soil Labs commercial-commerce QA pack
+
+- [x] Define ten hidden product drafts and 39 variants covering the three soil products, five proposed dry mixes, 1 lb Starter trial, S-5XL shirt, and adjustable embroidered hat.
+- [x] Add planning and strict validation for product-label/formula evidence, method-preset separation, media rights, pricing/weight/inventory completeness, and twelve storefront/order scenarios.
+- [x] Record the owner-confirmed pre-launch placeholder state: tagline, no website, buyer-paid shipping, TBD prices, disabled checkout, zero stock across all 39 variants, editable draft descriptions, an owner-supplied banner, and clearly labeled shirt/hat concept mockups.
+- [ ] Seed Penny Saver Soil, Living Soil, and No-Till Soil product/variant drafts plus proposed dry-mix, sample, shirt, and embroidered-hat fixtures.
+- [ ] Require verified label/guaranteed-analysis evidence before proposed 3-3-3, 3-1-2, 1-3-2, 2-6-4, or 0.5-3-3 product claims become published test facts; do not silently replace the approved GrowPath method presets.
+- [ ] Exercise inventory, out-of-stock, weights, images, labels, directions, cart, checkout, orders, discounts, taxes, shipping, cancellation, refund, and order-history states.
+- [ ] Keep the app module named Soil & Nutrient Batch Planner and keep Living Soil Labs as the seeded commercial brand/storefront.
+
+53. Facility simulation QA pack
+
+- [x] Define a private synthetic Facility graph with 5 canonical-role personas, 5 zones, 10 workflow rooms, 5 grows, 12 plants, 8 equipment records, 6 inventory records, 6 draft SOPs, and 10 planned tasks.
+- [x] Add planning and strict validation for integration safety, 15 governed telemetry metrics, normal operations plus 13 incidents, confirmation-gated write-backs, and the 13-check acceptance matrix.
+- [ ] Seed Facility -> rooms/zones -> grows -> plants with canonical Owner, Manager, Staff, and Viewer access; model grower, scout, and restricted-employee duties as assignments/permission constraints rather than inventing incompatible account roles.
+- [ ] Cover mother, clone/propagation, seedling, veg, flower, dry, cure, tissue culture, cold/storage, equipment, inventory, SOPs, recurring sanitation/scouting, and task assignment.
+- [ ] Generate normal telemetry plus humidity/dew-point, stale/offline sensor, high substrate EC, irrigation, CO2, light/exhaust, acknowledged excursion, pest quarantine, inventory shortage, missed SOP/task, permission conflict, and malformed import incidents.
+- [ ] Verify entitlements, AI-credit billing/refunds, Facility Owner access, uploads, Ask AI, alerts, persistence/reload, and tool write-backs across Plant, Grow, Log, ToolRun, Task, room, and Facility scope.
+
+54. Idempotent backend seed runner and cleanup
+
+- [x] Implement dry-run, seed, verify, and cleanup commands against the real backend schemas with a required QA namespace and explicit test/staging environment gate.
+- [x] Hash generated test passwords, keep credentials out of fixtures/logs, preserve referential integrity, and make reruns update the named QA records instead of duplicating them.
+- [x] Produce counts, created/updated/skipped records, source-rights failures, and cleanup evidence for every run.
+- [x] Backend PR `headiescannabiscompany-arch/growpath-commerical#29` merged as `54d4632659b3247261c50cee17646f88ae3e248c` and deployed live to `https://api.growpathai.com` on 2026-07-20; Render and an independent `/health` request both returned healthy/HTTP 200. The runner itself remains production-blocked by design.
+- [x] Offline planning against the real frontend catalogs produced the intended 87-record graph with zero database writes and correctly blocked source/media-rights, commerce-approval, account-binding, facility-baseline, SOP, telemetry, scenario, and acceptance gaps for item 55.
+
+55. Execute and close the QA seed packs
+
+- [x] Correct the seed lifecycle so selected packs can be seeded from complete governed inputs while scenario runs and browser acceptance remain separately tracked post-seed evidence. Backend PR `#30` merged as `f727c259bb4b7829c6809e86c566467151572ca3` and is live on both production and staging Render services.
+- [x] Make the Facility simulator seed-input-ready with five seed-time personas, reviewed synthetic-only room profiles, synthetic test adapters, six executable QA checklists, and 252 deterministic telemetry points covering all 14 scenarios. Approval is limited to private test/staging fixtures and excludes production, claims, setpoints, external media rights, and Living Soil Labs product facts.
+- [x] Run a selected-pack offline plan against backend `f727c259bb4b7829c6809e86c566467151572ca3`: 326 Facility records planned, zero database writes, zero seed blockers, zero unrelated rights failures, and only scenario/browser work retained as post-seed obligations.
+- [x] Seed and verify the governed Facility pack in networked staging under namespace `growpath-qa-facility-acceptance`; the five role personas shared Facility `6a5ea11685cee9a1c3f9696d`, and the backend Facility-ID guard from PR `#33` is live on staging and production as `7c8c21d9d9a18bafef45eccd0d33b2a8bfb486e5`.
+- [ ] Populate only source- and license-approved records, run contract tests, then seed a networked test/staging environment.
+- [ ] Exercise Personal Free, Personal Pro, Commercial, Facility Owner/Manager/Staff/Viewer, cross-role shared-record, and outside-user loops against the seeded records.
+  - Facility staging progress: Manager -> Grower -> Scout/Viewer task persistence passed on shared task `6a5eb37ec9fd257ae2484ce0`; Owner bookends, forced Viewer 403 evidence, production-role retest, exported recording, non-Facility sessions, and outside-user validation remain open. Evidence: `docs/qa/FACILITY_ROLE_LOOP_EVIDENCE_2026-07-20.md`.
+  - Personal Pro production progress: one provider-backed Ask AI request deducted and persisted exactly one credit (`94 -> 93`) with zero refunds. The invalid current-plan upgrade was fixed in frontend PR `#64` and live-retested on merge `cc822f8dbc242c08279aeb9089628b85010c3c0a`. Grows -> grow-scoped New Journal Entry then preserved the exact grow ID; duplicate headers and missing root heading semantics were fixed through PRs `#66`-`#68`, with `e8c24316a415882163f4ea04768bff074342c6b9` live at 9:12 PM ET. PR `#70` restored exact grow-Journal Back behavior. PRs `#71` and `#72` made Journal log, ToolRun, and task rows actionable, preserved exact source IDs, and brought a reopened saved result directly into view. A production ToolRun-to-task chain then passed exact Journal task focus and View Source before the QA task was archived. PR `#74`, merge `27fe657d2dc3ae911a40c553afa659fb8fa0e553`, preserved bounded Journal/task/timeline context on Saved Tool Runs; Render deployment `dep-d9fdfcl7vvec73cecirg` was live at 10:23 PM ET and exact grow-Journal Back passed with 13 ToolRun links and zero archived-task links. Existing-log, saved-ToolRun, and production task source reopening passed. Frontend PRs `#76`/`#77` and backend PR `#34` then made real saved grow photos visible and reusable through an ownership-scoped evidence contract. Frontend merge `e67e5fb4091350a3953f4bbbab97256f022af990` and backend merge `a78d219589a8c434e2e9ce8e58c663af52708570` were live by 11:57 PM ET. Seven live diagnosis requests ultimately persisted exact three-credit charges (`93 -> 90 -> 87 -> 72`) with zero refunds. Frontend PRs through `#82` and backend PRs through `#38` preserved selected photos through follow-up, kept blank measurements missing, and made photo-supported empty-context identity deterministically `visual_suggestion`. Final `Cannabis` / `Cannabis sativa` result and photo-backed refinement retained evidence without strain inference; `Unsure` feedback, exact log `6a5f04d84622b8f588e8c10a`, and source-linked task `6a5f04e14622b8f588e8c110` persisted in Journal. The complete Personal Pro loop remains open for fresh upload, failure/refund, exact saved-diagnosis reopening, lifecycle, billing, broader accessibility, exported video, and independent review. Evidence: `docs/qa/PERSONAL_PRO_AI_CREDIT_EVIDENCE_2026-07-20.md`.
+- [ ] Record commit SHA, environment URL, seed namespace, timestamp, account/role, checks, failures, screenshots/video, cleanup result, and final acceptance status.
+  - The 2026-07-20 Facility evidence record now contains SHAs, URLs, namespace, timestamps, role/account suffixes, checks, findings, CI, and deployment status. Screenshot/video, cleanup, production-role rerun, and final acceptance are intentionally still open.
+
+56. Owner support-email deep dives
+
+- [x] Review the connected `support@growpathai.com` mailbox and add all three owner notes submitted on 2026-07-21 without inventing missing requirements.
+- [x] Tighten the Personal home/feed layout so promotional campaigns do not narrow or overpower the grow command center. Free home now has one top and one bottom placement; paid home has one top placement; the supplemental side rail and home middle placement are removed.
+- [x] Make Forum/Q&A more approachable and interaction-led while keeping promotional Feed/Campaigns separate from discussion. Personal Community now leads with a question/share composer, renders author/date/media/tag/like/reply context as individual discussion cards, keeps groups and notifications secondary, demotes commercial discovery, and interleaves compact clearly labeled campaign placements instead of stacking large ads after the forum.
+- [x] Deepen Courses/Lives authoring and learner UX: the initial Course Builder now uses the same provider-aware GrowPath upload, YouTube, Rumble, Vimeo, and Other URL contract as Add/Edit Lesson; it exposes real Twitch OAuth/EventSub status plus shared Schedule and Notification Center entry points; created live sessions preserve calendar, RSVP, reminder, and notification context; and learner course/live surfaces make that connected workflow visible.
+- [ ] Run production desktop/mobile and accessibility review for each deep dive, fix findings, and attach final-SHA evidence.
+  - Production desktop and genuine 673-pixel narrow-browser review passed after frontend merge `fcd1ebde03b1d6b37876cf35132a29da8ed589dc`; shared campaign, Personal Home/tab, and Course Builder contrast now measures `5.18:1` to `7.58:1`, Course Builder exposes eight headings, named-control and overflow scans passed, and genuine production screenshots were captured in the in-app Browser. Authenticated role coverage, true mobile-device, keyboard/focus, screen-reader, and exported video evidence remain open. Evidence: `docs/qa/DEEP_DIVE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-07-23.md`.
 
 ## Immediate Execution Slice
 
@@ -893,6 +1029,89 @@ Completed and pushed:
 617. Live URL verification now falls back to PowerShell web requests on Windows when Node fetch hits local TLS/CA failures, so `npm run verify:live-urls` can pass against production without repeatedly requiring a manual `NODE_OPTIONS=--use-system-ca` workaround.
 618. Stale underscored `/home/_personal` and `/home/_facility` route files were removed from `src/app`, dropping route inventory from 207 to 205 and keeping Personal/Facility entry through the canonical `/home/personal`, `/home/facility/select`, and `/home/facility` route family.
 619. UI route inventory now fails on underscored non-layout files under `src/app`, preventing helper/private route pollution from reintroducing hidden `/home/_*` paths while still allowing Expo `_layout` files.
+620. Personal, Commercial, and Facility Task Centers now provide shared queue and source filters while retaining workspace-specific task classes; Commercial and Facility add assigned-work views, and Facility shows filtered-versus-total queue counts without discarding room, SOP, team, proof, or approval context.
+621. SchedulePicker now includes a reusable month calendar modal with exact-date selection, month navigation, today/cancel actions, typed dates, quick dates, reminders, recurrence, all-day, lights-cycle, and timezone context; existing task, alert, live, feed, recipe-linked, course-linked, and SOP-linked surfaces inherit it, while Commercial Marketing now uses it for product/content launches and persists campaign reminder plus recurrence metadata.
+622. Schedule / Agenda now provides Agenda, Day, Week, and Month windows with editable anchor-date and period navigation, retrieves persisted commercial campaign launches in addition to tasks, lives, course events, course releases, and Feed schedules, and deduplicates overlapping campaign records while retaining task-backed course assignments, grow milestones, soil-ready dates, and Facility SOP work.
+623. Alert Center now assigns alerts directly in addition to assigning generated follow-up tasks, routes setup alerts back to their workspace, and covers setup, sensor, course/live, storefront/product, and Facility training sources; the backend now exposes owned alert listing and mutation through normalized Notification records with persisted severity, status, workspace/source identity, snooze, resolution, and assignment state.
+624. NotificationIntent and Notification now support task reminders, live reminders, course due/overdue, critical/digest alerts, replay availability, milestones, and system events; the shared scheduler always creates in-app delivery first, optionally adds push/email channels, and the worker records delivered, skipped, or failed outcomes while normalizing linked source context for Notification Center routing and task creation.
+625. Commercial Course Builder now persists structured quiz outlines and course-level Forum/Q&A discussion links alongside its existing course basics, thumbnail/banner uploads, modules, lessons, media/video/document resources, lesson assignments/tasks, products, lives, Stripe access, and draft/publish controls; owners also get a protected learner-preview view that works before public publication.
+626. The shared Course Player now shows learner-specific lesson progress, durable private lesson notes, documents and media, course and lesson discussion, course-scoped Ask AI actions, assignment-to-task creation, related products, and scheduled lives; the shared Course API now preserves builder resources and link metadata and stores completion plus notes on each learner enrollment instead of the course itself.
+627. Course Analytics now aggregates the live Course, Enrollment, Earning, Task, question, and CourseEngagementEvent records instead of the disconnected legacy Lesson collection, reporting course/lesson views, unique viewers, enrollments, completion and average progress, sales/earnings, drop-off, assignment-task completion, live RSVPs, related-product clicks, and unanswered questions through a reachable shared owner analytics route.
+628. Lives now has a shared public root and player over the same LiveSession records used by Commercial scheduling, with upcoming/live/replay discovery, Twitch embed and external watch/replay actions, related course/product/feed/Forum links, durable RSVP/cancel state, private attendee storage, in-app live reminders, replay-available notifications, and Commercial links into the public live/replay experience.
+629. Twitch now uses server-side authorization-code OAuth with short-lived hashed state, encrypted user tokens and EventSub secrets, explicit deployment configuration status, broadcaster identity retrieval, app-token webhook subscriptions for stream online/offline, raw-body HMAC/timestamp/replay protection, LiveSession status updates, disconnect/reconnect controls, production `parent`-host embed gating, live video/chat embeds, and manual Twitch VOD URL embedding while automatic VOD import remains deferred.
+630. Feed campaigns now persist as canonical Commercial/Facility-owned campaign records over the existing Feed collection, with product/course/live/storefront/facility/general types, creative and CTA metadata, resolved destinations, grow-interest targeting, placements, schedules, and lifecycle status; Facility creation requires the selected facility plus active membership, and legacy Feed post fields remain compatible.
+631. Feed placements now resolve through canonical home hero/top/middle/bottom, page top/middle/bottom, course, tool, Forum, product, Facility, and Commercial slot keys; the API filters campaigns by eligible slot while preserving legacy `feed` campaigns, existing plan policy controls placement density, and viewer grow-interest overlap contributes only evidence-backed relevance weight before the established freshness/engagement/exposure rotation.
+632. The shared Commercial/Facility Feed campaign builder now combines campaign type, public destination, image creative, CTA, grow-interest audience, named placement slots, shared schedule controls, and a pre-publish review; both client and server block active/scheduled publication when destinations, creative, placement, external URL, campaign-type linkage, or schedule setup is missing or invalid, and Facility outreach can link education/live/Forum destinations without exposing direct-sales fields or bypassing readiness checks.
+633. Feed campaign analytics now record canonical campaign impressions, destination clicks, explicit conversions, hides, and reports with server-derived ownership, then aggregate owner-visible totals by campaign, placement, and matched grow interest; viewers can hide/report outreach from the shared Feed, while Commercial and Facility owners receive scoped performance summaries without viewer identity or inferred conversions.
+634. The shared Forum model now preserves canonical thread category/type, tags, grow interests, photos, documents, structured comments/replies, and workflow context for grows, plants, ToolRuns, recipes, products, courses, lessons, lives, storefronts, facilities, rooms, tasks, and alerts; post/comment identity supports user, brand, Facility, and moderator presentation only after server-side plan, membership, or role verification, and category counts plus filtered thread reads stay on the same Forum API.
+635. Forum home now browses server-backed discussion categories and filters latest, trending, and following views without mixing in Feed campaigns; create-thread entry preserves general, product Q&A, course, live Q&A, and Facility-internal context, thread detail exposes verified identity, documents, and linked workflow context, and Facility-internal reads/creation require the selected Facility plus active membership instead of leaking through public Forum feeds.
+636. Forum threads and comments now create exact source-linked Personal, Commercial, or Facility tasks; canonical in-app notifications cover replies and `@username` mentions, product/course/live/Facility questions receive a scheduled unanswered reminder that is skipped after the first reply, and the Forum assistant offers review-only title, category, tag, summary, and task suggestions through quota-accounted OpenAI when configured or an explicitly labeled deterministic fallback.
+637. Forum reports now create evidence-backed moderation cases in the shared admin queue; authorized moderators can hide, restore, soft-remove, lock, unlock, pin, unpin, or move Forum threads, locks block new comments, pins affect thread ordering, and every action is retained in both the case action history and immutable platform audit log.
+638. Integration providers and connections now expose one canonical read-only connector contract with encrypted credential state, provider authentication type, capability declarations, connection status, structured errors, and last-sync status/summary; adapters must implement connection testing, device discovery, and data pulling before registration, and no controller mutation capability is exposed.
+639. The Facility integration import wizard now continues from provider selection and encrypted connection through connection testing, provider structure discovery, editable device-to-room/zone/metric mapping, server-side preview counts, and explicit owner/manager confirmation; confirmation retains the reviewed read-only mapping on the connection without prematurely creating rooms or controller-write access.
+640. Confirmed integration mappings now auto-build idempotent read-only spaces, devices, streams, and dashboards for owned Personal grows; canonical rooms plus draft alert/dashboard definitions for owner/manager Facility builds; and spaces only for owned Commercial trials or explicitly identified demo/education grows, with irrelevant commercial records rejected and controller mutations still unavailable.
+641. Imported telemetry now uses one unit-aware normalization registry for air temperature, RH, VPD, dew point, CO2, PPFD/DLI, substrate moisture/EC/pH, irrigation events, alarms, device-offline, and device-fault signals; observations preserve raw provider keys, values, and units alongside canonical values, explicit unit conversions occur only when supported, and unknown vendor metrics remain visible as unmapped evidence.
+642. A grow-scoped imported-telemetry context now supplies one deterministic evidence window to VPD, Dew Point, Bud Rot screening, Crop Steering, Watering Planner/dryback, AI summaries, review-only alert/task drafts, run comparisons, explicitly linked product trials, and reviewed/de-identified course examples; the VPD tool visibly prefills from this context, while missing data remains explicit and sensor evidence is never labeled a diagnosis.
+643. The canonical integration collection boundary now has an app-readable field-use registry covering every IntegrationConnection, IntegrationSpace, TelemetrySource, and TelemetryPoint schema path; each field declares at least one display, analytics, AI, search, recommendation, task, alert, or export consumer, and a schema-regression audit fails on missing, stale, or invalid declarations instead of allowing new dead import fields.
+644. Commercial Analytics now aggregates owner-scoped published-storefront events, Feed impressions/clicks/conversions, course engagement, live views/RSVPs, paid internal orders with currency-preserving revenue, and recorded grow-interest matches; the UI exposes event-backed overview cards and per-source breakdowns without inferring conversions or sales.
+645. Personal Analytics now combines owner-scoped grows, journal activity, saved ToolRuns, personal task outcomes, and imported telemetry counts; it reports seven-day grow consistency, tool mix, measured environment history, task completion, and saved run comparisons while keeping cannabis-specific presentation subject to grow/account context.
+646. Facility Analytics now requires selected-facility membership and reports explicit room stability signals with unknown coverage, task and SOP completion, recorded sensor alerts, BatchCycle history, and course-linked staff training assignments; the Facility dashboard links to the new analytics surface and never treats missing room evidence as stable.
+647. Production Personal Pro IPM Scout now discloses the automatic GPT structured review as a one-credit action before submission, exposes actual AI credits used in the completed result, explains separate photo-prefill billing and provider-failure refunds, and retains the same evidence policy in the ETGU method document plus runtime registry.
+648. A truthful production IPM no-pest baseline stayed an insufficient-evidence working hypothesis with no confirmed organism or pesticide-rate advice, while an uncertain user decision, exact grow log, three-task IPM plan, ToolRun, module record, and one-credit ledger deduction persisted on the same grow.
+649. Personal logs, ToolRuns, tasks, and full grow Timeline reads now combine no-store requests with per-request freshness keys, preventing an older grow-filtered Journal response from masking newly persisted diagnosis or IPM records.
+650. Production Render now applies a higher-priority `/home/*` SPA rewrite, the repo mirrors that rule, and the live verifier plus final go/no-go evidence contract require a dynamic personal-grow deep link to return successfully; true Journal, Tasks, and Timeline hard reloads retained the exact July 21 diagnosis/IPM records on deployed merge `f72b5fbb7b60371d8994ae306737b58ca30cd4b3`.
+651. Personal IPM Scout now offers saved photos from the selected grow as explicit opt-in evidence, names each source log, preserves grow/plant/log provenance in a separate IPM-purpose evidence link without re-uploading, shares the same ten-photo limit with new uploads, and states that unselected private grow media is not sent or used for model training.
+652. AI evidence prefill now counts only non-empty values actually placed into tool forms, leaves unknown provider fields blank, and normalizes returned evidence lists into readable comma-separated text instead of exposing raw empty arrays such as `[]` as user observations.
+653. Personal-assistant photo prefill now loads only explicitly selected, account-owned, AI-usable image bytes from private uploads, enforces grow/plant scope plus photo count/type/size limits, sends usable JPEG/PNG/WebP evidence to the configured OpenAI vision model, refuses invalid evidence without charging, and refunds provider failure; production backend merge `9ec163618eb22ce6b9e7f16a3f6228fe0237657b` visually described the selected cannabis flower photo and persisted an exact one-credit charge.
+654. IPM photo prefill now leaves photo-derived scout and sticky-trap counts blank and suppresses unknown placeholder phrases from both fields and the filled-field total while preserving `pestSeen: not confirmed`; production frontend merge `ab71b8404a6dc6e11f5932038d46599a653e6cfa` retained five defensible visual/follow-up fields, left unknown scouting/history fields blank, and persisted `67 / 100 -> 66 / 100`, 20 billed requests, and zero refunds.
+655. AI-enabled media pickers now disclose that adding media approves AI use for the current workflow only and is not model training, then persist that approval on the uploaded evidence; ordinary record-only media remains non-AI-usable by default, and every existing AI-backed picker opts in explicitly.
+656. Production IPM fresh-file upload passed on frontend merge `91ca611e0af6c01571a33410cd3aeb95c9c32970` and Render deploy `dep-d9fmh0h9rddc73cotla0`: new evidence `6a5f6a3e9a4ebf90c8c78619` reached real pixel analysis, filled four defensible fields, left unsupported scout measurements blank, and persisted the exact one-credit change `66 / 100 -> 65 / 100`, 21 billed requests, and zero refunds.
+657. Production Plant Diagnosis fresh-file upload now passes against real image bytes: evidence `6a5f8deb9a4ebf90c8c78967` produced draft `Cannabis` / `Cannabis sativa` without cultivar inference, persisted `Unsure` feedback plus exact ToolRun `6a5f8e039a4ebf90c8c78977` and journal entry `6a5f8e8a9a4ebf90c8c7899f`, and charged exactly three credits (`65 / 100 -> 62 / 100`, 22 billed requests, zero refunds).
+658. Plant Diagnosis no longer silently submits `veg` and `upper new growth` when the user supplied neither field, and its result surface now separates overall confidence, ranked-candidate confidence, health status, and action urgency. PR `#95` passed 295 frontend suites / 1,108 tests plus GitHub CI; merge `2f2cfeeeabe1d1bfcaeafc4a0743cdf28204488b` was live as Render deploy `dep-d9fp4ssm0tmc73fifr9g` at 11:40 AM ET, and the deployed non-billable retest showed explicit Stage/Pattern `unknown` choices without changing the 62-credit balance.
+659. Production Crop ID now works without a grow and preserves server-attested photo provenance. A genuine cannabis-flower run returned `Cannabis` / `Cannabis sativa` with no cultivar and charged exactly one credit; a genuine two-photo roadside-plant run retained the defensible `Mint` working candidate while leaving exact species unconfirmed. Backend PRs `#40`/`#41` and frontend PRs `#97`-`#99` are live through backend `54eefe8c5929948e024467bb5b8d16457890bad7` and frontend `8d250dd656a18ef8c1f80715667b7491369906e5`. Reopening the corrected Saved Run retained `59 / 100`, 41 credits across 25 billed requests, and zero refunds. Evidence: `docs/qa/CROP_IDENTIFICATION_PRODUCTION_EVIDENCE_2026-07-21.md`.
+660. The final Crop ID hard reload exposed a production API shutdown unrelated to identification: `/api/commercial/courses/public` treated `public` as a Mongo ID and raised an unhandled rejection. Backend PR `#42` now serves only published courses from published storefronts through an explicit public projection, validates dynamic workflow IDs, and forwards async errors. Merge `76453037a988aef03ea75642cbaad6f3438f0762` was Live as `dep-d9fqtpu7r5hc7383e7k0`; the exact endpoint returned HTTP 200, subsequent `/health` passed, the Mint ToolRun reopened, and credits remained `59 / 100`.
+661. Production Harvest Readiness now blocks AI analysis until three sharp top/middle/lower macro photos and one wider context photo are present, leaves unknown observations blank, discloses the exact one-credit provider action and refund rule, preserves server-attested evidence/provenance, and enforces the cannabis visibility boundary in the API. Backend merge `bb0968f3b25d9dd62541cdfb2aff6479f1392be0` and frontend merge `8ebf26a9fbe3986ec9c518c76c7471c7d8b379e6` are live; one genuine-photo retest kept Analyze disabled and preserved `59 / 100`. Owner-controlled EtGU harvest videos were reviewed as acquisition/uncertainty QA examples rather than scientific decision sources. Complete-set provider, billing, saved-run, and connected-writeback evidence remains open.
+662. Run-To-Run Comparison now selects two to five account-owned saved grows, uses an explicit reference run, inventories scoped logs/tasks/ToolRuns/module records/diagnoses/non-synthetic telemetry, compares only matching recorded units or scales, keeps missing evidence unknown, and reports cautious associations instead of an arbitrary overall winner. Personal Tools and the grow workspace now share one workflow with saved ToolRun, grow-log, and reviewed next-run task actions; database ownership and persistence tests plus the full frontend guard and 295-suite regression run cover the new contract. A 2026-07-25 production pass verified the Commercial-to-Personal workspace boundary, truthful zero-history state, disabled zero-grow comparison, named controls, zero console errors/warnings, and no horizontal overflow at 1280-by-720 and 391-by-844 without creating data. The authenticated Personal account had zero saved grows, so the real two-to-five-grow comparison, saved ToolRun/log/task reopening, hard reload, deployed-SHA mapping, and final screenshot/video remain open. Evidence: `docs/qa/RUN_COMPARISON_PRODUCTION_EVIDENCE_2026-07-25.md`.
+663. Facility room grow views now replace the backend-facing zero-grow dead end with the supported Start Grow workflow, preselect only the room that launched setup, provide a safe return to that room, and label room-card navigation as Open Grows instead of promising a broader workspace than the destination provides.
+664. The signed-out public loop now keeps Courses learner-facing and discovery-only, filters the anonymous catalog to published courses, hides authoring and owner actions, and presents clear sign-in/register choices. Forum/Q&A now presents the truthful authentication boundary without calling the protected feed or exposing a raw `Not authenticated` failure. Public marketing pages use one level-one heading followed by level-two section headings. Frontend PR `#166`, merge `388896541124f2148623f17e61b93f1449716068`, passed both post-merge workflows and was live as Render deployment `dep-d9h49kepbkes73e4028g`; signed-out semantic and screenshot retests passed. Registration/email, password reset, checkout entry, Support delivery, mobile/video, and independent outside-user validation remain open.
+665. The canonical Forum Directory now exposes accessible inline Forum-group creation instead of leaving Create Group in an older compatibility screen. The workflow requires a name and description, accepts comma-separated topic labels, makes Public versus Private discoverability explicit, reloads the real directory after creation, and reports success or API failure in context.
+666. Commercial production navigation now keeps every secondary workspace reachable from compact More, exposes Inventory Support creation as a named action, and replaces ordinary Product Trial, Product Batch, and Inventory Support database-ID entry with readable owner-scoped record choices plus an explicit advanced fallback. A production narrow-width retest also found and fixed a shared AppPage flex overlap that let a campaign card intercept form controls; frontend merge `1b998f992dbe0f6c17ef3b4f09db71842b26cbcb` is live as Render deployment `dep-d9hr7684n6ts73eui1i0`, and the same pointer action now opens the intended advanced fields without creating a record.
+667. Commercial Product Lines now hides the duplicate navigator title and exposes one level-one page heading, four level-two authoring/list/guidance headings, and level-three saved-line headings. Frontend merge `e19854836e2adaf6b3d379ca9ee11842cfe72e50` passed both post-merge workflows and is live as Render deployment `dep-d9hrg9bbc2fs739qvldg`; the signed-in production DOM verified the empty-state hierarchy without creating a product line.
+668. Commercial Product Batches now keeps Product Batches as the navigation label while exposing one level-one `Soil & Nutrient Batch Planner` page heading, six level-two metrics/authoring/list/guidance headings, and level-three saved-batch headings. Frontend commit `777280e23a6b018b1829544bc33a9b6aaf1856d9` passed both main-branch workflows and is live as Render deployment `dep-d9hrufepbkes738bhsc0`; the signed-in production DOM verified the zero-record hierarchy without creating a batch.
+669. Commercial Product Trials now hides the duplicate navigator title and exposes one level-one page heading, five level-two authoring/list/evidence/claim/publishing headings, and level-three saved-trial headings. Frontend commit `aab88d1be5a52485d90580855e7ff40fabd9166c` passed branch CI plus both main-branch workflows and is live as Render deployment `dep-d9hs5a77f7vs738e0blg`; the signed-in production DOM verified all four empty-state creation paths and the heading hierarchy without creating a trial.
+670. Commercial Inventory Support now hides the duplicate navigator title and exposes one level-one page heading, three level-two stock/scope/records headings, and level-three saved-record headings while preserving its capability-gated create action. Frontend commit `9d8236884453d789491bb565bfe0566f002926a8` passed branch CI plus both main-branch workflows and is live as Render deployment `dep-d9hsb7jeo5us738e8f5g`; the signed-in production DOM verified the zero-record hierarchy without creating inventory.
+671. Commercial Product Trial Evidence Runs now hides the duplicate navigator title and exposes one level-one page heading, six distinct level-two overview/authoring/list/planning/claim/setup headings, and level-three saved-run headings. Frontend commit `1e36fd94672f6fc355d2b65776317dee1afc5486` passed branch CI plus both main-branch workflows and is live as Render deployment `dep-d9hsgt3eo5us738edlmg`; the signed-in production DOM verified the zero-record hierarchy without creating an evidence run. Render's obsolete duplicate Node frontend service was also identified as the source of repeated false failed-deploy results and had automatic deploys turned off without changing or deleting the live Static Site.
+672. Commercial bottom navigation no longer reserves an empty icon row that pushed wide-screen labels against the lower viewport edge. Text-only labels now use a centered beside-icon layout, the icon containers are explicitly hidden at zero size, and label margins are normalized. Frontend commit `4778c51b911cf6fbfb0704ffdb9e61f8071c75f7` passed two staged branch CI runs plus both final main-branch workflows and is live as Render deployment `dep-d9hstb6rnols73dhtg60`; the signed-in 1280-by-720 production DOM verified every Dashboard-through-Tools label fully inside the bar with no fallback icon symbols. The Browser screenshot command timed out, so no screenshot is claimed for this correction.
+673. Commercial Product Trial Evidence Run creation now uses readable owner-scoped Product, Product Line, and Product Batch choices, truthful empty-state creation paths, and named guided public-share choices while keeping direct IDs behind an advanced control. Frontend commit `18223504d437b51dd1bdf7c4949c568c18496f15` passed 55 distinct focused local regression checks, full branch CI, and both main-branch workflows, and is live as Render deployment `dep-d9ht571oagis73anfi40`; the signed-in zero-record production retest verified one page heading, all three creation paths, hidden-by-default IDs, advanced show/hide behavior, readable share intent, and a disabled incomplete create action without creating data. A genuine in-app Browser viewport screenshot was captured and reviewed against the final SHA and URL.
+674. Canonical signed-in Forum post previews now use a shared accessible up/down reply control that lazy-loads ordinary comments and exposes a text-reply composer below the post while retaining the dedicated discussion URL for media, moderation, grow-log, task, and other advanced context. Frontend commit `021ab90d47f72e161a6c2488e3eb38f2cfbb8abf` passed focused regression and contract checks, full branch CI, and both main-branch workflows, and is live as Render deployment `dep-d9hthibbc2fs73e00ns0`; the production in-app Browser retest expanded three API-returned replies, exposed the disabled empty composer and full-page fallback, collapsed the panel, stayed on the same exact Forum URL, captured a genuine screenshot, and created no production record. See `docs/qa/FORUM_INLINE_DISCUSSION_PRODUCTION_EVIDENCE_2026-07-24.md`.
+675. An authenticated non-destructive Facility and Commercial route audit found and fixed clipped Commercial More cards at narrow width and the missing semantic Facility Audit Logs page heading. Frontend PR `#215` and merge `c4df86f12b16ed6fc3ddbd0dcfb806ebcffe3019` passed branch CI plus both post-merge workflows; live `391 x 844` retests returned matching document/viewport widths, zero out-of-bounds actions, exactly one page heading on both corrected screens, and zero browser-console errors/warnings. Genuine final-SHA screenshots were captured without creating or mutating production data. See `docs/qa/FACILITY_COMMERCIAL_NONDESTRUCTIVE_AUDIT_EVIDENCE_2026-07-25.md`.
+676. The Facility SOP Library now provides eight setpoint-free standard starters, owner/manager-only PDF/Word/text/image supporting-document uploads, executable checklist enforcement, Facility-scoped attachment ownership, preserved revision history, non-destructive retirement, and read-only member access. The full frontend regression passed 312 suites / 1,232 tests and all repository guards passed. A signed-in production Owner completed the deliberate supporting-document upload, reviewed create, hard reload, review-reset revision, second hard reload, exact-name retirement, cleanup, and preserved-history loop. Missing active-Library retirement and missing lifecycle audit events found during that pass were corrected through frontend PRs `#221`/`#222` and backend PR `#75`. Frontend merges `a8d8cbe0e18fbff56c414efb160da810de8589d3` and `5788731b016b9c6673ed3857eb73ba992a8eeaa1` plus backend merge `c4cdf291ee79fdf6fd221e54db273eae3c7dbbf5` passed their clean-runner and post-merge workflows. The final disposable create/revise/retire retest produced three readable, hard-reload-persistent Facility audit events with exact title, version, timestamp, and ids, and left no active temporary SOP. Real production Viewer `john.collins15@alumni.morgan.edu` then accepted the invitation, appeared in the four-member Team roster as `VIEWER`, reopened shared completed task `6a6140ec67a6aeadb8f4a0c9` under explicit no-create/no-update boundaries, confirmed the Facility-owned AI balance, and opened the active SOP under the read-only Library boundary. A genuine loaded viewport screenshot was captured at the final frontend/backend SHA-tagged URL. Forced backend 403 and exported recording evidence remain open; see `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
+677. Personal and Commercial Ask AI now offers the shared SOP starters as review-only procedure recommendations ranked from the request and selected grow records. Results expose the starter version, rationale, checklist, safety boundary, and missing information; converting one into a grow review task requires a separate confirmation, while formal approval, uploads, versioning, assignment, execution evidence, and audit controls remain Facility-only. Signed-in Personal and Commercial sessions verified all eight starters, the Facility-governance boundary, disabled empty Send state, and no-credit starter-to-composer behavior. A first provider-backed Commercial request found Facility-only wording and charged exactly one credit (`2000 -> 1999`). Source version 2 was then deployed through frontend `aaf68b2fe3380935f1faac9fa7ef6b17759934af` and backend `ff32ec14b27fc4c3fb75643e3e2446929dbec5a1`; the live corrective response used workspace-neutral `documented rating scale` and `applicable IPM plan`, omitted the prior Facility-only phrases, preserved missing information, and charged exactly one additional credit (`1999 -> 1998`, 2 billed requests, 0 refunds). With no grow selected, task creation stayed blocked and no record was written. Provider-backed response and credit-accounting acceptance are complete; deliberate grow-task confirmation and screenshot/video evidence remain open. See `docs/qa/SOP_LIBRARY_AI_RECOMMENDATIONS_PRODUCTION_EVIDENCE_2026-07-25.md`.
+678. Shared video is now a universal Free, Pro, Commercial, and Facility capability rather than a creator-only feature. The production implementation adds workspace video libraries, truthful per-plan storage, private Cloudflare R2 upload and protected playback, external-source records, explicit visibility, cannabis-interest gating, public and following-only discovery, canonical Follow controls, accessible playback/fallback, real successful-open view counts, course reuse by stable video ID, detach/remove safeguards, and Facility role boundaries. Staff control only their own unpublished drafts, including cleanup; owner/manager reviewers control the shared library and published records. Discover searches video titles, descriptions, tags, interests, accounts, summaries, captions, and transcripts. Frontend merge `7e3c2443827a766899224a045dc4537f86d1104c`, backend merges `af383e5b588244ad6fc9badc7e5470386867bf76` and `f9ba8b10d2976c06ef040d7ebd8ade11a1cacfcb`, and live signed-in Personal upload/playback/delete plus Facility external-draft create/reload/watch evidence verify the shared storage boundary. Facility Staff self-cleanup was the next production finding.
+679. Production Commercial subscription settlement now has real payment evidence. Account `support+qa-resend-20260726-0907@growpathai.com` completed a live $50 Checkout; replacement account-event webhooks returned HTTP 200 for checkout, subscription, invoice, and later cancellation-update events; and GrowPath unlocked Commercial mode. Backend PR `#83`, merge `2d0164e6fc60d62dc0f52945023f22a5a3bd97e2`, deployed as `dep-d9j1dh0k1i2s73bfsj50` with exact raw-body preservation and a full-app Stripe webhook contract. The account had already consumed its one-time 30-day trial, but that billing state was not clear enough before Checkout, so the full $50 was refunded at 10:24:59 AM EDT and the subscription was scheduled to cancel August 26 with `No further invoice`; GrowPath correctly retains active Commercial access through the current period. At this checkpoint, trial policy/copy, visible success-return feedback, terminal expiry/downgrade, paid-course settlement, Facility settlement, and a real external dispute remained open; item 680 resolves the account-specific copy, confirmation, and return-feedback findings.
+680. Paid-plan checkout now uses account-specific trial eligibility and protects an already-used-trial account from accidental immediate billing. Frontend PR `#240`, merge `809a820625f7edcb9351d93f255a6f98cfc287f7`, passed full CI and deployed Live as Render `dep-d9j203cvikkc73d680o0`. Production Browser verification confirmed the first Pro action remained on GrowPath, explained that no trial remained, and changed to `Continue — billed $10`; the second action was intentionally not pressed, so no new Checkout or charge was created. The live success return refreshed the account and displayed completion feedback, and the live canceled return stated that no new payment was submitted. Product policy still must decide whether the one-time trial remains account-wide or becomes plan-specific; terminal August 26 expiry/downgrade, paid-course settlement, Facility settlement, and a real external dispute remain open.
+681. The owner selected one separate 30-day trial for each paid plan: Pro, Commercial, and Facility. Consuming one plan's trial does not consume another plan's trial, repeat trials for the same plan are blocked, and legacy `trialUsed: true` accounts count as having consumed Pro only. Frontend and backend implementation is complete, including plan-specific Offers/status copy, account/session history, normal and Facility checkout eligibility, checkout-completion and subscription-lifecycle webhook persistence, and retirement of the unused unauthenticated generic subscription checkout. Frontend PR #246 merged as `e050b6c3f7cf143854cd312612fb7677e6e2cda5`; backend PR #88 merged as `6420c09788a471ce86afebd26e5ec96591d7f59d`. Production frontend `/offers` and backend `/health` both returned HTTP 200 on 2026-07-27. Focused changed-path suites, frontend lint, and the full frontend CI suite (319 suites / 1,273 tests) passed; the local backend grouped run exceeded its 120-second limit during database setup, so no new backend pass is claimed here. Stripe trial settlement, same-plan repeat protection, and live plan-by-plan Browser evidence remain open.
+682. Signed-in reports for Forum posts, Feed campaigns, storefront products, courses, videos, and live sessions now persist before notification, create a platform moderation case, and email `admin@growpathai.com` with both the exact same-origin content link and a focused Admin review link. Admin highlights email-linked cases and opens the reported content without exposing unsupported moderation actions. Email failure is recorded without erasing a valid report. Frontend PR #247 merged as `ade1c3644339f833a363a4e0ba6224a1cfb9ff7b`; backend PR #89 merged as `d79118beaf6dff23561dade9dd8be81f000f72e1`. The focused frontend contracts pass (49 tests across Forum, Feed, Course, video/product/live reporting, and Admin moderation), production frontend and backend health endpoints returned HTTP 200 on 2026-07-27, and the current frontend main branch includes the merged report flow. Admin-mail receipt, exact production deep-link retest, and timestamped inbox evidence remain open; no receipt is being claimed without observing it.
+
+683. The paid-plan upgrade screen needs clearer plan-specific descriptions before Stripe opens: Pro, Commercial, and Facility should each explain what the plan unlocks, who it is for, and what billing happens next. Keep the current CTA flow intact, add the missing comparison copy, and retest the live upgrade page once the plan descriptions are in place.
+   - In progress in repo: the upgrade screen now shows comparison copy for who-it-is-for, what-it-unlocks, and what Stripe does next for Pro, Commercial, and Facility. Unit coverage for the screen still passes; live retest passed on 2026-07-29 at `/home/personal/upgrade`.
+684. Add a gift-subscription option to the upgrade flow so one user can enter another person's email address, choose a gift term such as one month or one year, and trigger an emailed handoff form or claim flow for the recipient before Stripe checkout opens. Keep recipient privacy, billing confirmation, and plan-specific copy explicit, and retest the upgrade page and email path after implementation.
+   - In progress in repo: gift checkout now collects recipient email plus optional recipient name and message, preserves the monthly/yearly gift term, and passes the handoff details into the checkout request on both the personal upgrade screen and the canonical `/offers` billing page. The live upgrade page shows the gift mode copy and recipient handoff controls; backend mail-path delivery still needs recipient-side confirmation.
+
+685. Forum should include a real video library and upload flow instead of pushing videos out through Discover only. Add per-user and per-workspace video views, upload controls, storage usage/allotment visibility, and preserve the ability to follow accounts and reuse video posts in courses and other workflows.
+   - In progress in repo: Forum/community now links to the shared video library and surfaces storage/account context; the shared video page now adds workspace-versus-my-uploads views, storage counts, and the existing upload/playback flow. The reusable-library picker is now regression-tested for attach and detach behavior, and the video detail route now has a regression that verifies protected playback is forwarded into the player card. Live upload/playback validation passed on 2026-07-29 at `/videos?tab=library` and `/videos/:id`; remaining course-reuse cleanup is still open.
+686. Discover should keep Lives framed as campaigns and surfaced opportunities, not as a plain joinable live-session list. Add a separate Lives browsing mode like the Forum video view when live sessions need to be explored, but keep the top-level Discover presentation focused on featured campaigns and discovery content.
+   - In progress in repo: Discover now points live browsing to `/lives`, the public Lives screen now renders campaign-linked opportunities, upcoming sessions, live-now, and replay sections instead of a plain join list, and Forum/Q&A now exposes a dedicated Lives card that routes to the same browsing surface. Live browser verification on 2026-07-29 confirmed the campaign-framed browsing layout and empty-state counts.
+687. Replace the misinterpreted forum tasks/notifications surface with a real notification system in Profile. Define the notification types first, then support device delivery when enabled, clear per-type on/off toggles, and visible read/unread and disabled state across the app.
+   - In progress in repo: Profile notification preferences and push-token registration are wired, and the inbox now uses the same preference taxonomy with visible delivery status. Live browser verification on 2026-07-29 confirmed the notification settings card, enabled categories, and inbox filters/status on `/home/personal/profile` and `/home/notifications`; device delivery propagation still needs a real push receipt if we want end-to-end confirmation.
+688. Recheck the live deployment against the current forum, video, lives, and notification decisions before any further cleanup so we do not keep editing against stale production behavior. If the live branch is outdated, rebaseline the affected screens and update the todo list before changing anything else.
+   - Live recheck completed on 2026-07-29 against the current video, upgrade, lives, and notification pages. If any later code branch differs, rebaseline before touching the stale surface.
+689. Commercial is the next major workflow pass. Finish the remaining commercial page, storefront, video, lives, notification, and discovery polish against the live branch first, keep the current grows layout stable while that work lands, and do not widen the scope into Facility or cross-role grow rewrites until the commercial slice is verified live.
+   - Live verification on 2026-07-29 confirms the commercial dashboard, storefront, products, feed/campaigns, lives, orders, analytics, courses, profile, tools, diagnosis, and soil/nutrient mix builder surfaces all load in the Jcindc commercial session. The remaining visible gap is launch configuration: brand profile and storefront are still draft shells with no brand slug or products set.
+690. Facility is the second major workflow pass after Commercial is stable. Rebuild and verify the Facility workflow end-to-end, then revisit Personal/Grows only where Facility learnings require a cross-role change so we do not keep shuffling the grows experience before the shared workflow order is settled.
+## Post-Commercial Follow-up
+
+- [x] Replace the ordinary Forum-card `Open discussion` page jump with an accessible expand/collapse arrow that loads comments and reply controls directly below the post. Keep the dedicated detail URL only for direct links and advanced context, and reuse one shared inline-discussion pattern anywhere Forum posts are previewed. Live as `021ab90d47f72e161a6c2488e3eb38f2cfbb8abf`; see `docs/qa/FORUM_INLINE_DISCUSSION_PRODUCTION_EVIDENCE_2026-07-24.md`.
 
 ## Working Rule For Codex
 

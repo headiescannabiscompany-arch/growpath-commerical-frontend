@@ -1,0 +1,281 @@
+# Facility role-loop evidence - 2026-07-20
+
+## Scope and environment
+
+This record covers the governed Facility QA namespace in the networked staging
+environment and the frontend/backend releases produced from the findings. It does not
+claim that the Facility role loop was rerun with production Facility accounts.
+
+- Staging API: `https://growpath-api-staging.onrender.com`
+- Production API health target: `https://api.growpathai.com`
+- Production frontend: `https://growpathai.com`
+- Seed namespace: `growpath-qa-facility-acceptance`
+- Shared Facility ID: `6a5ea11685cee9a1c3f9696d`
+- Browser test surface: local Expo web build pointed at the staging API
+- Latest deployed frontend merge SHA: `c638c9626ac86982b9c5e167616390118b54db3f`
+- Deployed backend merge SHA: `7c8c21d9d9a18bafef45eccd0d33b2a8bfb486e5`
+
+## Role sessions and shared-record result
+
+| Role/session            | Account suffix                           | Checks performed                                                                                                   | Result                                                                                                                                                                                                         |
+| ----------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Facility Owner          | `account-owner@qa.invalid`               | Opened the shared dashboard, rooms, equipment, inventory, tasks, SOP templates, team, and compliance surfaces      | Correct Facility selected; 10 rooms, 8 equipment records, 6 inventory records, 10 planned tasks, 6 SOP templates, and 5 team members were visible                                                              |
+| Facility Manager        | `account-manager@qa.invalid`             | Reopened the shared Facility, reviewed team controls, created and assigned a task to Staff Grower, then signed out | Manager could assign operational work but could not see Owner-only invite/role/remove controls; task count increased from 10 to 11; sign-out returned to the public entry instead of reactivating preview auth |
+| Facility Staff - Grower | `account-grower@qa.invalid`              | Opened the Manager-created task from the assigned queue and completed it                                           | Exact task detail route opened; persisted task status became `DONE`; completion identified the Grower account; open task count returned from 11 to 10                                                          |
+| Facility Staff - Scout  | `account-scout@qa.invalid`               | Reviewed the same Facility dashboard and completed-task filter                                                     | Shared counts matched and the cross-role task was visible as `DONE`; Staff could create permitted tasks but could not assign them                                                                              |
+| Facility Viewer         | `account-restricted-employee@qa.invalid` | Reviewed tasks, the completed task detail, and Team                                                                | Viewer saw current shared state and all 5 members; task mutation, task creation, assignment, invitation, role-change, and removal controls were absent after the fix                                           |
+
+The shared workflow record was task
+`6a5eb37ec9fd257ae2484ce0`, titled
+`[QA role-manager 2026-07-20 19:46 ET] Verify shared task write`. The Manager
+created and assigned it, the Grower completed it, and the Scout and Viewer observed the
+persisted `DONE` state. The task retained two audit events for creation and completion.
+
+This proves the Manager -> Staff -> Scout/Viewer operational chain against one shared
+record in staging. The full five-step acceptance chain remains open because an Owner
+did not create the same task and return after completion to confirm its final audit,
+notification, and compliance consequences. A forced Viewer backend-mutation request
+was also not retained as 403 evidence.
+
+## Findings fixed and delivered
+
+| Finding                                                                                                                 | Fix and merge                                                       | Verification                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Staging Facility seed requests could cross Facility boundaries when a supplied Facility ID was not guarded consistently | Backend PR `#33`, merge `7c8c21d9d9a18bafef45eccd0d33b2a8bfb486e5`  | Backend CI passed; staging and production Render services showed the exact SHA live at 7:27 PM ET; both health targets returned HTTP 200                                                                 |
+| Local browser sign-out could reactivate preview authentication instead of remaining signed out                          | Frontend PR `#59`, merge `e6ce1fb99130d3a07882e2c6b7fc4f379211fb9e` | Frontend CI passed; live at 7:33 PM ET; staging browser sign-out returned to the public entry                                                                                                            |
+| Manager Team UI implied Owner-only invite/role/remove authority                                                         | Frontend PR `#60`, merge `df3975b2dc736c34f25ee7cf510f752301b4e2bc` | Frontend CI passed; live at 7:45 PM ET; Manager retained assignment controls without Owner controls                                                                                                      |
+| The expanded task creator pushed the task queue behind the fixed tab bar, making task rows appear non-actionable        | Frontend PR `#61`, merge `58fa877ec68ad6b945b6c0de95cea6ab27a741c3` | Frontend CI passed; live at 8:05 PM ET; the queue stayed visible and opened the encoded task detail route                                                                                                |
+| Viewer Team rows displayed false assignment affordances                                                                 | Frontend PR `#62`, merge `c638c9626ac86982b9c5e167616390118b54db3f` | 11 focused Team/role/task tests passed locally; full CI passed; Render deployment `dep-d9fbi157vvec73cd6b8g` was live at 8:12 PM ET; Viewer became read-only while Manager assignment remained available |
+
+CI evidence:
+
+- Backend PR `#33`: `https://github.com/headiescannabiscompany-arch/growpath-commerical/actions/runs/29786736220`
+- Frontend PR `#59`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29787301406`
+- Frontend PR `#60`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29787930497`
+- Frontend PR `#61`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29788947380`
+- Frontend PR `#62`: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/29789359878`
+
+## Production follow-up - 2026-07-22
+
+The production Facility Owner session was resumed against frontend merge
+`93bb0217bed041d26aed286b8aad1965da1ccd6e` at `https://growpathai.com`.
+This follow-up moved the production shared-record chain forward without claiming the
+missing role sessions.
+
+- The Owner reopened the Facility Team surface and confirmed two active members: one
+  Owner and one Manager. Owner-only invite and role-management controls were present.
+- The Owner sent the secondary test account a Manager invitation. The application
+  reported confirmed email dispatch, but the active-member count remained two until
+  acceptance, as expected.
+- The secondary account signed in successfully, but its workspace switcher continued
+  to show `Create Facility Account`; no in-app pending-invitation acceptance path was
+  exposed. The invitation therefore still requires the delivered recipient email.
+- The Owner created `[QA cross-role 2026-07-22] Verify shared task persistence`, due
+  2026-07-23, and assigned it to the existing Manager. The exact task detail reloaded
+  with status `OPEN`, the Manager assignment, and the Owner mutation controls intact.
+- Genuine in-app Browser screenshot and DOM evidence were captured at
+  `2026-07-22T22:17:21.853Z`. No task completion, role change, deletion, or operational
+  grow action was performed.
+
+The next production acceptance action is to open the delivered invitation in the
+secondary account mailbox or supply credentials for the existing Manager, Staff, and
+Viewer accounts. The same QA task must then be opened as Manager, completed by Staff,
+observed as read-only by Viewer, and reopened by Owner for final audit confirmation.
+The connected Gmail mailbox did not contain the recipient mailbox, and the installed
+Chrome session was unavailable, so those role results are not inferred.
+
+### Production Owner inventory loop - 2026-07-22
+
+The same production Owner session completed the Facility inventory create, persistence,
+adjustment, and cleanup loop at `https://growpathai.com/home/facility/inventory`.
+
+- The Owner created `[QA inventory 2026-07-22] Verification marker` with quantity 1
+  each and a release-only SKU. The list reported `1 items | 1 units on hand`, and the
+  record survived a hard reload.
+- A `+1` quantity adjustment persisted as 2 after reload. A `-1` adjustment restored
+  the marker to 1 before cleanup.
+- The live detail exposed raw database fields and internal identifiers and had no
+  cleanup action. Frontend PR `#148`, merge
+  `65409b6ce535d0bff4d07d7bc04652c8ed0c46ea`, replaced that payload with readable
+  SKU and record-time information, clarified adjustments, and added confirmed
+  removal. The full frontend regression passed: 301 suites, 1,165 tests, and one
+  snapshot.
+- The new production screen was observed at `2026-07-22T22:39:52.644Z`; screenshot
+  and DOM evidence at `2026-07-22T22:40:05.767Z` showed readable record information,
+  no raw identifiers, and the removal control.
+- The first confirmed removal issued the canonical record-ID request but received 404
+  because the backend treated every update/delete identifier only as an SKU. Backend
+  PR `#55`, merge `3036d43901000b0697c7723bba7b9877c08cdf4e`, made Facility
+  inventory update/delete accept either a record ID or SKU while preserving Facility
+  scope, role gates, soft deletion, and audit details. Both database-backed inventory
+  contract suites passed locally (19 tests), and both backend CI jobs, including the
+  API security scan, passed.
+- After the production API deployment, confirmed deletion returned to the empty list
+  at `2026-07-22T23:05:56.281Z`. A hard reload at
+  `2026-07-22T23:06:06.403Z` still showed `0 items | 0 units on hand` and the temporary
+  marker was absent. Final screenshot evidence is tied to the two merge SHAs above.
+
+This closes the production Owner inventory loop without leaving test inventory. It
+does not close the separate Manager, Staff, Viewer, or cross-role task chain.
+
+### Production Owner SOP and compliance loop - 2026-07-22
+
+The Owner completed a template-backed SOP run and the compliance deviation lifecycle
+on the production Facility.
+
+- The Owner created `[QA SOP 2026-07-22] Sanitation evidence check` with three explicit
+  checklist steps, started a template-backed run, reviewed all three steps as done,
+  and completed the run. The detail became mutation locked and survived a hard reload
+  with `3/3` reviewed steps and the completion timestamp intact.
+- The Compliance surface showed the template plus the run-created, three step-updated,
+  and run-completed audit events. Team was also reopened and still showed the active
+  Owner and Manager with Owner-only invitation and role-management controls.
+- The first deviation create attempt at `2026-07-22T23:22:09Z` exposed a production
+  service defect. Render recorded an unhandled Mongo duplicate-key failure for the
+  globally unique `DEV-2026-0001` reference and marked the API instance failed. The
+  UI reported a connection/session-check problem, the API returned 502 during the
+  restart, and no deviation record was saved.
+- Backend PR `#56`, merge `0f330650992b6085cd2a791ddf740717d1091172`, replaced the
+  Facility-local sequential reference with a globally collision-resistant public
+  reference and routed deviation list/create/resolve failures through the API error
+  boundary. Two database-backed suites passed locally (7 tests); the full GitHub test,
+  lint, dependency-audit, and ZAP API scan gates passed. Frontend PR `#150`, merge
+  `c0e4f4c382ade08d02b9ef55ca6bef6bc7f2efd4`, recorded the matching knowledge rule.
+- Render showed backend `0f330650` live at 7:42 PM ET. The Owner then created
+  `[QA compliance 2026-07-22] Verify controlled deviation write`, observed one open
+  deviation and its creation audit event, resolved it, and hard reloaded. The final
+  screen showed zero open deviations, one SOP template, 49 audit events, and both
+  readable deviation audit entries; API health remained HTTP 200 at
+  `2026-07-22T23:43:36Z`.
+- Genuine in-app Browser screenshot and DOM evidence were captured after the hard
+  reload on the two deployed merge SHAs above. The completed SOP run and resolved QA
+  deviation remain as labeled audit evidence; no open test deviation remains.
+
+This closes the production Owner SOP and compliance write/reload loop. Manager, Staff,
+Viewer, forced-authorization, invitation-acceptance, and shared-record completion
+remain separate acceptance items.
+
+### Production Owner report export and audit-detail loop - 2026-07-22
+
+The Owner next reviewed the Facility report packet and immutable audit history on the
+same production Facility.
+
+- The initial production export contained 71 stored records, including 49 audit logs,
+  one completed three-step SOP run, and one resolved deviation. The packet incorrectly
+  reported `Inspection readiness: Needs cleanup` because the frontend treated the
+  total deviation count as if every deviation were still open.
+- Backend PR `#57`, merge `3742d661f639cbb4795f41f6a713e4901a3f5246`, added total,
+  open, resolved, and cancelled deviation counts to the compliance export. Its focused
+  database-backed export suite passed locally (2 tests), and GitHub runs `29968147060`
+  and `29968147092` passed the database test, full suite, lint, dependency audit,
+  application startup, OpenAPI preparation, and ZAP API scan.
+- Frontend PR `#153`, merge `0e5073ce50dc266f16c53b476f1294a748d6da0a`, made report
+  readiness depend on the open-deviation count, exposed all four deviation states,
+  and replaced raw-first audit detail with readable action, time, actor, and immutable
+  record sections. Three focused suites passed locally (15 tests), and frontend CI run
+  `29968274255` passed Expo dependency verification, Expo Doctor, audit, lint, delivery
+  guard, and the full test run.
+- Render deployed frontend `0e5073ce` as `dep-d9glpa6rnols73dst8t0` at 8:14 PM ET and
+  backend `3742d661` as `dep-d9glqp58nd3s73du6tog` at 8:17 PM ET. The signed-in Owner
+  session recovered after the backend handoff without clearing authentication.
+- At 8:18 PM ET, the fresh production export retained the readable
+  `triple-bag-genetics-llc-compliance-export.json` filename and all 71 records, then
+  correctly reported `Inspection readiness: Ready`, 1 total deviation, 0 open,
+  1 resolved, and 0 cancelled. A second direct-route load and export at 8:18:45 PM ET
+  returned the same result.
+- The audit list retained 49 readable events. A direct-route reload of the resolved
+  deviation detail showed the readable action, recorded time, actor fallback, immutable
+  record explanation, and raw payload without leading with an unlabeled identifier.
+  Genuine in-app Browser screenshots captured the report at 8:19:51 PM ET and the
+  audit detail on the exact deployed pair. API health returned HTTP 200 at
+  `2026-07-23T00:21:29Z`.
+- A final fresh-route retest on evidence merge `4ba10b534ba43ffacbc96760407125e9cb5586cd`
+  exposed a hydration race: an immediate first export used the generic
+  `facility-compliance-export.json` filename, while a retry after the selected Facility
+  finished hydrating used the correct readable name. The packet contents and readiness
+  remained accurate in both attempts.
+- Backend PR `#58`, merge `55104d54b2065779a426fc8e9b46a09b8b63b023`, made the
+  readable Facility name and safe download filename part of the export contract.
+  Frontend PR `#155`, merge `90499dfae1a27d5d1cf3ec1061f541c8a3efa407`, now prefers
+  that authoritative packet name over still-hydrating local context. The backend
+  database suite passed locally (2 tests), the frontend reporting suite passed locally
+  (4 tests), and both repositories' complete CI gates passed, including the backend
+  API security scan.
+- Render deployed frontend `90499dfa` as `dep-d9gm6onavr4c73d9p0h0` at 8:43 PM ET and
+  backend `55104d54` as `dep-d9gm9gmq1p3s73burq80` at 8:48 PM ET. At 8:49:19 PM ET,
+  the exact fresh-route/immediate-first-click sequence produced
+  `triple-bag-genetics-llc-compliance-export.json`, 71 records, `Ready`, and 1 total /
+  0 open / 1 resolved / 0 cancelled deviation without waiting for local Facility
+  hydration. A genuine in-app Browser screenshot captured the final result, and API
+  health returned HTTP 200 at `2026-07-23T00:50:00Z`.
+
+This closes the production Owner report-export and audit-detail review loop. The
+separate Manager, Staff, Viewer, forced-authorization, invitation-acceptance,
+cross-role completion, mobile/accessibility, and exported-video checks remain open.
+
+### Production membership inventory and removal confirmation - 2026-07-23
+
+The signed-in Owner reopened the production Team page after frontend merge
+`b2469b22326190ae7a0a8120b5c639b351466b62` was live.
+
+- The canonical Team list showed exactly three active real members: Owner, Manager,
+  and Staff. No Viewer was present.
+- The Manager row exposed one specifically named Remove control. Activating it opened
+  a native confirmation dialog; the dialog was dismissed.
+- After cancellation, the page still showed all three members and reported no browser
+  errors.
+- No invitation, role change, or member removal was submitted.
+
+This confirms the repaired web removal flow reaches a deliberate confirmation without
+changing membership when cancelled. One real Viewer invitation/acceptance and any
+owner-approved temporary-alias cleanup remain deferred to the final owner-input pass.
+
+### Production Manager and Staff chain - 2026-07-23
+
+The real production Manager and Staff accounts completed their portions of the shared
+Facility chain on frontend `b2469b22326190ae7a0a8120b5c639b351466b62`.
+The same task record was used throughout:
+`6a6140ec67a6aeadb8f4a0c9`, titled
+`[QA cross-role 2026-07-22] Verify shared task persistence`.
+
+- A fresh Manager sign-in opened the post-login workspace chooser with Personal,
+  Commercial, and Facility available. Selecting Facility opened the correct shared
+  workspace with the Manager navigation boundary.
+- Manager Team access showed all three real members and allowed work assignment while
+  hiding Owner-only invitation, role-change, and removal controls.
+- The task appeared in the Manager's assigned queue as `OPEN`. The Manager reassigned
+  it to the real Staff member. Reload preserved the Staff assignment.
+- A fresh Staff sign-in opened the post-login workspace chooser. Selecting Facility
+  exposed Tasks without Team or Compliance navigation. The assigned filter showed the
+  same `OPEN` task.
+- Staff could not assign or delete the task. Staff completed it at
+  `2026-07-23T14:07:53.862Z`; reload retained `Status: Completed` and the reopen action.
+- The Owner then signed in through the same chooser, selected Facility, and found zero
+  open tasks. The completed filter reopened the exact task with the Staff assignee and
+  completion timestamp.
+- Compliance reported 61 audit events. Audit
+  `6a621f41ee3a85e9e35aaff3` retained the Manager's assignee change at
+  `2026-07-23T14:03:45.348Z`; audit `6a622039ee3a85e9e35ab0bc` retained the Staff
+  status change from `OPEN` to `DONE`.
+
+No operational grow, room, inventory, SOP, or membership record was created, changed,
+or removed. This closes the real production Manager and Staff role loops plus the
+Owner final-state bookend. The Viewer observation and forced read-only authorization
+proof remain deferred pending one real Viewer account.
+
+## Evidence limitations and remaining acceptance
+
+- The role sessions used the in-app Browser against the local frontend connected to
+  the staging API. Visible DOM state and persisted backend records were reviewed, but
+  a raw screen-recording/video file was not exported.
+- The real Owner, Manager, and Staff production sessions and shared-record handoff were
+  retested on frontend `b2469b22`. Viewer remains the only missing production role.
+- Forced Viewer backend authorization evidence, mobile/accessibility passes, and
+  exported final-SHA video remain open. Final-SHA screenshots cover the Owner report
+  and audit-detail loop.
+- Production Owner creation/final review, Manager reassignment, and Staff
+  completion/reload now pass. The Viewer session remains blocked on one real account
+  and invitation acceptance.
+- Public, valid Personal Free, Personal Pro, Commercial, and independent outside-user
+  closure remain tracked separately. Email and Stripe delivery evidence still depends
+  on production configuration and authorized test transactions.

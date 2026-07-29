@@ -1,7 +1,7 @@
 import { getFeedBannerPolicy, getFeedPolicy } from "../../src/utils/feedPolicy";
 
 describe("feedPolicy", () => {
-  it("keeps the main page feed-heavy with promo placements", () => {
+  it("keeps the main page focused while preserving bounded free-plan promotions", () => {
     const rail = getFeedPolicy({ routeKey: "home", plan: "free", mode: "personal" });
     const banner = getFeedBannerPolicy({
       routeKey: "home",
@@ -10,12 +10,37 @@ describe("feedPolicy", () => {
       longContent: true
     });
 
-    expect(rail.slots).toBe(2);
+    expect(rail.slots).toBe(0);
     expect(rail.railMode).toBe("promo-only");
     expect(banner.top).toBe(true);
-    expect(banner.middle).toBe(true);
+    expect(banner.middle).toBe(false);
     expect(banner.bottom).toBe(true);
+    expect(banner.slotsByPlacement).toEqual({
+      top: 1,
+      middle: 0,
+      bottom: 1
+    });
     expect(banner.railMode).toBe("promo-only");
+  });
+
+  it("limits the paid main page to one top promotion", () => {
+    const rail = getFeedPolicy({ routeKey: "home", plan: "pro", mode: "personal" });
+    const banner = getFeedBannerPolicy({
+      routeKey: "home",
+      plan: "pro",
+      mode: "personal",
+      longContent: true
+    });
+
+    expect(rail.slots).toBe(0);
+    expect(banner.top).toBe(true);
+    expect(banner.middle).toBe(false);
+    expect(banner.bottom).toBe(false);
+    expect(banner.slotsByPlacement).toEqual({
+      top: 1,
+      middle: 0,
+      bottom: 0
+    });
   });
 
   it("shows a top banner for non-home paid pages", () => {

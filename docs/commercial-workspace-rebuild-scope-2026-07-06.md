@@ -181,6 +181,17 @@ Implement this through a shared page/header rule rather than custom back buttons
 - As a GrowPath user, I can see public batch/lot information only when the owner chooses to show it.
 - Batches/lots should be product inventory history, not a top-level commercial app.
 
+### CSV / PDF Storefront Item Import
+
+- As a commercial owner or authorized manager, I can bulk-import storefront items from CSV or PDF.
+- CSV import supports a downloadable template, header/field mapping, row limits, duplicate detection, per-row validation, and a corrected-file error report.
+- PDF import accepts a product catalog or menu and uses AI-assisted extraction to propose item drafts with source-page references and confidence warnings.
+- Both formats land in a review table where the owner can edit, reject, merge, or approve each proposed item.
+- Import never silently publishes products, prices, claims, inventory, checkout links, regulated items, or cannabis sales listings.
+- Images referenced by URL are validated and previewed; embedded PDF images require explicit owner selection before reuse.
+- Import retains the source document, importer identity, timestamp, mapping decisions, and final create/update audit trail within storage limits.
+- Single users see only approved, published storefront items through Discover, Storefronts, Feed, and relevant Grow Interest filtering.
+
 ### Inventory
 
 - As a commercial owner, I can see inventory generated from products and batches/lots.
@@ -199,7 +210,11 @@ Implement this through a shared page/header rule rather than custom back buttons
 
 - As a commercial owner, I can create a course with title, thumbnail, banner, short description, full description, category, grow interests, skill level, price/free setting, visibility, videos, linked videos, documents, images, modules, lessons, quizzes/checklists, products, live sessions, and forum discussion.
 - As a commercial owner, I can upload videos.
-- As a commercial owner, I can link external videos.
+- As a commercial owner, I can choose a lesson video source explicitly: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Pasting a known provider URL should detect and normalize the provider automatically while still showing the owner what will be saved.
+- External video sources store the original URL plus normalized provider metadata and an availability-check result; they never accept pasted iframe/HTML or claim that GrowPath owns or hosts third-party media.
+- GrowPath embeds supported media only when the provider and specific video permit it. Embedding-disabled, private, deleted, age/region-restricted, or otherwise unavailable videos receive an actionable author warning and a learner-safe Open on provider or lesson-resource fallback.
+- Every video lesson records captions/transcript status, includes a text summary or equivalent lesson content, and exposes a direct-link fallback. Third-party embeds use privacy-aware click-to-load behavior where appropriate.
+- Course progress records the learner's GrowPath lesson completion. Provider watch duration or completion is shown only when a supported integration supplies trustworthy events; otherwise the app does not fabricate viewing analytics.
 - As a commercial owner, I can upload documents/PDFs.
 - As a commercial owner, I can create modules and lessons.
 - As a commercial owner, I can publish/unpublish courses.
@@ -434,6 +449,7 @@ One feed source rule:
 - Move product lines inside Products.
 - Move batches/lots inside Products.
 - Make inventory generated from Products + Batches/Lots.
+- Add reviewed CSV/PDF storefront item import with templates, mapping, duplicate handling, draft approval, source evidence, and audit history.
 
 ### Phase 3 - Stripe and Orders
 

@@ -9,6 +9,7 @@ import {
 } from "@/api/commercialWorkflows";
 import { apiRequest } from "@/api/apiRequest";
 import { InlineError } from "@/components/InlineError";
+import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -22,7 +23,12 @@ function batchTitle(batch: SoilNutrientBatch | null) {
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
-  const display = String(value || "").trim();
+  const display =
+    value == null || value === ""
+      ? ""
+      : typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value).trim();
   if (!display) return null;
   return (
     <View style={styles.detailRow}>
@@ -188,6 +194,16 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
 
+      <CommercialContextualTools
+        source="commercial_batch_detail"
+        batchId={batchId}
+        growId={String(batch?.linkedTrialId || batch?.trialGrowId || "")}
+        productId={String(batch?.productId || "")}
+        productLineId={String(batch?.productLineId || "")}
+        prompt={`Review the commercial batch ${batchTitle(batch)} for formula accuracy, release timing, production risks, and trial readiness.`}
+        tools={["ask-ai", "recipe-builder", "environment", "report"]}
+      />
+
       <AppCard>
         <Text style={styles.cardTitle}>Batch Record</Text>
         <Text style={styles.body}>
@@ -204,11 +220,55 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             value={[batch?.batchVolume, batch?.batchVolumeUnit].filter(Boolean).join(" ")}
           />
           <DetailRow label="Estimated cost" value={batch?.estimatedCost} />
+          <DetailRow
+            label="Cost evidence"
+            value={batch?.costEstimate?.status || "Unknown"}
+          />
+          <DetailRow label="Bag size" value={batch?.bagSize ?? "Unknown"} />
+          <DetailRow label="Bag count" value={batch?.bagCount ?? "Unknown"} />
+          <DetailRow
+            label="Label estimate"
+            value={batch?.guaranteedAnalysisEstimate?.status || "Unknown"}
+          />
+          <DetailRow label="Linked ToolRun" value={batch?.linkedToolRunId} />
         </View>
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Linked Commercial Workflow</Text>
+        <Text style={styles.cardTitle}>Calculation Evidence & Inventory Review</Text>
+        <Text style={styles.body}>
+          Missing evidence stays unknown. Inventory shown here is a review snapshot; the
+          batch calculation did not decrement stock or assign lots.
+        </Text>
+        <View style={styles.detailGrid}>
+          <DetailRow label="Label N-P2O5-K2O" value={batch?.guaranteedAnalysisEstimate} />
+          <DetailRow label="Known/complete cost" value={batch?.costEstimate} />
+          <DetailRow
+            label="Ingredient pulls"
+            value={batch?.ingredientPullSheet?.length ?? 0}
+          />
+          <DetailRow
+            label="Inventory shortages"
+            value={
+              batch?.inventoryReview?.filter((row) => row.status === "shortage").length ??
+              0
+            }
+          />
+        </View>
+        {(batch?.warnings || []).map((warning, index) => (
+          <Text key={`warning-${index}`} style={styles.body}>
+            Warning: {warning}
+          </Text>
+        ))}
+        {(batch?.missingInformation || []).map((item, index) => (
+          <Text key={`missing-${index}`} style={styles.muted}>
+            Missing: {item}
+          </Text>
+        ))}
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Connected records</Text>
         <Text style={styles.body}>
           Batches should link to products, product lines, evidence runs, feed campaigns,
           and storefront proof only when the evidence is strong enough.
@@ -263,8 +323,8 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       <AppCard>
         <Text style={styles.cardTitle}>Formula Evidence</Text>
         <Text style={styles.body}>
-          Keep guaranteed analysis and release timing visible so public product copy does
-          not collapse formula work into a toy NPK claim.
+          Keep guaranteed analysis and release timing visible so public product details
+          accurately describe the formula and its expected behavior.
         </Text>
         <TextInput
           accessibilityLabel="Commercial batch detail status"
@@ -332,22 +392,6 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             {saving ? "Saving..." : "Save Batch Detail"}
           </Text>
         </Pressable>
-      </AppCard>
-
-      <AppCard>
-        <Text style={styles.cardTitle}>Commercial Use Rules</Text>
-        <Text style={styles.bullet}>
-          Do not call the module Living Soil Labs in the app.
-        </Text>
-        <Text style={styles.bullet}>
-          Use guaranteed analysis plus release timing, not only NPK.
-        </Text>
-        <Text style={styles.bullet}>
-          Treat compost/castings and organic release as estimated.
-        </Text>
-        <Text style={styles.bullet}>
-          Link trial results before making public product claims.
-        </Text>
       </AppCard>
     </AppPage>
   );

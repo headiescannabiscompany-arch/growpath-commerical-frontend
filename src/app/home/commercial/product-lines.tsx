@@ -102,7 +102,9 @@ export default function CommercialProductLinesRoute() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial workspace</Text>
-          <Text style={styles.title}>Product Lines</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Product Lines
+          </Text>
           <Text style={styles.subtitle}>
             Organize products into families: soil lines, nutrient lines, genetics lines,
             plant lines, course lines, equipment lines, and garden-center categories.
@@ -131,7 +133,9 @@ export default function CommercialProductLinesRoute() {
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Line</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create Product Line
+        </Text>
         <Text style={styles.body}>
           Product family workflow: create the line first, then attach products, formulas,
           product trial evidence runs, courses, feed campaigns, and storefront sections.
@@ -194,7 +198,9 @@ export default function CommercialProductLinesRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product Lines</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Product Lines
+        </Text>
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
@@ -204,7 +210,9 @@ export default function CommercialProductLinesRoute() {
           <View style={styles.list}>
             {lines.map((line, index) => (
               <View key={idOf(line, index)} style={styles.lineRow}>
-                <Text style={styles.lineTitle}>{line.name || "Untitled line"}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.lineTitle}>
+                  {line.name || "Untitled line"}
+                </Text>
                 <Text style={styles.muted}>
                   {[line.category, line.status || "draft"].filter(Boolean).join(" | ")}
                 </Text>
@@ -237,7 +245,9 @@ export default function CommercialProductLinesRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Line-level public page context</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Line-level public page context
+        </Text>
         <Text style={styles.body}>
           Product lines explain families of related products. They should feed storefront
           sections, public profile sections, course bundles, and product-trial reports.
@@ -257,7 +267,9 @@ export default function CommercialProductLinesRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Brand-type examples</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Brand-type examples
+        </Text>
         <Text style={styles.body}>
           Different commercial users need the same structure with different content, not
           separate apps.

@@ -1,4 +1,6 @@
 import { getToken } from "../auth/tokenStore";
+import { publishTokenBalanceChange } from "../utils/tokenBalanceEvents";
+import { Platform } from "react-native";
 
 export type ApiRequestOptions = {
   method?: string;
@@ -15,6 +17,21 @@ export type ApiRequestOptions = {
   invalidateOn401?: boolean;
   retries?: number;
   retryDelay?: number;
+  cache?: RequestCache;
+};
+
+export type SignedBinaryUploadOptions = {
+  url: string;
+  uri: string;
+  body?: Blob;
+  mimeType: string;
+  signal?: AbortSignal;
+  onProgress?: (fraction: number) => void;
+};
+
+export type SignedBinaryUploadResult = {
+  status: number;
+  etag: string;
 };
 
 const configuredApiUrl =
@@ -170,6 +187,124 @@ function toNetworkError(error: any) {
   return normalized;
 }
 
+function uploadError(code: string, message: string, status: number | null = null) {
+  const error = new ApiError(code, status);
+  error.message = message;
+  return error;
+}
+
+function responseEtag(headers: Record<string, string> | undefined) {
+  if (!headers) return "";
+  const key = Object.keys(headers).find((name) => name.toLowerCase() === "etag");
+  return key ? String(headers[key] || "").trim() : "";
+}
+
+export async function uploadBinaryToSignedUrl(
+  options: SignedBinaryUploadOptions
+): Promise<SignedBinaryUploadResult> {
+  const onProgress = options.onProgress || (() => undefined);
+  onProgress(0);
+  if (Platform.OS === "web") {
+    if (!options.body) {
+      throw uploadError(
+        "VIDEO_UPLOAD_FILE_UNAVAILABLE",
+        "The browser could not read the selected video file."
+      );
+    }
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      const abort = () => request.abort();
+      options.signal?.addEventListener("abort", abort, { once: true });
+      request.open("PUT", options.url, true);
+      request.setRequestHeader("Content-Type", options.mimeType);
+      request.upload.onprogress = (event) => {
+        if (event.lengthComputable && event.total > 0) {
+          onProgress(Math.min(1, event.loaded / event.total));
+        }
+      };
+      request.onerror = () => {
+        options.signal?.removeEventListener("abort", abort);
+        reject(
+          uploadError(
+            "VIDEO_UPLOAD_NETWORK_ERROR",
+            "The video upload was interrupted. Check your connection and try again."
+          )
+        );
+      };
+      request.onabort = () => {
+        options.signal?.removeEventListener("abort", abort);
+        reject(uploadError("VIDEO_UPLOAD_ABORTED", "The video upload was canceled."));
+      };
+      request.onload = () => {
+        options.signal?.removeEventListener("abort", abort);
+        if (request.status < 200 || request.status >= 300) {
+          reject(
+            uploadError(
+              "VIDEO_UPLOAD_REJECTED",
+              "Protected storage rejected the video upload.",
+              request.status
+            )
+          );
+          return;
+        }
+        onProgress(1);
+        resolve({
+          status: request.status,
+          etag: String(request.getResponseHeader("ETag") || "").trim()
+        });
+      };
+      request.send(options.body);
+    });
+  }
+
+  if (!options.uri) {
+    throw uploadError(
+      "VIDEO_UPLOAD_FILE_UNAVAILABLE",
+      "The device could not read the selected video file."
+    );
+  }
+  const FileSystem = await import("expo-file-system/legacy");
+  const task = FileSystem.createUploadTask(
+    options.url,
+    options.uri,
+    {
+      httpMethod: "PUT",
+      uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+      headers: { "Content-Type": options.mimeType }
+    },
+    (progress) => {
+      const total = Number(progress.totalBytesExpectedToSend || 0);
+      if (total > 0) {
+        onProgress(Math.min(1, Number(progress.totalBytesSent || 0) / total));
+      }
+    }
+  );
+  const abort = () => {
+    void task.cancelAsync().catch(() => undefined);
+  };
+  options.signal?.addEventListener("abort", abort, { once: true });
+  try {
+    const response = await task.uploadAsync();
+    if (!response) {
+      throw uploadError("VIDEO_UPLOAD_ABORTED", "The video upload was canceled.");
+    }
+    if (response.status < 200 || response.status >= 300) {
+      throw uploadError(
+        "VIDEO_UPLOAD_REJECTED",
+        "Protected storage rejected the video upload.",
+        response.status
+      );
+    }
+    onProgress(1);
+    return {
+      status: response.status,
+      etag: responseEtag(response.headers)
+    };
+  } finally {
+    options.signal?.removeEventListener("abort", abort);
+  }
+}
+
 export async function apiRequest<T = any>(
   path: string,
   opts: ApiRequestOptions = {}
@@ -228,6 +363,7 @@ export async function apiRequest<T = any>(
         method: opts.method || "GET",
         headers,
         body,
+        cache: opts.cache,
         signal: signal || controller?.signal
       } as any);
 
@@ -236,7 +372,10 @@ export async function apiRequest<T = any>(
       if (!res.ok) {
         const data = await parseResponse(res, opts.responseType ?? "auto");
         const requestId = res.headers?.get?.("x-request-id") || null;
-        if (res.status === 401 && opts.invalidateOn401 !== false) {
+        // A feature endpoint can return 401 because that feature is unavailable or
+        // its route is misconfigured. Only callers performing a canonical session
+        // check may invalidate the entire login.
+        if (res.status === 401 && opts.invalidateOn401 === true) {
           try {
             if (unauthorizedHandler) await unauthorizedHandler();
           } catch {
@@ -251,6 +390,11 @@ export async function apiRequest<T = any>(
       }
 
       const result = (await parseResponse(res, opts.responseType ?? "auto")) as T;
+      const reportedBalance =
+        result && typeof result === "object"
+          ? ((result as any).aiTokensRemaining ?? (result as any).data?.aiTokensRemaining)
+          : undefined;
+      publishTokenBalanceChange(reportedBalance);
       emitTransportEvent({ type: "recovered" });
       return result;
     } catch (err: any) {

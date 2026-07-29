@@ -28,6 +28,11 @@ export const endpoints = {
     facilityPath(facilityId, `/inventory/${id}`),
   inventoryAdjust: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/inventory/${id}/adjust`),
+  facilityTransfers: (facilityId: string) => facilityPath(facilityId, "/transfers"),
+  facilityTransfer: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/transfers/${encodeURIComponent(id)}`),
+  facilityTransferTransition: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/transfers/${encodeURIComponent(id)}/transition`),
 
   // grows
   grows: (facilityId: string) => facilityPath(facilityId, "/grows"),
@@ -76,6 +81,7 @@ export const endpoints = {
   sopTemplates: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-templates`,
   sopTemplate: (facilityId: string, id: string) =>
     `${BASE}/facilities/${facilityId}/sop-templates/${id}`,
+  sopDocuments: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-documents`,
 
   // SOP runs
   sopRuns: (facilityId: string) => facilityPath(facilityId, "/sop-runs"),

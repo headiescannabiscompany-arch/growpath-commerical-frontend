@@ -23,6 +23,8 @@ export type Campaign = {
   adClicks?: number;
   impressions?: number;
   launchDate?: string;
+  reminderPreference?: string;
+  recurrenceRule?: string;
   targetUrl?: string;
   externalUrl?: string;
   imageUrl?: string;

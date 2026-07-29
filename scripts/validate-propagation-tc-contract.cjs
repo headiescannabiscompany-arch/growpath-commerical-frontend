@@ -52,7 +52,12 @@ const tests = {
     `${route} ToolRun-backed calculator route`
   );
   requireText("tool calculators", calculators, new RegExp(`function ${fn}\\b`), fn);
-  requireText("tool calculator exports", calculators, new RegExp(`\\b${fn}\\b`), `${fn} export`);
+  requireText(
+    "tool calculator exports",
+    calculators,
+    new RegExp(`\\b${fn}\\b`),
+    `${fn} export`
+  );
 });
 
 [
@@ -64,6 +69,16 @@ const tests = {
   ["TC batch summary", /calculateTissueCulture[\s\S]*batchSummary/],
   ["TC vessel tracking", /calculateTissueCulture[\s\S]*vesselStatus/],
   ["TC contamination diagnosis", /calculateTissueCulture[\s\S]*diagnosisRecord/],
+  ["TC release review", /calculateTissueCulture[\s\S]*releaseReview/],
+  ["TC photo provenance", /calculateTissueCulture[\s\S]*mediaAnalysis/],
+  [
+    "TC official source",
+    /calculateTissueCulture[\s\S]*usda-ars-hemp-tissue-culture-protocol-2025/
+  ],
+  [
+    "TC primary research source",
+    /calculateTissueCulture[\s\S]*frontiers-2021-drug-type-cannabis-tc/
+  ],
   ["TC calendar", /calculateTissueCulture[\s\S]*generatedCalendar/],
   ["TC media recipe", /calculateTissueCulture[\s\S]*mediaRecipe/],
   ["TC SOP version", /calculateTissueCulture[\s\S]*SOPVersion/],
@@ -110,32 +125,79 @@ const tests = {
 
 [
   ["clone ToolRun screen", cloneScreen, /tool="clone-rooting"/],
+  ["clone blank count fields", cloneScreen, /key: "cloneCount"[\s\S]*defaultValue: ""/],
+  [
+    "clone direct-root field",
+    cloneScreen,
+    /key: "rootEvidence"[\s\S]*Direct root evidence/
+  ],
+  ["clone count consistency validation", cloneScreen, /rooted \+ failed > total/],
+  [
+    "clone hidden-root limit",
+    cloneScreen,
+    /Elapsed time and top growth do not prove hidden roots/
+  ],
+  ["clone provider execution provenance", cloneScreen, /imageAnalysisPerformed/],
   ["clone follow-up tasks", cloneScreen, /Create Clone Follow-up Tasks/],
   ["clone schedule metadata", cloneScreen, /clone_rooting_followup/],
   ["clone photo review", cloneScreen, /clone_photo_review/],
-  ["clone environment adjustment", cloneScreen, /clone_environment_adjustment/],
+  ["clone environment review", cloneScreen, /clone_environment_review/],
   ["clone transplant decision", cloneScreen, /clone_transplant_decision/],
   ["TC ToolRun screen", tcScreen, /tool="tissue-culture"/],
-  ["TC batch/vessel fields", tcScreen, /Batch number[\s\S]*Total vessels[\s\S]*Contaminated vessels/],
-  ["TC media/SOP fields", tcScreen, /Media recipe[\s\S]*SOP version/],
-  ["TC acclimation field", tcScreen, /Acclimated plants/],
+  [
+    "TC batch/vessel fields",
+    tcScreen,
+    /Batch number[\s\S]*Total vessels[\s\S]*Contaminated vessels/
+  ],
+  ["TC blank batch field", tcScreen, /key: "batchNumber"[\s\S]*defaultValue: ""/],
+  ["TC blank vessel field", tcScreen, /key: "vessels"[\s\S]*defaultValue: ""/],
+  ["TC workflow lane", tcScreen, /key: "workflowLane"[\s\S]*cryopreservation/],
+  ["TC direct inspection", tcScreen, /key: "inspectionStatus"[\s\S]*mixed/],
+  ["TC media/SOP fields", tcScreen, /SOP version[\s\S]*Media recipe/],
+  ["TC acclimation field", tcScreen, /Plants entering acclimation/],
   ["TC cost fields", tcScreen, /Media cost[\s\S]*Vessel \/ supply cost[\s\S]*Labor cost/],
-  ["TC workflow tasks", tcScreen, /Create TC Workflow Tasks/],
+  ["TC provider execution provenance", tcScreen, /imageAnalysisPerformed/],
+  ["TC no automatic release", tcScreen, /does not automatically release/],
+  ["TC workflow tasks", tcScreen, /Create TC Evidence Tasks/],
   ["TC calendar metadata", tcScreen, /tissue_culture_workflow/],
-  ["TC contamination review", tcScreen, /Review contamination and browning/],
-  ["TC rooting/acclimation review", tcScreen, /rooting_acclimation_review/],
-  ["TC SOP/media review", tcScreen, /sop_media_review/]
+  ["TC release review task", tcScreen, /tc_release_review/],
+  ["TC transfer review", tcScreen, /tc_transfer_review/],
+  ["TC cold-storage recovery", tcScreen, /tc_cold_storage_recovery/]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 5 screen", contents, pattern, description);
 });
 
 [
-  ["clone backend test", tests.backendTools, /runs stress testing and clone rooting tools[\s\S]*clonePerformanceSummary/],
-  ["TC backend test", tests.backendTools, /runs tissue culture and soil nutrient batch tools[\s\S]*costTracking[\s\S]*generatedCalendar/],
-  ["module record backend tests", tests.backendModules, /lists supported module record types[\s\S]*updates and archives owned module records/],
-  ["clone UI test", tests.clone, /creates clone rooting follow-up tasks from the saved ToolRun[\s\S]*clone_transplant_decision/],
-  ["TC UI test", tests.tc, /creates tissue culture workflow tasks from the saved ToolRun[\s\S]*Vessel \/ supply cost[\s\S]*creates default tissue culture follow-up task/],
-  ["module persistence tests", tests.modulePersistence, /maps approved real tools[\s\S]*run_comparison/]
+  [
+    "clone backend test",
+    tests.backendTools,
+    /runs stress testing and clone rooting tools[\s\S]*clonePerformanceSummary/
+  ],
+  [
+    "TC backend test",
+    tests.backendTools,
+    /runs tissue culture and soil nutrient batch tools[\s\S]*costTracking[\s\S]*generatedCalendar/
+  ],
+  [
+    "module record backend tests",
+    tests.backendModules,
+    /lists supported module record types[\s\S]*updates and archives owned module records/
+  ],
+  [
+    "clone UI test",
+    tests.clone,
+    /blocks a run until real batch counts[\s\S]*rejects counts that cannot fit inside the batch/
+  ],
+  [
+    "TC UI test",
+    tests.tc,
+    /starts blank and refuses to create a fake batch[\s\S]*Vessel \/ supply cost[\s\S]*creates a default follow-up from the recorded schedule/
+  ],
+  [
+    "module persistence tests",
+    tests.modulePersistence,
+    /maps approved real tools[\s\S]*run_comparison/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 5 tests", contents, pattern, description);
 });

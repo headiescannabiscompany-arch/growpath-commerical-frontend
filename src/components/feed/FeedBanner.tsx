@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import FeedRail from "@/components/feed/FeedRail";
+import { FREE_POLICY } from "@/config/freePolicy";
 import { radius } from "@/theme/theme";
 import type { FeedBannerPlacement, FeedRailMode } from "@/utils/feedPolicy";
 
@@ -11,6 +12,9 @@ type FeedBannerProps = {
   mode?: string | null;
   plan?: string | null;
   railMode?: FeedRailMode;
+  routeKey?: string;
+  growInterests?: string[];
+  compact?: boolean;
 };
 
 const LABELS: Record<FeedBannerPlacement, string> = {
@@ -24,7 +28,10 @@ export default function FeedBanner({
   slots = 1,
   mode,
   plan,
-  railMode = "standard"
+  railMode = "standard",
+  routeKey,
+  growInterests,
+  compact = false
 }: FeedBannerProps) {
   if (!slots || slots <= 0) return null;
 
@@ -32,15 +39,24 @@ export default function FeedBanner({
     <View
       accessibilityRole="summary"
       accessibilityLabel={`${LABELS[placement]} placement`}
-      style={styles.banner}
+      style={[styles.banner, compact ? styles.bannerCompact : null]}
     >
       <Text style={styles.label}>{LABELS[placement]}</Text>
+      {plan === "free" && placement === "top" ? (
+        <Text style={styles.upgradeCopy}>
+          Want to see fewer ads? Paid accounts get at least{" "}
+          {FREE_POLICY.paidAdReductionPercentMinimum}% fewer ads.
+        </Text>
+      ) : null}
       <FeedRail
         slots={slots}
         mode={mode}
         plan={plan}
         railMode={railMode}
         placement={placement}
+        routeKey={routeKey}
+        growInterests={growInterests}
+        compact={compact}
       />
     </View>
   );
@@ -55,10 +71,15 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 10
   },
+  bannerCompact: {
+    padding: 9,
+    gap: 7
+  },
   label: {
     color: "#166534",
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase"
-  }
+  },
+  upgradeCopy: { color: "#4B5563", fontSize: 13, lineHeight: 19 }
 });

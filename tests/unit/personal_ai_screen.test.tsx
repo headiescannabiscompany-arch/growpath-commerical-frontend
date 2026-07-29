@@ -1,7 +1,7 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import AiScreen from "@/app/home/personal/(tabs)/ai";
+import AiScreen, { facilityAiPresetFor } from "@/app/home/personal/(tabs)/ai";
 
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
@@ -11,6 +11,27 @@ const mockListToolRuns = jest.fn();
 const mockGetDiagnosisHistory = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockListNutrientRecipes = jest.fn();
+const mockListTelemetrySources = jest.fn();
+const mockGetTelemetryPoints = jest.fn();
+const mockApiRequest = jest.fn();
+const mockGetFacilityTasks = jest.fn();
+const mockGetFacilityComplianceExport = jest.fn();
+const mockRouterPush = jest.fn();
+let mockSearchParams: Record<string, string> = {};
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockSearchParams,
+  useRouter: () => ({ push: mockRouterPush })
+}));
+
+jest.mock("@/components/media/MediaEvidencePicker", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockMediaEvidencePicker() {
+    return <Text>Attach grow evidence</Text>;
+  };
+});
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
@@ -42,9 +63,33 @@ jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
 }));
 
+jest.mock("@/api/nutrientRecipes", () => ({
+  listNutrientRecipes: (...args: any[]) => mockListNutrientRecipes(...args)
+}));
+
+jest.mock("@/api/telemetry", () => ({
+  listTelemetrySources: (...args: any[]) => mockListTelemetrySources(...args),
+  getTelemetryPoints: (...args: any[]) => mockGetTelemetryPoints(...args)
+}));
+
+jest.mock("@/api/apiRequest", () => ({
+  apiRequest: (...args: any[]) => mockApiRequest(...args)
+}));
+
+jest.mock("@/api/facilityTasks", () => ({
+  getFacilityTasks: (...args: any[]) => mockGetFacilityTasks(...args)
+}));
+
+jest.mock("@/api/complianceExport", () => ({
+  getFacilityComplianceExport: (...args: any[]) =>
+    mockGetFacilityComplianceExport(...args)
+}));
+
 describe("personal AI screen", () => {
+  afterEach(cleanup);
   beforeEach(() => {
     jest.resetAllMocks();
+    mockSearchParams = {};
     mockListPersonalGrows.mockResolvedValue([
       {
         id: "grow-1",
@@ -75,8 +120,40 @@ describe("personal AI screen", () => {
     mockListPersonalPlants.mockResolvedValue([]);
     mockListToolRuns.mockResolvedValue([]);
     mockGetDiagnosisHistory.mockResolvedValue([]);
+    mockListNutrientRecipes.mockResolvedValue([]);
+    mockListTelemetrySources.mockResolvedValue([]);
+    mockGetTelemetryPoints.mockResolvedValue({ points: [] });
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
     mockCreatePersonalTask.mockResolvedValue({ id: "ai-task-1" });
+    mockApiRequest.mockResolvedValue([]);
+    mockGetFacilityTasks.mockResolvedValue([]);
+    mockGetFacilityComplianceExport.mockResolvedValue({
+      success: true,
+      exportType: "facility_compliance_packet",
+      facilityId: "facility-1",
+      generatedAt: "2026-07-22T19:00:00.000Z",
+      filters: {},
+      counts: {
+        auditLogs: 36,
+        deviations: 0,
+        verifications: 0,
+        sopTemplates: 0,
+        sopRuns: 0
+      },
+      evidenceSummary: {
+        sopRuns: {
+          totalRuns: 0,
+          completedRuns: 0,
+          inProgressRuns: 0,
+          totalSteps: 0,
+          doneSteps: 0,
+          skippedSteps: 0,
+          pendingSteps: 0,
+          runsMissingSteps: 0
+        }
+      },
+      collections: {}
+    });
   });
 
   it("answers VPD commands and context-aware task prompts", async () => {
@@ -84,6 +161,11 @@ describe("personal AI screen", () => {
 
     await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
     expect(screen.getByText("Grows: 1")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Type here...").props).toMatchObject({
+      autoComplete: "off",
+      textContentType: "none",
+      importantForAutofill: "no"
+    });
 
     fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "vpd 78f 60");
     fireEvent.press(screen.getByText("Send"));
@@ -114,7 +196,9 @@ describe("personal AI screen", () => {
         }
       ],
       actions: [],
-      referencedData: []
+      referencedData: [],
+      conversationId: "conversation-1",
+      providerLabel: "GPT-assisted grow review"
     });
 
     const screen = render(<AiScreen />);
@@ -129,6 +213,16 @@ describe("personal AI screen", () => {
 
     await waitFor(() =>
       expect(screen.getByText("Drafted actions require confirmation")).toBeTruthy()
+    );
+    await waitFor(() =>
+      expect(screen.getByText("GPT-assisted grow review")).toBeTruthy()
+    );
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        conversationId: undefined,
+        evidenceAssetIds: []
+      })
     );
     expect(mockCreatePersonalTask).not.toHaveBeenCalled();
 
@@ -151,5 +245,137 @@ describe("personal AI screen", () => {
       })
     );
     expect(screen.getByText("AI suggested task created.")).toBeTruthy();
+  });
+
+  it("offers Commercial SOP starters and requires review before creating a grow task", async () => {
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      intent: "sop_recommendation",
+      reply: "I found one review-only procedure draft.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: [],
+      sopRecommendations: [
+        {
+          key: "ipm_scouting_escalation",
+          sourceVersion: 2,
+          title: "IPM Scouting and Escalation",
+          category: "ipm",
+          summary: "A repeatable visual scouting record.",
+          whyRecommended: "It matches the scouting request and selected grow.",
+          checklist: [
+            "Confirm the inspection scope.",
+            "Separate observations from suspected causes."
+          ],
+          safetyNotes: "Do not diagnose from one sign or apply a treatment.",
+          missingInformation: ["Confirm the reviewer and escalation threshold."],
+          reviewStatus: "review_required"
+        }
+      ]
+    });
+
+    const screen = render(<AiScreen workspaceType="commercial" />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Draft IPM Scouting and Escalation"));
+    const composer = screen.getByPlaceholderText("Type here...");
+    expect(composer.props.value).toContain("review-only SOP/checklist draft");
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Send"));
+    await waitFor(() =>
+      expect(screen.getByText("Review-only procedure drafts")).toBeTruthy()
+    );
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceType: "commercial",
+        context: expect.objectContaining({
+          sopStarterLibrary: expect.arrayContaining([
+            expect.objectContaining({
+              key: "ipm_scouting_escalation",
+              sourceVersion: 2
+            })
+          ])
+        })
+      })
+    );
+    expect(
+      JSON.stringify(mockAskPersonalAssistant.mock.calls[0][0].context.sopStarterLibrary)
+    ).not.toMatch(
+      /facility (?:ipm plan|scale|approved|reviewer|quarantine|sanitation|emergency)/i
+    );
+    expect(screen.getByText(/starting points, not approved Facility SOPs/i)).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByLabelText("Review IPM Scouting and Escalation as a task")
+    );
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        "Review the drafted task below. Nothing is saved until you confirm it."
+      )
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Confirm create_task"));
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          title: "Review: IPM Scouting and Escalation",
+          description: expect.stringContaining(
+            "Separate observations from suspected causes."
+          ),
+          sourceObjectId: "sop-starter:ipm_scouting_escalation:v2"
+        })
+      )
+    );
+  });
+
+  it("loads the Facility inspection-readiness preset and its evidence context", async () => {
+    mockSearchParams = { preset: "compliance" };
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "Recorded audit coverage is present; SOP run evidence is missing.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+
+    const screen = render(<AiScreen workspaceType="facility" facilityId="facility-1" />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Inspection Readiness Context")).toBeTruthy()
+    );
+    expect(screen.getByText("Audit logs: 36")).toBeTruthy();
+    expect(screen.getByText("SOP runs: 0")).toBeTruthy();
+    expect(screen.queryByText("Build your first grow")).toBeNull();
+    expect(screen.queryByText(/Crop context:/)).toBeNull();
+    expect(screen.queryByText("AI procedure recommendations")).toBeNull();
+
+    const composer = screen.getByPlaceholderText("Add notes for Inspection Readiness");
+    expect(composer.props.value).toContain(
+      "Review this Facility's current inspection readiness"
+    );
+    fireEvent.press(screen.getByText("Send"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          facilityId: "facility-1",
+          workspaceType: "facility",
+          context: expect.objectContaining({
+            facilityPreset: "compliance",
+            facilityCompliance: expect.objectContaining({
+              counts: expect.objectContaining({ auditLogs: 36, sopRuns: 0 })
+            })
+          })
+        })
+      )
+    );
+  });
+
+  it("recognizes only supported Facility AI presets", () => {
+    expect(facilityAiPresetFor("inventory")?.title).toBe("Inventory Risk");
+    expect(facilityAiPresetFor("unknown")).toBeNull();
   });
 });

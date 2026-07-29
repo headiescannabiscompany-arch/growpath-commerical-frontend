@@ -19,10 +19,12 @@ import {
   updatePersonalLog,
   type PersonalLog
 } from "@/api/logs";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { radius } from "@/theme/theme";
 
 function param(value?: string | string[]) {
@@ -157,6 +159,7 @@ export default function LogDetailScreen() {
     <ScreenBoundary
       title={log?.title || "Journal Entry"}
       showBack
+      preferBackFallback
       backFallbackHref={
         log?.growId
           ? `/home/personal/grows/${encodeURIComponent(log.growId)}/journal`
@@ -164,7 +167,9 @@ export default function LogDetailScreen() {
       }
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{log?.title || "Journal Entry"}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {log?.title || "Journal Entry"}
+        </Text>
         <PersonalFeedPlacement
           placement="top"
           routeKey="personal_logs_logid"
@@ -184,13 +189,13 @@ export default function LogDetailScreen() {
               onChangeText={(title) => setForm((current) => ({ ...current, title }))}
               accessibilityLabel="Edit log title"
             />
-            <Text style={styles.label}>Date</Text>
-            <TextInput
-              style={styles.input}
+            <CalendarDateField
+              label="Date"
               value={form.date}
-              onChangeText={(date) => setForm((current) => ({ ...current, date }))}
-              placeholder="YYYY-MM-DD"
+              onChange={(date) => setForm((current) => ({ ...current, date }))}
+              placeholder="Choose log date"
               accessibilityLabel="Edit log date"
+              optional={false}
             />
             <Text style={styles.label}>Type</Text>
             <TextInput
@@ -304,6 +309,16 @@ export default function LogDetailScreen() {
                 </View>
               ) : null}
             </View>
+
+            <ContextualWorkflowLinks
+              title="Log report"
+              helper="Export the linked grow timeline with this journal entry kept as the launch source."
+              source="grow_log_detail"
+              growId={String(log.growId || "")}
+              plantId={String(log.plantId || "")}
+              logId={logId}
+              workflows={["pdf-export"]}
+            />
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>History Links</Text>

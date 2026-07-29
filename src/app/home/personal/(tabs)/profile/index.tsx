@@ -8,13 +8,24 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  Share
+  Share,
+  Switch
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
-import { requestEmailVerification } from "@/api/auth";
-import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
+import { requestEmailVerification, updateContentControls } from "@/api/auth";
+import {
+  deleteAccount,
+  exportPrivacyData,
+  updateNotificationPreferences,
+  updateProfile
+} from "@/api/users";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  NOTIFICATION_PREFERENCE_OPTIONS,
+  NotificationPreferenceState
+} from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
@@ -77,6 +88,21 @@ const styles = StyleSheet.create({
   buttonDanger: { backgroundColor: "#fff", borderColor: "#FCA5A5" },
   buttonDangerText: { color: "#DC2626", fontWeight: "800" },
   buttonSecondaryText: { color: "#0F172A", fontWeight: "800" },
+  notificationRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 8
+  },
+  notificationCopy: { flex: 1, minWidth: 0 },
+  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
+  notificationDescription: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
 
   accountAction: {
     marginTop: 10,
@@ -103,6 +129,30 @@ const styles = StyleSheet.create({
   mutedText: { marginTop: 8, fontSize: 12, color: "#64748B", lineHeight: 18 }
 });
 
+type PlanAction = readonly [label: string, href: string, primary: boolean];
+
+export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
+  const planRank: Record<string, number> = {
+    free: 0,
+    pro: 1,
+    commercial: 2,
+    facility: 3
+  };
+  const currentRank = planRank[String(plan || "free").toLowerCase()] ?? 0;
+  const actions: PlanAction[] = [];
+
+  if (currentRank < planRank.facility) {
+    actions.push(["Upgrade Plans", "/home/personal/upgrade", currentRank < planRank.pro]);
+  }
+  actions.push([
+    "Manage Billing",
+    "/home/personal/profile/billing",
+    currentRank >= planRank.pro
+  ]);
+
+  return actions;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
   const auth = useAuth();
@@ -117,15 +167,35 @@ export default function ProfileScreen() {
   const [privacyFeedback, setPrivacyFeedback] = useState("");
   const [privacyError, setPrivacyError] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [contentControlBusy, setContentControlBusy] = useState(false);
+  const [parentalPin, setParentalPin] = useState("");
+  const [contentControlFeedback, setContentControlFeedback] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
+    DEFAULT_NOTIFICATION_PREFERENCES
+  );
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState("");
+  const [notificationError, setNotificationError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
+  const planActions = getPersonalProfilePlanActions(plan);
   const emailVerified = Boolean(auth.user?.emailVerified);
 
   useEffect(() => {
     setEmailDraft(email === "unknown" ? "" : email);
   }, [email]);
+
+  useEffect(() => {
+    const storedPrefs =
+      ((auth.user as any)
+        ?.notificationPreferences as Partial<NotificationPreferenceState>) || {};
+    setNotificationPrefs({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      ...storedPrefs
+    });
+  }, [auth.user]);
 
   const handleSaveEmail = async () => {
     const nextEmail = emailDraft.trim().toLowerCase();
@@ -165,6 +235,54 @@ export default function ProfileScreen() {
       setEmailError(e?.message || "Unable to request verification email.");
     } finally {
       setResendingVerification(false);
+    }
+  };
+
+  const handleSaveNotificationPreferences = async () => {
+    setNotificationSaving(true);
+    setNotificationFeedback("");
+    setNotificationError("");
+    try {
+      await updateNotificationPreferences(notificationPrefs as any);
+      await auth.retryMe();
+      setNotificationFeedback("Notification settings saved.");
+    } catch (error: any) {
+      setNotificationError(error?.message || "Unable to save notification settings.");
+    } finally {
+      setNotificationSaving(false);
+    }
+  };
+
+  const saveContentControls = async (input: {
+    cannabisVisibility: "show" | "hide";
+    parentalLockEnabled?: boolean;
+    enablingLock?: boolean;
+  }) => {
+    setContentControlBusy(true);
+    setContentControlFeedback("");
+    try {
+      const result = await updateContentControls({
+        cannabisVisibility: input.cannabisVisibility,
+        parentalLockEnabled: input.parentalLockEnabled,
+        ...(input.enablingLock ? { newPin: parentalPin } : { currentPin: parentalPin })
+      });
+      setParentalPin("");
+      setContentControlFeedback(
+        result.contentControls.parentalLockEnabled
+          ? "Cannabis content controls are protected by the parental PIN."
+          : result.contentControls.cannabisVisibility === "show"
+            ? "Cannabis content is visible for this account."
+            : "Cannabis content is hidden."
+      );
+      await auth.retryMe();
+    } catch (error: any) {
+      setContentControlFeedback(
+        error?.data?.error?.message ||
+          error?.message ||
+          "Unable to update content controls."
+      );
+    } finally {
+      setContentControlBusy(false);
     }
   };
 
@@ -293,7 +411,9 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Profile</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Profile
+      </Text>
       <Text style={styles.subtitle}>Account and plan details</Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_profile" longContent />
 
@@ -369,6 +489,22 @@ export default function ProfileScreen() {
         >
           <Text style={styles.accountActionText}>Switch workspace</Text>
         </Pressable>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/home/personal/more/links" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Manage profile links"
+        >
+          <Text style={styles.accountActionText}>Profile links</Text>
+        </Pressable>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/videos?tab=library" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Open personal video library"
+        >
+          <Text style={styles.accountActionText}>My videos</Text>
+        </Pressable>
         <Text style={styles.mutedText}>
           Personal is for your grow records and Forum/Q&A. Commercial and Facility
           workspaces keep storefront outreach and operational rooms separate.
@@ -379,25 +515,17 @@ export default function ProfileScreen() {
         <Text style={styles.rowLabel}>Plan</Text>
         <Text style={styles.rowValue}>{plan}</Text>
         <Text style={styles.mutedText}>
-          Free includes basic grow tracking, logs, tasks, and limited AI/tool tokens.
-          Upgrade for more grows, storage, advanced tools, exports, integrations, and
-          higher AI limits.
+          Free includes basic grow tracking, logs, tasks, and limited AI credits. Upgrade
+          for more grows, storage, advanced tools, exports, integrations, and higher AI
+          limits.
         </Text>
         <View style={styles.actionGrid}>
-          {[
-            ["Upgrade to Pro", "/home/personal/upgrade/pro", true],
-            ["Upgrade to Commercial", "/home/personal/upgrade/commercial", false],
-            ["Apply / Upgrade to Facility", "/home/personal/upgrade/facility", false],
-            ["Manage Billing", "/home/personal/profile/billing", false]
-          ].map(([label, href, primary]) => (
+          {planActions.map(([label, href, primary]) => (
             <Pressable
               key={String(label)}
               accessibilityRole="button"
               onPress={() => router.push(href as any)}
-              style={[
-                styles.planAction,
-                primary ? styles.planActionPrimary : null
-              ]}
+              style={[styles.planAction, primary ? styles.planActionPrimary : null]}
             >
               <Text
                 style={primary ? styles.planActionPrimaryText : styles.planActionText}
@@ -410,10 +538,65 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.rowLabel}>AI token balance</Text>
+        <Text style={styles.rowLabel}>AI-credit balance</Text>
         <TokenBalanceWidget
           onPress={() => router.push("/home/personal/profile/billing" as any)}
         />
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Notification settings</Text>
+        <Text style={styles.mutedText}>
+          These controls decide which inbox items can also reach your device. In-app
+          notifications stay available; push requires a registered device.
+        </Text>
+        {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+          <View key={String(option.key)} style={styles.notificationRow}>
+            <View style={styles.notificationCopy}>
+              <Text style={styles.notificationTitle}>{option.title}</Text>
+              <Text style={styles.notificationDescription}>{option.description}</Text>
+            </View>
+            <Switch
+              accessibilityLabel={option.title}
+              value={Boolean(notificationPrefs[option.key])}
+              onValueChange={(value) =>
+                setNotificationPrefs((current) => ({
+                  ...current,
+                  [option.key]: value
+                }))
+              }
+            />
+          </View>
+        ))}
+        <View style={styles.actionGrid}>
+          <Pressable
+            style={styles.accountAction}
+            onPress={() => router.push("/home/notifications" as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification inbox"
+          >
+            <Text style={styles.accountActionText}>Open Notification Inbox</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.planAction,
+              styles.planActionPrimary,
+              notificationSaving && { opacity: 0.6 }
+            ]}
+            onPress={() => void handleSaveNotificationPreferences()}
+            accessibilityRole="button"
+            accessibilityLabel="Save notification settings"
+            disabled={notificationSaving}
+          >
+            <Text style={styles.planActionPrimaryText}>
+              {notificationSaving ? "Saving..." : "Save Notification Settings"}
+            </Text>
+          </Pressable>
+        </View>
+        {notificationFeedback ? (
+          <Text style={styles.feedback}>{notificationFeedback}</Text>
+        ) : null}
+        {notificationError ? <Text style={styles.error}>{notificationError}</Text> : null}
       </View>
 
       <View style={styles.card}>
@@ -430,6 +613,88 @@ export default function ProfileScreen() {
         >
           <Text style={styles.accountActionText}>Edit Grow Interests</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Cannabis content and parental lock</Text>
+        <Text style={styles.mutedText}>
+          Cannabis posts, courses, feed recommendations, and related tools can be hidden
+          without affecting fruit, vegetable, flower, tree, or general gardening content.
+        </Text>
+        <Text style={styles.rowValue}>
+          Cannabis content:{" "}
+          {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
+        </Text>
+        <Text style={styles.mutedText}>
+          Age eligibility: {auth.user?.ageBand || "verification needed"} - Parental lock:{" "}
+          {auth.user?.parentalLockEnabled ? "On" : "Off"}
+        </Text>
+        <TextInput
+          accessibilityLabel="Parental content control PIN"
+          style={styles.input}
+          value={parentalPin}
+          onChangeText={setParentalPin}
+          placeholder={
+            auth.user?.parentalLockEnabled
+              ? "Current parental PIN"
+              : "New 4-12 digit parental PIN"
+          }
+          keyboardType="number-pad"
+          secureTextEntry
+          autoComplete="one-time-code"
+          textContentType="oneTimeCode"
+          importantForAutofill="no"
+        />
+        <View style={styles.actionGrid}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Hide cannabis content"
+            disabled={contentControlBusy}
+            style={styles.planAction}
+            onPress={() => void saveContentControls({ cannabisVisibility: "hide" })}
+          >
+            <Text style={styles.planActionText}>Hide cannabis</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Show cannabis content"
+            disabled={contentControlBusy || !auth.user?.cannabisEligible}
+            style={[
+              styles.planAction,
+              (!auth.user?.cannabisEligible || contentControlBusy) && { opacity: 0.5 }
+            ]}
+            onPress={() => void saveContentControls({ cannabisVisibility: "show" })}
+          >
+            <Text style={styles.planActionText}>Show cannabis</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              auth.user?.parentalLockEnabled
+                ? "Disable parental lock"
+                : "Enable parental lock"
+            }
+            disabled={contentControlBusy || parentalPin.length < 4}
+            style={[
+              styles.planAction,
+              (contentControlBusy || parentalPin.length < 4) && { opacity: 0.5 }
+            ]}
+            onPress={() =>
+              void saveContentControls({
+                cannabisVisibility: "hide",
+                parentalLockEnabled: !auth.user?.parentalLockEnabled,
+                enablingLock: !auth.user?.parentalLockEnabled
+              })
+            }
+          >
+            <Text style={styles.planActionText}>
+              {auth.user?.parentalLockEnabled ? "Disable lock" : "Enable lock + hide"}
+            </Text>
+          </Pressable>
+        </View>
+        {contentControlFeedback ? (
+          <Text style={styles.feedback}>{contentControlFeedback}</Text>
+        ) : null}
       </View>
       <PersonalFeedPlacement placement="middle" routeKey="personal_profile" longContent />
 
@@ -450,6 +715,22 @@ export default function ProfileScreen() {
         <Text style={styles.mutedText}>
           Personal, Commercial, and Facility are separate account types.
         </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Grow reports and export</Text>
+        <Text style={styles.mutedText}>
+          Export records across your account, or open a specific grow first to create a
+          grow-scoped report.
+        </Text>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/home/personal/tools/pdf-export" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Open grow reports and export"
+        >
+          <Text style={styles.accountActionText}>Open Grow Reports & Export</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>

@@ -63,7 +63,21 @@ describe("commercial legacy screens", () => {
       screen.getByPlaceholderText("Linked product, course, evidence run, or store URL"),
       "product-1"
     );
-    fireEvent.changeText(screen.getByPlaceholderText("Launch date or window"), "April");
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date"));
+    fireEvent(
+      screen.getByLabelText("Marketing plan launch date year"),
+      "valueChange",
+      2026
+    );
+    fireEvent(
+      screen.getByLabelText("Marketing plan launch date month"),
+      "valueChange",
+      4
+    );
+    fireEvent.press(screen.getByLabelText("Marketing plan launch date day 2026-04-15"));
+    fireEvent.press(
+      screen.getByLabelText("Marketing plan launch date use selected date")
+    );
     fireEvent.changeText(
       screen.getByPlaceholderText("Content notes, platform notes, budget notes, or CTA"),
       "Announce trial results through a feed campaign"
@@ -76,7 +90,7 @@ describe("commercial legacy screens", () => {
           name: "Spring soil drop",
           objective: "content_plan",
           linkedTarget: "product-1",
-          launchDate: "April",
+          launchDate: "2026-04-15",
           notes: "Announce trial results through a feed campaign"
         })
       )

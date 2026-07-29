@@ -73,8 +73,22 @@ const mockCommercialRecord = {
     rows.unshift(row);
     return makeDoc(row);
   }),
-  findOneAndUpdate: jest.fn((query, patch) => {
+  findOneAndUpdate: jest.fn((query, patch, options = {}) => {
     const index = rows.findIndex((row) => matches(row, query));
+    if (index < 0 && options.upsert) {
+      const inserted = applyPatch(
+        {
+          _id: `course-${rows.length + 1}`,
+          userId: query.userId,
+          recordType: query.recordType,
+          deletedAt: null,
+          payload: {}
+        },
+        patch
+      );
+      rows.unshift(inserted);
+      return one(inserted);
+    }
     if (index < 0) return one(null);
     rows[index] = applyPatch(rows[index], patch);
     return one(rows[index]);
@@ -185,6 +199,73 @@ describe("generic courses backend routes", () => {
     expect(published.body.isPublished).toBe(true);
   });
 
+  test("normalizes provider media, rejects iframe markup, and blocks incomplete media publish", async () => {
+    const app = createApp();
+    const created = await request(app)
+      .post("/api/courses/create")
+      .send({ title: "Provider Media Course" });
+
+    const unsafe = await request(app)
+      .post(`/api/courses/${created.body.id}/lesson`)
+      .send({
+        title: "Unsafe embed",
+        videoUrl: '<iframe src="https://youtube.com/embed/QT7vv46368M"></iframe>'
+      });
+    expect(unsafe.status).toBe(400);
+    expect(unsafe.body.error.code).toBe("INVALID_LESSON_MEDIA");
+
+    const added = await request(app).post(`/api/courses/${created.body.id}/lesson`).send({
+      title: "Provider lesson",
+      videoUrl: "https://youtu.be/QT7vv46368M",
+      videoAssetId: "video-1"
+    });
+    expect(added.status).toBe(201);
+    expect(added.body.lesson.videoAssetId).toBe("video-1");
+    expect(added.body.lesson.mediaSource).toMatchObject({
+      sourceType: "youtube",
+      providerVideoId: "QT7vv46368M",
+      canonicalUrl: "https://www.youtube.com/watch?v=QT7vv46368M"
+    });
+
+    const blocked = await request(app).put(`/api/courses/${created.body.id}/publish`);
+    expect(blocked.status).toBe(422);
+    expect(blocked.body.error.code).toBe("LESSON_MEDIA_NOT_READY");
+
+    const updated = await request(app)
+      .put(`/api/courses/lesson/${added.body.lesson.id}`)
+      .send({
+        mediaSource: {
+          ...added.body.lesson.mediaSource,
+          creatorRightsConfirmed: true,
+          availabilityStatus: "available",
+          lastCheckedAt: "2026-07-22T13:00:00Z",
+          captionsStatus: "provided",
+          textSummary: "Accessible provider-backed lesson summary.",
+          allowEmbed: true
+        }
+      });
+    expect(updated.status).toBe(200);
+    expect(updated.body.lesson.mediaSource.embedUrl).toBe(
+      "https://www.youtube-nocookie.com/embed/QT7vv46368M"
+    );
+
+    const published = await request(app).put(`/api/courses/${created.body.id}/publish`);
+    expect(published.status).toBe(200);
+
+    const removed = await request(app)
+      .put(`/api/courses/lesson/${added.body.lesson.id}`)
+      .send({
+        videoUrl: "",
+        externalVideoUrl: "",
+        mediaSource: null,
+        videoAssetId: ""
+      });
+    expect(removed.status).toBe(200);
+    expect(removed.body.lesson.videoUrl).toBe("");
+    expect(removed.body.lesson.mediaSource).toBeNull();
+    expect(removed.body.lesson.videoAssetId).toBe("");
+  });
+
   test("course owner can update and delete lessons by lesson route", async () => {
     const app = createApp();
     const created = await request(app)
@@ -246,6 +327,46 @@ describe("generic courses backend routes", () => {
     const reviews = await request(app).get(`/api/courses/${created.body.id}/reviews`);
     expect(reviews.status).toBe(200);
     expect(reviews.body.reviews).toHaveLength(1);
+  });
+
+  test("enrolled learners can RSVP and receive course lives in their calendar feed", async () => {
+    const app = createApp();
+    const created = await request(app)
+      .post("/api/courses/create")
+      .send({
+        title: "Live Grow Class",
+        status: "published",
+        liveSessions: [
+          {
+            id: "live-1",
+            title: "Canopy Q&A",
+            scheduledStart: "2026-08-01T19:00:00-04:00",
+            timezone: "America/New_York",
+            twitchChannel: "growpath",
+            meetingUrl: "https://www.twitch.tv/growpath"
+          }
+        ]
+      });
+    await request(app).post(`/api/courses/${created.body.id}/enroll`);
+
+    const rsvp = await request(app)
+      .post(`/api/courses/${created.body.id}/lives/live-1/rsvp`)
+      .send({ reminderPlan: { label: "1 hour before", channels: ["in_app"] } });
+    expect(rsvp.status).toBe(201);
+    expect(rsvp.body).toMatchObject({ success: true, rsvped: true });
+
+    const status = await request(app).get(`/api/courses/${created.body.id}/live-rsvps`);
+    expect(status.body.sessionIds).toEqual(["live-1"]);
+
+    const calendar = await request(app).get("/api/courses/mine/live-events");
+    expect(calendar.body.liveEvents).toEqual([
+      expect.objectContaining({
+        sessionId: "live-1",
+        courseId: created.body.id,
+        title: "Canopy Q&A",
+        rsvped: true
+      })
+    ]);
   });
 
   test("public course list only returns published courses", async () => {

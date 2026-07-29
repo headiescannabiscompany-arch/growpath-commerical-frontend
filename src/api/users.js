@@ -73,6 +73,13 @@ export function getFollowing(id) {
   return apiRequest(routes.USER.FOLLOWING(id), { method: "GET" });
 }
 
+export function discoverUsers(q = "", limit = 20) {
+  return apiRequest("/api/search/users", {
+    method: "GET",
+    params: { q: String(q || "").trim() || undefined, limit }
+  }).then((res) => (Array.isArray(res?.users) ? res.users : []));
+}
+
 export function updateNotificationPreferences(prefs) {
   return apiRequest(routes.USER.NOTIFICATIONS, {
     method: "POST",

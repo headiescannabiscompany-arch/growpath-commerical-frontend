@@ -31,7 +31,18 @@ const mockPost = {
   likeCount: 0,
   photos: [],
   tags: ["grow"],
-  strain: "TestStrain"
+  strain: "TestStrain",
+  category: "product_qna",
+  postType: "product_qna",
+  authorIdentity: { type: "commercial", displayName: "Soil Brand" },
+  documents: [
+    {
+      name: "Product label",
+      url: "https://example.com/label.pdf",
+      mimeType: "application/pdf"
+    }
+  ],
+  context: { productId: "product-1", storefrontSlug: "soil-brand" }
 };
 const mockComments = [
   { _id: "c1", text: "Nice post!", user: { _id: "user2", username: "Bob" } },
@@ -56,7 +67,9 @@ jest.mock("../src/api/forum", () => ({
   savePost: jest.fn(),
   unsavePost: jest.fn(),
   reportPost: jest.fn(),
-  savePostToGrowLog: jest.fn()
+  savePostToGrowLog: jest.fn(),
+  assistForumThread: jest.fn(),
+  createForumTask: jest.fn()
 }));
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
@@ -68,14 +81,7 @@ const mockUseAuth = jest.fn();
 jest.mock("../src/auth/AuthContext", () => ({
   __esModule: true,
   ...jest.requireActual("../src/auth/AuthContext"),
-  useAuth: () => ({
-    user: { id: "test-user", name: "Test User" },
-    token: "test-token",
-    isAuthenticated: true,
-    login: jest.fn(),
-    logout: jest.fn()
-    // add any other context values needed for tests
-  })
+  useAuth: () => mockUseAuth()
 }));
 
 describe("ForumPostDetailScreen QA", () => {
@@ -99,6 +105,11 @@ describe("ForumPostDetailScreen QA", () => {
     );
 
   beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      user: { _id: "user1", username: "Alice" },
+      capabilities: { canUseForum: true, canPostForum: true },
+      mode: "personal"
+    });
     forumApi.getPost.mockResolvedValue(mockPost);
     forumApi.getComments.mockResolvedValue(mockComments);
     forumApi.likePost.mockResolvedValue({ likeCount: 1 });
@@ -109,6 +120,14 @@ describe("ForumPostDetailScreen QA", () => {
     forumApi.unsavePost.mockResolvedValue({ success: true });
     forumApi.reportPost.mockResolvedValue({ success: true });
     forumApi.savePostToGrowLog.mockResolvedValue({ success: true });
+    forumApi.assistForumThread.mockResolvedValue({
+      suggestions: {
+        providerLabel: "GrowPath structured fallback",
+        summary: "Review watering context.",
+        tasks: [{ title: "Check moisture" }]
+      }
+    });
+    forumApi.createForumTask.mockResolvedValue({ task: { title: "Forum follow-up" } });
   });
 
   plans.forEach(({ name, capabilities }) => {
@@ -195,5 +214,43 @@ describe("ForumPostDetailScreen QA", () => {
     await waitFor(() => getByText("Test post content"));
     expect(getByText(/Follow/i)).toBeTruthy();
     expect(getByText(/Comments/i)).toBeTruthy();
+  });
+
+  it("shows verified identity, discussion type, documents, and workflow context", async () => {
+    const { getByText } = renderWithNav(
+      <ForumPostDetailScreen
+        route={{ params: { id: "post1" } }}
+        navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+      />
+    );
+
+    await waitFor(() => getByText("Test post content"));
+    expect(getByText(/Soil Brand.*Brand/)).toBeTruthy();
+    expect(getByText(/product qna.*product qna/i)).toBeTruthy();
+    expect(getByText("Product label")).toBeTruthy();
+    expect(getByText(/product: product-1/i)).toBeTruthy();
+    expect(getByText(/storefront: soil-brand/i)).toBeTruthy();
+  });
+
+  it("creates Forum tasks and shows reviewable AI suggestions", async () => {
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    const { getByText, getByLabelText } = renderWithNav(
+      <ForumPostDetailScreen
+        route={{ params: { id: "post1" } }}
+        navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+      />
+    );
+    await waitFor(() => getByText("Test post content"));
+
+    fireEvent.press(getByText("Create Task"));
+    await waitFor(() =>
+      expect(forumApi.createForumTask).toHaveBeenCalledWith("post1", expect.any(Object))
+    );
+
+    fireEvent.press(getByText("Ask AI"));
+    await waitFor(() => expect(getByLabelText("Forum AI suggestions")).toBeTruthy());
+    expect(getByText("Review watering context.")).toBeTruthy();
+    expect(getByText(/Suggested tasks: Check moisture/)).toBeTruthy();
+    alertSpy.mockRestore();
   });
 });

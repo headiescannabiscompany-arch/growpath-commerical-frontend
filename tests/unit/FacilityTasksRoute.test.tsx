@@ -5,8 +5,12 @@ import FacilityTasksRoute from "@/app/home/facility/(tabs)/tasks";
 
 const mockCreateTask = jest.fn();
 const mockGetFacilityTasks = jest.fn();
+const mockListTeamMembers = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockClearError = jest.fn();
+const mockHandleApiError = jest.fn();
+const mockRouter = { push: mockPush, replace: mockReplace };
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -15,12 +19,21 @@ function addDaysKey(days: number) {
 }
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace })
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    return React.cloneElement(children, { onPress: () => mockPush(href) });
+  },
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => ({})
 }));
 
 jest.mock("@/api/tasks", () => ({
   createTask: (...args: any[]) => mockCreateTask(...args),
   getFacilityTasks: (...args: any[]) => mockGetFacilityTasks(...args)
+}));
+
+jest.mock("@/api/team", () => ({
+  listTeamMembers: (...args: any[]) => mockListTeamMembers(...args)
 }));
 
 jest.mock("@/components/InlineError", () => ({
@@ -45,13 +58,32 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => ({
     error: null,
-    clearError: jest.fn(),
-    handleApiError: jest.fn()
+    clearError: mockClearError,
+    handleApiError: mockHandleApiError
   })
 }));
 
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
+}));
+
+jest.mock("@/features/facility/useFacilityRooms", () => ({
+  useFacilityRooms: () => ({
+    rooms: [
+      { id: "clone-room", name: "Clone room" },
+      { id: "flower-1", name: "Flower room" },
+      { id: "flower-2", name: "Flower room 2" },
+      { id: "mix-room", name: "Mix room" },
+      { id: "media-room", name: "Media room" },
+      { id: "training-room", name: "Training room" }
+    ],
+    loading: false,
+    error: null
+  })
+}));
+
+jest.mock("@/features/facility/useFacilityGrows", () => ({
+  useFacilityGrows: () => ({ grows: [], loading: false, error: null })
 }));
 
 describe("FacilityTasksRoute", () => {
@@ -67,7 +99,8 @@ describe("FacilityTasksRoute", () => {
         sourceObjectId: "alert-1",
         roomId: "flower-1",
         requiresProof: true,
-        requiresApproval: true
+        requiresApproval: true,
+        assignedToUserId: "user-1"
       },
       {
         id: "task-linked-batch",
@@ -96,23 +129,62 @@ describe("FacilityTasksRoute", () => {
         linkedFeedCampaignId: "campaign-linked-1"
       }
     ]);
+    mockListTeamMembers.mockResolvedValue([
+      { id: "member-1", userId: "user-1", name: "Alex Grower", role: "STAFF" }
+    ]);
     mockCreateTask.mockResolvedValue({ id: "task-created" });
+  });
+
+  it("filters the facility queue by assignment, status, and source", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter assigned"));
+    expect(screen.getByText("Scout Flower Room")).toBeTruthy();
+    expect(screen.queryByText("Review production batch")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter all"));
+    fireEvent.press(screen.getByLabelText("Facility task source filter product_batch"));
+    expect(screen.getByText("Review production batch")).toBeTruthy();
+    expect(screen.queryByText("Scout Flower Room")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Facility task queue filter overdue"));
+    expect(screen.getByText("Review production batch")).toBeTruthy();
+  });
+
+  it("opens the selected task detail with a concrete web-safe route", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Open task Scout Flower Room"));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/tasks/[id]",
+      params: { id: "task-1" }
+    });
   });
 
   it("creates source-linked facility tasks with room, proof, and approval context", async () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
-    expect(screen.getByText(/Source: sensor alert alert-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: flower-1/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
+    expect(screen.getAllByText(/Source: sensor alert/)).toHaveLength(2);
+    expect(screen.queryByText(/alert-1/)).toBeNull();
+    expect(screen.getByText(/Assignee: Alex Grower/)).toBeTruthy();
+    expect(screen.queryByText(/user-1/)).toBeNull();
+    expect(screen.getAllByText(/Room: Flower room/)).toHaveLength(2);
     expect(screen.getByText("Review production batch")).toBeTruthy();
-    expect(screen.getByText(/Source: product batch batch-linked-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: mix-room/)).toBeTruthy();
+    expect(screen.getByText(/Source: product batch/)).toBeTruthy();
+    expect(screen.queryByText(/batch-linked-1/)).toBeNull();
+    expect(screen.getByText(/Room: Mix room/)).toBeTruthy();
     expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
-    expect(screen.getByText(/Source: sensor alert sensor-alert-linked-1/)).toBeTruthy();
-    expect(screen.getByText(/Room: flower-2/)).toBeTruthy();
+    expect(screen.queryByText(/sensor-alert-linked-1/)).toBeNull();
+    expect(screen.getByText(/Room: Flower room 2/)).toBeTruthy();
     expect(screen.getByText("Prepare facility outreach campaign")).toBeTruthy();
-    expect(screen.getByText(/Source: feed campaign campaign-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Source: feed campaign/)).toBeTruthy();
+    expect(screen.queryByText(/campaign-linked-1/)).toBeNull();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
 
@@ -129,10 +201,11 @@ describe("FacilityTasksRoute", () => {
       screen.getByLabelText("Facility task reminder preset 24 hours before")
     );
     fireEvent.press(screen.getByLabelText("Facility task recurrence preset weekly"));
-    fireEvent.changeText(screen.getByLabelText("Facility task assignee"), "user-1");
+    fireEvent.press(screen.getByLabelText("Assign facility task to Alex Grower"));
+    fireEvent.press(screen.getByLabelText("Set facility task room Clone room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source sop"));
     fireEvent.changeText(screen.getByLabelText("Facility task source object"), "sop-7");
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "clone-room");
     fireEvent.press(screen.getByLabelText("Toggle proof required"));
     fireEvent.press(screen.getByLabelText("Toggle approval required"));
     fireEvent.press(screen.getByLabelText("Create facility task"));
@@ -142,10 +215,11 @@ describe("FacilityTasksRoute", () => {
         title: "Sanitize clone trays",
         notes: "After clone pull.",
         dueDate: addDaysKey(7),
-        assignedTo: "user-1",
+        assignedToUserId: "user-1",
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "clone-room",
+        growId: undefined,
         allDay: true,
         calendarType: "sop_facility_task",
         sourceStage: "sop_work",
@@ -160,21 +234,44 @@ describe("FacilityTasksRoute", () => {
     );
   });
 
+  it("keeps a created facility task visible when the immediate list response is stale", async () => {
+    mockGetFacilityTasks.mockResolvedValue([]);
+    mockCreateTask.mockResolvedValueOnce({
+      id: "task-created",
+      title: "Verify room persistence",
+      status: "OPEN"
+    });
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(mockGetFacilityTasks).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task title"),
+      "Verify room persistence"
+    );
+    fireEvent.press(screen.getByLabelText("Create facility task"));
+
+    await waitFor(() => expect(mockGetFacilityTasks).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("Verify room persistence")).toBeTruthy();
+  });
+
   it("creates facility tasks linked to feed campaigns", async () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
 
     fireEvent.changeText(
       screen.getByLabelText("Facility task title"),
       "Publish facility outreach"
     );
+    fireEvent.press(screen.getByLabelText("Set facility task room Media room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source feed_campaign"));
     fireEvent.changeText(
       screen.getByLabelText("Facility task source object"),
       "campaign-7"
     );
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "media-room");
     fireEvent.press(screen.getByLabelText("Create facility task"));
 
     await waitFor(() =>
@@ -199,17 +296,19 @@ describe("FacilityTasksRoute", () => {
     const screen = render(<FacilityTasksRoute />);
 
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Toggle facility task creator"));
 
     fireEvent.changeText(
       screen.getByLabelText("Facility task title"),
       "Review SOP assignment"
     );
+    fireEvent.press(screen.getByLabelText("Set facility task room Training room"));
+    fireEvent.press(screen.getByLabelText("Toggle advanced facility task linkage"));
     fireEvent.press(screen.getByLabelText("Set facility task source course_assignment"));
     fireEvent.changeText(
       screen.getByLabelText("Facility task source object"),
       "assignment-7"
     );
-    fireEvent.changeText(screen.getByLabelText("Facility task room"), "training-room");
     fireEvent.press(screen.getByLabelText("Create facility task"));
 
     await waitFor(() =>

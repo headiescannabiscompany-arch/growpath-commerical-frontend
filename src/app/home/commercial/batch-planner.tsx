@@ -4,15 +4,20 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   createSoilNutrientBatch,
+  fetchProducts,
   fetchProductLines,
+  fetchProductTrialEvidenceRuns,
   fetchSoilNutrientBatches,
+  CommercialProduct,
   ProductLine,
+  ProductTrialEvidenceRun,
   SoilNutrientBatch
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 
 type BatchForm = {
   batchName: string;
@@ -54,10 +59,6 @@ function batchId(batch: SoilNutrientBatch) {
   return batch.id || batch._id || batch.batchCode || batch.batchName || "batch";
 }
 
-function productLineId(line: ProductLine) {
-  return String(line.id || line._id || line.name || "").trim();
-}
-
 function numberOrUndefined(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -73,13 +74,92 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+type RecordChoice = {
+  id: string;
+  label: string;
+};
+
+function recordChoice(
+  record: Record<string, any>,
+  index: number,
+  labelKeys: string[],
+  fallback: string
+): RecordChoice | null {
+  const id = String(record.id ?? record._id ?? "").trim();
+  if (!id) return null;
+  const label =
+    labelKeys.map((key) => String(record[key] ?? "").trim()).find(Boolean) ||
+    `${fallback} ${index + 1}`;
+  return { id, label };
+}
+
+function RecordPicker({
+  choices,
+  createHref,
+  createLabel,
+  label,
+  onChange,
+  selectedId
+}: {
+  choices: RecordChoice[];
+  createHref: string;
+  createLabel: string;
+  label: string;
+  onChange: (id: string) => void;
+  selectedId: string;
+}) {
+  return (
+    <View style={styles.recordPicker}>
+      <Text style={styles.selectorLabel}>{label}</Text>
+      {choices.length ? (
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={`${label} choices`}
+          style={styles.selectorActions}
+        >
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityLabel={`${label}: Not linked yet`}
+            accessibilityState={{ checked: !selectedId }}
+            onPress={() => onChange("")}
+            style={[styles.action, !selectedId && styles.selectedAction]}
+          >
+            <Text style={styles.actionText}>Not linked yet</Text>
+          </Pressable>
+          {choices.slice(0, 8).map((item) => (
+            <Pressable
+              key={`${label}-${item.id}`}
+              accessibilityRole="radio"
+              accessibilityLabel={`${label}: ${item.label}`}
+              accessibilityState={{ checked: selectedId === item.id }}
+              onPress={() => onChange(item.id)}
+              style={[styles.action, selectedId === item.id && styles.selectedAction]}
+            >
+              <Text style={styles.actionText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.emptyPicker}>
+          <Text style={styles.muted}>No saved {label.toLowerCase()} records yet.</Text>
+          <ActionLink href={createHref} label={createLabel} />
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function CommercialBatchPlannerRoute() {
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
+  const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [form, setForm] = useState<BatchForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
 
   const readyCount = useMemo(
     () =>
@@ -95,12 +175,16 @@ export default function CommercialBatchPlannerRoute() {
     setLoading(true);
     setError(null);
     try {
-      const [nextBatches, nextLines] = await Promise.all([
+      const [nextBatches, nextProducts, nextLines, nextEvidenceRuns] = await Promise.all([
         fetchSoilNutrientBatches(),
-        fetchProductLines()
+        fetchProducts(),
+        fetchProductLines(),
+        fetchProductTrialEvidenceRuns()
       ]);
       setBatches(nextBatches);
+      setProducts(nextProducts);
       setProductLines(nextLines);
+      setEvidenceRuns(nextEvidenceRuns);
     } catch (err) {
       setError(err);
     } finally {
@@ -111,6 +195,18 @@ export default function CommercialBatchPlannerRoute() {
   useEffect(() => {
     loadBatches();
   }, []);
+
+  const productChoices = products
+    .map((record, index) => recordChoice(record, index, ["name"], "Product"))
+    .filter((item): item is RecordChoice => !!item);
+  const productLineChoices = productLines
+    .map((record, index) => recordChoice(record, index, ["name"], "Product line"))
+    .filter((item): item is RecordChoice => !!item);
+  const evidenceRunChoices = evidenceRuns
+    .map((record, index) =>
+      recordChoice(record, index, ["name", "growName", "cultivar"], "Evidence run")
+    )
+    .filter((item): item is RecordChoice => !!item);
 
   async function submitBatch() {
     if (!form.batchName.trim()) return;
@@ -146,6 +242,37 @@ export default function CommercialBatchPlannerRoute() {
     }
   }
 
+  async function prefillCommercialBatch() {
+    if (prefilling) return;
+    setPrefilling(true);
+    setError(null);
+    try {
+      const response = await askPersonalAssistant({
+        workspaceType: "commercial",
+        context: {
+          workflow: "soil-nutrient-batch",
+          productLines: productLines.slice(0, 20),
+          recentBatches: batches.slice(0, 10),
+          requestedFields: Object.keys(EMPTY_FORM)
+        },
+        message:
+          "Prefill a commercial soil/nutrient batch from saved product lines, recipes, verified analyses, inventory/lot records, trials, and prior batch actuals. Return JSON only with the requested string fields. Never invent batch codes, formula versions, product/trial links, guaranteed analysis, quantities, costs, or release claims. Leave unknowns blank. Put missing labels/COAs, substitutions, QA, release uncertainty, and production limitations in notes."
+      });
+      const raw = String(response.reply || "");
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
+      setForm(
+        Object.fromEntries(
+          Object.keys(EMPTY_FORM).map((key) => [key, String(parsed[key] ?? "")])
+        ) as BatchForm
+      );
+    } catch (err) {
+      setError(err);
+    } finally {
+      setPrefilling(false);
+    }
+  }
+
   return (
     <AppPage
       routeKey="commercial-batch-planner"
@@ -154,7 +281,9 @@ export default function CommercialBatchPlannerRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Soil & Nutrient Batch Planner</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Soil & Nutrient Batch Planner
+            </Text>
             <Text style={styles.subtitle}>
               Commercial batch planning scales recipes with purpose, guaranteed analysis,
               release timing, cost, inventory pull sheets, product links, and evidence run
@@ -173,10 +302,12 @@ export default function CommercialBatchPlannerRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial batch fields</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Commercial batch fields
+        </Text>
         <Text style={styles.body}>
-          Commercial users need product/formula fields on top of the normal batch planner.
-          Do not call this Living Soil Labs inside the app.
+          Track formula versions, guaranteed analysis, release timing, inventory, cost,
+          and the products or trials connected to each batch.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -197,7 +328,20 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create commercial batch</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create commercial batch
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Fill commercial batch from saved records"
+          disabled={prefilling}
+          onPress={prefillCommercialBatch}
+          style={[styles.action, prefilling && styles.disabled]}
+        >
+          <Text style={styles.actionText}>
+            {prefilling ? "Reviewing records..." : "Fill from saved records with AI"}
+          </Text>
+        </Pressable>
         <View style={styles.formGrid}>
           <TextInput
             value={form.batchName}
@@ -229,54 +373,76 @@ export default function CommercialBatchPlannerRoute() {
             placeholder="Formula version"
             style={styles.input}
           />
-          <TextInput
-            value={form.productId}
-            onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            accessibilityLabel="Commercial batch product id"
-            placeholder="Linked product ID"
-            style={styles.input}
+          <RecordPicker
+            label="Batch product"
+            choices={productChoices}
+            selectedId={form.productId}
+            onChange={(productId) => setForm((prev) => ({ ...prev, productId }))}
+            createHref="/home/commercial/products/new"
+            createLabel="Create Product"
           />
-          <TextInput
-            value={form.productLineId}
-            onChangeText={(productLineId) =>
-              setForm((prev) => ({ ...prev, productLineId }))
+          <RecordPicker
+            label="Batch product line"
+            choices={productLineChoices}
+            selectedId={form.productLineId}
+            onChange={(productLineId) => setForm((prev) => ({ ...prev, productLineId }))}
+            createHref="/home/commercial/product-lines"
+            createLabel="Create Product Line"
+          />
+          <RecordPicker
+            label="Batch evidence run"
+            choices={evidenceRunChoices}
+            selectedId={form.trialGrowId}
+            onChange={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
+            createHref="/home/commercial/evidence-runs/new"
+            createLabel="Create Evidence Run"
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              showAdvancedRecordIds
+                ? "Hide advanced batch record ID fields"
+                : "Show advanced batch record ID fields"
             }
-            accessibilityLabel="Commercial batch product line id"
-            placeholder="Linked product line ID, or choose below"
-            style={styles.input}
-          />
-          {productLines.length ? (
-            <View style={styles.lineSelector}>
-              <Text style={styles.selectorLabel}>Choose Product Line</Text>
-              <View style={styles.selectorActions}>
-                {productLines.slice(0, 4).map((line) => {
-                  const id = productLineId(line);
-                  const name = line.name || "Product line";
-                  return (
-                    <Pressable
-                      key={`batch-line-${id || name}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Use batch product line ${name}`}
-                      onPress={() => setForm((prev) => ({ ...prev, productLineId: id }))}
-                      style={[
-                        styles.action,
-                        form.productLineId === id && styles.selectedAction
-                      ]}
-                    >
-                      <Text style={styles.actionText}>{name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
+            accessibilityState={{ expanded: showAdvancedRecordIds }}
+            onPress={() => setShowAdvancedRecordIds((current) => !current)}
+            style={styles.advancedToggle}
+          >
+            <Text style={styles.advancedToggleText}>
+              {showAdvancedRecordIds
+                ? "Hide advanced record IDs"
+                : "Use advanced record IDs"}
+            </Text>
+          </Pressable>
+          {showAdvancedRecordIds ? (
+            <>
+              <TextInput
+                value={form.productId}
+                onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
+                accessibilityLabel="Commercial batch product id"
+                placeholder="Linked product ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.productLineId}
+                onChangeText={(productLineId) =>
+                  setForm((prev) => ({ ...prev, productLineId }))
+                }
+                accessibilityLabel="Commercial batch product line id"
+                placeholder="Linked product line ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.trialGrowId}
+                onChangeText={(trialGrowId) =>
+                  setForm((prev) => ({ ...prev, trialGrowId }))
+                }
+                accessibilityLabel="Commercial batch evidence run id"
+                placeholder="Linked evidence run ID"
+                style={styles.input}
+              />
+            </>
           ) : null}
-          <TextInput
-            value={form.trialGrowId}
-            onChangeText={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
-            accessibilityLabel="Commercial batch evidence run id"
-            placeholder="Linked evidence run ID"
-            style={styles.input}
-          />
           <TextInput
             value={form.batchVolume}
             onChangeText={(batchVolume) => setForm((prev) => ({ ...prev, batchVolume }))}
@@ -362,12 +528,16 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current batches</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Current batches
+        </Text>
         {batches.length ? (
           <View style={styles.list}>
             {batches.map((batch) => (
               <View key={batchId(batch)} style={styles.batchRow}>
-                <Text style={styles.batchTitle}>{batch.batchName || batch.name}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.batchTitle}>
+                  {batch.batchName || batch.name}
+                </Text>
                 <Text style={styles.batchMeta}>
                   {[
                     batch.batchCode,
@@ -412,7 +582,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Formula-to-product workflow</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          From formula to product
+        </Text>
         <Text style={styles.body}>
           Commercial batch planning should turn a purpose-built recipe into a
           product-ready formula only after the formula has batch records, cost context,
@@ -442,7 +614,9 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Effectiveness loop</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Effectiveness loop
+        </Text>
         <Text style={styles.body}>
           A soil or nutrient product is not done at recipe math. Link batches to trial
           evidence runs and track seedling safety, veg vigor, pH/EC stability,
@@ -461,17 +635,19 @@ export default function CommercialBatchPlannerRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Naming rule</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Naming rule
+        </Text>
         <Text style={styles.body}>
-          The app module is Soil & Nutrient Batch Planner. Living Soil Labs is an example
-          commercial brand, not the feature name.
+          The app module is Soil & Nutrient Batch Planner. Keep brand names out of the
+          feature name.
         </Text>
         <Text style={styles.bullet}>
           Use product, formula, batch, trial, and storefront language in the app
         </Text>
-        <Text style={styles.bullet}>Do not label the module Living Soil Labs</Text>
+        <Text style={styles.bullet}>Do not label the module with a brand name</Text>
         <Text style={styles.bullet}>
-          Support both personal one-grow batches and commercial production batches
+          Keep production batch planning and records inside the Commercial workspace
         </Text>
       </AppCard>
     </AppPage>
@@ -633,13 +809,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
-  lineSelector: {
+  recordPicker: {
     borderColor: "#BBF7D0",
     borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 220,
     padding: 9
+  },
+  emptyPicker: {
+    alignItems: "flex-start",
+    gap: 8
   },
   selectorLabel: {
     color: "#166534",
@@ -648,6 +828,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  advancedToggle: {
+    alignSelf: "flex-start",
+    minWidth: 220,
+    paddingHorizontal: 4,
+    paddingVertical: 8
+  },
+  advancedToggleText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    textDecorationLine: "underline"
+  },
   bullet: {
     color: "#334155",
     fontSize: 13,

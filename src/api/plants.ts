@@ -12,7 +12,9 @@ export type Plant = {
 
 function normalizePlantList(res: any) {
   if (Array.isArray(res)) return res;
-  return res?.plants ?? res?.data ?? [];
+  return (
+    res?.plants ?? res?.items ?? res?.data?.plants ?? res?.data?.items ?? res?.data ?? []
+  );
 }
 
 function normalizePlantEntity(res: any) {
@@ -120,6 +122,7 @@ export type PersonalPlant = Plant & {
     sizeMetrics?: Record<string, unknown>;
     timingAdjustments?: Record<string, unknown>;
     waterUseProfile?: Record<string, unknown>;
+    phenoTags?: string[];
     phenoLabel?: string;
     stressSensitivities?: string[];
     pestDiseaseSensitivities?: string[];
@@ -189,4 +192,28 @@ export async function createPersonalPlant(data: {
   } catch (_error) {
     return null;
   }
+}
+
+export async function savePersonalPlantCropIdentity(
+  plantId: string,
+  identity: {
+    growId?: string;
+    cropCommonName: string;
+    scientificName?: string;
+    commonNames?: string[] | string;
+    cultivar?: string;
+    cropProfileId?: string | null;
+    confidence?: string;
+    sourceToolRunId?: string | null;
+    userConfirmed: true;
+  }
+): Promise<PersonalPlant> {
+  const response: any = await apiRequest(
+    `/api/personal/plants/${encodeURIComponent(plantId)}/crop-identity`,
+    { method: "PATCH", body: identity }
+  );
+  return (response?.updated ??
+    response?.plant ??
+    response?.data?.plant ??
+    response) as PersonalPlant;
 }

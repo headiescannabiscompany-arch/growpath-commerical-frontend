@@ -17,6 +17,7 @@ import { radius } from "@/theme/theme";
 
 export default function CreateFacilityScreen() {
   const [name, setName] = useState("");
+  const [businessType, setBusinessType] = useState("indoor cultivation");
   const [touched, setTouched] = useState(false);
   const [createdName, setCreatedName] = useState("");
   const createFacility = useCreateFacility();
@@ -42,7 +43,7 @@ export default function CreateFacilityScreen() {
     setTouched(true);
     if (!canCreate) return;
     createFacility.mutate(
-      { name: trimmedName },
+      { name: trimmedName, businessType },
       {
         onSuccess: (facility: any) => {
           setCreatedName(String(facility?.name || trimmedName));
@@ -81,6 +82,36 @@ export default function CreateFacilityScreen() {
             returnKeyType="done"
             onSubmitEditing={handleCreate}
           />
+          <Text style={styles.label}>Facility type</Text>
+          <View style={styles.typeRow}>
+            {[
+              "indoor cultivation",
+              "greenhouse",
+              "outdoor",
+              "nursery / propagation",
+              "mixed use"
+            ].map((type) => (
+              <Pressable
+                key={type}
+                accessibilityRole="button"
+                accessibilityLabel={`Set facility type to ${type}`}
+                onPress={() => setBusinessType(type)}
+                style={[
+                  styles.typeButton,
+                  businessType === type && styles.typeButtonSelected
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    businessType === type && styles.typeButtonTextSelected
+                  ]}
+                >
+                  {type}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
           {touched && !trimmedName ? (
             <Text style={styles.error}>Facility name is required.</Text>
           ) : null}
@@ -148,6 +179,18 @@ const styles = StyleSheet.create({
     maxWidth: 760
   },
   form: { gap: 12 },
+  typeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  typeButton: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#cbd5e1",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  typeButtonSelected: { backgroundColor: "#166534", borderColor: "#166534" },
+  typeButtonText: { color: "#475569", fontWeight: "800" },
+  typeButtonTextSelected: { color: "#ffffff" },
   label: {
     color: "#334155",
     fontSize: 13,

@@ -29,6 +29,7 @@ import {
   verifyGrowlinkCredentials
 } from "@/api/telemetry";
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
 
@@ -725,20 +726,26 @@ export default function DataIntegrationsScreen() {
               {loadingGrowlinkSources ? <ActivityIndicator size="small" /> : null}
             </View>
             <View style={styles.historyWindow}>
-              <TextInput
-                style={[styles.input, styles.historyInput]}
-                value={growlinkHistoryStartIso}
-                onChangeText={setGrowlinkHistoryStartIso}
-                placeholder="History start ISO"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={[styles.input, styles.historyInput]}
-                value={growlinkHistoryEndIso}
-                onChangeText={setGrowlinkHistoryEndIso}
-                placeholder="History end ISO"
-                autoCapitalize="none"
-              />
+              <View style={styles.historyInput}>
+                <CalendarDateField
+                  accessibilityLabel="Growlink history start"
+                  label="History start"
+                  mode="datetime"
+                  onChange={setGrowlinkHistoryStartIso}
+                  optional={false}
+                  value={growlinkHistoryStartIso}
+                />
+              </View>
+              <View style={styles.historyInput}>
+                <CalendarDateField
+                  accessibilityLabel="Growlink history end"
+                  label="History end"
+                  mode="datetime"
+                  onChange={setGrowlinkHistoryEndIso}
+                  optional={false}
+                  value={growlinkHistoryEndIso}
+                />
+              </View>
             </View>
             {growlinkSources.map((source) => (
               <View key={source.id} style={styles.sourceRow}>
@@ -956,8 +963,8 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 10
   },
-  historyWindow: { flexDirection: "row", gap: 8, marginTop: 10 },
-  historyInput: { flex: 1, marginBottom: 0 },
+  historyWindow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  historyInput: { flex: 1, marginBottom: 0, minWidth: 220 },
   sourceName: { fontWeight: "700" },
   editor: { borderTopWidth: 1, borderTopColor: "#E2E8F0", marginTop: 12, paddingTop: 16 },
   editorTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },

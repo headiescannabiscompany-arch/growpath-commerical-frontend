@@ -1,6 +1,7 @@
 // CONTRACT: All facility-scoped resources must use endpoints.ts (no hardcoded paths)
 // and must return canonical envelopes.
 import { apiRequest } from "./apiRequest";
+import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 
@@ -15,7 +16,14 @@ export type Grow = {
 };
 
 function normalizeGrowList(res: any) {
-  const raw = Array.isArray(res) ? res : (res?.grows ?? res?.data ?? []);
+  const raw = Array.isArray(res)
+    ? res
+    : (res?.grows ??
+      res?.items ??
+      res?.data?.grows ??
+      res?.data?.items ??
+      res?.data ??
+      []);
   return Array.isArray(raw)
     ? raw.map((grow) => {
         if (!grow || typeof grow !== "object") return grow;
@@ -44,7 +52,10 @@ export async function listGrows(
     return normalizeGrowList(listRes);
   }
   const listRes = await apiRequest(routes.GROWS.LIST, {
-    params: filtersOrFacilityId || {}
+    params:
+      typeof filtersOrFacilityId === "object" && filtersOrFacilityId
+        ? filtersOrFacilityId
+        : {}
   });
   return normalizeGrowList(listRes);
 }
@@ -94,6 +105,22 @@ export interface PersonalGrow extends Grow {
   location: string;
   status: "vegetating" | "flowering" | "curing" | "harvested";
   updatedAt: string;
+  notes?: string;
+  cultivar?: string;
+  cropCommonName?: string;
+  scientificName?: string;
+  growTags?: string[];
+  growInterests?: Record<string, string[]>;
+  cropTypes?: string[];
+  environmentTypes?: string[];
+  growingMethods?: string[];
+  planning?: {
+    startType?: string;
+    plantCount?: number;
+    vegLengthWeeks?: number;
+    expectedFlowerDays?: number;
+    createStarterCalendar?: boolean;
+  };
 }
 
 export interface PersonalGrowTimelineEvent {
@@ -140,7 +167,8 @@ export async function getPersonalGrowTimeline(
   if (!growId) return [];
   try {
     const res = await apiRequest(
-      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`
+      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`,
+      { cache: "no-store", params: withFreshnessParam() }
     );
     const rows = Array.isArray(res)
       ? res
@@ -175,6 +203,26 @@ export async function appendGrowPhotos(
     body: { photos: photoUrls }
   });
   return (res as any)?.grow ?? (res as any)?.data?.grow ?? (res as any) ?? null;
+}
+
+export async function savePersonalGrowCropIdentity(
+  growId: string,
+  identity: {
+    cropCommonName: string;
+    scientificName?: string;
+    commonNames?: string[] | string;
+    cultivar?: string;
+    cropProfileId?: string | null;
+    confidence?: string;
+    sourceToolRunId?: string | null;
+    userConfirmed: true;
+  }
+): Promise<PersonalGrow> {
+  const response: any = await apiRequest(
+    `/api/personal/grows/${encodeURIComponent(growId)}/crop-identity`,
+    { method: "PATCH", body: identity }
+  );
+  return (response?.grow ?? response?.data?.grow ?? response) as PersonalGrow;
 }
 
 export function addEntry(growId: string, data: Record<string, any> = {}) {

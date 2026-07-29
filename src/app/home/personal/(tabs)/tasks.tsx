@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +18,7 @@ import {
   type PersonalTask
 } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
@@ -44,6 +46,7 @@ const sourceTypes = [
 ] as const;
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
+type QueueFilter = "all" | "assigned" | SectionKey;
 
 function storefrontAlias(task: PersonalTask) {
   return String(
@@ -375,6 +378,8 @@ export default function PersonalTaskCenterRoute() {
   const [toolRunId, setToolRunId] = useState("");
   const [reminderNote, setReminderNote] = useState("");
   const [recurrenceRule, setRecurrenceRule] = useState("");
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   async function load() {
     setLoading(true);
@@ -392,6 +397,27 @@ export default function PersonalTaskCenterRoute() {
     void load();
   }, []);
 
+  const visibleTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        const assigned = Boolean(task.assignedToUserId || task.assignedTo);
+        return (
+          (queueFilter === "all" ||
+            (queueFilter === "assigned"
+              ? assigned
+              : sectionForTask(task) === queueFilter)) &&
+          (sourceFilter === "all" || String(task.sourceType || "manual") === sourceFilter)
+        );
+      }),
+    [tasks, queueFilter, sourceFilter]
+  );
+  const availableSourceFilters = useMemo(
+    () => [
+      "all",
+      ...Array.from(new Set(tasks.map((task) => String(task.sourceType || "manual"))))
+    ],
+    [tasks]
+  );
   const sections = useMemo(() => {
     const grouped: Record<SectionKey, PersonalTask[]> = {
       overdue: [],
@@ -399,9 +425,9 @@ export default function PersonalTaskCenterRoute() {
       upcoming: [],
       completed: []
     };
-    tasks.forEach((task) => grouped[sectionForTask(task)].push(task));
+    visibleTasks.forEach((task) => grouped[sectionForTask(task)].push(task));
     return grouped;
-  }, [tasks]);
+  }, [visibleTasks]);
   const taskStats = useMemo(
     () => [
       { label: "Overdue", value: sections.overdue.length, tone: "red" as const },
@@ -518,6 +544,16 @@ export default function PersonalTaskCenterRoute() {
                 </Pressable>
               </Link>
             ) : null}
+            {task.actionUrl ? (
+              <Pressable
+                style={styles.ghostButton}
+                accessibilityRole="link"
+                accessibilityLabel="Open scheduled live stream"
+                onPress={() => void Linking.openURL(String(task.actionUrl))}
+              >
+                <Text style={styles.ghostButtonText}>Open Live Stream</Text>
+              </Pressable>
+            ) : null}
             {showLinkedObjectPath ? (
               <Link href={linkedObjectPath as any} asChild>
                 <Pressable
@@ -550,7 +586,9 @@ export default function PersonalTaskCenterRoute() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Task Center / Schedule</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Task Center / Schedule
+      </Text>
       <Text style={styles.subtitle}>
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
         product-linked notes, alerts, and sensor follow-ups.
@@ -572,6 +610,65 @@ export default function PersonalTaskCenterRoute() {
           </View>
         ))}
       </View>
+      <View style={styles.form}>
+        <Text style={styles.formTitle}>Queue filters</Text>
+        <View style={styles.chipRow}>
+          {(
+            [
+              "all",
+              "assigned",
+              "overdue",
+              "today",
+              "upcoming",
+              "completed"
+            ] as QueueFilter[]
+          ).map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task queue filter ${option}`}
+              onPress={() => setQueueFilter(option)}
+              style={[styles.chip, queueFilter === option && styles.chipSelected]}
+            >
+              <Text
+                style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Source filter</Text>
+        <View style={styles.chipRow}>
+          {availableSourceFilters.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task source filter ${option}`}
+              onPress={() => setSourceFilter(option)}
+              style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+            >
+              <Text
+                style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+              >
+                {option.replace(/_/g, " ")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+      <ContextualWorkflowLinks
+        title="Task planning tools"
+        helper="These planners belong here because their main output is a real grow task or calendar entry. Select the grow inside the planner when one is not already in context."
+        source="personal_tasks_calendar"
+        workflows={[
+          "auto-grow-calendar",
+          "watering",
+          "feeding-schedule",
+          "topdress",
+          "timeline-planner"
+        ]}
+      />
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_task_center"

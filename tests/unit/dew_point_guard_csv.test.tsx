@@ -168,9 +168,78 @@ describe("Dew Point Guard CSV flow", () => {
     expect(call.points[0].ts).toBe("2026-02-27T05:00:00.000Z");
     expect(call.points[0].rh).toBe(60);
     expect(Math.abs(call.points[0].airTempC - 21.1111)).toBeLessThan(0.02);
-    expect(call.points[2].ts).toBe("2026-02-27T05:20:00.000Z");
+    expect(call.points[2].ts).toBe("2026-02-27T10:20:00.000Z");
 
     await waitFor(() => expect(mockGetTelemetryPoints).toHaveBeenCalled());
+  });
+
+  it("detects an AC Infinity export, creates a sanitized source, and preserves optional channels", async () => {
+    mockListTelemetrySources.mockResolvedValueOnce([]);
+    mockCreateTelemetrySource.mockResolvedValueOnce({
+      id: "s-ac-infinity",
+      growId: "g1",
+      type: "upload",
+      name: "AC Infinity CSV History",
+      timezone: "America/New_York",
+      isActive: true,
+      config: { provider: "ac_infinity", importMode: "csv" }
+    });
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+    await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "America/New_York");
+
+    const csv = [
+      '"Device ID","Test Controller","",""',
+      '"Sample Frequency","24 HRS","",""',
+      '"Start Time","03/18/2026 1:28:00 AM","",""',
+      '"End Time","03/19/2026 1:28:00 AM","",""',
+      '"Temperature Units","°F","",""',
+      '"Time","CO₂ (Sensor 1)","LIGHT (Sensor 1)","Inside Temperature","Inside Relative Humidity","Inside VPD","Outside Temperature","Outside Relative Humidity"',
+      '"03/18/2026 1:28 AM","606","2.5","64.7","41.2","1.22","69.9","30.6"',
+      '"03/19/2026 1:28 AM","620","3.0","65.1","42.0","1.20","70.1","31.2"'
+    ].join("\n");
+    fireEvent.changeText(screen.getByTestId("dpg-csv-paste"), csv);
+    fireEvent.press(screen.getByTestId("dpg-csv-parse"));
+
+    expect(screen.getByTestId("dpg-csv-import-summary").props.children).toContain(
+      "AC Infinity export detected"
+    );
+    expect(screen.getByTestId("dpg-csv-warning").props.children).toContain(
+      "one sample per day"
+    );
+    fireEvent.press(screen.getByTestId("dpg-create-source-from-csv"));
+    await waitFor(() => expect(mockCreateTelemetrySource).toHaveBeenCalled());
+    expect(mockCreateTelemetrySource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "g1",
+        type: "upload",
+        name: "AC Infinity CSV History",
+        timezone: "America/New_York",
+        config: expect.objectContaining({
+          provider: "ac_infinity",
+          importMode: "csv",
+          columns: expect.arrayContaining([
+            "Inside Temperature",
+            "Inside Relative Humidity"
+          ])
+        })
+      })
+    );
+
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalled());
+    expect(mockBulkIngestTelemetryPoints.mock.calls[0][0].points[0]).toEqual(
+      expect.objectContaining({
+        ts: "2026-03-18T05:28:00.000Z",
+        rh: 41.2,
+        vpdKpa: 1.22,
+        co2Ppm: 606,
+        lightValue: 2.5,
+        lightUnit: "manufacturer_reported"
+      })
+    );
   });
 
   it("verifies Pulse credentials, loads devices, and creates a Pulse telemetry source", async () => {

@@ -8,7 +8,9 @@ export function useBulkCreateRooms() {
   const { facilityId } = useFacility();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (rooms: { name: string }[]) => {
+    mutationFn: async (
+      rooms: Array<{ name: string; roomType?: string; trackingMode?: string }>
+    ) => {
       // If backend supports bulk, use it. Otherwise, loop.
       // Here, we loop and return array of results.
       const results = [];

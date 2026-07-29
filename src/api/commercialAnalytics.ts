@@ -15,6 +15,10 @@ export type CommercialAnalyticsBreakdowns = {
   storefronts?: CommercialAnalyticsBreakdownRow[];
   links?: CommercialAnalyticsBreakdownRow[];
   sources?: CommercialAnalyticsBreakdownRow[];
+  courses?: CommercialAnalyticsBreakdownRow[];
+  lives?: CommercialAnalyticsBreakdownRow[];
+  orders?: CommercialAnalyticsBreakdownRow[];
+  growInterests?: CommercialAnalyticsBreakdownRow[];
 };
 
 export type CommercialAnalyticsOverview = {
@@ -31,6 +35,15 @@ export type CommercialAnalyticsOverview = {
   forumReplies?: number;
   activeTrials?: number;
   completedTrials?: number;
+  feedImpressions?: number;
+  feedConversions?: number;
+  courseProductClicks?: number;
+  liveViews?: number;
+  liveWatchClicks?: number;
+  liveRsvps?: number;
+  orderCount?: number;
+  orderRevenueCents?: number;
+  orderRevenueByCurrency?: Record<string, number>;
   breakdowns?: CommercialAnalyticsBreakdowns;
 };
 

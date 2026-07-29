@@ -8,6 +8,11 @@ type SaveAndOpenArgs = {
   router: { push: (href: string) => void };
   growId?: string;
   plantId?: string;
+  facilityId?: string;
+  roomId?: string;
+  productId?: string;
+  batchId?: string;
+  courseId?: string;
   cropProfileId?: string | null;
   cropIdentity?: Record<string, any> | null;
   selectedPlantContext?: Record<string, any> | null;
@@ -26,11 +31,17 @@ type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
   description?: string;
   priority?: "low" | "medium" | "high";
   dueDate?: string;
+  endAt?: string | null;
+  allDay?: boolean;
+  reminderPlan?: Record<string, any> | null;
+  recurrence?: Record<string, any> | string | null;
+  calendarType?: string | null;
+  sourceStage?: string | null;
 };
 type CreateTaskResult =
   | { ok: true; toolRunId: string; taskId: string }
   | { ok: false; error: string };
-type LinkedTaskDraft = {
+export type LinkedTaskDraft = {
   title: string;
   description?: string;
   priority?: "low" | "medium" | "high";
@@ -41,6 +52,7 @@ type LinkedTaskDraft = {
   recurrence?: Record<string, any> | null;
   calendarType?: string | null;
   sourceStage?: string | null;
+  sourceType?: string | null;
 };
 type CreateTasksArgs = Omit<SaveAndOpenArgs, "router"> & {
   tasks: LinkedTaskDraft[];
@@ -75,6 +87,11 @@ async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
       toolType,
       growId,
       plantId: args.plantId,
+      facilityId: args.facilityId,
+      roomId: args.roomId,
+      productId: args.productId,
+      batchId: args.batchId,
+      courseId: args.courseId,
       cropProfileId: args.cropProfileId,
       cropIdentity: args.cropIdentity,
       selectedPlantContext: args.selectedPlantContext,
@@ -135,12 +152,26 @@ export async function saveToolRunAndCreateTask(
       `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
     priority: args.priority || "medium",
     dueDate: args.dueDate,
-    allDay: true,
-    calendarType: `${String(args.toolKey || args.toolType || "tool_run")
-      .replace(/[^a-z0-9]+/gi, "_")
-      .toLowerCase()}_followup`,
-    sourceStage: "tool_run_followup",
-    reminderPlan: { label: "12 hours before", channels: ["in_app"] },
+    ...(args.endAt !== undefined ? { endAt: args.endAt } : {}),
+    allDay: args.allDay ?? true,
+    calendarType:
+      args.calendarType ||
+      `${String(args.toolKey || args.toolType || "tool_run")
+        .replace(/[^a-z0-9]+/gi, "_")
+        .toLowerCase()}_followup`,
+    sourceStage: args.sourceStage || "tool_run_followup",
+    reminderPlan: args.reminderPlan || {
+      label: "12 hours before",
+      channels: ["in_app"]
+    },
+    ...(args.recurrence
+      ? {
+          recurrence:
+            typeof args.recurrence === "string"
+              ? { rule: args.recurrence }
+              : args.recurrence
+        }
+      : {}),
     sourceType: "tool_run",
     sourceObjectId: ensured.toolRunId,
     sourceToolRunId: ensured.toolRunId,
@@ -177,7 +208,7 @@ export async function saveToolRunAndCreateTasks(
       recurrence: draft.recurrence,
       calendarType: draft.calendarType,
       sourceStage: draft.sourceStage,
-      sourceType: "tool_run",
+      sourceType: draft.sourceType || "tool_run",
       sourceObjectId: ensured.toolRunId,
       sourceToolRunId: ensured.toolRunId,
       linkedGrowId: growId,

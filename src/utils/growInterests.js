@@ -14,6 +14,30 @@ INTEREST_TIERS.forEach((tier) => {
   });
 });
 
+const LEGACY_CROP_ALIASES = [
+  // sensitive-ok: owner-approved taxonomy aliases map legacy crop labels to the canonical interest.
+  [/cannabis|hemp|marijuana/i, "Cannabis"],
+  [/tomato|pepper|vegetable|veggie|lettuce|cucumber|squash|bean/i, "Vegetables"],
+  [/\bherb|basil|cilantro|parsley|mint\b/i, "Herbs"],
+  [/fruit|tree|bush|berry|orchard|citrus|apple|peach/i, "Fruit Trees & Bushes"],
+  [/houseplant|indoor plant|pothos|philodendron/i, "Houseplants"],
+  [/succulent|cacti|cactus/i, "Succulents & Cacti"],
+  [/flower|ornamental/i, "Flowers / Ornamentals"],
+  [/microgreen/i, "Microgreens"],
+  [/mushroom|fungi/i, "Mushrooms"]
+];
+
+export function canonicalGrowInterestTag(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+  const exact = Object.keys(TAG_TO_TIER).find(
+    (option) => option.toLowerCase() === clean.toLowerCase()
+  );
+  if (exact) return exact;
+  const cropAlias = LEGACY_CROP_ALIASES.find(([pattern]) => pattern.test(clean));
+  return cropAlias?.[1] || clean;
+}
+
 export function getTier1Metadata() {
   return tierOneMetadata;
 }
@@ -94,6 +118,33 @@ export function filterPostsByInterests(
       return false;
     }
     return true;
+  });
+}
+
+export function matchesTieredGrowInterests(entityTags = [], viewerInterests = {}) {
+  const tags = new Set(
+    normalizeInterestList(entityTags).map(canonicalGrowInterestTag).filter(Boolean)
+  );
+  const tier1 = getTier1Metadata();
+  const selectedTier1 = new Set(
+    normalizeInterestList(viewerInterests?.[tier1.id])
+      .map(canonicalGrowInterestTag)
+      .filter(Boolean)
+  );
+  const entityTier1 = tier1.options.filter((option) => tags.has(option));
+  if (!selectedTier1.size || !entityTier1.some((option) => selectedTier1.has(option))) {
+    return false;
+  }
+
+  return INTEREST_TIERS.filter((tier) => tier.tier > 1).every((tier) => {
+    const entityValues = tier.options.filter((option) => tags.has(option));
+    if (!entityValues.length) return true;
+    const viewerValues = new Set(
+      normalizeInterestList(viewerInterests?.[tier.id])
+        .map(canonicalGrowInterestTag)
+        .filter(Boolean)
+    );
+    return entityValues.some((option) => viewerValues.has(option));
   });
 }
 
