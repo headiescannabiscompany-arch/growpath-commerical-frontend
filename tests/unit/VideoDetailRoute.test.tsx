@@ -6,6 +6,7 @@ import VideoDetailRoute from "@/app/videos/[videoId]";
 const mockGetVideo = jest.fn();
 const mockBack = jest.fn();
 let mockReportProps: any = null;
+let mockLessonMediaCardProps: any = null;
 let mockUserId = "viewer-1";
 
 jest.mock("expo-router", () => ({
@@ -33,7 +34,13 @@ jest.mock("@/components/ReportModal", () => ({
     return null;
   }
 }));
-jest.mock("@/components/learning/LessonMediaCard", () => () => null);
+jest.mock("@/components/learning/LessonMediaCard", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockLessonMediaCardProps = props;
+    return null;
+  }
+}));
 jest.mock("@/components/layout/AppCard", () => ({
   __esModule: true,
   default: ({ children }: any) => {
@@ -78,6 +85,7 @@ describe("VideoDetailRoute reporting", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockReportProps = null;
+    mockLessonMediaCardProps = null;
     mockUserId = "viewer-1";
     mockGetVideo.mockResolvedValue(video);
   });
@@ -99,6 +107,16 @@ describe("VideoDetailRoute reporting", () => {
         })
       )
     );
+    expect(mockLessonMediaCardProps).toEqual(
+      expect.objectContaining({
+        context: "video",
+        lesson: expect.objectContaining({
+          title: "Living soil walkthrough",
+          videoAssetId: "video-1",
+          playbackUrl: undefined
+        })
+      })
+    );
   });
 
   it("does not offer an owner a report action on their own video", async () => {
@@ -107,5 +125,26 @@ describe("VideoDetailRoute reporting", () => {
 
     await waitFor(() => expect(screen.getByText("Living soil walkthrough")).toBeTruthy());
     expect(screen.queryByText("Report Video")).toBeNull();
+  });
+
+  it("passes a protected playback URL into the lesson media card when available", async () => {
+    mockGetVideo.mockResolvedValue({
+      ...video,
+      playbackUrl: "https://r2.example/signed-playback"
+    });
+
+    render(<VideoDetailRoute />);
+
+    await waitFor(() => expect(mockLessonMediaCardProps).toBeTruthy());
+    expect(mockLessonMediaCardProps).toEqual(
+      expect.objectContaining({
+        context: "video",
+        lesson: expect.objectContaining({
+          title: "Living soil walkthrough",
+          videoAssetId: "video-1",
+          playbackUrl: "https://r2.example/signed-playback"
+        })
+      })
+    );
   });
 });
