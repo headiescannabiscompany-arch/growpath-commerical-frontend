@@ -170,6 +170,9 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Discover Storefronts")).toBeTruthy();
     expect(screen.getByText("Commercial Feed")).toBeTruthy();
+    expect(screen.getByText("My Videos")).toBeTruthy();
+    expect(screen.getByText("Lives")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
     expect(screen.queryByText("Field Studies")).toBeNull();
     expect(screen.queryByText("Public Plant Map")).toBeNull();
     expect(screen.getByText("Discover")).toBeTruthy();

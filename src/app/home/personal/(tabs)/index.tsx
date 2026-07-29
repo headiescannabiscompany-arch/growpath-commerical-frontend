@@ -471,6 +471,15 @@ export default function PersonalHomeTab() {
       </View>
 
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Single-user shortcuts</Text>
+        <View style={styles.actions}>
+          <ActionLink href="/videos?tab=library" label="My Videos" />
+          <ActionLink href="/lives" label="Lives" />
+          <ActionLink href="/home/notifications" label="Notifications" />
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Explore</Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
