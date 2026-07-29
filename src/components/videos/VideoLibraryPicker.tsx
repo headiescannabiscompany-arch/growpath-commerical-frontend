@@ -1,9 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useAuth } from "@/auth/AuthContext";
 import { GrowPathVideo, listVideoLibrary, VideoWorkspaceType } from "@/api/videos";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+
+type VideoLibraryScope = "workspace" | "mine" | "published" | "drafts";
+
+const SCOPE_OPTIONS: Array<{ value: VideoLibraryScope; label: string }> = [
+  { value: "workspace", label: "Workspace library" },
+  { value: "mine", label: "My uploads" },
+  { value: "published", label: "Published" },
+  { value: "drafts", label: "Drafts" }
+];
 
 type Props = {
   selectedId?: string;
@@ -16,11 +26,17 @@ export default function VideoLibraryPicker({
   disabled = false,
   onSelect
 }: Props) {
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const workspaceType = entitlements.mode as VideoWorkspaceType;
   const [videos, setVideos] = useState<GrowPathVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [scope, setScope] = useState<VideoLibraryScope>("workspace");
+  const currentUserId = useMemo(
+    () => String(auth.user?.id || auth.user?._id || ""),
+    [auth.user]
+  );
 
   useEffect(() => {
     let active = true;
@@ -46,6 +62,22 @@ export default function VideoLibraryPicker({
     };
   }, [entitlements.facilityId, workspaceType]);
 
+  const filteredVideos = useMemo(() => {
+    switch (scope) {
+      case "mine":
+        return videos.filter(
+          (video) =>
+            String(video.uploaderUserId || video.owner?.id || "") === currentUserId
+        );
+      case "published":
+        return videos.filter((video) => video.status === "published");
+      case "drafts":
+        return videos.filter((video) => video.status === "draft");
+      default:
+        return videos;
+    }
+  }, [currentUserId, scope, videos]);
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -68,16 +100,42 @@ export default function VideoLibraryPicker({
           </Pressable>
         ) : null}
       </View>
-      {loading ? <Text style={styles.help}>Loading your videos…</Text> : null}
+
+      <View style={styles.scopeRow}>
+        {SCOPE_OPTIONS.map((option) => {
+          const selected = scope === option.value;
+          return (
+            <Pressable
+              key={option.value}
+              accessibilityRole="button"
+              accessibilityLabel={`Show ${option.label.toLowerCase()} videos`}
+              disabled={disabled}
+              onPress={() => setScope(option.value)}
+              style={[styles.scopeButton, selected && styles.scopeButtonSelected]}
+            >
+              <Text style={[styles.scopeText, selected && styles.scopeTextSelected]}>
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <Text style={styles.help}>
+        Showing {filteredVideos.length} reusable video
+        {filteredVideos.length === 1 ? "" : "s"} in this scope.
+      </Text>
+
+      {loading ? <Text style={styles.help}>Loading your videos...</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {!loading && !videos.length ? (
+      {!loading && !filteredVideos.length ? (
         <Text style={styles.help}>
           Your current workspace has no reusable videos yet. Open Videos to add one.
         </Text>
       ) : null}
-      {videos.length ? (
+      {filteredVideos.length ? (
         <View style={styles.options}>
-          {videos.map((video) => {
+          {filteredVideos.map((video) => {
             const selected = video.id === selectedId;
             return (
               <Pressable
@@ -131,6 +189,25 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   clearText: { color: "#B91C1C", fontWeight: "800" },
+  scopeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  scopeButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  scopeButtonSelected: {
+    backgroundColor: "#DCFCE7",
+    borderColor: "#16A34A"
+  },
+  scopeText: { color: "#334155", fontSize: 12, fontWeight: "800" },
+  scopeTextSelected: { color: "#166534" },
   options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   option: {
     backgroundColor: "#FFFFFF",

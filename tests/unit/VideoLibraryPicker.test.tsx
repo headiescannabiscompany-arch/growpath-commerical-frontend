@@ -5,7 +5,16 @@ const mockListVideoLibrary = jest.fn();
 const mockOnSelect = jest.fn();
 let mockMode = "personal";
 let mockFacilityId: string | null = null;
+let mockUserId = "user-1";
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    isAuthed: true,
+    user: {
+      id: mockUserId
+    }
+  })
+}));
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: mockMode,
@@ -23,6 +32,7 @@ describe("VideoLibraryPicker", () => {
   beforeEach(() => {
     mockMode = "personal";
     mockFacilityId = null;
+    mockUserId = "user-1";
     mockListVideoLibrary.mockReset();
     mockOnSelect.mockReset();
   });
@@ -34,13 +44,15 @@ describe("VideoLibraryPicker", () => {
           id: "video-1",
           title: "Reusable lesson clip",
           status: "draft",
-          visibility: "public"
+          visibility: "public",
+          uploaderUserId: "user-1"
         },
         {
           id: "video-2",
           title: "Published workspace clip",
           status: "published",
-          visibility: "followers"
+          visibility: "followers",
+          uploaderUserId: "user-2"
         }
       ]
     });
@@ -51,6 +63,12 @@ describe("VideoLibraryPicker", () => {
       expect(screen.getByText("Reusable lesson clip")).toBeTruthy();
     });
     expect(screen.getByText("Published workspace clip")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Show my uploads videos"));
+    await waitFor(() => {
+      expect(screen.getByText("Reusable lesson clip")).toBeTruthy();
+    });
+    expect(screen.queryByText("Published workspace clip")).toBeNull();
 
     fireEvent.press(screen.getByLabelText("Use library video Reusable lesson clip"));
     expect(mockOnSelect).toHaveBeenCalledWith(
@@ -68,7 +86,8 @@ describe("VideoLibraryPicker", () => {
           id: "video-1",
           title: "Reusable lesson clip",
           status: "draft",
-          visibility: "public"
+          visibility: "public",
+          uploaderUserId: "user-1"
         }
       ]
     });
