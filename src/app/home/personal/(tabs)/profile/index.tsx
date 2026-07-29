@@ -8,13 +8,19 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  Share
+  Share,
+  Switch
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification, updateContentControls } from "@/api/auth";
-import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
+import {
+  deleteAccount,
+  exportPrivacyData,
+  updateNotificationPreferences,
+  updateProfile
+} from "@/api/users";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
@@ -77,6 +83,21 @@ const styles = StyleSheet.create({
   buttonDanger: { backgroundColor: "#fff", borderColor: "#FCA5A5" },
   buttonDangerText: { color: "#DC2626", fontWeight: "800" },
   buttonSecondaryText: { color: "#0F172A", fontWeight: "800" },
+  notificationRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 8
+  },
+  notificationCopy: { flex: 1, minWidth: 0 },
+  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
+  notificationDescription: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
 
   accountAction: {
     marginTop: 10,
@@ -104,6 +125,70 @@ const styles = StyleSheet.create({
 });
 
 type PlanAction = readonly [label: string, href: string, primary: boolean];
+
+type NotificationPreferenceState = {
+  pushEnabled: boolean;
+  taskReminders: boolean;
+  forumReplies: boolean;
+  forumMentions: boolean;
+  videoActivity: boolean;
+  courseAndLiveUpdates: boolean;
+  commerceUpdates: boolean;
+  facilityAlerts: boolean;
+};
+
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferenceState = {
+  pushEnabled: true,
+  taskReminders: true,
+  forumReplies: true,
+  forumMentions: true,
+  videoActivity: true,
+  courseAndLiveUpdates: true,
+  commerceUpdates: true,
+  facilityAlerts: true
+};
+
+const NOTIFICATION_PREFERENCE_OPTIONS: Array<{
+  key: keyof NotificationPreferenceState;
+  title: string;
+  description: string;
+}> = [
+  {
+    key: "pushEnabled",
+    title: "Device push",
+    description: "Allow GrowPath to send opted-in notifications to this device."
+  },
+  {
+    key: "taskReminders",
+    title: "Task reminders",
+    description: "Due dates, follow-ups, and reminder-based workflow items."
+  },
+  {
+    key: "forumReplies",
+    title: "Forum replies",
+    description: "Replies, @mentions, and discussion follow-ups in Forum/Q&A."
+  },
+  {
+    key: "videoActivity",
+    title: "Video activity",
+    description: "Comments, follows, and library activity for uploaded videos."
+  },
+  {
+    key: "courseAndLiveUpdates",
+    title: "Courses and lives",
+    description: "Course progress, live reminders, and replay availability."
+  },
+  {
+    key: "commerceUpdates",
+    title: "Commerce updates",
+    description: "Feed campaigns, storefronts, orders, and related commercial alerts."
+  },
+  {
+    key: "facilityAlerts",
+    title: "Facility alerts",
+    description: "Facility-specific room, task, SOP, and compliance notifications."
+  }
+];
 
 export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   const planRank: Record<string, number> = {
@@ -146,6 +231,12 @@ export default function ProfileScreen() {
   const [contentControlFeedback, setContentControlFeedback] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
+    DEFAULT_NOTIFICATION_PREFERENCES
+  );
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState("");
+  const [notificationError, setNotificationError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
   const planActions = getPersonalProfilePlanActions(plan);
@@ -154,6 +245,16 @@ export default function ProfileScreen() {
   useEffect(() => {
     setEmailDraft(email === "unknown" ? "" : email);
   }, [email]);
+
+  useEffect(() => {
+    const storedPrefs =
+      ((auth.user as any)
+        ?.notificationPreferences as Partial<NotificationPreferenceState>) || {};
+    setNotificationPrefs({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      ...storedPrefs
+    });
+  }, [auth.user]);
 
   const handleSaveEmail = async () => {
     const nextEmail = emailDraft.trim().toLowerCase();
@@ -193,6 +294,21 @@ export default function ProfileScreen() {
       setEmailError(e?.message || "Unable to request verification email.");
     } finally {
       setResendingVerification(false);
+    }
+  };
+
+  const handleSaveNotificationPreferences = async () => {
+    setNotificationSaving(true);
+    setNotificationFeedback("");
+    setNotificationError("");
+    try {
+      await updateNotificationPreferences(notificationPrefs as any);
+      await auth.retryMe();
+      setNotificationFeedback("Notification settings saved.");
+    } catch (error: any) {
+      setNotificationError(error?.message || "Unable to save notification settings.");
+    } finally {
+      setNotificationSaving(false);
     }
   };
 
@@ -485,6 +601,61 @@ export default function ProfileScreen() {
         <TokenBalanceWidget
           onPress={() => router.push("/home/personal/profile/billing" as any)}
         />
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Notification settings</Text>
+        <Text style={styles.mutedText}>
+          These controls decide which inbox items can also reach your device. In-app
+          notifications stay available; push requires a registered phone.
+        </Text>
+        {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+          <View key={String(option.key)} style={styles.notificationRow}>
+            <View style={styles.notificationCopy}>
+              <Text style={styles.notificationTitle}>{option.title}</Text>
+              <Text style={styles.notificationDescription}>{option.description}</Text>
+            </View>
+            <Switch
+              accessibilityLabel={option.title}
+              value={Boolean(notificationPrefs[option.key])}
+              onValueChange={(value) =>
+                setNotificationPrefs((current) => ({
+                  ...current,
+                  [option.key]: value
+                }))
+              }
+            />
+          </View>
+        ))}
+        <View style={styles.actionGrid}>
+          <Pressable
+            style={styles.accountAction}
+            onPress={() => router.push("/home/notifications" as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification inbox"
+          >
+            <Text style={styles.accountActionText}>Open Notification Inbox</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.planAction,
+              styles.planActionPrimary,
+              notificationSaving && { opacity: 0.6 }
+            ]}
+            onPress={() => void handleSaveNotificationPreferences()}
+            accessibilityRole="button"
+            accessibilityLabel="Save notification settings"
+            disabled={notificationSaving}
+          >
+            <Text style={styles.planActionPrimaryText}>
+              {notificationSaving ? "Saving..." : "Save Notification Settings"}
+            </Text>
+          </Pressable>
+        </View>
+        {notificationFeedback ? (
+          <Text style={styles.feedback}>{notificationFeedback}</Text>
+        ) : null}
+        {notificationError ? <Text style={styles.error}>{notificationError}</Text> : null}
       </View>
 
       <View style={styles.card}>

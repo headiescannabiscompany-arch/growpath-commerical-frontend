@@ -3,6 +3,17 @@
 import { apiRequest } from "./apiRequest";
 // import type { ApiError } from "./errors"; // Removed as unused
 
+export type NotificationPreferences = {
+  pushEnabled?: boolean;
+  taskReminders?: boolean;
+  forumReplies?: boolean;
+  forumMentions?: boolean;
+  videoActivity?: boolean;
+  courseAndLiveUpdates?: boolean;
+  commerceUpdates?: boolean;
+  facilityAlerts?: boolean;
+};
+
 export type AuthUser = {
   id: string;
   _id?: string;
@@ -20,6 +31,7 @@ export type AuthUser = {
   cannabisEligible?: boolean;
   cannabisVisibility?: "show" | "hide";
   parentalLockEnabled?: boolean;
+  notificationPreferences?: NotificationPreferences;
 };
 
 export type SignupBody = {

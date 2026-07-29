@@ -249,6 +249,23 @@ export default function ForumRoute() {
         </View>
       ) : null}
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Video library</Text>
+        <Text style={styles.cardText}>
+          Videos belong in Forum/Q&A. Open the shared library to upload clips, review
+          storage usage, and reuse videos in courses and other workflows.
+        </Text>
+        <Link href="/videos?tab=library" asChild>
+          <Pressable
+            style={styles.primaryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Open video library"
+          >
+            <Text style={styles.primaryText}>Open Video Library</Text>
+          </Pressable>
+        </Link>
+      </View>
+
       <View style={styles.feedHeader}>
         <Text style={styles.feedTitle}>Forum Feed</Text>
         <Text style={styles.feedSubtitle}>
