@@ -12,6 +12,19 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockUpdateContentControls = jest.fn();
 let mockEntitlementsPlan = "free";
+const mockUser = {
+  id: "user-1",
+  email: "grower@example.com",
+  displayName: "Grower",
+  role: "user",
+  plan: "free",
+  subscriptionStatus: "free",
+  emailVerified: true,
+  ageBand: "21_plus",
+  cannabisEligible: true,
+  cannabisVisibility: "show",
+  parentalLockEnabled: true
+};
 
 jest.mock("@/api/users", () => ({
   deleteAccount: (...args: any[]) => mockDeleteAccount(...args),
@@ -26,19 +39,7 @@ jest.mock("@/api/auth", () => ({
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: {
-      id: "user-1",
-      email: "grower@example.com",
-      displayName: "Grower",
-      role: "user",
-      plan: "free",
-      subscriptionStatus: "free",
-      emailVerified: true,
-      ageBand: "21_plus",
-      cannabisEligible: true,
-      cannabisVisibility: "show",
-      parentalLockEnabled: true
-    },
+    user: mockUser,
     logout: (...args: any[]) => mockLogout(...args),
     retryMe: (...args: any[]) => mockRetryMe(...args)
   })

@@ -26,10 +26,10 @@ jest.mock("@/api/apiRequest", () => ({
 describe("LiveSessionsListScreen", () => {
   it("lists public live and replay records and opens the shared player", async () => {
     const screen = render(<LiveSessionsListScreen />);
-    await waitFor(() => expect(screen.getByText("Living Soil Q&A")).toBeTruthy());
-    expect(screen.getByText("RSVPs: 4")).toBeTruthy();
-    expect(screen.getByText("Replay available")).toBeTruthy();
-    fireEvent.press(screen.getByText("Living Soil Q&A"));
+    await waitFor(() => expect(screen.getAllByText("Living Soil Q&A").length).toBeGreaterThan(0));
+    expect(screen.getAllByText(/4 RSVPs/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^Replay$/).length).toBeGreaterThan(0);
+    fireEvent.press(screen.getAllByText("Open session")[0]);
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
   });
 });
