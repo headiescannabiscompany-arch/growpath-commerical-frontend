@@ -86,10 +86,17 @@ function actionHref(id, section) {
 }
 
 function ActionLink({ href, label, primary = false }) {
+  var buttonStyle = primary
+    ? StyleSheet.flatten([styles.action, styles.actionPrimary])
+    : styles.action;
+  var textStyle = primary
+    ? StyleSheet.flatten([styles.actionText, styles.actionTextPrimary])
+    : styles.actionText;
+
   return (
     <Link href={href} asChild>
-      <Pressable accessibilityRole="button" style={[styles.action, primary ? styles.actionPrimary : null]}>
-        <Text style={[styles.actionText, primary ? styles.actionTextPrimary : null]}>{label}</Text>
+      <Pressable accessibilityRole="button" style={buttonStyle}>
+        <Text style={textStyle}>{label}</Text>
       </Pressable>
     </Link>
   );
