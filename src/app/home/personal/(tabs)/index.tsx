@@ -49,6 +49,7 @@ export default function PersonalHomeTab() {
   const [model, setModel] = useState<HomeModel | null>(null);
   const [globeObservations, setGlobeObservations] = useState<any[]>([]);
   const [globeLoading, setGlobeLoading] = useState(true);
+  const [globeVisible, setGlobeVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -109,6 +110,15 @@ export default function PersonalHomeTab() {
     useCallback(() => {
       load();
     }, [load])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      setGlobeVisible(true);
+      return () => {
+        setGlobeVisible(false);
+      };
+    }, [])
   );
 
   React.useEffect(() => {
@@ -444,12 +454,14 @@ export default function PersonalHomeTab() {
             from this shared view.
           </Text>
           <View style={styles.globeFrame}>
-            {globeLoading ? <ActivityIndicator /> : null}
-            <FieldObservationGlobe
-              observations={globeObservations}
-              onSelectObservations={() => {}}
-              onViewportChange={() => {}}
-            />
+            {globeLoading && globeVisible ? <ActivityIndicator /> : null}
+            {globeVisible ? (
+              <FieldObservationGlobe
+                observations={globeObservations}
+                onSelectObservations={() => {}}
+                onViewportChange={() => {}}
+              />
+            ) : null}
           </View>
           <View style={styles.actions}>
             <ActionLink href="/field-observations" label="Open Globe" />
