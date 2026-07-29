@@ -9,6 +9,12 @@ jest.mock("@react-navigation/native", () => ({
   })
 }));
 
+jest.mock("expo-router", () => ({
+  useRouter: () => ({
+    push: jest.fn()
+  })
+}));
+
 jest.mock("@/components/AppShell.js", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -53,6 +59,9 @@ describe("DashboardScreen feed policy", () => {
     expect(screen.getByText("Grower Dashboard")).toBeTruthy();
     expect(screen.getByText(/Feed placements here are promotional campaigns/)).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("My Videos")).toBeTruthy();
+    expect(screen.getByText("Lives")).toBeTruthy();
+    expect(screen.getByText("Notifications")).toBeTruthy();
     expect(screen.getByText("Campaign placement top")).toBeTruthy();
     expect(screen.getByText("Campaign placement middle")).toBeTruthy();
     expect(screen.getByText("Campaign placement bottom")).toBeTruthy();

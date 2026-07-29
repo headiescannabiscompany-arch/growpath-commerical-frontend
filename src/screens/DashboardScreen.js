@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 import AppShell from "../components/AppShell.js";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -23,6 +24,7 @@ function DashboardAction({ label, description, onPress, disabled }) {
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const entitlements = useEntitlements();
   const analyticsEnabled = entitlements.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
   const exportEnabled = entitlements.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
@@ -69,6 +71,21 @@ export default function DashboardScreen() {
             label="Forum / Q&A"
             description="Ask grow questions and discuss products, courses, and lives."
             onPress={() => goTo("Community")}
+          />
+          <DashboardAction
+            label="My Videos"
+            description="Upload clips, review storage, and reuse videos in courses."
+            onPress={() => router.push("/videos?tab=library")}
+          />
+          <DashboardAction
+            label="Lives"
+            description="Browse upcoming sessions, campaigns, and replays."
+            onPress={() => router.push("/lives")}
+          />
+          <DashboardAction
+            label="Notifications"
+            description="Open the inbox, review alerts, and manage notification settings."
+            onPress={() => router.push("/home/notifications")}
           />
         </View>
       </View>
