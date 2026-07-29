@@ -548,7 +548,7 @@ export default function ProfileScreen() {
         <Text style={styles.rowLabel}>Notification settings</Text>
         <Text style={styles.mutedText}>
           These controls decide which inbox items can also reach your device. In-app
-          notifications stay available; push requires a registered phone.
+          notifications stay available; push requires a registered device.
         </Text>
         {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
           <View key={String(option.key)} style={styles.notificationRow}>

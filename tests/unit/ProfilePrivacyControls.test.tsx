@@ -152,6 +152,12 @@ describe("Profile privacy controls", () => {
     expect(screen.getByText("Manage Billing")).toBeTruthy();
   });
 
+  it("describes push delivery as device-based rather than phone-based", () => {
+    const screen = render(<Profile />);
+
+    expect(screen.getByText(/registered device/)).toBeTruthy();
+  });
+
   it("lets an adult account hide cannabis without entering the parental PIN", async () => {
     const screen = render(<Profile />);
     expect(screen.getByLabelText("Parental content control PIN").props).toMatchObject({
