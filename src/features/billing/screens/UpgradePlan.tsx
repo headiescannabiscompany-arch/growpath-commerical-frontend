@@ -20,76 +20,15 @@ import {
   formatPlanPrice,
   PLAN_PRICING
 } from "../../../constants/pricing";
+import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 
 type BillingInterval = "monthly" | "yearly";
-type PlanKey = "pro" | "commercial" | "facility";
 type CheckoutMode = "live" | "test" | "unknown";
 
-type Plan = {
-  key: PlanKey;
-  title: string;
-  eyebrow: string;
-  audience: string;
-  description: string;
-  billingNext: string;
-  bullets: string[];
-};
-
-const PLANS: Plan[] = [
-  {
-    key: "pro",
-    title: PLAN_PRICING.pro.title,
-    eyebrow: PLAN_PRICING.pro.eyebrow,
-    audience:
-      "Solo growers and personal accounts that want AI guidance, diagnosis, planning, exports, and saved run history without storefront or facility admin overhead.",
-    description:
-      "For an individual grower account that needs AI guidance, diagnosis, planning, exports, and the stronger personal toolset without brand or facility admin overhead.",
-    billingNext:
-      "Stripe opens with Pro selected and the chosen monthly or yearly interval. Payment is collected there.",
-    bullets: [
-      "AI diagnosis, planning, and review workflows",
-      "Advanced calculators and grow exports",
-      "Personal account tools and saved run history"
-    ]
-  },
-  {
-    key: "commercial",
-    title: PLAN_PRICING.commercial.title,
-    eyebrow: PLAN_PRICING.commercial.eyebrow,
-    audience:
-      "Brands, sellers, and educators that need storefronts, products, courses, lives, orders, analytics, and discovery surfaces.",
-    description:
-      "For a public brand or seller that needs storefronts, products, campaigns, courses, lives, orders, analytics, and the discovery surfaces that connect the whole brand workflow.",
-    billingNext:
-      "Stripe opens with Commercial selected and the chosen monthly or yearly interval. Payment is collected there.",
-    bullets: [
-      "Storefront, products, and public brand pages",
-      "Courses, lives, and campaign publishing",
-      "Orders, analytics, and discovery reach"
-    ]
-  },
-  {
-    key: "facility",
-    title: PLAN_PRICING.facility.title,
-    eyebrow: PLAN_PRICING.facility.eyebrow,
-    audience:
-      "Multi-user operators that need rooms, tasks, SOPs, compliance, and team controls.",
-    description:
-      "For a multi-user operation that needs rooms, tasks, SOPs, audit evidence, compliance exports, and team coordination with stronger operational controls.",
-    billingNext:
-      "Stripe opens with Facility selected and the chosen monthly or yearly interval. Payment is collected there.",
-    bullets: [
-      "Rooms, tasks, and team coordination",
-      "SOPs, audit evidence, and compliance exports",
-      "Multi-user operational workflows"
-    ]
-  }
-];
-
-function normalizePlanKey(value: unknown): PlanKey | null {
+function normalizePlanKey(value: unknown): BillingPlanKey | null {
   const raw = String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
-  return ["pro", "commercial", "facility"].includes(raw) ? (raw as PlanKey) : null;
+  return ["pro", "commercial", "facility"].includes(raw) ? (raw as BillingPlanKey) : null;
 }
 
 function isLikelyEmail(value: string) {
@@ -124,14 +63,14 @@ export default function UpgradePlan() {
     return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
   }, [searchParams.gift]);
   const plans = useMemo(() => {
-    if (!requestedPlan) return PLANS;
-    const selected = PLANS.find((plan) => plan.key === requestedPlan);
-    if (!selected) return PLANS;
-    return [selected, ...PLANS.filter((plan) => plan.key !== requestedPlan)];
+    if (!requestedPlan) return BILLING_PLANS;
+    const selected = BILLING_PLANS.find((plan) => plan.key === requestedPlan);
+    if (!selected) return BILLING_PLANS;
+    return [selected, ...BILLING_PLANS.filter((plan) => plan.key !== requestedPlan)];
   }, [requestedPlan]);
 
   const [interval, setInterval] = useState<BillingInterval>("monthly");
-  const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [giftMode, setGiftMode] = useState(false);
@@ -177,8 +116,8 @@ export default function UpgradePlan() {
     setFeedback("Gift checkout canceled. No new payment was submitted.");
   }, [giftResult]);
 
-  async function startCheckout(plan: PlanKey) {
-    const selected = PLANS.find((item) => item.key === plan);
+  async function startCheckout(plan: BillingPlanKey) {
+    const selected = BILLING_PLANS.find((item) => item.key === plan);
     const recipient = giftRecipientValue;
     const recipientName = giftRecipientName.trim();
     const note = giftMessage.trim();
@@ -242,8 +181,8 @@ export default function UpgradePlan() {
             : ""}
         </Text>
         <Text style={styles.comparisonNote}>
-          Compare the cards below. Each one explains who it is for, what it unlocks,
-          and what Stripe does next when you continue.
+          Compare the cards below. Each one explains who it is for, what it unlocks, and
+          what Stripe does next when you continue.
         </Text>
         <View style={styles.segment}>
           {(["monthly", "yearly"] as const).map((item) => {
@@ -411,6 +350,14 @@ export default function UpgradePlan() {
               <Text style={styles.sectionText}>{plan.audience}</Text>
               <Text style={styles.sectionLabel}>What it unlocks</Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
+              <Text style={styles.sectionLabel}>Plan details</Text>
+              <View style={styles.details}>
+                {plan.details.map((detail) => (
+                  <Text key={detail} style={styles.detail}>
+                    • {detail}
+                  </Text>
+                ))}
+              </View>
               <Text style={styles.price}>
                 {formatPlanPrice(plan.key, interval)}
                 <Text style={styles.priceMeta}>
@@ -533,6 +480,8 @@ const styles = StyleSheet.create({
   priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
   billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },
   cardDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
+  details: { gap: 4 },
+  detail: { color: "#334155", fontSize: 12, fontWeight: "700", lineHeight: 18 },
   helper: { color: "#64748b", fontSize: 12, fontWeight: "700", lineHeight: 18 },
   input: {
     backgroundColor: "#ffffff",
