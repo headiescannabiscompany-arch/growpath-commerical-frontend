@@ -111,6 +111,7 @@ export default function CommercialTabsLayout() {
         name="inventory"
         options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
+      {/* prettier-ignore */}
       <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null, headerShown: false }} />
       <Tabs.Screen
         name="more"

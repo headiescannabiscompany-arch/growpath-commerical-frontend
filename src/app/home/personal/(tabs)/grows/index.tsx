@@ -298,12 +298,12 @@ export default function PersonalGrowsRoute() {
             <ActionButton href="/home/personal/diagnose" label="Run Diagnosis" />
             <ActionButton href="/home/personal/tasks" label="Open Tasks" />
           </View>
-              {!canCreateGrow ? (
-                <View>
-                  <Text style={styles.limitHeading}>Free grow limit reached</Text>
-                  <Text style={styles.limitText}>{limitMessage}</Text>
-                </View>
-              ) : null}
+          {!canCreateGrow ? (
+            <View>
+              <Text style={styles.limitHeading}>Free grow limit reached</Text>
+              <Text style={styles.limitText}>{limitMessage}</Text>
+            </View>
+          ) : null}
         </AppCard>
 
         <AppCard style={styles.roadmapCard}>
@@ -589,19 +589,19 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12
   },
-      limitText: {
-        color: "#64748B",
-        fontSize: 12,
-        lineHeight: 17,
-        marginTop: 10
-      },
-      limitHeading: {
-        color: "#B45309",
-        fontSize: 12,
-        fontWeight: "900",
-        marginTop: 10,
-        textTransform: "uppercase"
-      },
+  limitText: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 10
+  },
+  limitHeading: {
+    color: "#B45309",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 10,
+    textTransform: "uppercase"
+  },
   roadmapCard: {
     backgroundColor: "#FFFFFF",
     borderColor: "#C7F9CC"
