@@ -233,6 +233,31 @@ export default function PersonalGrowsRoute() {
         { href: "/home/personal/diagnose", label: "Run Diagnosis" },
         { href: "/home/personal/tasks", label: "Open Tasks" }
       ];
+  const growToolsActions = latestGrow
+    ? [
+        {
+          href: `/home/personal/tools/integrations?growId=${encodeURIComponent(
+            latestGrow.id
+          )}`,
+          label: "Integrations"
+        },
+        {
+          href: `/home/personal/tools/pdf-export?growId=${encodeURIComponent(
+            latestGrow.id
+          )}`,
+          label: "PDF Export"
+        }
+      ]
+    : [
+        {
+          href: "/home/personal/tools/integrations?growId=",
+          label: "Integrations"
+        },
+        {
+          href: "/home/personal/tools/pdf-export?growId=",
+          label: "PDF Export"
+        }
+      ];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -294,6 +319,30 @@ export default function PersonalGrowsRoute() {
             {roadmapActions.map((action) => (
               <ActionButton
                 key={`roadmap-${action.label}-${action.href}`}
+                href={action.href}
+                label={action.label}
+                primary={Boolean(action.primary)}
+              />
+            ))}
+          </View>
+        </AppCard>
+
+        <AppCard style={styles.roadmapCard}>
+          <Text style={styles.cardKicker}>Grow tools</Text>
+          <Text style={styles.roadmapTitle}>
+            {latestGrow
+              ? "Jump into connected tools and exports for the current grow."
+              : "Create a grow first, then connect tools and export records from here."}
+          </Text>
+          <Text style={styles.roadmapText}>
+            {latestGrow
+              ? "Use the grow-specific integrations and PDF export links to keep the record connected to sensors, spreadsheets, and printable reports."
+              : "The tools are ready once a grow exists so the links can carry the right grow context."}
+          </Text>
+          <View style={styles.roadmapActions}>
+            {growToolsActions.map((action) => (
+              <ActionButton
+                key={`grow-tools-${action.label}-${action.href}`}
                 href={action.href}
                 label={action.label}
                 primary={Boolean(action.primary)}
