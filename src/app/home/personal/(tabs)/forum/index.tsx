@@ -209,10 +209,15 @@ export default function ForumRoute() {
     >
       <View style={styles.headerRow}>
         <View>
-          <Text accessibilityRole="header" style={[styles.title, { color: palette.heroText }]}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: palette.heroText }]}
+          >
             Forum / Q&A
           </Text>
-                    <Text style={[styles.cardText, { color: palette.textMuted }]}>
+        </View>
+        {videoLibraryLoading ? (
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
             Loading video storage…
           </Text>
         ) : (
@@ -331,7 +336,9 @@ export default function ForumRoute() {
             { backgroundColor: palette.surfaceMuted, borderColor: palette.danger }
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>Forum could not load</Text>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Forum could not load
+          </Text>
           <Text style={[styles.cardText, { color: palette.textMuted }]}>{feedback}</Text>
           <Pressable
             onPress={() => load()}
@@ -344,20 +351,37 @@ export default function ForumRoute() {
         </View>
       ) : null}
       {!canView ? (
-        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
-          <Text style={[styles.cardTitle, { color: palette.text }]}>Forum unavailable</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Forum unavailable
+          </Text>
           <Text style={[styles.cardText, { color: palette.textMuted }]}>
             This account does not have `FORUM_VIEW`.
           </Text>
         </View>
       ) : null}
       {isSignedIn && loading ? (
-        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <ActivityIndicator />
         </View>
       ) : null}
       {isSignedIn && !loading && canView && !feedback && !visiblePosts.length ? (
-        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <Text style={[styles.cardTitle, { color: palette.text }]}>
             {posts.length ? "No matching discussions" : "No posts yet"}
           </Text>
@@ -388,7 +412,10 @@ export default function ForumRoute() {
                 {titleOf(post)}
               </Text>
               {bodyOf(post) ? (
-                <Text style={[styles.cardText, { color: palette.textMuted }]} numberOfLines={3}>
+                <Text
+                  style={[styles.cardText, { color: palette.textMuted }]}
+                  numberOfLines={3}
+                >
                   {bodyOf(post)}
                 </Text>
               ) : (
