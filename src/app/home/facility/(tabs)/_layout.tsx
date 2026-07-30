@@ -78,10 +78,7 @@ export default function FacilityTabsLayout() {
           tabBarLabel: compactTabs ? "Comp" : "Compliance"
         }}
       />
-      <Tabs.Screen
-        name="logs"
-        options={{ title: "Logs", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="logs" options={{ title: "Logs", href: null }} />
       <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
       <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />
@@ -99,11 +96,8 @@ export default function FacilityTabsLayout() {
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
-      <Tabs.Screen
-        name="ai-diagnosis-photo"
-        options={{ title: "Trichome Analysis", tabBarButton: () => null }}
-      />
-      <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="ai-diagnosis-photo" options={{ title: "Trichome Analysis", href: null }} />
+      <Tabs.Screen name="ai-template" options={{ href: null }} />
       <Tabs.Screen name="ai-validation" options={{ title: "AI QA", href: null }} />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
