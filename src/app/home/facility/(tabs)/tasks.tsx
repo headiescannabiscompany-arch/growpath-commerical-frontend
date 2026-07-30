@@ -510,7 +510,7 @@ export default function FacilityTasksRoute() {
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>New Task</Text>
+          <Text style={styles.cardTitle}>{canWrite ? "New Task" : "Task access"}</Text>
           {canWrite ? (
             <Pressable
               accessibilityRole="button"

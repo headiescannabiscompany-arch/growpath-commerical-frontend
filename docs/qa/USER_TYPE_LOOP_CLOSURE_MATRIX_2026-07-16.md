@@ -539,6 +539,13 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       completion/reload, Owner final-state/audit review, and real Viewer read-only
       observation. Forced backend authorization evidence and the exported recording
       remain to finish the production chain.
+- 2026-07-30 live Facility retest: owner profile shows `2000 / 2000` Facility AI
+      Credits, the viewer login lands in Facility workspace mode, the Team page
+      shows read-only access, the Tasks page denies task creation, and the shared
+      task detail remains read-only. Evidence screenshots were saved at
+      `docs/qa/evidence/2026-07-30-facility-loop/owner-profile.png`,
+      `docs/qa/evidence/2026-07-30-facility-loop/viewer-team.png`, and
+      `docs/qa/evidence/2026-07-30-facility-loop/viewer-task-detail.png`.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
 
