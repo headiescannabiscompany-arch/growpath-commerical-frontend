@@ -18,9 +18,9 @@ describe("app theme modes", () => {
   it("keeps night mode aligned with the dark green and blue-clickable theme", () => {
     const palette = getThemePalette("night", "light");
     expect(palette.resolvedMode).toBe("night");
-    expect(palette.page).toBe("#050805");
-    expect(palette.hero).toBe("#0D1E14");
-    expect(palette.accent).toBe("#6EA8FF");
-    expect(palette.link).toBe("#7AB0FF");
+    expect(palette.page).toBe("#0E141B");
+    expect(palette.hero).toBe("#101823");
+    expect(palette.accent).toBe("#78AAFF");
+    expect(palette.link).toBe("#78AAFF");
   });
 });

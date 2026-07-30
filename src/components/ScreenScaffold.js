@@ -127,25 +127,25 @@ export function Pill({ text, tone = "default" }) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#0b0f17" },
+  page: { flex: 1, backgroundColor: "#F1F7F2" },
   container: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 14 },
-  kicker: { color: "#7aa2ff", fontSize: 12, letterSpacing: 1, marginBottom: 6 },
-  title: { color: "#ffffff", fontSize: 26, fontWeight: "700", marginBottom: 6 },
-  subtitle: { color: "#a9b4c6", fontSize: 14, lineHeight: 20 },
+  kicker: { color: "#166534", fontSize: 12, letterSpacing: 1, marginBottom: 6 },
+  title: { color: "#122012", fontSize: 26, fontWeight: "700", marginBottom: 6 },
+  subtitle: { color: "#5F6F5F", fontSize: 14, lineHeight: 20 },
   badges: { flexDirection: "row", gap: 8, marginTop: 10 },
   badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.pill },
-  badgeStub: { backgroundColor: "#2a2f3a" },
-  badgeLive: { backgroundColor: "#1d4ed8" },
+  badgeStub: { backgroundColor: "#E3F4E9" },
+  badgeLive: { backgroundColor: "#166534" },
   badgeText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
   body: { gap: 12 },
 
   section: {
-    backgroundColor: "#111827",
+    backgroundColor: "#FFFFFF",
     borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#1f2937"
+    borderColor: "#D7E3D5"
   },
   sectionHeader: {
     flexDirection: "row",
@@ -153,40 +153,40 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10
   },
-  sectionTitle: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
+  sectionTitle: { color: "#122012", fontSize: 16, fontWeight: "700" },
   sectionRight: {},
   sectionBody: { gap: 10 },
 
   card: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#FFFFFF",
     borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#1f2937"
+    borderColor: "#D7E3D5"
   },
   cardWarn: { borderColor: "#b45309" },
   cardSuccess: { borderColor: "#15803d" },
-  cardTitle: { color: "#ffffff", fontSize: 14, fontWeight: "700", marginBottom: 6 },
+  cardTitle: { color: "#122012", fontSize: 14, fontWeight: "700", marginBottom: 6 },
 
   pill: {
     alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    backgroundColor: "#243042"
+    backgroundColor: "#E3F4E9"
   },
-  pillLocked: { backgroundColor: "#3b1d1d" },
-  pillOk: { backgroundColor: "#0f3d2a" },
-  pillText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
+  pillLocked: { backgroundColor: "#FEE2E2" },
+  pillOk: { backgroundColor: "#DCFCE7" },
+  pillText: { color: "#122012", fontSize: 12, fontWeight: "700" },
 
   debug: {
     marginTop: 14,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#FFFFFF",
     borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#1f2937"
+    borderColor: "#D7E3D5"
   },
-  debugTitle: { color: "#ffffff", fontWeight: "700", marginBottom: 6 },
-  debugText: { color: "#a9b4c6", fontSize: 12, lineHeight: 16 }
+  debugTitle: { color: "#122012", fontWeight: "700", marginBottom: 6 },
+  debugText: { color: "#5F6F5F", fontSize: 12, lineHeight: 16 }
 });

@@ -22,7 +22,7 @@ const OPTIONS: Array<{
   {
     key: "night",
     label: "Night",
-    description: "Uses the softer charcoal night UI."
+    description: "Uses the softer blue-gray night UI."
   }
 ];
 
@@ -39,8 +39,8 @@ export default function ThemeModeSelector() {
       <Text style={[styles.kicker, { color: palette.accent }]}>Appearance</Text>
       <Text style={[styles.title, { color: palette.text }]}>Day, night, or auto</Text>
       <Text style={[styles.body, { color: palette.textMuted }]}>
-        Auto follows your device theme. Day uses the lighter green UI. Night uses a
-        softer charcoal surface with bright text and blue clickable links.
+        Auto follows your device theme. Day uses the lighter green UI. Night uses a dark
+        blue-gray surface with bright text and blue clickable links.
       </Text>
 
       <View style={styles.segmentRow}>

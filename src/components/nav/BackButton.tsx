@@ -52,8 +52,8 @@ export default function BackButton({
       style={[
         styles.btn,
         {
-          backgroundColor: palette.surface,
-          borderColor: palette.border
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.borderSoft
         }
       ]}
       onPress={goBack}
