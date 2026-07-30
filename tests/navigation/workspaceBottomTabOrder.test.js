@@ -37,19 +37,18 @@ describe("workspace bottom-tab order", () => {
       "feed",
       "lives",
       "orders",
+      "inventory",
       "analytics",
       "more"
     ]);
-    expect(contents).toContain("const compactSecondaryHref");
+    expect(contents).not.toContain("const compactSecondaryHref");
     expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
+    expect(contents).toContain('name="lives" options={{ title: "Lives", href: null }}');
+    expect(contents).toMatch(
+      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: null,[\s\S]*?headerShown: false/
+    );
     expect(contents).toContain(
-      'options={{ title: "Lives", href: compactSecondaryHref("lives") }}'
-    );
-    expect(contents).toMatch(
-      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: compactSecondaryHref\("orders"\),[\s\S]*?headerShown: false/
-    );
-    expect(contents).toMatch(
-      /name="analytics"\s+options=\{\{[\s\S]*?title: "Analytics",[\s\S]*?href: compactSecondaryHref\("analytics"\),[\s\S]*?headerShown: false/
+      'name="analytics" options={{ title: "Analytics", href: null, headerShown: false }}'
     );
     expect(contents).toContain('name="community"');
     expect(contents).toContain('tabBarLabel: compactTabs ? "Forum" : "Forum / Q&A"');
@@ -59,6 +58,12 @@ describe("workspace bottom-tab order", () => {
     );
     expect(contents).toContain('name="more"');
     expect(contents).toContain('options={{ title: "More", href: null, headerShown: false }}');
+    expect(contents).toContain(
+      'name="storefront/edit"\n        options={{ title: "Edit Storefront", href: null, headerShown: false }}'
+    );
+    expect(contents).toContain(
+      'name="storefront/preview"\n        options={{ title: "Preview Storefront", href: null, headerShown: false }}'
+    );
     [
       "/home/commercial/courses",
       "/home/commercial/lives",

@@ -9,8 +9,6 @@ export default function CommercialTabsLayout() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const compactTabs = width < 760;
-  const compactSecondaryHref = (route: string) =>
-    compactTabs && pathname !== `/home/commercial/${route}` ? null : undefined;
   const hideTabBar =
     pathname.includes("/inventory-create") ||
     pathname.includes("/inventory/new") ||
@@ -103,31 +101,22 @@ export default function CommercialTabsLayout() {
           headerShown: false
         }}
       />
-      <Tabs.Screen
-        name="lives"
-        options={{ title: "Lives", href: compactSecondaryHref("lives") }}
-      />
-      <Tabs.Screen
-        name="orders"
-        options={{
-          title: "Orders",
-          href: compactSecondaryHref("orders"),
-          headerShown: false
-        }}
-      />
+      <Tabs.Screen name="lives" options={{ title: "Lives", href: null }} />
+      <Tabs.Screen name="orders" options={{ title: "Orders", href: null, headerShown: false }} />
       <Tabs.Screen
         name="inventory"
         options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: "Analytics",
-          href: compactSecondaryHref("analytics"),
-          headerShown: false
-        }}
-      />
+      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null, headerShown: false }} />
       <Tabs.Screen name="more" options={{ title: "More", href: null, headerShown: false }} />
+      <Tabs.Screen
+        name="storefront/edit"
+        options={{ title: "Edit Storefront", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="storefront/preview"
+        options={{ title: "Preview Storefront", href: null, headerShown: false }}
+      />
       <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"
