@@ -84,41 +84,43 @@ const DAY_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
 };
 
 const NIGHT_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
-  page: "#050805",
-  surface: "#101711",
-  surfaceMuted: "#141C15",
-  surfaceStrong: "#182019",
-  card: "#101711",
-  border: "#273227",
-  borderSoft: "#2E3930",
-  text: "#F2F4F0",
-  textMuted: "#BBC1B7",
-  textSoft: "#D2D6CE",
-  accent: "#6EA8FF",
-  accentSoft: "#11243E",
+  page: "#000000",
+  surface: "#121212",
+  surfaceMuted: "#181818",
+  surfaceStrong: "#202020",
+  card: "#121212",
+  border: "#2B2B2B",
+  borderSoft: "#343434",
+  text: "#F4F4F4",
+  textMuted: "#B8B8B8",
+  textSoft: "#D3D3D3",
+  accent: "#6FA8FF",
+  accentSoft: "#12223D",
   accentText: "#FFFFFF",
-  hero: "#0D1E14",
+  hero: "#0A0A0A",
   heroText: "#FFFFFF",
-  heroMuted: "#D0D8CF",
-  tabBar: "#0B110D",
-  tabBarBorder: "#243025",
-  tabActive: "#7AB0FF",
-  tabInactive: "#B6BDB4",
-  link: "#7AB0FF",
-  success: "#5DD67D",
+  heroMuted: "#D6D6D6",
+  tabBar: "#090909",
+  tabBarBorder: "#242424",
+  tabActive: "#7BB2FF",
+  tabInactive: "#B9B9B9",
+  link: "#7BB2FF",
+  success: "#7B8F61",
   warning: "#F8C44E",
   danger: "#F28B8B",
   info: "#7AB0FF",
   shadow: "#00000088"
 };
 
-function normalizeSystemScheme(scheme: ColorSchemeName): ResolvedThemeMode {
-  return scheme === "dark" ? "night" : "day";
+function normalizeSystemScheme(
+  scheme: ColorSchemeName | ResolvedThemeMode | null | undefined
+): ResolvedThemeMode {
+  return scheme === "dark" || scheme === "night" ? "night" : "day";
 }
 
 export function resolveThemeMode(
   mode: ThemeMode,
-  systemScheme: ColorSchemeName
+  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined
 ): ResolvedThemeMode {
   if (mode === "day") return "day";
   if (mode === "night") return "night";
@@ -127,7 +129,7 @@ export function resolveThemeMode(
 
 export function getThemePalette(
   mode: ThemeMode,
-  systemScheme: ColorSchemeName
+  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined
 ): ThemePalette {
   const resolvedMode = resolveThemeMode(mode, systemScheme);
   const base = resolvedMode === "night" ? NIGHT_PALETTE : DAY_PALETTE;
@@ -152,8 +154,8 @@ const ThemeContext = createContext<ThemeContextValue>(DEFAULT_THEME_VALUE);
 
 export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("auto");
-  const [systemScheme, setSystemScheme] = useState<ColorSchemeName>(
-    Appearance.getColorScheme()
+  const [systemScheme, setSystemScheme] = useState<ResolvedThemeMode>(
+    normalizeSystemScheme(Appearance.getColorScheme())
   );
   const [hydrated, setHydrated] = useState(false);
 
@@ -203,7 +205,7 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
       resolvedMode,
       palette,
       hydrated,
-      systemScheme: normalizeSystemScheme(systemScheme),
+      systemScheme,
       setThemeMode
     }),
     [mode, resolvedMode, palette, hydrated, systemScheme, setThemeMode]

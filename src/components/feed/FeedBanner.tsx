@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import FeedRail from "@/components/feed/FeedRail";
 import { FREE_POLICY } from "@/config/freePolicy";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { FeedBannerPlacement, FeedRailMode } from "@/utils/feedPolicy";
 
@@ -33,17 +34,25 @@ export default function FeedBanner({
   growInterests,
   compact = false
 }: FeedBannerProps) {
+  const { palette } = useAppTheme();
   if (!slots || slots <= 0) return null;
 
   return (
     <View
       accessibilityRole="summary"
       accessibilityLabel={`${LABELS[placement]} placement`}
-      style={[styles.banner, compact ? styles.bannerCompact : null]}
+      style={[
+        styles.banner,
+        {
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.border
+        },
+        compact ? styles.bannerCompact : null
+      ]}
     >
-      <Text style={styles.label}>{LABELS[placement]}</Text>
+      <Text style={[styles.label, { color: palette.accent }]}>{LABELS[placement]}</Text>
       {plan === "free" && placement === "top" ? (
-        <Text style={styles.upgradeCopy}>
+        <Text style={[styles.upgradeCopy, { color: palette.textMuted }]}>
           Want to see fewer ads? Paid accounts get at least{" "}
           {FREE_POLICY.paidAdReductionPercentMinimum}% fewer ads.
         </Text>
@@ -65,9 +74,7 @@ export default function FeedBanner({
 const styles = StyleSheet.create({
   banner: {
     borderWidth: 1,
-    borderColor: "#D9E8D8",
     borderRadius: radius.card,
-    backgroundColor: "#F7FBF5",
     padding: 12,
     gap: 10
   },
@@ -76,10 +83,9 @@ const styles = StyleSheet.create({
     gap: 7
   },
   label: {
-    color: "#166534",
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase"
   },
-  upgradeCopy: { color: "#4B5563", fontSize: 13, lineHeight: 19 }
+  upgradeCopy: { fontSize: 13, lineHeight: 19 }
 });

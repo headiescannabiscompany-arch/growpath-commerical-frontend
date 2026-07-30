@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
@@ -18,6 +18,7 @@ import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import {
@@ -105,6 +106,7 @@ function ForumPostImage({ photo, index }: { photo: string; index: number }) {
 export default function ForumRoute() {
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
   const canPost = isSignedIn && entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -196,7 +198,7 @@ export default function ForumRoute() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
@@ -207,139 +209,72 @@ export default function ForumRoute() {
     >
       <View style={styles.headerRow}>
         <View>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" style={[styles.title, { color: palette.heroText }]}>
             Forum / Q&A
           </Text>
-          <Text style={styles.subtitle}>
-            Discussion, Q&A, grow help, course/product/live questions, and community
-            replies. Promotional feed placements around this page are campaign ads, not
-            forum threads.
+                    <Text style={[styles.cardText, { color: palette.textMuted }]}>
+            Loading video storage…
           </Text>
-        </View>
-      </View>
-      {canPost ? (
-        <View style={styles.composerGrid}>
-          <Link href="/forum/new-post" asChild>
-            <Pressable
-              style={styles.composer}
-              accessibilityRole="button"
-              accessibilityLabel="Create forum post"
-            >
-              <Text style={styles.composerTitle}>New Discussion</Text>
-              <Text style={styles.cardText}>Ask or share with growers like you.</Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={{
-              pathname: "/forum/new-post",
-              params: {
-                purpose: "diagnosis",
-                title: "Diagnosis help: ",
-                body: "What I am seeing:\n\nWhat changed recently:\n\nEnvironment / feeding details:\n"
-              }
-            }}
-            asChild
-          >
-            <Pressable
-              style={styles.quickComposer}
-              accessibilityRole="button"
-              accessibilityLabel="Ask forum for diagnosis help"
-            >
-              <Text style={styles.quickComposerTitle}>Ask for Diagnosis Help</Text>
-              <Text style={styles.cardText}>
-                Start with a useful issue template and add photos.
-              </Text>
-            </Pressable>
-          </Link>
-          <Link
-            href={{
-              pathname: "/forum/new-post",
-              params: { purpose: "grow_update", title: "Grow update: " }
-            }}
-            asChild
-          >
-            <Pressable
-              style={styles.quickComposer}
-              accessibilityRole="button"
-              accessibilityLabel="Share a grow update to forum"
-            >
-              <Text style={styles.quickComposerTitle}>Share a Grow Update</Text>
-              <Text style={styles.cardText}>
-                Attach the grow from its dashboard for full context.
-              </Text>
-            </Pressable>
-          </Link>
-        </View>
-      ) : null}
-
-      {!isSignedIn ? (
-        <View style={styles.publicAccessCard}>
-          <Text style={styles.cardTitle}>Sign in to browse Forum / Q&A</Text>
-          <Text style={styles.cardText}>
-            Public visitors can learn what the GrowPath Forum covers here. Sign in or
-            create a free account to browse discussions, follow grow interests, ask
-            questions, or reply.
-          </Text>
-          <View style={styles.publicActionRow}>
-            <Link href="/login" style={styles.publicPrimaryLink}>
-              Sign in
-            </Link>
-            <Link href="/register" style={styles.publicSecondaryLink}>
-              Create free account
-            </Link>
-          </View>
-        </View>
-      ) : null}
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Forum videos</Text>
-        <Text style={styles.cardText}>
-          Videos belong in Forum/Q&A. Open the shared library to upload clips, review
-          storage usage, and reuse videos in courses and other workflows.
-        </Text>
-        {videoLibraryLoading ? (
-          <Text style={styles.cardText}>Loading video storage…</Text>
         ) : (
           <View style={styles.videoStats}>
-            <View style={styles.videoStat}>
-              <Text style={styles.videoStatValue}>
+            <View
+              style={[
+                styles.videoStat,
+                { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.videoStatValue, { color: palette.text }]}>
                 {formatBytes(videoQuota.usedBytes)} used
               </Text>
-              <Text style={styles.videoStatLabel}>
+              <Text style={[styles.videoStatLabel, { color: palette.textMuted }]}>
                 of {formatBytes(videoQuota.limitBytes)} total
               </Text>
             </View>
-            <View style={styles.videoStat}>
-              <Text style={styles.videoStatValue}>
+            <View
+              style={[
+                styles.videoStat,
+                { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.videoStatValue, { color: palette.text }]}>
                 {Array.isArray(videoLibrary?.videos) ? videoLibrary.videos.length : 0}
               </Text>
-              <Text style={styles.videoStatLabel}>Workspace videos</Text>
+              <Text style={[styles.videoStatLabel, { color: palette.textMuted }]}>
+                Workspace videos
+              </Text>
             </View>
           </View>
         )}
         <Link href="/videos?tab=library" asChild>
           <Pressable
-            style={styles.primaryBtn}
+            style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
             accessibilityRole="button"
             accessibilityLabel="Open video library"
           >
-            <Text style={styles.primaryText}>Open Video Library</Text>
+            <Text style={[styles.primaryText, { color: palette.accentText }]}>
+              Open Video Library
+            </Text>
           </Pressable>
         </Link>
         <Link href="/videos?tab=discover" asChild>
           <Pressable
-            style={styles.secondaryBtn}
+            style={[
+              styles.secondaryBtn,
+              { borderColor: palette.accent, backgroundColor: palette.surfaceMuted }
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Browse videos"
           >
-            <Text style={styles.secondaryText}>Browse Videos</Text>
+            <Text style={[styles.secondaryText, { color: palette.accent }]}>
+              Browse Videos
+            </Text>
           </Pressable>
         </Link>
       </View>
 
-      <View style={styles.feedHeader}>
-        <Text style={styles.feedTitle}>Forum Feed</Text>
-        <Text style={styles.feedSubtitle}>
+      <View style={[styles.feedHeader, { borderBottomColor: palette.border }]}>
+        <Text style={[styles.feedTitle, { color: palette.text }]}>Forum Feed</Text>
+        <Text style={[styles.feedSubtitle, { color: palette.textMuted }]}>
           {isSignedIn
             ? "Latest discussions from growers, tagged by grow interests."
             : "Discussions stay behind account sign-in so participation, moderation, and workspace context remain attributable."}
@@ -350,7 +285,14 @@ export default function ForumRoute() {
               <Pressable
                 key={scope}
                 onPress={() => setFeedScope(scope)}
-                style={[styles.scopeBtn, feedScope === scope && styles.scopeBtnActive]}
+                style={[
+                  styles.scopeBtn,
+                  { borderColor: palette.border, backgroundColor: palette.surfaceMuted },
+                  feedScope === scope && {
+                    borderColor: palette.accent,
+                    backgroundColor: palette.accentSoft
+                  }
+                ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: feedScope === scope }}
                 accessibilityLabel={
@@ -362,7 +304,10 @@ export default function ForumRoute() {
                 <Text
                   style={[
                     styles.scopeText,
-                    feedScope === scope && styles.scopeTextActive
+                    { color: palette.textMuted },
+                    feedScope === scope && {
+                      color: palette.accent
+                    }
                   ]}
                 >
                   {scope === "for-you" ? "For You" : "All Discussions"}
@@ -380,36 +325,43 @@ export default function ForumRoute() {
       />
 
       {isSignedIn && feedback ? (
-        <View style={styles.errorCard}>
-          <Text style={styles.cardTitle}>Forum could not load</Text>
-          <Text style={styles.cardText}>{feedback}</Text>
+        <View
+          style={[
+            styles.errorCard,
+            { backgroundColor: palette.surfaceMuted, borderColor: palette.danger }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Forum could not load</Text>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>{feedback}</Text>
           <Pressable
             onPress={() => load()}
-            style={styles.primaryBtn}
+            style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
             accessibilityRole="button"
             accessibilityLabel="Retry loading forum posts"
           >
-            <Text style={styles.primaryText}>Retry</Text>
+            <Text style={[styles.primaryText, { color: palette.accentText }]}>Retry</Text>
           </Pressable>
         </View>
       ) : null}
       {!canView ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Forum unavailable</Text>
-          <Text style={styles.cardText}>This account does not have `FORUM_VIEW`.</Text>
+        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Forum unavailable</Text>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
+            This account does not have `FORUM_VIEW`.
+          </Text>
         </View>
       ) : null}
       {isSignedIn && loading ? (
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
           <ActivityIndicator />
         </View>
       ) : null}
       {isSignedIn && !loading && canView && !feedback && !visiblePosts.length ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
+        <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
             {posts.length ? "No matching discussions" : "No posts yet"}
           </Text>
-          <Text style={styles.cardText}>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
             {posts.length
               ? "Try All Discussions, or update your grow interests in Profile."
               : "Start the first discussion for your grow interests."}
@@ -422,18 +374,27 @@ export default function ForumRoute() {
         const photos = photosOf(post);
         return (
           <React.Fragment key={id || titleOf(post)}>
-            <View style={styles.card}>
-              <Text style={styles.meta}>
+            <View
+              style={[
+                styles.card,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.meta, { color: palette.textMuted }]}>
                 {authorOf(post)}
                 {timeOf(post) ? ` | ${timeOf(post)}` : ""}
               </Text>
-              <Text style={styles.cardTitle}>{titleOf(post)}</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                {titleOf(post)}
+              </Text>
               {bodyOf(post) ? (
-                <Text style={styles.cardText} numberOfLines={3}>
+                <Text style={[styles.cardText, { color: palette.textMuted }]} numberOfLines={3}>
                   {bodyOf(post)}
                 </Text>
               ) : (
-                <Text style={styles.emptyImageText}>No text preview available</Text>
+                <Text style={[styles.emptyImageText, { color: palette.textMuted }]}>
+                  No text preview available
+                </Text>
               )}
               {photos.length ? (
                 <View style={styles.photoRow}>
@@ -446,18 +407,32 @@ export default function ForumRoute() {
                   ))}
                 </View>
               ) : (
-                <Text style={styles.emptyImageText}>No image attached</Text>
+                <Text style={[styles.emptyImageText, { color: palette.textMuted }]}>
+                  No image attached
+                </Text>
               )}
               {tagsOf(post).length ? (
                 <View style={styles.tagRow}>
                   {tagsOf(post).map((tag) => (
-                    <Text key={String(tag)} style={styles.tag}>
+                    <Text
+                      key={String(tag)}
+                      style={[
+                        styles.tag,
+                        {
+                          backgroundColor: palette.surfaceMuted,
+                          borderColor: palette.border,
+                          color: palette.textMuted
+                        }
+                      ]}
+                    >
                       {String(tag)}
                     </Text>
                   ))}
                 </View>
               ) : null}
-              <Text style={styles.meta}>{post.likeCount || 0} likes</Text>
+              <Text style={[styles.meta, { color: palette.textMuted }]}>
+                {post.likeCount || 0} likes
+              </Text>
               <InlineForumDiscussion
                 canReply={canPost}
                 replyCount={(post as any).commentCount ?? (post.comments || []).length}

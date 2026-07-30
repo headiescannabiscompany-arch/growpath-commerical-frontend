@@ -1264,7 +1264,7 @@ export default function DiagnoseRoute({
               }
               details={
                 <View style={styles.providerPanel}>
-                  <Text style={styles.providerTitle}>ETGU and GPT verification</Text>
+                  <Text style={styles.providerTitle}>Cross-check summary</Text>
                   <Text style={styles.providerMeta}>
                     {result.verification?.status || "Comparison unavailable"}
                   </Text>
@@ -1272,7 +1272,7 @@ export default function DiagnoseRoute({
                     {result.verification?.note ||
                       "This result did not include a separate rule-versus-provider comparison."}
                   </Text>
-                  <Text style={styles.providerTitle}>Provider output</Text>
+                  <Text style={styles.providerTitle}>Model output</Text>
                   <Text style={styles.providerMeta}>
                     {result.providerName || result.source || "unverified provider"}
                     {result.providerModel ? ` | ${result.providerModel}` : ""}
@@ -1288,7 +1288,7 @@ export default function DiagnoseRoute({
                       Provider output was not supplied as a separate structured payload.
                     </Text>
                   )}
-                  <Text style={styles.providerTitle}>Draft crop identity</Text>
+                  <Text style={styles.providerTitle}>Crop suggestion</Text>
                   <Text style={styles.providerMeta}>
                     {result.cropIdentity?.commonName || "Not identified"}
                     {result.cropIdentity?.scientificName
@@ -1318,7 +1318,7 @@ export default function DiagnoseRoute({
                       - Alternative to confirm: {line}
                     </Text>
                   ))}
-                  <Text style={styles.providerTitle}>Photo evidence quality</Text>
+                  <Text style={styles.providerTitle}>Photo review</Text>
                   <Text style={styles.providerMeta}>
                     {result.imageAnalysis?.performed
                       ? `${result.imageAnalysis.photoCount || 1} photo${
@@ -1345,7 +1345,7 @@ export default function DiagnoseRoute({
                       - Limitation: {line}
                     </Text>
                   ))}
-                  <Text style={styles.providerTitle}>GrowPath AI reasoning</Text>
+                  <Text style={styles.providerTitle}>Reasoning notes</Text>
                   {result.growPathReasoning.length ? (
                     result.growPathReasoning.map((line) => (
                       <Text key={line} style={styles.providerLine}>

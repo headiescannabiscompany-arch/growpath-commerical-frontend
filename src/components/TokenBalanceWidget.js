@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { getTokenBalance } from "../api/tokens";
 import { useAuth } from "../auth/AuthContext";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 import { subscribeToTokenBalanceChange } from "../utils/tokenBalanceEvents";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -27,6 +28,7 @@ export default function TokenBalanceWidget({
 }) {
   const router = useRouter();
   const auth = useAuth();
+  const { palette } = useAppTheme();
   const normalizedWorkspaceType = String(workspaceType || "personal").toLowerCase();
   const facilityScoped = workspaceType === "facility";
   const commercialScoped = normalizedWorkspaceType === "commercial";
@@ -207,56 +209,83 @@ export default function TokenBalanceWidget({
 
   return (
     <Container
-      style={[styles.container, isLow && styles.containerLow]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: palette.surface,
+          borderColor: isLow ? palette.danger : palette.border
+        },
+        isLow && styles.containerLow
+      ]}
       {...(interactive ? { onPress: onPress || (() => router.push(detailsHref)) } : {})}
     >
       <View style={styles.headerRow}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>AI</Text>
+        <View
+          style={[
+            styles.iconContainer,
+            {
+              backgroundColor: palette.surfaceMuted,
+              borderColor: palette.border
+            }
+          ]}
+        >
+          <Text style={[styles.icon, { color: palette.accent }]}>AI</Text>
         </View>
         <View style={styles.headerContent}>
-          <Text style={styles.label}>
+          <Text style={[styles.label, { color: palette.textMuted }]}>
             {facilityScoped
               ? "Facility AI Credits"
               : commercialScoped
                 ? "Commercial AI Credits"
                 : "AI Credits"}
           </Text>
-          <Text style={styles.balance}>
+          <Text style={[styles.balance, { color: palette.text }]}>
             {aiTokens} / {maxTokens ?? "-"}
           </Text>
         </View>
-        <View style={styles.barContainer}>
+        <View style={[styles.barContainer, { backgroundColor: palette.border }]}>
           <View
-            style={[styles.bar, { width: `${percentage}%` }, isLow && styles.barLow]}
+            style={[
+              styles.bar,
+              { width: `${percentage}%`, backgroundColor: palette.accent },
+              isLow && styles.barLow
+            ]}
           />
         </View>
       </View>
 
       <View style={styles.details}>
-        <Text style={styles.description}>{usageCopy}</Text>
+        <Text style={[styles.description, { color: palette.textMuted }]}>{usageCopy}</Text>
         {verifiedPlanCopy ? (
-          <Text style={styles.description}>{verifiedPlanCopy}</Text>
+          <Text style={[styles.description, { color: palette.textMuted }]}>
+            {verifiedPlanCopy}
+          </Text>
         ) : null}
         {facilityScoped && workspaceName ? (
-          <Text style={styles.description}>Balance owner: {workspaceName}.</Text>
+          <Text style={[styles.description, { color: palette.textMuted }]}>
+            Balance owner: {workspaceName}.
+          </Text>
         ) : null}
         {weeklyUsageCopy ? (
-          <Text style={styles.description}>{weeklyUsageCopy}</Text>
+          <Text style={[styles.description, { color: palette.textMuted }]}>
+            {weeklyUsageCopy}
+          </Text>
         ) : null}
         {loading ? (
-          <Text style={styles.description}>Checking live AI-credit balance...</Text>
+          <Text style={[styles.description, { color: palette.textMuted }]}>
+            Checking live AI-credit balance...
+          </Text>
         ) : null}
-        <Text style={styles.description}>{refillCopy}</Text>
+        <Text style={[styles.description, { color: palette.textMuted }]}>{refillCopy}</Text>
         {allowanceMismatch ? (
-          <Text style={styles.syncWarning}>
+          <Text style={[styles.syncWarning, { color: palette.warning }]}>
             {facilityScoped ? "The Facility" : "Your paid or trial plan"} is active, but
             the server is still reporting the free 5-credit allowance. Refresh plan status
             before using AI credits.
           </Text>
         ) : null}
         {balance?.usage && !balance.usage.reconciled ? (
-          <Text style={styles.syncWarning}>
+          <Text style={[styles.syncWarning, { color: palette.warning }]}>
             Balance and usage ledger differ by {balance.usage.ledgerDifference} credits.
             Report this account for reconciliation before using more AI credits.
           </Text>
@@ -265,7 +294,7 @@ export default function TokenBalanceWidget({
 
       {interactive ? (
         <View style={styles.ctaRow}>
-          <Text style={styles.ctaText}>See how AI credits work</Text>
+          <Text style={[styles.ctaText, { color: palette.link }]}>See how AI credits work</Text>
         </View>
       ) : null}
     </Container>
@@ -274,7 +303,6 @@ export default function TokenBalanceWidget({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f8f9fa",
     borderRadius: radius.card,
     padding: 16,
     marginVertical: 8,
@@ -282,8 +310,7 @@ const styles = StyleSheet.create({
     borderColor: "#27ae60"
   },
   containerLow: {
-    borderColor: "#e74c3c",
-    backgroundColor: "#fff5f5"
+    borderColor: "#e74c3c"
   },
   headerRow: {
     flexDirection: "row",
@@ -294,13 +321,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.pill,
+    borderWidth: 1,
     backgroundColor: "#e8f5e9",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12
   },
   icon: {
-    color: "#166534",
     fontSize: 14,
     fontWeight: "900"
   },
@@ -309,13 +336,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "#4b5563",
     marginBottom: 2
   },
   balance: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#1f2937"
   },
   barContainer: {
     width: 96,
@@ -327,7 +352,6 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: "100%",
-    backgroundColor: "#27ae60",
     borderRadius: radius.pill
   },
   barLow: {

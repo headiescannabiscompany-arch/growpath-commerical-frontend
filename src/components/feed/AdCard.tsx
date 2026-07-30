@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { fetchPublicStorefront } from "@/api/storefront";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -35,6 +36,7 @@ export default function AdCard({
   strategyLabel,
   compact = false
 }: AdCardProps) {
+  const { palette } = useAppTheme();
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const { width } = useWindowDimensions();
   const compactMedia = width >= 760;
@@ -91,6 +93,11 @@ export default function AdCard({
       onPress={openAd}
       style={[
         styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          shadowColor: palette.page
+        },
         (compact || compactMedia) && resolvedImageUrl ? styles.cardDesktop : null,
         compact ? styles.cardCompact : null
       ]}
@@ -99,6 +106,7 @@ export default function AdCard({
         <View
           style={[
             styles.mediaFrame,
+            { backgroundColor: palette.surfaceMuted },
             compact || compactMedia ? styles.mediaDesktop : null,
             compact ? styles.mediaCompact : null
           ]}
@@ -113,14 +121,21 @@ export default function AdCard({
       ) : null}
       <View style={styles.copy}>
         <View style={styles.labelRow}>
-          <Text style={styles.label}>Promoted campaign</Text>
-          {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
+          <Text style={[styles.label, { color: palette.accent }]}>Promoted campaign</Text>
+          {strategyLabel ? (
+            <Text style={[styles.strategy, { color: palette.textMuted }]}>
+              {strategyLabel}
+            </Text>
+          ) : null}
         </View>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.body} numberOfLines={compact || compactMedia ? 2 : undefined}>
+        <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
+        <Text
+          style={[styles.body, { color: palette.textMuted }]}
+          numberOfLines={compact || compactMedia ? 2 : undefined}
+        >
           {body}
         </Text>
-        <Text style={styles.link}>
+        <Text style={[styles.link, { color: palette.link }]}>
           {cta} {"\u2192"}
         </Text>
       </View>
@@ -130,8 +145,6 @@ export default function AdCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
     borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
@@ -156,8 +169,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#C2410C"
+    fontWeight: "700"
   },
   labelRow: {
     alignItems: "center",
@@ -167,7 +179,6 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   strategy: {
-    color: "#64748B",
     fontSize: 11,
     fontWeight: "700"
   },
@@ -176,8 +187,7 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     borderRadius: radius.card,
     overflow: "hidden",
-    marginBottom: 10,
-    backgroundColor: "#F1F5F9"
+    marginBottom: 10
   },
   mediaDesktop: {
     width: 128,
@@ -198,12 +208,10 @@ const styles = StyleSheet.create({
   },
   body: {
     fontSize: 14,
-    color: "#475569",
     marginBottom: 10
   },
   link: {
     fontSize: 14,
-    fontWeight: "700",
-    color: "#C2410C"
+    fontWeight: "700"
   }
 });

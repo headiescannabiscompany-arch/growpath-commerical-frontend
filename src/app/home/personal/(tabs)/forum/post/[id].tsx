@@ -28,6 +28,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
@@ -161,6 +162,7 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 
 export default function ForumPostDetailRoute() {
   const params = useLocalSearchParams();
+  const { palette } = useAppTheme();
   const id = getId(params as any);
   const growId = param((params as any).growId);
   const entitlements = useEntitlements();
@@ -372,7 +374,7 @@ export default function ForumPostDetailRoute() {
   return (
     <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: palette.page }]}
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
@@ -382,48 +384,66 @@ export default function ForumPostDetailRoute() {
         }
       >
         {!canView ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Forum unavailable</Text>
-            <Text style={styles.cardText}>This account does not have `FORUM_VIEW`.</Text>
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Forum unavailable
+            </Text>
+            <Text style={[styles.cardText, { color: palette.textMuted }]}>
+              This account does not have `FORUM_VIEW`.
+            </Text>
           </View>
         ) : null}
 
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? <Text style={[styles.feedback, { color: palette.danger }]}>{feedback}</Text> : null}
 
         {loading ? (
-          <View style={styles.card}>
-            <ActivityIndicator />
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+            <ActivityIndicator color={palette.accent} />
           </View>
         ) : null}
 
         {!loading && canView ? (
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
             {post ? (
               <>
-                <Text style={styles.title}>{titleOf(post)}</Text>
+                <Text style={[styles.title, { color: palette.text }]}>{titleOf(post)}</Text>
                 <PersonalFeedPlacement
                   placement="top"
                   routeKey="personal_forum_post_id"
                   longContent
                 />
-                <Text style={styles.meta}>
+                <Text style={[styles.meta, { color: palette.textMuted }]}>
                   {authorName(post)}
                   {post.createdAt
                     ? ` | ${new Date(post.createdAt).toLocaleString()}`
                     : ""}
                 </Text>
-                {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
+                {bodyOf(post) ? (
+                  <Text style={[styles.body, { color: palette.textMuted }]}>
+                    {bodyOf(post)}
+                  </Text>
+                ) : null}
                 {tagsOf(post).length ? (
                   <View style={styles.tagRow}>
                     {tagsOf(post).map((tag) => (
-                      <Text key={tag} style={styles.tag}>
+                      <Text
+                        key={tag}
+                        style={[
+                          styles.tag,
+                          {
+                            backgroundColor: palette.surfaceMuted,
+                            color: palette.accent,
+                            borderColor: palette.border
+                          }
+                        ]}
+                      >
                         {tag}
                       </Text>
                     ))}
                   </View>
                 ) : null}
                 {(post as any).growId || (post as any).linkedGrowId ? (
-                  <Text style={styles.contextText}>
+                  <Text style={[styles.contextText, { color: palette.accent }]}>
                     Attached grow: {(post as any).growId || (post as any).linkedGrowId}
                   </Text>
                 ) : null}
@@ -443,11 +463,17 @@ export default function ForumPostDetailRoute() {
                   <Pressable
                     disabled={!canPost || saving}
                     onPress={toggleLike}
-                    style={[styles.secondaryBtn, (!canPost || saving) && styles.disabled]}
+                    style={[
+                      styles.secondaryBtn,
+                      { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                      (!canPost || saving) && styles.disabled
+                    ]}
                     accessibilityRole="button"
                     accessibilityLabel={liked ? "Unlike forum post" : "Like forum post"}
                   >
-                    <Text style={styles.secondaryText}>{liked ? "Unlike" : "Like"}</Text>
+                    <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                      {liked ? "Unlike" : "Like"}
+                    </Text>
                   </Pressable>
                   {growId ? (
                     <>
@@ -456,24 +482,26 @@ export default function ForumPostDetailRoute() {
                         onPress={saveToGrowLog}
                         style={[
                           styles.secondaryBtn,
+                          { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
                           (!canPost || saving) && styles.disabled
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel="Save forum post to grow log"
                       >
-                        <Text style={styles.secondaryText}>Save to Log</Text>
+                        <Text style={[styles.secondaryText, { color: palette.accent }]}>Save to Log</Text>
                       </Pressable>
                       <Pressable
                         disabled={!canPost || creatingTask}
                         onPress={createFollowUpTask}
                         style={[
                           styles.secondaryBtn,
+                          { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
                           (!canPost || creatingTask) && styles.disabled
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel="Create forum follow-up task"
                       >
-                        <Text style={styles.secondaryText}>
+                        <Text style={[styles.secondaryText, { color: palette.accent }]}>
                           {creatingTask ? "Creating..." : "Create Task"}
                         </Text>
                       </Pressable>
@@ -482,17 +510,21 @@ export default function ForumPostDetailRoute() {
                   <Pressable
                     disabled={!canPost || saving}
                     onPress={reportPost}
-                    style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
+                    style={[
+                      styles.dangerBtn,
+                      { borderColor: palette.danger, backgroundColor: palette.surfaceMuted },
+                      (!canPost || saving) && styles.disabled
+                    ]}
                     accessibilityRole="button"
                     accessibilityLabel="Report forum post"
                   >
-                    <Text style={styles.dangerText}>Report</Text>
+                    <Text style={[styles.dangerText, { color: palette.danger }]}>Report</Text>
                   </Pressable>
-                  <Text style={styles.meta}>{likes} likes</Text>
+                  <Text style={[styles.meta, { color: palette.textMuted }]}>{likes} likes</Text>
                 </View>
               </>
             ) : (
-              <Text style={styles.cardText}>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
                 {id ? "No post returned." : "Missing post id."}
               </Text>
             )}
@@ -508,8 +540,8 @@ export default function ForumPostDetailRoute() {
         ) : null}
 
         {canView ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Comments</Text>
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Comments</Text>
             {canPost ? (
               <View style={styles.commentComposer}>
                 <TextInput
@@ -518,17 +550,30 @@ export default function ForumPostDetailRoute() {
                   placeholder="Add a comment..."
                   multiline
                   editable={!saving}
-                  style={[styles.input, styles.commentInput]}
+                  placeholderTextColor={palette.textMuted}
+                  style={[
+                    styles.input,
+                    styles.commentInput,
+                    {
+                      backgroundColor: palette.surfaceMuted,
+                      borderColor: palette.border,
+                      color: palette.text
+                    }
+                  ]}
                   accessibilityLabel="Forum comment"
                 />
                 <Pressable
                   disabled={saving}
                   onPress={pickCommentPhotos}
-                  style={[styles.secondaryBtn, saving && styles.disabled]}
+                  style={[
+                    styles.secondaryBtn,
+                    { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                    saving && styles.disabled
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel="Attach forum comment photos"
                 >
-                  <Text style={styles.secondaryText}>
+                  <Text style={[styles.secondaryText, { color: palette.accent }]}>
                     {commentPhotoUris.length ? "Add more photos" : "Attach photo"}
                   </Text>
                 </Pressable>
@@ -550,7 +595,9 @@ export default function ForumPostDetailRoute() {
                           accessibilityRole="button"
                           accessibilityLabel={`Remove forum comment photo ${index + 1}`}
                         >
-                          <Text style={styles.dangerText}>Remove</Text>
+                          <Text style={[styles.dangerText, { color: palette.danger }]}>
+                            Remove
+                          </Text>
                         </Pressable>
                       </View>
                     ))}
@@ -561,27 +608,39 @@ export default function ForumPostDetailRoute() {
                   onPress={submitComment}
                   style={[
                     styles.primaryBtn,
+                    { backgroundColor: palette.accent },
                     ((!commentText.trim() && !commentPhotoUris.length) || saving) &&
                       styles.disabled
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel="Submit forum comment"
                 >
-                  <Text style={styles.primaryText}>Comment</Text>
+                  <Text style={[styles.primaryText, { color: palette.accentText }]}>
+                    Comment
+                  </Text>
                 </Pressable>
               </View>
             ) : (
-              <Text style={styles.cardText}>Commenting requires `FORUM_POST`.</Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                Commenting requires `FORUM_POST`.
+              </Text>
             )}
 
             {comments.map((comment) => (
               <View
                 key={String(comment._id || comment.id || bodyOf(comment))}
-                style={styles.comment}
+                style={[
+                  styles.comment,
+                  { borderTopColor: palette.border }
+                ]}
               >
-                <Text style={styles.rowTitle}>{authorName(comment)}</Text>
+                <Text style={[styles.rowTitle, { color: palette.text }]}>
+                  {authorName(comment)}
+                </Text>
                 {visibleCommentBody(comment) ? (
-                  <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
+                  <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                    {visibleCommentBody(comment)}
+                  </Text>
                 ) : null}
                 {commentPhotos(comment).length ? (
                   <View style={styles.photoGrid}>
@@ -598,7 +657,9 @@ export default function ForumPostDetailRoute() {
               </View>
             ))}
             {!comments.length ? (
-              <Text style={styles.cardText}>No comments yet.</Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                No comments yet.
+              </Text>
             ) : null}
           </View>
         ) : null}

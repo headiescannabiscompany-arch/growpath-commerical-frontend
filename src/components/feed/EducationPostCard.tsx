@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export type EducationPostCardProps = {
@@ -18,17 +19,23 @@ export default function EducationPostCard({
   body,
   onPress
 }: EducationPostCardProps) {
+  const { palette } = useAppTheme();
   function openHref() {
     const location = (globalThis as any)?.window?.location;
     if (location) location.href = href;
   }
 
   const Content = (
-    <View style={styles.card}>
-      {!!title && <Text style={styles.title}>{title}</Text>}
-      {!!body && <Text style={styles.body}>{body}</Text>}
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ]}
+    >
+      {!!title && <Text style={[styles.title, { color: palette.text }]}>{title}</Text>}
+      {!!body && <Text style={[styles.body, { color: palette.textMuted }]}>{body}</Text>}
       {!!cta && (
-        <Text style={styles.cta}>
+        <Text style={[styles.cta, { color: palette.link }]}>
           {cta} {"\u2192"}
         </Text>
       )}
@@ -54,10 +61,9 @@ const styles = StyleSheet.create({
   card: {
     padding: 12,
     borderWidth: 1,
-    borderRadius: radius.card,
-    borderColor: "rgba(0,0,0,0.15)"
+    borderRadius: radius.card
   },
   title: { fontSize: 16, fontWeight: "600", marginBottom: 6 },
-  body: { opacity: 0.8 },
-  cta: { color: "#166534", fontWeight: "800", marginTop: 8 }
+  body: { fontSize: 14, lineHeight: 20 },
+  cta: { fontWeight: "800", marginTop: 8 }
 });

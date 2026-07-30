@@ -111,6 +111,20 @@ function objectValue(source: unknown, key: string) {
     : undefined;
 }
 
+function friendlyNoticeLabel(severity: ToolResultSeverity) {
+  switch (severity) {
+    case "high":
+      return "Needs review";
+    case "medium":
+      return "Check this";
+    case "low":
+      return "Low confidence";
+    case "info":
+    default:
+      return "Helpful detail";
+  }
+}
+
 function buildAskAiPrompt({
   title,
   status,
@@ -290,10 +304,25 @@ export default function ToolResultSurface({
   return (
     <View style={styles.card} accessibilityRole="summary">
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        {status ? <Text style={styles.status}>{status}</Text> : null}
+        <View style={styles.headerTextGroup}>
+          <Text style={styles.title}>{title}</Text>
+          {summary ? <Text style={styles.headerSummaryHint}>Bottom line</Text> : null}
+        </View>
+        <View style={styles.headerBadges}>
+          {confidence ? (
+            <Text style={styles.confidenceBadge}>
+              {String(confidence).replaceAll("_", " ").toUpperCase()}
+            </Text>
+          ) : null}
+          {status ? <Text style={styles.status}>{status}</Text> : null}
+        </View>
       </View>
-      {summary ? <Text style={styles.summary}>{summary}</Text> : null}
+      {summary ? (
+        <View style={styles.summaryPanel}>
+          <Text style={styles.summaryLabel}>Bottom line</Text>
+          <Text style={styles.summary}>{summary}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.metrics}>
         {metrics.map((metric) => (
@@ -344,10 +373,10 @@ export default function ToolResultSurface({
                 : styles.noticeInfo
           ]}
         >
-          <Text style={styles.noticeLabel}>{notice.severity.toUpperCase()}</Text>
+          <Text style={styles.noticeLabel}>{friendlyNoticeLabel(notice.severity)}</Text>
           <Text style={styles.noticeText}>{notice.message}</Text>
           {notice.remediation ? (
-            <Text style={styles.remediation}>Action: {notice.remediation}</Text>
+            <Text style={styles.remediation}>Next: {notice.remediation}</Text>
           ) : null}
         </View>
       ))}
@@ -361,9 +390,10 @@ export default function ToolResultSurface({
       {recommendations.length ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recommendations</Text>
-          {recommendations.map((item) => (
+          <Text style={styles.sectionIntro}>Next checks and follow-up actions.</Text>
+          {recommendations.map((item, index) => (
             <Text key={item} style={styles.listItem}>
-              - {item}
+              {index + 1}. {item}
             </Text>
           ))}
         </View>
@@ -398,7 +428,7 @@ export default function ToolResultSurface({
 
       {assumptions.length ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Assumptions</Text>
+          <Text style={styles.sectionTitle}>Evidence considered</Text>
           {assumptions.map((item) => (
             <Text key={item} style={styles.detail}>
               - {item}
@@ -456,18 +486,37 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: "#F8FAFC",
     padding: 14,
-    gap: 10
+    gap: 12
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 10
   },
+  headerTextGroup: { flex: 1, gap: 2 },
+  headerBadges: { flexDirection: "row", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" },
   title: { fontSize: 17, fontWeight: "800", color: "#0F172A" },
+  headerSummaryHint: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.3
+  },
+  confidenceBadge: {
+    color: "#1D4ED8",
+    backgroundColor: "#EFF6FF",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    fontSize: 11,
+    fontWeight: "800",
+    overflow: "hidden"
+  },
   status: {
     color: "#166534",
     backgroundColor: "#DCFCE7",
@@ -477,6 +526,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
     overflow: "hidden"
+  },
+  summaryPanel: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D1FAE5",
+    borderRadius: 10,
+    padding: 12,
+    gap: 6
+  },
+  summaryLabel: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.3
   },
   summary: { color: "#334155", lineHeight: 20 },
   metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -532,11 +596,12 @@ const styles = StyleSheet.create({
   noticeHigh: { backgroundColor: "#FEE2E2" },
   noticeMedium: { backgroundColor: "#FFEDD5" },
   noticeInfo: { backgroundColor: "#E0F2FE" },
-  noticeLabel: { color: "#7C2D12", fontSize: 11, fontWeight: "800" },
+  noticeLabel: { color: "#7C2D12", fontSize: 11, fontWeight: "800", textTransform: "uppercase" },
   noticeText: { color: "#7C2D12", lineHeight: 19 },
   remediation: { color: "#9A3412", fontWeight: "700", lineHeight: 19 },
   section: { gap: 4 },
   sectionTitle: { color: "#334155", fontWeight: "800" },
+  sectionIntro: { color: "#64748B", fontSize: 12, lineHeight: 18 },
   listItem: { color: "#475569", lineHeight: 19 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   action: {
