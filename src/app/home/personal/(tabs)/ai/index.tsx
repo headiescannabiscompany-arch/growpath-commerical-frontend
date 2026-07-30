@@ -83,6 +83,25 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   sopChoiceText: { color: "#5B21B6", fontWeight: "700", fontSize: 12 },
+  workspaceCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    borderRadius: radius.card,
+    marginBottom: 10,
+    backgroundColor: "#EFF6FF"
+  },
+  workspaceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  workspaceChip: {
+    borderWidth: 1,
+    borderColor: "#93C5FD",
+    borderRadius: radius.card,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  workspaceChipOn: { backgroundColor: "#1D4ED8", borderColor: "#1D4ED8" },
+  workspaceChipText: { color: "#1D4ED8", fontWeight: "800", fontSize: 12 },
+  workspaceChipTextOn: { color: "#FFFFFF" },
   actionButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
@@ -813,6 +832,51 @@ export default function AiScreen({
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+        <View style={styles.workspaceCard}>
+          <Text style={[styles.contextText, styles.contextTitle]}>
+            AI workspace options
+          </Text>
+          <Text style={styles.contextText}>
+            Show the same AI workflow in the right workspace: Single user, Commercial or
+            Facility.
+          </Text>
+          <View style={styles.workspaceRow}>
+            {[
+              {
+                label: "Single user",
+                href: "/home/personal/ai",
+                active: workspaceType === "personal"
+              },
+              {
+                label: "Commercial",
+                href: "/home/commercial/tools/ask-ai",
+                active: workspaceType === "commercial"
+              },
+              {
+                label: "Facility",
+                href: "/home/facility/ai-ask",
+                active: workspaceType === "facility"
+              }
+            ].map((item) => (
+              <Pressable
+                key={item.label}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${item.label} AI`}
+                onPress={() => router.push(item.href as any)}
+                style={[styles.workspaceChip, item.active && styles.workspaceChipOn]}
+              >
+                <Text
+                  style={[
+                    styles.workspaceChipText,
+                    item.active && styles.workspaceChipTextOn
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
         {workspaceType !== "facility" ? (
           <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
         ) : null}

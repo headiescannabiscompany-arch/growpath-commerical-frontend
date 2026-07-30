@@ -46,6 +46,22 @@ describe("apiRequest authentication contract", () => {
     }
   });
 
+  it("refreshes token listeners when an AI response reports consumed credits", async () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeToTokenBalanceChange(listener);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      text: async () => JSON.stringify({ aiCreditsUsed: 3 })
+    })) as any;
+
+    try {
+      await apiRequest("/api/ai/assistant/personal");
+      expect(listener).toHaveBeenCalledWith(0);
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it("does not replace an explicitly supplied lowercase authorization header", async () => {
     global.fetch = jest.fn(async (_url: string, options: any) => ({
       ok: true,

@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   containerTv: { alignSelf: "center", maxWidth: 1840, padding: 28, width: "100%" },
   hero: {
     alignItems: "stretch",
-    backgroundColor: "#0b1220",
+    backgroundColor: "#172317",
     borderRadius: radius.card,
     flexDirection: "row",
     gap: 16,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   heroTv: { minHeight: 180, padding: 28 },
   heroCopy: { flex: 1, justifyContent: "center" },
   kicker: {
-    color: "#93c5fd",
+    color: "#BFD6C0",
     fontSize: 12,
     fontWeight: "900",
     marginBottom: 6,
@@ -585,15 +585,15 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end"
   },
   pulse: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.16)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(191,214,192,0.18)",
     borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 118,
     padding: 12
   },
   pulseValue: { color: "white", fontSize: 20, fontWeight: "900" },
-  pulseLabel: { color: "#a7f3d0", fontSize: 12, fontWeight: "800", marginTop: 3 },
+  pulseLabel: { color: "#D1FAE5", fontSize: 12, fontWeight: "800", marginTop: 3 },
 
   learningSection: {
     backgroundColor: "white",

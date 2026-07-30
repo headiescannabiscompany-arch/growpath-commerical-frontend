@@ -118,6 +118,44 @@ describe("facility workflow API wrappers", () => {
     });
   });
 
+  it("creates facility tasks with an assignee when provided", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      task: {
+        id: "task-3",
+        title: "Assign the room check",
+        assignedToUserId: "member-1",
+        assignedTo: "member-1",
+        scope: "facility"
+      }
+    });
+
+    await expect(
+      createTask("facility-1", {
+        title: "Assign the room check",
+        assignedToUserId: "member-1",
+        assignedTo: "member-1",
+        scope: "facility"
+      })
+    ).resolves.toEqual({
+      _id: "task-3",
+      id: "task-3",
+      title: "Assign the room check",
+      assignedToUserId: "member-1",
+      assignedTo: "member-1",
+      scope: "facility"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/facility/facility-1/tasks", {
+      method: "POST",
+      body: {
+        title: "Assign the room check",
+        assignedToUserId: "member-1",
+        assignedTo: "member-1",
+        scope: "facility"
+      }
+    });
+  });
+
   it("normalizes legacy facility task envelopes and completes tasks", async () => {
     mockApiRequest
       .mockResolvedValueOnce({

@@ -394,7 +394,15 @@ export async function apiRequest<T = any>(
         result && typeof result === "object"
           ? ((result as any).aiTokensRemaining ?? (result as any).data?.aiTokensRemaining)
           : undefined;
-      publishTokenBalanceChange(reportedBalance);
+      const consumedCredits =
+        result && typeof result === "object"
+          ? ((result as any).aiCreditsUsed ?? (result as any).data?.aiCreditsUsed)
+          : undefined;
+      if (reportedBalance !== undefined && reportedBalance !== null) {
+        publishTokenBalanceChange(reportedBalance);
+      } else if (consumedCredits !== undefined && consumedCredits !== null) {
+        publishTokenBalanceChange(0);
+      }
       emitTransportEvent({ type: "recovered" });
       return result;
     } catch (err: any) {

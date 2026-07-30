@@ -394,6 +394,7 @@ export default function FacilityTasksRoute() {
     if (!title) return;
     const cleanSourceObjectId = newSourceObjectId.trim();
     const cleanRoomId = newRoomId.trim();
+    const assignedToUserId = canAssign ? newAssignedTo.trim() || undefined : undefined;
     setCreating(true);
     try {
       clearError();
@@ -401,7 +402,8 @@ export default function FacilityTasksRoute() {
         title,
         notes: newNotes.trim() || undefined,
         dueDate: newDueDate.trim() || undefined,
-        assignedToUserId: canAssign ? newAssignedTo.trim() || undefined : undefined,
+        assignedTo: assignedToUserId,
+        assignedToUserId,
         sourceType: newSourceType,
         sourceObjectId: cleanSourceObjectId || undefined,
         roomId: cleanRoomId || undefined,
