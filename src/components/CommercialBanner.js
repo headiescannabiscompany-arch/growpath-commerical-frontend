@@ -2,6 +2,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import ContextBar from "./ContextBar.js";
+import { useAppTheme } from "@/theme/appTheme";
 
 // Simple, reusable banner for promos, upgrades, featured tools, etc.
 const defaultCapabilities = {
@@ -14,6 +15,7 @@ export default function CommercialBanner({
   capabilities = defaultCapabilities,
   contextBarProps
 }) {
+  const { palette } = useAppTheme();
   let bannerText = "Featured: Try GrowPath Pro for advanced tools & Forum/Q&A!";
   if (mode === "facility") bannerText = "Facility: Access your team tools and analytics!";
   else if (mode === "commercial")
@@ -30,15 +32,28 @@ export default function CommercialBanner({
       {(mode === "facility" || mode === "commercial") && (
         <ContextBar {...contextBarProps} />
       )}
-      <View style={styles.banner}>
+      <View
+        style={[
+          styles.banner,
+          {
+            backgroundColor: palette.hero,
+            borderBottomColor: palette.border
+          }
+        ]}
+      >
         <Image
           source={require("../../assets/icon.png")}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.text}>{bannerText}</Text>
+        <Text style={[styles.text, { color: palette.heroText }]}>{bannerText}</Text>
         {showUpgrade && (
-          <Text style={[styles.text, { fontSize: 12, marginLeft: 8 }]}>
+          <Text
+            style={[
+              styles.text,
+              { color: palette.heroMuted, fontSize: 12, marginLeft: 8 }
+            ]}
+          >
             Unlock more with Pro!
           </Text>
         )}
@@ -50,14 +65,12 @@ export default function CommercialBanner({
 const styles = StyleSheet.create({
   banner: {
     width: "100%",
-    backgroundColor: "#10B981",
     paddingVertical: 10,
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
     minHeight: 48
   },
   logo: {
@@ -66,7 +79,6 @@ const styles = StyleSheet.create({
     marginRight: 12
   },
   text: {
-    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
     flex: 1

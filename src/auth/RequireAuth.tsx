@@ -3,11 +3,13 @@ import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useRouter, useSegments } from "expo-router";
 import { useAuth } from "./AuthContext";
+import { useAppTheme } from "@/theme/appTheme";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, user, isHydrating, meStatus, meError, retryMe, logout } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  const { palette } = useAppTheme();
 
   React.useEffect(() => {
     if (!isHydrating) {
@@ -28,7 +30,14 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (isHydrating || (token && (meStatus === "loading" || meStatus === "idle"))) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
         <ActivityIndicator />
       </View>
     );
@@ -38,14 +47,20 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     return (
       <View
         accessibilityRole="alert"
-        style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          backgroundColor: palette.page
+        }}
       >
-        <Text style={{ color: "#111827", fontSize: 20, fontWeight: "700" }}>
+        <Text style={{ color: palette.text, fontSize: 20, fontWeight: "700" }}>
           Session check failed
         </Text>
         <Text
           style={{
-            color: "#4B5563",
+            color: palette.textMuted,
             fontSize: 14,
             marginTop: 8,
             maxWidth: 420,
@@ -68,13 +83,15 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
             accessibilityLabel="Retry /api/me"
             onPress={() => retryMe()}
             style={{
-              backgroundColor: "#166534",
+              backgroundColor: palette.accent,
               borderRadius: 12,
               paddingHorizontal: 14,
               paddingVertical: 10
             }}
           >
-            <Text style={{ color: "#FFFFFF", fontWeight: "800" }}>Retry /api/me</Text>
+            <Text style={{ color: palette.accentText, fontWeight: "800" }}>
+              Retry /api/me
+            </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -84,15 +101,15 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
               router.replace("/login");
             }}
             style={{
-              backgroundColor: "#FFFFFF",
-              borderColor: "#CBD5E1",
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
               borderRadius: 12,
               borderWidth: 1,
               paddingHorizontal: 14,
               paddingVertical: 10
             }}
           >
-            <Text style={{ color: "#111827", fontWeight: "800" }}>
+            <Text style={{ color: palette.text, fontWeight: "800" }}>
               Clear session and sign in
             </Text>
           </Pressable>
