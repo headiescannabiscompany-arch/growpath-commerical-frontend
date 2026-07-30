@@ -4,7 +4,9 @@ import path from "path";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
-import CommercialHome from "@/app/home/commercial";
+import CommercialHome, {
+  resetCommercialDashboardCacheForTests
+} from "@/app/home/commercial";
 import CommercialCommunityRoute from "@/app/home/commercial/community";
 import CommercialCoursesRoute from "@/app/home/commercial/courses";
 import CommercialCourseDetailRoute from "@/app/home/commercial/courses/[courseId]";
@@ -94,6 +96,7 @@ describe("commercial workflow pages", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
+    resetCommercialDashboardCacheForTests();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/dashboard") {
         return Promise.resolve({
@@ -958,6 +961,43 @@ describe("commercial workflow pages", () => {
           })
         })
       )
+    );
+  });
+
+  it("shows a draft shell when the commercial storefront is not configured yet", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/dashboard") {
+        return Promise.resolve({
+          dashboard: {
+            counts: {
+              storefrontConfigured: 0,
+              products: 0,
+              courses: 0
+            }
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialHome />);
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/dashboard")
+    );
+
+    expect(screen.getByText("Storefront not configured yet.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Draft shell: add a public slug, finish the brand profile, and publish once products are ready."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Draft")).toBeTruthy();
+    expect(screen.getByLabelText("Preview Storefront").props.href).toBe(
+      "/home/commercial/storefront/preview"
+    );
+    expect(screen.getByLabelText("Open Storefront").props.href).toBe(
+      "/home/commercial/storefront"
     );
   });
 
@@ -3119,6 +3159,3 @@ describe("commercial workflow pages", () => {
     );
   });
 });
-
-
-

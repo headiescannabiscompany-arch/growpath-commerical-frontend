@@ -81,6 +81,12 @@ async function loadCommercialDashboard() {
   return commercialDashboardPromise;
 }
 
+export function resetCommercialDashboardCacheForTests() {
+  commercialDashboardCache = null;
+  commercialDashboardPromise = null;
+  commercialDashboardFetchedAt = 0;
+}
+
 const QUICK_ACTIONS: Action[] = [
   { label: "Storefront", href: "/home/commercial/storefront" },
   { label: "Brand Profile", href: "/home/commercial/profile" },
@@ -421,6 +427,16 @@ export default function CommercialHome() {
       { label: "Add Product", href: "/home/commercial/products/new" }
     ];
   }, [dashboard?.storefront?.slug]);
+  const storefrontStatus = String(
+    dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
+  ).trim();
+  const storefrontIsLive = Boolean(dashboard?.storefront?.slug);
+  const storefrontLaunchCopy = !storefrontIsLive
+    ? "Draft shell: add a public slug, finish the brand profile, and publish once products are ready."
+    : storefrontStatus &&
+        !["published", "active"].includes(storefrontStatus.toLowerCase())
+      ? `Storefront slug is set, but the public brand home is still ${storefrontStatus}.`
+      : `Storefront is live at /${String(dashboard?.storefront?.slug || "").trim()}.`;
 
   async function createActionItemTask(
     item: NonNullable<DashboardModel["actionItems"]>[number],
@@ -530,6 +546,7 @@ export default function CommercialHome() {
                   : "Storefront not configured yet."}
               </Text>
             )}
+            <Text style={styles.dashboardLaunchCopy}>{storefrontLaunchCopy}</Text>
           </View>
           <View style={styles.pulseStack}>
             <View style={styles.pulse}>
@@ -780,6 +797,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 18,
     marginTop: 10
+  },
+  dashboardLaunchCopy: {
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 6
   },
   actionItemList: {
     gap: 8,
