@@ -15,6 +15,7 @@ import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
 import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function formatDate(value?: string) {
@@ -111,17 +112,30 @@ function ActionButton({
   testID?: string;
 }) {
   const router = useRouter();
+  const { palette } = useAppTheme();
   return (
     <Pressable
       accessibilityRole="link"
       testID={testID}
       onPress={() => router.push(href as any)}
-      style={primary ? [styles.action, styles.actionPrimary] : styles.action}
+      style={[
+        styles.action,
+        primary
+          ? {
+              backgroundColor: palette.accent,
+              borderColor: palette.accent
+            }
+          : {
+              backgroundColor: palette.surface,
+              borderColor: palette.border
+            }
+      ]}
     >
       <Text
-        style={
-          primary ? [styles.actionText, styles.actionTextPrimary] : styles.actionText
-        }
+        style={[
+          styles.actionText,
+          { color: primary ? palette.accentText : palette.link }
+        ]}
       >
         {label}
       </Text>
@@ -131,6 +145,7 @@ function ActionButton({
 
 export default function PersonalGrowsRoute() {
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
   const hasCreateCapability = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
   const grows = items;
@@ -265,17 +280,22 @@ export default function PersonalGrowsRoute() {
   return (
     <ScrollView
       testID="screen-personal-grows"
-      style={styles.page}
+      style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.stack}>
-        <AppCard style={styles.heroCard}>
-          <Text style={styles.kicker}>Personal grow workspace</Text>
-          <Text accessibilityRole="header" style={styles.title}>
+        <AppCard
+          style={[
+            styles.heroCard,
+            { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.kicker, { color: palette.accent }]}>Personal grow workspace</Text>
+          <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
             Grows
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Keep each grow connected to logs, photos, tasks, AI tools, and exports instead
             of a flat list.
           </Text>
@@ -300,20 +320,29 @@ export default function PersonalGrowsRoute() {
           </View>
           {!canCreateGrow ? (
             <View>
-              <Text style={styles.limitHeading}>Free grow limit reached</Text>
-              <Text style={styles.limitText}>{limitMessage}</Text>
+              <Text style={[styles.limitHeading, { color: palette.warning }]}>
+                Free grow limit reached
+              </Text>
+              <Text style={[styles.limitText, { color: palette.textMuted }]}>
+                {limitMessage}
+              </Text>
             </View>
           ) : null}
         </AppCard>
 
-        <AppCard style={styles.roadmapCard}>
-          <Text style={styles.cardKicker}>Grow roadmap</Text>
-          <Text style={styles.roadmapTitle}>
+        <AppCard
+          style={[
+            styles.roadmapCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardKicker, { color: palette.accent }]}>Grow roadmap</Text>
+          <Text style={[styles.roadmapTitle, { color: palette.text }]}>
             {latestGrow
               ? "Keep the current grow moving with a clear next step."
               : "Turn a blank workspace into a real grow record."}
           </Text>
-          <Text style={styles.roadmapText}>
+          <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
             {latestGrow
               ? "Open the grow, then move through journal entries, tasks, timeline events, and AI tools as the plant changes."
               : "Create the grow, add crop identity and photos, then use diagnosis, tasks, and AI tools to keep the record usable."}
@@ -330,14 +359,19 @@ export default function PersonalGrowsRoute() {
           </View>
         </AppCard>
 
-        <AppCard style={styles.roadmapCard}>
-          <Text style={styles.cardKicker}>Grow tools</Text>
-          <Text style={styles.roadmapTitle}>
+        <AppCard
+          style={[
+            styles.roadmapCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardKicker, { color: palette.accent }]}>Grow tools</Text>
+          <Text style={[styles.roadmapTitle, { color: palette.text }]}>
             {latestGrow
               ? "Jump into connected tools and exports for the current grow."
               : "Create a grow first, then connect tools and export records from here."}
           </Text>
-          <Text style={styles.roadmapText}>
+          <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
             {latestGrow
               ? "Use the grow-specific integrations and PDF export links to keep the record connected to sensors, spreadsheets, and printable reports."
               : "The tools are ready once a grow exists so the links can carry the right grow context."}

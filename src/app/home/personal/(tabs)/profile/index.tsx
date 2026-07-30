@@ -29,6 +29,7 @@ import {
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
@@ -158,6 +159,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const auth = useAuth();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
 
   const email = auth.user?.email || "unknown";
   const [emailDraft, setEmailDraft] = useState(email === "unknown" ? "" : email);
@@ -183,6 +185,12 @@ export default function ProfileScreen() {
   const plan = ent.plan || "free";
   const planActions = getPersonalProfilePlanActions(plan);
   const emailVerified = Boolean(auth.user?.emailVerified);
+  const pageStyle = { backgroundColor: palette.page };
+  const cardStyle = { backgroundColor: palette.surface, borderColor: palette.border };
+  const textStyle = { color: palette.text };
+  const mutedTextStyle = { color: palette.textMuted };
+  const accentButtonStyle = { backgroundColor: palette.accent, borderColor: palette.accent };
+  const accentTextStyle = { color: palette.accentText };
 
   useEffect(() => {
     setEmailDraft(email === "unknown" ? "" : email);
@@ -411,17 +419,17 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>
+    <ScrollView style={[styles.container, pageStyle]} contentContainerStyle={styles.content}>
+      <Text accessibilityRole="header" style={[styles.title, textStyle]}>
         Profile
       </Text>
-      <Text style={styles.subtitle}>Account and plan details</Text>
+      <Text style={[styles.subtitle, mutedTextStyle]}>Account and plan details</Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_profile" longContent />
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Email</Text>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Email</Text>
         <View style={styles.statusRow}>
-          <Text style={styles.statusLabel}>Status</Text>
+          <Text style={[styles.statusLabel, mutedTextStyle]}>Status</Text>
           <Text
             style={[
               styles.statusValue,
@@ -443,13 +451,14 @@ export default function ProfileScreen() {
             setEmailFeedback("");
             setEmailError("");
           }}
-        />
+          />
         {emailFeedback ? <Text style={styles.feedback}>{emailFeedback}</Text> : null}
         {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
         <Pressable
           style={[
             styles.button,
             styles.buttonPrimary,
+            accentButtonStyle,
             (savingEmail || emailDraft.trim().toLowerCase() === email) && {
               opacity: 0.55
             }
@@ -457,7 +466,7 @@ export default function ProfileScreen() {
           disabled={savingEmail || emailDraft.trim().toLowerCase() === email}
           onPress={handleSaveEmail}
         >
-          <Text style={styles.buttonPrimaryText}>
+          <Text style={[styles.buttonPrimaryText, accentTextStyle]}>
             {savingEmail ? "Saving..." : "Update Email"}
           </Text>
         </Pressable>
@@ -472,41 +481,41 @@ export default function ProfileScreen() {
             disabled={resendingVerification || !email || email === "unknown"}
             onPress={handleResendVerification}
           >
-            <Text style={styles.buttonSecondaryText}>
+            <Text style={[styles.buttonSecondaryText, textStyle]}>
               {resendingVerification ? "Sending..." : "Resend verification email"}
             </Text>
           </Pressable>
         ) : null}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Mode</Text>
-        <Text style={styles.rowValue}>{mode}</Text>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Mode</Text>
+        <Text style={[styles.rowValue, textStyle]}>{mode}</Text>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/account/mode" as any)}
           accessibilityRole="button"
           accessibilityLabel="Switch workspace mode"
         >
-          <Text style={styles.accountActionText}>Switch workspace</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Switch workspace</Text>
         </Pressable>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/home/personal/more/links" as any)}
           accessibilityRole="button"
           accessibilityLabel="Manage profile links"
         >
-          <Text style={styles.accountActionText}>Profile links</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Profile links</Text>
         </Pressable>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/videos?tab=library" as any)}
           accessibilityRole="button"
           accessibilityLabel="Open personal video library"
         >
-          <Text style={styles.accountActionText}>My videos</Text>
+          <Text style={[styles.accountActionText, textStyle]}>My videos</Text>
         </Pressable>
-        <Text style={styles.mutedText}>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Personal is for your grow records and Forum/Q&A. Commercial and Facility
           workspaces keep storefront outreach and operational rooms separate.
         </Text>
@@ -514,10 +523,10 @@ export default function ProfileScreen() {
 
       <ThemeModeSelector />
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Plan</Text>
-        <Text style={styles.rowValue}>{plan}</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Plan</Text>
+        <Text style={[styles.rowValue, textStyle]}>{plan}</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Free includes basic grow tracking, logs, tasks, and limited AI credits. Upgrade
           for more grows, storage, advanced tools, exports, integrations, and higher AI
           limits.
@@ -528,10 +537,17 @@ export default function ProfileScreen() {
               key={String(label)}
               accessibilityRole="button"
               onPress={() => router.push(href as any)}
-              style={[styles.planAction, primary ? styles.planActionPrimary : null]}
+              style={[
+                styles.planAction,
+                primary ? [styles.planActionPrimary, accentButtonStyle] : null
+              ]}
             >
               <Text
-                style={primary ? styles.planActionPrimaryText : styles.planActionText}
+                style={
+                  primary
+                    ? [styles.planActionPrimaryText, accentTextStyle]
+                    : [styles.planActionText, { color: palette.accent }]
+                }
               >
                 {label}
               </Text>
@@ -540,25 +556,27 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>AI-credit balance</Text>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>AI-credit balance</Text>
         <TokenBalanceWidget
           onPress={() => router.push("/home/personal/profile/billing" as any)}
         />
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Notification settings</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Notification settings</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           These controls decide which inbox items can also reach your device. In-app
           notifications stay available; push requires a registered device.
         </Text>
         {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
           <View key={String(option.key)} style={styles.notificationRow}>
             <View style={styles.notificationCopy}>
-              <Text style={styles.notificationTitle}>{option.title}</Text>
-              <Text style={styles.notificationDescription}>{option.description}</Text>
-            </View>
+            <Text style={[styles.notificationTitle, textStyle]}>{option.title}</Text>
+            <Text style={[styles.notificationDescription, mutedTextStyle]}>
+              {option.description}
+            </Text>
+          </View>
             <Switch
               accessibilityLabel={option.title}
               value={Boolean(notificationPrefs[option.key])}
@@ -573,17 +591,18 @@ export default function ProfileScreen() {
         ))}
         <View style={styles.actionGrid}>
           <Pressable
-            style={styles.accountAction}
+            style={[styles.accountAction, { backgroundColor: palette.surface }]}
             onPress={() => router.push("/home/notifications" as any)}
             accessibilityRole="button"
             accessibilityLabel="Open notification inbox"
           >
-            <Text style={styles.accountActionText}>Open Notification Inbox</Text>
+            <Text style={[styles.accountActionText, textStyle]}>Open Notification Inbox</Text>
           </Pressable>
           <Pressable
             style={[
               styles.planAction,
               styles.planActionPrimary,
+              accentButtonStyle,
               notificationSaving && { opacity: 0.6 }
             ]}
             onPress={() => void handleSaveNotificationPreferences()}
@@ -591,7 +610,7 @@ export default function ProfileScreen() {
             accessibilityLabel="Save notification settings"
             disabled={notificationSaving}
           >
-            <Text style={styles.planActionPrimaryText}>
+            <Text style={[styles.planActionPrimaryText, accentTextStyle]}>
               {notificationSaving ? "Saving..." : "Save Notification Settings"}
             </Text>
           </Pressable>
@@ -602,33 +621,33 @@ export default function ProfileScreen() {
         {notificationError ? <Text style={styles.error}>{notificationError}</Text> : null}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Grow interests</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Grow interests</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Edit what you grow, your environment, growing method, experience level, and
           commercial goals when relevant.
         </Text>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/onboarding/guilds" as any)}
           accessibilityRole="button"
           accessibilityLabel="Edit grow interests"
         >
-          <Text style={styles.accountActionText}>Edit Grow Interests</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Edit Grow Interests</Text>
         </Pressable>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Cannabis content and parental lock</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Cannabis content and parental lock</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Cannabis posts, courses, feed recommendations, and related tools can be hidden
           without affecting fruit, vegetable, flower, tree, or general gardening content.
         </Text>
-        <Text style={styles.rowValue}>
+        <Text style={[styles.rowValue, textStyle]}>
           Cannabis content:{" "}
           {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
         </Text>
-        <Text style={styles.mutedText}>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Age eligibility: {auth.user?.ageBand || "verification needed"} - Parental lock:{" "}
           {auth.user?.parentalLockEnabled ? "On" : "Off"}
         </Text>
@@ -653,10 +672,10 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Hide cannabis content"
             disabled={contentControlBusy}
-            style={styles.planAction}
+            style={[styles.planAction, { borderColor: palette.accent, backgroundColor: palette.surface }]}
             onPress={() => void saveContentControls({ cannabisVisibility: "hide" })}
           >
-            <Text style={styles.planActionText}>Hide cannabis</Text>
+            <Text style={[styles.planActionText, { color: palette.accent }]}>Hide cannabis</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -664,11 +683,12 @@ export default function ProfileScreen() {
             disabled={contentControlBusy || !auth.user?.cannabisEligible}
             style={[
               styles.planAction,
+              { borderColor: palette.accent, backgroundColor: palette.surface },
               (!auth.user?.cannabisEligible || contentControlBusy) && { opacity: 0.5 }
             ]}
             onPress={() => void saveContentControls({ cannabisVisibility: "show" })}
           >
-            <Text style={styles.planActionText}>Show cannabis</Text>
+            <Text style={[styles.planActionText, { color: palette.accent }]}>Show cannabis</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -680,6 +700,7 @@ export default function ProfileScreen() {
             disabled={contentControlBusy || parentalPin.length < 4}
             style={[
               styles.planAction,
+              { borderColor: palette.accent, backgroundColor: palette.accent },
               (contentControlBusy || parentalPin.length < 4) && { opacity: 0.5 }
             ]}
             onPress={() =>
@@ -690,7 +711,7 @@ export default function ProfileScreen() {
               })
             }
           >
-            <Text style={styles.planActionText}>
+            <Text style={[styles.planActionPrimaryText, accentTextStyle]}>
               {auth.user?.parentalLockEnabled ? "Disable lock" : "Enable lock + hide"}
             </Text>
           </Pressable>
@@ -701,44 +722,44 @@ export default function ProfileScreen() {
       </View>
       <PersonalFeedPlacement placement="middle" routeKey="personal_profile" longContent />
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Other account types</Text>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Other account types</Text>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/login" as any)}
         >
-          <Text style={styles.accountActionText}>Sign in to Commercial account</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Sign in to Commercial account</Text>
         </Pressable>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/login" as any)}
         >
-          <Text style={styles.accountActionText}>Sign in to Facility account</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Sign in to Facility account</Text>
         </Pressable>
-        <Text style={styles.mutedText}>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Personal, Commercial, and Facility are separate account types.
         </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Grow reports and export</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Grow reports and export</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Export records across your account, or open a specific grow first to create a
           grow-scoped report.
         </Text>
         <Pressable
-          style={styles.accountAction}
+          style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/home/personal/tools/pdf-export" as any)}
           accessibilityRole="button"
           accessibilityLabel="Open grow reports and export"
         >
-          <Text style={styles.accountActionText}>Open Grow Reports & Export</Text>
+          <Text style={[styles.accountActionText, textStyle]}>Open Grow Reports & Export</Text>
         </Pressable>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rowLabel}>Privacy and account data</Text>
-        <Text style={styles.mutedText}>
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Privacy and account data</Text>
+        <Text style={[styles.mutedText, mutedTextStyle]}>
           Export your account data as JSON, or request account deletion. Deletion
           anonymizes the account and archives active personal records instead of blindly
           removing grow history.
@@ -746,13 +767,17 @@ export default function ProfileScreen() {
         {privacyFeedback ? <Text style={styles.feedback}>{privacyFeedback}</Text> : null}
         {privacyError ? <Text style={styles.error}>{privacyError}</Text> : null}
         <Pressable
-          style={[styles.button, exporting && { opacity: 0.55 }]}
+          style={[
+            styles.button,
+            { backgroundColor: palette.surface, borderColor: palette.border },
+            exporting && { opacity: 0.55 }
+          ]}
           disabled={exporting}
           onPress={handleExportData}
           accessibilityRole="button"
           accessibilityLabel="Export account data"
         >
-          <Text style={styles.buttonSecondaryText}>
+          <Text style={[styles.buttonSecondaryText, textStyle]}>
             {exporting ? "Exporting..." : "Export Account Data"}
           </Text>
         </Pressable>
@@ -772,6 +797,7 @@ export default function ProfileScreen() {
           style={[
             styles.button,
             styles.buttonDanger,
+            { backgroundColor: palette.surface, borderColor: palette.danger },
             (deleting || deleteConfirm.trim().toUpperCase() !== "DELETE") && {
               opacity: 0.55
             }
@@ -781,14 +807,21 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Delete account"
         >
-          <Text style={styles.buttonDangerText}>
+          <Text style={[styles.buttonDangerText, { color: palette.danger }]}>
             {deleting ? "Deleting..." : "Delete Account"}
           </Text>
         </Pressable>
       </View>
 
-      <Pressable style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
-        <Text style={styles.buttonDangerText}>Log out</Text>
+      <Pressable
+        style={[
+          styles.button,
+          styles.buttonDanger,
+          { backgroundColor: palette.surface, borderColor: palette.danger }
+        ]}
+        onPress={handleLogout}
+      >
+        <Text style={[styles.buttonDangerText, { color: palette.danger }]}>Log out</Text>
       </Pressable>
       <PersonalFeedPlacement placement="bottom" routeKey="personal_profile" longContent />
     </ScrollView>
