@@ -78,6 +78,10 @@ export default function FacilityTabsLayout() {
           tabBarLabel: compactTabs ? "Comp" : "Compliance"
         }}
       />
+      <Tabs.Screen
+        name="logs"
+        options={{ title: "Logs", href: null, tabBarButton: () => null }}
+      />
       <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
       <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />

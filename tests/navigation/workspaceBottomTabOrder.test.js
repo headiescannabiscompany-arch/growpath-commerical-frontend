@@ -98,6 +98,9 @@ describe("workspace bottom-tab order", () => {
     const contents = source("src/app/home/facility/(tabs)/_layout.tsx");
     expectOrder(contents, ["dashboard", "rooms", "tasks", "ai-ask", "profile"]);
     expect(contents).toContain("href: compactTabs ? null : undefined");
+    expect(contents).toContain(
+      'name="logs"\n        options={{ title: "Logs", href: null, tabBarButton: () => null }}'
+    );
   });
 
   it("keeps legacy Facility navigation anchored by Dashboard and Profile", () => {
