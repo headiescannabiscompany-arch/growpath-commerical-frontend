@@ -80,7 +80,7 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="logs"
-        options={{ title: "Logs", href: null, tabBarButton: () => null }}
+        options={{ title: "Logs", tabBarButton: () => null }}
       />
       <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
