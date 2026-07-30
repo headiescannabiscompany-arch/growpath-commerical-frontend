@@ -97,8 +97,8 @@ export default function CommercialTabsLayout() {
         name="feed"
         options={{
           title: "Feed / Campaigns",
-          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
           href: null,
+          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
           headerShown: false
         }}
       />
@@ -111,10 +111,7 @@ export default function CommercialTabsLayout() {
         name="inventory"
         options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
-      <Tabs.Screen
-        name="analytics"
-        options={{ title: "Analytics", href: null, headerShown: false }}
-      />
+      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null, headerShown: false }} />
       <Tabs.Screen
         name="more"
         options={{ title: "More", href: null, headerShown: false }}

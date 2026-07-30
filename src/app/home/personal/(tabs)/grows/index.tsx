@@ -133,6 +133,7 @@ export default function PersonalGrowsRoute() {
   const ent = useEntitlements();
   const hasCreateCapability = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
+  const grows = items;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
@@ -207,7 +208,7 @@ export default function PersonalGrowsRoute() {
     [sortedGrows]
   );
 
-  const canCreateGrow = hasCreateCapability && (maxGrows <= 0 || items.length < maxGrows);
+  const canCreateGrow = hasCreateCapability && (maxGrows <= 0 || grows.length < maxGrows);
   const limitMessage =
     maxGrows === 1
       ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
@@ -297,7 +298,12 @@ export default function PersonalGrowsRoute() {
             <ActionButton href="/home/personal/diagnose" label="Run Diagnosis" />
             <ActionButton href="/home/personal/tasks" label="Open Tasks" />
           </View>
-          {!canCreateGrow ? <Text style={styles.limitText}>{limitMessage}</Text> : null}
+              {!canCreateGrow ? (
+                <View>
+                  <Text style={styles.limitHeading}>Free grow limit reached</Text>
+                  <Text style={styles.limitText}>{limitMessage}</Text>
+                </View>
+              ) : null}
         </AppCard>
 
         <AppCard style={styles.roadmapCard}>
@@ -356,6 +362,7 @@ export default function PersonalGrowsRoute() {
             <Text style={styles.stateText}>{error}</Text>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Try loading grows again"
               onPress={() => {
                 void load();
               }}
@@ -582,12 +589,19 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12
   },
-  limitText: {
-    color: "#64748B",
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 10
-  },
+      limitText: {
+        color: "#64748B",
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 10
+      },
+      limitHeading: {
+        color: "#B45309",
+        fontSize: 12,
+        fontWeight: "900",
+        marginTop: 10,
+        textTransform: "uppercase"
+      },
   roadmapCard: {
     backgroundColor: "#FFFFFF",
     borderColor: "#C7F9CC"

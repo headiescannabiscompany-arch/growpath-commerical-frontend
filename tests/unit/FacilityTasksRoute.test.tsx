@@ -215,6 +215,7 @@ describe("FacilityTasksRoute", () => {
         title: "Sanitize clone trays",
         notes: "After clone pull.",
         dueDate: addDaysKey(7),
+        assignedTo: "user-1",
         assignedToUserId: "user-1",
         sourceType: "sop",
         sourceObjectId: "sop-7",

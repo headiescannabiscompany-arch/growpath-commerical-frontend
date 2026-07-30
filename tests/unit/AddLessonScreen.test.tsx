@@ -53,6 +53,12 @@ jest.mock("@/components/learning/LessonMediaSourceEditor", () => {
   );
 });
 
+jest.mock("@/components/videos/VideoLibraryPicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return () => <View />;
+});
+
 jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images", Videos: "Videos" },
   launchImageLibraryAsync: (...args: any[]) => mockLaunchLibrary(...args)
