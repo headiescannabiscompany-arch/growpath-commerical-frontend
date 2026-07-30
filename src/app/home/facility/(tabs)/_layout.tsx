@@ -61,40 +61,29 @@ export default function FacilityTabsLayout() {
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen name="grows" options={{ title: "Grows", href: null }} />
-      <Tabs.Screen name="plants" options={{ title: "Plants", href: null }} />
-      <Tabs.Screen name="logs" options={{ title: "Journal", href: null }} />
-      <Tabs.Screen
-        name="inventory"
-        options={{ title: "Inventory", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />
+      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
+      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen
-        name="sop-runs"
-        options={{ title: "SOPs", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="sop-runs" options={{ title: "SOPs" }} />
       <Tabs.Screen
         name="compliance"
         options={{
           title: "Compliance",
-          tabBarLabel: compactTabs ? "Comp" : "Compliance",
-          href: compactTabs ? null : undefined
+          tabBarLabel: compactTabs ? "Comp" : "Compliance"
         }}
       />
       <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
-      <Tabs.Screen
-        name="team"
-        options={{ title: "Team", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
+      <Tabs.Screen name="transfers" options={{ title: "Sales", href: null }} />
+      <Tabs.Screen name="team" options={{ title: "Team", href: null }} />
       <Tabs.Screen name="reports" options={{ title: "Reports", href: null }} />
       <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null }} />
-      <Tabs.Screen
-        name="integrations"
-        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="integrations" options={{ title: "Integrations", href: null }} />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
-      <Tabs.Screen name="ai-ask" options={{ title: "AI", tabBarLabel: "AI" }} />
+      <Tabs.Screen
+        name="ai-ask"
+        options={{ title: "AI", tabBarLabel: "AI", href: null }}
+      />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
