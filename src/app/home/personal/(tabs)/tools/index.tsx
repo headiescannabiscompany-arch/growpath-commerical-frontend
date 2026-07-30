@@ -225,7 +225,7 @@ function ToolCard({
             <Text
               style={[
                 styles.badge,
-                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+                { backgroundColor: palette.accentSoft, color: palette.accent }
               ]}
             >
               {modeLabel}
@@ -233,7 +233,7 @@ function ToolCard({
             <Text
               style={[
                 styles.badge,
-                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+                { backgroundColor: palette.accentSoft, color: palette.accent }
               ]}
             >
               {creditLabel}
@@ -241,7 +241,7 @@ function ToolCard({
             <Text
               style={[
                 styles.badge,
-                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+                { backgroundColor: palette.accentSoft, color: palette.accent }
               ]}
             >
               {growLabel}
@@ -357,7 +357,7 @@ export default function ToolsHubScreen() {
         <View
           style={[
             styles.context,
-            { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            { backgroundColor: palette.accentSoft, borderColor: palette.accent }
           ]}
         >
           <Text style={[styles.contextText, { color: palette.text }]}>
@@ -370,7 +370,7 @@ export default function ToolsHubScreen() {
           <View
             style={[
               styles.context,
-              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+              { backgroundColor: palette.accentSoft, borderColor: palette.accent }
             ]}
           >
             <Text style={[styles.contextText, { color: palette.text }]}>
@@ -382,7 +382,7 @@ export default function ToolsHubScreen() {
           <View
             style={[
               styles.context,
-              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+              { backgroundColor: palette.accentSoft, borderColor: palette.accent }
             ]}
           >
             <Text style={[styles.contextText, { color: palette.text }]}>
@@ -404,7 +404,7 @@ export default function ToolsHubScreen() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
           Start Here
         </Text>
         <View style={styles.grid}>
@@ -425,7 +425,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
           Core Workflows
         </Text>
         <View style={styles.grid}>
@@ -445,7 +445,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
           Saved AI & Tool Results
         </Text>
         <View style={styles.utilityRow}>
@@ -471,7 +471,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
           Tool Library
         </Text>
       </View>
@@ -491,7 +491,9 @@ export default function ToolsHubScreen() {
               />
             ) : null}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{AREA_LABELS[area]}</Text>
+              <Text style={[styles.sectionTitle, { color: palette.accent }]}>
+                {AREA_LABELS[area]}
+              </Text>
               <View style={styles.grid}>
                 {areaTools.map((tool) => (
                   <ToolCard
