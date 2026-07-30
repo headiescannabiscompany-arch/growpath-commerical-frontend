@@ -51,14 +51,6 @@ export const PAGE_REGISTRY_FACILITY = [
     component: require("../screens/FacilityPlantsScreen").default
   },
   {
-    name: "FacilityLogs",
-    label: "Logs",
-    icon: "document-text-outline",
-    capabilityKey: "facility.plants",
-    group: "plants",
-    component: require("../app/home/facility/(tabs)/logs").default
-  },
-  {
     name: "FacilityInventory",
     label: "Inventory",
     icon: "cube-outline",

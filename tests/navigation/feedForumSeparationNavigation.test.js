@@ -32,6 +32,10 @@ describe("feed/forum navigation separation", () => {
     expect(integrations.component?.name).toBe("FacilityIntegrationsRoute");
   });
 
+  it("does not expose facility logs as a bottom menu destination", () => {
+    expect(byName(PAGE_REGISTRY_FACILITY, "FacilityLogs")).toBeUndefined();
+  });
+
   it("uses shared Schedule, Alert Center, and Notification Center routes across personal and facility registries", () => {
     const personalSchedule = byName(PAGE_REGISTRY_PERSONAL, "Calendar");
     const personalAlerts = byName(PAGE_REGISTRY_PERSONAL, "Alerts");
