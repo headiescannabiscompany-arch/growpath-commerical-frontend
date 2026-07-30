@@ -9,25 +9,33 @@ const outputDir =
     ? process.argv[outputArgIndex + 1]
     : "dist";
 const absoluteOutputDir = path.resolve(ROOT, outputDir);
-const productionApiUrl = process.env.EXPO_PUBLIC_API_URL || "https://api.growpathai.com";
+const defaultProductionApiUrl = "https://api.growpathai.com";
+const requestedProductionApiUrl = process.env.EXPO_PUBLIC_API_URL || defaultProductionApiUrl;
 
-let parsedProductionApiUrl;
-try {
-  parsedProductionApiUrl = new URL(productionApiUrl);
-} catch {
-  console.error(`Invalid EXPO_PUBLIC_API_URL for production export: ${productionApiUrl}`);
-  process.exit(1);
+function normalizeProductionApiUrl(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol === "https:" && parsed.hostname === "api.growpathai.com") {
+      return { productionApiUrl: rawUrl, wasFallback: false };
+    }
+  } catch {
+    // fall through to fallback below
+  }
+
+  return {
+    productionApiUrl: defaultProductionApiUrl,
+    wasFallback: true
+  };
 }
 
-if (
-  parsedProductionApiUrl.protocol !== "https:" ||
-  parsedProductionApiUrl.hostname !== "api.growpathai.com"
-) {
-  console.error(
-    "Production web export requires EXPO_PUBLIC_API_URL=https://api.growpathai.com"
+const { productionApiUrl, wasFallback } = normalizeProductionApiUrl(
+  requestedProductionApiUrl
+);
+
+if (wasFallback) {
+  console.warn(
+    `Using fallback EXPO_PUBLIC_API_URL for production export: ${defaultProductionApiUrl} (received ${requestedProductionApiUrl})`
   );
-  console.error(`Received: ${productionApiUrl}`);
-  process.exit(1);
 }
 
 const env = {
