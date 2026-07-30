@@ -14,6 +14,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
 import {
   canonicalGrowInterestTag,
@@ -100,6 +101,7 @@ export default function CoursesScreen({ navigation } = {}) {
     : params?.checkout;
   const ent = useEntitlements();
   const auth = useAuth();
+  const { palette } = useAppTheme();
   const access = getLearningAccess(ent);
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const canCreateCourses = isSignedIn && access.canCreateCourses;
@@ -252,16 +254,29 @@ export default function CoursesScreen({ navigation } = {}) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
+      <Text
+        accessibilityRole="header"
+        style={[styles.title, { color: palette.heroText }]}
+      >
         Courses
       </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
 
       {!isSignedIn ? (
-        <View style={styles.publicCard}>
-          <Text style={styles.cardTitle}>Published course catalog</Text>
-          <Text style={styles.meta}>
+        <View
+          style={[
+            styles.publicCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Published course catalog
+          </Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
             Browse courses that their creators have published. Sign in or create a free
             account before authoring, enrolling, purchasing, or saving learner progress.
           </Text>
@@ -270,40 +285,58 @@ export default function CoursesScreen({ navigation } = {}) {
               accessibilityRole="link"
               accessibilityLabel="Sign in for courses"
               onPress={() => router.push("/login")}
-              style={styles.btn}
+              style={[styles.btn, { backgroundColor: palette.accent }]}
             >
-              <Text style={styles.btnText}>Sign in</Text>
+              <Text style={[styles.btnText, { color: palette.accentText }]}>Sign in</Text>
             </Pressable>
             <Pressable
               accessibilityRole="link"
               accessibilityLabel="Create a free account for courses"
               onPress={() => router.push("/register")}
-              style={styles.btn}
+              style={[styles.btn, { backgroundColor: palette.surface }]}
             >
-              <Text style={styles.secondaryBtnText}>Create free account</Text>
+              <Text
+                style={[
+                  styles.secondaryBtnText,
+                  { color: palette.link, borderColor: palette.border }
+                ]}
+              >
+                Create free account
+              </Text>
             </Pressable>
           </View>
         </View>
       ) : null}
 
       {!access.canViewCourses ? (
-        <View style={styles.lockedCard}>
-          <Text style={styles.cardTitle}>Courses unavailable</Text>
-          <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
+        <View
+          style={[
+            styles.lockedCard,
+            { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Courses unavailable
+          </Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            This account does not have `COURSES_VIEW`.
+          </Text>
         </View>
       ) : null}
 
       {loading ? (
         <View style={styles.row}>
           <ActivityIndicator />
-          <Text style={styles.meta}>Loading courses...</Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            Loading courses...
+          </Text>
         </View>
       ) : null}
 
-      {err ? <Text style={styles.error}>{err}</Text> : null}
+      {err ? <Text style={[styles.error, { color: palette.danger }]}>{err}</Text> : null}
 
       {!loading && !err && courses.length === 0 ? (
-        <Text style={styles.meta}>
+        <Text style={[styles.meta, { color: palette.textMuted }]}>
           {isSignedIn ? "No courses found" : "No published courses yet"}
         </Text>
       ) : null}
@@ -311,38 +344,44 @@ export default function CoursesScreen({ navigation } = {}) {
       {courses.map((item, idx) => (
         <Pressable
           key={String(item?._id || item?.id || idx)}
-          style={styles.card}
+          style={[styles.card, { borderBottomColor: palette.borderSoft }]}
           disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Text style={styles.cardTitle}>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
             {String(item?.title || item?.name || "Untitled")}
           </Text>
-          <Text style={styles.statusText}>
+          <Text style={[styles.statusText, { color: palette.success }]}>
             {isPublishedCourse(item) ? "Published" : "Draft"}
           </Text>
-          <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
+          <Text style={[styles.priceText, { color: palette.text }]}>
+            {coursePriceLabel(item)}
+          </Text>
           {courseInterestTags(item).length ? (
-            <Text style={styles.meta}>
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
               Grow interests: {courseInterestTags(item).join(" | ")}
             </Text>
           ) : (
-            <Text style={styles.meta}>Grow interests: General</Text>
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
+              Grow interests: General
+            </Text>
           )}
           {!matchesCourseInterests(item, userInterests) ? (
-            <Text style={styles.lockedText}>
+            <Text style={[styles.lockedText, { color: palette.warning }]}>
               Hidden from your learning path until you add a matching grow interest.
             </Text>
           ) : null}
           {hasAnalytics ? (
-            <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
+              Views: {item?.analytics?.views ?? 0}
+            </Text>
           ) : null}
           {isSignedIn && access.canPublishCourses && item?.isPublished ? (
             <Pressable accessibilityRole="button" style={styles.smallBtn}>
               <Text style={styles.smallBtnText}>Unpublish</Text>
             </Pressable>
           ) : null}
-          <Text style={styles.link}>
+          <Text style={[styles.link, { color: palette.link }]}>
             {matchesCourseInterests(item, userInterests)
               ? "Open details"
               : "Outside your grow interests"}

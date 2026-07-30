@@ -19,6 +19,7 @@ import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import AppPage from "@/components/layout/AppPage";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -78,6 +79,7 @@ function courseRows(payload: any) {
 
 export default function DiscoverDirectory() {
   const router = useRouter();
+  const { palette } = useAppTheme();
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -307,29 +309,51 @@ export default function DiscoverDirectory() {
       routeKey="discover"
       header={
         <View>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: palette.heroText }]}
+          >
             Discover
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Search once, then scroll through videos and every customer-facing community
             and commercial section.
           </Text>
         </View>
       }
     >
-      <AppCard>
+      <AppCard
+        style={[
+          styles.searchCard,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
+      >
         <TextInput
           accessibilityLabel="Search discovery"
           onChangeText={setQuery}
           onSubmitEditing={search}
           placeholder="Search videos, accounts, brands, products, courses, lives..."
           returnKeyType="search"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
           value={query}
         />
         <View style={styles.searchRow}>
-          <Pressable accessibilityRole="button" onPress={search} style={styles.button}>
-            <Text style={styles.buttonText}>Search Everything</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={search}
+            style={[styles.button, { backgroundColor: palette.accent }]}
+          >
+            <Text style={[styles.buttonText, { color: palette.accentText }]}>
+              Search Everything
+            </Text>
           </Pressable>
           {activeQuery ? (
             <Pressable
@@ -339,26 +363,44 @@ export default function DiscoverDirectory() {
                 setActiveQuery("");
                 void load();
               }}
-              style={styles.clearButton}
+              style={[
+                styles.clearButton,
+                { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+              ]}
             >
-              <Text style={styles.clearText}>Clear</Text>
+              <Text style={[styles.clearText, { color: palette.text }]}>Clear</Text>
             </Pressable>
           ) : null}
         </View>
         {activeQuery ? (
-          <Text style={styles.meta}>Results for “{activeQuery}”</Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            Results for “{activeQuery}”
+          </Text>
         ) : (
-          <Text style={styles.meta}>Browse all current discovery sections below.</Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            Browse all current discovery sections below.
+          </Text>
         )}
       </AppCard>
 
       {loading ? <ActivityIndicator accessibilityLabel="Loading discovery" /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <AppCard style={styles.previewCard}>
+      {error ? (
+        <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>
+      ) : null}
+      <AppCard
+        style={[
+          styles.previewCard,
+          { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+        ]}
+      >
         <View style={styles.previewHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Discovery Nature</Text>
-            <Text style={styles.ranking}>Shared, opt-in plant findings</Text>
+            <Text style={[styles.sectionTitle, { color: palette.text }]}>
+              Discovery Nature
+            </Text>
+            <Text style={[styles.ranking, { color: palette.textMuted }]}>
+              Shared, opt-in plant findings
+            </Text>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -366,13 +408,19 @@ export default function DiscoverDirectory() {
             onPress={() => router.push("/field-observations")}
             style={({ pressed }) => [
               styles.browseButton,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border
+              },
               pressed && styles.buttonPressed
             ]}
           >
-            <Text style={styles.browseButtonText}>Open Nature Globe</Text>
+            <Text style={[styles.browseButtonText, { color: palette.link }]}>
+              Open Nature Globe
+            </Text>
           </Pressable>
         </View>
-        <Text style={styles.previewMeta}>
+        <Text style={[styles.previewMeta, { color: palette.textMuted }]}>
           Share/view opted-in plant findings. Discover species of mapped areas and find
           invasive species.
         </Text>
@@ -397,8 +445,12 @@ export default function DiscoverDirectory() {
           >
             <View style={styles.sectionHeader}>
               <View>
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                <Text style={styles.ranking}>{section.ranking}</Text>
+                <Text style={[styles.sectionTitle, { color: palette.text }]}>
+                  {section.title}
+                </Text>
+                <Text style={[styles.ranking, { color: palette.textMuted }]}>
+                  {section.ranking}
+                </Text>
               </View>
               <Pressable
                 accessibilityRole="button"
@@ -406,10 +458,16 @@ export default function DiscoverDirectory() {
                 onPress={() => router.push(section.browseHref as any)}
                 style={({ pressed }) => [
                   styles.browseButton,
+                  {
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border
+                  },
                   pressed && styles.buttonPressed
                 ]}
               >
-                <Text style={styles.browseButtonText}>View all {section.title}</Text>
+                <Text style={[styles.browseButtonText, { color: palette.link }]}>
+                  View all {section.title}
+                </Text>
               </Pressable>
             </View>
             {section.key === "videos" ? (
@@ -422,6 +480,10 @@ export default function DiscoverDirectory() {
                   }}
                   style={({ pressed }) => [
                     styles.filterButton,
+                    {
+                      backgroundColor: palette.surface,
+                      borderColor: palette.border
+                    },
                     !videoFollowingOnly && styles.filterButtonSelected,
                     pressed && styles.buttonPressed
                   ]}
@@ -429,6 +491,7 @@ export default function DiscoverDirectory() {
                   <Text
                     style={[
                       styles.filterText,
+                      { color: palette.textMuted },
                       !videoFollowingOnly && styles.filterTextSelected
                     ]}
                   >
@@ -443,6 +506,10 @@ export default function DiscoverDirectory() {
                   }}
                   style={({ pressed }) => [
                     styles.filterButton,
+                    {
+                      backgroundColor: palette.surface,
+                      borderColor: palette.border
+                    },
                     videoFollowingOnly && styles.filterButtonSelected,
                     pressed && styles.buttonPressed
                   ]}
@@ -450,6 +517,7 @@ export default function DiscoverDirectory() {
                   <Text
                     style={[
                       styles.filterText,
+                      { color: palette.textMuted },
                       videoFollowingOnly && styles.filterTextSelected
                     ]}
                   >
@@ -472,6 +540,10 @@ export default function DiscoverDirectory() {
                     onPress={() => router.push(result.href as any)}
                     style={({ pressed }) => [
                       styles.resultCard,
+                      {
+                        backgroundColor: palette.surface,
+                        borderColor: palette.border
+                      },
                       pressed && styles.buttonPressed
                     ]}
                   >
@@ -483,16 +555,25 @@ export default function DiscoverDirectory() {
                         style={styles.resultImage}
                       />
                     ) : null}
-                    <Text style={styles.resultTitle} numberOfLines={2}>
+                    <Text
+                      style={[styles.resultTitle, { color: palette.text }]}
+                      numberOfLines={2}
+                    >
                       {result.title}
                     </Text>
                     {result.meta ? (
-                      <Text style={styles.resultMeta} numberOfLines={2}>
+                      <Text
+                        style={[styles.resultMeta, { color: palette.textMuted }]}
+                        numberOfLines={2}
+                      >
                         {result.meta}
                       </Text>
                     ) : null}
                     {result.summary ? (
-                      <Text style={styles.resultSummary} numberOfLines={3}>
+                      <Text
+                        style={[styles.resultSummary, { color: palette.textMuted }]}
+                        numberOfLines={3}
+                      >
                         {result.summary}
                       </Text>
                     ) : null}
@@ -500,7 +581,9 @@ export default function DiscoverDirectory() {
                 ))}
               </ScrollView>
             ) : (
-              <Text style={styles.empty}>{section.empty}</Text>
+              <Text style={[styles.empty, { color: palette.textMuted }]}>
+                {section.empty}
+              </Text>
             )}
           </View>
         ))}

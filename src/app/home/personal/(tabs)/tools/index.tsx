@@ -13,6 +13,7 @@ import {
   getNavigablePersonalTools
 } from "@/config/featureStatus";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
 import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
@@ -169,6 +170,7 @@ function ToolCard({
   growId: string;
   enabled: boolean;
 }) {
+  const { palette } = useAppTheme();
   const href = tool.acceptsGrowContext
     ? hrefWithGrow(tool.href || "", growId)
     : tool.href || "";
@@ -198,41 +200,78 @@ function ToolCard({
     : "";
 
   return (
-    <View style={[styles.card, !enabled && styles.cardLocked]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        },
+        !enabled && styles.cardLocked
+      ]}
+    >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{tool.title}</Text>
-        {!enabled ? <Text style={styles.locked}>Locked</Text> : null}
+        <Text style={[styles.cardTitle, { color: palette.text }]}>{tool.title}</Text>
+        {!enabled ? (
+          <Text style={[styles.locked, { color: palette.warning }]}>Locked</Text>
+        ) : null}
       </View>
-      <Text style={styles.cardDesc}>{tool.description}</Text>
+      <Text style={[styles.cardDesc, { color: palette.textMuted }]}>
+        {tool.description}
+      </Text>
       {experience ? (
         <>
           <View style={styles.badgeRow}>
-            <Text style={styles.badge}>{modeLabel}</Text>
-            <Text style={styles.badge}>{creditLabel}</Text>
-            <Text style={styles.badge}>{growLabel}</Text>
+            <Text
+              style={[
+                styles.badge,
+                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+              ]}
+            >
+              {modeLabel}
+            </Text>
+            <Text
+              style={[
+                styles.badge,
+                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+              ]}
+            >
+              {creditLabel}
+            </Text>
+            <Text
+              style={[
+                styles.badge,
+                { backgroundColor: palette.surfaceMuted, color: palette.textMuted }
+              ]}
+            >
+              {growLabel}
+            </Text>
           </View>
-          <Text style={styles.detail}>
-            <Text style={styles.detailLabel}>Bring: </Text>
+          <Text style={[styles.detail, { color: palette.textMuted }]}>
+            <Text style={[styles.detailLabel, { color: palette.text }]}>Bring: </Text>
             {experience.inputSummary}
           </Text>
-          <Text style={styles.detail}>
-            <Text style={styles.detailLabel}>You get: </Text>
+          <Text style={[styles.detail, { color: palette.textMuted }]}>
+            <Text style={[styles.detailLabel, { color: palette.text }]}>You get: </Text>
             {experience.outputSummary}
           </Text>
         </>
       ) : null}
       {enabled ? (
-        <Link href={href as Href} style={styles.link} asChild>
+        <Link href={href as Href} style={[styles.link, { color: palette.link }]} asChild>
           <Text>Open</Text>
         </Link>
       ) : (
-        <Text style={styles.lockedText}>Upgrade to unlock</Text>
+        <Text style={[styles.lockedText, { color: palette.warning }]}>
+          Upgrade to unlock
+        </Text>
       )}
     </View>
   );
 }
 
 export default function ToolsHubScreen() {
+  const { palette } = useAppTheme();
   const { growId: rawGrowId, devPlan: rawDevPlan } = useLocalSearchParams<{
     growId?: string | string[];
     devPlan?: string | string[];
@@ -300,30 +339,53 @@ export default function ToolsHubScreen() {
   });
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.header}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text
+          accessibilityRole="header"
+          style={[styles.title, { color: palette.heroText }]}
+        >
           AI Tools
         </Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { color: palette.textMuted }]}>
           Ask AI, diagnose plants, analyze measured light, build soil and nutrient mixes,
           and save useful outputs back to a grow.
         </Text>
-        <View style={styles.context}>
-          <Text style={styles.contextText}>
+        <View
+          style={[
+            styles.context,
+            { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.contextText, { color: palette.text }]}>
             {isFreePlan
               ? "Free plan: Ask AI and Plant Diagnose include a limited weekly AI-credit allowance."
               : "AI-credit balance and usage are managed from Profile."}
           </Text>
         </View>
         {growId ? (
-          <View style={styles.context}>
-            <Text style={styles.contextText}>Grow context active: {growId}</Text>
+          <View
+            style={[
+              styles.context,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.contextText, { color: palette.text }]}>
+              Grow context active: {growId}
+            </Text>
           </View>
         ) : null}
         {selectedInterests.length ? (
-          <View style={styles.context}>
-            <Text style={styles.contextText}>
+          <View
+            style={[
+              styles.context,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.contextText, { color: palette.text }]}>
               Workflow interests: {selectedInterests.join(" | ")}
             </Text>
           </View>
@@ -342,7 +404,9 @@ export default function ToolsHubScreen() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Start Here</Text>
+        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+          Start Here
+        </Text>
         <View style={styles.grid}>
           {primaryTools.map((tool) => (
             <ToolCard
@@ -361,7 +425,9 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Core Workflows</Text>
+        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+          Core Workflows
+        </Text>
         <View style={styles.grid}>
           {coreTools.map((tool) => (
             <ToolCard
@@ -379,21 +445,35 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Saved AI & Tool Results</Text>
+        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+          Saved AI & Tool Results
+        </Text>
         <View style={styles.utilityRow}>
           <Link
             href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
             asChild
           >
-            <Pressable style={styles.utilityButton}>
-              <Text style={styles.utilityText}>Saved Runs</Text>
+            <Pressable
+              style={[
+                styles.utilityButton,
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.border
+                }
+              ]}
+            >
+              <Text style={[styles.utilityText, { color: palette.link }]}>
+                Saved Runs
+              </Text>
             </Pressable>
           </Link>
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Tool Library</Text>
+        <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>
+          Tool Library
+        </Text>
       </View>
       {AREA_ORDER.map((area, index) => {
         const areaTools = libraryTools.filter((tool) => tool.area === area);
