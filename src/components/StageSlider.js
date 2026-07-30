@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { colors, spacing, radius } from "../theme/theme";
+import { radius, spacing } from "../theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 const DEFAULT_OPTIONS = ["Seedling", "Vegetative", "Flower", "Drying", "Curing"];
 
@@ -10,6 +11,7 @@ export default function StageSlider({
   options = DEFAULT_OPTIONS,
   disabled = false
 }) {
+  const { palette } = useAppTheme();
   const currentIndex = Math.max(
     0,
     options.findIndex((opt) => opt === value)
@@ -17,14 +19,21 @@ export default function StageSlider({
 
   return (
     <View style={styles.container}>
-      {disabled && <View style={styles.disabledOverlay} />}
+      {disabled ? (
+        <View
+          style={[
+            styles.disabledOverlay,
+            { backgroundColor: `${palette.surface}CC`, borderColor: palette.border }
+          ]}
+        />
+      ) : null}
       <View style={styles.trackRow}>
         {options.map((option, index) => {
           const isActive = index === currentIndex;
           return (
             <React.Fragment key={option}>
               <TouchableOpacity
-                style={[styles.notchWrap, disabled && styles.notchWrapDisabled]}
+                style={[styles.notchWrap, { backgroundColor: palette.surfaceMuted }]}
                 onPress={() => !disabled && onChange?.(option)}
                 accessibilityRole="button"
                 accessibilityLabel={`Set stage to ${option}`}
@@ -33,12 +42,16 @@ export default function StageSlider({
                 <View
                   style={[
                     styles.notch,
-                    isActive && styles.notchActive,
-                    disabled && styles.notchDisabled
+                    { backgroundColor: palette.border },
+                    isActive && { backgroundColor: palette.accent }
                   ]}
                 />
               </TouchableOpacity>
-              {index < options.length - 1 ? <View style={styles.trackSegment} /> : null}
+              {index < options.length - 1 ? (
+                <View
+                  style={[styles.trackSegment, { backgroundColor: palette.border }]}
+                />
+              ) : null}
             </React.Fragment>
           );
         })}
@@ -56,8 +69,9 @@ export default function StageSlider({
               <Text
                 style={[
                   styles.label,
-                  isActiveLabel && styles.labelActive,
-                  disabled && styles.labelDisabled
+                  { color: palette.textMuted },
+                  isActiveLabel && { color: palette.text, fontWeight: "600" },
+                  disabled && { color: palette.textMuted }
                 ]}
                 numberOfLines={1}
               >
@@ -77,10 +91,8 @@ const styles = StyleSheet.create({
   },
   disabledOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.6)",
     borderRadius: radius.card,
     zIndex: 1
-    // pointerEvents is deprecated as a prop, use style.pointerEvents if needed
   },
   trackRow: {
     flexDirection: "row",
@@ -91,26 +103,17 @@ const styles = StyleSheet.create({
     width: spacing(4),
     height: spacing(4),
     borderRadius: radius.pill,
-    backgroundColor: "rgba(16, 185, 129, 0.1)",
     alignItems: "center",
     justifyContent: "center"
   },
   notch: {
     width: 12,
     height: 12,
-    borderRadius: radius.pill,
-    backgroundColor: colors.border
-  },
-  notchDisabled: {
-    backgroundColor: colors.border
-  },
-  notchActive: {
-    backgroundColor: colors.accent
+    borderRadius: radius.pill
   },
   trackSegment: {
     flex: 1,
-    height: 2,
-    backgroundColor: colors.border
+    height: 2
   },
   labelRow: {
     flexDirection: "row",
@@ -122,14 +125,6 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   label: {
-    fontSize: 12,
-    color: colors.textSoft
-  },
-  labelActive: {
-    color: colors.text,
-    fontWeight: "600"
-  },
-  labelDisabled: {
-    color: colors.textSoft
+    fontSize: 12
   }
 });

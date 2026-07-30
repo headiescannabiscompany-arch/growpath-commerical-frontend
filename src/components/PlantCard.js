@@ -8,9 +8,10 @@ import {
   StyleSheet,
   ActivityIndicator
 } from "react-native";
-import { colors, radius, spacing } from "../theme/theme";
+import { radius, spacing } from "../theme/theme";
 import StageSlider from "./StageSlider";
 import { resolveImageUrl } from "../utils/images";
+import { useAppTheme } from "@/theme/appTheme";
 
 function resolvePhoto(value = {}) {
   if (value.photoPreview) return value.photoPreview;
@@ -35,6 +36,7 @@ export default function PlantCard({
   placeholderText = "No photo added",
   style
 }) {
+  const { palette } = useAppTheme();
   const previewUrl = resolvePhoto(value);
 
   const handleChange = (field, text) => {
@@ -43,17 +45,39 @@ export default function PlantCard({
     }
   };
 
+  const cardBaseStyle = [
+    styles.card,
+    {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    style
+  ];
+
   if (mode === "view" && variant === "small") {
     return (
-      <View style={[styles.smallCard, style]}>
+      <View
+        style={[
+          styles.smallCard,
+          { backgroundColor: palette.surface, borderColor: palette.border },
+          style
+        ]}
+      >
         {previewUrl ? (
           <Image source={{ uri: previewUrl }} style={styles.smallPhoto} />
         ) : (
-          <View style={styles.smallPhotoPlaceholder}>
-            <Text style={styles.photoPlaceholderText}>{placeholderText}</Text>
+          <View
+            style={[
+              styles.smallPhotoPlaceholder,
+              { borderColor: palette.border, backgroundColor: palette.surfaceMuted }
+            ]}
+          >
+            <Text style={[styles.photoPlaceholderText, { color: palette.textMuted }]}>
+              {placeholderText}
+            </Text>
           </View>
         )}
-        <Text style={styles.viewName}>
+        <Text style={[styles.viewName, { color: palette.text }]}>
           {value.name || value.strain || "Unnamed Plant"}
         </Text>
       </View>
@@ -61,13 +85,19 @@ export default function PlantCard({
   }
 
   return (
-    <View style={[styles.card, style]}>
+    <View style={cardBaseStyle}>
       {(title || allowRemove) && (
         <View style={styles.header}>
-          {title ? <Text style={styles.headerText}>{title}</Text> : <View />}
+          {title ? (
+            <Text style={[styles.headerText, { color: palette.text }]}>{title}</Text>
+          ) : (
+            <View />
+          )}
           {allowRemove && onRemove ? (
             <TouchableOpacity onPress={onRemove}>
-              <Text style={styles.removeText}>Remove</Text>
+              <Text style={[styles.removeText, { color: palette.textMuted }]}>
+                Remove
+              </Text>
             </TouchableOpacity>
           ) : null}
         </View>
@@ -75,42 +105,71 @@ export default function PlantCard({
 
       {mode === "view" ? (
         <View style={{ gap: spacing(1) }}>
-          <Text style={styles.viewName}>
+          <Text style={[styles.viewName, { color: palette.text }]}>
             {value.name || value.strain || "Unnamed Plant"}
           </Text>
-          {value.strain ? <Text style={styles.metaText}>{value.strain}</Text> : null}
-          {value.stage ? <Text style={styles.metaText}>{value.stage}</Text> : null}
+          {value.strain ? (
+            <Text style={[styles.metaText, { color: palette.textMuted }]}>
+              {value.strain}
+            </Text>
+          ) : null}
+          {value.stage ? (
+            <Text style={[styles.metaText, { color: palette.textMuted }]}>
+              {value.stage}
+            </Text>
+          ) : null}
         </View>
       ) : (
         <>
-          <Text style={styles.fieldLabel}>Plant Name</Text>
+          <Text style={[styles.fieldLabel, { color: palette.text }]}>Plant Name</Text>
           <TextInput
             value={value.name}
             onChangeText={(text) => handleChange("name", text)}
             placeholder="e.g., Tent Left, Balcony Clone"
-            style={styles.input}
-            placeholderTextColor={colors.textSoft}
+            style={[
+              styles.input,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                color: palette.text
+              }
+            ]}
+            placeholderTextColor={palette.textMuted}
           />
 
-          <Text style={styles.fieldLabel}>Strain</Text>
+          <Text style={[styles.fieldLabel, { color: palette.text }]}>Strain</Text>
           <TextInput
             value={value.strain}
             onChangeText={(text) => handleChange("strain", text)}
             placeholder="Blueberry Muffin, Gelato #33, etc."
-            style={styles.input}
-            placeholderTextColor={colors.textSoft}
+            style={[
+              styles.input,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                color: palette.text
+              }
+            ]}
+            placeholderTextColor={palette.textMuted}
           />
 
-          <Text style={styles.fieldLabel}>Breeder</Text>
+          <Text style={[styles.fieldLabel, { color: palette.text }]}>Breeder</Text>
           <TextInput
             value={value.breeder}
             onChangeText={(text) => handleChange("breeder", text)}
             placeholder="Barney's Farm, Mephisto, etc."
-            style={styles.input}
-            placeholderTextColor={colors.textSoft}
+            style={[
+              styles.input,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                color: palette.text
+              }
+            ]}
+            placeholderTextColor={palette.textMuted}
           />
 
-          <Text style={styles.fieldLabel}>Growth Stage</Text>
+          <Text style={[styles.fieldLabel, { color: palette.text }]}>Growth Stage</Text>
           <StageSlider
             value={value.stage}
             onChange={(option) => handleChange("stage", option)}
@@ -122,26 +181,44 @@ export default function PlantCard({
         {previewUrl ? (
           <Image source={{ uri: previewUrl }} style={styles.photo} />
         ) : (
-          <View style={styles.photoPlaceholder}>
-            <Text style={styles.photoPlaceholderText}>{placeholderText}</Text>
+          <View
+            style={[
+              styles.photoPlaceholder,
+              {
+                borderColor: palette.border,
+                backgroundColor: palette.surfaceMuted
+              }
+            ]}
+          >
+            <Text style={[styles.photoPlaceholderText, { color: palette.textMuted }]}>
+              {placeholderText}
+            </Text>
           </View>
         )}
 
         {mode !== "view" && typeof onAddPhoto === "function" ? (
           <TouchableOpacity
-            style={styles.photoButton}
+            style={[
+              styles.photoButton,
+              { borderColor: palette.accent, backgroundColor: palette.surface }
+            ]}
             onPress={onAddPhoto}
             disabled={uploadingPhoto}
           >
             {uploadingPhoto ? (
               <View style={styles.photoButtonRow}>
-                <ActivityIndicator size="small" color={colors.accent} />
-                <Text style={[styles.photoButtonText, { marginLeft: spacing(2) }]}>
+                <ActivityIndicator size="small" color={palette.accent} />
+                <Text
+                  style={[
+                    styles.photoButtonText,
+                    { color: palette.accent, marginLeft: spacing(2) }
+                  ]}
+                >
                   Uploading...
                 </Text>
               </View>
             ) : (
-              <Text style={styles.photoButtonText}>
+              <Text style={[styles.photoButtonText, { color: palette.accent }]}>
                 {previewUrl ? "Replace Photo" : "Add Photo"}
               </Text>
             )}
@@ -157,7 +234,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing(3),
     marginBottom: spacing(3)
   },
@@ -168,28 +244,22 @@ const styles = StyleSheet.create({
     marginBottom: spacing(2)
   },
   headerText: {
-    fontWeight: "700",
-    color: colors.text
+    fontWeight: "700"
   },
   removeText: {
-    color: colors.textSoft,
     fontWeight: "600"
   },
   fieldLabel: {
     fontSize: 13,
     fontWeight: "600",
     marginBottom: spacing(1),
-    marginTop: spacing(2),
-    color: colors.text
+    marginTop: spacing(2)
   },
   input: {
-    backgroundColor: "#fff",
     padding: spacing(4),
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing(1),
-    color: colors.text
+    marginBottom: spacing(1)
   },
   photoSection: {
     marginTop: spacing(2)
@@ -205,43 +275,34 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing(2),
-    backgroundColor: "rgba(0,0,0,0.02)"
+    marginBottom: spacing(2)
   },
-  photoPlaceholderText: {
-    color: colors.textSoft
-  },
+  photoPlaceholderText: {},
   photoButton: {
     paddingVertical: spacing(2),
     alignItems: "center",
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.accent
+    borderWidth: 1
   },
   photoButtonRow: {
     flexDirection: "row",
     alignItems: "center"
   },
   photoButtonText: {
-    color: colors.accent,
     fontWeight: "600"
   },
   viewName: {
     fontSize: 16,
-    fontWeight: "700",
-    color: colors.text
+    fontWeight: "700"
   },
   metaText: {
-    color: colors.textSoft,
     fontSize: 13
   },
   smallCard: {
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing(2),
     alignItems: "center",
     width: 140,
@@ -258,8 +319,6 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing(2)

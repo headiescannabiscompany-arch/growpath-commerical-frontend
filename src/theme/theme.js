@@ -2,14 +2,14 @@
 export const colors = {
   bg: "#F1F7F2",
   card: "#FFFFFF",
-  accent: "#1C8F4A",
-  accentSoft: "#E0F4E7",
+  accent: "#166534",
+  accentSoft: "#DCFCE7",
   danger: "#E84343",
-  text: "#1F2933",
-  textSoft: "#6B7B7C",
-  border: "#E2E8F0",
+  text: "#122012",
+  textSoft: "#5F6F5F",
+  border: "#D7E3D5",
   tabBg: "#FFFFFF",
-  tabIcon: "#7B8A86"
+  tabIcon: "#5F6F5F"
 };
 
 export const radius = {
@@ -21,18 +21,18 @@ export const spacing = (n = 1) => 4 * n;
 
 // Capitalized exports for new screens (standardized theme structure)
 export const Colors = {
-  primary: "#1C8F4A",
+  primary: "#166534",
   background: "#F1F7F2",
   surface: "#FFFFFF",
-  text: "#1F2933",
-  textSecondary: "#6B7B7C",
-  success: "#1C8F4A",
+  text: "#122012",
+  textSecondary: "#5F6F5F",
+  success: "#166534",
   error: "#E84343",
   warning: "#FFA500",
   info: "#2196F3",
-  accent: "#1C8F4A",
-  accentSoft: "#E0F4E7",
-  border: "#E2E8F0"
+  accent: "#166534",
+  accentSoft: "#DCFCE7",
+  border: "#D7E3D5"
 };
 
 export const Typography = {

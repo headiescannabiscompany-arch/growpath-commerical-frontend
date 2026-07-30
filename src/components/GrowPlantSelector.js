@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { colors, radius } from "../theme/theme";
+import { radius } from "../theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function GrowPlantSelector({
   grows = [],
@@ -11,72 +12,96 @@ export default function GrowPlantSelector({
   loading = false,
   label = "Link to a Grow (optional)"
 }) {
-  // Reset plant selection if grow changes (handled by parent usually, but safety check)
-  // Actually, parent should handle logic. This is a dumb component.
-
-  // Helper to check if a plant is selected
+  const { palette } = useAppTheme();
   const isPlantSelected = (id) => selectedPlantIds.includes(id);
-
-  // Find selected grow object
   const activeGrow = grows.find((g) => g._id === selectedGrowId);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ]}
+    >
+      <Text style={[styles.label, { color: palette.text }]}>{label}</Text>
 
       {loading ? (
-        <Text style={styles.helperText}>Loading your grows…</Text>
+        <Text style={[styles.helperText, { color: palette.textMuted }]}>
+          Loading your grows...
+        </Text>
       ) : grows.length === 0 ? (
-        <Text style={styles.helperText}>
+        <Text style={[styles.helperText, { color: palette.textMuted }]}>
           No grows found. Create a grow to link items to it.
         </Text>
       ) : (
         <View style={styles.pillRow}>
           <TouchableOpacity
-            style={[styles.pill, !selectedGrowId && styles.pillActive]}
+            style={[
+              styles.pill,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+              !selectedGrowId && {
+                backgroundColor: palette.accent,
+                borderColor: palette.accent
+              }
+            ]}
             onPress={() => {
-              if (onSelectGrow) onSelectGrow(null);
-              if (onSelectPlants) onSelectPlants([]);
+              onSelectGrow?.(null);
+              onSelectPlants?.([]);
             }}
           >
-            <Text style={[styles.pillText, !selectedGrowId && styles.pillTextActive]}>
+            <Text
+              style={[
+                styles.pillText,
+                { color: palette.text },
+                !selectedGrowId && { color: palette.accentText }
+              ]}
+            >
               No Grow
             </Text>
           </TouchableOpacity>
-          {grows.map((grow) => (
-            <TouchableOpacity
-              key={grow._id}
-              style={[styles.pill, selectedGrowId === grow._id && styles.pillActive]}
-              onPress={() => {
-                if (onSelectGrow) {
-                  // Toggle off if same, or switch
-                  const next = selectedGrowId === grow._id ? null : grow._id;
-                  onSelectGrow(next);
-                  // Clear plants if grow changes/clears
-                  if (onSelectPlants) onSelectPlants([]);
-                }
-              }}
-            >
-              <Text
+          {grows.map((grow) => {
+            const isSelected = selectedGrowId === grow._id;
+            return (
+              <TouchableOpacity
+                key={grow._id}
                 style={[
-                  styles.pillText,
-                  selectedGrowId === grow._id && styles.pillTextActive
+                  styles.pill,
+                  { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+                  isSelected && {
+                    backgroundColor: palette.accent,
+                    borderColor: palette.accent
+                  }
                 ]}
+                onPress={() => {
+                  const next = isSelected ? null : grow._id;
+                  onSelectGrow?.(next);
+                  onSelectPlants?.([]);
+                }}
               >
-                {grow.name || grow.title || "Grow"}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.pillText,
+                    { color: palette.text },
+                    isSelected && { color: palette.accentText }
+                  ]}
+                >
+                  {grow.name || grow.title || "Grow"}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
 
       {selectedGrowId && activeGrow ? (
         <>
-          <Text style={[styles.label, { marginTop: 10 }]}>Attach a plant (optional)</Text>
+          <Text style={[styles.label, { color: palette.text, marginTop: 10 }]}>
+            Attach a plant (optional)
+          </Text>
           {(() => {
             if (!Array.isArray(activeGrow.plants) || activeGrow.plants.length === 0) {
               return (
-                <Text style={styles.helperText}>
+                <Text style={[styles.helperText, { color: palette.textMuted }]}>
                   This grow does not have any plants yet.
                 </Text>
               );
@@ -86,16 +111,24 @@ export default function GrowPlantSelector({
                 <TouchableOpacity
                   style={[
                     styles.pill,
-                    selectedPlantIds.length === 0 && styles.pillActive
+                    {
+                      backgroundColor: palette.surfaceMuted,
+                      borderColor: palette.border
+                    },
+                    selectedPlantIds.length === 0 && {
+                      backgroundColor: palette.accent,
+                      borderColor: palette.accent
+                    }
                   ]}
                   onPress={() => {
-                    if (onSelectPlants) onSelectPlants([]);
+                    onSelectPlants?.([]);
                   }}
                 >
                   <Text
                     style={[
                       styles.pillText,
-                      selectedPlantIds.length === 0 && styles.pillTextActive
+                      { color: palette.text },
+                      selectedPlantIds.length === 0 && { color: palette.accentText }
                     ]}
                   >
                     Entire Grow
@@ -107,18 +140,32 @@ export default function GrowPlantSelector({
                   return (
                     <TouchableOpacity
                       key={id}
-                      style={[styles.pill, isActive && styles.pillActive]}
+                      style={[
+                        styles.pill,
+                        {
+                          backgroundColor: palette.surfaceMuted,
+                          borderColor: palette.border
+                        },
+                        isActive && {
+                          backgroundColor: palette.accent,
+                          borderColor: palette.accent
+                        }
+                      ]}
                       onPress={() => {
-                        if (onSelectPlants) {
-                          if (isActive) {
-                            onSelectPlants(selectedPlantIds.filter((pid) => pid !== id));
-                          } else {
-                            onSelectPlants([...selectedPlantIds, id]);
-                          }
+                        if (isActive) {
+                          onSelectPlants?.(selectedPlantIds.filter((pid) => pid !== id));
+                        } else {
+                          onSelectPlants?.([...selectedPlantIds, id]);
                         }
                       }}
                     >
-                      <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
+                      <Text
+                        style={[
+                          styles.pillText,
+                          { color: palette.text },
+                          isActive && { color: palette.accentText }
+                        ]}
+                      >
                         {plant.name || plant.strain || "Plant"}
                       </Text>
                     </TouchableOpacity>
@@ -138,15 +185,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 12,
     backgroundColor: "#f7f7f7",
-    borderRadius: radius.card
+    borderRadius: radius.card,
+    borderWidth: 1
   },
   label: {
     fontWeight: "600",
-    marginBottom: 5,
-    color: "#333"
+    marginBottom: 5
   },
   helperText: {
-    color: "#666",
     marginTop: 4,
     fontSize: 13
   },
@@ -160,20 +206,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
     marginRight: 8,
     marginBottom: 8
   },
-  pillActive: {
-    backgroundColor: colors.accent || "#2ecc71",
-    borderColor: colors.accent || "#2ecc71"
-  },
   pillText: {
-    color: "#333",
     fontWeight: "600"
-  },
-  pillTextActive: {
-    color: "#fff"
   }
 });

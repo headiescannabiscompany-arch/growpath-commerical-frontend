@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Colors, Spacing, radius } from "../theme/theme.js";
+import { useAppTheme } from "@/theme/appTheme";
 
 /**
  * SkeletonLoader Component
@@ -13,6 +14,7 @@ const SkeletonLoader = ({
   borderRadius = radius.card,
   style
 }) => {
+  const { palette } = useAppTheme();
   return (
     <View
       style={[
@@ -20,7 +22,8 @@ const SkeletonLoader = ({
         {
           width,
           height,
-          borderRadius
+          borderRadius,
+          backgroundColor: palette.surfaceMuted
         },
         style
       ]}
@@ -29,66 +32,78 @@ const SkeletonLoader = ({
 };
 
 // Skeleton for marketplace cards
-export const ContentCardSkeleton = () => (
-  <View style={styles.cardSkeleton}>
-    <SkeletonLoader height={100} style={styles.thumbnail} />
-    <SkeletonLoader height={16} width="80%" style={styles.title} />
-    <SkeletonLoader height={14} width="60%" style={styles.subtitle} />
-    <View style={styles.row}>
-      <SkeletonLoader height={14} width="40%" />
-      <SkeletonLoader height={14} width="30%" />
+export const ContentCardSkeleton = () => {
+  const { palette } = useAppTheme();
+  return (
+    <View style={[styles.cardSkeleton, { backgroundColor: palette.surface }]}>
+      <SkeletonLoader height={100} style={styles.thumbnail} />
+      <SkeletonLoader height={16} width="80%" style={styles.title} />
+      <SkeletonLoader height={14} width="60%" style={styles.subtitle} />
+      <View style={styles.row}>
+        <SkeletonLoader height={14} width="40%" />
+        <SkeletonLoader height={14} width="30%" />
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 // Skeleton for upload cards
-export const UploadCardSkeleton = () => (
-  <View style={styles.uploadSkeleton}>
-    <View style={styles.uploadHeader}>
-      <SkeletonLoader height={40} width={40} borderRadius={4} />
-      <View style={styles.uploadInfo}>
-        <SkeletonLoader height={16} width="70%" style={styles.mb8} />
-        <SkeletonLoader height={12} width="50%" />
+export const UploadCardSkeleton = () => {
+  const { palette } = useAppTheme();
+  return (
+    <View style={[styles.uploadSkeleton, { backgroundColor: palette.surface }]}>
+      <View style={styles.uploadHeader}>
+        <SkeletonLoader height={40} width={40} borderRadius={4} />
+        <View style={styles.uploadInfo}>
+          <SkeletonLoader height={16} width="70%" style={styles.mb8} />
+          <SkeletonLoader height={12} width="50%" />
+        </View>
+      </View>
+      <View style={[styles.row, styles.mt16]}>
+        <SkeletonLoader height={14} width="25%" />
+        <SkeletonLoader height={14} width="25%" />
+        <SkeletonLoader height={14} width="25%" />
       </View>
     </View>
-    <View style={[styles.row, styles.mt16]}>
-      <SkeletonLoader height={14} width="25%" />
-      <SkeletonLoader height={14} width="25%" />
-      <SkeletonLoader height={14} width="25%" />
-    </View>
-  </View>
-);
+  );
+};
 
 // Skeleton for guild cards
-export const GuildCardSkeleton = () => (
-  <View style={styles.guildSkeleton}>
-    <View style={styles.guildHeader}>
-      <SkeletonLoader height={40} width={40} borderRadius={20} />
-      <View style={styles.guildInfo}>
-        <SkeletonLoader height={16} width="70%" style={styles.mb8} />
-        <SkeletonLoader height={12} width="50%" />
+export const GuildCardSkeleton = () => {
+  const { palette } = useAppTheme();
+  return (
+    <View style={[styles.guildSkeleton, { backgroundColor: palette.surface }]}>
+      <View style={styles.guildHeader}>
+        <SkeletonLoader height={40} width={40} borderRadius={20} />
+        <View style={styles.guildInfo}>
+          <SkeletonLoader height={16} width="70%" style={styles.mb8} />
+          <SkeletonLoader height={12} width="50%" />
+        </View>
+      </View>
+      <View style={[styles.row, styles.mt12]}>
+        <SkeletonLoader height={12} width="35%" />
+        <SkeletonLoader height={12} width="35%" />
       </View>
     </View>
-    <View style={[styles.row, styles.mt12]}>
-      <SkeletonLoader height={12} width="35%" />
-      <SkeletonLoader height={12} width="35%" />
-    </View>
-  </View>
-);
+  );
+};
 
 // Skeleton for campaign cards
-export const CampaignCardSkeleton = () => (
-  <View style={styles.campaignSkeleton}>
-    <View style={styles.campaignHeader}>
-      <SkeletonLoader height={16} width="60%" style={styles.mb8} />
-      <SkeletonLoader height={14} width="40%" />
+export const CampaignCardSkeleton = () => {
+  const { palette } = useAppTheme();
+  return (
+    <View style={[styles.campaignSkeleton, { backgroundColor: palette.surface }]}>
+      <View style={styles.campaignHeader}>
+        <SkeletonLoader height={16} width="60%" style={styles.mb8} />
+        <SkeletonLoader height={14} width="40%" />
+      </View>
+      <View style={[styles.row, styles.mt12]}>
+        <SkeletonLoader height={12} width="30%" />
+        <SkeletonLoader height={12} width="30%" />
+      </View>
     </View>
-    <View style={[styles.row, styles.mt12]}>
-      <SkeletonLoader height={12} width="30%" />
-      <SkeletonLoader height={12} width="30%" />
-    </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   skeleton: {
