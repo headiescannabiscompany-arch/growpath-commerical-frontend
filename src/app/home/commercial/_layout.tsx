@@ -97,6 +97,7 @@ export default function CommercialTabsLayout() {
         name="feed"
         options={{
           title: "Feed / Campaigns",
+          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
           href: null,
           headerShown: false
         }}
