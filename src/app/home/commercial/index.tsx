@@ -413,6 +413,7 @@ export default function CommercialHome() {
       storefrontConfigured: dashboard?.storefront?.slug ? 1 : 0
     };
   }, [dashboard]);
+  const productCount = Number(counts.products ?? 0);
   const storefrontPrimaryActions = useMemo<Action[]>(() => {
     const slug = String(dashboard?.storefront?.slug || "").trim();
     return [
@@ -427,12 +428,40 @@ export default function CommercialHome() {
       { label: "Add Product", href: "/home/commercial/products/new" }
     ];
   }, [dashboard?.storefront?.slug]);
+  const storefrontLaunchChecklist = useMemo(
+    () => [
+      {
+        label: "Public slug",
+        value: String(dashboard?.storefront?.slug || "").trim() || "Missing"
+      },
+      {
+        label: "Products",
+        value:
+          productCount > 0 ? `${productCount.toLocaleString()} ready` : "No products yet"
+      },
+      {
+        label: "Storefront",
+        value:
+          String(
+            dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
+          ).trim() || "Draft"
+      }
+    ],
+    [
+      dashboard?.storefront?.slug,
+      dashboard?.storefront?.status,
+      dashboard?.storefront?.storefrontStatus,
+      productCount
+    ]
+  );
   const storefrontStatus = String(
     dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
   ).trim();
   const storefrontIsLive = Boolean(dashboard?.storefront?.slug);
   const storefrontLaunchCopy = !storefrontIsLive
-    ? "Draft shell: add a public slug, finish the brand profile, and publish once products are ready."
+    ? productCount > 0
+      ? "Draft shell: add a public slug and finish the brand profile. Products are already in place, so the next step is publishing the storefront."
+      : "Draft shell: add a public slug, finish the brand profile, and create at least one product before publishing."
     : storefrontStatus &&
         !["published", "active"].includes(storefrontStatus.toLowerCase())
       ? `Storefront slug is set, but the public brand home is still ${storefrontStatus}.`
@@ -547,6 +576,14 @@ export default function CommercialHome() {
               </Text>
             )}
             <Text style={styles.dashboardLaunchCopy}>{storefrontLaunchCopy}</Text>
+            <View style={styles.launchChecklist}>
+              {storefrontLaunchChecklist.map((item) => (
+                <View key={item.label} style={styles.launchChecklistItem}>
+                  <Text style={styles.launchChecklistValue}>{item.value}</Text>
+                  <Text style={styles.launchChecklistLabel}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
           </View>
           <View style={styles.pulseStack}>
             <View style={styles.pulse}>
@@ -803,6 +840,34 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     marginTop: 6
+  },
+  launchChecklist: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 14
+  },
+  launchChecklistItem: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#C7E5D0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    minWidth: 112,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  launchChecklistValue: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    lineHeight: 17
+  },
+  launchChecklistLabel: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "800",
+    marginTop: 2,
+    textTransform: "uppercase"
   },
   actionItemList: {
     gap: 8,

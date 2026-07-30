@@ -989,10 +989,13 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Storefront not configured yet.")).toBeTruthy();
     expect(
       screen.getByText(
-        "Draft shell: add a public slug, finish the brand profile, and publish once products are ready."
+        "Draft shell: add a public slug, finish the brand profile, and create at least one product before publishing."
       )
     ).toBeTruthy();
-    expect(screen.getByText("Draft")).toBeTruthy();
+    expect(screen.getByText("Public slug")).toBeTruthy();
+    expect(screen.getByText("Missing")).toBeTruthy();
+    expect(screen.getByText("No products yet")).toBeTruthy();
+    expect(screen.getAllByText("Draft").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Preview Storefront").props.href).toBe(
       "/home/commercial/storefront/preview"
     );
