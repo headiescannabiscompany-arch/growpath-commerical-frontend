@@ -87,6 +87,15 @@ export function resetCommercialDashboardCacheForTests() {
   commercialDashboardFetchedAt = 0;
 }
 
+const SHARED_CORE_ACTIONS: Action[] = [
+  { label: "Dashboard", href: "/home/commercial" },
+  { label: "Grows", href: "/home/commercial/grows" },
+  { label: "Videos", href: "/videos?tab=library" },
+  { label: "Discover", href: "/discover" },
+  { label: "Notifications", href: "/home/notifications" },
+  { label: "Tasks", href: "/home/commercial/tasks" }
+];
+
 const QUICK_ACTIONS: Action[] = [
   { label: "Storefront", href: "/home/commercial/storefront" },
   { label: "Brand Profile", href: "/home/commercial/profile" },
@@ -536,8 +545,8 @@ export default function CommercialHome() {
               {auth.user?.email} | {plan} plan
             </Text>
             <Text style={styles.headerDescription}>
-              Brand profile and storefront plus products, courses, lives, feed campaigns,
-              orders, Stripe readiness, and analytics.
+              Brand profile and storefront plus the shared core surfaces, products,
+              courses, lives, feed campaigns, orders, Stripe readiness, and analytics.
             </Text>
           </View>
           <Pressable
@@ -614,6 +623,19 @@ export default function CommercialHome() {
             </Link>
           ))}
         </View>
+        <View style={styles.sharedCoreCard}>
+          <Text style={styles.cardTitle}>Shared core surfaces</Text>
+          <Text style={styles.cardDesc}>
+            Commercial keeps the shared workspace visible: dashboard, grows, videos,
+            discovery, notifications, and tasks.
+          </Text>
+        </View>
+        <View style={styles.actions}>
+          {SHARED_CORE_ACTIONS.map((action) => (
+            <ActionButton key={`shared-${action.label}-${action.href}`} action={action} />
+          ))}
+        </View>
+
         <View style={styles.actions}>
           {QUICK_ACTIONS.map((action) => (
             <ActionButton key={`quick-${action.label}-${action.href}`} action={action} />
@@ -963,6 +985,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginTop: 12
+  },
+  sharedCoreCard: {
+    marginTop: 16
   },
   action: {
     backgroundColor: "#FFFFFF",

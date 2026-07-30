@@ -798,9 +798,16 @@ describe("commercial workflow pages", () => {
     );
     expect(
       screen.getByText(
-        "Publish the public brand home base after profile, products, and proof are coherent. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through the correct checkout path."
+        "Brand profile and storefront plus the shared core surfaces, products, courses, lives, feed campaigns, orders, Stripe readiness, and analytics."
       )
     ).toBeTruthy();
+    expect(screen.getByText("Shared core surfaces")).toBeTruthy();
+    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial" }).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows" }).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/videos?tab=library" }).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/discover" }).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/home/notifications" }).length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/tasks" }).length).toBeGreaterThan(0);
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Restock base soil bags")).toBeTruthy();
