@@ -111,13 +111,17 @@ describe("workspace bottom-tab order", () => {
     );
   });
 
-  it("keeps legacy Facility navigation anchored by Dashboard and Profile", () => {
+  it("keeps legacy Facility navigation anchored to the live shell order", () => {
     const contents = source("src/navigation/FacilityTabs.js");
     expectOrder(contents, [
       "FacilityDashboard",
       "FacilityRooms",
+      "FacilityGrows",
+      "FacilityPlants",
       "FacilityTasks",
+      "FacilitySopRuns",
       "FacilityCompliance",
+      "FacilityMore",
       "FacilityProfile"
     ]);
     expect(contents).toContain('title: "Inventory", tabBarButton: () => null');
