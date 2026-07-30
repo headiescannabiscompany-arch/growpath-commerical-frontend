@@ -17,6 +17,42 @@ const workspaceGroups: Array<{
   title: string;
 }> = [
   {
+    title: "Shared core surfaces",
+    destinations: [
+      {
+        label: "Dashboard",
+        href: "/home/commercial",
+        description: "Open the commercial command center and launch readiness view."
+      },
+      {
+        label: "Grows",
+        href: "/home/commercial/grows",
+        description: "Review trial runs, journals, tasks, and timeline evidence."
+      },
+      {
+        label: "Videos",
+        href: "/videos?tab=library",
+        description:
+          "Upload once, manage workspace video storage, and publish videos for discovery."
+      },
+      {
+        label: "Discover",
+        href: "/discover",
+        description: "Browse published storefronts, videos, courses, and field findings."
+      },
+      {
+        label: "Notifications",
+        href: "/home/notifications",
+        description: "Review inbox alerts, read status, and delivery preferences."
+      },
+      {
+        label: "Tasks",
+        href: "/home/commercial/tasks",
+        description: "Track action items that keep the workspace moving."
+      }
+    ]
+  },
+  {
     title: "Learning and engagement",
     destinations: [
       {
@@ -28,12 +64,6 @@ const workspaceGroups: Array<{
         label: "Lives",
         href: "/home/commercial/lives",
         description: "Plan live sessions, connection status, and audience access."
-      },
-      {
-        label: "Videos",
-        href: "/videos?tab=library",
-        description:
-          "Upload once, manage workspace video storage, and publish videos for discovery."
       },
       {
         label: "Forum / Q&A",

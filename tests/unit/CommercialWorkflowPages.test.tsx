@@ -3083,6 +3083,7 @@ describe("commercial workflow pages", () => {
       ]
     ).toBe(1);
     [
+      "Shared core surfaces",
       "Learning and engagement",
       "Sales and measurement",
       "Products and production",
@@ -3091,6 +3092,12 @@ describe("commercial workflow pages", () => {
       expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
     });
     [
+      "Dashboard",
+      "Grows",
+      "Videos",
+      "Discover",
+      "Notifications",
+      "Tasks",
       "Courses",
       "Lives",
       "Forum / Q&A",
