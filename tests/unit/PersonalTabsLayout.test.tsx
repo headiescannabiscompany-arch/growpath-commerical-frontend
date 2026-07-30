@@ -30,7 +30,7 @@ describe("PersonalTabsLayout", () => {
     expect(mockTabs).toHaveBeenCalledWith(
       expect.objectContaining({
         screenOptions: expect.objectContaining({
-          tabBarActiveTintColor: "#1C8F4A",
+          tabBarActiveTintColor: "#166534",
           tabBarInactiveTintColor: "#5F6F5F",
           tabBarStyle: expect.objectContaining({
             backgroundColor: "#FFFFFF",
