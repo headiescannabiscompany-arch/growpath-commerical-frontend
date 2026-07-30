@@ -1,0 +1,251 @@
+import { Link } from "expo-router";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
+
+type WorkspaceDestination = {
+  description: string;
+  href: string;
+  label: string;
+};
+
+const workspaceGroups: Array<{
+  destinations: WorkspaceDestination[];
+  title: string;
+}> = [
+  {
+    title: "Facility operations",
+    destinations: [
+      {
+        label: "Dashboard",
+        href: "/home/facility",
+        description: "Open the Facility command center and live operational status."
+      },
+      {
+        label: "Rooms",
+        href: "/home/facility/rooms",
+        description: "Review rooms, zones, devices, and room-level work."
+      },
+      {
+        label: "Grows",
+        href: "/home/facility/grows",
+        description: "Track grows, runs, task context, and operational evidence."
+      },
+      {
+        label: "Plants",
+        href: "/home/facility/plants",
+        description: "Manage plant records, context, and linked observations."
+      },
+      {
+        label: "Tasks",
+        href: "/home/facility/tasks",
+        description: "Review assigned work, proof, approvals, and follow-up items."
+      },
+      {
+        label: "SOPs",
+        href: "/home/facility/sop-runs",
+        description: "Run, compare, and review facility procedures."
+      },
+      {
+        label: "Compliance",
+        href: "/home/facility/compliance",
+        description: "Review verification, audit readiness, and compliance exports."
+      }
+    ]
+  },
+  {
+    title: "Admin and records",
+    destinations: [
+      {
+        label: "Inventory",
+        href: "/home/facility/inventory",
+        description: "Track facility inventory, lots, and adjustments."
+      },
+      {
+        label: "Team",
+        href: "/home/facility/team",
+        description: "Invite members, manage roles, and assign work."
+      },
+      {
+        label: "Sales",
+        href: "/home/facility/transfers",
+        description: "Review licensed transfers, manifests, and totals."
+      },
+      {
+        label: "Reports",
+        href: "/home/facility/reports",
+        description: "Open operational summaries and export packets."
+      },
+      {
+        label: "Analytics",
+        href: "/home/facility/analytics",
+        description: "Inspect room stability, SOPs, alerts, and training metrics."
+      },
+      {
+        label: "Integrations",
+        href: "/home/facility/integrations",
+        description: "Connect room data, sensors, and read-only import previews."
+      },
+      {
+        label: "AI",
+        href: "/home/facility/ai-ask",
+        description: "Open facility AI prompts, review, and helper workflows."
+      }
+    ]
+  },
+  {
+    title: "Learning and community",
+    destinations: [
+      {
+        label: "Feed",
+        href: "/home/facility/feed",
+        description: "Share updates, campaigns, and public-facing activity."
+      },
+      {
+        label: "Courses",
+        href: "/courses",
+        description: "Open facility training courses and shared lesson resources."
+      },
+      {
+        label: "Videos",
+        href: "/videos?tab=library",
+        description: "Manage the video library and workspace storage use."
+      },
+      {
+        label: "Forum / Q&A",
+        href: "/forum",
+        description: "Open discussion, help threads, and community questions."
+      },
+      {
+        label: "Notifications",
+        href: "/home/notifications",
+        description: "Review alerts, delivery status, and notification preferences."
+      }
+    ]
+  },
+  {
+    title: "Workspace",
+    destinations: [
+      {
+        label: "Profile",
+        href: "/home/facility/profile",
+        description: "Manage the facility identity, plan, and AI usage."
+      },
+      {
+        label: "Switch workspace",
+        href: "/account/mode",
+        description: "Move between Personal, Commercial, and Facility accounts."
+      }
+    ]
+  }
+];
+
+function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
+  return (
+    <Link href={href as any} asChild>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`Open ${label}`}
+        style={styles.destination}
+      >
+        <Text style={styles.destinationTitle}>{label}</Text>
+        <Text style={styles.destinationDescription}>{description}</Text>
+        <Text style={styles.destinationAction}>Open</Text>
+      </Pressable>
+    </Link>
+  );
+}
+
+export default function FacilityMoreRoute() {
+  return (
+    <AppPage
+      routeKey="facility-more"
+      longContent
+      header={
+        <View style={styles.header}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            More Facility Workspaces
+          </Text>
+          <Text style={styles.subtitle}>
+            Open the admin, learning, and social surfaces that do not fit in the compact
+            Facility tab bar.
+          </Text>
+        </View>
+      }
+    >
+      {workspaceGroups.map((group) => (
+        <AppCard key={group.title}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.groupTitle}>
+            {group.title}
+          </Text>
+          <View style={styles.destinationGrid}>
+            {group.destinations.map((destination) => (
+              <WorkspaceLink key={destination.href} {...destination} />
+            ))}
+          </View>
+        </AppCard>
+      ))}
+    </AppPage>
+  );
+}
+
+const styles = StyleSheet.create({
+  destination: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexBasis: 220,
+    flexGrow: 1,
+    flexShrink: 1,
+    maxWidth: "100%",
+    minHeight: 120,
+    minWidth: 220,
+    padding: 14
+  },
+  destinationAction: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900",
+    marginTop: 10
+  },
+  destinationDescription: {
+    color: "#475569",
+    flexShrink: 1,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 5
+  },
+  destinationGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  destinationTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  groupTitle: {
+    color: "#0F172A",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 12
+  },
+  header: {
+    gap: 6
+  },
+  subtitle: {
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 20
+  },
+  title: {
+    color: "#0F172A",
+    fontSize: 28,
+    fontWeight: "900"
+  }
+});

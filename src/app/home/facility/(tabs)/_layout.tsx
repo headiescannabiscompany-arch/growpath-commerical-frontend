@@ -84,6 +84,7 @@ export default function FacilityTabsLayout() {
         name="ai-ask"
         options={{ title: "AI", tabBarLabel: "AI", href: null }}
       />
+      <Tabs.Screen name="more" options={{ title: "More" }} />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
