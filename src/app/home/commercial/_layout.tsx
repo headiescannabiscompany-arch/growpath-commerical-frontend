@@ -69,6 +69,10 @@ export default function CommercialTabsLayout() {
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
       <Tabs.Screen
+        name="storefront/index"
+        options={{ title: "Storefront", tabBarLabel: "Storefront" }}
+      />
+      <Tabs.Screen
         name="grows/index"
         options={{ title: "Grows", tabBarLabel: "Grows" }}
       />
@@ -81,14 +85,21 @@ export default function CommercialTabsLayout() {
         options={{ title: "Discover", tabBarLabel: "Discover" }}
       />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
+      <Tabs.Screen
+        name="community"
+        options={{
+          title: "Forum / Q&A",
+          tabBarLabel: compactTabs ? "Forum" : "Forum / Q&A",
+          headerShown: false
+        }}
+      />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-      <Tabs.Screen name="storefront/index" options={{ title: "Storefront" }} />
-      <Tabs.Screen name="products/index" options={{ title: "Products" }} />
+      <Tabs.Screen name="products/index" options={{ title: "Products", href: null }} />
       <Tabs.Screen
         name="feed"
         options={{
           title: "Feed / Campaigns",
-          tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
+          href: null,
           headerShown: false
         }}
       />
@@ -116,14 +127,7 @@ export default function CommercialTabsLayout() {
           headerShown: false
         }}
       />
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: "More",
-          href: compactTabs ? undefined : null,
-          headerShown: false
-        }}
-      />
+      <Tabs.Screen name="more" options={{ title: "More", href: null, headerShown: false }} />
       <Tabs.Screen name="tools/library" options={{ href: null, title: "Tool Library" }} />
       <Tabs.Screen
         name="batch-planner"
@@ -139,7 +143,6 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen name="tasks" options={{ title: "Tasks", href: null }} />
       <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
-      <Tabs.Screen name="community" options={{ title: "Forum / Q&A", href: null }} />
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
       <Tabs.Screen
         name="inventory-create"
