@@ -184,6 +184,7 @@ export default function PersonalGrowsRoute() {
 
   const activeGrows = useMemo(() => sortedGrows.filter(isActiveGrow), [sortedGrows]);
   const latestGrow = sortedGrows[0];
+  const id = String(latestGrow?.id || latestGrow?._id || "").trim();
   const totalPhotos = useMemo(
     () => sortedGrows.reduce((sum, grow) => sum + growPhotoCount(grow), 0),
     [sortedGrows]
@@ -236,15 +237,11 @@ export default function PersonalGrowsRoute() {
   const growToolsActions = latestGrow
     ? [
         {
-          href: `/home/personal/tools/integrations?growId=${encodeURIComponent(
-            latestGrow.id
-          )}`,
+          href: `/home/personal/tools/integrations?growId=${id}`,
           label: "Integrations"
         },
         {
-          href: `/home/personal/tools/pdf-export?growId=${encodeURIComponent(
-            latestGrow.id
-          )}`,
+          href: `/home/personal/tools/pdf-export?growId=${id}`,
           label: "PDF Export"
         }
       ]
