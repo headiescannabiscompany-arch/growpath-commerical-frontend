@@ -27,7 +27,9 @@ export default function TokenBalanceWidget({
 }) {
   const router = useRouter();
   const auth = useAuth();
+  const normalizedWorkspaceType = String(workspaceType || "personal").toLowerCase();
   const facilityScoped = workspaceType === "facility";
+  const commercialScoped = normalizedWorkspaceType === "commercial";
   const normalizedFacilityId = String(facilityId || "").trim();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,13 @@ export default function TokenBalanceWidget({
                   facilityId: normalizedFacilityId
                 }
               }
-            : {})
+            : commercialScoped
+              ? {
+                  params: {
+                    workspaceType: "commercial"
+                  }
+                }
+              : {})
         };
         let res = await getTokenBalance(undefined, requestOptions);
         let nextBalance = res?.data ?? res;
@@ -141,7 +149,8 @@ export default function TokenBalanceWidget({
     refreshVersion,
     retryMe,
     scopeStateKey,
-    stalePaidRetryKey
+    stalePaidRetryKey,
+    commercialScoped
   ]);
 
   const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
@@ -181,7 +190,7 @@ export default function TokenBalanceWidget({
   const usageCopy =
     "AI credits pay for real model work. Rule-based calculators and fallbacks are free; Plant Diagnose uses 3 credits and provider-backed text help uses 1.";
   const verifiedPlanCopy = balance?.plan
-    ? `${facilityScoped ? "Facility" : "Server"} plan: ${String(balance.plan).toUpperCase()} (${balance.subscriptionStatus || "unknown status"}); ${maxTokens ?? "-"} weekly credits from ${balance.allowanceSource || "plan"}.`
+    ? `${facilityScoped ? "Facility" : commercialScoped ? "Commercial" : "Server"} plan: ${String(balance.plan).toUpperCase()} (${balance.subscriptionStatus || "unknown status"}); ${maxTokens ?? "-"} weekly credits from ${balance.allowanceSource || "plan"}.`
     : null;
   const weeklyUsageCopy = balance?.usage
     ? `Used this week: ${Number(balance.usage.creditsUsed || 0)} credits across ${Number(balance.usage.billedRequests || 0)} billed requests; ${Number(balance.usage.creditsRefunded || 0)} credits refunded.`
@@ -192,7 +201,9 @@ export default function TokenBalanceWidget({
     ? normalizedFacilityId
       ? `/ai/how-it-works?workspaceType=facility&facilityId=${encodeURIComponent(normalizedFacilityId)}`
       : "/ai/how-it-works?workspaceType=facility"
-    : "/ai/how-it-works";
+    : commercialScoped
+      ? "/ai/how-it-works?workspaceType=commercial"
+      : "/ai/how-it-works";
 
   return (
     <Container
@@ -205,7 +216,11 @@ export default function TokenBalanceWidget({
         </View>
         <View style={styles.headerContent}>
           <Text style={styles.label}>
-            {facilityScoped ? "Facility AI Credits" : "AI Credits"}
+            {facilityScoped
+              ? "Facility AI Credits"
+              : commercialScoped
+                ? "Commercial AI Credits"
+                : "AI Credits"}
           </Text>
           <Text style={styles.balance}>
             {aiTokens} / {maxTokens ?? "-"}

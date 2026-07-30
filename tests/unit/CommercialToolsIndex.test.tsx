@@ -4,6 +4,7 @@ import { fireEvent, render } from "@testing-library/react-native";
 import CommercialToolsIndex from "@/app/home/commercial/tools";
 
 const mockPush = jest.fn();
+const mockTokenBalanceWidget = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -20,7 +21,10 @@ jest.mock("expo-router", () => {
 jest.mock("@/components/TokenBalanceWidget", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return () => React.createElement(View, { testID: "token-balance" });
+  return (props: any) => {
+    mockTokenBalanceWidget(props);
+    return React.createElement(View, { testID: "token-balance" });
+  };
 });
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -38,10 +42,15 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("CommercialToolsIndex", () => {
   beforeEach(() => {
     mockPush.mockReset();
+    mockTokenBalanceWidget.mockReset();
   });
 
   it("surfaces the soil and nutrient batch planner only through Commercial", () => {
     const screen = render(<CommercialToolsIndex />);
+
+    expect(mockTokenBalanceWidget).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceType: "commercial" })
+    );
 
     expect(screen.getByText("Soil & Nutrient Batch Planner")).toBeTruthy();
     expect(

@@ -39,7 +39,9 @@ const ACTION_COSTS = [
 
 export default function TokenInfoScreen() {
   const params = useLocalSearchParams();
-  const facilityScoped = String(params?.workspaceType || "").toLowerCase() === "facility";
+  const workspaceType = String(params?.workspaceType || "").toLowerCase();
+  const facilityScoped = workspaceType === "facility";
+  const commercialScoped = workspaceType === "commercial";
   const facilityId = facilityScoped ? String(params?.facilityId || "").trim() : "";
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,13 @@ export default function TokenInfoScreen() {
               facilityId
             }
           }
-        : {})
+        : commercialScoped
+          ? {
+              params: {
+                workspaceType: "commercial"
+              }
+            }
+          : {})
     })
       .then((response) => {
         if (alive) setBalance(response?.data ?? response);
@@ -112,7 +120,9 @@ export default function TokenInfoScreen() {
           <Text style={styles.balanceLabel}>
             {facilityScoped
               ? "Selected Facility's live AI-credit balance"
-              : "Your live AI-credit balance"}
+              : commercialScoped
+                ? "Commercial workspace's live AI-credit balance"
+                : "Your live AI-credit balance"}
           </Text>
           <Text style={styles.balanceValue}>
             {loading

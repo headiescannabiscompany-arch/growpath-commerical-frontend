@@ -62,7 +62,7 @@ export default function CommercialToolsIndex() {
         </View>
       }
     >
-      <TokenBalanceWidget />
+      <TokenBalanceWidget workspaceType="commercial" />
       <View style={styles.grid}>
         {TOOLS.map((tool) => (
           <AppCard key={tool.href} style={styles.card}>

@@ -79,4 +79,32 @@ describe("TokenInfoScreen action costs", () => {
       })
     );
   });
+
+  it("loads the selected Commercial balance when opened from Commercial mode", async () => {
+    mockSearchParams = {
+      workspaceType: "commercial"
+    };
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 1800,
+      maxTokens: 2000,
+      plan: "commercial",
+      subscriptionStatus: "active",
+      allowanceSource: "plan"
+    });
+
+    const screen = render(<TokenInfoScreen />);
+
+    await waitFor(() => expect(screen.getByText("1800 / 2000")).toBeTruthy());
+    expect(
+      screen.getByText("Commercial workspace's live AI-credit balance")
+    ).toBeTruthy();
+    expect(mockGetTokenBalance).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        params: {
+          workspaceType: "commercial"
+        }
+      })
+    );
+  });
 });

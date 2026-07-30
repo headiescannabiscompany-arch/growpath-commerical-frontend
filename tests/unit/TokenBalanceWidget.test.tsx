@@ -238,6 +238,39 @@ describe("TokenBalanceWidget", () => {
     );
   });
 
+  it("loads and labels the commercial balance instead of the personal balance", async () => {
+    mockAuthState = {
+      token: "commercial-token",
+      user: { plan: "commercial", subscriptionStatus: "active" },
+      ctx: { plan: "commercial", subscriptionStatus: "active" },
+      retryMe: jest.fn()
+    };
+    mockGetTokenBalance.mockResolvedValue({
+      aiTokens: 1800,
+      maxTokens: 2000,
+      plan: "commercial",
+      subscriptionStatus: "active",
+      allowanceSource: "plan",
+      creditOwner: "commercial"
+    });
+
+    const screen = render(<TokenBalanceWidget workspaceType="commercial" />);
+
+    await waitFor(() => expect(screen.getByText("Commercial AI Credits")).toBeTruthy());
+    expect(screen.getByText("1800 / 2000")).toBeTruthy();
+    expect(
+      screen.getByText(/Commercial plan: COMMERCIAL \(active\); 2000 weekly credits/)
+    ).toBeTruthy();
+    expect(mockGetTokenBalance).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        params: {
+          workspaceType: "commercial"
+        }
+      })
+    );
+  });
+
   it("never falls back to an individual balance when no Facility is selected", async () => {
     const screen = render(<TokenBalanceWidget workspaceType="facility" />);
 
