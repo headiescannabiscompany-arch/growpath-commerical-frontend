@@ -1,14 +1,17 @@
 import React from "react";
 import { Link } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
     marginTop: 10,
     marginBottom: 12
+  },
+  content: {
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    gap: 8,
+    alignItems: "center"
   },
   pill: {
     borderWidth: 1,
@@ -62,7 +65,12 @@ export default function GrowWorkspaceNav({
   if (!growId) return null;
 
   return (
-    <View style={styles.row}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.row}
+      contentContainerStyle={styles.content}
+    >
       {tabs.map((tab) => {
         const isActive = tab.key === active;
         return (
@@ -79,6 +87,6 @@ export default function GrowWorkspaceNav({
           </Link>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
