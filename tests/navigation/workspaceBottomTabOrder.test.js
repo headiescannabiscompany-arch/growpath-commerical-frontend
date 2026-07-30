@@ -43,26 +43,32 @@ describe("workspace bottom-tab order", () => {
     ]);
     expect(contents).not.toContain("const compactSecondaryHref");
     expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
-    expect(contents).toContain('name="lives" options={{ title: "Lives", href: null }}');
+    expect(contents).toContain(
+      'name="lives"\n        options={{ title: "Lives", href: null, tabBarButton: () => null }}'
+    );
     expect(contents).toMatch(
       /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: null,[\s\S]*?headerShown: false/
     );
     expect(contents).toContain(
-      'name="analytics" options={{ title: "Analytics", href: null, headerShown: false }}'
+      'name="analytics"\n        options={{\n          title: "Analytics",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
     );
     expect(contents).toContain('name="community"');
     expect(contents).toContain('tabBarLabel: compactTabs ? "Forum" : "Forum / Q&A"');
-    expect(contents).toContain('name="products/index" options={{ title: "Products", href: null }}');
+    expect(contents).toContain(
+      'name="products/index"\n        options={{ title: "Products", href: null, tabBarButton: () => null }}'
+    );
     expect(contents).toContain(
       'name="feed"\n        options={{\n          title: "Feed / Campaigns",\n          href: null,'
     );
     expect(contents).toContain('name="more"');
-    expect(contents).toContain('options={{ title: "More", href: null, headerShown: false }}');
     expect(contents).toContain(
-      'name="storefront/edit"\n        options={{ title: "Edit Storefront", href: null, headerShown: false }}'
+      'name="more"\n        options={{\n          title: "More",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
     );
     expect(contents).toContain(
-      'name="storefront/preview"\n        options={{ title: "Preview Storefront", href: null, headerShown: false }}'
+      'name="storefront/edit"\n        options={{\n          title: "Edit Storefront",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
+    );
+    expect(contents).toContain(
+      'name="storefront/preview"\n        options={{\n          title: "Preview Storefront",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
     );
     [
       "/home/commercial/courses",
@@ -78,9 +84,11 @@ describe("workspace bottom-tab order", () => {
       "/home/commercial/tools"
     ].forEach((href) => expect(more).toContain(`href: "${href}"`));
     expect(contents).toContain(
-      'name="tools/library" options={{ href: null, title: "Tool Library" }}'
+      'name="tools/library"\n        options={{ href: null, title: "Tool Library", tabBarButton: () => null }}'
     );
-    expect(contents).toContain('name="tasks" options={{ title: "Tasks", href: null }}');
+    expect(contents).toContain(
+      'name="tasks"\n        options={{ title: "Tasks", href: null, tabBarButton: () => null }}'
+    );
   });
 
   it("centers Commercial text-only tabs without reserving an empty icon row", () => {
