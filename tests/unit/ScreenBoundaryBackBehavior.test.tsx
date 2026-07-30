@@ -17,14 +17,16 @@ jest.mock("../../src/components/nav/BackButton", () => {
 });
 
 describe("ScreenBoundary back behavior", () => {
-  it("does not show a back button by default for root-style screens", () => {
+  it("shows a back button by default for root-style screens", () => {
     const screen = render(
       <ScreenBoundary title="Root">
         <Text>Root screen</Text>
       </ScreenBoundary>
     );
 
-    expect(screen.queryByText(/Shared Boundary Back/)).toBeNull();
+    expect(
+      screen.getByText(/Shared Boundary Back.*\/account\/workspace.*history/)
+    ).toBeTruthy();
     expect(screen.getByText("Root screen")).toBeTruthy();
   });
 

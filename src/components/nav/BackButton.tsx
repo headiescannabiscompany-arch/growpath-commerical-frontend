@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 
 export default function BackButton({
   label = "< Back",
-  fallbackHref = "/home",
+  fallbackHref = "/account/workspace",
   preferFallback = false
 }: {
   label?: string;

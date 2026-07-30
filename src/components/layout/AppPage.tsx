@@ -24,31 +24,6 @@ type AppPageProps = {
   backFallbackHref?: string;
 };
 
-const NO_BACK_ROUTE_KEYS = new Set([
-  "home",
-  "personal_home",
-  "personal_task_center",
-  "commercial_home",
-  "commercial-analytics",
-  "commercial-batch-planner",
-  "commercial-evidence-runs",
-  "commercial-community",
-  "commercial-courses",
-  "commercial-grows",
-  "commercial-lives",
-  "commercial-marketing",
-  "commercial-orders",
-  "commercial-product-lines",
-  "commercial-products",
-  "commercial-profile",
-  "commercial-trials",
-  "facility_dashboard",
-  "orders",
-  "store",
-  "store-public",
-  "storefront"
-]);
-
 export default function AppPage({
   routeKey,
   header,
@@ -85,15 +60,16 @@ export default function AppPage({
     ) : null;
 
   const rail = railOverride !== undefined ? railOverride : computedRail;
+  const resolvedBackHref = backFallbackHref || "/account/workspace";
 
   return (
     <ScrollView
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
     >
-      {(showBack ?? !NO_BACK_ROUTE_KEYS.has(routeKey)) ? (
+      {(showBack ?? true) ? (
         <View style={styles.backRow}>
-          <BackButton fallbackHref={backFallbackHref} />
+          <BackButton fallbackHref={resolvedBackHref} />
         </View>
       ) : null}
       {header ? (

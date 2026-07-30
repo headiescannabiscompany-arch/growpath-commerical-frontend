@@ -34,47 +34,47 @@ jest.mock("@/utils/feedPolicy", () => ({
 }));
 
 describe("AppPage back behavior", () => {
-  it("hides the shared back button on workspace root pages", () => {
+  it("shows the shared back button on workspace root pages", () => {
     const screen = render(
       <AppPage routeKey="commercial-products">
         <Text>Products root</Text>
       </AppPage>
     );
 
-    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     expect(screen.getByText("Products root")).toBeTruthy();
   });
 
-  it("keeps the commercial dashboard as a root page", () => {
+  it("shows the shared back button on the commercial dashboard", () => {
     const screen = render(
       <AppPage routeKey="commercial_home">
         <Text>Commercial dashboard</Text>
       </AppPage>
     );
 
-    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     expect(screen.getByText("Commercial dashboard")).toBeTruthy();
   });
 
-  it("hides the shared back button on commercial orders root page", () => {
+  it("shows the shared back button on commercial orders root page", () => {
     const screen = render(
       <AppPage routeKey="orders">
         <Text>Orders root</Text>
       </AppPage>
     );
 
-    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     expect(screen.getByText("Orders root")).toBeTruthy();
   });
 
-  it("hides the shared back button on the canonical evidence-runs root page", () => {
+  it("shows the shared back button on the canonical evidence-runs root page", () => {
     const screen = render(
       <AppPage routeKey="commercial-evidence-runs">
         <Text>Evidence runs root</Text>
       </AppPage>
     );
 
-    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     expect(screen.getByText("Evidence runs root")).toBeTruthy();
   });
 
@@ -85,7 +85,7 @@ describe("AppPage back behavior", () => {
       </AppPage>
     );
 
-    expect(screen.getByText("Shared Back default")).toBeTruthy();
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     expect(screen.getByText("Product detail")).toBeTruthy();
   });
 
@@ -108,13 +108,13 @@ describe("AppPage back behavior", () => {
         <Text>Create product</Text>
       </AppPage>
     );
-    expect(productScreen.getByText("Shared Back default")).toBeTruthy();
+    expect(productScreen.getByText("Shared Back /account/workspace")).toBeTruthy();
 
     const evidenceRunScreen = render(
       <AppPage routeKey="commercial-evidence-run-create">
         <Text>Create evidence run</Text>
       </AppPage>
     );
-    expect(evidenceRunScreen.getByText("Shared Back default")).toBeTruthy();
+    expect(evidenceRunScreen.getByText("Shared Back /account/workspace")).toBeTruthy();
   });
 });

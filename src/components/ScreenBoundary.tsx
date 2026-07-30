@@ -29,8 +29,8 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const showBack = Boolean(this.props.showBack);
-    const fallbackHref = this.props.backFallbackHref || "/home";
+    const showBack = this.props.showBack ?? true;
+    const fallbackHref = this.props.backFallbackHref || "/account/workspace";
 
     if (!this.state.error) {
       if (!showBack) {
