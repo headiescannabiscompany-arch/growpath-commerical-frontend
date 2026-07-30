@@ -70,17 +70,19 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="grows/index"
-        options={{ title: "Product Trial Evidence Runs", href: null }}
+        options={{ title: "Grows", tabBarLabel: "Grows" }}
       />
+      <Tabs.Screen
+        name="tools/index"
+        options={{ title: "AI Tools", tabBarLabel: "AI Tools" }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{ title: "Discover", tabBarLabel: "Discover" }}
+      />
+      <Tabs.Screen name="courses" options={{ title: "Courses" }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="storefront/index" options={{ title: "Storefront" }} />
-      <Tabs.Screen
-        name="storefront/edit"
-        options={{ href: null, title: "Edit Storefront" }}
-      />
-      <Tabs.Screen
-        name="storefront/preview"
-        options={{ href: null, title: "Storefront Preview" }}
-      />
       <Tabs.Screen name="products/index" options={{ title: "Products" }} />
       <Tabs.Screen
         name="feed"
@@ -89,10 +91,6 @@ export default function CommercialTabsLayout() {
           tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
           headerShown: false
         }}
-      />
-      <Tabs.Screen
-        name="courses"
-        options={{ title: "Courses", href: compactSecondaryHref("courses") }}
       />
       <Tabs.Screen
         name="lives"
@@ -117,14 +115,6 @@ export default function CommercialTabsLayout() {
           href: compactSecondaryHref("analytics"),
           headerShown: false
         }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile", href: compactSecondaryHref("profile") }}
-      />
-      <Tabs.Screen
-        name="tools/index"
-        options={{ title: "Tools", href: compactSecondaryHref("tools") }}
       />
       <Tabs.Screen
         name="more"

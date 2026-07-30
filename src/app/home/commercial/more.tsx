@@ -37,7 +37,7 @@ const workspaceGroups: Array<{
       },
       {
         label: "Discover",
-        href: "/discover",
+        href: "/home/commercial/discover",
         description: "Browse published storefronts, videos, courses, and field findings."
       },
       {

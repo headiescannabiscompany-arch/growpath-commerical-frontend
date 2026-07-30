@@ -91,7 +91,7 @@ const SHARED_CORE_ACTIONS: Action[] = [
   { label: "Dashboard", href: "/home/commercial" },
   { label: "Grows", href: "/home/commercial/grows" },
   { label: "Videos", href: "/videos?tab=library" },
-  { label: "Discover", href: "/discover" },
+  { label: "Discover", href: "/home/commercial/discover" },
   { label: "Notifications", href: "/home/notifications" },
   { label: "Tasks", href: "/home/commercial/tasks" }
 ];

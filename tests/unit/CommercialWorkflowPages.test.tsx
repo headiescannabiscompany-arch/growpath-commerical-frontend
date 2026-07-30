@@ -805,7 +805,9 @@ describe("commercial workflow pages", () => {
     expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial" }).length).toBeGreaterThan(0);
     expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows" }).length).toBeGreaterThan(0);
     expect(screen.UNSAFE_getAllByProps({ href: "/videos?tab=library" }).length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/discover" }).length).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/discover" }).length
+    ).toBeGreaterThan(0);
     expect(screen.UNSAFE_getAllByProps({ href: "/home/notifications" }).length).toBeGreaterThan(0);
     expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/tasks" }).length).toBeGreaterThan(0);
     expect(screen.getByText("Action Items")).toBeTruthy();
