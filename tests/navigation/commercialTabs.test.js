@@ -7,27 +7,35 @@ describe("CommercialTabs", () => {
     "utf8"
   );
 
-  it("keeps storefront as a primary commercial tab", () => {
+  it("keeps the modern commercial tab order with storefront first and utility routes hidden", () => {
     const dashboardIndex = source.indexOf('name="CommercialDashboard"');
     const storefrontIndex = source.indexOf('name="Storefront"');
-    const productsIndex = source.indexOf('name="CommercialProducts"');
-    const feedIndex = source.indexOf('name="CommercialFeed"');
+    const growsIndex = source.indexOf('name="CommercialGrows"');
+    const toolsIndex = source.indexOf('name="CommercialTools"');
+    const discoverIndex = source.indexOf('name="CommercialDiscover"');
+    const coursesIndex = source.indexOf('name="CommercialCourses"');
+    const communityIndex = source.indexOf('name="CommercialCommunity"');
     const profileIndex = source.indexOf('name="CommercialProfile"');
 
     expect(dashboardIndex).toBeGreaterThanOrEqual(0);
     expect(storefrontIndex).toBeGreaterThan(dashboardIndex);
-    expect(productsIndex).toBeGreaterThan(storefrontIndex);
-    expect(feedIndex).toBeGreaterThan(productsIndex);
-    expect(profileIndex).toBeGreaterThan(feedIndex);
+    expect(growsIndex).toBeGreaterThan(storefrontIndex);
+    expect(toolsIndex).toBeGreaterThan(growsIndex);
+    expect(discoverIndex).toBeGreaterThan(toolsIndex);
+    expect(coursesIndex).toBeGreaterThan(discoverIndex);
+    expect(communityIndex).toBeGreaterThan(coursesIndex);
+    expect(profileIndex).toBeGreaterThan(communityIndex);
     expect(source).toContain('options={{ title: "Storefront" }}');
-    expect(source).toContain('options={{ title: "Feed / Campaigns" }}');
+    expect(source).toContain('options={{ title: "Grows" }}');
+    expect(source).toContain('options={{ title: "AI Tools" }}');
+    expect(source).toContain('options={{ title: "Discover" }}');
+    expect(source).toContain('options={{ title: "Courses" }}');
+    expect(source).toContain('options={{ title: "Forum / Q&A" }}');
     expect(source).toContain("../app/home/commercial/feed");
-    expect(source).toContain('title: "Courses", tabBarButton: () => null');
+    expect(source).toContain('title: "Products", tabBarButton: () => null');
+    expect(source).toContain('title: "Feed / Campaigns", tabBarButton: () => null');
     expect(source).toContain('title: "Lives", tabBarButton: () => null');
     expect(source).toContain('title: "Orders", tabBarButton: () => null');
     expect(source).toContain('title: "Analytics", tabBarButton: () => null');
-    expect(source).not.toContain("../app/feed");
-    expect(source).not.toContain('name="CommercialGrows"');
-    expect(source).not.toContain('options={{ title: "Evidence & Trials" }}');
   });
 });

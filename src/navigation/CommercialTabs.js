@@ -2,13 +2,17 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import CommercialDashboardScreen from "../screens/commercial/CommercialDashboardScreen";
+import CommercialGrowsRoute from "../app/home/commercial/grows";
+import CommercialToolsRoute from "../app/home/commercial/tools";
+import CommercialDiscoverRoute from "../app/home/commercial/discover";
 import CommercialCoursesRoute from "../app/home/commercial/courses";
-import CommercialLivesRoute from "../app/home/commercial/lives";
-import CommercialOrdersRoute from "../app/home/commercial/orders";
-import CommercialProductsRoute from "../app/home/commercial/products";
-import CommercialFeedRoute from "../app/home/commercial/feed";
+import CommercialCommunityRoute from "../app/home/commercial/community";
 import CommercialProfileRoute from "../app/home/commercial/profile";
 import CommercialStorefrontRoute from "../app/home/commercial/storefront";
+import CommercialProductsRoute from "../app/home/commercial/products";
+import CommercialFeedRoute from "../app/home/commercial/feed";
+import CommercialLivesRoute from "../app/home/commercial/lives";
+import CommercialOrdersRoute from "../app/home/commercial/orders";
 import CommercialAnalyticsRoute from "../app/home/commercial/analytics";
 
 const Tab = createBottomTabNavigator();
@@ -27,14 +31,29 @@ export default function CommercialTabs() {
         options={{ title: "Storefront" }}
       />
       <Tab.Screen
-        name="CommercialProducts"
-        component={CommercialProductsRoute}
-        options={{ title: "Products" }}
+        name="CommercialGrows"
+        component={CommercialGrowsRoute}
+        options={{ title: "Grows" }}
       />
       <Tab.Screen
-        name="CommercialFeed"
-        component={CommercialFeedRoute}
-        options={{ title: "Feed / Campaigns" }}
+        name="CommercialTools"
+        component={CommercialToolsRoute}
+        options={{ title: "AI Tools" }}
+      />
+      <Tab.Screen
+        name="CommercialDiscover"
+        component={CommercialDiscoverRoute}
+        options={{ title: "Discover" }}
+      />
+      <Tab.Screen
+        name="CommercialCourses"
+        component={CommercialCoursesRoute}
+        options={{ title: "Courses" }}
+      />
+      <Tab.Screen
+        name="CommercialCommunity"
+        component={CommercialCommunityRoute}
+        options={{ title: "Forum / Q&A" }}
       />
       <Tab.Screen
         name="CommercialProfile"
@@ -42,9 +61,14 @@ export default function CommercialTabs() {
         options={{ title: "Profile" }}
       />
       <Tab.Screen
-        name="CommercialCourses"
-        component={CommercialCoursesRoute}
-        options={{ title: "Courses", tabBarButton: () => null }}
+        name="CommercialProducts"
+        component={CommercialProductsRoute}
+        options={{ title: "Products", tabBarButton: () => null }}
+      />
+      <Tab.Screen
+        name="CommercialFeed"
+        component={CommercialFeedRoute}
+        options={{ title: "Feed / Campaigns", tabBarButton: () => null }}
       />
       <Tab.Screen
         name="CommercialLives"
