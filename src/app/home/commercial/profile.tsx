@@ -7,6 +7,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
@@ -197,6 +198,8 @@ export default function CommercialProfileRoute() {
         {loading ? <Text style={styles.muted}>Loading brand profile...</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
+
+      <ThemeModeSelector />
 
       <AppCard>
         <Text style={styles.cardTitle}>Edit brand profile</Text>

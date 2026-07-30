@@ -18,6 +18,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
 
@@ -242,6 +243,10 @@ export default function FacilityProfileRoute() {
               facilities.
             </Text>
           )}
+        </View>
+
+        <View style={styles.card}>
+          <ThemeModeSelector />
         </View>
 
         <View style={styles.card}>

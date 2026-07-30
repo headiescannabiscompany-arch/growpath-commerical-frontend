@@ -3,11 +3,13 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function CommercialTabsLayout() {
   const ent = useEntitlements();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
   const compactTabs = width < 760;
   const hideTabBar =
     pathname.includes("/inventory-create") ||
@@ -26,12 +28,6 @@ export default function CommercialTabsLayout() {
     pathname.includes("/product-lines/") ||
     pathname.includes("/trials/") ||
     pathname.includes("/tools/");
-
-  const tabBarStyle = hideTabBar
-    ? { display: "none" as const }
-    : compactTabs
-      ? { height: 72, paddingBottom: 22, paddingTop: 4 }
-      : undefined;
 
   if (!ent?.ready) {
     return (
@@ -53,13 +49,22 @@ export default function CommercialTabsLayout() {
         tabBarIcon: () => null,
         tabBarIconStyle: { display: "none" },
         tabBarLabelPosition: "beside-icon",
+        headerStyle: { backgroundColor: palette.surface },
+        headerTintColor: palette.text,
+        headerTitleStyle: { color: palette.text },
         tabBarLabelStyle: {
           fontSize: compactTabs ? 11 : 12,
           fontWeight: "700",
           marginStart: 0,
           marginEnd: 0
         },
-        tabBarStyle
+        tabBarStyle: hideTabBar
+          ? { display: "none" as const }
+          : {
+              backgroundColor: palette.tabBar,
+              borderTopColor: palette.tabBarBorder,
+              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
+            }
       }}
     >
       <Tabs.Screen

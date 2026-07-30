@@ -2,6 +2,7 @@ import React, { forwardRef, useRef, useCallback } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 // import { colors } from "../theme/theme.js"; // Removed as unused
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
+import { useAppTheme } from "@/theme/appTheme";
 
 /**
  * @typedef {Object} ScreenContainerProps
@@ -29,6 +30,7 @@ const ScreenContainer = forwardRef(function ScreenContainer(
   },
   ref
 ) {
+  const { palette } = useAppTheme();
   const Comp = scroll ? ScrollView : View;
   const fallbackRef = useRef(null);
   const resolvedStyle = [styles.container, style].filter(Boolean);
@@ -67,7 +69,7 @@ const ScreenContainer = forwardRef(function ScreenContainer(
   return (
     <Comp
       ref={scroll ? setRefs : innerRef || ref}
-      style={resolvedStyle}
+      style={[{ backgroundColor: palette.page }, ...resolvedStyle]}
       contentContainerStyle={resolvedContentStyle}
       {...rest}
     >

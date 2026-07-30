@@ -4,6 +4,7 @@ import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
 
 export function shouldHideFacilityTabBar(pathname = "") {
   return (
@@ -22,13 +23,9 @@ export default function FacilityTabsLayout() {
   const { selectedId } = useFacility();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
   const compactTabs = width < 700;
   const hideTabBar = shouldHideFacilityTabBar(pathname);
-  const tabBarStyle = hideTabBar
-    ? { display: "none" as const }
-    : compactTabs
-      ? { height: 72, paddingBottom: 22, paddingTop: 4 }
-      : undefined;
 
   if (!ent?.ready) {
     return (
@@ -52,8 +49,17 @@ export default function FacilityTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        headerStyle: { backgroundColor: palette.surface },
+        headerTintColor: palette.text,
+        headerTitleStyle: { color: palette.text },
         tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
-        tabBarStyle
+        tabBarStyle: hideTabBar
+          ? { display: "none" as const }
+          : {
+              backgroundColor: palette.tabBar,
+              borderTopColor: palette.tabBarBorder,
+              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
+            }
       }}
     >
       <Tabs.Screen

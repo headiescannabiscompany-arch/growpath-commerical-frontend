@@ -30,15 +30,21 @@ describe("PersonalTabsLayout", () => {
     expect(mockTabs).toHaveBeenCalledWith(
       expect.objectContaining({
         screenOptions: expect.objectContaining({
-          tabBarActiveTintColor: "#0056B3",
-          tabBarInactiveTintColor: "#475569",
+          tabBarActiveTintColor: "#1C8F4A",
+          tabBarInactiveTintColor: "#5F6F5F",
+          tabBarStyle: expect.objectContaining({
+            backgroundColor: "#FFFFFF",
+            borderTopColor: "#D7DDD2"
+          }),
           tabBarLabelStyle: { fontSize: 11, fontWeight: "700" }
         })
       })
     );
 
     const props = mockTabs.mock.calls[0][0];
-    const names = React.Children.toArray(props.children).map((child: any) => child.props.name);
+    const names = React.Children.toArray(props.children).map(
+      (child: any) => child.props.name
+    );
 
     expect(names).toEqual(
       expect.arrayContaining(["field-studies/index", "field-studies/[studyId]"])

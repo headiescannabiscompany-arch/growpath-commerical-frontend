@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import RequireAuthGate from "@/auth/RequireAuthGate";
 import { ModeSwitcher } from "@/components/ModeSwitcher";
 import AppPage from "@/components/layout/AppPage";
+import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { radius } from "@/theme/theme";
 
 function AccountModePageContent() {
@@ -24,6 +25,7 @@ function AccountModePageContent() {
       }
     >
       <ModeSwitcher />
+      <ThemeModeSelector />
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Mode boundaries</Text>
         <Text style={styles.noteText}>

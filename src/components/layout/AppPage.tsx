@@ -12,6 +12,7 @@ import FeedBanner from "@/components/feed/FeedBanner";
 import FeedRail from "@/components/feed/FeedRail";
 import BackButton from "@/components/nav/BackButton";
 import { getFeedBannerPolicy, getFeedPolicy } from "@/utils/feedPolicy";
+import { useAppTheme } from "@/theme/appTheme";
 
 type AppPageProps = {
   routeKey: string;
@@ -68,6 +69,7 @@ export default function AppPage({
     mode: ent.mode,
     longContent
   });
+  const { palette } = useAppTheme();
 
   const computedRail =
     policy.slots > 0 ? (
@@ -85,7 +87,10 @@ export default function AppPage({
   const rail = railOverride !== undefined ? railOverride : computedRail;
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
+    <ScrollView
+      style={[styles.page, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.pageContent}
+    >
       {(showBack ?? !NO_BACK_ROUTE_KEYS.has(routeKey)) ? (
         <View style={styles.backRow}>
           <BackButton fallbackHref={backFallbackHref} />
@@ -152,8 +157,7 @@ export default function AppPage({
 
 const styles = StyleSheet.create({
   page: {
-    flex: 1,
-    backgroundColor: "#F1F5F9"
+    flex: 1
   },
   pageContent: {
     padding: 20,

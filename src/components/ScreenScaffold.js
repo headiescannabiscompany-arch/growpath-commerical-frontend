@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 
 import { radius } from "../theme/theme";
 import { sanitizeViewChildren } from "./layout/sanitizeViewChildren";
+import { useAppTheme } from "@/theme/appTheme";
 export default function ScreenScaffold({
   title,
   subtitle,
@@ -11,21 +12,34 @@ export default function ScreenScaffold({
   children,
   debug
 }) {
+  const { palette } = useAppTheme();
+
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.container}>
+    <ScrollView
+      style={[styles.page, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.container}
+    >
       <View style={styles.header}>
-        <Text style={styles.kicker}>{mode ? mode.toUpperCase() : "MODE"}</Text>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <Text style={[styles.kicker, { color: palette.accent }]}>
+          {mode ? mode.toUpperCase() : "MODE"}
+        </Text>
+        <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
+        {subtitle ? (
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>{subtitle}</Text>
+        ) : null}
 
         <View style={styles.badges}>
           <View
             style={[
               styles.badge,
-              status === "LIVE" ? styles.badgeLive : styles.badgeStub
+              status === "LIVE"
+                ? [styles.badgeLive, { backgroundColor: palette.accent }]
+                : [styles.badgeStub, { backgroundColor: palette.surfaceMuted }]
             ]}
           >
-            <Text style={styles.badgeText}>{status}</Text>
+            <Text style={[styles.badgeText, { color: palette.accentText }]}>
+              {status}
+            </Text>
           </View>
         </View>
       </View>
@@ -37,9 +51,14 @@ export default function ScreenScaffold({
       ) : null}
 
       {debug ? (
-        <View style={styles.debug}>
-          <Text style={styles.debugTitle}>Debug</Text>
-          <Text style={styles.debugText}>
+        <View
+          style={[
+            styles.debug,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.debugTitle, { color: palette.text }]}>Debug</Text>
+          <Text style={[styles.debugText, { color: palette.textMuted }]}>
             {typeof debug === "string" ? debug : JSON.stringify(debug, null, 2)}
           </Text>
         </View>
@@ -49,10 +68,16 @@ export default function ScreenScaffold({
 }
 
 export function Section({ title, children, right }) {
+  const { palette } = useAppTheme();
   return (
-    <View style={styles.section}>
+    <View
+      style={[
+        styles.section,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ]}
+    >
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>{title}</Text>
         {right ? (
           <View style={styles.sectionRight}>
             {sanitizeViewChildren(right, "ScreenScaffold.right")}
@@ -67,30 +92,36 @@ export function Section({ title, children, right }) {
 }
 
 export function Card({ title, children, tone = "default" }) {
+  const { palette } = useAppTheme();
   return (
     <View
       style={[
         styles.card,
-        tone === "warning" ? styles.cardWarn : null,
-        tone === "success" ? styles.cardSuccess : null
+        { backgroundColor: palette.surface, borderColor: palette.border },
+        tone === "warning" ? { borderColor: palette.warning } : null,
+        tone === "success" ? { borderColor: palette.success } : null
       ]}
     >
-      {title ? <Text style={styles.cardTitle}>{title}</Text> : null}
+      {title ? (
+        <Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>
+      ) : null}
       {sanitizeViewChildren(children, "ScreenScaffold.children")}
     </View>
   );
 }
 
 export function Pill({ text, tone = "default" }) {
+  const { palette } = useAppTheme();
   return (
     <View
       style={[
         styles.pill,
-        tone === "locked" ? styles.pillLocked : null,
-        tone === "ok" ? styles.pillOk : null
+        { backgroundColor: palette.surfaceMuted },
+        tone === "locked" ? { backgroundColor: palette.danger } : null,
+        tone === "ok" ? { backgroundColor: palette.success } : null
       ]}
     >
-      <Text style={styles.pillText}>{text}</Text>
+      <Text style={[styles.pillText, { color: palette.accentText }]}>{text}</Text>
     </View>
   );
 }

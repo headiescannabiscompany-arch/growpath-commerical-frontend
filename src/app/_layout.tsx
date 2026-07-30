@@ -8,6 +8,8 @@ import { AuthProvider } from "../auth/AuthContext";
 import { SessionProvider } from "../session/SessionProvider";
 import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 import { FacilityProvider } from "../facility/FacilityProvider";
+import { ThemeModeProvider } from "../theme/appTheme";
+import { useAppTheme } from "../theme/appTheme";
 import { GlobalApiStatusBanner } from "../components/GlobalApiStatusBanner";
 import GlobalReportBugButton from "../components/GlobalReportBugButton";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
@@ -25,6 +27,22 @@ const queryClient = new QueryClient({
   }
 });
 
+function RootShell() {
+  const { palette } = useAppTheme();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: palette.page }}>
+      <GlobalApiStatusBanner />
+      <View style={{ flex: 1 }}>
+        <RouteAccessGuard>
+          <Slot />
+        </RouteAccessGuard>
+      </View>
+      <GlobalReportBugButton />
+    </View>
+  );
+}
+
 function RootLayout() {
   useEffect(() => {
     if (process.env.EXPO_PUBLIC_E2E === "1") {
@@ -35,21 +53,15 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SessionProvider>
-          <EntitlementsProvider>
-            <FacilityProvider>
-              <View style={{ flex: 1 }}>
-                <GlobalApiStatusBanner />
-                <View style={{ flex: 1 }}>
-                  <RouteAccessGuard>
-                    <Slot />
-                  </RouteAccessGuard>
-                </View>
-                <GlobalReportBugButton />
-              </View>
-            </FacilityProvider>
-          </EntitlementsProvider>
-        </SessionProvider>
+        <ThemeModeProvider>
+          <SessionProvider>
+            <EntitlementsProvider>
+              <FacilityProvider>
+                <RootShell />
+              </FacilityProvider>
+            </EntitlementsProvider>
+          </SessionProvider>
+        </ThemeModeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

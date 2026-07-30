@@ -27,6 +27,7 @@ import {
   NotificationPreferenceState
 } from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { radius } from "@/theme/theme";
 
@@ -510,6 +511,8 @@ export default function ProfileScreen() {
           workspaces keep storefront outreach and operational rooms separate.
         </Text>
       </View>
+
+      <ThemeModeSelector />
 
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Plan</Text>

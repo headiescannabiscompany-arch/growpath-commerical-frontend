@@ -8,6 +8,7 @@ import type { AccountMode } from "@/state/useAccountMode";
 import { useModeSwitcher } from "@/features/mode/useModeSwitcher";
 import { availableWorkspaceModes } from "@/features/mode/workspaceOptions";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 type Props = {
   showFacility?: boolean;
@@ -41,6 +42,7 @@ export function ModeSwitcher({
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { mode, switchTo } = useModeSwitcher();
+  const { palette } = useAppTheme();
   const availableModes = availableWorkspaceModes(entitlements);
   const commercialAccess = availableModes.includes("commercial");
   const facilityAccess = availableModes.includes("facility");
@@ -94,17 +96,30 @@ export function ModeSwitcher({
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.identityPanel}>
-        <Text style={styles.kicker}>Current identity</Text>
-        <Text style={styles.identityName}>
+      <View
+        style={[
+          styles.identityPanel,
+          { backgroundColor: palette.hero, borderColor: palette.border }
+        ]}
+      >
+        <Text style={[styles.kicker, { color: palette.heroMuted }]}>
+          Current identity
+        </Text>
+        <Text style={[styles.identityName, { color: palette.heroText }]}>
           {auth.user?.name || auth.user?.email || "Signed-in grower"}
         </Text>
-        <Text style={styles.identityMeta}>
+        <Text style={[styles.identityMeta, { color: palette.heroMuted }]}>
           Acting in {MODE_LABELS[mode]} workspace mode
         </Text>
       </View>
 
-      <View style={styles.selector} accessibilityLabel="Account mode selector">
+      <View
+        style={[
+          styles.selector,
+          { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+        ]}
+        accessibilityLabel="Account mode selector"
+      >
         {cards.map((card) => {
           const selected = mode === card.mode;
           return (
@@ -113,9 +128,18 @@ export function ModeSwitcher({
               accessibilityRole="button"
               accessibilityLabel={`${card.actionLabel}: ${card.title}`}
               onPress={() => handlePress(card)}
-              style={[styles.segment, selected && styles.segmentActive]}
+              style={[
+                styles.segment,
+                selected && [styles.segmentActive, { backgroundColor: palette.surface }]
+              ]}
             >
-              <Text style={[styles.segmentText, selected && styles.segmentTextActive]}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  { color: palette.textMuted },
+                  selected && { color: palette.text }
+                ]}
+              >
                 {MODE_LABELS[card.mode]}
               </Text>
             </Pressable>
@@ -132,16 +156,35 @@ export function ModeSwitcher({
               accessibilityRole="button"
               accessibilityLabel={card.title}
               onPress={() => handlePress(card)}
-              style={[styles.card, selected && styles.cardActive]}
+              style={[
+                styles.card,
+                { backgroundColor: palette.surface, borderColor: palette.border },
+                selected && { borderColor: palette.accent, borderWidth: 2 }
+              ]}
             >
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{card.title}</Text>
-                <Text style={[styles.badge, selected && styles.badgeActive]}>
+                <Text style={[styles.cardTitle, { color: palette.text }]}>
+                  {card.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.badge,
+                    { backgroundColor: palette.surfaceMuted, color: palette.textMuted },
+                    selected && {
+                      backgroundColor: palette.accentSoft,
+                      color: palette.accent
+                    }
+                  ]}
+                >
                   {selected ? "Current" : card.access ? "Available" : "Setup"}
                 </Text>
               </View>
-              <Text style={styles.cardText}>{card.description}</Text>
-              <Text style={styles.cardAction}>{card.actionLabel}</Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                {card.description}
+              </Text>
+              <Text style={[styles.cardAction, { color: palette.accent }]}>
+                {card.actionLabel}
+              </Text>
             </Pressable>
           );
         })}

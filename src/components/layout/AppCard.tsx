@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import { sanitizeViewChildren } from "./sanitizeViewChildren";
 export type AppCardProps = {
   style?: any;
@@ -20,10 +21,24 @@ export default function AppCard({
   accessibilityLabel,
   style
 }: AppCardProps) {
+  const { palette } = useAppTheme();
   const Inner = (
-    <View accessibilityLabel={accessibilityLabel} style={[styles.card, style]}>
-      {!!title && <Text style={styles.title}>{title}</Text>}
-      {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+    <View
+      accessibilityLabel={accessibilityLabel}
+      style={[
+        styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          shadowColor: palette.shadow
+        },
+        style
+      ]}
+    >
+      {!!title && <Text style={[styles.title, { color: palette.text }]}>{title}</Text>}
+      {!!subtitle && (
+        <Text style={[styles.subtitle, { color: palette.textMuted }]}>{subtitle}</Text>
+      )}
       {!!children && (
         <View style={styles.content}>
           {sanitizeViewChildren(children, "AppCard.content")}
@@ -44,17 +59,14 @@ export default function AppCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
     borderRadius: radius.card,
     borderWidth: 1,
     padding: 16,
-    shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.06,
     shadowRadius: 18
   },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  subtitle: { color: "#64748B", marginTop: 4 },
+  title: { fontSize: 16, fontWeight: "800" },
+  subtitle: { marginTop: 4 },
   content: { marginTop: 12 }
 });

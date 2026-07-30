@@ -3,10 +3,12 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function PersonalTabsLayout() {
   const ent = useEntitlements();
   const pathname = usePathname();
+  const { palette } = useAppTheme();
   const hideTabBar =
     pathname.startsWith("/home/personal/tools/") && pathname !== "/home/personal/tools";
 
@@ -28,10 +30,15 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarActiveTintColor: "#0056B3",
-        tabBarInactiveTintColor: "#475569",
+        tabBarActiveTintColor: palette.tabActive,
+        tabBarInactiveTintColor: palette.tabInactive,
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
-        tabBarStyle: hideTabBar ? { display: "none" } : undefined
+        tabBarStyle: hideTabBar
+          ? { display: "none" }
+          : {
+              backgroundColor: palette.tabBar,
+              borderTopColor: palette.tabBarBorder
+            }
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Home" }} />

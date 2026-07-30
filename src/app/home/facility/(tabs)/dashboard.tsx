@@ -28,6 +28,7 @@ import { listTeamMembers } from "@/api/team";
 import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import { useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
@@ -85,6 +86,7 @@ export default function FacilityDashboardTab() {
   const facilityRole = String(entitlements.facilityRole || "VIEWER").toUpperCase();
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
   const isTablet = width >= 760;
   const isDesktop = width >= 1040;
   const isTv = width >= 1600;
@@ -389,7 +391,7 @@ export default function FacilityDashboardTab() {
   return (
     <ScreenBoundary title="Dashboard">
       <ScrollView
-        style={styles.page}
+        style={[styles.page, { backgroundColor: palette.page }]}
         contentContainerStyle={[
           styles.container,
           isTv ? styles.containerTv : isDesktop ? styles.containerDesktop : null
@@ -403,13 +405,35 @@ export default function FacilityDashboardTab() {
       >
         {error ? <InlineError error={error} /> : null}
 
-        <View style={[styles.hero, isTv ? styles.heroTv : null]}>
+        <View
+          style={[
+            styles.hero,
+            { backgroundColor: palette.hero },
+            isTv ? styles.heroTv : null
+          ]}
+        >
           <View style={styles.heroCopy}>
-            <Text style={[styles.kicker, isTv ? styles.kickerTv : null]}>
+            <Text
+              style={[
+                styles.kicker,
+                { color: palette.heroMuted },
+                isTv ? styles.kickerTv : null
+              ]}
+            >
               Facility workspace
             </Text>
-            <Text style={[styles.h1, isTv ? styles.h1Tv : null]}>Operations Live</Text>
-            <Text style={[styles.muted, isTv ? styles.mutedTv : null]}>
+            <Text
+              style={[styles.h1, { color: palette.heroText }, isTv ? styles.h1Tv : null]}
+            >
+              Operations Live
+            </Text>
+            <Text
+              style={[
+                styles.muted,
+                { color: palette.heroMuted },
+                isTv ? styles.mutedTv : null
+              ]}
+            >
               {String(selectedFacility?.name || "Facility operations")}
             </Text>
           </View>
@@ -427,10 +451,19 @@ export default function FacilityDashboardTab() {
           </View>
         </View>
 
-        <View style={styles.learningSection}>
+        <View
+          style={[
+            styles.learningSection,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <View style={styles.learningHeader}>
-            <Text style={styles.sectionTitle}>Learning &amp; community</Text>
-            <Text style={styles.learningHint}>Quick access for your facility team</Text>
+            <Text style={[styles.sectionTitle, { color: palette.text }]}>
+              Learning &amp; community
+            </Text>
+            <Text style={[styles.learningHint, { color: palette.textMuted }]}>
+              Quick access for your facility team
+            </Text>
           </View>
           <View style={styles.learningGrid}>
             {learningRows.map((row) => (
@@ -442,15 +475,22 @@ export default function FacilityDashboardTab() {
                 style={({ pressed }) => [
                   styles.learningCard,
                   { width: isTablet ? "48.5%" : "100%" },
+                  { backgroundColor: palette.surface, borderColor: palette.border },
                   tileToneStyle(row.tone),
                   pressed && styles.pressed
                 ]}
               >
                 <View style={styles.learningCopy}>
-                  <Text style={styles.learningTitle}>{row.label}</Text>
-                  <Text style={styles.learningDetail}>{row.detail}</Text>
+                  <Text style={[styles.learningTitle, { color: palette.text }]}>
+                    {row.label}
+                  </Text>
+                  <Text style={[styles.learningDetail, { color: palette.textMuted }]}>
+                    {row.detail}
+                  </Text>
                 </View>
-                <Text style={styles.learningAction}>{row.action} →</Text>
+                <Text style={[styles.learningAction, { color: palette.link }]}>
+                  {row.action} {"→"}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -459,21 +499,25 @@ export default function FacilityDashboardTab() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading...</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>Loading...</Text>
           </View>
         ) : null}
 
         <View style={[styles.contentGrid, isDesktop ? styles.contentGridWide : null]}>
           <View style={styles.mainColumn}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>At a glance</Text>
+              <Text style={[styles.sectionTitle, { color: palette.text }]}>
+                At a glance
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Refresh facility dashboard"
                 onPress={() => load({ refresh: true })}
-                style={styles.refreshButton}
+                style={[styles.refreshButton, { backgroundColor: palette.accent }]}
               >
-                <Text style={styles.refreshText}>Refresh</Text>
+                <Text style={[styles.refreshText, { color: palette.accentText }]}>
+                  Refresh
+                </Text>
               </Pressable>
             </View>
             <View style={styles.grid}>
@@ -486,25 +530,43 @@ export default function FacilityDashboardTab() {
                   style={({ pressed }) => [
                     styles.tile,
                     { width: tileBasis },
+                    { backgroundColor: palette.surface, borderColor: palette.border },
                     tileToneStyle(q.tone),
                     pressed && styles.pressed
                   ]}
                 >
                   <View>
-                    <Text style={[styles.tileValue, isTv ? styles.tileValueTv : null]}>
+                    <Text
+                      style={[
+                        styles.tileValue,
+                        { color: palette.text },
+                        isTv ? styles.tileValueTv : null
+                      ]}
+                    >
                       {String(q.value)}
                     </Text>
-                    <Text style={styles.tileLabel}>{q.label}</Text>
+                    <Text style={[styles.tileLabel, { color: palette.text }]}>
+                      {q.label}
+                    </Text>
                   </View>
-                  <Text style={styles.tileHint}>{q.hint}</Text>
+                  <Text style={[styles.tileHint, { color: palette.textMuted }]}>
+                    {q.hint}
+                  </Text>
                 </Pressable>
               ))}
             </View>
           </View>
 
           <View style={[styles.sideColumn, isDesktop ? styles.sideColumnWide : null]}>
-            <View style={styles.panel}>
-              <Text style={styles.cardTitle}>Priority status</Text>
+            <View
+              style={[
+                styles.panel,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Priority status
+              </Text>
               {statusRows.map((row) => (
                 <Pressable
                   key={row.label}
@@ -515,16 +577,27 @@ export default function FacilityDashboardTab() {
                 >
                   <View style={[styles.statusDot, dotToneStyle(row.tone)]} />
                   <View style={styles.statusText}>
-                    <Text style={styles.rowTitle}>{row.label}</Text>
-                    <Text style={styles.rowMeta}>{row.value}</Text>
+                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                      {row.label}
+                    </Text>
+                    <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
+                      {row.value}
+                    </Text>
                   </View>
-                  <Text style={styles.link}>Open</Text>
+                  <Text style={[styles.link, { color: palette.link }]}>Open</Text>
                 </Pressable>
               ))}
             </View>
 
-            <View style={styles.panel}>
-              <Text style={styles.cardTitle}>Command actions</Text>
+            <View
+              style={[
+                styles.panel,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Command actions
+              </Text>
               {actionRows.map((row) => (
                 <Pressable
                   key={row.label}
@@ -534,10 +607,14 @@ export default function FacilityDashboardTab() {
                   style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
                 >
                   <View>
-                    <Text style={styles.rowTitle}>{row.label}</Text>
-                    <Text style={styles.rowMeta}>{row.detail}</Text>
+                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                      {row.label}
+                    </Text>
+                    <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
+                      {row.detail}
+                    </Text>
                   </View>
-                  <Text style={styles.link}>Open</Text>
+                  <Text style={[styles.link, { color: palette.link }]}>Open</Text>
                 </Pressable>
               ))}
             </View>
