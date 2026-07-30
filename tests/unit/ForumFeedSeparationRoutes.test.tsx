@@ -8,6 +8,7 @@ import ForumCodeRoute from "@/app/home/personal/(tabs)/forum/code";
 import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 
 const mockListForumPosts = jest.fn();
+const mockListVideoLibrary = jest.fn();
 const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
 const mockListForumComments = jest.fn();
@@ -72,6 +73,10 @@ jest.mock("@/api/communitySocial", () => ({
   postId: (post: any) => post.id || post._id || post.title
 }));
 
+jest.mock("@/api/videos", () => ({
+  listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args)
+}));
+
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () =>
     mockAuthState.isAuthed === false
@@ -129,6 +134,22 @@ describe("Forum and feed separation copy", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockListForumPosts.mockResolvedValue([]);
+    mockListVideoLibrary.mockResolvedValue({
+      videos: [],
+      quota: {
+        plan: "personal",
+        limitBytes: 1024 * 1024 * 2,
+        usedBytes: 1024 * 1024,
+        remainingBytes: 1024 * 1024,
+        externalSourcesConsumeStorage: false,
+        growPathUploadsConsumeStorage: true
+      },
+      permissions: {
+        canUpload: true,
+        canPublish: true,
+        canManage: true
+      }
+    });
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
     mockListForumComments.mockResolvedValue([]);
@@ -154,6 +175,10 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Forum Feed")).toBeTruthy();
+    expect(screen.getByText("Forum videos")).toBeTruthy();
+    expect(screen.getByText("1.0 MB used")).toBeTruthy();
+    expect(screen.getByText("of 2.0 MB total")).toBeTruthy();
+    expect(screen.getByText("Browse Videos")).toBeTruthy();
     expect(screen.getByText(/tagged by grow interests/)).toBeTruthy();
     expect(screen.getByText(/Discussion, Q&A, grow help/)).toBeTruthy();
     expect(screen.getByText(/campaign ads, not forum threads/)).toBeTruthy();

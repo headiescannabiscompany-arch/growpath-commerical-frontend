@@ -11,11 +11,13 @@ import {
 } from "react-native";
 
 import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
+import { listVideoLibrary } from "@/api/videos";
 import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import {
@@ -111,6 +113,8 @@ export default function ForumRoute() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [videoLibrary, setVideoLibrary] = useState<any>(null);
+  const [videoLibraryLoading, setVideoLibraryLoading] = useState(true);
   const [feedScope, setFeedScope] = useState<"for-you" | "all">("for-you");
   const visiblePosts = useMemo(
     () =>
@@ -121,6 +125,18 @@ export default function ForumRoute() {
           ),
     [auth.user?.growInterests, feedScope, posts]
   );
+  const videoQuota = useMemo(() => {
+    return (
+      videoLibrary?.quota || {
+        plan: String(entitlements.plan || "free"),
+        limitBytes: videoStorageFallback(entitlements.plan),
+        usedBytes: 0,
+        remainingBytes: videoStorageFallback(entitlements.plan),
+        externalSourcesConsumeStorage: false,
+        growPathUploadsConsumeStorage: true
+      }
+    );
+  }, [entitlements.plan, videoLibrary?.quota]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -151,6 +167,32 @@ export default function ForumRoute() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    let alive = true;
+    async function loadLibrary() {
+      if (!isSignedIn) {
+        if (alive) {
+          setVideoLibrary(null);
+          setVideoLibraryLoading(false);
+        }
+        return;
+      }
+      if (alive) setVideoLibraryLoading(true);
+      try {
+        const library = await listVideoLibrary("personal");
+        if (alive) setVideoLibrary(library);
+      } catch {
+        if (alive) setVideoLibrary(null);
+      } finally {
+        if (alive) setVideoLibraryLoading(false);
+      }
+    }
+    void loadLibrary();
+    return () => {
+      alive = false;
+    };
+  }, [isSignedIn]);
 
   return (
     <ScrollView
@@ -250,11 +292,31 @@ export default function ForumRoute() {
       ) : null}
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Video library</Text>
+        <Text style={styles.cardTitle}>Forum videos</Text>
         <Text style={styles.cardText}>
           Videos belong in Forum/Q&A. Open the shared library to upload clips, review
           storage usage, and reuse videos in courses and other workflows.
         </Text>
+        {videoLibraryLoading ? (
+          <Text style={styles.cardText}>Loading video storage…</Text>
+        ) : (
+          <View style={styles.videoStats}>
+            <View style={styles.videoStat}>
+              <Text style={styles.videoStatValue}>
+                {formatBytes(videoQuota.usedBytes)} used
+              </Text>
+              <Text style={styles.videoStatLabel}>
+                of {formatBytes(videoQuota.limitBytes)} total
+              </Text>
+            </View>
+            <View style={styles.videoStat}>
+              <Text style={styles.videoStatValue}>
+                {Array.isArray(videoLibrary?.videos) ? videoLibrary.videos.length : 0}
+              </Text>
+              <Text style={styles.videoStatLabel}>Workspace videos</Text>
+            </View>
+          </View>
+        )}
         <Link href="/videos?tab=library" asChild>
           <Pressable
             style={styles.primaryBtn}
@@ -262,6 +324,15 @@ export default function ForumRoute() {
             accessibilityLabel="Open video library"
           >
             <Text style={styles.primaryText}>Open Video Library</Text>
+          </Pressable>
+        </Link>
+        <Link href="/videos?tab=discover" asChild>
+          <Pressable
+            style={styles.secondaryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Browse videos"
+          >
+            <Text style={styles.secondaryText}>Browse Videos</Text>
           </Pressable>
         </Link>
       </View>
@@ -431,6 +502,23 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   cardText: { color: "#475569", lineHeight: 20 },
+  videoStats: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 8
+  },
+  videoStat: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexBasis: 180,
+    flexGrow: 1,
+    padding: 10
+  },
+  videoStatValue: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
+  videoStatLabel: { color: "#64748B", fontSize: 12, marginTop: 2 },
   publicAccessCard: {
     borderWidth: 1,
     borderColor: "#BBF7D0",
@@ -539,6 +627,16 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   primaryText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryBtn: {
+    alignSelf: "flex-start",
+    borderColor: "#166534",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  secondaryText: { color: "#166534", fontWeight: "800" },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
