@@ -33,10 +33,16 @@ function growName(grow?: PersonalGrow | null) {
 }
 
 function growIdentity(grow?: PersonalGrow | null) {
-  const parts = [grow?.cropCommonName, grow?.scientificName, grow?.cultivar || grow?.strain]
+  const parts = [
+    grow?.cropCommonName,
+    grow?.scientificName,
+    grow?.cultivar || grow?.strain
+  ]
     .map(safeText)
     .filter(Boolean);
-  return parts.length ? parts.join(" • ") : "Add species, cultivar, and notes when you know them.";
+  return parts.length
+    ? parts.join(" • ")
+    : "Add species, cultivar, and notes when you know them.";
 }
 
 function growSummary(grow?: PersonalGrow | null) {
@@ -45,7 +51,9 @@ function growSummary(grow?: PersonalGrow | null) {
     grow?.startDate ? `Started ${formatDate(grow.startDate)}` : "",
     grow?.updatedAt ? `Updated ${formatDate(grow.updatedAt)}` : ""
   ].filter(Boolean);
-  return parts.length ? parts.join(" • ") : "Keep the grow labeled with photos, logs, tasks, and AI runs.";
+  return parts.length
+    ? parts.join(" • ")
+    : "Keep the grow labeled with photos, logs, tasks, and AI runs.";
 }
 
 function growPhotoCount(grow?: PersonalGrow | null) {
@@ -110,7 +118,11 @@ function ActionButton({
       onPress={() => router.push(href as any)}
       style={primary ? [styles.action, styles.actionPrimary] : styles.action}
     >
-      <Text style={primary ? [styles.actionText, styles.actionTextPrimary] : styles.actionText}>
+      <Text
+        style={
+          primary ? [styles.actionText, styles.actionTextPrimary] : styles.actionText
+        }
+      >
         {label}
       </Text>
     </Pressable>
@@ -147,8 +159,7 @@ export default function PersonalGrowsRoute() {
   }, [load]);
 
   const sortedGrows = useMemo(
-    () =>
-      [...items].sort((left, right) => growTimestamp(right) - growTimestamp(left)),
+    () => [...items].sort((left, right) => growTimestamp(right) - growTimestamp(left)),
     [items]
   );
 
@@ -208,6 +219,20 @@ export default function PersonalGrowsRoute() {
     { label: "Flowering", value: statusCounts.flowering },
     { label: "Harvested", value: statusCounts.harvested }
   ];
+  const roadmapActions = latestGrow
+    ? [
+        { href: growHref(latestGrow.id), label: "Open Grow", primary: true },
+        { href: growHref(latestGrow.id, "journal"), label: "Journal" },
+        { href: growHref(latestGrow.id, "tasks"), label: "Tasks" },
+        { href: growHref(latestGrow.id, "timeline"), label: "Timeline" },
+        { href: growHref(latestGrow.id, "tools"), label: "AI Tools" }
+      ]
+    : [
+        { href: "/home/personal/grows/new", label: "Create Grow", primary: true },
+        { href: "/home/personal/tools", label: "Open AI Tools" },
+        { href: "/home/personal/diagnose", label: "Run Diagnosis" },
+        { href: "/home/personal/tasks", label: "Open Tasks" }
+      ];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -228,8 +253,8 @@ export default function PersonalGrowsRoute() {
             Grows
           </Text>
           <Text style={styles.subtitle}>
-            Keep each grow connected to logs, photos, tasks, AI tools, and exports instead of
-            a flat list.
+            Keep each grow connected to logs, photos, tasks, AI tools, and exports instead
+            of a flat list.
           </Text>
           <View style={styles.heroActions}>
             {canCreateGrow ? (
@@ -240,13 +265,41 @@ export default function PersonalGrowsRoute() {
                 testID="btn-new-grow"
               />
             ) : (
-              <ActionButton href="/home/personal/profile/billing" label="Manage Billing" primary />
+              <ActionButton
+                href="/home/personal/profile/billing"
+                label="Manage Billing"
+                primary
+              />
             )}
             <ActionButton href="/home/personal/tools" label="Open AI Tools" />
             <ActionButton href="/home/personal/diagnose" label="Run Diagnosis" />
             <ActionButton href="/home/personal/tasks" label="Open Tasks" />
           </View>
           {!canCreateGrow ? <Text style={styles.limitText}>{limitMessage}</Text> : null}
+        </AppCard>
+
+        <AppCard style={styles.roadmapCard}>
+          <Text style={styles.cardKicker}>Grow roadmap</Text>
+          <Text style={styles.roadmapTitle}>
+            {latestGrow
+              ? "Keep the current grow moving with a clear next step."
+              : "Turn a blank workspace into a real grow record."}
+          </Text>
+          <Text style={styles.roadmapText}>
+            {latestGrow
+              ? "Open the grow, then move through journal entries, tasks, timeline events, and AI tools as the plant changes."
+              : "Create the grow, add crop identity and photos, then use diagnosis, tasks, and AI tools to keep the record usable."}
+          </Text>
+          <View style={styles.roadmapActions}>
+            {roadmapActions.map((action) => (
+              <ActionButton
+                key={`roadmap-${action.label}-${action.href}`}
+                href={action.href}
+                label={action.label}
+                primary={Boolean(action.primary)}
+              />
+            ))}
+          </View>
         </AppCard>
 
         <PersonalFeaturedFeed />
@@ -293,12 +346,16 @@ export default function PersonalGrowsRoute() {
                   ? growIdentity(latestGrow)
                   : "Create a grow to start connecting logs, photos, tasks, and AI runs."}
               </Text>
-              {latestGrow ? <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text> : null}
+              {latestGrow ? (
+                <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text>
+              ) : null}
             </View>
             {latestGrow ? (
               <View style={[styles.statusChip, statusTone(growStatus(latestGrow))]}>
                 <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
-                <Text style={styles.statusChipLabel}>{growPhotoCount(latestGrow)} photos</Text>
+                <Text style={styles.statusChipLabel}>
+                  {growPhotoCount(latestGrow)} photos
+                </Text>
               </View>
             ) : null}
           </View>
@@ -312,7 +369,11 @@ export default function PersonalGrowsRoute() {
             </View>
           ) : (
             <View style={styles.featuredActions}>
-              <ActionButton href="/home/personal/grows/new" label="Start First Grow" primary />
+              <ActionButton
+                href="/home/personal/grows/new"
+                label="Start First Grow"
+                primary
+              />
             </View>
           )}
         </AppCard>
@@ -338,7 +399,9 @@ export default function PersonalGrowsRoute() {
         {loading && !sortedGrows.length ? (
           <AppCard style={styles.stateCard}>
             <ActivityIndicator />
-            <Text style={[styles.stateText, { marginTop: 10 }]}>Loading grow dashboard...</Text>
+            <Text style={[styles.stateText, { marginTop: 10 }]}>
+              Loading grow dashboard...
+            </Text>
           </AppCard>
         ) : null}
 
@@ -361,7 +424,11 @@ export default function PersonalGrowsRoute() {
                   testID="btn-create-first-grow"
                 />
               ) : (
-                <ActionButton href="/home/personal/profile/billing" label="Manage Billing" primary />
+                <ActionButton
+                  href="/home/personal/profile/billing"
+                  label="Manage Billing"
+                  primary
+                />
               )}
               <ActionButton href="/home/personal/tools" label="Open AI Tools" />
               <ActionButton href="/home/personal/diagnose" label="Diagnose" />
@@ -393,7 +460,9 @@ export default function PersonalGrowsRoute() {
                   </View>
                   <View style={[styles.statusChip, statusTone(status)]}>
                     <Text style={styles.statusChipValue}>{status}</Text>
-                    <Text style={styles.statusChipLabel}>{growPhotoCount(grow)} photos</Text>
+                    <Text style={styles.statusChipLabel}>
+                      {growPhotoCount(grow)} photos
+                    </Text>
                   </View>
                 </View>
 
@@ -472,6 +541,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     marginTop: 10
+  },
+  roadmapCard: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#C7F9CC"
+  },
+  roadmapTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "900",
+    lineHeight: 21
+  },
+  roadmapText: {
+    color: "#475569",
+    lineHeight: 20,
+    marginTop: 4
+  },
+  roadmapActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
   },
   stateCard: {
     alignItems: "center",

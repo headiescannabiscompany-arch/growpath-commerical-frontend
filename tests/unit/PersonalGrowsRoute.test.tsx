@@ -52,8 +52,48 @@ describe("PersonalGrowsRoute", () => {
 
     expect(screen.getByText("Personal grow workspace")).toBeTruthy();
     expect(screen.getByText("Grows")).toBeTruthy();
+    expect(screen.getByText("Grow roadmap")).toBeTruthy();
+    expect(
+      screen.getByText("Turn a blank workspace into a real grow record.")
+    ).toBeTruthy();
+    expect(screen.getAllByText("Create Grow").length).toBeGreaterThan(1);
     expect(screen.getByText("Workspace summary")).toBeTruthy();
     expect(screen.getByText("No grow yet")).toBeTruthy();
     expect(screen.getByText("Featured feed mock")).toBeTruthy();
+  });
+
+  it("shows a useful roadmap for the latest grow", async () => {
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Front Yard",
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        cultivar: "Blue Dream",
+        location: "Greenhouse A",
+        startDate: "2026-07-21T00:00:00Z",
+        updatedAt: "2026-07-22T00:00:00Z",
+        status: "flowering",
+        photos: [{ id: "photo-1" }, { id: "photo-2" }]
+      }
+    ]);
+
+    const screen = render(<PersonalGrowsRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Front Yard").length).toBeGreaterThan(0)
+    );
+
+    expect(screen.getByText("Grow roadmap")).toBeTruthy();
+    expect(
+      screen.getByText("Keep the current grow moving with a clear next step.")
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText("Cannabis • Cannabis sativa • Blue Dream").length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Greenhouse A/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Open Grow").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Journal").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Timeline").length).toBeGreaterThan(0);
   });
 });
