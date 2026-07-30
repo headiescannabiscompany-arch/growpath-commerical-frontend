@@ -5,6 +5,7 @@ import { Pressable, View, Text, StyleSheet } from "react-native";
 import { apiRequest } from "@/api/apiRequest";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { InlineError } from "@/components/InlineError";
@@ -560,6 +561,8 @@ export default function CommercialHome() {
         </View>
       }
     >
+      <ThemeModeSelector />
+
       <AppCard style={styles.commandCard}>
         <View style={styles.commandHeader}>
           <View style={styles.commandCopy}>
