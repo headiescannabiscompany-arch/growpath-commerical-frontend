@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 const styles = StyleSheet.create({
   btn: {
@@ -26,6 +27,7 @@ export default function BackButton({
   preferFallback?: boolean;
 }) {
   const router = useRouter();
+  const { palette } = useAppTheme();
 
   const goBack = () => {
     const canGoBack =
@@ -47,10 +49,16 @@ export default function BackButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Back"
-      style={styles.btn}
+      style={[
+        styles.btn,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        }
+      ]}
       onPress={goBack}
     >
-      <Text style={styles.txt}>{label}</Text>
+      <Text style={[styles.txt, { color: palette.link }]}>{label}</Text>
     </Pressable>
   );
 }
