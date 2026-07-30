@@ -345,8 +345,8 @@ export default function CommunityTab() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Forum lives</Text>
         <Text style={styles.cardText}>
-          Live sessions stay campaign-linked and replay-friendly. Browse them here
-          instead of treating Lives like a generic join list.
+          Live sessions stay campaign-linked and replay-friendly. Browse them here instead
+          of treating Lives like a generic join list.
         </Text>
         <View style={styles.discoveryActions}>
           <Link href="/lives" asChild>

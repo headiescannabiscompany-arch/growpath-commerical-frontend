@@ -68,10 +68,7 @@ function splitLinks(value: string) {
 function hasStorefrontIdentity(storefront: BusinessStorefront | null) {
   return Boolean(
     storefront &&
-      (storefront.id ||
-        storefront.name ||
-        storefront.businessName ||
-        storefront.slug)
+    (storefront.id || storefront.name || storefront.businessName || storefront.slug)
   );
 }
 

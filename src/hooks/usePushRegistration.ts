@@ -94,7 +94,8 @@ export function usePushRegistration({ userId, token, isHydrating }: PushAuth) {
           requestNotificationPermission,
           setupAndroidChannel,
           savePushToken,
-          getExpoPushTokenAsync: Notifications?.getExpoPushTokenAsync?.bind(Notifications) || undefined,
+          getExpoPushTokenAsync:
+            Notifications?.getExpoPushTokenAsync?.bind(Notifications) || undefined,
           projectId: expoProjectId()
         }
       );

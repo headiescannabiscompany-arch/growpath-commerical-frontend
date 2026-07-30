@@ -41,7 +41,10 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen name="discover" options={{ title: "Discover" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-      <Tabs.Screen name="field-studies/index" options={{ href: null, title: "Field Studies" }} />
+      <Tabs.Screen
+        name="field-studies/index"
+        options={{ href: null, title: "Field Studies" }}
+      />
       <Tabs.Screen
         name="field-studies/[studyId]"
         options={{ href: null, title: "Field Study" }}

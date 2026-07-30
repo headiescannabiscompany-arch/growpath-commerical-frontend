@@ -102,13 +102,22 @@ export default function CommercialTabsLayout() {
         }}
       />
       <Tabs.Screen name="lives" options={{ title: "Lives", href: null }} />
-      <Tabs.Screen name="orders" options={{ title: "Orders", href: null, headerShown: false }} />
+      <Tabs.Screen
+        name="orders"
+        options={{ title: "Orders", href: null, headerShown: false }}
+      />
       <Tabs.Screen
         name="inventory"
         options={{ title: "Inventory Support", href: null, headerShown: false }}
       />
-      <Tabs.Screen name="analytics" options={{ title: "Analytics", href: null, headerShown: false }} />
-      <Tabs.Screen name="more" options={{ title: "More", href: null, headerShown: false }} />
+      <Tabs.Screen
+        name="analytics"
+        options={{ title: "Analytics", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{ title: "More", href: null, headerShown: false }}
+      />
       <Tabs.Screen
         name="storefront/edit"
         options={{ title: "Edit Storefront", href: null, headerShown: false }}
