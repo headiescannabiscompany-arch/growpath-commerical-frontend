@@ -372,19 +372,27 @@ export default function FieldObservationGlobe({
             );
           }
         });
-        activeMap.addControl(
-          new maplibregl.NavigationControl({ visualizePitch: true }),
-          "top-right"
-        );
-        activeMap.addControl(new maplibregl.GlobeControl(), "top-right");
-        activeMap.addControl(new maplibregl.FullscreenControl(), "top-right");
-        activeMap.addControl(
-          new maplibregl.GeolocateControl({
-            positionOptions: { enableHighAccuracy: false },
-            trackUserLocation: false
-          }),
-          "top-right"
-        );
+        const safeAddControl = (control: any, position: string) => {
+          try {
+            activeMap.addControl(control, position as any);
+          } catch (controlError) {
+            if (__DEV__) {
+              console.warn("[FieldObservationGlobe] control unavailable:", controlError);
+            }
+          }
+        };
+        safeAddControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+        safeAddControl(new maplibregl.GlobeControl(), "top-right");
+        safeAddControl(new maplibregl.FullscreenControl(), "top-right");
+        if (typeof navigator !== "undefined" && navigator.geolocation) {
+          safeAddControl(
+            new maplibregl.GeolocateControl({
+              positionOptions: { enableHighAccuracy: false },
+              trackUserLocation: false
+            }),
+            "top-right"
+          );
+        }
       })
       .catch((error) => {
         if (!disposed) {
