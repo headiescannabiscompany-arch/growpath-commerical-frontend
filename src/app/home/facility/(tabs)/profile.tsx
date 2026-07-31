@@ -74,20 +74,22 @@ function renderKV(obj: AnyRec | null, key: string) {
 function ProfileAction({
   label,
   onPress,
-  accessibilityLabel
+  accessibilityLabel,
+  danger = false
 }: {
   label: string;
   onPress: () => void;
   accessibilityLabel: string;
+  danger?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={styles.actionButton}
+      style={[styles.actionButton, danger && styles.dangerActionButton]}
     >
-      <Text style={styles.actionText}>{label}</Text>
+      <Text style={[styles.actionText, danger && styles.dangerActionText]}>{label}</Text>
     </Pressable>
   );
 }
@@ -227,6 +229,12 @@ export default function FacilityProfileRoute() {
               accessibilityLabel="Manage facility plan and billing"
               onPress={() => router.push("/offers" as any)}
             />
+            <ProfileAction
+              label="Log out"
+              accessibilityLabel="Log out"
+              danger
+              onPress={logout}
+            />
           </View>
         </View>
 
@@ -307,15 +315,6 @@ export default function FacilityProfileRoute() {
             />
           </View>
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Log out"
-          onPress={logout}
-          style={styles.logoutButton}
-        >
-          <Text style={styles.logoutText}>Log out</Text>
-        </Pressable>
       </ScrollView>
     </ScreenBoundary>
   );
@@ -373,19 +372,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   actionText: { color: "#172317", fontWeight: "900" },
+  dangerActionButton: {
+    backgroundColor: "#FEF2F2",
+    borderColor: "#DC2626"
+  },
+  dangerActionText: { color: "#991B1B" },
 
   kvWrap: { marginTop: 8 },
   kv: { marginBottom: 10 },
   k: { fontSize: 12, opacity: 0.7, marginBottom: 3 },
-  v: { fontSize: 14 },
-  logoutButton: {
-    borderWidth: 1,
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: "#FEF2F2",
-    alignItems: "center"
-  },
-  logoutText: { color: "#991B1B", fontWeight: "900" }
+  v: { fontSize: 14 }
 });

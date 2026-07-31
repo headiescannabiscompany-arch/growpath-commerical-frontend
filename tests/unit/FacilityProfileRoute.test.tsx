@@ -93,10 +93,13 @@ describe("FacilityProfileRoute", () => {
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));
     fireEvent.press(screen.getByLabelText("Manage facility plan and billing"));
+    fireEvent.press(screen.getByLabelText("Log out"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
     expect(mockPush).toHaveBeenCalledWith("/offers");
+    await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
+    expect(mockReplace).toHaveBeenCalledWith("/login");
     expect(screen.queryByText("Report Bug")).toBeNull();
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
