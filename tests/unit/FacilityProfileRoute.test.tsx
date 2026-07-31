@@ -5,8 +5,24 @@ import FacilityProfileRoute from "@/app/home/facility/(tabs)/profile";
 
 const mockApiRequest = jest.fn();
 const mockLogout = jest.fn();
+const mockRetryMe = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockClearError = jest.fn();
+const mockHandleApiError = jest.fn();
+const mockAuth = {
+  user: {
+    id: "facility-user-1",
+    email: "facility@example.com",
+    displayName: "Facility Lead"
+  },
+  logout: (...args: any[]) => mockLogout(...args),
+  retryMe: (...args: any[]) => mockRetryMe(...args)
+};
+let mockFacilitySelection: {
+  selectedId: string | null;
+  selected?: Record<string, unknown>;
+} = { selectedId: null };
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -29,7 +45,7 @@ jest.mock("@/components/InlineError", () => ({
 }));
 
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: null })
+  useFacility: () => mockFacilitySelection
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -37,14 +53,7 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({
-    user: {
-      id: "facility-user-1",
-      email: "facility@example.com",
-      displayName: "Facility Lead"
-    },
-    logout: (...args: any[]) => mockLogout(...args)
-  })
+  useAuth: () => mockAuth
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -59,8 +68,8 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => ({
     error: null,
-    clearError: jest.fn(),
-    handleApiError: jest.fn()
+    clearError: mockClearError,
+    handleApiError: mockHandleApiError
   })
 }));
 
@@ -68,8 +77,12 @@ describe("FacilityProfileRoute", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
     mockLogout.mockReset();
+    mockRetryMe.mockReset();
     mockPush.mockReset();
     mockReplace.mockReset();
+    mockClearError.mockReset();
+    mockHandleApiError.mockReset();
+    mockFacilitySelection = { selectedId: null };
     mockApiRequest.mockImplementation((path: string) =>
       Promise.resolve(
         path === "/api/tokens/balance"
@@ -104,5 +117,18 @@ describe("FacilityProfileRoute", () => {
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
     );
+  });
+
+  it("shows the active facility when the facilities list is unavailable", async () => {
+    mockFacilitySelection = {
+      selectedId: "facility-1",
+      selected: { id: "facility-1", name: "Viewer Facility", state: "Maryland" }
+    };
+
+    const screen = render(<FacilityProfileRoute />);
+
+    await waitFor(() => expect(screen.getByText("Viewer Facility")).toBeTruthy());
+    expect(screen.getByText("Maryland")).toBeTruthy();
+    expect(screen.queryByText(/Facility details are unavailable/)).toBeNull();
   });
 });

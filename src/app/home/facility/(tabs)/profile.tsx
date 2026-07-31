@@ -181,7 +181,9 @@ export default function FacilityProfileRoute() {
             (f) =>
               String(f?.id ?? f?._id ?? f?.facilityId) === String(facilityId) ||
               String(f?.facilityId ?? "") === String(facilityId)
-          ) ?? null;
+          ) ??
+          selectedFacility ??
+          null;
 
         setFacility(found);
 
@@ -195,7 +197,7 @@ export default function FacilityProfileRoute() {
         setRefreshing(false);
       }
     },
-    [auth.user, facilityId, clearError, handleApiError]
+    [auth.user, facilityId, selectedFacility, clearError, handleApiError]
   );
 
   useEffect(() => {
