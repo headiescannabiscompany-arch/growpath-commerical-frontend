@@ -1129,7 +1129,7 @@ Completed and pushed:
 691. Run a full UI consolidation pass across Personal, Commercial, and Facility with live browser verification for each user type and each top-level page. Standardize spacing, typography, card radius, button styling, and route placement; make night mode actually readable with much lighter text and dark-surfaces that stay distinct; expose the appearance switcher where each workspace can see it quickly; verify each page button goes where it should; and record the mismatches that still need work instead of treating the first pass as finished.
 
 - In progress in repo: the shared night palette is now a lighter blue-gray set of surfaces, text, and links, and the common back button now renders against a visible surface-muted fill instead of disappearing into the page background.
-- In progress in repo: the shared grow widgets and fallback shells now use the shared palette too, including the grow selector, stage slider, plant save modal, plant card, skeleton loaders, both error-boundary surfaces, and the shared AppShell / CommercialBanner / ContextBar chrome.
+   - In progress in repo: the shared grow widgets and fallback shells now use the shared palette too, including the grow selector, stage slider, plant save modal, plant card, skeleton loaders, both error-boundary surfaces, and the shared AppShell / CommercialBanner / ContextBar chrome. The personal/commercial/facility tab layouts also no longer mix `href` with hidden `tabBarButton` routes on web, which was blanking the live shells.
 
 ## Post-Commercial Follow-up
 

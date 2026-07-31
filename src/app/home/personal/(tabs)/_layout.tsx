@@ -50,26 +50,26 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen
         name="field-studies/index"
-        options={{ href: null, tabBarButton: () => null, title: "Field Studies" }}
+        options={{ tabBarButton: () => null, title: "Field Studies" }}
       />
       <Tabs.Screen
         name="field-studies/[studyId]"
-        options={{ href: null, tabBarButton: () => null, title: "Field Study" }}
+        options={{ tabBarButton: () => null, title: "Field Study" }}
       />
       <Tabs.Screen
         name="ai"
-        options={{ href: null, tabBarButton: () => null, title: "AI Assistant" }}
+        options={{ tabBarButton: () => null, title: "AI Assistant" }}
       />
       <Tabs.Screen
         name="forum"
-        options={{ href: null, tabBarButton: () => null, title: "Forum / Q&A" }}
+        options={{ tabBarButton: () => null, title: "Forum / Q&A" }}
       />
       <Tabs.Screen
         name="diagnose"
-        options={{ href: null, tabBarButton: () => null, title: "Diagnose" }}
+        options={{ tabBarButton: () => null, title: "Diagnose" }}
       />
-      <Tabs.Screen name="logs" options={{ href: null, tabBarButton: () => null }} />
-      <Tabs.Screen name="tasks" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="logs" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="tasks" options={{ tabBarButton: () => null }} />
     </Tabs>
   );
 }
