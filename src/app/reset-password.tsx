@@ -95,7 +95,9 @@ export default function ResetPasswordScreen() {
     <View style={styles.root}>
       <View style={styles.panel}>
         <BackButton fallbackHref="/login" />
-        <Text style={styles.title}>Choose new password</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Choose new password
+        </Text>
         <Text style={styles.message}>
           Enter a new password for your GrowPath account. Reset links expire after 1 hour.
         </Text>

@@ -160,7 +160,9 @@ export default function RegisterScreen() {
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.planPanel}>
           <Text style={styles.kicker}>Choose account</Text>
-          <Text style={styles.title}>Create account</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Create account
+          </Text>
           <Text style={styles.subtitle}>
             Pick the workflow you need now. You can still change plans as the account
             grows.

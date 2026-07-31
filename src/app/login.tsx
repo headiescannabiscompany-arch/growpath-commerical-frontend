@@ -116,7 +116,9 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          <Text style={styles.title}>Sign in</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Sign in
+          </Text>
           {params.reset === "success" ? (
             <Text style={styles.successMessage}>
               Password updated. Sign in with your new password.

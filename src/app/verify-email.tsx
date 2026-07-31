@@ -55,7 +55,9 @@ export default function VerifyEmailScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
-        <Text style={styles.title}>Email verification</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Email verification
+        </Text>
         {state === "checking" ? <ActivityIndicator color="#2563eb" /> : null}
         <Text style={styles.message}>{message}</Text>
         <Pressable
