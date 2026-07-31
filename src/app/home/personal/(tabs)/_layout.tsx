@@ -31,6 +31,7 @@ export default function PersonalTabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        tabBarIcon: () => null,
         tabBarShowIcon: false,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
