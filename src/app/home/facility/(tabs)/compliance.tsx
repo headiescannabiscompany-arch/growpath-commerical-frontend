@@ -342,14 +342,16 @@ export default function FacilityComplianceTab() {
                 >
                   <Text style={styles.actionText}>SOP runs</Text>
                 </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Start new SOP run"
-                  onPress={() => router.push("/home/facility/sop-runs/start" as any)}
-                  style={styles.actionBtn}
-                >
-                  <Text style={styles.actionText}>Start SOP run</Text>
-                </Pressable>
+                {canWriteCompliance ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Start new SOP run"
+                    onPress={() => router.push("/home/facility/sop-runs/start" as any)}
+                    style={styles.actionBtn}
+                  >
+                    <Text style={styles.actionText}>Start SOP run</Text>
+                  </Pressable>
+                ) : null}
               </View>
             </View>
 

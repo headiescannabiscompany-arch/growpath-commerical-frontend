@@ -7,6 +7,7 @@ const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockPush = jest.fn();
 let mockMode = "commercial";
+let mockFacilityRole = "OWNER";
 let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
 
 function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
@@ -43,6 +44,7 @@ jest.mock("@/entitlements", () => ({
     mode: mockMode,
     plan: mockMode,
     facilityId: mockMode === "facility" ? "facility-1" : null,
+    facilityRole: mockMode === "facility" ? mockFacilityRole : null,
     can: () => true
   })
 }));
@@ -60,6 +62,7 @@ jest.mock("expo-image-picker", () => ({
 describe("CommercialFeedRoute", () => {
   beforeEach(() => {
     mockMode = "commercial";
+    mockFacilityRole = "OWNER";
     mockRouteParams = { campaignId: "campaign-1" };
     mockApiRequest.mockReset();
     mockPersistImageUri.mockReset();
@@ -99,6 +102,16 @@ describe("CommercialFeedRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("keeps a Facility viewer in read-only outreach mode", async () => {
+    mockMode = "facility";
+    mockFacilityRole = "VIEWER";
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Facility Outreach")).toBeTruthy());
+    expect(screen.queryByText("Create Campaign")).toBeNull();
+    expect(screen.queryByLabelText("Upload feed campaign image")).toBeNull();
   });
 
   it("creates live feed campaigns as outreach with live and Forum/Q&A links", async () => {

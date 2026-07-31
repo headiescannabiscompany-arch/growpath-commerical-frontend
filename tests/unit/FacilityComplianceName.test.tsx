@@ -111,4 +111,20 @@ describe("Facility Compliance facility label", () => {
     fireEvent.press(screen.getByLabelText("Open SOP Library"));
     expect(mockRouter.push).toHaveBeenCalledWith("/home/facility/sop-runs/presets");
   });
+
+  it("keeps SOP run creation hidden for a viewer", async () => {
+    mockEntitlementState.can.mockImplementation(
+      (capability: string) => capability === "COMPLIANCE_READ"
+    );
+    mockEntitlementState.facilityRole = "VIEWER";
+    const screen = render(<FacilityComplianceTab />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByLabelText("Start new SOP run")).toBeNull();
+    expect(
+      screen.getByText("You do not have permission to create compliance records.")
+    ).toBeTruthy();
+  });
 });

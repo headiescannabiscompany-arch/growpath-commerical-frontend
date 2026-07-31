@@ -510,7 +510,10 @@ export default function CommercialFeedRoute() {
   const ent = useEntitlements();
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
-  const canManageCampaigns = isCommercial || isFacility;
+  const facilityRole = String(ent.facilityRole || "").toUpperCase();
+  const canManageCampaigns =
+    isCommercial ||
+    (isFacility && (facilityRole === "OWNER" || facilityRole === "MANAGER"));
   const allowedTypes = isFacility ? FACILITY_TYPES : COMMERCIAL_TYPES;
   const allowedCampaignKinds = isFacility
     ? FACILITY_CAMPAIGN_KINDS

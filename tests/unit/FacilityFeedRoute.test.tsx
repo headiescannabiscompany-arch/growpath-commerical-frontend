@@ -25,6 +25,7 @@ jest.mock("@/entitlements", () => ({
     ready: true,
     mode: "facility",
     plan: "facility",
+    facilityRole: "OWNER",
     can: () => true
   })
 }));
@@ -69,6 +70,8 @@ describe("FacilityFeedCampaignsRoute", () => {
     await waitFor(() => expect(screen.getByText("Facility Outreach")).toBeTruthy());
     expect(screen.getByText("Facility IPM training")).toBeTruthy();
     expect(screen.getAllByText("Facility outreach").length).toBeGreaterThan(0);
-    expect(screen.getByLabelText("Selected feed campaign facility-campaign-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Selected feed campaign facility-campaign-1")
+    ).toBeTruthy();
   });
 });

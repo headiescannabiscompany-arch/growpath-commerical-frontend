@@ -14,6 +14,7 @@ import { getFacilityComplianceExport } from "@/api/complianceExport";
 import { getFacilityReport } from "@/api/reports";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
@@ -157,6 +158,10 @@ export function facilityComplianceExportFilenameFromSources(
 
 export default function FacilityReportsTab() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const canExportCompliance = Boolean(
+    entitlements.can?.(CAPABILITY_KEYS.EXPORT_COMPLIANCE)
+  );
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -204,7 +209,7 @@ export default function FacilityReportsTab() {
   }, [facilityId, load, router]);
 
   async function exportCompliancePacket() {
-    if (!facilityId || exporting) return;
+    if (!facilityId || exporting || !canExportCompliance) return;
     setExporting(true);
     setExportFeedback("");
     try {
@@ -284,17 +289,19 @@ export default function FacilityReportsTab() {
             >
               <Text style={styles.buttonText}>Refresh</Text>
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Export compliance packet"
-              style={[styles.button, exporting ? styles.buttonDisabled : null]}
-              disabled={exporting}
-              onPress={exportCompliancePacket}
-            >
-              <Text style={styles.buttonText}>
-                {exporting ? "Exporting..." : "Export"}
-              </Text>
-            </Pressable>
+            {canExportCompliance ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Export compliance packet"
+                style={[styles.button, exporting ? styles.buttonDisabled : null]}
+                disabled={exporting}
+                onPress={exportCompliancePacket}
+              >
+                <Text style={styles.buttonText}>
+                  {exporting ? "Exporting..." : "Export"}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
         {exportFeedback ? <Text style={styles.success}>{exportFeedback}</Text> : null}
