@@ -36,12 +36,16 @@ describe("PersonalTabsLayout", () => {
             backgroundColor: "#FFFFFF",
             borderTopColor: "#D7DDD2"
           }),
-          tabBarLabelStyle: { fontSize: 11, fontWeight: "700" }
+          tabBarLabelStyle: expect.objectContaining({
+            fontWeight: "700",
+            textAlign: "center"
+          })
         })
       })
     );
 
     const props = mockTabs.mock.calls[0][0];
+    expect(props.screenOptions.tabBarLabelStyle.fontSize).toBeGreaterThanOrEqual(10);
     const names = React.Children.toArray(props.children).map(
       (child: any) => child.props.name
     );
@@ -49,6 +53,18 @@ describe("PersonalTabsLayout", () => {
     expect(names).toEqual(
       expect.arrayContaining(["field-studies/index", "field-studies/[studyId]"])
     );
+
+    const visibleNames = React.Children.toArray(props.children)
+      .filter((child: any) => child.props.options?.tabBarButton == null)
+      .map((child: any) => child.props.name);
+    expect(visibleNames).toEqual([
+      "index",
+      "grows",
+      "community",
+      "discover",
+      "more",
+      "profile"
+    ]);
 
     const fieldStudiesScreen = React.Children.toArray(props.children).find(
       (child: any) => child.props.name === "field-studies/index"

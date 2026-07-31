@@ -32,16 +32,16 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarShowIcon: false,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 9 : 11,
+          fontSize: compactTabs ? 10 : 11,
           fontWeight: "700",
+          lineHeight: compactTabs ? 12 : 13,
           textAlign: "center"
         },
-        tabBarItemStyle: { flex: 1, minWidth: 0 },
+        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" }
           : {
@@ -54,47 +54,42 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen name="index" options={{ title: "Home", tabBarLabel: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows", tabBarLabel: "Grows" }} />
       <Tabs.Screen
-        name="tools"
-        options={{ title: "AI Tools", tabBarLabel: "AI Tools" }}
-      />
-      <Tabs.Screen
         name="community"
         options={{ title: "Forum / Q&A", tabBarLabel: "Forum" }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover" }}
+        options={{ title: "Discovery Nature", tabBarLabel: "Nature" }}
       />
-      <Tabs.Screen
-        name="courses"
-        options={{ title: "Courses", tabBarLabel: "Courses" }}
-      />
+      <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
+      <Tabs.Screen name="tools" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="courses" options={{ href: null, tabBarButton: () => null }} />
       <Tabs.Screen
         name="field-studies/index"
-        options={{ tabBarButton: () => null, title: "Field Studies" }}
+        options={{ href: null, tabBarButton: () => null, title: "Field Studies" }}
       />
       <Tabs.Screen
         name="field-studies/[studyId]"
-        options={{ tabBarButton: () => null, title: "Field Study" }}
+        options={{ href: null, tabBarButton: () => null, title: "Field Study" }}
       />
       <Tabs.Screen
         name="ai"
-        options={{ tabBarButton: () => null, title: "AI Assistant" }}
+        options={{ href: null, tabBarButton: () => null, title: "AI Assistant" }}
       />
       <Tabs.Screen
         name="forum"
-        options={{ tabBarButton: () => null, title: "Forum / Q&A" }}
+        options={{ href: null, tabBarButton: () => null, title: "Forum / Q&A" }}
       />
       <Tabs.Screen
         name="diagnose"
-        options={{ tabBarButton: () => null, title: "Diagnose" }}
+        options={{ href: null, tabBarButton: () => null, title: "Diagnose" }}
       />
-      <Tabs.Screen name="logs" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen name="tasks" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="logs" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="tasks" options={{ href: null, tabBarButton: () => null }} />
     </Tabs>
   );
 }
