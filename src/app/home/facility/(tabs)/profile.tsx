@@ -69,7 +69,8 @@ function renderKV(obj: AnyRec | null, key: string) {
             displayName: "Display name",
             legalName: "Legal name",
             createdAt: "Created",
-            license: "License number"
+            license: "License number",
+            id: "Facility ID"
           } as Record<string, string>
         )[key] || key.replace(/Id$/, " ID")}
       </Text>
@@ -183,7 +184,7 @@ export default function FacilityProfileRoute() {
               String(f?.facilityId ?? "") === String(facilityId)
           ) ??
           selectedFacility ??
-          null;
+          ({ id: String(facilityId), name: "Selected facility" } as AnyRec);
 
         setFacility(found);
 
@@ -221,7 +222,14 @@ export default function FacilityProfileRoute() {
 
   const facilityKeys = useMemo(() => {
     if (!facility) return [];
-    const facilityPreferred = ["name", "legalName", "license", "state", "createdAt"];
+    const facilityPreferred = [
+      "name",
+      "id",
+      "legalName",
+      "license",
+      "state",
+      "createdAt"
+    ];
     return facilityPreferred.filter((k) => k in facility);
   }, [facility]);
 

@@ -119,16 +119,13 @@ describe("FacilityProfileRoute", () => {
     );
   });
 
-  it("shows the active facility when the facilities list is unavailable", async () => {
-    mockFacilitySelection = {
-      selectedId: "facility-1",
-      selected: { id: "facility-1", name: "Viewer Facility", state: "Maryland" }
-    };
+  it("shows the selected facility id when Viewer data has no facility record", async () => {
+    mockFacilitySelection = { selectedId: "facility-1" };
 
     const screen = render(<FacilityProfileRoute />);
 
-    await waitFor(() => expect(screen.getByText("Viewer Facility")).toBeTruthy());
-    expect(screen.getByText("Maryland")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Selected facility")).toBeTruthy());
+    expect(screen.getByText("facility-1")).toBeTruthy();
     expect(screen.queryByText(/Facility details are unavailable/)).toBeNull();
   });
 });
