@@ -7,12 +7,13 @@ const jestBin = path.join(root, "node_modules", "jest", "bin", "jest.js");
 const batchSize = Math.max(1, Number(process.env.JEST_CI_BATCH_SIZE || 5));
 const laneCount = Math.max(1, Number(process.env.JEST_CI_LANES || 5));
 const heapMb = Math.max(1024, Number(process.env.JEST_CI_HEAP_MB || 12288));
+const outputBufferMb = Math.max(8, Number(process.env.JEST_CI_OUTPUT_BUFFER_MB || 64));
 const traceFile = process.env.JEST_CI_TRACE_FILE || "";
 const soloTestPatterns = [
   "CommercialWorkflowPages.test.tsx",
   "ContentMarketplaceScreen.test.tsx",
   "release.production-builds.test.js",
-  "AutoGrowCalendarToolScreen.test.tsx",
+  "AutoGrowCalendarToolScreen.test.tsx"
 ];
 
 function trace(message) {
@@ -25,18 +26,24 @@ function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: root,
     encoding: "utf8",
+    maxBuffer: outputBufferMb * 1024 * 1024,
     stdio: ["ignore", "pipe", "pipe"],
-    ...spawnOptions,
+    ...spawnOptions
   });
 
   if (echo && result.stdout) process.stdout.write(result.stdout);
   if (echo && result.stderr) process.stderr.write(result.stderr);
+  if (result.error) {
+    console.error(
+      `[jest-batches] child process failed: ${result.error.message || result.error}`
+    );
+  }
 
   return result;
 }
 
 const listResult = run(process.execPath, [jestBin, "--listTests", "--json"], {
-  echo: false,
+  echo: false
 });
 if (listResult.status !== 0) {
   if (listResult.stdout) process.stdout.write(listResult.stdout);
@@ -85,15 +92,13 @@ const totalBatches = lanes.reduce(
 let batchNumber = 0;
 for (const test of soloTests) {
   batchNumber += 1;
-  console.log(
-    `\n==> Jest batch ${batchNumber}/${totalBatches} (solo, 1 file)`
-  );
+  console.log(`\n==> Jest batch ${batchNumber}/${totalBatches} (solo, 1 file)`);
   trace(
     JSON.stringify({
       batchNumber,
       totalBatches,
       kind: "solo",
-      tests: [test],
+      tests: [test]
     })
   );
 
@@ -105,7 +110,7 @@ for (const test of soloTests) {
       "--runInBand",
       "--forceExit",
       "--runTestsByPath",
-      test,
+      test
     ],
     { echo: true }
   );
@@ -117,7 +122,7 @@ for (const test of soloTests) {
         totalBatches,
         kind: "solo",
         exitCode: result.status || 1,
-        failed: true,
+        failed: true
       })
     );
     process.exit(result.status || 1);
@@ -129,7 +134,7 @@ for (const test of soloTests) {
       totalBatches,
       kind: "solo",
       exitCode: 0,
-      failed: false,
+      failed: false
     })
   );
 }
@@ -151,7 +156,7 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
         kind: "lane",
         lane: laneIndex + 1,
         lanes: lanes.length,
-        tests: batch,
+        tests: batch
       })
     );
 
@@ -163,7 +168,7 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
         "--runInBand",
         "--forceExit",
         "--runTestsByPath",
-        ...batch,
+        ...batch
       ],
       { echo: true }
     );
@@ -177,7 +182,7 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
           lane: laneIndex + 1,
           lanes: lanes.length,
           exitCode: result.status || 1,
-          failed: true,
+          failed: true
         })
       );
       process.exit(result.status || 1);
@@ -191,7 +196,7 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
         lane: laneIndex + 1,
         lanes: lanes.length,
         exitCode: 0,
-        failed: false,
+        failed: false
       })
     );
   }
