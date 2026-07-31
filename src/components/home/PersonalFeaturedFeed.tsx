@@ -31,6 +31,28 @@ function cleanText(value: unknown) {
     .trim();
 }
 
+const PUBLIC_TEST_TITLE_PATTERNS = [
+  /^qa(?:\s+only)?\b/i,
+  /^\[qa\]/i,
+  /^e2e\b/i,
+  /^test(?:ing)?\s+(?:post|course|campaign|product)\b/i
+];
+
+export function isPublicTestContent(row: any) {
+  if (row?.isTest === true || row?.qaOnly === true || row?.testOnly === true) {
+    return true;
+  }
+
+  const title = cleanText(row?.title || row?.name);
+  const detail = cleanText(
+    row?.summary || row?.description || row?.body || row?.content || row?.text
+  );
+  return (
+    PUBLIC_TEST_TITLE_PATTERNS.some((pattern) => pattern.test(title)) ||
+    /\bqa[- ]only\b/i.test(detail)
+  );
+}
+
 function clipText(value: unknown, max = 150) {
   const text = cleanText(value);
   if (!text) return "";
@@ -169,12 +191,17 @@ export default function PersonalFeaturedFeed() {
           listCourses(1)
         ]);
 
-        const campaigns =
-          campaignResult.status === "fulfilled" ? campaignResult.value.items : [];
-        const forumPosts = forumResult.status === "fulfilled" ? forumResult.value : [];
+        const campaigns = (
+          campaignResult.status === "fulfilled" ? campaignResult.value.items : []
+        ).filter((campaign) => !isPublicTestContent(campaign));
+        const forumPosts = (
+          forumResult.status === "fulfilled" ? forumResult.value : []
+        ).filter((post) => !isPublicTestContent(post));
         const courseItems =
           courseResult.status === "fulfilled"
-            ? rows(courseResult.value, ["courses", "results", "items"])
+            ? rows(courseResult.value, ["courses", "results", "items"]).filter(
+                (course: any) => !isPublicTestContent(course)
+              )
             : [];
 
         const commercialCards = campaigns
