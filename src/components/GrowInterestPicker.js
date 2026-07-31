@@ -7,6 +7,7 @@ import {
   normalizeInterestList
 } from "../utils/growInterests";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
 
 function resolveVisibleTiers(enabledTierIds) {
@@ -32,6 +33,8 @@ export default function GrowInterestPicker({
   showEmptyTiers = false,
   emptyTierText = "No choices are saved for this tier."
 }) {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const selections = value || buildEmptyTierSelection();
   const visibleTiers = resolveVisibleTiers(enabledTierIds);
   const { user } = useAuth();
@@ -136,88 +139,90 @@ export default function GrowInterestPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: radius.card,
-    padding: 16,
-    backgroundColor: "#FFFFFF",
-    marginBottom: 24
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 4
-  },
-  headerRowStatic: {
-    paddingVertical: 0
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4
-  },
-  helper: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginBottom: 12
-  },
-  toggleIcon: {
-    fontSize: 18,
-    color: "#6B7280",
-    marginLeft: 8
-  },
-  tierBlock: {
-    marginBottom: 16
-  },
-  tierHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  tierLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
-    flex: 1,
-    marginRight: 8
-  },
-  tierCount: {
-    fontSize: 12,
-    color: "#6B7280"
-  },
-  emptyTierText: {
-    fontSize: 13,
-    lineHeight: 19,
-    color: "#B45309"
-  },
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap"
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#F9FAFB",
-    marginRight: 8,
-    marginBottom: 8
-  },
-  chipActive: {
-    backgroundColor: "#10B981",
-    borderColor: "#059669"
-  },
-  chipText: {
-    fontSize: 12,
-    color: "#374151",
-    fontWeight: "500"
-  },
-  chipTextActive: {
-    color: "#FFFFFF"
-  }
-});
+const createStyles = (palette) =>
+  StyleSheet.create({
+    container: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 16,
+      backgroundColor: palette.surface,
+      marginBottom: 24
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 4
+    },
+    headerRowStatic: {
+      paddingVertical: 0
+    },
+    title: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 4
+    },
+    helper: {
+      fontSize: 13,
+      color: palette.textMuted,
+      marginBottom: 12
+    },
+    toggleIcon: {
+      fontSize: 18,
+      color: palette.textMuted,
+      marginLeft: 8
+    },
+    tierBlock: {
+      marginBottom: 16
+    },
+    tierHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8
+    },
+    tierLabel: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: palette.text,
+      flex: 1,
+      marginRight: 8
+    },
+    tierCount: {
+      fontSize: 12,
+      color: palette.textMuted
+    },
+    emptyTierText: {
+      fontSize: 13,
+      lineHeight: 19,
+      color: palette.warning
+    },
+    chipRow: {
+      flexDirection: "row",
+      flexWrap: "wrap"
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: palette.surfaceMuted,
+      marginRight: 8,
+      marginBottom: 8
+    },
+    chipActive: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    chipText: {
+      fontSize: 12,
+      color: palette.textMuted,
+      fontWeight: "500"
+    },
+    chipTextActive: {
+      color: palette.accentText
+    }
+  });

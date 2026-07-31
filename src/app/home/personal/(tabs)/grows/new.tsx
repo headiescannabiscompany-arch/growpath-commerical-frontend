@@ -23,6 +23,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { INTEREST_TIERS } from "@/config/interests";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
   buildEmptyTierSelection,
@@ -68,6 +69,7 @@ function mergeTierSelections(...sources: Record<string, string[]>[]) {
 
 export default function NewGrowScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
   const params = useLocalSearchParams<{
     source?: string | string[];
     name?: string | string[];
@@ -388,12 +390,14 @@ export default function NewGrowScreen() {
     return (
       <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+          style={{ flex: 1, backgroundColor: palette.page }}
           contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
         >
-          <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
-          <ActivityIndicator />
-          <Text style={{ color: "#475569" }}>Checking grow limit...</Text>
+          <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>
+            New Grow
+          </Text>
+          <ActivityIndicator color={palette.accent} />
+          <Text style={{ color: palette.textMuted }}>Checking grow limit...</Text>
         </ScrollView>
       </ScreenBoundary>
     );
@@ -419,27 +423,29 @@ export default function NewGrowScreen() {
   return (
     <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
       <ScrollView
-        style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+        style={{ flex: 1, backgroundColor: palette.page }}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
       >
-        <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
-        <Text style={{ color: "#475569" }}>
+        <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>
+          New Grow
+        </Text>
+        <Text style={{ color: palette.textMuted }}>
           Set required anchors so logs, tools, and tasks can map to this grow correctly.
         </Text>
         {aiSource ? (
           <View
             style={{
               borderWidth: 1,
-              borderColor: "#86EFAC",
+              borderColor: palette.success,
               borderRadius: radius.card,
               padding: 12,
-              backgroundColor: "#F0FDF4"
+              backgroundColor: palette.accentSoft
             }}
           >
-            <Text style={{ color: "#166534", fontWeight: "800" }}>
+            <Text style={{ color: palette.accent, fontWeight: "800" }}>
               AI-assisted grow draft
             </Text>
-            <Text style={{ color: "#166534", marginTop: 4 }}>
+            <Text style={{ color: palette.textMuted, marginTop: 4 }}>
               Review every prefilled field before saving. AI does not create the grow
               until you confirm here.
             </Text>
@@ -456,14 +462,14 @@ export default function NewGrowScreen() {
             style={{
               alignSelf: "flex-start",
               borderWidth: 1,
-              borderColor: "#166534",
+              borderColor: palette.accent,
               borderRadius: radius.card,
               paddingHorizontal: 12,
               paddingVertical: 9,
-              backgroundColor: "#F0FDF4"
+              backgroundColor: palette.accentSoft
             }}
           >
-            <Text style={{ color: "#166534", fontWeight: "800" }}>
+            <Text style={{ color: palette.accent, fontWeight: "800" }}>
               Build this grow with AI
             </Text>
           </Pressable>
@@ -474,17 +480,17 @@ export default function NewGrowScreen() {
           <View
             style={{
               borderWidth: 1,
-              borderColor: "#FCA5A5",
+              borderColor: palette.danger,
               borderRadius: radius.card,
               padding: 10,
-              backgroundColor: "#FEF2F2"
+              backgroundColor: palette.surfaceMuted
             }}
           >
-            <Text style={{ color: "#7F1D1D", fontWeight: "700" }}>{error}</Text>
+            <Text style={{ color: palette.danger, fontWeight: "700" }}>{error}</Text>
           </View>
         ) : null}
 
-        <Text style={{ fontWeight: "700" }}>Grow name</Text>
+        <Text style={{ color: palette.text, fontWeight: "700" }}>Grow name</Text>
         <TextInput
           testID="input-grow-name"
           value={name}
@@ -493,8 +499,10 @@ export default function NewGrowScreen() {
           accessibilityLabel="Grow name"
           style={{
             borderWidth: 1,
-            borderColor: "#E2E8F0",
+            borderColor: palette.border,
             borderRadius: radius.card,
+            backgroundColor: palette.surface,
+            color: palette.text,
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
@@ -503,21 +511,23 @@ export default function NewGrowScreen() {
         <View
           style={{
             borderWidth: 1,
-            borderColor: "#BBF7D0",
+            borderColor: palette.success,
             borderRadius: radius.card,
             padding: 12,
             gap: 9,
-            backgroundColor: "#F0FDF4"
+            backgroundColor: palette.accentSoft
           }}
         >
-          <Text style={{ color: "#14532D", fontSize: 16, fontWeight: "900" }}>
+          <Text style={{ color: palette.text, fontSize: 16, fontWeight: "900" }}>
             Grow Planner / Auto Calendar
           </Text>
-          <Text style={{ color: "#166534" }}>
+          <Text style={{ color: palette.textMuted }}>
             These setup answers prefill the shared calendar tool after this grow is saved.
             The calendar tool creates real starter tasks; this form does not duplicate it.
           </Text>
-          <Text style={{ fontWeight: "700" }}>How are you starting?</Text>
+          <Text style={{ color: palette.text, fontWeight: "700" }}>
+            How are you starting?
+          </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {["seed", "clone", "transplant", "existing plant"].map((option) => (
               <Pressable
@@ -527,14 +537,19 @@ export default function NewGrowScreen() {
                 onPress={() => setStartType(option)}
                 style={{
                   borderWidth: 1,
-                  borderColor: startType === option ? "#166534" : "#86EFAC",
+                  borderColor: startType === option ? palette.accent : palette.border,
                   borderRadius: 999,
-                  backgroundColor: startType === option ? "#166534" : "#FFFFFF",
+                  backgroundColor:
+                    startType === option ? palette.accent : palette.surface,
                   paddingHorizontal: 10,
                   paddingVertical: 7
                 }}
               >
-                <Text style={{ color: startType === option ? "#FFFFFF" : "#166534" }}>
+                <Text
+                  style={{
+                    color: startType === option ? palette.accentText : palette.text
+                  }}
+                >
                   {option}
                 </Text>
               </Pressable>
@@ -547,7 +562,9 @@ export default function NewGrowScreen() {
               ["Expected flower days", expectedFlowerDays, setExpectedFlowerDays]
             ].map(([label, value, setter]) => (
               <View key={String(label)} style={{ flex: 1, minWidth: 150, gap: 4 }}>
-                <Text style={{ fontWeight: "700" }}>{String(label)}</Text>
+                <Text style={{ color: palette.text, fontWeight: "700" }}>
+                  {String(label)}
+                </Text>
                 <TextInput
                   value={String(value)}
                   onChangeText={setter as (text: string) => void}
@@ -555,9 +572,10 @@ export default function NewGrowScreen() {
                   accessibilityLabel={String(label)}
                   style={{
                     borderWidth: 1,
-                    borderColor: "#86EFAC",
+                    borderColor: palette.border,
                     borderRadius: radius.card,
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: palette.surface,
+                    color: palette.text,
                     paddingHorizontal: 10,
                     paddingVertical: 9
                   }}
@@ -565,7 +583,7 @@ export default function NewGrowScreen() {
               </View>
             ))}
           </View>
-          <Text style={{ color: "#166534", fontWeight: "800" }}>
+          <Text style={{ color: palette.accent, fontWeight: "800" }}>
             Next: save the grow, then confirm Create Grow Calendar to generate tasks.
           </Text>
         </View>
@@ -580,7 +598,7 @@ export default function NewGrowScreen() {
           collapsible={false}
         />
 
-        <Text style={{ fontWeight: "700" }}>System preset</Text>
+        <Text style={{ color: palette.text, fontWeight: "700" }}>System preset</Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           {(["soil", "coco", "hydro"] as SystemPreset[]).map((preset) => (
             <Pressable
@@ -593,18 +611,23 @@ export default function NewGrowScreen() {
                 paddingHorizontal: 12,
                 borderRadius: 999,
                 borderWidth: 1,
-                borderColor: systemPreset === preset ? "#166534" : "#CBD5E1",
-                backgroundColor: systemPreset === preset ? "#166534" : "#FFFFFF"
+                borderColor: systemPreset === preset ? palette.accent : palette.border,
+                backgroundColor:
+                  systemPreset === preset ? palette.accent : palette.surface
               }}
             >
-              <Text style={{ color: systemPreset === preset ? "#FFFFFF" : "#0F172A" }}>
+              <Text
+                style={{
+                  color: systemPreset === preset ? palette.accentText : palette.text
+                }}
+              >
                 {preset}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        <Text style={{ fontWeight: "700" }}>Anchor type</Text>
+        <Text style={{ color: palette.text, fontWeight: "700" }}>Anchor type</Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           {(
             [
@@ -622,11 +645,16 @@ export default function NewGrowScreen() {
                 paddingHorizontal: 12,
                 borderRadius: 999,
                 borderWidth: 1,
-                borderColor: anchorDateType === opt.key ? "#166534" : "#CBD5E1",
-                backgroundColor: anchorDateType === opt.key ? "#166534" : "#FFFFFF"
+                borderColor: anchorDateType === opt.key ? palette.accent : palette.border,
+                backgroundColor:
+                  anchorDateType === opt.key ? palette.accent : palette.surface
               }}
             >
-              <Text style={{ color: anchorDateType === opt.key ? "#FFFFFF" : "#0F172A" }}>
+              <Text
+                style={{
+                  color: anchorDateType === opt.key ? palette.accentText : palette.text
+                }}
+              >
                 {opt.label}
               </Text>
             </Pressable>
@@ -641,7 +669,7 @@ export default function NewGrowScreen() {
           testID="input-grow-anchor-date"
         />
 
-        <Text style={{ fontWeight: "700" }}>Timezone</Text>
+        <Text style={{ color: palette.text, fontWeight: "700" }}>Timezone</Text>
         <TextInput
           value={timeZone}
           onChangeText={setTimeZone}
@@ -649,8 +677,10 @@ export default function NewGrowScreen() {
           accessibilityLabel="Timezone"
           style={{
             borderWidth: 1,
-            borderColor: "#E2E8F0",
+            borderColor: palette.border,
             borderRadius: radius.card,
+            backgroundColor: palette.surface,
+            color: palette.text,
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
@@ -665,21 +695,21 @@ export default function NewGrowScreen() {
               gap: 10
             }}
           >
-            <Text style={{ fontWeight: "700" }}>Grow photos</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>Grow photos</Text>
             <Pressable
               onPress={pickPhotos}
               accessibilityRole="button"
               accessibilityLabel="Attach grow photos"
               style={{
                 borderWidth: 1,
-                borderColor: "#166534",
+                borderColor: palette.accent,
                 borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                backgroundColor: "#F0FDF4"
+                backgroundColor: palette.accentSoft
               }}
             >
-              <Text style={{ color: "#166534", fontWeight: "800" }}>
+              <Text style={{ color: palette.accent, fontWeight: "800" }}>
                 {photos.length ? "Add More Photos" : "Attach Photos"}
               </Text>
             </Pressable>
@@ -692,16 +722,20 @@ export default function NewGrowScreen() {
                   style={{
                     width: 92,
                     borderWidth: 1,
-                    borderColor: "#E2E8F0",
+                    borderColor: palette.border,
                     borderRadius: radius.card,
                     overflow: "hidden",
-                    backgroundColor: "#F8FAFC"
+                    backgroundColor: palette.surfaceMuted
                   }}
                 >
                   <Image
                     source={{ uri: photo.uri }}
                     accessibilityLabel={`Attached grow photo ${index + 1}`}
-                    style={{ width: "100%", height: 72, backgroundColor: "#E2E8F0" }}
+                    style={{
+                      width: "100%",
+                      height: 72,
+                      backgroundColor: palette.surfaceStrong
+                    }}
                   />
                   <Pressable
                     onPress={() =>
@@ -711,7 +745,9 @@ export default function NewGrowScreen() {
                     accessibilityLabel={`Remove attached grow photo ${index + 1}`}
                     style={{ padding: 6, alignItems: "center" }}
                   >
-                    <Text style={{ color: "#991B1B", fontSize: 12, fontWeight: "800" }}>
+                    <Text
+                      style={{ color: palette.danger, fontSize: 12, fontWeight: "800" }}
+                    >
                       Remove
                     </Text>
                   </Pressable>
@@ -719,7 +755,7 @@ export default function NewGrowScreen() {
               ))}
             </View>
           ) : (
-            <Text style={{ color: "#64748B" }}>
+            <Text style={{ color: palette.textMuted }}>
               Attach setup photos now so the grow starts with visual history.
             </Text>
           )}
@@ -731,8 +767,10 @@ export default function NewGrowScreen() {
             autoCapitalize="none"
             style={{
               borderWidth: 1,
-              borderColor: "#E2E8F0",
+              borderColor: palette.border,
               borderRadius: radius.card,
+              backgroundColor: palette.surface,
+              color: palette.text,
               paddingHorizontal: 12,
               paddingVertical: 10
             }}
@@ -744,14 +782,14 @@ export default function NewGrowScreen() {
             accessibilityLabel="Add grow photo URL"
             style={{
               borderWidth: 1,
-              borderColor: "#CBD5E1",
+              borderColor: palette.border,
               borderRadius: radius.card,
               padding: 10,
               alignSelf: "flex-start",
               opacity: photoUrl.trim() ? 1 : 0.5
             }}
           >
-            <Text style={{ fontWeight: "700" }}>Add photo URL</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>Add photo URL</Text>
           </Pressable>
         </View>
 
@@ -764,12 +802,12 @@ export default function NewGrowScreen() {
           style={{
             marginTop: 8,
             borderWidth: 1,
-            borderColor: "#E2E8F0",
+            borderColor: palette.border,
             borderRadius: radius.card,
             padding: 10
           }}
         >
-          <Text style={{ fontWeight: "700" }}>
+          <Text style={{ color: palette.text, fontWeight: "700" }}>
             {showAdvanced ? "Hide advanced fields" : "Show advanced fields"}
           </Text>
         </Pressable>
@@ -842,7 +880,9 @@ export default function NewGrowScreen() {
               accessibilityLabel="Cure start date"
             />
 
-            <Text style={{ fontWeight: "700" }}>Pot size (optional)</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>
+              Pot size (optional)
+            </Text>
             <TextInput
               value={potSize}
               onChangeText={setPotSize}
@@ -850,14 +890,18 @@ export default function NewGrowScreen() {
               accessibilityLabel="Pot size"
               style={{
                 borderWidth: 1,
-                borderColor: "#E2E8F0",
+                borderColor: palette.border,
                 borderRadius: radius.card,
+                backgroundColor: palette.surface,
+                color: palette.text,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
             />
 
-            <Text style={{ fontWeight: "700" }}>Pot count (optional)</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>
+              Pot count (optional)
+            </Text>
             <TextInput
               value={potCount}
               onChangeText={setPotCount}
@@ -866,14 +910,18 @@ export default function NewGrowScreen() {
               accessibilityLabel="Pot count"
               style={{
                 borderWidth: 1,
-                borderColor: "#E2E8F0",
+                borderColor: palette.border,
                 borderRadius: radius.card,
+                backgroundColor: palette.surface,
+                color: palette.text,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
             />
 
-            <Text style={{ fontWeight: "700" }}>Cultivar (optional)</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>
+              Cultivar (optional)
+            </Text>
             <TextInput
               value={cultivar}
               onChangeText={setCultivar}
@@ -881,14 +929,18 @@ export default function NewGrowScreen() {
               accessibilityLabel="Cultivar"
               style={{
                 borderWidth: 1,
-                borderColor: "#E2E8F0",
+                borderColor: palette.border,
                 borderRadius: radius.card,
+                backgroundColor: palette.surface,
+                color: palette.text,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
             />
 
-            <Text style={{ fontWeight: "700" }}>Target VPD band (optional)</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>
+              Target VPD band (optional)
+            </Text>
             <TextInput
               value={targetVpdBand}
               onChangeText={setTargetVpdBand}
@@ -896,14 +948,18 @@ export default function NewGrowScreen() {
               accessibilityLabel="Target VPD band"
               style={{
                 borderWidth: 1,
-                borderColor: "#E2E8F0",
+                borderColor: palette.border,
                 borderRadius: radius.card,
+                backgroundColor: palette.surface,
+                color: palette.text,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
             />
 
-            <Text style={{ fontWeight: "700" }}>Notes (optional)</Text>
+            <Text style={{ color: palette.text, fontWeight: "700" }}>
+              Notes (optional)
+            </Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
@@ -912,8 +968,10 @@ export default function NewGrowScreen() {
               accessibilityLabel="Grow notes"
               style={{
                 borderWidth: 1,
-                borderColor: "#E2E8F0",
+                borderColor: palette.border,
                 borderRadius: radius.card,
+                backgroundColor: palette.surface,
+                color: palette.text,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 minHeight: 80,
@@ -934,17 +992,19 @@ export default function NewGrowScreen() {
             paddingVertical: 12,
             paddingHorizontal: 14,
             borderWidth: 1,
-            borderColor: "#166534",
+            borderColor: palette.accent,
             borderRadius: radius.card,
-            backgroundColor: "#166534",
+            backgroundColor: palette.accent,
             opacity: saving || !isValid ? 0.6 : 1,
             alignSelf: "flex-start"
           }}
         >
           {saving ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
-            <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Create grow</Text>
+            <Text style={{ color: palette.accentText, fontWeight: "700" }}>
+              Create grow
+            </Text>
           )}
         </Pressable>
         <PersonalFeedPlacement
@@ -970,25 +1030,25 @@ export default function NewGrowScreen() {
           >
             <View
               style={{
-                backgroundColor: "#FFFFFF",
+                backgroundColor: palette.surface,
                 borderRadius: radius.card,
                 padding: 18,
                 gap: 10,
                 width: "100%",
                 maxWidth: 560,
                 borderWidth: 1,
-                borderColor: "#CBD5E1",
-                shadowColor: "#0F172A",
+                borderColor: palette.border,
+                shadowColor: palette.shadow,
                 shadowOpacity: 0.22,
                 shadowRadius: 24,
                 shadowOffset: { width: 0, height: 12 },
                 elevation: 12
               }}
             >
-              <Text style={{ fontSize: 20, fontWeight: "900", color: "#0F172A" }}>
+              <Text style={{ fontSize: 20, fontWeight: "900", color: palette.text }}>
                 Grow created: {name.trim()}
               </Text>
-              <Text style={{ color: "#475569", lineHeight: 20 }}>
+              <Text style={{ color: palette.textMuted, lineHeight: 20 }}>
                 Choose the next step so this grow immediately has plants, logs, tasks, or
                 AI context attached.
               </Text>
@@ -1023,17 +1083,20 @@ export default function NewGrowScreen() {
                   onPress={() => openCreated(path)}
                   style={{
                     borderWidth: 1,
-                    borderColor: "#166534",
+                    borderColor: palette.accent,
                     borderRadius: radius.card,
                     paddingVertical: 10,
                     paddingHorizontal: 12,
                     backgroundColor:
-                      label === "Open Grow Dashboard" ? "#166534" : "#FFFFFF"
+                      label === "Open Grow Dashboard" ? palette.accent : palette.surface
                   }}
                 >
                   <Text
                     style={{
-                      color: label === "Open Grow Dashboard" ? "#FFFFFF" : "#166534",
+                      color:
+                        label === "Open Grow Dashboard"
+                          ? palette.accentText
+                          : palette.accent,
                       fontWeight: "800"
                     }}
                   >
