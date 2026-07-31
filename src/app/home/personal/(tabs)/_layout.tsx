@@ -37,17 +37,20 @@ export default function PersonalTabsLayout() {
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 9 : 11,
+          fontSize: compactTabs ? 10 : 11,
           fontWeight: "700",
-          textAlign: "center"
+          textAlign: "center",
+          lineHeight: compactTabs ? 12 : 14
         },
-        tabBarItemStyle: { flex: 1, minWidth: 0 },
+        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: compactTabs ? 2 : 6 },
         tabBarStyle: hideTabBar
           ? { display: "none" }
           : {
               backgroundColor: palette.tabBar,
               borderTopColor: palette.tabBarBorder,
-              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
+              ...(compactTabs
+                ? { height: 74, paddingBottom: 20, paddingHorizontal: 6, paddingTop: 6 }
+                : {})
             }
       }}
     >

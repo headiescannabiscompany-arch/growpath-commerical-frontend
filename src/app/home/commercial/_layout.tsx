@@ -53,19 +53,22 @@ export default function CommercialTabsLayout() {
         headerTitleStyle: { color: palette.text },
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 9 : 12,
+          fontSize: compactTabs ? 10 : 12,
           fontWeight: "700",
           textAlign: "center",
+          lineHeight: compactTabs ? 12 : 14,
           marginStart: 0,
           marginEnd: 0
         },
-        tabBarItemStyle: { flex: 1, minWidth: 0 },
+        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: compactTabs ? 2 : 6 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
               backgroundColor: palette.tabBar,
               borderTopColor: palette.tabBarBorder,
-              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
+              ...(compactTabs
+                ? { height: 74, paddingBottom: 20, paddingHorizontal: 6, paddingTop: 6 }
+                : {})
             }
       }}
     >
