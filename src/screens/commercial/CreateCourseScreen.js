@@ -181,7 +181,7 @@ export default function CreateCourseScreen({
           color: palette.text
         }
       ],
-      uploadButton: [themeStyles.uploadButton, { borderColor: palette.accent }],
+      uploadButton: [styles.uploadButton, { borderColor: palette.accent }],
       uploadButtonText: [styles.uploadButtonText, { color: palette.link }],
       secondaryButton: [styles.secondaryButton, { borderColor: palette.accent }],
       secondaryButtonText: [styles.secondaryButtonText, { color: palette.link }],
@@ -203,11 +203,11 @@ export default function CreateCourseScreen({
       integrationHelpText: [styles.integrationHelpText, { color: palette.textMuted }],
       readyText: [styles.readyText, { color: palette.success }],
       pricingModeButton: [
-        themeStyles.pricingModeButton,
+        styles.pricingModeButton,
         { backgroundColor: palette.surface, borderColor: palette.border }
       ],
       pricingModeButtonActive: [
-        themeStyles.pricingModeButtonActive,
+        styles.pricingModeButtonActive,
         { backgroundColor: palette.accentSoft, borderColor: palette.accent }
       ],
       pricingModeText: [styles.pricingModeText, { color: palette.link }],
