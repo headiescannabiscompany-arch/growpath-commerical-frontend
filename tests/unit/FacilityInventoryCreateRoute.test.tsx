@@ -3,6 +3,8 @@ import { render } from "@testing-library/react-native";
 
 import FacilityCreateInventoryItemRoute from "@/app/home/facility/inventory/new";
 
+let mockCanWriteInventory = true;
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: jest.fn() })
 }));
@@ -37,15 +39,30 @@ jest.mock("@/state/useFacility", () => ({
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { INVENTORY_WRITE: "inventory_write" },
-  useEntitlements: () => ({ can: () => true })
+  useEntitlements: () => ({ can: () => mockCanWriteInventory })
 }));
 
 describe("FacilityCreateInventoryItemRoute", () => {
+  beforeEach(() => {
+    mockCanWriteInventory = true;
+  });
+
   it("uses the shared back control for the canonical nested create route", () => {
     const screen = render(<FacilityCreateInventoryItemRoute />);
 
     expect(screen.getAllByText("Create Inventory Item").length).toBeGreaterThan(0);
     expect(screen.getByText("Shared Back /home/facility/inventory")).toBeTruthy();
     expect(screen.getByLabelText("Inventory item name")).toBeTruthy();
+  });
+
+  it("renders a true read-only handoff without form fields for viewers", () => {
+    mockCanWriteInventory = false;
+
+    const screen = render(<FacilityCreateInventoryItemRoute />);
+
+    expect(screen.getByText("Inventory is read-only")).toBeTruthy();
+    expect(screen.getByLabelText("Return to facility inventory")).toBeTruthy();
+    expect(screen.queryByLabelText("Inventory item name")).toBeNull();
+    expect(screen.queryByLabelText("Create inventory item")).toBeNull();
   });
 });

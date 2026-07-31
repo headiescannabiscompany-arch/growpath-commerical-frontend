@@ -52,6 +52,32 @@ export default function FacilityCreateInventoryItemScreen() {
     }
   };
 
+  if (!canWriteInventory) {
+    return (
+      <ScreenBoundary
+        title="Create Inventory Item"
+        showBack
+        backFallbackHref="/home/facility/inventory"
+      >
+        <View accessibilityRole="alert" style={styles.container}>
+          <Text style={styles.h1}>Inventory is read-only</Text>
+          <Text style={styles.lockedText}>
+            Your facility role or plan does not allow inventory changes. Ask an owner or
+            manager to update inventory access.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Return to facility inventory"
+            onPress={() => router.replace("/home/facility/inventory")}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Return to Inventory</Text>
+          </Pressable>
+        </View>
+      </ScreenBoundary>
+    );
+  }
+
   return (
     <ScreenBoundary
       title="Create Inventory Item"
@@ -60,12 +86,6 @@ export default function FacilityCreateInventoryItemScreen() {
     >
       <View style={styles.container}>
         <Text style={styles.h1}>Create Inventory Item</Text>
-        {!canWriteInventory ? (
-          <Text style={styles.lockedText}>
-            Your facility role or plan does not allow inventory changes. Ask an owner or
-            manager to update inventory access.
-          </Text>
-        ) : null}
         <TextInput
           value={name}
           onChangeText={setName}
