@@ -258,7 +258,11 @@ function ToolCard({
         </>
       ) : null}
       {enabled ? (
-        <Link href={href as Href} style={[styles.link, { color: palette.link }]} asChild>
+        <Link
+          href={href as Href}
+          style={StyleSheet.flatten([styles.link, { color: palette.link }])}
+          asChild
+        >
           <Text>Open</Text>
         </Link>
       ) : (
@@ -404,9 +408,7 @@ export default function ToolsHubScreen() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
-          Start Here
-        </Text>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>Start Here</Text>
         <View style={styles.grid}>
           {primaryTools.map((tool) => (
             <ToolCard
@@ -454,13 +456,13 @@ export default function ToolsHubScreen() {
             asChild
           >
             <Pressable
-              style={[
+              style={StyleSheet.flatten([
                 styles.utilityButton,
                 {
                   backgroundColor: palette.surface,
                   borderColor: palette.border
                 }
-              ]}
+              ])}
             >
               <Text style={[styles.utilityText, { color: palette.link }]}>
                 Saved Runs
@@ -471,9 +473,7 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: palette.accent }]}>
-          Tool Library
-        </Text>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>Tool Library</Text>
       </View>
       {AREA_ORDER.map((area, index) => {
         const areaTools = libraryTools.filter((tool) => tool.area === area);

@@ -49,8 +49,8 @@ const groups: Array<{ title: string; destinations: Destination[] }> = [
       },
       {
         label: "Logs",
-        href: "/home/personal/logs",
-        description: "Review personal journals and event history."
+        href: "/home/personal/grows",
+        description: "Choose a grow to review its journal and event history."
       },
       {
         label: "Tasks",
