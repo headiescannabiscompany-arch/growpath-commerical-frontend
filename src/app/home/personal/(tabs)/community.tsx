@@ -310,7 +310,10 @@ export default function CommunityTab() {
                 <Link href="/forum/new-post" asChild>
                   <Pressable
                     testID="community-new-post"
-                    style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
+                    style={StyleSheet.flatten([
+                      styles.primaryBtn,
+                      { backgroundColor: palette.accent }
+                    ])}
                     accessibilityRole="button"
                     accessibilityLabel="Start a new forum discussion"
                   >
@@ -322,7 +325,7 @@ export default function CommunityTab() {
               ) : null}
               <Link href="/forum" asChild>
                 <Pressable
-                  style={[styles.secondaryBtn, mutedSurface]}
+                  style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
                   accessibilityRole="button"
                   accessibilityLabel="Browse all forum discussions"
                 >
@@ -333,7 +336,7 @@ export default function CommunityTab() {
               </Link>
               <Link href="/communities" asChild>
                 <Pressable
-                  style={[styles.secondaryBtn, mutedSurface]}
+                  style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
                   accessibilityRole="button"
                   accessibilityLabel="Find forum groups"
                 >
@@ -361,7 +364,7 @@ export default function CommunityTab() {
         <View style={styles.discoveryActions}>
           <Link href="/videos?tab=library" asChild>
             <Pressable
-              style={[styles.secondaryBtn, mutedSurface]}
+              style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
               accessibilityRole="button"
               accessibilityLabel="Open video library"
             >
@@ -372,7 +375,7 @@ export default function CommunityTab() {
           </Link>
           <Link href="/videos?tab=discover" asChild>
             <Pressable
-              style={[styles.secondaryBtn, mutedSurface]}
+              style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
               accessibilityRole="button"
               accessibilityLabel="Browse videos"
             >
@@ -393,7 +396,7 @@ export default function CommunityTab() {
         <View style={styles.discoveryActions}>
           <Link href="/lives" asChild>
             <Pressable
-              style={[styles.secondaryBtn, mutedSurface]}
+              style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
               accessibilityRole="button"
               accessibilityLabel="Open lives browser"
             >
@@ -695,7 +698,7 @@ export default function CommunityTab() {
               ].map(([label, href]) => (
                 <Link key={href} href={href as any} asChild>
                   <Pressable
-                    style={[styles.secondaryBtn, mutedSurface]}
+                    style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
                     accessibilityRole="button"
                     accessibilityLabel={label}
                   >
