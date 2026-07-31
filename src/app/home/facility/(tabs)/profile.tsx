@@ -5,6 +5,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View
 } from "react-native";
@@ -21,6 +22,12 @@ import { radius } from "@/theme/theme";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
+import { updateNotificationPreferences } from "@/api/users";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  NOTIFICATION_PREFERENCE_OPTIONS,
+  NotificationPreferenceState
+} from "@/notifications/notificationPreferences";
 
 type AnyRec = Record<string, any>;
 
@@ -114,6 +121,37 @@ export default function FacilityProfileRoute() {
   const [facility, setFacility] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
+    DEFAULT_NOTIFICATION_PREFERENCES
+  );
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [notificationFeedback, setNotificationFeedback] = useState("");
+  const [notificationError, setNotificationError] = useState("");
+
+  useEffect(() => {
+    const storedPrefs =
+      ((auth.user as any)
+        ?.notificationPreferences as Partial<NotificationPreferenceState>) || {};
+    setNotificationPrefs({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      ...storedPrefs
+    });
+  }, [auth.user]);
+
+  const saveNotificationPreferences = useCallback(async () => {
+    setNotificationSaving(true);
+    setNotificationFeedback("");
+    setNotificationError("");
+    try {
+      await updateNotificationPreferences(notificationPrefs);
+      await auth.retryMe();
+      setNotificationFeedback("Notification settings saved.");
+    } catch (saveError: any) {
+      setNotificationError(saveError?.message || "Unable to save notification settings.");
+    } finally {
+      setNotificationSaving(false);
+    }
+  }, [auth, notificationPrefs]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -258,6 +296,50 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
+          <Text style={styles.h1}>Notification settings</Text>
+          <Text style={styles.mutedText}>
+            Choose which inbox items can also reach this device. In-app notifications
+            remain available; push delivery requires a registered device.
+          </Text>
+          {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+            <View key={String(option.key)} style={styles.notificationRow}>
+              <View style={styles.notificationCopy}>
+                <Text style={styles.notificationTitle}>{option.title}</Text>
+                <Text style={styles.notificationDescription}>{option.description}</Text>
+              </View>
+              <Switch
+                accessibilityLabel={option.title}
+                value={Boolean(notificationPrefs[option.key])}
+                onValueChange={(value) =>
+                  setNotificationPrefs((current) => ({
+                    ...current,
+                    [option.key]: value
+                  }))
+                }
+              />
+            </View>
+          ))}
+          <View style={styles.actionRow}>
+            <ProfileAction
+              label="Open inbox"
+              accessibilityLabel="Open notification inbox"
+              onPress={() => router.push("/home/notifications?workspace=facility" as any)}
+            />
+            <ProfileAction
+              label={notificationSaving ? "Saving..." : "Save settings"}
+              accessibilityLabel="Save notification settings"
+              onPress={() => void saveNotificationPreferences()}
+            />
+          </View>
+          {notificationFeedback ? (
+            <Text style={styles.feedback}>{notificationFeedback}</Text>
+          ) : null}
+          {notificationError ? (
+            <Text style={styles.error}>{notificationError}</Text>
+          ) : null}
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.h1}>Account</Text>
 
           {me ? (
@@ -325,6 +407,9 @@ const styles = StyleSheet.create({
 
   loading: { paddingVertical: 18, alignItems: "center" },
   muted: { opacity: 0.7 },
+  mutedText: { color: "#64748B", fontSize: 12, lineHeight: 18, marginTop: 4 },
+  feedback: { color: "#047857", fontSize: 12, fontWeight: "700", marginTop: 8 },
+  error: { color: "#DC2626", fontSize: 12, fontWeight: "700", marginTop: 8 },
 
   card: {
     borderWidth: 1,
@@ -377,6 +462,21 @@ const styles = StyleSheet.create({
     borderColor: "#DC2626"
   },
   dangerActionText: { color: "#991B1B" },
+  notificationRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 8
+  },
+  notificationCopy: { flex: 1, minWidth: 0 },
+  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
+  notificationDescription: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
 
   kvWrap: { marginTop: 8 },
   kv: { marginBottom: 10 },
