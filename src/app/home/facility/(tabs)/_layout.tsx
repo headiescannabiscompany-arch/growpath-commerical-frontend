@@ -55,20 +55,17 @@ export default function FacilityTabsLayout() {
         headerTitleStyle: { color: palette.text },
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 10 : 10,
+          fontSize: compactTabs ? 9 : 10,
           fontWeight: "700",
-          textAlign: "center",
-          lineHeight: compactTabs ? 12 : 13
+          textAlign: "center"
         },
-        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: compactTabs ? 2 : 6 },
+        tabBarItemStyle: { flex: 1, minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
               backgroundColor: palette.tabBar,
               borderTopColor: palette.tabBarBorder,
-              ...(compactTabs
-                ? { height: 74, paddingBottom: 20, paddingHorizontal: 6, paddingTop: 6 }
-                : {})
+              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
             }
       }}
     >
