@@ -55,7 +55,7 @@ describe("PersonalTabsLayout", () => {
     );
 
     const visibleNames = React.Children.toArray(props.children)
-      .filter((child: any) => child.props.options?.tabBarButton == null)
+      .filter((child: any) => child.props.options?.href !== null)
       .map((child: any) => child.props.name);
     expect(visibleNames).toEqual([
       "index",
@@ -65,6 +65,11 @@ describe("PersonalTabsLayout", () => {
       "more",
       "profile"
     ]);
+    for (const child of React.Children.toArray(props.children) as any[]) {
+      if (child.props.options?.href === null) {
+        expect(child.props.options.tabBarButton).toBeUndefined();
+      }
+    }
 
     const fieldStudiesScreen = React.Children.toArray(props.children).find(
       (child: any) => child.props.name === "field-studies/index"
@@ -73,11 +78,13 @@ describe("PersonalTabsLayout", () => {
       (child: any) => child.props.name === "field-studies/[studyId]"
     ) as any;
 
-    expect(fieldStudiesScreen.props.options).toEqual(
-      expect.objectContaining({ href: null, title: "Field Studies" })
-    );
-    expect(fieldStudyDetailScreen.props.options).toEqual(
-      expect.objectContaining({ href: null, title: "Field Study" })
-    );
+    expect(fieldStudiesScreen.props.options).toEqual({
+      href: null,
+      title: "Field Studies"
+    });
+    expect(fieldStudyDetailScreen.props.options).toEqual({
+      href: null,
+      title: "Field Study"
+    });
   });
 });
