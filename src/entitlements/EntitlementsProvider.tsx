@@ -668,10 +668,24 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     }));
   }, []);
 
-  const setPreferredMode = useCallback(async (mode: PreferredMode | null) => {
-    setPreferredModeState(mode);
-    await persistPreferredMode(mode);
-  }, []);
+  const setPreferredMode = useCallback(
+    async (mode: PreferredMode | null) => {
+      setPreferredModeState(mode);
+
+      // Apply the selected workspace from the already-authorized session before
+      // routing. Waiting only for the preference effect lets workspace layouts
+      // evaluate the previous mode and redirect the user back during a switch.
+      if (token && meStatus === "ready") {
+        const ctx = auth.ctx ?? null;
+        const user = auth.user ?? null;
+        lastAppliedRef.current = entitlementApplicationFingerprint(ctx, user, mode);
+        setState((previous) => applyServerCtx(previous, ctx, user, mode));
+      }
+
+      await persistPreferredMode(mode);
+    },
+    [auth.ctx, auth.user, meStatus, token]
+  );
 
   const value = useMemo(
     () => ({ ...state, can, refresh, preferredMode, setPreferredMode }),

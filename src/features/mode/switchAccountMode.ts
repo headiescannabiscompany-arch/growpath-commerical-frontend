@@ -17,6 +17,10 @@ export async function switchAccountMode(nextMode: AccountMode, deps: SwitchModeD
   await deps.setPreferredMode?.(nextMode);
   if (nextMode !== currentMode) setMode(nextMode);
 
+  // Let entitlement and local-mode subscribers commit before a workspace
+  // layout guard evaluates the destination route.
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
   const href =
     nextMode === "facility"
       ? "/home/facility"
