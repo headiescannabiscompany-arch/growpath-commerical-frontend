@@ -106,6 +106,11 @@ export function viewerOwnsCourse(course, user) {
   return Boolean(viewerId && creatorId && viewerId === creatorId);
 }
 
+export function isExplicitQaCourse(course) {
+  const title = String(course?.title || course?.name || "");
+  return /\bqa[\s-]+only\b/i.test(title) || /\btest[\s-]+only\b/i.test(title);
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -175,9 +180,12 @@ export default function CoursesScreen({ navigation } = {}) {
           _viewerOwnsCourse:
             Boolean(course?._viewerOwnsCourse) || viewerOwnsCourse(course, auth.user)
         }));
+        const publicCleanScoped = ownershipScoped.filter(
+          (course) => course?._viewerOwnsCourse || !isExplicitQaCourse(course)
+        );
         const publicationScoped = isSignedIn
-          ? ownershipScoped
-          : ownershipScoped.filter(isPublishedCourse);
+          ? publicCleanScoped
+          : publicCleanScoped.filter(isPublishedCourse);
         const filtered = access.canSeePaidCourses
           ? publicationScoped
           : publicationScoped.filter(

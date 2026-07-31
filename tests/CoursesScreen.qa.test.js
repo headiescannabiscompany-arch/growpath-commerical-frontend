@@ -64,6 +64,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 
 import CoursesScreen, {
   courseInterestTags,
+  isExplicitQaCourse,
   matchesCourseInterests,
   viewerOwnsCourse
 } from "../src/screens/CoursesScreen.js";
@@ -159,6 +160,12 @@ describe("CoursesScreen QA (capability-driven)", () => {
     expect(
       viewerOwnsCourse({ createdBy: { _id: "another-user" } }, { _id: "course-user" })
     ).toBe(false);
+  });
+
+  it("identifies only explicit QA-only course titles for public filtering", () => {
+    expect(isExplicitQaCourse({ title: "QA ONLY — Paid Course Lifecycle" })).toBe(true);
+    expect(isExplicitQaCourse({ title: "Test-only checkout course" })).toBe(true);
+    expect(isExplicitQaCourse({ title: "Soil testing fundamentals" })).toBe(false);
   });
 
   it("shows only free courses if cannot see paid courses", async () => {
