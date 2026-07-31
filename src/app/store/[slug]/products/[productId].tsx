@@ -14,7 +14,10 @@ import { Link, useLocalSearchParams } from "expo-router";
 
 import { checkoutProduct } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
-import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import {
+  recordCommercialAnalyticsEvent,
+  type CommercialAnalyticsEvent
+} from "@/api/commercialAnalytics";
 import { useAuth } from "@/auth/AuthContext";
 import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
@@ -163,7 +166,7 @@ async function openUrl(url: string) {
   await Linking.openURL(url);
 }
 
-function trackCommercialClick(payload: Record<string, any>) {
+function trackCommercialClick(payload: CommercialAnalyticsEvent) {
   void recordCommercialAnalyticsEvent(payload).catch(() => {
     // Click tracking should not block public product navigation.
   });

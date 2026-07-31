@@ -25,7 +25,7 @@ export default function GrowInterestPicker({
   helperText,
   value,
   onChange,
-  enabledTierIds,
+  enabledTierIds = /** @type {string[]} */ ([]),
   tierOptionsOverride,
   collapsible = true,
   defaultExpanded = true,

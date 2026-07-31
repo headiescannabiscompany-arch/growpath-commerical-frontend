@@ -7,7 +7,7 @@ const mockRouter = { push: jest.fn(), replace: jest.fn() };
 const mockClearError = jest.fn();
 const mockHandleApiError = jest.fn();
 const mockEntitlementState = {
-  can: jest.fn(() => true),
+  can: jest.fn((_capability?: string) => true),
   facilityRole: "OWNER"
 };
 let mockFacilityState: any;
@@ -114,7 +114,7 @@ describe("Facility Compliance facility label", () => {
 
   it("keeps SOP run creation hidden for a viewer", async () => {
     mockEntitlementState.can.mockImplementation(
-      (capability: string) => capability === "COMPLIANCE_READ"
+      (capability?: string) => capability === "COMPLIANCE_READ"
     );
     mockEntitlementState.facilityRole = "VIEWER";
     const screen = render(<FacilityComplianceTab />);

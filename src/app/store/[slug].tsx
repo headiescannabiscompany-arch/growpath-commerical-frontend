@@ -13,7 +13,10 @@ import { Link, useLocalSearchParams } from "expo-router";
 
 import { checkoutProduct } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
-import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import {
+  recordCommercialAnalyticsEvent,
+  type CommercialAnalyticsEvent
+} from "@/api/commercialAnalytics";
 import AppPage from "@/components/layout/AppPage";
 import {
   extractPublicCommercialPayload,
@@ -57,7 +60,7 @@ async function openCheckoutUrl(url: string) {
   await Linking.openURL(url);
 }
 
-function trackCommercialClick(payload: Record<string, any>) {
+function trackCommercialClick(payload: CommercialAnalyticsEvent) {
   void recordCommercialAnalyticsEvent(payload).catch(() => {
     // Click tracking should never block public storefront navigation.
   });

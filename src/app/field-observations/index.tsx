@@ -276,9 +276,11 @@ export default function PublicFieldObservationsScreen() {
                       {observationName(observation)}
                     </Text>
                     <Text style={styles.cardMeta}>
-                      {observation.observationContext?.region ||
-                        observation.location?.label ||
-                        "Shared map location"}
+                      {String(
+                        observation.observationContext?.region ||
+                          observation.location?.label ||
+                          "Shared map location"
+                      )}
                     </Text>
                   </Pressable>
                 );

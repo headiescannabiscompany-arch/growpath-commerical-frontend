@@ -99,7 +99,7 @@ export default function CommercialGrowDetailRoute({
     setError(null);
     try {
       const updated = await updateCommercialGrow(growId, {
-        status: status.trim() || "active",
+        status: (status.trim() || "active") as CommercialGrow["status"],
         publicShareStatus:
           (publicShareStatus.trim() as CommercialGrow["publicShareStatus"]) ||
           "evidence_building",

@@ -11,7 +11,10 @@ import {
 } from "react-native";
 
 import { fetchPublicStorefront } from "@/api/storefront";
-import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import {
+  recordCommercialAnalyticsEvent,
+  type CommercialAnalyticsEvent
+} from "@/api/commercialAnalytics";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
@@ -33,7 +36,7 @@ async function openUrl(url: string) {
   await Linking.openURL(url);
 }
 
-function trackCommercialClick(payload: Record<string, any>) {
+function trackCommercialClick(payload: CommercialAnalyticsEvent) {
   void recordCommercialAnalyticsEvent(payload).catch(() => {
     // Click tracking should not block public brand navigation.
   });

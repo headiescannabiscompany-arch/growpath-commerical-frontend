@@ -89,7 +89,7 @@ async function openCheckoutUrl(url) {
   await Linking.openURL(url);
 }
 
-export default function CourseDetailScreen({ route, navigation }) {
+export default function CourseDetailScreen({ route, navigation = null }) {
   const router = useRouter();
   const auth = useAuth();
   const entitlements = useEntitlements();

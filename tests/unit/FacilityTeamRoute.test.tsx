@@ -137,10 +137,10 @@ describe("FacilityTeamTab", () => {
     try {
       screen = render(<FacilityTeamTab />);
 
-      await waitFor(() => expect(screen.getByText("Alex Grower")).toBeTruthy());
+      await waitFor(() => expect(screen?.getByText("Alex Grower")).toBeTruthy());
       mockListTeamMembers.mockResolvedValue([]);
       fireEvent.press(
-        screen.getByLabelText(
+        screen!.getByLabelText(
           "Remove Alex Grower - alex@example.com - staff from facility"
         )
       );
@@ -153,7 +153,7 @@ describe("FacilityTeamTab", () => {
       );
       await waitFor(() =>
         expect(
-          screen.getByText(
+          screen?.getByText(
             "Alex Grower - alex@example.com - staff no longer has access to this facility."
           )
         ).toBeTruthy()

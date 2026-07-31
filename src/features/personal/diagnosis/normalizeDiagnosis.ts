@@ -8,6 +8,7 @@ export type NormalizedDiagnosis = {
   evidence: string[];
   counterEvidence: string[];
   missingData: string[];
+  limitations?: string[];
   actions: string[];
   tags: string[];
   explanation: string;

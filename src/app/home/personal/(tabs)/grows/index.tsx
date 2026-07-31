@@ -200,7 +200,7 @@ export default function PersonalGrowsRoute() {
 
   const activeGrows = useMemo(() => sortedGrows.filter(isActiveGrow), [sortedGrows]);
   const latestGrow = sortedGrows[0];
-  const id = String(latestGrow?.id || latestGrow?._id || "").trim();
+  const id = String(latestGrow?.id || (latestGrow as any)?._id || "").trim();
   const totalPhotos = useMemo(
     () => sortedGrows.reduce((sum, grow) => sum + growPhotoCount(grow), 0),
     [sortedGrows]
@@ -250,27 +250,28 @@ export default function PersonalGrowsRoute() {
         { href: "/home/personal/diagnose", label: "Run Diagnosis" },
         { href: "/home/personal/tasks", label: "Open Tasks" }
       ];
-  const growToolsActions = latestGrow
-    ? [
-        {
-          href: `/home/personal/tools/integrations?growId=${id}`,
-          label: "Integrations"
-        },
-        {
-          href: `/home/personal/tools/pdf-export?growId=${id}`,
-          label: "PDF Export"
-        }
-      ]
-    : [
-        {
-          href: "/home/personal/tools/integrations?growId=",
-          label: "Integrations"
-        },
-        {
-          href: "/home/personal/tools/pdf-export?growId=",
-          label: "PDF Export"
-        }
-      ];
+  const growToolsActions: Array<{ href: string; label: string; primary?: boolean }> =
+    latestGrow
+      ? [
+          {
+            href: `/home/personal/tools/integrations?growId=${id}`,
+            label: "Integrations"
+          },
+          {
+            href: `/home/personal/tools/pdf-export?growId=${id}`,
+            label: "PDF Export"
+          }
+        ]
+      : [
+          {
+            href: "/home/personal/tools/integrations?growId=",
+            label: "Integrations"
+          },
+          {
+            href: "/home/personal/tools/pdf-export?growId=",
+            label: "PDF Export"
+          }
+        ];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -291,8 +292,13 @@ export default function PersonalGrowsRoute() {
             { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
           ]}
         >
-          <Text style={[styles.kicker, { color: palette.accent }]}>Personal grow workspace</Text>
-          <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
+          <Text style={[styles.kicker, { color: palette.accent }]}>
+            Personal grow workspace
+          </Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: palette.text }]}
+          >
             Grows
           </Text>
           <Text style={[styles.subtitle, { color: palette.textMuted }]}>
@@ -525,7 +531,7 @@ export default function PersonalGrowsRoute() {
 
         <View style={styles.growList}>
           {filteredGrows.map((grow) => {
-            const id = String(grow?.id || grow?._id || "").trim();
+            const id = String(grow?.id || (grow as any)?._id || "").trim();
             if (!id) return null;
             const status = growStatus(grow);
             const growChips = [

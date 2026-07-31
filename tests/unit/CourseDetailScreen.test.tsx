@@ -73,7 +73,7 @@ jest.mock("@/api/courses", () => ({
   updateCourse: (...args: any[]) => mockUpdateCourse(...args)
 }));
 
-const freeCourse = {
+const freeCourse: any = {
   id: "course-1",
   title: "Living Soil Course",
   price: 0,
@@ -274,7 +274,7 @@ describe("CourseDetailScreen learner player", () => {
       canSellPaidCourses: true,
       canPublishCourses: true
     });
-    let ownerCourse = {
+    let ownerCourse: any = {
       id: "course-owner",
       title: "Owner Course",
       creator: "learner-1",

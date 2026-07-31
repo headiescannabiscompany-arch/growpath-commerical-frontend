@@ -416,8 +416,8 @@ export default function CommercialHome() {
     };
   }, [ent?.ready, ent.mode]);
 
-  const counts = useMemo(() => {
-    const raw = dashboard?.counts || dashboard?.metrics || {};
+  const counts = useMemo<Record<string, number>>(() => {
+    const raw = (dashboard?.counts || dashboard?.metrics || {}) as Record<string, number>;
     return {
       ...raw,
       storefrontConfigured: dashboard?.storefront?.slug ? 1 : 0

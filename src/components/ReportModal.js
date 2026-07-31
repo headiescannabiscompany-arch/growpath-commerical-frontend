@@ -11,8 +11,8 @@ const ReportModal = ({
   contentId,
   contentTitle,
   targetUrl,
-  parentPostId,
-  token,
+  parentPostId = null,
+  token = null,
   onSuccess
 }) => {
   const [reason, setReason] = useState("");

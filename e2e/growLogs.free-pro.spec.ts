@@ -61,7 +61,7 @@ async function installPersonalAuthMocks(
   let createCount = 0;
   const token = `${user.plan}-playwright-auth-token`;
 
-  await page.addInitScript((authToken) => {
+  await page.addInitScript((authToken: string) => {
     window.localStorage.clear();
     window.localStorage.setItem("auth_token_v1", authToken);
     window.localStorage.setItem("seenOnboardingCarousel", "true");

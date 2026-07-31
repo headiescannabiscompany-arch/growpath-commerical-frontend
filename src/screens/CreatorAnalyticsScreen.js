@@ -4,7 +4,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import { getCreatorCourses, getCourseAnalytics } from "../api/creator.js";
 import { radius } from "../theme/theme.js";
 
-export default function CreatorAnalyticsScreen({ navigation }) {
+export default function CreatorAnalyticsScreen({ navigation = null }) {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [analytics, setAnalytics] = useState(null);

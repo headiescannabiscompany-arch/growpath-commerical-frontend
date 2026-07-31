@@ -74,7 +74,7 @@ function hasStorefrontIdentity(storefront: BusinessStorefront | null) {
 }
 
 function hydrateForm(storefront: BusinessStorefront | null): ProfileForm {
-  if (!hasStorefrontIdentity(storefront)) return EMPTY_FORM;
+  if (!storefront || !hasStorefrontIdentity(storefront)) return EMPTY_FORM;
   const socialLinks = Array.isArray(storefront.socialLinks)
     ? storefront.socialLinks.join(", ")
     : String(storefront.socialLinks || "");
