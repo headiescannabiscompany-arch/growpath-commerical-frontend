@@ -46,17 +46,19 @@ export default function CommercialTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
+        tabBarShowIcon: false,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 8 : 12,
+          fontSize: compactTabs ? 9 : 12,
           fontWeight: "700",
+          textAlign: "center",
           marginStart: 0,
           marginEnd: 0
         },
-        tabBarItemStyle: { minWidth: 0 },
+        tabBarItemStyle: { flex: 1, minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {

@@ -31,11 +31,16 @@ export default function PersonalTabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        tabBarShowIcon: false,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: compactTabs ? 8 : 11, fontWeight: "700" },
-        tabBarItemStyle: { minWidth: 0 },
+        tabBarLabelStyle: {
+          fontSize: compactTabs ? 9 : 11,
+          fontWeight: "700",
+          textAlign: "center"
+        },
+        tabBarItemStyle: { flex: 1, minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" }
           : {

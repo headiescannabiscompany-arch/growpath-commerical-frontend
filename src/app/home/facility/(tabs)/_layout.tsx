@@ -48,12 +48,17 @@ export default function FacilityTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
+        tabBarShowIcon: false,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
         tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: compactTabs ? 8 : 10, fontWeight: "700" },
-        tabBarItemStyle: { minWidth: 0 },
+        tabBarLabelStyle: {
+          fontSize: compactTabs ? 9 : 10,
+          fontWeight: "700",
+          textAlign: "center"
+        },
+        tabBarItemStyle: { flex: 1, minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
