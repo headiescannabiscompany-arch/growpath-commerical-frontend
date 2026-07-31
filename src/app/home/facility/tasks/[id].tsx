@@ -21,6 +21,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { listTeamMembers, type TeamMember } from "@/api/team";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -310,6 +311,7 @@ export default function FacilityTaskDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
   const { rooms } = useFacilityRooms(facilityId);
+  const { palette } = useAppTheme();
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -345,6 +347,7 @@ export default function FacilityTaskDetail() {
   const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
   const canAssign = canWrite && canManageRole(ent?.facilityRole);
   const canDelete = canWrite && canManageRole(ent?.facilityRole);
+  const styles = useMemo(() => buildStyles(palette), [palette]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -529,7 +532,7 @@ export default function FacilityTaskDetail() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}
@@ -589,6 +592,7 @@ export default function FacilityTaskDetail() {
                     }
                     style={styles.input}
                     placeholder="Task title"
+                    placeholderTextColor={palette.textMuted}
                   />
 
                   <Text style={styles.label}>Notes</Text>
@@ -600,6 +604,7 @@ export default function FacilityTaskDetail() {
                     }
                     style={[styles.input, styles.inputMultiline]}
                     placeholder="Task notes"
+                    placeholderTextColor={palette.textMuted}
                     multiline
                   />
 
@@ -804,6 +809,7 @@ export default function FacilityTaskDetail() {
                           }
                           style={styles.input}
                           placeholder="Linked record reference"
+                          placeholderTextColor={palette.textMuted}
                         />
                       </View>
                     ) : null}
@@ -917,91 +923,99 @@ export default function FacilityTaskDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
-  muted: { opacity: 0.7 },
+function buildStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 16, gap: 12, backgroundColor: palette.page },
+    loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    muted: { color: palette.textMuted },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 10
-  },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 10
+    },
 
-  sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
-  taskTitle: { color: "#0f172a", fontSize: 22, fontWeight: "900" },
-  form: { gap: 12 },
-  formGroup: { gap: 8 },
-  label: { fontSize: 12, opacity: 0.7 },
-  summaryLine: { color: "#334155", fontWeight: "700" },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.18)",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "white"
-  },
-  chipSelected: { backgroundColor: "#0f172a", borderColor: "#0f172a" },
-  chipText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
-  chipTextSelected: { color: "white" },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  inputMultiline: { minHeight: 72, textAlignVertical: "top" },
-  statusRow: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  primaryBtn: {
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center"
-  },
-  secondaryBtn: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.18)",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center"
-  },
-  dangerBtn: {
-    borderWidth: 1,
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center"
-  },
-  primaryBtnDisabled: { opacity: 0.6 },
-  primaryBtnText: { color: "white", fontWeight: "800" },
-  secondaryBtnText: { fontWeight: "800" },
-  dangerBtnText: { color: "#B91C1C", fontWeight: "800" },
-  advancedPanel: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 10
-  },
-  helpText: { color: "#475569", fontSize: 12, fontWeight: "700" },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 8
+    },
+    taskTitle: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    form: { gap: 12 },
+    formGroup: { gap: 8 },
+    label: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    summaryLine: { color: palette.textMuted, fontWeight: "700" },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    chipTextSelected: { color: palette.accentText },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    inputMultiline: { minHeight: 72, textAlignVertical: "top" },
+    statusRow: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
+    primaryBtn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      alignItems: "center"
+    },
+    secondaryBtn: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      alignItems: "center"
+    },
+    dangerBtn: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      alignItems: "center"
+    },
+    primaryBtnDisabled: { opacity: 0.6 },
+    primaryBtnText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtnText: { color: palette.text, fontWeight: "800" },
+    dangerBtnText: { color: palette.danger, fontWeight: "800" },
+    advancedPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10
+    },
+    helpText: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
 
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+    empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    feedback: {
+      color: palette.textMuted,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });
+}
