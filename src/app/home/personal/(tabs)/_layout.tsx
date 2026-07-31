@@ -34,8 +34,8 @@ export default function PersonalTabsLayout() {
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
-        tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: compactTabs ? 9 : 11, fontWeight: "700" },
+        tabBarShowLabel: !compactTabs,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
         tabBarItemStyle: { minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" }

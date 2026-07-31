@@ -52,8 +52,8 @@ export default function FacilityTabsLayout() {
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
-        tabBarShowLabel: true,
-        tabBarLabelStyle: { fontSize: compactTabs ? 9 : 10, fontWeight: "700" },
+        tabBarShowLabel: !compactTabs,
+        tabBarLabelStyle: { fontSize: 10, fontWeight: "700" },
         tabBarItemStyle: { minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }

@@ -50,9 +50,9 @@ export default function CommercialTabsLayout() {
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
-        tabBarShowLabel: true,
+        tabBarShowLabel: !compactTabs,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 9 : 12,
+          fontSize: 12,
           fontWeight: "700",
           marginStart: 0,
           marginEnd: 0
