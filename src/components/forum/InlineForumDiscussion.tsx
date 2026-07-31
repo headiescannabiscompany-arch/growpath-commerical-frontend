@@ -137,7 +137,11 @@ export default function InlineForumDiscussion({
             { backgroundColor: palette.surface, borderColor: palette.border }
           ]}
         >
-          <Text accessibilityRole="header" aria-level={3} style={[styles.heading, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={[styles.heading, { color: palette.text }]}
+          >
             Discussion replies
           </Text>
           {loading ? (

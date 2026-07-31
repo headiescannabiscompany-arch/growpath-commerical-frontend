@@ -255,7 +255,9 @@ export default function TokenBalanceWidget({
       </View>
 
       <View style={styles.details}>
-        <Text style={[styles.description, { color: palette.textMuted }]}>{usageCopy}</Text>
+        <Text style={[styles.description, { color: palette.textMuted }]}>
+          {usageCopy}
+        </Text>
         {verifiedPlanCopy ? (
           <Text style={[styles.description, { color: palette.textMuted }]}>
             {verifiedPlanCopy}
@@ -276,7 +278,9 @@ export default function TokenBalanceWidget({
             Checking live AI-credit balance...
           </Text>
         ) : null}
-        <Text style={[styles.description, { color: palette.textMuted }]}>{refillCopy}</Text>
+        <Text style={[styles.description, { color: palette.textMuted }]}>
+          {refillCopy}
+        </Text>
         {allowanceMismatch ? (
           <Text style={[styles.syncWarning, { color: palette.warning }]}>
             {facilityScoped ? "The Facility" : "Your paid or trial plan"} is active, but
@@ -294,7 +298,9 @@ export default function TokenBalanceWidget({
 
       {interactive ? (
         <View style={styles.ctaRow}>
-          <Text style={[styles.ctaText, { color: palette.link }]}>See how AI credits work</Text>
+          <Text style={[styles.ctaText, { color: palette.link }]}>
+            See how AI credits work
+          </Text>
         </View>
       ) : null}
     </Container>
@@ -340,7 +346,7 @@ const styles = StyleSheet.create({
   },
   balance: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "700"
   },
   barContainer: {
     width: 96,

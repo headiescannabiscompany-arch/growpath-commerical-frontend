@@ -384,7 +384,12 @@ export default function ForumPostDetailRoute() {
         }
       >
         {!canView ? (
-          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <Text style={[styles.cardTitle, { color: palette.text }]}>
               Forum unavailable
             </Text>
@@ -394,19 +399,33 @@ export default function ForumPostDetailRoute() {
           </View>
         ) : null}
 
-        {feedback ? <Text style={[styles.feedback, { color: palette.danger }]}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text style={[styles.feedback, { color: palette.danger }]}>{feedback}</Text>
+        ) : null}
 
         {loading ? (
-          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <ActivityIndicator color={palette.accent} />
           </View>
         ) : null}
 
         {!loading && canView ? (
-          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             {post ? (
               <>
-                <Text style={[styles.title, { color: palette.text }]}>{titleOf(post)}</Text>
+                <Text style={[styles.title, { color: palette.text }]}>
+                  {titleOf(post)}
+                </Text>
                 <PersonalFeedPlacement
                   placement="top"
                   routeKey="personal_forum_post_id"
@@ -465,7 +484,10 @@ export default function ForumPostDetailRoute() {
                     onPress={toggleLike}
                     style={[
                       styles.secondaryBtn,
-                      { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                      {
+                        borderColor: palette.accent,
+                        backgroundColor: palette.surfaceMuted
+                      },
                       (!canPost || saving) && styles.disabled
                     ]}
                     accessibilityRole="button"
@@ -482,20 +504,28 @@ export default function ForumPostDetailRoute() {
                         onPress={saveToGrowLog}
                         style={[
                           styles.secondaryBtn,
-                          { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                          {
+                            borderColor: palette.accent,
+                            backgroundColor: palette.surfaceMuted
+                          },
                           (!canPost || saving) && styles.disabled
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel="Save forum post to grow log"
                       >
-                        <Text style={[styles.secondaryText, { color: palette.accent }]}>Save to Log</Text>
+                        <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                          Save to Log
+                        </Text>
                       </Pressable>
                       <Pressable
                         disabled={!canPost || creatingTask}
                         onPress={createFollowUpTask}
                         style={[
                           styles.secondaryBtn,
-                          { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                          {
+                            borderColor: palette.accent,
+                            backgroundColor: palette.surfaceMuted
+                          },
                           (!canPost || creatingTask) && styles.disabled
                         ]}
                         accessibilityRole="button"
@@ -512,15 +542,22 @@ export default function ForumPostDetailRoute() {
                     onPress={reportPost}
                     style={[
                       styles.dangerBtn,
-                      { borderColor: palette.danger, backgroundColor: palette.surfaceMuted },
+                      {
+                        borderColor: palette.danger,
+                        backgroundColor: palette.surfaceMuted
+                      },
                       (!canPost || saving) && styles.disabled
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel="Report forum post"
                   >
-                    <Text style={[styles.dangerText, { color: palette.danger }]}>Report</Text>
+                    <Text style={[styles.dangerText, { color: palette.danger }]}>
+                      Report
+                    </Text>
                   </Pressable>
-                  <Text style={[styles.meta, { color: palette.textMuted }]}>{likes} likes</Text>
+                  <Text style={[styles.meta, { color: palette.textMuted }]}>
+                    {likes} likes
+                  </Text>
                 </View>
               </>
             ) : (
@@ -540,7 +577,12 @@ export default function ForumPostDetailRoute() {
         ) : null}
 
         {canView ? (
-          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <Text style={[styles.cardTitle, { color: palette.text }]}>Comments</Text>
             {canPost ? (
               <View style={styles.commentComposer}>
@@ -567,7 +609,10 @@ export default function ForumPostDetailRoute() {
                   onPress={pickCommentPhotos}
                   style={[
                     styles.secondaryBtn,
-                    { borderColor: palette.accent, backgroundColor: palette.surfaceMuted },
+                    {
+                      borderColor: palette.accent,
+                      backgroundColor: palette.surfaceMuted
+                    },
                     saving && styles.disabled
                   ]}
                   accessibilityRole="button"
@@ -629,10 +674,7 @@ export default function ForumPostDetailRoute() {
             {comments.map((comment) => (
               <View
                 key={String(comment._id || comment.id || bodyOf(comment))}
-                style={[
-                  styles.comment,
-                  { borderTopColor: palette.border }
-                ]}
+                style={[styles.comment, { borderTopColor: palette.border }]}
               >
                 <Text style={[styles.rowTitle, { color: palette.text }]}>
                   {authorName(comment)}

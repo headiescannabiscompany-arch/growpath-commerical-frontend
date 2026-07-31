@@ -189,7 +189,10 @@ export default function ProfileScreen() {
   const cardStyle = { backgroundColor: palette.surface, borderColor: palette.border };
   const textStyle = { color: palette.text };
   const mutedTextStyle = { color: palette.textMuted };
-  const accentButtonStyle = { backgroundColor: palette.accent, borderColor: palette.accent };
+  const accentButtonStyle = {
+    backgroundColor: palette.accent,
+    borderColor: palette.accent
+  };
   const accentTextStyle = { color: palette.accentText };
 
   useEffect(() => {
@@ -419,7 +422,10 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, pageStyle]} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, pageStyle]}
+      contentContainerStyle={styles.content}
+    >
       <Text accessibilityRole="header" style={[styles.title, textStyle]}>
         Profile
       </Text>
@@ -451,7 +457,7 @@ export default function ProfileScreen() {
             setEmailFeedback("");
             setEmailError("");
           }}
-          />
+        />
         {emailFeedback ? <Text style={styles.feedback}>{emailFeedback}</Text> : null}
         {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
         <Pressable
@@ -572,11 +578,11 @@ export default function ProfileScreen() {
         {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
           <View key={String(option.key)} style={styles.notificationRow}>
             <View style={styles.notificationCopy}>
-            <Text style={[styles.notificationTitle, textStyle]}>{option.title}</Text>
-            <Text style={[styles.notificationDescription, mutedTextStyle]}>
-              {option.description}
-            </Text>
-          </View>
+              <Text style={[styles.notificationTitle, textStyle]}>{option.title}</Text>
+              <Text style={[styles.notificationDescription, mutedTextStyle]}>
+                {option.description}
+              </Text>
+            </View>
             <Switch
               accessibilityLabel={option.title}
               value={Boolean(notificationPrefs[option.key])}
@@ -596,7 +602,9 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Open notification inbox"
           >
-            <Text style={[styles.accountActionText, textStyle]}>Open Notification Inbox</Text>
+            <Text style={[styles.accountActionText, textStyle]}>
+              Open Notification Inbox
+            </Text>
           </Pressable>
           <Pressable
             style={[
@@ -638,7 +646,9 @@ export default function ProfileScreen() {
       </View>
 
       <View style={[styles.card, cardStyle]}>
-        <Text style={[styles.rowLabel, mutedTextStyle]}>Cannabis content and parental lock</Text>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>
+          Cannabis content and parental lock
+        </Text>
         <Text style={[styles.mutedText, mutedTextStyle]}>
           Cannabis posts, courses, feed recommendations, and related tools can be hidden
           without affecting fruit, vegetable, flower, tree, or general gardening content.
@@ -672,10 +682,15 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Hide cannabis content"
             disabled={contentControlBusy}
-            style={[styles.planAction, { borderColor: palette.accent, backgroundColor: palette.surface }]}
+            style={[
+              styles.planAction,
+              { borderColor: palette.accent, backgroundColor: palette.surface }
+            ]}
             onPress={() => void saveContentControls({ cannabisVisibility: "hide" })}
           >
-            <Text style={[styles.planActionText, { color: palette.accent }]}>Hide cannabis</Text>
+            <Text style={[styles.planActionText, { color: palette.accent }]}>
+              Hide cannabis
+            </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -688,7 +703,9 @@ export default function ProfileScreen() {
             ]}
             onPress={() => void saveContentControls({ cannabisVisibility: "show" })}
           >
-            <Text style={[styles.planActionText, { color: palette.accent }]}>Show cannabis</Text>
+            <Text style={[styles.planActionText, { color: palette.accent }]}>
+              Show cannabis
+            </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -728,13 +745,17 @@ export default function ProfileScreen() {
           style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/login" as any)}
         >
-          <Text style={[styles.accountActionText, textStyle]}>Sign in to Commercial account</Text>
+          <Text style={[styles.accountActionText, textStyle]}>
+            Sign in to Commercial account
+          </Text>
         </Pressable>
         <Pressable
           style={[styles.accountAction, { backgroundColor: palette.surface }]}
           onPress={() => router.push("/login" as any)}
         >
-          <Text style={[styles.accountActionText, textStyle]}>Sign in to Facility account</Text>
+          <Text style={[styles.accountActionText, textStyle]}>
+            Sign in to Facility account
+          </Text>
         </Pressable>
         <Text style={[styles.mutedText, mutedTextStyle]}>
           Personal, Commercial, and Facility are separate account types.
@@ -753,7 +774,9 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Open grow reports and export"
         >
-          <Text style={[styles.accountActionText, textStyle]}>Open Grow Reports & Export</Text>
+          <Text style={[styles.accountActionText, textStyle]}>
+            Open Grow Reports & Export
+          </Text>
         </Pressable>
       </View>
 

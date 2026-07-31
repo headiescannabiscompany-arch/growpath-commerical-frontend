@@ -381,7 +381,10 @@ export default function FieldObservationGlobe({
             }
           }
         };
-        safeAddControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+        safeAddControl(
+          new maplibregl.NavigationControl({ visualizePitch: true }),
+          "top-right"
+        );
         safeAddControl(new maplibregl.GlobeControl(), "top-right");
         safeAddControl(new maplibregl.FullscreenControl(), "top-right");
         if (typeof navigator !== "undefined" && navigator.geolocation) {
