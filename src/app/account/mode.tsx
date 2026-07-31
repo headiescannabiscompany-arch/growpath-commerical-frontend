@@ -16,7 +16,9 @@ function AccountModePageContent() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Account mode</Text>
-          <Text style={styles.title}>Choose Workspace</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Choose Workspace
+          </Text>
           <Text style={styles.subtitle}>
             Pick whether you are acting as yourself, a commercial brand, or a facility
             team before creating records or posting.

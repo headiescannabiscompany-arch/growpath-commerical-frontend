@@ -62,7 +62,13 @@ export default function FacilityCreateInventoryItemScreen() {
         backFallbackHref="/home/facility/inventory"
       >
         <View accessibilityRole="alert" style={styles.container}>
-          <Text style={[styles.h1, { color: palette.text }]}>Inventory is read-only</Text>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.h1, { color: palette.text }]}
+          >
+            Inventory is read-only
+          </Text>
           <Text style={[styles.lockedText, { color: palette.warning }]}>
             Your facility role or plan does not allow inventory changes. Ask an owner or
             manager to update inventory access.
