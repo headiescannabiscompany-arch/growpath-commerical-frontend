@@ -451,12 +451,19 @@ export default function PersonalHomeTab() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Discovery globe</Text>
-        <AppCard style={styles.globeCard}>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>
+          Discovery globe
+        </Text>
+        <AppCard
+          style={[
+            styles.globeCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <Text style={[styles.cardTitle, { color: palette.text }]}>
             Shared plant findings
           </Text>
-          <Text style={styles.cardDescription}>
+          <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
             Opt-in public observations appear on the globe. Personal details stay excluded
             from this shared view.
           </Text>

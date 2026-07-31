@@ -13,7 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CalendarItem = {
@@ -421,6 +421,7 @@ function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
 
 export default function HomeScheduleRoute() {
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
@@ -761,146 +762,147 @@ export default function HomeScheduleRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: "#F8FAFC", flex: 1 },
-  content: { gap: 12, padding: 20, paddingBottom: 44 },
-  backRow: { marginBottom: 4 },
-  backButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  backButtonText: { color: "#0F172A", fontWeight: "900" },
-  headerRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "space-between"
-  },
-  headerText: { flex: 1, minWidth: 240 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 26, fontWeight: "900" },
-  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metricCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
-  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
-  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
-  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
-  refreshButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  refreshText: { color: "#FFFFFF", fontWeight: "900" },
-  filterPanel: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  filterLabel: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
-  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  dateNavigator: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  dateInput: {
-    flexGrow: 1,
-    minWidth: 220
-  },
-  filterChip: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  filterChipActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  filterText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  filterTextActive: { color: "#FFFFFF" },
-  feedback: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#B91C1C",
-    fontWeight: "800",
-    padding: 10
-  },
-  section: { gap: 8 },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  countPill: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 4
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 14
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  cardTitle: { color: "#0F172A", flex: 1, fontSize: 16, fontWeight: "900" },
-  typePill: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: 999,
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    textTransform: "uppercase"
-  },
-  meta: { color: "#475569", lineHeight: 19 },
-  linkButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  linkButtonText: { color: "#FFFFFF", fontWeight: "900" },
-  empty: { color: "#64748B", fontWeight: "700" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { backgroundColor: palette.page, flex: 1 },
+    content: { gap: 12, padding: 20, paddingBottom: 44 },
+    backRow: { marginBottom: 4 },
+    backButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    backButtonText: { color: palette.text, fontWeight: "900" },
+    headerRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      justifyContent: "space-between"
+    },
+    headerText: { flex: 1, minWidth: 240 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 26, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metricCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    redMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.danger },
+    greenMetric: { backgroundColor: palette.accentSoft, borderColor: palette.success },
+    blueMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.info },
+    slateMetric: { backgroundColor: palette.surface, borderColor: palette.border },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "900" },
+    refreshButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    refreshText: { color: palette.accentText, fontWeight: "900" },
+    filterPanel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    filterLabel: { color: palette.text, fontSize: 12, fontWeight: "900" },
+    filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    dateNavigator: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    dateInput: {
+      flexGrow: 1,
+      minWidth: 220
+    },
+    filterChip: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    filterChipActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    filterText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    filterTextActive: { color: palette.accentText },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.danger,
+      fontWeight: "800",
+      padding: 10
+    },
+    section: { gap: 8 },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    countPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textMuted,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 4
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 14
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    cardTitle: { color: palette.text, flex: 1, fontSize: 16, fontWeight: "900" },
+    typePill: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "900",
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      textTransform: "uppercase"
+    },
+    meta: { color: palette.textMuted, lineHeight: 19 },
+    linkButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    linkButtonText: { color: palette.accentText, fontWeight: "900" },
+    empty: { color: palette.textMuted, fontWeight: "700" }
+  });

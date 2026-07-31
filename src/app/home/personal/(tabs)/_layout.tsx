@@ -32,6 +32,7 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        sceneStyle: { backgroundColor: palette.page },
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,

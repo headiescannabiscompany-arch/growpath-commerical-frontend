@@ -23,7 +23,7 @@ import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
@@ -363,6 +363,7 @@ function scheduleSummary(task: PersonalTask) {
 
 export default function PersonalTaskCenterRoute() {
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
 
@@ -821,145 +822,146 @@ export default function PersonalTaskCenterRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { gap: 12, padding: 20, paddingBottom: 40 },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
-  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metricCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
-  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
-  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
-  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
-  form: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 12
-  },
-  formTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  label: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  flexInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flex: 1,
-    minWidth: 190,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: { minHeight: 76, textAlignVertical: "top" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  chipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  chipTextOn: { color: "#FFFFFF" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    minHeight: 42,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  feedback: { color: "#166534", fontWeight: "900" },
-  section: { gap: 8 },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  countPill: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 9,
-    paddingVertical: 4
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 12
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  taskTitle: { color: "#0F172A", flex: 1, fontSize: 15, fontWeight: "900" },
-  sourcePill: {
-    backgroundColor: "#ECFDF5",
-    borderRadius: 999,
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  empty: { color: "#94A3B8", fontSize: 12, fontWeight: "700" },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  secondaryButton: {
-    alignSelf: "flex-start",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "900" },
-  ghostButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#F1F5F9",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  ghostButtonText: { color: "#334155", fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { gap: 12, padding: 20, paddingBottom: 40 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metricCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    redMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.danger },
+    greenMetric: { backgroundColor: palette.accentSoft, borderColor: palette.success },
+    blueMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.info },
+    slateMetric: { backgroundColor: palette.surface, borderColor: palette.border },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "900" },
+    form: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 12
+    },
+    formTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    label: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    flexInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flex: 1,
+      minWidth: 190,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: { minHeight: 76, textAlignVertical: "top" },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    chipTextOn: { color: palette.accentText },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      minHeight: 42,
+      justifyContent: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    feedback: { color: palette.success, fontWeight: "900" },
+    section: { gap: 8 },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    sectionTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    countPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 9,
+      paddingVertical: 4
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 12
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    taskTitle: { color: palette.text, flex: 1, fontSize: 15, fontWeight: "900" },
+    sourcePill: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    },
+    meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700", lineHeight: 18 },
+    empty: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    secondaryButton: {
+      alignSelf: "flex-start",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "900" },
+    ghostButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    ghostButtonText: { color: palette.text, fontWeight: "900" }
+  });
