@@ -49,7 +49,6 @@ export default function FacilityTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarShowIcon: false,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },

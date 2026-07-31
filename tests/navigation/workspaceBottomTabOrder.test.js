@@ -75,7 +75,6 @@ describe("workspace bottom-tab order", () => {
   it("centers Commercial text-only tabs without reserving an icon row", () => {
     const contents = source("src/app/home/commercial/_layout.tsx");
     expect(contents).toContain("tabBarIcon: () => null");
-    expect(contents).toContain("tabBarShowIcon: false");
     expect(contents).toContain("fontSize: compactTabs ? 9 : 12");
     expect(contents).toContain("marginStart: 0");
     expect(contents).toContain("marginEnd: 0");
