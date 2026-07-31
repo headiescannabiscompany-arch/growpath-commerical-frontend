@@ -14,6 +14,7 @@ import {
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
@@ -41,6 +42,8 @@ function timelineCalendarMetadata(sourceStage: string) {
 }
 
 export default function TimelinePlannerScreen() {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -241,27 +244,30 @@ export default function TimelinePlannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800" },
-  label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  milestones: { gap: 8 },
-  milestone: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  milestoneDate: { color: "#166534", fontWeight: "800" },
-  milestoneTitle: { color: "#0F172A", fontWeight: "800", marginTop: 3 },
-  milestoneDetail: { color: "#64748B", marginTop: 2, lineHeight: 18 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 40, backgroundColor: palette.page, gap: 8 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.accent, fontWeight: "800" },
+    label: { color: palette.text, fontWeight: "800", marginTop: 4 },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10
+    },
+    milestones: { gap: 8 },
+    milestone: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    milestoneDate: { color: palette.accent, fontWeight: "800" },
+    milestoneTitle: { color: palette.text, fontWeight: "800", marginTop: 3 },
+    milestoneDetail: { color: palette.textMuted, marginTop: 2, lineHeight: 18 }
+  });

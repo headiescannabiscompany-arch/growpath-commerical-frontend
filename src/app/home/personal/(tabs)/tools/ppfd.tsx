@@ -14,6 +14,7 @@ import {
   saveToolRunAndOpenJournal
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -43,6 +44,8 @@ function ppfdTaskMetadata(hasWarnings: boolean) {
 }
 
 export default function PpfdToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -283,17 +286,19 @@ export default function PpfdToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 30, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { color: "#64748B", marginBottom: 6 },
-  context: { color: "#166534", fontWeight: "700", marginBottom: 4 },
-  label: { fontWeight: "700", marginTop: 6 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#FFFFFF"
-  }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 30, backgroundColor: palette.page, gap: 8 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { color: palette.textMuted, marginBottom: 6 },
+    context: { color: palette.accent, fontWeight: "700", marginBottom: 4 },
+    label: { color: palette.text, fontWeight: "700", marginTop: 6 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      color: palette.text
+    }
+  });

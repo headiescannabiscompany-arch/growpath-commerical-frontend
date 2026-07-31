@@ -13,6 +13,7 @@ import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
@@ -22,6 +23,8 @@ function coerceParam(value?: string | string[]) {
 }
 
 export default function PdfExportScreen() {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const entitlements = useEntitlements();
@@ -165,19 +168,20 @@ export default function PdfExportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800" },
-  preview: { gap: 8 },
-  previewRow: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  previewTitle: { color: "#0F172A", fontWeight: "800" },
-  previewDetail: { color: "#64748B", marginTop: 3, lineHeight: 18 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 40, backgroundColor: palette.page, gap: 8 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.accent, fontWeight: "800" },
+    preview: { gap: 8 },
+    previewRow: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    previewTitle: { color: palette.text, fontWeight: "800" },
+    previewDetail: { color: palette.textMuted, marginTop: 3, lineHeight: 18 }
+  });

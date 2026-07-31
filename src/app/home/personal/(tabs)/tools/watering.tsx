@@ -17,6 +17,7 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
 
@@ -56,6 +57,8 @@ function wateringTaskMetadata() {
 }
 
 export default function WateringToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -491,36 +494,38 @@ export default function WateringToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 36, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 4 },
-  context: { color: "#166534", fontWeight: "700" },
-  label: { fontWeight: "700", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#FFFFFF"
-  },
-  aiCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  aiTitle: { color: "#14532D", fontWeight: "800" },
-  aiText: { color: "#475569", lineHeight: 19 },
-  aiButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  aiButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.45 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 36, backgroundColor: palette.page, gap: 8 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { fontSize: 13, color: palette.textMuted, marginBottom: 4 },
+    context: { color: palette.accent, fontWeight: "700" },
+    label: { color: palette.text, fontWeight: "700", marginTop: 4 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    aiCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    aiTitle: { color: palette.text, fontWeight: "800" },
+    aiText: { color: palette.textMuted, lineHeight: 19 },
+    aiButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    aiButtonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.45 }
+  });
