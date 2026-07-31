@@ -675,7 +675,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       // Apply the selected workspace from the already-authorized session before
       // routing. Waiting only for the preference effect lets workspace layouts
       // evaluate the previous mode and redirect the user back during a switch.
-      if (token && meStatus === "ready") {
+      if (token && (auth.ctx || auth.user)) {
         const ctx = auth.ctx ?? null;
         const user = auth.user ?? null;
         lastAppliedRef.current = entitlementApplicationFingerprint(ctx, user, mode);
@@ -684,7 +684,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
       await persistPreferredMode(mode);
     },
-    [auth.ctx, auth.user, meStatus, token]
+    [auth.ctx, auth.user, token]
   );
 
   const value = useMemo(
