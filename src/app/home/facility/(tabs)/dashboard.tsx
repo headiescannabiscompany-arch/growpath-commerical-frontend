@@ -439,15 +439,29 @@ export default function FacilityDashboardTab() {
             </Text>
           </View>
           <View style={styles.heroStats}>
-            <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>
+            <View
+              style={[
+                styles.pulse,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.pulseValue, { color: palette.text }]}>
                 {counts.verifications ? "Review" : "Clear"}
               </Text>
-              <Text style={styles.pulseLabel}>Compliance</Text>
+              <Text style={[styles.pulseLabel, { color: palette.textMuted }]}>
+                Compliance
+              </Text>
             </View>
-            <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>{String(counts.tasks)}</Text>
-              <Text style={styles.pulseLabel}>Tasks</Text>
+            <View
+              style={[
+                styles.pulse,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.pulseValue, { color: palette.text }]}>
+                {String(counts.tasks)}
+              </Text>
+              <Text style={[styles.pulseLabel, { color: palette.textMuted }]}>Tasks</Text>
             </View>
           </View>
         </View>
@@ -576,7 +590,11 @@ export default function FacilityDashboardTab() {
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
-                  style={({ pressed }) => [styles.statusRow, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.statusRow,
+                    { borderTopColor: palette.border },
+                    pressed && styles.pressed
+                  ]}
                 >
                   <View style={[styles.statusDot, dotToneStyle(row.tone)]} />
                   <View style={styles.statusText}>
@@ -607,7 +625,11 @@ export default function FacilityDashboardTab() {
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
-                  style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.actionRow,
+                    { borderTopColor: palette.border },
+                    pressed && styles.pressed
+                  ]}
                 >
                   <View>
                     <Text style={[styles.rowTitle, { color: palette.text }]}>

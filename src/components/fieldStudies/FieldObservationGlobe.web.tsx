@@ -68,6 +68,7 @@ function loadMapLibreModule() {
 }
 
 import type { FieldObservation } from "@/api/fieldStudies";
+import { useAppTheme } from "@/theme/appTheme";
 
 export type FieldObservationViewport = {
   west: number;
@@ -169,6 +170,8 @@ export default function FieldObservationGlobe({
   onSelectObservations,
   onViewportChange
 }: Props) {
+  const { palette } = useAppTheme();
+  const { accent, info, link, surface, warning } = palette;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const observationsRef = useRef(observations);
@@ -302,14 +305,14 @@ export default function FieldObservationGlobe({
               "circle-color": [
                 "step",
                 ["get", "point_count"],
-                "#65A30D",
+                link,
                 10,
-                "#15803D",
+                info,
                 50,
-                "#14532D"
+                accent
               ],
               "circle-radius": ["step", ["get", "point_count"], 18, 10, 23, 50, 29],
-              "circle-stroke-color": "#FFFFFF",
+              "circle-stroke-color": surface,
               "circle-stroke-width": 3
             }
           });
@@ -322,11 +325,11 @@ export default function FieldObservationGlobe({
               "circle-color": [
                 "case",
                 ["==", ["get", "precision"], "exact"],
-                "#15803D",
-                "#D97706"
+                accent,
+                warning
               ],
               "circle-radius": 9,
-              "circle-stroke-color": "#FFFFFF",
+              "circle-stroke-color": surface,
               "circle-stroke-width": 3
             }
           });
@@ -381,7 +384,10 @@ export default function FieldObservationGlobe({
             }
           }
         };
-        safeAddControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+        safeAddControl(
+          new maplibregl.NavigationControl({ visualizePitch: true }),
+          "top-right"
+        );
         safeAddControl(new maplibregl.GlobeControl(), "top-right");
         safeAddControl(new maplibregl.FullscreenControl(), "top-right");
         if (typeof navigator !== "undefined" && navigator.geolocation) {
@@ -409,7 +415,7 @@ export default function FieldObservationGlobe({
       map?.remove();
       if (mapRef.current === map) mapRef.current = null;
     };
-  }, [centerOnUser]);
+  }, [accent, centerOnUser, info, link, surface, warning]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -452,7 +458,7 @@ export default function FieldObservationGlobe({
           width: 100%;
         }
         .growpath-field-globe {
-          background: #dbeafe;
+          background: ${palette.surfaceMuted};
           border-radius: 16px;
           height: min(64vh, 620px);
           min-height: 420px;
@@ -465,9 +471,9 @@ export default function FieldObservationGlobe({
         }
         .growpath-field-globe-status,
         .growpath-field-globe-error {
-          background: rgba(255, 255, 255, 0.94);
+          background: ${palette.surface};
           border-radius: 10px;
-          color: #334155;
+          color: ${palette.textMuted};
           left: 50%;
           padding: 10px 14px;
           position: absolute;
@@ -476,14 +482,14 @@ export default function FieldObservationGlobe({
           z-index: 4;
         }
         .growpath-field-globe-error {
-          color: #991b1b;
+          color: ${palette.danger};
         }
         .growpath-field-globe-location {
           align-items: center;
-          background: rgba(255, 255, 255, 0.95);
+          background: ${palette.surface};
           border-radius: 10px;
           bottom: 10px;
-          box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+          box-shadow: 0 1px 6px ${palette.shadow};
           display: flex;
           gap: 9px;
           left: 10px;
@@ -493,10 +499,10 @@ export default function FieldObservationGlobe({
           z-index: 4;
         }
         .growpath-field-globe-location button {
-          background: #166534;
+          background: ${palette.accent};
           border: 0;
           border-radius: 8px;
-          color: #fff;
+          color: ${palette.accentText};
           cursor: pointer;
           font: inherit;
           font-weight: 800;
@@ -509,7 +515,7 @@ export default function FieldObservationGlobe({
           opacity: 0.55;
         }
         .growpath-field-globe-location span {
-          color: #334155;
+          color: ${palette.textMuted};
           font-size: 12px;
           line-height: 16px;
         }

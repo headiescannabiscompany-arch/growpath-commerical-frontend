@@ -459,7 +459,7 @@ export default function CommunityTab() {
                       style={[
                         styles.avatar,
                         {
-                          backgroundColor: palette.accentSoft,
+                          backgroundColor: palette.surfaceMuted,
                           borderColor: palette.border
                         }
                       ]}
@@ -514,9 +514,9 @@ export default function CommunityTab() {
                           style={[
                             styles.tag,
                             {
-                              backgroundColor: palette.accentSoft,
+                              backgroundColor: palette.surfaceMuted,
                               borderColor: palette.border,
-                              color: palette.accent
+                              color: palette.textMuted
                             }
                           ]}
                         >
@@ -574,7 +574,10 @@ export default function CommunityTab() {
                 const joined = Boolean(guild.joined || guild.isMember);
                 const name = guild.name || "Forum group";
                 return (
-                  <View key={rowId(guild) || guild.name} style={styles.row}>
+                  <View
+                    key={rowId(guild) || guild.name}
+                    style={[styles.row, { borderTopColor: palette.border }]}
+                  >
                     <Text style={[styles.rowTitle, { color: palette.text }]}>{name}</Text>
                     <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
                       {guild.description || "No description"} | {guild.memberCount || 0}{" "}
@@ -647,7 +650,10 @@ export default function CommunityTab() {
                 </Pressable>
               </Link>
               {notifications.slice(0, 4).map((notification) => (
-                <View key={rowId(notification) || notification.title} style={styles.row}>
+                <View
+                  key={rowId(notification) || notification.title}
+                  style={[styles.row, { borderTopColor: palette.border }]}
+                >
                   <Text style={[styles.rowTitle, { color: palette.text }]}>
                     {notification.title || "Notification"}
                   </Text>

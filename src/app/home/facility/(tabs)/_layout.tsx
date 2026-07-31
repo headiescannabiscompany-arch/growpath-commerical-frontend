@@ -53,13 +53,16 @@ export default function FacilityTabsLayout() {
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
+        tabBarActiveTintColor: palette.tabActive,
+        tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 9 : 10,
+          fontSize: compactTabs ? 8 : 10,
           fontWeight: "700",
+          lineHeight: compactTabs ? 10 : 12,
           textAlign: "center"
         },
-        tabBarItemStyle: { flex: 1, minWidth: 0 },
+        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
@@ -82,101 +85,121 @@ export default function FacilityTabsLayout() {
         name="compliance"
         options={{ title: "Compliance", tabBarLabel: "Compliance" }}
       />
-      <Tabs.Screen name="logs" options={{ title: "Logs", tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="logs"
+        options={{ title: "Logs", href: null, tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="audit-logs"
-        options={{ title: "Audit", tabBarButton: () => null }}
+        options={{ title: "Audit", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="inventory"
-        options={{ title: "Inventory", tabBarButton: () => null }}
+        options={{ title: "Inventory", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="transfers"
-        options={{ title: "Sales", tabBarButton: () => null }}
+        options={{ title: "Sales", href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen name="team" options={{ title: "Team", tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="team"
+        options={{ title: "Team", href: null, tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="reports"
-        options={{ title: "Reports", tabBarButton: () => null }}
+        options={{ title: "Reports", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Analytics", tabBarButton: () => null }}
+        options={{ title: "Analytics", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="integrations"
-        options={{ title: "Integrations", tabBarButton: () => null }}
+        options={{ title: "Integrations", href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen name="ai-tools" options={{ href: compactTabs ? null : undefined }} />
+      <Tabs.Screen
+        name="ai-tools"
+        options={{
+          title: "AI Tools",
+          tabBarLabel: "AI",
+          href: compactTabs ? null : undefined
+        }}
+      />
       <Tabs.Screen
         name="ai-ask"
-        options={{ title: "AI", tabBarLabel: "AI", tabBarButton: () => null }}
+        options={{ title: "AI", tabBarLabel: "AI", href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen name="more" options={{ title: "More" }} />
+      <Tabs.Screen
+        name="more"
+        options={{ title: "More", href: null, tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
       <Tabs.Screen
         name="ai-diagnosis-photo"
-        options={{ title: "Trichome Analysis", tabBarButton: () => null }}
+        options={{ title: "Trichome Analysis", href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="ai-template"
+        options={{ href: null, tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="ai-validation"
-        options={{ title: "AI QA", tabBarButton: () => null }}
+        options={{ title: "AI QA", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
-        options={{ title: "Create Inventory Item", tabBarButton: () => null }}
+        options={{ title: "Create Inventory Item", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="InventoryItemDetailScreen"
-        options={{ title: "Inventory Item", tabBarButton: () => null }}
+        options={{ title: "Inventory Item", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/environment"
-        options={{ title: "Environment Review", tabBarButton: () => null }}
+        options={{ title: "Environment Review", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/pulse"
-        options={{ title: "Connect Pulse", tabBarButton: () => null }}
+        options={{ title: "Connect Pulse", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/history-import"
-        options={{ title: "Import Grow History", tabBarButton: () => null }}
+        options={{ title: "Import Grow History", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{
           title: "Soil & Nutrient Mix Builders",
+          href: null,
           tabBarButton: () => null
         }}
       />
       <Tabs.Screen
         name="tools/dry-amendment-mix"
-        options={{ title: "Dry Amendment Mix", tabBarButton: () => null }}
+        options={{ title: "Dry Amendment Mix", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/ingredient-library"
-        options={{ title: "Ingredients", tabBarButton: () => null }}
+        options={{ title: "Ingredients", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/npk"
-        options={{ title: "Nutrient Mix Builder", tabBarButton: () => null }}
+        options={{ title: "Nutrient Mix Builder", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/soil-builder"
-        options={{ title: "Soil Mix Builder", tabBarButton: () => null }}
+        options={{ title: "Soil Mix Builder", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/feeding-schedule"
-        options={{ title: "Feeding Schedule", tabBarButton: () => null }}
+        options={{ title: "Feeding Schedule", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"
-        options={{ title: "Harvest Readiness", tabBarButton: () => null }}
+        options={{ title: "Harvest Readiness", href: null, tabBarButton: () => null }}
       />
     </Tabs>
   );

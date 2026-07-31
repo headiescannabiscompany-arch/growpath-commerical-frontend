@@ -3,6 +3,7 @@ import * as ExpoRouter from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 export type ContextualWorkflowKey =
   | "auto-grow-calendar"
@@ -100,11 +101,19 @@ export default function ContextualWorkflowLinks({
   ...context
 }: Props) {
   const router = useContextualRouter();
+  const { palette } = useAppTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {helper ? <Text style={styles.helper}>{helper}</Text> : null}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ]}
+    >
+      <Text style={[styles.title, { color: palette.text }]}>{title}</Text>
+      {helper ? (
+        <Text style={[styles.helper, { color: palette.textMuted }]}>{helper}</Text>
+      ) : null}
       <View style={styles.row}>
         {workflows.map((workflow) => {
           const definition = WORKFLOWS[workflow];
@@ -116,10 +125,17 @@ export default function ContextualWorkflowLinks({
               onPress={() =>
                 router.push?.(contextualWorkflowHref(workflow, context) as any)
               }
-              style={StyleSheet.flatten(styles.action)}
+              style={[
+                styles.action,
+                { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }
+              ]}
             >
-              <Text style={styles.actionTitle}>{definition.label}</Text>
-              <Text style={styles.actionDescription}>{definition.description}</Text>
+              <Text style={[styles.actionTitle, { color: palette.accent }]}>
+                {definition.label}
+              </Text>
+              <Text style={[styles.actionDescription, { color: palette.textMuted }]}>
+                {definition.description}
+              </Text>
             </Pressable>
           );
         })}
@@ -130,29 +146,24 @@ export default function ContextualWorkflowLinks({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
     borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     marginTop: 12,
     padding: 12
   },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  helper: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
+  title: { fontSize: 16, fontWeight: "900" },
+  helper: { fontSize: 12, fontWeight: "700", lineHeight: 18 },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
     borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 180,
     paddingHorizontal: 11,
     paddingVertical: 9
   },
-  actionTitle: { color: "#166534", fontSize: 13, fontWeight: "900" },
+  actionTitle: { fontSize: 13, fontWeight: "900" },
   actionDescription: {
-    color: "#64748B",
     fontSize: 11,
     fontWeight: "700",
     marginTop: 3

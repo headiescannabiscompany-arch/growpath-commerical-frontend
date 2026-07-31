@@ -36,6 +36,7 @@ import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function rowId(row: any) {
@@ -398,6 +399,51 @@ export default function FacilityRoomsTab() {
   const roomImportPreview = useMemo(
     () => buildRoomImportPreview(importDeviceText),
     [importDeviceText]
+  );
+
+  const { palette } = useAppTheme();
+  const themed = useMemo(
+    () => ({
+      page: { backgroundColor: palette.page },
+      feedback: {
+        backgroundColor: palette.surfaceMuted,
+        borderColor: palette.border,
+        color: palette.textMuted
+      },
+      h1: { color: palette.text },
+      muted: { color: palette.textMuted },
+      card: { backgroundColor: palette.surface, borderColor: palette.border },
+      cardTitle: { color: palette.text },
+      sectionTitle: { color: palette.text },
+      input: {
+        borderColor: palette.border,
+        backgroundColor: palette.surface,
+        color: palette.text
+      },
+      inputPlaceholder: palette.textMuted,
+      primaryBtn: { backgroundColor: palette.accent },
+      primaryText: { color: palette.accentText },
+      dangerBtn: { borderColor: palette.danger },
+      dangerText: { color: palette.danger },
+      pill: { borderColor: palette.border, backgroundColor: palette.surface },
+      pillSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+      pillText: { color: palette.text },
+      pillTextSelected: { color: palette.accentText },
+      aiPanel: { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+      detailTitle: { color: palette.text },
+      row: { borderTopColor: palette.borderSoft },
+      openWorkspace: { color: palette.accent },
+      orderButton: { borderColor: palette.border, backgroundColor: palette.surfaceMuted },
+      orderButtonText: { color: palette.text },
+      rowTitle: { color: palette.text },
+      rowMeta: { color: palette.textMuted },
+      summaryCard: { borderColor: palette.border, backgroundColor: palette.surfaceMuted },
+      summaryValue: { color: palette.text },
+      summaryLabel: { color: palette.textMuted },
+      statusActive: { color: palette.warning, backgroundColor: palette.surfaceMuted },
+      statusComplete: { color: palette.success, backgroundColor: palette.surfaceMuted }
+    }),
+    [palette]
   );
 
   useEffect(() => {
@@ -805,7 +851,7 @@ export default function FacilityRoomsTab() {
       backFallbackHref="/home/facility/rooms"
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[styles.container, themed.page]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -814,12 +860,14 @@ export default function FacilityRoomsTab() {
         }
       >
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text style={[styles.feedback, themed.feedback]}>{feedback}</Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Facility rooms &amp; workspaces</Text>
-            <Text style={styles.muted}>
+            <Text style={[styles.h1, themed.h1]}>Facility rooms &amp; workspaces</Text>
+            <Text style={[styles.muted, themed.muted]}>
               {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
             </Text>
           </View>
@@ -834,9 +882,11 @@ export default function FacilityRoomsTab() {
           prompt="Review facility rooms, equipment, and environment readings for risks and next actions."
         />
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Arrange room workspaces</Text>
-          <Text style={styles.muted}>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.cardTitle, themed.cardTitle]}>
+            Arrange room workspaces
+          </Text>
+          <Text style={[styles.muted, themed.muted]}>
             Put rooms in the order your team uses them. The saved order is shared across
             GrowPathAI modes. Open a room to review its grow records; use Room Workspace
             below for tracking, equipment, and batch cycles.
@@ -851,7 +901,7 @@ export default function FacilityRoomsTab() {
                 (item) => String(item.roomId ?? "") === id
               );
               return (
-                <View key={id || room.name} style={styles.row}>
+                <View key={id || room.name} style={[styles.row, themed.row]}>
                   <Pressable
                     onPress={() => {
                       setActiveRoomId(id);
@@ -864,8 +914,10 @@ export default function FacilityRoomsTab() {
                     accessibilityLabel={`Open grows for ${room.name || "room"}`}
                     style={styles.roomWorkspace}
                   >
-                    <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
-                    <Text style={styles.rowMeta}>
+                    <Text style={[styles.rowTitle, themed.rowTitle]}>
+                      {room.name || "Room"}
+                    </Text>
+                    <Text style={[styles.rowMeta, themed.rowMeta]}>
                       {[
                         room.roomType || "room",
                         room.stage || "no active stage",
@@ -873,7 +925,9 @@ export default function FacilityRoomsTab() {
                         `${linkedEquipment} connected devices`
                       ].join(" | ")}
                     </Text>
-                    <Text style={styles.openWorkspace}>Open grows {">"}</Text>
+                    <Text style={[styles.openWorkspace, themed.openWorkspace]}>
+                      Open grows {">"}
+                    </Text>
                   </Pressable>
                   {canEditRooms && rooms.length > 1 ? (
                     <View style={styles.orderControls}>
@@ -884,10 +938,13 @@ export default function FacilityRoomsTab() {
                         accessibilityLabel={`Move ${room.name || "room"} up`}
                         style={[
                           styles.orderButton,
+                          themed.orderButton,
                           (saving || roomIndex === 0) && styles.disabled
                         ]}
                       >
-                        <Text style={styles.orderButtonText}>Move up</Text>
+                        <Text style={[styles.orderButtonText, themed.orderButtonText]}>
+                          Move up
+                        </Text>
                       </Pressable>
                       <Pressable
                         onPress={() => moveRoom(roomIndex, 1)}
@@ -896,10 +953,13 @@ export default function FacilityRoomsTab() {
                         accessibilityLabel={`Move ${room.name || "room"} down`}
                         style={[
                           styles.orderButton,
+                          themed.orderButton,
                           (saving || roomIndex === rooms.length - 1) && styles.disabled
                         ]}
                       >
-                        <Text style={styles.orderButtonText}>Move down</Text>
+                        <Text style={[styles.orderButtonText, themed.orderButtonText]}>
+                          Move down
+                        </Text>
                       </Pressable>
                     </View>
                   ) : null}
@@ -907,7 +967,7 @@ export default function FacilityRoomsTab() {
               );
             })
           ) : (
-            <Text style={styles.muted}>
+            <Text style={[styles.muted, themed.muted]}>
               No rooms were returned for this facility. Refresh or verify the selected
               facility and integration mapping.
             </Text>
@@ -915,9 +975,11 @@ export default function FacilityRoomsTab() {
         </View>
 
         {canEditRooms && !showRoomImport ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Connect or import room data</Text>
-            <Text style={styles.muted}>
+          <View style={[styles.card, themed.card]}>
+            <Text style={[styles.cardTitle, themed.cardTitle]}>
+              Connect or import room data
+            </Text>
+            <Text style={[styles.muted, themed.muted]}>
               Connect Pulse, request TrolMaster access, or import controller history from
               CSV/PDF in Integrations. Discovered rooms return here for review and
               mapping.
@@ -926,50 +988,67 @@ export default function FacilityRoomsTab() {
               accessibilityRole="button"
               accessibilityLabel="Open facility integrations for room data"
               onPress={() => router.push("/home/facility/integrations")}
-              style={styles.primaryBtn}
+              style={[styles.primaryBtn, themed.primaryBtn]}
             >
-              <Text style={styles.primaryText}>Open connections and history import</Text>
+              <Text style={[styles.primaryText, themed.primaryText]}>
+                Open connections and history import
+              </Text>
             </Pressable>
           </View>
         ) : null}
 
         {canEditRooms && showRoomImport ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Import controller rooms</Text>
-            <Text style={styles.muted}>
+          <View style={[styles.card, themed.card]}>
+            <Text style={[styles.cardTitle, themed.cardTitle]}>
+              Import controller rooms
+            </Text>
+            <Text style={[styles.muted, themed.muted]}>
               These device names were discovered by an integration. Review GrowPathAI’s
               proposed room mapping before creating anything.
             </Text>
             <TextInput
               value={importProvider}
               onChangeText={setImportProvider}
-              style={styles.input}
+              style={[styles.input, themed.input]}
               accessibilityLabel="Facility import provider"
               placeholder="Provider, e.g. TrolMaster, Pulse, Growlink"
+              placeholderTextColor={themed.inputPlaceholder}
             />
             <TextInput
               value={importDeviceText}
               onChangeText={setImportDeviceText}
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, themed.input, styles.textArea]}
               accessibilityLabel="Facility import device list"
               multiline
               placeholder={"Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH"}
+              placeholderTextColor={themed.inputPlaceholder}
             />
             {roomImportPreview.length ? (
               <View style={styles.importPreviewList}>
                 {roomImportPreview.map((room) => (
-                  <View key={room.name} style={styles.importPreviewRow}>
-                    <Text style={styles.rowTitle}>{room.name}</Text>
-                    <Text style={styles.rowMeta}>
+                  <View
+                    key={room.name}
+                    style={[
+                      styles.importPreviewRow,
+                      {
+                        backgroundColor: palette.surfaceMuted,
+                        borderColor: palette.border
+                      }
+                    ]}
+                  >
+                    <Text style={[styles.rowTitle, themed.rowTitle]}>{room.name}</Text>
+                    <Text style={[styles.rowMeta, themed.rowMeta]}>
                       {room.roomType} | {room.devices.length} device
                       {room.devices.length === 1 ? "" : "s"}
                     </Text>
                     {room.metrics.length ? (
-                      <Text style={styles.rowMeta}>
+                      <Text style={[styles.rowMeta, themed.rowMeta]}>
                         Metrics: {room.metrics.join(", ")}
                       </Text>
                     ) : (
-                      <Text style={styles.rowMeta}>Metrics need manual mapping</Text>
+                      <Text style={[styles.rowMeta, themed.rowMeta]}>
+                        Metrics need manual mapping
+                      </Text>
                     )}
                   </View>
                 ))}
@@ -982,10 +1061,11 @@ export default function FacilityRoomsTab() {
               accessibilityLabel="Create imported facility rooms"
               style={[
                 styles.primaryBtn,
+                themed.primaryBtn,
                 (saving || !canEditRooms || !roomImportPreview.length) && styles.disabled
               ]}
             >
-              <Text style={styles.primaryText}>
+              <Text style={[styles.primaryText, themed.primaryText]}>
                 {saving ? "Creating..." : "Create previewed rooms"}
               </Text>
             </Pressable>
@@ -993,21 +1073,25 @@ export default function FacilityRoomsTab() {
               accessibilityRole="button"
               accessibilityLabel="Close controller room import"
               onPress={() => setShowRoomImport(false)}
-              style={styles.pill}
+              style={[styles.pill, themed.pill]}
             >
-              <Text style={styles.pillText}>Close import</Text>
+              <Text style={[styles.pillText, themed.pillText]}>Close import</Text>
             </Pressable>
           </View>
         ) : null}
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>New Room</Text>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.cardTitle, themed.cardTitle]}>New Room</Text>
           {!canEditRooms ? (
-            <Text style={styles.muted}>{roomAccess.hiddenRoomReason}</Text>
+            <Text style={[styles.muted, themed.muted]}>
+              {roomAccess.hiddenRoomReason}
+            </Text>
           ) : (
             <View style={styles.form}>
-              <Text style={styles.sectionTitle}>Ask AI to help describe this space</Text>
-              <Text style={styles.muted}>
+              <Text style={[styles.sectionTitle, themed.sectionTitle]}>
+                Ask AI to help describe this space
+              </Text>
+              <Text style={[styles.muted, themed.muted]}>
                 Tell us what you know, such as “4 × 8 indoor tent,” “outdoor raised flower
                 bed,” “greenhouse,” or “tissue-culture room.” AI asks for missing facts
                 and labels calculations or assumptions before anything is applied.
@@ -1015,10 +1099,11 @@ export default function FacilityRoomsTab() {
               <TextInput
                 value={roomDescription}
                 onChangeText={setRoomDescription}
-                style={[styles.input, styles.textArea]}
+                style={[styles.input, themed.input, styles.textArea]}
                 accessibilityLabel="Describe new room for AI assistance"
                 multiline
                 placeholder="Describe the space, dimensions, crop purpose, known temperature/RH, equipment, and location if outdoor."
+                placeholderTextColor={themed.inputPlaceholder}
               />
               <Pressable
                 onPress={getRoomFormHelp}
@@ -1027,10 +1112,11 @@ export default function FacilityRoomsTab() {
                 accessibilityLabel="Ask AI to help fill out new room"
                 style={[
                   styles.primaryBtn,
+                  themed.primaryBtn,
                   (assistantBusy || !roomDescription.trim()) && styles.disabled
                 ]}
               >
-                <Text style={styles.primaryText}>
+                <Text style={[styles.primaryText, themed.primaryText]}>
                   {assistantBusy ? "Reviewing..." : "Ask AI to help fill this out"}
                 </Text>
               </Pressable>
@@ -1038,11 +1124,11 @@ export default function FacilityRoomsTab() {
                 <View style={styles.importPreviewList}>
                   {assistantResult.questions.length ? (
                     <View>
-                      <Text style={styles.sectionTitle}>
+                      <Text style={[styles.sectionTitle, themed.sectionTitle]}>
                         Questions before we infer more
                       </Text>
                       {assistantResult.questions.map((question) => (
-                        <Text key={question} style={styles.rowMeta}>
+                        <Text key={question} style={[styles.rowMeta, themed.rowMeta]}>
                           • {question}
                         </Text>
                       ))}
@@ -1050,9 +1136,14 @@ export default function FacilityRoomsTab() {
                   ) : null}
                   {assistantResult.suggestions.length ? (
                     <View>
-                      <Text style={styles.sectionTitle}>Reviewable suggestions</Text>
+                      <Text style={[styles.sectionTitle, themed.sectionTitle]}>
+                        Reviewable suggestions
+                      </Text>
                       {assistantResult.suggestions.map((suggestion) => (
-                        <Text key={suggestion.field} style={styles.rowMeta}>
+                        <Text
+                          key={suggestion.field}
+                          style={[styles.rowMeta, themed.rowMeta]}
+                        >
                           {suggestion.field}: {String(suggestion.value)} ·{" "}
                           {suggestion.source}
                           {suggestion.source === "inferred" ? " · review required" : ""}
@@ -1062,9 +1153,11 @@ export default function FacilityRoomsTab() {
                         onPress={applyRoomSuggestions}
                         accessibilityRole="button"
                         accessibilityLabel="Apply reviewed AI room suggestions"
-                        style={styles.pill}
+                        style={[styles.pill, themed.pill]}
                       >
-                        <Text style={styles.pillText}>Apply reviewed suggestions</Text>
+                        <Text style={[styles.pillText, themed.pillText]}>
+                          Apply reviewed suggestions
+                        </Text>
                       </Pressable>
                     </View>
                   ) : null}
@@ -1073,24 +1166,27 @@ export default function FacilityRoomsTab() {
               <TextInput
                 value={roomName}
                 onChangeText={setRoomName}
-                style={styles.input}
+                style={[styles.input, themed.input]}
                 accessibilityLabel="New room name"
                 placeholder="Room name"
+                placeholderTextColor={themed.inputPlaceholder}
               />
               <TextInput
                 value={roomZoneName}
                 onChangeText={setRoomZoneName}
-                style={styles.input}
+                style={[styles.input, themed.input]}
                 accessibilityLabel="New room zone or area"
                 placeholder="Zone or area, optional"
+                placeholderTextColor={themed.inputPlaceholder}
               />
               {(roomType === "outdoor bed" || roomType === "greenhouse") && (
                 <TextInput
                   value={roomLocation}
                   onChangeText={setRoomLocation}
-                  style={styles.input}
+                  style={[styles.input, themed.input]}
                   accessibilityLabel="New room city or region"
                   placeholder="City, region, or postal code for weather context"
+                  placeholderTextColor={themed.inputPlaceholder}
                 />
               )}
               <View style={styles.pillRow}>
@@ -1114,9 +1210,11 @@ export default function FacilityRoomsTab() {
                 ))}
               </View>
               {roomType === "seedling" ? (
-                <View style={styles.aiPanel}>
-                  <Text style={styles.sectionTitle}>Seedling placement</Text>
-                  <Text style={styles.rowMeta}>
+                <View style={[styles.aiPanel, themed.aiPanel]}>
+                  <Text style={[styles.sectionTitle, themed.sectionTitle]}>
+                    Seedling placement
+                  </Text>
+                  <Text style={[styles.rowMeta, themed.rowMeta]}>
                     Use a dedicated seedling room, or track a seedling rack/zone inside a
                     veg room. This is a layout choice; GrowPath does not force either one.
                   </Text>
@@ -1233,7 +1331,7 @@ export default function FacilityRoomsTab() {
                   (saving || !roomName.trim()) && styles.disabled
                 ]}
               >
-                <Text style={styles.primaryText}>
+                <Text style={[styles.primaryText, themed.primaryText]}>
                   {saving ? "Saving..." : "Create Room"}
                 </Text>
               </Pressable>
@@ -1241,8 +1339,8 @@ export default function FacilityRoomsTab() {
           )}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Room Workspace</Text>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.cardTitle, themed.cardTitle]}>Room Workspace</Text>
           {rooms.length ? (
             <View style={styles.pillRow}>
               {rooms.map((room) => {
@@ -1264,13 +1362,15 @@ export default function FacilityRoomsTab() {
               })}
             </View>
           ) : (
-            <Text style={styles.muted}>No rooms yet.</Text>
+            <Text style={[styles.muted, themed.muted]}>No rooms yet.</Text>
           )}
 
           {activeRoom ? (
             <View style={styles.detailBlock}>
-              <Text style={styles.detailTitle}>{activeRoom.name}</Text>
-              <Text style={styles.muted}>
+              <Text style={[styles.detailTitle, themed.detailTitle]}>
+                {activeRoom.name}
+              </Text>
+              <Text style={[styles.muted, themed.muted]}>
                 Type: {activeRoom.roomType || "n/a"} | Tracking:{" "}
                 {activeRoom.trackingMode || "batch"}
                 {activeRoom.zoneName ? ` | Zone: ${activeRoom.zoneName}` : ""}
@@ -1309,7 +1409,7 @@ export default function FacilityRoomsTab() {
                   accessibilityLabel="Delete Room"
                   style={[styles.dangerBtn, saving && styles.disabled]}
                 >
-                  <Text style={styles.dangerText}>Delete Room</Text>
+                  <Text style={[styles.dangerText, themed.dangerText]}>Delete Room</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -1318,23 +1418,25 @@ export default function FacilityRoomsTab() {
 
         {activeRoom ? (
           <>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Equipment</Text>
+            <View style={[styles.card, themed.card]}>
+              <Text style={[styles.cardTitle, themed.cardTitle]}>Equipment</Text>
               {canManageEquipmentCycles ? (
                 <View style={styles.form}>
                   <TextInput
                     value={equipmentName}
                     onChangeText={setEquipmentName}
-                    style={styles.input}
+                    style={[styles.input, themed.input]}
                     accessibilityLabel="Equipment name"
                     placeholder="Equipment name"
+                    placeholderTextColor={themed.inputPlaceholder}
                   />
                   <TextInput
                     value={equipmentType}
                     onChangeText={setEquipmentType}
-                    style={styles.input}
+                    style={[styles.input, themed.input]}
                     accessibilityLabel="Equipment type"
                     placeholder="Equipment type"
+                    placeholderTextColor={themed.inputPlaceholder}
                   />
                   <Pressable
                     onPress={addEquipment}
@@ -1346,15 +1448,19 @@ export default function FacilityRoomsTab() {
                       (saving || !equipmentName.trim()) && styles.disabled
                     ]}
                   >
-                    <Text style={styles.primaryText}>Add Equipment</Text>
+                    <Text style={[styles.primaryText, themed.primaryText]}>
+                      Add Equipment
+                    </Text>
                   </Pressable>
                 </View>
               ) : null}
               {roomEquipment.length ? (
                 roomEquipment.map((item) => (
-                  <View key={rowId(item) || item.name} style={styles.row}>
-                    <Text style={styles.rowTitle}>{item.name || "Equipment"}</Text>
-                    <Text style={styles.rowMeta}>
+                  <View key={rowId(item) || item.name} style={[styles.row, themed.row]}>
+                    <Text style={[styles.rowTitle, themed.rowTitle]}>
+                      {item.name || "Equipment"}
+                    </Text>
+                    <Text style={[styles.rowMeta, themed.rowMeta]}>
                       {[
                         item.type || "type n/a",
                         item.status || "status n/a",
@@ -1369,24 +1475,38 @@ export default function FacilityRoomsTab() {
                   </View>
                 ))
               ) : (
-                <Text style={styles.muted}>No equipment linked to this room.</Text>
+                <Text style={[styles.muted, themed.muted]}>
+                  No equipment linked to this room.
+                </Text>
               )}
             </View>
 
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Batch Cycles</Text>
-              <View style={styles.summaryCard}>
+            <View style={[styles.card, themed.card]}>
+              <Text style={[styles.cardTitle, themed.cardTitle]}>Batch Cycles</Text>
+              <View style={[styles.summaryCard, themed.summaryCard]}>
                 <View>
-                  <Text style={styles.summaryValue}>{activeCycles}</Text>
-                  <Text style={styles.summaryLabel}>active cycles</Text>
+                  <Text style={[styles.summaryValue, themed.summaryValue]}>
+                    {activeCycles}
+                  </Text>
+                  <Text style={[styles.summaryLabel, themed.summaryLabel]}>
+                    active cycles
+                  </Text>
                 </View>
                 <View>
-                  <Text style={styles.summaryValue}>{completedCycles}</Text>
-                  <Text style={styles.summaryLabel}>complete cycles</Text>
+                  <Text style={[styles.summaryValue, themed.summaryValue]}>
+                    {completedCycles}
+                  </Text>
+                  <Text style={[styles.summaryLabel, themed.summaryLabel]}>
+                    complete cycles
+                  </Text>
                 </View>
                 <View>
-                  <Text style={styles.summaryValue}>{estimatedPlants}</Text>
-                  <Text style={styles.summaryLabel}>estimated plants</Text>
+                  <Text style={[styles.summaryValue, themed.summaryValue]}>
+                    {estimatedPlants}
+                  </Text>
+                  <Text style={[styles.summaryLabel, themed.summaryLabel]}>
+                    estimated plants
+                  </Text>
                 </View>
               </View>
               {canManageEquipmentCycles ? (
@@ -1394,16 +1514,18 @@ export default function FacilityRoomsTab() {
                   <TextInput
                     value={cycleName}
                     onChangeText={setCycleName}
-                    style={styles.input}
+                    style={[styles.input, themed.input]}
                     accessibilityLabel="Batch cycle name"
                     placeholder="Cycle name"
+                    placeholderTextColor={themed.inputPlaceholder}
                   />
                   <TextInput
                     value={cycleStage}
                     onChangeText={setCycleStage}
-                    style={styles.input}
+                    style={[styles.input, themed.input]}
                     accessibilityLabel="Batch cycle stage"
                     placeholder="Stage"
+                    placeholderTextColor={themed.inputPlaceholder}
                   />
                   <View style={styles.pillRow}>
                     {CYCLE_STAGES.map((stage) => (
@@ -1451,10 +1573,11 @@ export default function FacilityRoomsTab() {
                   <TextInput
                     value={estimatedPlantCount}
                     onChangeText={setEstimatedPlantCount}
-                    style={styles.input}
+                    style={[styles.input, themed.input]}
                     accessibilityLabel="Batch cycle estimated plant count"
                     placeholder="Estimated plant count"
                     keyboardType="numeric"
+                    placeholderTextColor={themed.inputPlaceholder}
                   />
                   <Pressable
                     onPress={addCycle}
@@ -1466,7 +1589,9 @@ export default function FacilityRoomsTab() {
                       (saving || !cycleName.trim()) && styles.disabled
                     ]}
                   >
-                    <Text style={styles.primaryText}>Create Batch Cycle</Text>
+                    <Text style={[styles.primaryText, themed.primaryText]}>
+                      Create Batch Cycle
+                    </Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -1474,9 +1599,11 @@ export default function FacilityRoomsTab() {
                 roomCycles.map((cycle) => {
                   const id = rowId(cycle);
                   return (
-                    <View key={id || cycle.name} style={styles.row}>
-                      <Text style={styles.rowTitle}>{cycle.name || "Batch cycle"}</Text>
-                      <Text style={styles.rowMeta}>
+                    <View key={id || cycle.name} style={[styles.row, themed.row]}>
+                      <Text style={[styles.rowTitle, themed.rowTitle]}>
+                        {cycle.name || "Batch cycle"}
+                      </Text>
+                      <Text style={[styles.rowMeta, themed.rowMeta]}>
                         {cycle.stage || "stage n/a"} | {cycle.status || "status n/a"} |{" "}
                         {cycle.estimatedPlantCount ?? 0} plants
                       </Text>
@@ -1494,7 +1621,7 @@ export default function FacilityRoomsTab() {
                             : "completion evidence"}
                         </Text>
                         {cycle.startedAt ? (
-                          <Text style={styles.rowMeta}>
+                          <Text style={[styles.rowMeta, themed.rowMeta]}>
                             Started {String(cycle.startedAt).slice(0, 10)}
                           </Text>
                         ) : null}
@@ -1507,14 +1634,18 @@ export default function FacilityRoomsTab() {
                           accessibilityLabel={`Delete batch cycle ${cycle.name || id}`}
                           style={styles.inlineDanger}
                         >
-                          <Text style={styles.dangerText}>Delete</Text>
+                          <Text style={[styles.dangerText, themed.dangerText]}>
+                            Delete
+                          </Text>
                         </Pressable>
                       ) : null}
                     </View>
                   );
                 })
               ) : (
-                <Text style={styles.muted}>No batch cycles linked to this room.</Text>
+                <Text style={[styles.muted, themed.muted]}>
+                  No batch cycles linked to this room.
+                </Text>
               )}
             </View>
           </>

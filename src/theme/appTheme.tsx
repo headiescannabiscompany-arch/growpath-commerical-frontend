@@ -9,8 +9,17 @@ import React, {
 } from "react";
 import { Appearance, type ColorSchemeName } from "react-native";
 
+import {
+  requestCurrentCoordinates,
+  type PublicCoordinates
+} from "@/utils/locationSearch";
+
 export type ThemeMode = "auto" | "day" | "night";
 export type ResolvedThemeMode = "day" | "night";
+export type ThemeAutoStrategy = "device" | "location";
+export type ThemeLocationPreference = PublicCoordinates & {
+  updatedAt: string;
+};
 
 export type ThemePalette = {
   mode: ThemeMode;
@@ -49,10 +58,16 @@ type ThemeContextValue = {
   palette: ThemePalette;
   hydrated: boolean;
   systemScheme: ResolvedThemeMode;
+  autoUsesLocation: boolean;
+  themeLocation: ThemeLocationPreference | null;
   setThemeMode: (mode: ThemeMode) => void;
+  enableLocationAuto: () => Promise<void>;
+  disableLocationAuto: () => Promise<void>;
 };
 
 const STORAGE_KEY = "gp.theme.mode";
+const AUTO_STRATEGY_STORAGE_KEY = "gp.theme.auto.strategy";
+const AUTO_LOCATION_STORAGE_KEY = "gp.theme.auto.location";
 
 const DAY_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
   page: "#F1F7F2",
@@ -118,20 +133,149 @@ function normalizeSystemScheme(
   return scheme === "dark" || scheme === "night" ? "night" : "day";
 }
 
+function toRadians(value: number) {
+  return (value * Math.PI) / 180;
+}
+
+function toDegrees(value: number) {
+  return (value * 180) / Math.PI;
+}
+
+function normalizeAngle(value: number) {
+  const remainder = value % 360;
+  return remainder < 0 ? remainder + 360 : remainder;
+}
+
+function dayOfYear(date: Date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const current = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  return Math.floor((current.getTime() - start.getTime()) / 86400000);
+}
+
+function computeSolarTimes(date: Date, latitude: number, longitude: number) {
+  const lngHour = longitude / 15;
+  const n = dayOfYear(date);
+  const timezoneOffsetHours = -date.getTimezoneOffset() / 60;
+
+  const computeEvent = (event: "sunrise" | "sunset") => {
+    const t = n + ((event === "sunrise" ? 6 : 18) - lngHour) / 24;
+    const meanAnomaly = 0.9856 * t - 3.289;
+    let trueLongitude =
+      meanAnomaly +
+      1.916 * Math.sin(toRadians(meanAnomaly)) +
+      0.02 * Math.sin(toRadians(2 * meanAnomaly)) +
+      282.634;
+    trueLongitude = normalizeAngle(trueLongitude);
+
+    let rightAscension = toDegrees(
+      Math.atan(0.91764 * Math.tan(toRadians(trueLongitude)))
+    );
+    rightAscension = normalizeAngle(rightAscension);
+    const lQuadrant = Math.floor(trueLongitude / 90) * 90;
+    const raQuadrant = Math.floor(rightAscension / 90) * 90;
+    rightAscension = (rightAscension + (lQuadrant - raQuadrant)) / 15;
+
+    const sinDeclination = 0.39782 * Math.sin(toRadians(trueLongitude));
+    const cosDeclination = Math.cos(Math.asin(sinDeclination));
+    const cosHourAngle =
+      (Math.cos(toRadians(90.833)) - sinDeclination * Math.sin(toRadians(latitude))) /
+      (cosDeclination * Math.cos(toRadians(latitude)));
+
+    if (cosHourAngle > 1) {
+      return { state: "night" as const, minutes: null };
+    }
+    if (cosHourAngle < -1) {
+      return { state: "day" as const, minutes: null };
+    }
+
+    const hourAngle =
+      event === "sunrise"
+        ? 360 - toDegrees(Math.acos(cosHourAngle))
+        : toDegrees(Math.acos(cosHourAngle));
+    const localMeanTime = hourAngle / 15 + rightAscension - 0.06571 * t - 6.622;
+    const universalTime = localMeanTime - lngHour;
+    const localTimeHours = (universalTime + timezoneOffsetHours + 24) % 24;
+    return {
+      state: null as "day" | "night" | null,
+      minutes: Math.round(localTimeHours * 60)
+    };
+  };
+
+  return {
+    sunrise: computeEvent("sunrise"),
+    sunset: computeEvent("sunset")
+  };
+}
+
+function resolveLocationThemeMode(
+  location: ThemeLocationPreference,
+  nowMs: number
+): ResolvedThemeMode {
+  const now = new Date(nowMs);
+  const { sunrise, sunset } = computeSolarTimes(
+    now,
+    location.latitude,
+    location.longitude
+  );
+  if (sunrise.state === "night" || sunset.state === "night") return "night";
+  if (sunrise.state === "day" || sunset.state === "day") return "day";
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const sunriseMinutes = sunrise.minutes ?? 360;
+  const sunsetMinutes = sunset.minutes ?? 1080;
+  return currentMinutes >= sunriseMinutes && currentMinutes < sunsetMinutes
+    ? "day"
+    : "night";
+}
+
+function parseStoredLocation(raw: string | null): ThemeLocationPreference | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    const latitude = Number(parsed?.latitude);
+    const longitude = Number(parsed?.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+    return {
+      latitude,
+      longitude,
+      updatedAt:
+        typeof parsed?.updatedAt === "string" && parsed.updatedAt
+          ? parsed.updatedAt
+          : new Date().toISOString()
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function resolveThemeMode(
   mode: ThemeMode,
-  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined
+  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined,
+  autoStrategy: ThemeAutoStrategy = "device",
+  location: ThemeLocationPreference | null = null,
+  nowMs = Date.now()
 ): ResolvedThemeMode {
   if (mode === "day") return "day";
   if (mode === "night") return "night";
+  if (autoStrategy === "location" && location) {
+    return resolveLocationThemeMode(location, nowMs);
+  }
   return normalizeSystemScheme(systemScheme);
 }
 
 export function getThemePalette(
   mode: ThemeMode,
-  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined
+  systemScheme: ColorSchemeName | ResolvedThemeMode | null | undefined,
+  autoStrategy: ThemeAutoStrategy = "device",
+  location: ThemeLocationPreference | null = null,
+  nowMs = Date.now()
 ): ThemePalette {
-  const resolvedMode = resolveThemeMode(mode, systemScheme);
+  const resolvedMode = resolveThemeMode(
+    mode,
+    systemScheme,
+    autoStrategy,
+    location,
+    nowMs
+  );
   const base = resolvedMode === "night" ? NIGHT_PALETTE : DAY_PALETTE;
   return {
     mode,
@@ -147,28 +291,45 @@ const DEFAULT_THEME_VALUE: ThemeContextValue = {
   palette: DEFAULT_THEME_PALETTE,
   hydrated: false,
   systemScheme: normalizeSystemScheme(Appearance.getColorScheme()),
-  setThemeMode: () => {}
+  autoUsesLocation: false,
+  themeLocation: null,
+  setThemeMode: () => {},
+  enableLocationAuto: async () => {},
+  disableLocationAuto: async () => {}
 };
 
 const ThemeContext = createContext<ThemeContextValue>(DEFAULT_THEME_VALUE);
 
 export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("auto");
+  const [autoStrategy, setAutoStrategy] = useState<ThemeAutoStrategy>("device");
+  const [themeLocation, setThemeLocation] = useState<ThemeLocationPreference | null>(
+    null
+  );
   const [systemScheme, setSystemScheme] = useState<ResolvedThemeMode>(
     normalizeSystemScheme(Appearance.getColorScheme())
   );
   const [hydrated, setHydrated] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
     let alive = true;
 
     void (async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        const [storedMode, storedStrategy, storedLocation] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(AUTO_STRATEGY_STORAGE_KEY),
+          AsyncStorage.getItem(AUTO_LOCATION_STORAGE_KEY)
+        ]);
         if (!alive) return;
-        if (stored === "auto" || stored === "day" || stored === "night") {
-          setMode(stored);
+        if (storedMode === "auto" || storedMode === "day" || storedMode === "night") {
+          setMode(storedMode);
         }
+        if (storedStrategy === "device" || storedStrategy === "location") {
+          setAutoStrategy(storedStrategy);
+        }
+        setThemeLocation(parseStoredLocation(storedLocation));
       } finally {
         if (alive) setHydrated(true);
       }
@@ -186,17 +347,54 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    void AsyncStorage.setItem(STORAGE_KEY, mode);
-  }, [mode, hydrated]);
+    void Promise.all([
+      AsyncStorage.setItem(STORAGE_KEY, mode),
+      AsyncStorage.setItem(AUTO_STRATEGY_STORAGE_KEY, autoStrategy),
+      themeLocation
+        ? AsyncStorage.setItem(AUTO_LOCATION_STORAGE_KEY, JSON.stringify(themeLocation))
+        : AsyncStorage.removeItem(AUTO_LOCATION_STORAGE_KEY)
+    ]);
+  }, [mode, autoStrategy, themeLocation, hydrated]);
+
+  useEffect(() => {
+    if (mode !== "auto" || autoStrategy !== "location" || !themeLocation) return;
+    const interval = setInterval(() => {
+      setNowMs(Date.now());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [mode, autoStrategy, themeLocation]);
 
   const setThemeMode = useCallback((next: ThemeMode) => {
     setMode(next);
   }, []);
 
-  const resolvedMode = resolveThemeMode(mode, systemScheme);
+  const enableLocationAuto = useCallback(async () => {
+    const coordinates = await requestCurrentCoordinates();
+    const nextLocation: ThemeLocationPreference = {
+      ...coordinates,
+      updatedAt: new Date().toISOString()
+    };
+    setMode("auto");
+    setAutoStrategy("location");
+    setThemeLocation(nextLocation);
+  }, []);
+
+  const disableLocationAuto = useCallback(async () => {
+    setMode("auto");
+    setAutoStrategy("device");
+    setThemeLocation(null);
+  }, []);
+
+  const resolvedMode = resolveThemeMode(
+    mode,
+    systemScheme,
+    autoStrategy,
+    themeLocation,
+    nowMs
+  );
   const palette = useMemo(
-    () => getThemePalette(mode, systemScheme),
-    [mode, systemScheme]
+    () => getThemePalette(mode, systemScheme, autoStrategy, themeLocation, nowMs),
+    [mode, systemScheme, autoStrategy, themeLocation, nowMs]
   );
 
   const value = useMemo<ThemeContextValue>(
@@ -206,9 +404,24 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
       palette,
       hydrated,
       systemScheme,
-      setThemeMode
+      autoUsesLocation: autoStrategy === "location" && !!themeLocation,
+      themeLocation,
+      setThemeMode,
+      enableLocationAuto,
+      disableLocationAuto
     }),
-    [mode, resolvedMode, palette, hydrated, systemScheme, setThemeMode]
+    [
+      mode,
+      resolvedMode,
+      palette,
+      hydrated,
+      systemScheme,
+      autoStrategy,
+      themeLocation,
+      setThemeMode,
+      enableLocationAuto,
+      disableLocationAuto
+    ]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

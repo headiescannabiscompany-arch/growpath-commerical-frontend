@@ -12,6 +12,7 @@ import { Link } from "expo-router";
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { listForumPosts } from "@/api/communitySocial";
 import { listCourses } from "@/api/courses";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -154,6 +155,7 @@ function forumImage(post: any) {
 }
 
 export default function PersonalFeaturedFeed() {
+  const { palette } = useAppTheme();
   const [cards, setCards] = useState<HighlightCard[]>(FALLBACK_CARDS);
   const [loading, setLoading] = useState(true);
 
@@ -287,18 +289,26 @@ export default function PersonalFeaturedFeed() {
     <View style={styles.section}>
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
-          <Text style={styles.kicker}>Featured feed</Text>
-          <Text style={styles.title}>
+          <Text style={[styles.kicker, { color: palette.accent }]}>Featured feed</Text>
+          <Text style={[styles.title, { color: palette.text }]}>
             Six smaller cards that make the home page useful
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Three commercial ads, one facility education post, one course, and one popular
             forum post.
           </Text>
         </View>
         <Link href="/home/personal/discover" asChild>
-          <Pressable accessibilityRole="button" style={styles.moreButton}>
-            <Text style={styles.moreButtonText}>Open Discover</Text>
+          <Pressable
+            accessibilityRole="button"
+            style={[
+              styles.moreButton,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.moreButtonText, { color: palette.accent }]}>
+              Open Discover
+            </Text>
           </Pressable>
         </Link>
       </View>
@@ -310,7 +320,11 @@ export default function PersonalFeaturedFeed() {
           <Link key={card.key} href={card.href as any} asChild>
             <Pressable
               accessibilityRole="link"
-              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+              style={({ pressed }) => [
+                styles.card,
+                { backgroundColor: palette.surface, borderColor: palette.border },
+                pressed && styles.cardPressed
+              ]}
             >
               {card.imageUrl ? (
                 <Image
@@ -320,14 +334,21 @@ export default function PersonalFeaturedFeed() {
                   style={styles.image}
                 />
               ) : null}
-              <Text style={styles.label}>{card.label}</Text>
-              <Text style={styles.cardTitle} numberOfLines={2}>
+              <Text style={[styles.label, { color: palette.accent }]}>{card.label}</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]} numberOfLines={2}>
                 {card.title}
               </Text>
-              <Text style={styles.cardSummary} numberOfLines={3}>
+              <Text
+                style={[styles.cardSummary, { color: palette.textMuted }]}
+                numberOfLines={3}
+              >
                 {card.summary}
               </Text>
-              {card.meta ? <Text style={styles.meta}>{card.meta}</Text> : null}
+              {card.meta ? (
+                <Text style={[styles.meta, { color: palette.textMuted }]}>
+                  {card.meta}
+                </Text>
+              ) : null}
             </Pressable>
           </Link>
         ))}

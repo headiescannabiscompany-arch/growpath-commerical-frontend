@@ -18,6 +18,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
@@ -39,7 +40,11 @@ function unwrapRecord(res: any): AnyRec | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
-function renderKV(obj: AnyRec | null, key: string) {
+function renderKV(
+  obj: AnyRec | null,
+  key: string,
+  colors: { label: string; value: string }
+) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
@@ -56,7 +61,7 @@ function renderKV(obj: AnyRec | null, key: string) {
 
   return (
     <View style={styles.kv} key={key}>
-      <Text style={styles.k}>
+      <Text style={[styles.k, { color: colors.label }]}>
         {(
           {
             displayName: "Display name",
@@ -66,7 +71,7 @@ function renderKV(obj: AnyRec | null, key: string) {
           } as Record<string, string>
         )[key] || key.replace(/Id$/, " ID")}
       </Text>
-      <Text style={styles.v}>{displayValue}</Text>
+      <Text style={[styles.v, { color: colors.value }]}>{displayValue}</Text>
     </View>
   );
 }
@@ -74,20 +79,26 @@ function renderKV(obj: AnyRec | null, key: string) {
 function ProfileAction({
   label,
   onPress,
-  accessibilityLabel
+  accessibilityLabel,
+  backgroundColor,
+  borderColor,
+  textColor
 }: {
   label: string;
   onPress: () => void;
   accessibilityLabel: string;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={styles.actionButton}
+      style={[styles.actionButton, { backgroundColor, borderColor }]}
     >
-      <Text style={styles.actionText}>{label}</Text>
+      <Text style={[styles.actionText, { color: textColor }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -96,6 +107,7 @@ export default function FacilityProfileRoute() {
   const router = useRouter();
   const auth = useAuth();
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
+  const { palette } = useAppTheme();
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -182,10 +194,12 @@ export default function FacilityProfileRoute() {
     const facilityPreferred = ["name", "legalName", "license", "state", "createdAt"];
     return facilityPreferred.filter((k) => k in facility);
   }, [facility]);
+  const kvColors = { label: palette.textMuted, value: palette.text };
 
   return (
     <ScreenBoundary title="Profile">
       <ScrollView
+        style={{ backgroundColor: palette.page }}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
@@ -203,10 +217,23 @@ export default function FacilityProfileRoute() {
           </View>
         ) : null}
 
-        <View style={[styles.card, styles.workspaceCard]}>
-          <Text style={styles.kicker}>Facility workspace</Text>
-          <Text style={styles.workspaceTitle}>Operational facility identity</Text>
-          <Text style={styles.workspaceText}>
+        <View
+          style={[
+            styles.card,
+            styles.workspaceCard,
+            {
+              backgroundColor: palette.hero,
+              borderColor: palette.border
+            }
+          ]}
+        >
+          <Text style={[styles.kicker, { color: palette.heroMuted }]}>
+            Facility workspace
+          </Text>
+          <Text style={[styles.workspaceTitle, { color: palette.heroText }]}>
+            Operational facility identity
+          </Text>
+          <Text style={[styles.workspaceText, { color: palette.textMuted }]}>
             Facility is for rooms, operational runs, team tasks, sensor streams,
             compliance, and audit history. Commercial storefront outreach and Personal
             grow records stay in their own workspaces.
@@ -216,51 +243,84 @@ export default function FacilityProfileRoute() {
               label="Switch workspace"
               accessibilityLabel="Switch workspace mode"
               onPress={() => router.push("/account/mode" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Account profile"
               accessibilityLabel="Open account profile"
               onPress={() => router.push("/profile" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Plans & billing"
               accessibilityLabel="Manage facility plan and billing"
               onPress={() => router.push("/offers" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.h1}>Facility</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.h1, { color: palette.text }]}>Facility</Text>
 
           {facility ? (
             <View style={styles.kvWrap}>
-              {facilityKeys.map((k) => renderKV(facility, k))}
+              {facilityKeys.map((k) => renderKV(facility, k, kvColors))}
             </View>
           ) : (
-            <Text style={styles.muted}>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
               Facility details are unavailable right now. Pull to refresh or switch
               facilities.
             </Text>
           )}
         </View>
 
-        <View style={styles.card}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <ThemeModeSelector />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.h1}>Account</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.h1, { color: palette.text }]}>Account</Text>
 
           {me ? (
-            <View style={styles.kvWrap}>{meKeys.map((k) => renderKV(me, k))}</View>
+            <View style={styles.kvWrap}>
+              {meKeys.map((k) => renderKV(me, k, kvColors))}
+            </View>
           ) : (
-            <Text style={styles.muted}>Account details are unavailable right now.</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
+              Account details are unavailable right now.
+            </Text>
           )}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.h1}>AI usage</Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.h1, { color: palette.text }]}>AI usage</Text>
           <TokenBalanceWidget
             interactive={false}
             workspaceType="facility"
@@ -273,9 +333,14 @@ export default function FacilityProfileRoute() {
 
         <CannabisContentControls />
 
-        <View style={styles.card}>
-          <Text style={styles.h1}>Facility setup</Text>
-          <Text style={styles.muted}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.h1, { color: palette.text }]}>Facility setup</Text>
+          <Text style={[styles.muted, { color: palette.textMuted }]}>
             Manage the people, sensor connections, training, and community attached to
             this workspace.
           </Text>
@@ -284,26 +349,41 @@ export default function FacilityProfileRoute() {
               label="Team"
               accessibilityLabel="Open facility team"
               onPress={() => router.push("/home/facility/team" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Pulse / TrolMaster"
               accessibilityLabel="Open facility integrations"
               onPress={() => router.push("/home/facility/integrations" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Courses"
               accessibilityLabel="Open courses"
               onPress={() => router.push("/courses" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Videos"
               accessibilityLabel="Open Facility video library"
               onPress={() => router.push("/videos?tab=library" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
             <ProfileAction
               label="Forum"
               accessibilityLabel="Open forum"
               onPress={() => router.push("/forum" as any)}
+              backgroundColor={palette.surfaceMuted}
+              borderColor={palette.border}
+              textColor={palette.text}
             />
           </View>
         </View>
@@ -312,9 +392,12 @@ export default function FacilityProfileRoute() {
           accessibilityRole="button"
           accessibilityLabel="Log out"
           onPress={logout}
-          style={styles.logoutButton}
+          style={[
+            styles.logoutButton,
+            { borderColor: palette.danger, backgroundColor: palette.surfaceMuted }
+          ]}
         >
-          <Text style={styles.logoutText}>Log out</Text>
+          <Text style={[styles.logoutText, { color: palette.danger }]}>Log out</Text>
         </Pressable>
       </ScrollView>
     </ScreenBoundary>
@@ -329,18 +412,12 @@ const styles = StyleSheet.create({
 
   card: {
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
     borderRadius: radius.card,
     padding: 14,
-    backgroundColor: "white",
     marginBottom: 12
   },
-  workspaceCard: {
-    backgroundColor: "#172317",
-    borderColor: "#2f402f"
-  },
+  workspaceCard: {},
   kicker: {
-    color: "#BFD6C0",
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 0,
@@ -348,13 +425,8 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   h1: { fontSize: 18, fontWeight: "900", marginBottom: 6 },
-  workspaceTitle: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "900",
-    marginBottom: 6
-  },
-  workspaceText: { color: "#E8F1E7", fontSize: 14, lineHeight: 21 },
+  workspaceTitle: { fontSize: 18, fontWeight: "900", marginBottom: 6 },
+  workspaceText: { fontSize: 14, lineHeight: 21 },
   actionRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -363,8 +435,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     alignItems: "center",
-    backgroundColor: "#EEF7EE",
-    borderColor: "#BFD6C0",
     borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
@@ -372,7 +442,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10
   },
-  actionText: { color: "#172317", fontWeight: "900" },
+  actionText: { fontWeight: "900" },
 
   kvWrap: { marginTop: 8 },
   kv: { marginBottom: 10 },
@@ -380,12 +450,10 @@ const styles = StyleSheet.create({
   v: { fontSize: 14 },
   logoutButton: {
     borderWidth: 1,
-    borderColor: "#DC2626",
     borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: "#FEF2F2",
     alignItems: "center"
   },
-  logoutText: { color: "#991B1B", fontWeight: "900" }
+  logoutText: { fontWeight: "900" }
 });

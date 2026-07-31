@@ -99,7 +99,10 @@ export function ModeSwitcher({
       <View
         style={[
           styles.identityPanel,
-          { backgroundColor: palette.hero, borderColor: palette.border }
+          {
+            backgroundColor: palette.hero,
+            borderColor: palette.border
+          }
         ]}
       >
         <Text style={[styles.kicker, { color: palette.heroMuted }]}>
@@ -116,7 +119,10 @@ export function ModeSwitcher({
       <View
         style={[
           styles.selector,
-          { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+          {
+            backgroundColor: palette.surfaceMuted,
+            borderColor: palette.border
+          }
         ]}
         accessibilityLabel="Account mode selector"
       >
@@ -130,14 +136,16 @@ export function ModeSwitcher({
               onPress={() => handlePress(card)}
               style={[
                 styles.segment,
-                selected && [styles.segmentActive, { backgroundColor: palette.surface }]
+                {
+                  backgroundColor: selected ? palette.surface : palette.surfaceMuted,
+                  borderColor: selected ? palette.accent : palette.border
+                }
               ]}
             >
               <Text
                 style={[
                   styles.segmentText,
-                  { color: palette.textMuted },
-                  selected && { color: palette.text }
+                  { color: selected ? palette.text : palette.textMuted }
                 ]}
               >
                 {MODE_LABELS[card.mode]}
@@ -158,8 +166,11 @@ export function ModeSwitcher({
               onPress={() => handlePress(card)}
               style={[
                 styles.card,
-                { backgroundColor: palette.surface, borderColor: palette.border },
-                selected && { borderColor: palette.accent, borderWidth: 2 }
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: selected ? palette.accent : palette.border,
+                  borderWidth: selected ? 2 : 1
+                }
               ]}
             >
               <View style={styles.cardHeader}>
@@ -169,10 +180,14 @@ export function ModeSwitcher({
                 <Text
                   style={[
                     styles.badge,
-                    { backgroundColor: palette.surfaceMuted, color: palette.textMuted },
+                    {
+                      backgroundColor: selected
+                        ? palette.accentSoft
+                        : palette.surfaceMuted,
+                      color: selected ? palette.accent : palette.textMuted
+                    },
                     selected && {
-                      backgroundColor: palette.accentSoft,
-                      color: palette.accent
+                      backgroundColor: palette.accentSoft
                     }
                   ]}
                 >
@@ -196,30 +211,25 @@ export function ModeSwitcher({
 const styles = StyleSheet.create({
   wrap: { gap: 14 },
   identityPanel: {
-    backgroundColor: "#0f172a",
     borderRadius: radius.card,
     padding: 16
   },
   kicker: {
-    color: "#86efac",
     fontSize: 12,
     fontWeight: "900",
     textTransform: "uppercase"
   },
   identityName: {
-    color: "#ffffff",
     fontSize: 20,
     fontWeight: "900",
     marginTop: 6
   },
   identityMeta: {
-    color: "#cbd5e1",
     fontSize: 13,
     fontWeight: "700",
     marginTop: 4
   },
   selector: {
-    backgroundColor: "#e2e8f0",
     borderRadius: radius.card,
     flexDirection: "row",
     gap: 4,
@@ -229,30 +239,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: radius.card,
     flex: 1,
+    borderWidth: 1,
     paddingVertical: 10
   },
-  segmentActive: {
-    backgroundColor: "#ffffff"
-  },
   segmentText: {
-    color: "#475569",
     fontSize: 13,
     fontWeight: "900"
   },
-  segmentTextActive: {
-    color: "#0f172a"
-  },
   cards: { gap: 10 },
   card: {
-    backgroundColor: "#ffffff",
-    borderColor: "#dbe3ea",
     borderRadius: radius.card,
     borderWidth: 1,
     padding: 14
-  },
-  cardActive: {
-    borderColor: "#166534",
-    borderWidth: 2
   },
   cardHeader: {
     alignItems: "center",
@@ -261,15 +259,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   cardTitle: {
-    color: "#111827",
     flex: 1,
     fontSize: 16,
     fontWeight: "900"
   },
   badge: {
-    backgroundColor: "#f1f5f9",
     borderRadius: 999,
-    color: "#475569",
     fontSize: 11,
     fontWeight: "900",
     overflow: "hidden",
@@ -277,19 +272,13 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     textTransform: "uppercase"
   },
-  badgeActive: {
-    backgroundColor: "#dcfce7",
-    color: "#166534"
-  },
   cardText: {
-    color: "#475569",
     fontSize: 13,
     fontWeight: "700",
     lineHeight: 19,
     marginTop: 8
   },
   cardAction: {
-    color: "#166534",
     fontSize: 13,
     fontWeight: "900",
     marginTop: 10

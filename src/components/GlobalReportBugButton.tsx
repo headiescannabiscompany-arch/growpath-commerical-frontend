@@ -3,6 +3,7 @@ import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { usePathname } from "expo-router";
 
 import ReportBugButton from "@/components/ReportBugButton";
+import { useAppTheme } from "@/theme/appTheme";
 
 export function shouldDockReportBugButton(width: number) {
   return width < 600;
@@ -11,11 +12,23 @@ export function shouldDockReportBugButton(width: number) {
 export default function GlobalReportBugButton() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
   const isDocked = shouldDockReportBugButton(width);
   if (pathname === "/support") return null;
   return (
-    <View pointerEvents="box-none" style={isDocked ? styles.mobileDock : styles.layer}>
-      <View style={isDocked ? styles.mobileButton : styles.button}>
+    <View
+      pointerEvents="box-none"
+      style={[
+        isDocked ? styles.mobileDock : styles.layer,
+        isDocked
+          ? {
+              backgroundColor: palette.page,
+              borderTopColor: palette.borderSoft
+            }
+          : null
+      ]}
+    >
+      <View style={[isDocked ? styles.mobileButton : styles.button]}>
         <ReportBugButton label="Report Bug" />
       </View>
     </View>
@@ -43,9 +56,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#F4F7FB",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#D8DEE8"
+    borderTopWidth: StyleSheet.hairlineWidth
   },
   mobileButton: {
     alignSelf: "flex-end"

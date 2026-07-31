@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 function userName(user: any) {
   const explicit = String(user?.displayName || user?.name || "").trim();
@@ -70,6 +71,7 @@ export default function ReportBugButton({
   const pathname = usePathname();
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
   const email = String(auth.user?.email || "").trim();
   const userId = String(auth.user?.id || (auth.user as any)?._id || "").trim();
   const mode = String(entitlements.mode || "unknown");
@@ -85,7 +87,13 @@ export default function ReportBugButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Report bug"
-      style={styles.button}
+      style={[
+        styles.button,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.warning
+        }
+      ]}
       onPress={() =>
         router.push({
           pathname: "/support",
@@ -110,7 +118,7 @@ export default function ReportBugButton({
         } as any)
       }
     >
-      <Text style={styles.text}>{label}</Text>
+      <Text style={[styles.text, { color: palette.warning }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -118,8 +126,6 @@ export default function ReportBugButton({
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#B45309",
     borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
@@ -127,5 +133,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10
   },
-  text: { color: "#92400E", fontWeight: "900" }
+  text: { fontWeight: "900" }
 });

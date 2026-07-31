@@ -3,10 +3,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { updateContentControls } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function CannabisContentControls() {
   const auth = useAuth();
+  const { palette } = useAppTheme();
   const [busy, setBusy] = useState(false);
   const [pin, setPin] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -45,22 +47,36 @@ export default function CannabisContentControls() {
   }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Cannabis content and parental lock</Text>
-      <Text style={styles.copy}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ]}
+    >
+      <Text style={[styles.title, { color: palette.text }]}>
+        Cannabis content and parental lock
+      </Text>
+      <Text style={[styles.copy, { color: palette.textMuted }]}>
         Hide cannabis posts, courses, recommendations, and related tools without affecting
         fruit, vegetable, flower, tree, or general gardening content.
       </Text>
-      <Text style={styles.value}>
+      <Text style={[styles.value, { color: palette.text }]}>
         Cannabis content: {auth.user?.cannabisVisibility === "show" ? "Shown" : "Hidden"}
       </Text>
-      <Text style={styles.copy}>
+      <Text style={[styles.copy, { color: palette.textMuted }]}>
         Age eligibility: {auth.user?.ageBand || "verification needed"} · Parental lock:{" "}
         {auth.user?.parentalLockEnabled ? "On" : "Off"}
       </Text>
       <TextInput
         accessibilityLabel="Parental content control PIN"
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: palette.surfaceMuted,
+            borderColor: palette.border,
+            color: palette.text
+          }
+        ]}
         value={pin}
         onChangeText={setPin}
         placeholder={
@@ -68,6 +84,7 @@ export default function CannabisContentControls() {
             ? "Current parental PIN"
             : "New 4–12 digit parental PIN"
         }
+        placeholderTextColor={palette.textMuted}
         keyboardType="number-pad"
         secureTextEntry
         autoComplete="one-time-code"
@@ -80,12 +97,18 @@ export default function CannabisContentControls() {
           accessibilityLabel="Hide cannabis content"
           disabled={busy}
           onPress={() => void save({ cannabisVisibility: "hide" })}
+          backgroundColor={palette.surfaceMuted}
+          borderColor={palette.border}
+          textColor={palette.link}
         />
         <Action
           label="Show cannabis"
           accessibilityLabel="Show cannabis content"
           disabled={busy || !auth.user?.cannabisEligible}
           onPress={() => void save({ cannabisVisibility: "show" })}
+          backgroundColor={palette.surfaceMuted}
+          borderColor={palette.border}
+          textColor={palette.link}
         />
         <Action
           label={auth.user?.parentalLockEnabled ? "Disable lock" : "Enable lock + hide"}
@@ -102,9 +125,14 @@ export default function CannabisContentControls() {
               enablingLock: !auth.user?.parentalLockEnabled
             })
           }
+          backgroundColor={palette.surfaceMuted}
+          borderColor={palette.border}
+          textColor={palette.link}
         />
       </View>
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {feedback ? (
+        <Text style={[styles.feedback, { color: palette.success }]}>{feedback}</Text>
+      ) : null}
     </View>
   );
 }
@@ -113,41 +141,47 @@ function Action({
   label,
   accessibilityLabel,
   disabled,
-  onPress
+  onPress,
+  backgroundColor,
+  borderColor,
+  textColor
 }: {
   label: string;
   accessibilityLabel: string;
   disabled: boolean;
   onPress: () => void;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
-      style={[styles.action, disabled && styles.disabled]}
+      style={[
+        styles.action,
+        { backgroundColor, borderColor },
+        disabled && styles.disabled
+      ]}
       onPress={onPress}
     >
-      <Text style={styles.actionText}>{label}</Text>
+      <Text style={[styles.actionText, { color: textColor }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white",
-    borderColor: "#dbe5d4",
     borderRadius: radius.card,
     borderWidth: 1,
     gap: 9,
     padding: 14
   },
-  title: { color: "#172317", fontSize: 17, fontWeight: "900" },
-  copy: { color: "#64748b", lineHeight: 20 },
-  value: { color: "#172317", fontWeight: "800" },
+  title: { fontSize: 17, fontWeight: "900" },
+  copy: { lineHeight: 20 },
+  value: { fontWeight: "800" },
   input: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
     borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
@@ -155,14 +189,12 @@ const styles = StyleSheet.create({
   },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   action: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac",
     borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
-  actionText: { color: "#166534", fontWeight: "900" },
+  actionText: { fontWeight: "900" },
   disabled: { opacity: 0.45 },
-  feedback: { color: "#166534", fontWeight: "700" }
+  feedback: { fontWeight: "700" }
 });

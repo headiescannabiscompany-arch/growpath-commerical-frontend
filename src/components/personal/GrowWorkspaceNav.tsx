@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useAppTheme } from "@/theme/appTheme";
+
 const styles = StyleSheet.create({
   row: {
     marginTop: 10,
@@ -9,24 +11,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: "row",
-    flexWrap: "nowrap",
+    flexWrap: "wrap",
     gap: 8,
     alignItems: "center"
   },
   pill: {
     borderWidth: 1,
-    borderColor: "#CBD5E1",
     borderRadius: 999,
     paddingVertical: 7,
     paddingHorizontal: 11,
-    backgroundColor: "#FFFFFF"
+    minWidth: 0
   },
-  pillActive: {
-    borderColor: "#166534",
-    backgroundColor: "#166534"
-  },
-  text: { fontWeight: "700", color: "#0F172A", fontSize: 12 },
-  textActive: { color: "#FFFFFF" }
+  text: { fontWeight: "700", fontSize: 12 }
 });
 
 type Section =
@@ -51,6 +47,7 @@ export default function GrowWorkspaceNav({
   growId: string;
   active: Section;
 }) {
+  const { palette } = useAppTheme();
   const tabs: { key: Section; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "plants", label: "Plants" },
@@ -76,10 +73,19 @@ export default function GrowWorkspaceNav({
         return (
           <Link key={tab.key} href={hrefFor(growId, tab.key)} asChild>
             <Pressable
-              style={StyleSheet.flatten([styles.pill, isActive && styles.pillActive])}
+              style={[
+                styles.pill,
+                {
+                  backgroundColor: isActive ? palette.accent : palette.surface,
+                  borderColor: isActive ? palette.accent : palette.border
+                }
+              ]}
             >
               <Text
-                style={StyleSheet.flatten([styles.text, isActive && styles.textActive])}
+                style={[
+                  styles.text,
+                  { color: isActive ? palette.accentText : palette.text }
+                ]}
               >
                 {tab.label}
               </Text>

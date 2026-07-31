@@ -14,6 +14,7 @@ import { listPersonalGrows } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, isCannabisGrow } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import ToolResultSurface, {
   type ToolResultAction,
   type ToolResultMetric,
@@ -185,6 +186,7 @@ function toolRunNotices(run: ToolRun | null): ToolResultNotice[] {
 export default function GrowToolsScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const { palette } = useAppTheme();
   const [recent, setRecent] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
@@ -246,9 +248,12 @@ export default function GrowToolsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Grow Intelligence</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
+      <Text style={[styles.title, { color: palette.text }]}>Grow Intelligence</Text>
+      <Text style={[styles.subtitle, { color: palette.textMuted }]}>
         Plan and operate this grow with its plants, history, evidence, tasks, and saved
         results already attached.
       </Text>
@@ -259,26 +264,48 @@ export default function GrowToolsScreen() {
       />
       <GrowWorkspaceNav growId={growId} active="tools" />
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>AI tool library</Text>
-        <Text style={styles.cardText}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>AI tool library</Text>
+        <Text style={[styles.cardText, { color: palette.textMuted }]}>
           Open Ask AI, plant diagnosis, PPFD/DLI analysis, and the soil and nutrient mix
           builders with this grow selected.
         </Text>
         <Link href={withGrow("/home/personal/tools", growId)} asChild>
-          <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Open AI tools</Text>
+          <Pressable
+            style={[
+              styles.action,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.actionText, { color: palette.text }]}>
+              Open AI tools
+            </Text>
           </Pressable>
         </Link>
         <Link href={withGrow("/home/personal/tools/saved-runs", growId)} asChild>
-          <Pressable style={styles.action}>
-            <Text style={styles.actionText}>Saved runs</Text>
+          <Pressable
+            style={[
+              styles.action,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.actionText, { color: palette.text }]}>Saved runs</Text>
           </Pressable>
         </Link>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Grow workflows</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Grow workflows</Text>
         {GROW_WORKSPACE_GROUPS.map((group) => {
           const visibleItems = group.items.filter(
             ([, , options]) => !options?.cannabisOnly || cannabisGrow
@@ -286,7 +313,9 @@ export default function GrowToolsScreen() {
           if (!visibleItems.length) return null;
           return (
             <View key={group.title} style={{ marginTop: 12 }}>
-              <Text style={styles.cardTitle}>{group.title}</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                {group.title}
+              </Text>
               <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                 {visibleItems.map(([label, path]) => {
                   const href = path.startsWith("/")
@@ -294,8 +323,18 @@ export default function GrowToolsScreen() {
                     : `/home/personal/grows/${encodeURIComponent(growId)}/${path}`;
                   return (
                     <Link key={label} href={href as any} asChild>
-                      <Pressable style={styles.action}>
-                        <Text style={styles.actionText}>{label}</Text>
+                      <Pressable
+                        style={[
+                          styles.action,
+                          {
+                            backgroundColor: palette.surfaceMuted,
+                            borderColor: palette.border
+                          }
+                        ]}
+                      >
+                        <Text style={[styles.actionText, { color: palette.text }]}>
+                          {label}
+                        </Text>
                       </Pressable>
                     </Link>
                   );
@@ -304,25 +343,34 @@ export default function GrowToolsScreen() {
             </View>
           );
         })}
-        <Text style={styles.recentTitle}>Recent tool runs</Text>
+        <Text style={[styles.recentTitle, { color: palette.text }]}>
+          Recent tool runs
+        </Text>
         {recent.length === 0 ? (
-          <Text style={styles.recentRow}>No saved runs yet.</Text>
+          <Text style={[styles.recentRow, { color: palette.textMuted }]}>
+            No saved runs yet.
+          </Text>
         ) : (
           recent.map((run, index) => (
             <View
               key={String(run?._id || run?.id || `${run?.toolType || "tool"}-${index}`)}
             >
-              <Text style={styles.recentRow}>
+              <Text style={[styles.recentRow, { color: palette.textMuted }]}>
                 {run?.toolType || run?.toolName || "tool"} |{" "}
                 {String(run?.createdAt || "").slice(0, 10)}
               </Text>
-              <Text style={styles.recentContext}>{toolRunContextLabel(run)}</Text>
+              <Text style={[styles.recentContext, { color: palette.accent }]}>
+                {toolRunContextLabel(run)}
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => viewRun(run)}
-                style={styles.inlineAction}
+                style={[
+                  styles.inlineAction,
+                  { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+                ]}
               >
-                <Text style={styles.actionText}>
+                <Text style={[styles.actionText, { color: palette.text }]}>
                   {loadingRunId === String(run?._id || run?.id || "")
                     ? "Loading..."
                     : "View result"}

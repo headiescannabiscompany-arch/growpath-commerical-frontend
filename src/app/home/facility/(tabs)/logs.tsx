@@ -18,9 +18,12 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
+
+const LOG_TYPES = ["OBSERVATION", "WATER", "FEED", "IPM", "TRAINING"] as const;
 
 function asArray(res: any): AnyRec[] {
   if (Array.isArray(res)) return res;
@@ -31,15 +34,15 @@ function asArray(res: any): AnyRec[] {
   return [];
 }
 
-function pickId(x: AnyRec): string {
+function pickId(x: AnyRec) {
   return String(x?.id ?? x?._id ?? x?.logId ?? x?.uuid ?? "");
 }
 
-function pickTitle(x: AnyRec): string {
+function pickTitle(x: AnyRec) {
   return String(x?.title ?? x?.type ?? x?.name ?? "Log Entry");
 }
 
-function pickSubtitle(x: AnyRec): string {
+function pickSubtitle(x: AnyRec) {
   const at = x?.createdAt ?? x?.loggedAt ?? x?.at ?? x?.date;
   const grow = x?.growName ?? x?.growId;
   const room = x?.roomName ?? x?.roomId;
@@ -48,7 +51,7 @@ function pickSubtitle(x: AnyRec): string {
     grow ? `Grow: ${String(grow)}` : "",
     room ? `Room: ${String(room)}` : ""
   ].filter(Boolean);
-  return parts.join(" • ");
+  return parts.join(" · ");
 }
 
 function firstParam(value?: string | string[]) {
@@ -59,8 +62,6 @@ function canCreateLog(role: unknown) {
   return ["OWNER", "MANAGER", "STAFF"].includes(String(role || "").toUpperCase());
 }
 
-const LOG_TYPES = ["OBSERVATION", "WATER", "FEED", "IPM", "TRAINING"] as const;
-
 export default function FacilityLogsTab() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -68,6 +69,7 @@ export default function FacilityLogsTab() {
     contextName?: string | string[];
   }>();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
   const { selectedId: facilityId } = useFacility();
   const contextGrowId = String(firstParam(params.growId) || "");
   const contextName = String(firstParam(params.contextName) || "");
@@ -95,7 +97,6 @@ export default function FacilityLogsTab() {
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
       if (!facilityId) return;
-
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
@@ -176,58 +177,103 @@ export default function FacilityLogsTab() {
         contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
       }
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: palette.page }]}>
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text
+            style={[
+              styles.feedback,
+              { backgroundColor: palette.surfaceMuted, color: palette.accent }
+            ]}
+          >
+            {feedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>
+          <Text style={[styles.h1, { color: palette.text }]}>
             {contextName ? `${contextName} → Journal` : "Grow Journal"}
           </Text>
-          <Text style={styles.muted}>
+          <Text style={[styles.muted, { color: palette.textMuted }]}>
             Operational grow notes and observations. Compliance evidence and exports live
             together under Compliance.
           </Text>
-          <Text style={styles.muted}>{header}</Text>
+          <Text style={[styles.muted, { color: palette.textMuted }]}>{header}</Text>
         </View>
 
         {canCreateLog(ent?.facilityRole) ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Add journal entry</Text>
-            <Text style={styles.muted}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Add journal entry
+            </Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
               Record work, observations, and measurements where the team will find them
               later.
             </Text>
             <View style={styles.chipRow}>
-              {LOG_TYPES.map((option) => (
-                <Pressable
-                  key={option}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Set facility journal type ${option}`}
-                  onPress={() => setType(option)}
-                  style={[styles.chip, type === option && styles.chipSelected]}
-                >
-                  <Text
-                    style={[styles.chipText, type === option && styles.chipTextSelected]}
+              {LOG_TYPES.map((option) => {
+                const selected = type === option;
+                return (
+                  <Pressable
+                    key={option}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set facility journal type ${option}`}
+                    onPress={() => setType(option)}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: selected ? palette.accent : palette.surface,
+                        borderColor: selected ? palette.accent : palette.border
+                      }
+                    ]}
                   >
-                    {option.toLowerCase()}
-                  </Text>
-                </Pressable>
-              ))}
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: selected ? palette.accentText : palette.text }
+                      ]}
+                    >
+                      {option.toLowerCase()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
             <TextInput
               accessibilityLabel="Facility journal title"
               value={title}
               onChangeText={setTitle}
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: palette.surfaceMuted,
+                  borderColor: palette.border,
+                  color: palette.text
+                }
+              ]}
               placeholder="What happened?"
+              placeholderTextColor={palette.textMuted}
             />
             <TextInput
               accessibilityLabel="Facility journal note"
               value={note}
               onChangeText={setNote}
-              style={[styles.input, styles.textArea]}
+              style={[
+                styles.input,
+                styles.textArea,
+                {
+                  backgroundColor: palette.surfaceMuted,
+                  borderColor: palette.border,
+                  color: palette.text
+                }
+              ]}
               placeholder="Observation, readings, materials used, and follow-up"
+              placeholderTextColor={palette.textMuted}
               multiline
             />
             <Pressable
@@ -235,9 +281,13 @@ export default function FacilityLogsTab() {
               accessibilityLabel="Save facility journal entry"
               disabled={saving || !title.trim()}
               onPress={() => void addLog()}
-              style={[styles.primaryBtn, (saving || !title.trim()) && styles.disabled]}
+              style={[
+                styles.primaryBtn,
+                { backgroundColor: palette.accent },
+                (saving || !title.trim()) && styles.disabled
+              ]}
             >
-              <Text style={styles.primaryText}>
+              <Text style={[styles.primaryText, { color: palette.accentText }]}>
                 {saving ? "Saving…" : "Save journal entry"}
               </Text>
             </Pressable>
@@ -247,7 +297,9 @@ export default function FacilityLogsTab() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading logs…</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
+              Loading logs…
+            </Text>
           </View>
         ) : null}
 
@@ -264,9 +316,16 @@ export default function FacilityLogsTab() {
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             !loading ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No log entries yet</Text>
-                <Text style={styles.muted}>
+              <View
+                style={[
+                  styles.empty,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.emptyTitle, { color: palette.text }]}>
+                  No log entries yet
+                </Text>
+                <Text style={[styles.muted, { color: palette.textMuted }]}>
                   When logs exist on the backend, they’ll show up here.
                 </Text>
               </View>
@@ -274,7 +333,7 @@ export default function FacilityLogsTab() {
           }
           renderItem={({ item }) => {
             const id = pickId(item);
-            const title = pickTitle(item);
+            const itemTitle = pickTitle(item);
             const subtitle = pickSubtitle(item);
 
             return (
@@ -283,19 +342,32 @@ export default function FacilityLogsTab() {
                   if (!id) return;
                   router.push({ pathname: "/home/facility/logs/[id]", params: { id } });
                 }}
-                style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.row,
+                  {
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border
+                  },
+                  pressed && styles.pressed
+                ]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
-                    {title}
+                  <Text
+                    style={[styles.rowTitle, { color: palette.text }]}
+                    numberOfLines={1}
+                  >
+                    {itemTitle}
                   </Text>
                   {subtitle ? (
-                    <Text style={styles.rowSub} numberOfLines={1}>
+                    <Text
+                      style={[styles.rowSub, { color: palette.textMuted }]}
+                      numberOfLines={1}
+                    >
                       {subtitle}
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>›</Text>
+                <Text style={[styles.chev, { color: palette.textMuted }]}>›</Text>
               </Pressable>
             );
           }}
@@ -311,16 +383,12 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
   muted: { opacity: 0.7 },
   feedback: {
-    backgroundColor: "#ecfdf5",
     borderRadius: radius.card,
-    color: "#166534",
     fontWeight: "800",
     marginBottom: 10,
     padding: 10
   },
   card: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.12)",
     borderRadius: radius.card,
     borderWidth: 1,
     gap: 9,
@@ -330,19 +398,13 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: "900" },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.16)",
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
   },
-  chipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  chipTextSelected: { color: "white" },
+  chipText: { fontSize: 12, fontWeight: "800" },
   input: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.14)",
     borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
@@ -350,11 +412,10 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 76, textAlignVertical: "top" },
   primaryBtn: {
     alignItems: "center",
-    backgroundColor: "#0f172a",
     borderRadius: radius.card,
     padding: 11
   },
-  primaryText: { color: "white", fontWeight: "900" },
+  primaryText: { fontWeight: "900" },
   disabled: { opacity: 0.5 },
 
   loading: { paddingVertical: 18, alignItems: "center" },
@@ -365,15 +426,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 14,
     borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
+    borderWidth: 1
   },
   pressed: { opacity: 0.85 },
   rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
   rowSub: { opacity: 0.7 },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  empty: {
+    paddingVertical: 26,
+    alignItems: "center",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 6,
+    marginTop: 8
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "900" }
 });

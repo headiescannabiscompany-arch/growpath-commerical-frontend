@@ -291,8 +291,13 @@ export default function PersonalGrowsRoute() {
             { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
           ]}
         >
-          <Text style={[styles.kicker, { color: palette.accent }]}>Personal grow workspace</Text>
-          <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
+          <Text style={[styles.kicker, { color: palette.accent }]}>
+            Personal grow workspace
+          </Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: palette.text }]}
+          >
             Grows
           </Text>
           <Text style={[styles.subtitle, { color: palette.textMuted }]}>
@@ -392,8 +397,10 @@ export default function PersonalGrowsRoute() {
 
         {error ? (
           <AppCard style={styles.stateCard}>
-            <Text style={styles.stateTitle}>Unable to load grows</Text>
-            <Text style={styles.stateText}>{error}</Text>
+            <Text style={[styles.stateTitle, { color: palette.text }]}>
+              Unable to load grows
+            </Text>
+            <Text style={[styles.stateText, { color: palette.textMuted }]}>{error}</Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Try loading grows again"
@@ -402,7 +409,7 @@ export default function PersonalGrowsRoute() {
               }}
               style={styles.retryButton}
             >
-              <Text style={styles.ctaText}>Try again</Text>
+              <Text style={[styles.ctaText, { color: palette.link }]}>Try again</Text>
             </Pressable>
           </AppCard>
         ) : null}
@@ -421,26 +428,43 @@ export default function PersonalGrowsRoute() {
           ))}
         </View>
 
-        <AppCard style={styles.featuredCard}>
+        <AppCard
+          style={[
+            styles.featuredCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <View style={styles.featuredTopRow}>
             <View style={styles.featuredCopy}>
-              <Text style={styles.cardKicker}>Latest grow</Text>
-              <Text style={styles.featuredName}>
+              <Text style={[styles.cardKicker, { color: palette.accent }]}>
+                Latest grow
+              </Text>
+              <Text style={[styles.featuredName, { color: palette.text }]}>
                 {latestGrow ? growName(latestGrow) : "No grow yet"}
               </Text>
-              <Text style={styles.featuredMeta}>
+              <Text style={[styles.featuredMeta, { color: palette.textMuted }]}>
                 {latestGrow
                   ? growIdentity(latestGrow)
                   : "Create a grow to start connecting logs, photos, tasks, and AI runs."}
               </Text>
               {latestGrow ? (
-                <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text>
+                <Text style={[styles.featuredMeta, { color: palette.textMuted }]}>
+                  {growSummary(latestGrow)}
+                </Text>
               ) : null}
             </View>
             {latestGrow ? (
-              <View style={[styles.statusChip, statusTone(growStatus(latestGrow))]}>
-                <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
-                <Text style={styles.statusChipLabel}>
+              <View
+                style={[
+                  styles.statusChip,
+                  statusTone(growStatus(latestGrow)),
+                  { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.statusChipValue, { color: palette.text }]}>
+                  {growStatus(latestGrow)}
+                </Text>
+                <Text style={[styles.statusChipLabel, { color: palette.textMuted }]}>
                   {growPhotoCount(latestGrow)} photos
                 </Text>
               </View>
@@ -465,39 +489,73 @@ export default function PersonalGrowsRoute() {
           )}
         </AppCard>
 
-        <AppCard style={styles.searchCard}>
-          <Text style={styles.cardKicker}>Search</Text>
+        <AppCard
+          style={[
+            styles.searchCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardKicker, { color: palette.accent }]}>Search</Text>
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search grows"
-            style={styles.searchInput}
+            placeholderTextColor={palette.textMuted}
+            style={[
+              styles.searchInput,
+              {
+                backgroundColor: palette.surfaceMuted,
+                borderColor: palette.border,
+                color: palette.text
+              }
+            ]}
           />
-          <Text style={styles.searchHint}>
+          <Text style={[styles.searchHint, { color: palette.textMuted }]}>
             Filter by grow name, cultivar, strain, status, location, or crop identity.
           </Text>
         </AppCard>
 
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Your grows</Text>
-          <Text style={styles.sectionCount}>{filteredGrows.length} shown</Text>
+          <Text style={[styles.sectionTitle, { color: palette.text }]}>Your grows</Text>
+          <Text
+            style={[
+              styles.sectionCount,
+              {
+                backgroundColor: palette.surfaceMuted,
+                borderColor: palette.border,
+                color: palette.textMuted
+              }
+            ]}
+          >
+            {filteredGrows.length} shown
+          </Text>
         </View>
 
         {loading && !sortedGrows.length ? (
-          <AppCard style={styles.stateCard}>
+          <AppCard
+            style={[
+              styles.stateCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <ActivityIndicator />
-            <Text style={[styles.stateText, { marginTop: 10 }]}>
+            <Text style={[styles.stateText, { marginTop: 10, color: palette.textMuted }]}>
               Loading grow dashboard...
             </Text>
           </AppCard>
         ) : null}
 
         {!loading && !filteredGrows.length ? (
-          <AppCard style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>
+          <AppCard
+            style={[
+              styles.emptyCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.emptyTitle, { color: palette.text }]}>
               {sortedGrows.length ? "No grows match your search" : "No grows yet"}
             </Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { color: palette.textMuted }]}>
               {sortedGrows.length
                 ? "Try a different search term or clear the filter to see every grow."
                 : "Create a grow to connect photos, journal entries, tasks, tools, crop ID, and exportable records in one place."}
@@ -538,16 +596,39 @@ export default function PersonalGrowsRoute() {
             const note = safeText(grow?.notes);
 
             return (
-              <AppCard key={id} style={styles.growCard}>
+              <AppCard
+                key={id}
+                style={[
+                  styles.growCard,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
                 <View style={styles.growHeader}>
                   <View style={styles.growCopy}>
-                    <Text style={styles.growName}>{growName(grow)}</Text>
-                    <Text style={styles.growIdentity}>{growIdentity(grow)}</Text>
-                    <Text style={styles.growMeta}>{growSummary(grow)}</Text>
+                    <Text style={[styles.growName, { color: palette.text }]}>
+                      {growName(grow)}
+                    </Text>
+                    <Text style={[styles.growIdentity, { color: palette.accent }]}>
+                      {growIdentity(grow)}
+                    </Text>
+                    <Text style={[styles.growMeta, { color: palette.textMuted }]}>
+                      {growSummary(grow)}
+                    </Text>
                   </View>
-                  <View style={[styles.statusChip, statusTone(status)]}>
-                    <Text style={styles.statusChipValue}>{status}</Text>
-                    <Text style={styles.statusChipLabel}>
+                  <View
+                    style={[
+                      styles.statusChip,
+                      statusTone(status),
+                      {
+                        backgroundColor: palette.surfaceMuted,
+                        borderColor: palette.border
+                      }
+                    ]}
+                  >
+                    <Text style={[styles.statusChipValue, { color: palette.text }]}>
+                      {status}
+                    </Text>
+                    <Text style={[styles.statusChipLabel, { color: palette.textMuted }]}>
                       {growPhotoCount(grow)} photos
                     </Text>
                   </View>
@@ -556,14 +637,27 @@ export default function PersonalGrowsRoute() {
                 {growChips.length ? (
                   <View style={styles.chipRow}>
                     {growChips.slice(0, 4).map((chip) => (
-                      <View key={chip} style={styles.chip}>
-                        <Text style={styles.chipText}>{chip}</Text>
+                      <View
+                        key={chip}
+                        style={[
+                          styles.chip,
+                          {
+                            backgroundColor: palette.surfaceMuted,
+                            borderColor: palette.border
+                          }
+                        ]}
+                      >
+                        <Text style={[styles.chipText, { color: palette.textMuted }]}>
+                          {chip}
+                        </Text>
                       </View>
                     ))}
                   </View>
                 ) : null}
 
-                {note ? <Text style={styles.note}>{note}</Text> : null}
+                {note ? (
+                  <Text style={[styles.note, { color: palette.textMuted }]}>{note}</Text>
+                ) : null}
 
                 <View style={styles.growActions}>
                   <ActionButton href={growHref(id)} label="Open" primary />

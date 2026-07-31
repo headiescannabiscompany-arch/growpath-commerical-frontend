@@ -20,24 +20,36 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
 type HomeAlert = HomeModel["alerts"][number];
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
   return (
     <Link href={href} asChild>
-      <Pressable style={styles.action} accessibilityRole="button">
-        <Text style={styles.actionText}>{label}</Text>
+      <Pressable
+        style={[
+          styles.action,
+          { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+        ]}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.actionText, { color: palette.text }]}>{label}</Text>
       </Pressable>
     </Link>
   );
 }
 
-function alertSeverityStyle(severity: HomeAlert["severity"]) {
-  if (severity === "critical") return styles.alert_critical;
-  if (severity === "warning") return styles.alert_warning;
-  return styles.alert_info;
+function alertSeverityStyle(severity: HomeAlert["severity"], palette: any) {
+  if (severity === "critical") {
+    return { backgroundColor: palette.surfaceMuted, borderColor: palette.danger };
+  }
+  if (severity === "warning") {
+    return { backgroundColor: palette.surfaceMuted, borderColor: palette.warning };
+  }
+  return { backgroundColor: palette.surfaceMuted, borderColor: palette.info };
 }
 
 export default function PersonalHomeTab() {
@@ -46,6 +58,7 @@ export default function PersonalHomeTab() {
   const canCreateGrow = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const canCreateLog = ent.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
   const canCreateTask = ent.can(CAPABILITY_KEYS.TASK_REMINDERS);
+  const { palette } = useAppTheme();
   const [model, setModel] = useState<HomeModel | null>(null);
   const [globeObservations, setGlobeObservations] = useState<any[]>([]);
   const [globeLoading, setGlobeLoading] = useState(true);
@@ -150,11 +163,16 @@ export default function PersonalHomeTab() {
       routeKey="home"
       header={
         <View>
-          <Text style={styles.kicker}>Personal workspace</Text>
-          <Text accessibilityRole="header" style={styles.headerTitle}>
+          <Text style={[styles.kicker, { color: palette.accent }]}>
+            Personal workspace
+          </Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.headerTitle, { color: palette.text }]}
+          >
             Your Garden
           </Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerSubtitle, { color: palette.textMuted }]}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
           </Text>
         </View>
@@ -167,10 +185,19 @@ export default function PersonalHomeTab() {
 
       {!loading && !model?.activeGrow ? (
         <View style={styles.section}>
-          <AppCard style={styles.firstRunCard}>
-            <Text style={styles.commandEyebrow}>First run setup</Text>
-            <Text style={styles.commandTitle}>Build your grow workspace</Text>
-            <Text style={styles.commandDescription}>
+          <AppCard
+            style={[
+              styles.firstRunCard,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.commandEyebrow, { color: palette.accent }]}>
+              First run setup
+            </Text>
+            <Text style={[styles.commandTitle, { color: palette.text }]}>
+              Build your grow workspace
+            </Text>
+            <Text style={[styles.commandDescription, { color: palette.textMuted }]}>
               Start with one grow, then attach plants, photos, journal notes, tasks, tool
               runs, and diagnosis history to the same record.
             </Text>
@@ -183,17 +210,24 @@ export default function PersonalHomeTab() {
               <ActionLink href="/home/personal/community" label="Ask Forum / Q&A" />
             </View>
             {!canCreateGrow ? (
-              <Text style={styles.upgradeNote}>
+              <Text style={[styles.upgradeNote, { color: palette.textMuted }]}>
                 Upgrade to create and save personal grow records.
               </Text>
             ) : null}
           </AppCard>
 
           <View style={styles.onboardingGrid}>
-            <AppCard style={styles.onboardingCard}>
-              <Text style={styles.stepNumber}>1</Text>
-              <Text style={styles.cardTitle}>Create the grow</Text>
-              <Text style={styles.cardDescription}>
+            <AppCard
+              style={[
+                styles.onboardingCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.stepNumber, { color: palette.accent }]}>1</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Create the grow
+              </Text>
+              <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
                 Name the crop, stage, medium, room, and target outcome so every future log
                 has context.
               </Text>
@@ -201,19 +235,33 @@ export default function PersonalHomeTab() {
                 <ActionLink href="/home/personal/grows/new" label="Start Setup" />
               ) : null}
             </AppCard>
-            <AppCard style={styles.onboardingCard}>
-              <Text style={styles.stepNumber}>2</Text>
-              <Text style={styles.cardTitle}>Add observations</Text>
-              <Text style={styles.cardDescription}>
+            <AppCard
+              style={[
+                styles.onboardingCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.stepNumber, { color: palette.accent }]}>2</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Add observations
+              </Text>
+              <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
                 Save photos, watering notes, symptoms, environment readings, and task
                 decisions in the journal.
               </Text>
               <ActionLink href="/home/personal/tools" label="Open AI Tools" />
             </AppCard>
-            <AppCard style={styles.onboardingCard}>
-              <Text style={styles.stepNumber}>3</Text>
-              <Text style={styles.cardTitle}>Turn findings into tasks</Text>
-              <Text style={styles.cardDescription}>
+            <AppCard
+              style={[
+                styles.onboardingCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.stepNumber, { color: palette.accent }]}>3</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                Turn findings into tasks
+              </Text>
+              <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
                 Use diagnosis and tool results to create reminders that stay linked to the
                 grow.
               </Text>
@@ -225,58 +273,126 @@ export default function PersonalHomeTab() {
 
       {model?.activeGrow ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Active Grow</Text>
+          <Text style={[styles.sectionTitle, { color: palette.text }]}>Active Grow</Text>
           <Link href={growHref} asChild>
             <Pressable accessibilityRole="link" accessibilityLabel="Open active grow">
-              <AppCard style={styles.commandCard}>
+              <AppCard
+                style={[
+                  styles.commandCard,
+                  { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+                ]}
+              >
                 <View style={styles.commandHeader}>
                   <View style={styles.commandCopy}>
-                    <Text style={styles.commandEyebrow}>Personal command center</Text>
-                    <Text style={styles.commandTitle}>
+                    <Text style={[styles.commandEyebrow, { color: palette.accent }]}>
+                      Personal command center
+                    </Text>
+                    <Text style={[styles.commandTitle, { color: palette.text }]}>
                       {model.activeGrow.name || "Active grow"}
                     </Text>
-                    <Text style={styles.commandDescription}>
+                    <Text
+                      style={[styles.commandDescription, { color: palette.textMuted }]}
+                    >
                       {model.activeGrow.status} | Updated{" "}
                       {fmtDate(model.activeGrow.updatedAt)}
                     </Text>
                   </View>
                   <View style={styles.pulseStack}>
-                    <View style={styles.pulse}>
-                      <Text style={styles.pulseValue}>
+                    <View
+                      style={[
+                        styles.pulse,
+                        { backgroundColor: palette.surface, borderColor: palette.border }
+                      ]}
+                    >
+                      <Text style={[styles.pulseValue, { color: palette.text }]}>
                         {model.activeGrow.status || "Active"}
                       </Text>
-                      <Text style={styles.pulseLabel}>Stage</Text>
+                      <Text style={[styles.pulseLabel, { color: palette.accent }]}>
+                        Stage
+                      </Text>
                     </View>
-                    <View style={styles.pulse}>
-                      <Text style={styles.pulseValue}>{model.alerts.length}</Text>
-                      <Text style={styles.pulseLabel}>Alerts</Text>
+                    <View
+                      style={[
+                        styles.pulse,
+                        { backgroundColor: palette.surface, borderColor: palette.border }
+                      ]}
+                    >
+                      <Text style={[styles.pulseValue, { color: palette.text }]}>
+                        {model.alerts.length}
+                      </Text>
+                      <Text style={[styles.pulseLabel, { color: palette.accent }]}>
+                        Alerts
+                      </Text>
                     </View>
-                    <View style={styles.pulse}>
-                      <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
-                      <Text style={styles.pulseLabel}>Open tasks</Text>
+                    <View
+                      style={[
+                        styles.pulse,
+                        { backgroundColor: palette.surface, borderColor: palette.border }
+                      ]}
+                    >
+                      <Text style={[styles.pulseValue, { color: palette.text }]}>
+                        {model.openTaskCount}
+                      </Text>
+                      <Text style={[styles.pulseLabel, { color: palette.accent }]}>
+                        Open tasks
+                      </Text>
                     </View>
                   </View>
                 </View>
                 <View style={styles.metrics}>
-                  <View style={styles.metric}>
-                    <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
-                    <Text style={styles.metricLabel}>Plants</Text>
+                  <View
+                    style={[
+                      styles.metric,
+                      { backgroundColor: palette.surface, borderColor: palette.border }
+                    ]}
+                  >
+                    <Text style={[styles.metricValue, { color: palette.text }]}>
+                      {model.stats.plantCount}
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                      Plants
+                    </Text>
                   </View>
-                  <View style={styles.metric}>
-                    <Text style={styles.metricValue}>{model.stats.logCount}</Text>
-                    <Text style={styles.metricLabel}>Journal entries</Text>
+                  <View
+                    style={[
+                      styles.metric,
+                      { backgroundColor: palette.surface, borderColor: palette.border }
+                    ]}
+                  >
+                    <Text style={[styles.metricValue, { color: palette.text }]}>
+                      {model.stats.logCount}
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                      Journal entries
+                    </Text>
                   </View>
-                  <View style={styles.metric}>
-                    <Text style={styles.metricValue}>{model.openTaskCount}</Text>
-                    <Text style={styles.metricLabel}>Open tasks</Text>
+                  <View
+                    style={[
+                      styles.metric,
+                      { backgroundColor: palette.surface, borderColor: palette.border }
+                    ]}
+                  >
+                    <Text style={[styles.metricValue, { color: palette.text }]}>
+                      {model.openTaskCount}
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                      Open tasks
+                    </Text>
                   </View>
-                  <View style={styles.metric}>
-                    <Text style={styles.metricValue}>
+                  <View
+                    style={[
+                      styles.metric,
+                      { backgroundColor: palette.surface, borderColor: palette.border }
+                    ]}
+                  >
+                    <Text style={[styles.metricValue, { color: palette.text }]}>
                       {model.latestToolRun?.toolType ||
                         model.latestToolRun?.toolName ||
                         "None"}
                     </Text>
-                    <Text style={styles.metricLabel}>Latest tool</Text>
+                    <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                      Latest tool
+                    </Text>
                   </View>
                 </View>
               </AppCard>
@@ -320,61 +436,93 @@ export default function PersonalHomeTab() {
 
       {model?.activeGrow ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today</Text>
+          <Text style={[styles.sectionTitle, { color: palette.text }]}>Today</Text>
           <AppCard>
-            <Text style={styles.cardTitle}>Active alerts</Text>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Active alerts</Text>
             {model.alerts.length ? (
               <View style={styles.alertList}>
                 {model.alerts.map((alert) => (
                   <View
                     key={alert.id}
-                    style={[styles.alertRow, alertSeverityStyle(alert.severity)]}
+                    style={[styles.alertRow, alertSeverityStyle(alert.severity, palette)]}
                   >
                     <View style={styles.alertText}>
-                      <Text style={styles.alertTitle}>{alert.title}</Text>
-                      <Text style={styles.alertMessage}>{alert.message}</Text>
+                      <Text style={[styles.alertTitle, { color: palette.text }]}>
+                        {alert.title}
+                      </Text>
+                      <Text style={[styles.alertMessage, { color: palette.textMuted }]}>
+                        {alert.message}
+                      </Text>
                     </View>
                     <Link href={alert.href} asChild>
                       <Pressable
-                        style={styles.inlineAction}
+                        style={[
+                          styles.inlineAction,
+                          {
+                            backgroundColor: palette.surface,
+                            borderColor: palette.border
+                          }
+                        ]}
                         accessibilityRole="button"
                         accessibilityLabel={`Open ${alert.title}`}
                       >
-                        <Text style={styles.inlineActionText}>Open</Text>
+                        <Text style={[styles.inlineActionText, { color: palette.text }]}>
+                          Open
+                        </Text>
                       </Pressable>
                     </Link>
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={styles.cardDescription}>No active grow alerts are open.</Text>
+              <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
+                No active grow alerts are open.
+              </Text>
             )}
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>{"Today's tasks"}</Text>
+            <Text
+              style={[styles.cardTitle, { color: palette.text }]}
+            >{`Today's tasks`}</Text>
             {model.todayTasks.length ? (
               <View style={styles.taskList}>
                 {model.todayTasks.map((task) => (
-                  <View key={task.id} style={styles.taskRow}>
-                    <Text style={styles.taskTitle}>{task.title}</Text>
-                    <Text style={styles.taskMeta}>
+                  <View
+                    key={task.id}
+                    style={[
+                      styles.taskRow,
+                      { backgroundColor: palette.surface, borderColor: palette.border }
+                    ]}
+                  >
+                    <Text style={[styles.taskTitle, { color: palette.text }]}>
+                      {task.title}
+                    </Text>
+                    <Text style={[styles.taskMeta, { color: palette.textMuted }]}>
                       Due {fmtDate(task.dueDate)} | {task.priority || "medium"} | Source:{" "}
                       {task.sourceLabel}
                     </Text>
                     <Link href={task.sourceHref} asChild>
                       <Pressable
-                        style={styles.inlineAction}
+                        style={[
+                          styles.inlineAction,
+                          {
+                            backgroundColor: palette.surface,
+                            borderColor: palette.border
+                          }
+                        ]}
                         accessibilityRole="button"
                         accessibilityLabel={`Open source for ${task.title}`}
                       >
-                        <Text style={styles.inlineActionText}>Open Source</Text>
+                        <Text style={[styles.inlineActionText, { color: palette.text }]}>
+                          Open Source
+                        </Text>
                       </Pressable>
                     </Link>
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={styles.cardDescription}>
+              <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
                 {model.nextTask
                   ? `Next: ${model.nextTask.title} | ${fmtDate(model.nextTask.dueDate)}`
                   : "No open task is scheduled for this grow."}
@@ -383,8 +531,10 @@ export default function PersonalHomeTab() {
             <ActionLink href={`${growHref}/tasks`} label="View Tasks" />
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>Recent journal activity</Text>
-            <Text style={styles.cardDescription}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Recent journal activity
+            </Text>
+            <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
               {model.latestLog
                 ? `${model.latestLog.title} | ${fmtDate(model.latestLog.date)}`
                 : "No journal entries have been recorded yet."}
@@ -392,8 +542,10 @@ export default function PersonalHomeTab() {
             <ActionLink href={`${growHref}/journal`} label="Open Journal" />
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>Latest diagnosis</Text>
-            <Text style={styles.cardDescription}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Latest diagnosis
+            </Text>
+            <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
               {model.latestDiagnosis
                 ? `${model.latestDiagnosis.issueSummary || model.latestDiagnosis.diagnosisClass || "Diagnosis saved"} | ${fmtDate(model.latestDiagnosis.createdAt)}`
                 : "No diagnosis has been saved for this grow yet."}
@@ -404,8 +556,8 @@ export default function PersonalHomeTab() {
             />
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>Recent photos</Text>
-            <Text style={styles.cardDescription}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Recent photos</Text>
+            <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
               {model.recentPhotos.length
                 ? `${model.recentPhotos.length} recent photo${model.recentPhotos.length === 1 ? "" : "s"} attached to this grow. Latest: ${model.recentPhotos[0].title}`
                 : "No photos have been attached to this grow yet."}
@@ -418,27 +570,74 @@ export default function PersonalHomeTab() {
             ) : null}
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>Garden statistics</Text>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Garden statistics
+            </Text>
             <View style={styles.metrics}>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.activeGrowCount}</Text>
-                <Text style={styles.metricLabel}>Active grows</Text>
+              <View
+                style={[
+                  styles.metric,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.metricValue, { color: palette.text }]}>
+                  {model.stats.activeGrowCount}
+                </Text>
+                <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                  Active grows
+                </Text>
               </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.completedTaskCount}</Text>
-                <Text style={styles.metricLabel}>Completed tasks</Text>
+              <View
+                style={[
+                  styles.metric,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.metricValue, { color: palette.text }]}>
+                  {model.stats.completedTaskCount}
+                </Text>
+                <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                  Completed tasks
+                </Text>
               </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.toolRunCount}</Text>
-                <Text style={styles.metricLabel}>Tool runs</Text>
+              <View
+                style={[
+                  styles.metric,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.metricValue, { color: palette.text }]}>
+                  {model.stats.toolRunCount}
+                </Text>
+                <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                  Tool runs
+                </Text>
               </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.diagnosisCount}</Text>
-                <Text style={styles.metricLabel}>Diagnoses</Text>
+              <View
+                style={[
+                  styles.metric,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.metricValue, { color: palette.text }]}>
+                  {model.stats.diagnosisCount}
+                </Text>
+                <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                  Diagnoses
+                </Text>
               </View>
-              <View style={styles.metric}>
-                <Text style={styles.metricValue}>{model.stats.photoCount}</Text>
-                <Text style={styles.metricLabel}>Photos</Text>
+              <View
+                style={[
+                  styles.metric,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.metricValue, { color: palette.text }]}>
+                  {model.stats.photoCount}
+                </Text>
+                <Text style={[styles.metricLabel, { color: palette.textMuted }]}>
+                  Photos
+                </Text>
               </View>
             </View>
           </AppCard>
@@ -446,10 +645,19 @@ export default function PersonalHomeTab() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Discovery globe</Text>
-        <AppCard style={styles.globeCard}>
-          <Text style={styles.cardTitle}>Shared plant findings</Text>
-          <Text style={styles.cardDescription}>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>
+          Discovery globe
+        </Text>
+        <AppCard
+          style={[
+            styles.globeCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Shared plant findings
+          </Text>
+          <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
             Opt-in public observations appear on the globe. Personal details stay excluded
             from this shared view.
           </Text>
@@ -471,7 +679,9 @@ export default function PersonalHomeTab() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Single-user shortcuts</Text>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>
+          Single-user shortcuts
+        </Text>
         <View style={styles.actions}>
           <ActionLink href="/videos?tab=library" label="My Videos" />
           <ActionLink href="/lives" label="Lives" />
@@ -480,7 +690,7 @@ export default function PersonalHomeTab() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Explore</Text>
+        <Text style={[styles.sectionTitle, { color: palette.text }]}>Explore</Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/community" label="Forum / Q&A" />
           <ActionLink href="/store" label="Discover Storefronts" />
