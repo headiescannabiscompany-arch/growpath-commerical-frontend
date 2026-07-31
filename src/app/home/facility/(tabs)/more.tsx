@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type WorkspaceDestination = {
@@ -144,32 +145,43 @@ const workspaceGroups: Array<{
 ];
 
 function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
+  const { palette } = useAppTheme();
   return (
     <Link href={href as any} asChild>
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={`Open ${label}`}
-        style={styles.destination}
+        style={[
+          styles.destination,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
       >
-        <Text style={styles.destinationTitle}>{label}</Text>
-        <Text style={styles.destinationDescription}>{description}</Text>
-        <Text style={styles.destinationAction}>Open</Text>
+        <Text style={[styles.destinationTitle, { color: palette.text }]}>{label}</Text>
+        <Text style={[styles.destinationDescription, { color: palette.textMuted }]}>
+          {description}
+        </Text>
+        <Text style={[styles.destinationAction, { color: palette.accent }]}>Open</Text>
       </Pressable>
     </Link>
   );
 }
 
 export default function FacilityMoreRoute() {
+  const { palette } = useAppTheme();
   return (
     <AppPage
       routeKey="facility-more"
       longContent
       header={
         <View style={styles.header}>
-          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
             More Facility Workspaces
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Open the admin, learning, and social surfaces that do not fit in the compact
             Facility tab bar.
           </Text>
@@ -178,7 +190,11 @@ export default function FacilityMoreRoute() {
     >
       {workspaceGroups.map((group) => (
         <AppCard key={group.title}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.groupTitle}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.groupTitle, { color: palette.text }]}
+          >
             {group.title}
           </Text>
           <View style={styles.destinationGrid}>
@@ -194,8 +210,6 @@ export default function FacilityMoreRoute() {
 
 const styles = StyleSheet.create({
   destination: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
     borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: 220,
@@ -207,13 +221,11 @@ const styles = StyleSheet.create({
     padding: 14
   },
   destinationAction: {
-    color: "#166534",
     fontSize: 13,
     fontWeight: "900",
     marginTop: 10
   },
   destinationDescription: {
-    color: "#475569",
     flexShrink: 1,
     fontSize: 13,
     lineHeight: 19,
@@ -225,12 +237,10 @@ const styles = StyleSheet.create({
     gap: 10
   },
   destinationTitle: {
-    color: "#0F172A",
     fontSize: 16,
     fontWeight: "900"
   },
   groupTitle: {
-    color: "#0F172A",
     fontSize: 18,
     fontWeight: "900",
     marginBottom: 12
@@ -239,12 +249,10 @@ const styles = StyleSheet.create({
     gap: 6
   },
   subtitle: {
-    color: "#475569",
     fontSize: 14,
     lineHeight: 20
   },
   title: {
-    color: "#0F172A",
     fontSize: 28,
     fontWeight: "900"
   }

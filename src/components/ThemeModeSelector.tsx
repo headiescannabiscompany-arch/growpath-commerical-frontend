@@ -13,7 +13,7 @@ const OPTIONS: Array<{
   {
     key: "auto",
     label: "Auto",
-    description: "Follows your device appearance."
+    description: "Uses saved location sunrise/sunset, otherwise device appearance."
   },
   {
     key: "day",
@@ -69,9 +69,9 @@ export default function ThemeModeSelector() {
       <Text style={[styles.kicker, { color: palette.accent }]}>Appearance</Text>
       <Text style={[styles.title, { color: palette.text }]}>Day, night, or auto</Text>
       <Text style={[styles.body, { color: palette.textMuted }]}>
-        Auto follows your device theme unless you save a location for sunrise and sunset.
-        Day uses the lighter green UI. Night uses the darker blue-gray UI with bright text
-        and blue clickable links.
+        Auto now asks once for location, saves it, and then follows sunrise/sunset. Day
+        uses the lighter green UI. Night uses the darker blue-gray UI with bright text and
+        blue clickable links.
       </Text>
 
       <View style={styles.segmentRow}>

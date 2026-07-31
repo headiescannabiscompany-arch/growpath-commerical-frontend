@@ -32,14 +32,13 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarShowIcon: false,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 8 : 11,
+          fontSize: compactTabs ? 10 : 11,
           fontWeight: "700",
-          lineHeight: compactTabs ? 10 : 13,
+          lineHeight: compactTabs ? 12 : 13,
           textAlign: "center"
         },
         tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
@@ -54,23 +53,21 @@ export default function PersonalTabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Home", tabBarLabel: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows", tabBarLabel: "Grows" }} />
-      <Tabs.Screen name="tools" options={{ title: "AI Tools", tabBarLabel: "AI" }} />
       <Tabs.Screen
         name="community"
         options={{ title: "Forum / Q&A", tabBarLabel: "Forum" }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover" }}
+        options={{ title: "Discovery Nature", tabBarLabel: "Nature" }}
       />
-      <Tabs.Screen
-        name="courses"
-        options={{ title: "Courses", tabBarLabel: "Courses" }}
-      />
+      <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
+      <Tabs.Screen name="tools" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="courses" options={{ href: null, tabBarButton: () => null }} />
       <Tabs.Screen
         name="field-studies/index"
         options={{ href: null, tabBarButton: () => null, title: "Field Studies" }}

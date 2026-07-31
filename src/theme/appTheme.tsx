@@ -68,6 +68,7 @@ type ThemeContextValue = {
 const STORAGE_KEY = "gp.theme.mode";
 const AUTO_STRATEGY_STORAGE_KEY = "gp.theme.auto.strategy";
 const AUTO_LOCATION_STORAGE_KEY = "gp.theme.auto.location";
+const AUTO_LOCATION_PROMPTED_STORAGE_KEY = "gp.theme.auto.location.prompted";
 
 const DAY_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
   page: "#F1F7F2",
@@ -306,6 +307,7 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   const [themeLocation, setThemeLocation] = useState<ThemeLocationPreference | null>(
     null
   );
+  const [autoLocationPrompted, setAutoLocationPrompted] = useState(false);
   const [systemScheme, setSystemScheme] = useState<ResolvedThemeMode>(
     normalizeSystemScheme(Appearance.getColorScheme())
   );
@@ -330,6 +332,8 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
           setAutoStrategy(storedStrategy);
         }
         setThemeLocation(parseStoredLocation(storedLocation));
+        const prompted = await AsyncStorage.getItem(AUTO_LOCATION_PROMPTED_STORAGE_KEY);
+        setAutoLocationPrompted(prompted === "1");
       } finally {
         if (alive) setHydrated(true);
       }
@@ -350,11 +354,15 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     void Promise.all([
       AsyncStorage.setItem(STORAGE_KEY, mode),
       AsyncStorage.setItem(AUTO_STRATEGY_STORAGE_KEY, autoStrategy),
+      AsyncStorage.setItem(
+        AUTO_LOCATION_PROMPTED_STORAGE_KEY,
+        autoLocationPrompted ? "1" : "0"
+      ),
       themeLocation
         ? AsyncStorage.setItem(AUTO_LOCATION_STORAGE_KEY, JSON.stringify(themeLocation))
         : AsyncStorage.removeItem(AUTO_LOCATION_STORAGE_KEY)
     ]);
-  }, [mode, autoStrategy, themeLocation, hydrated]);
+  }, [mode, autoStrategy, autoLocationPrompted, themeLocation, hydrated]);
 
   useEffect(() => {
     if (mode !== "auto" || autoStrategy !== "location" || !themeLocation) return;
@@ -363,6 +371,33 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     }, 60000);
     return () => clearInterval(interval);
   }, [mode, autoStrategy, themeLocation]);
+
+  useEffect(() => {
+    if (!hydrated || mode !== "auto" || autoLocationPrompted || themeLocation) return;
+    let cancelled = false;
+
+    void (async () => {
+      setAutoLocationPrompted(true);
+      try {
+        const coordinates = await requestCurrentCoordinates();
+        if (cancelled) return;
+        const nextLocation: ThemeLocationPreference = {
+          ...coordinates,
+          updatedAt: new Date().toISOString()
+        };
+        setAutoStrategy("location");
+        setThemeLocation(nextLocation);
+      } catch {
+        if (!cancelled) {
+          // Leave auto mode on device theme when location is unavailable.
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [autoLocationPrompted, hydrated, mode, themeLocation]);
 
   const setThemeMode = useCallback((next: ThemeMode) => {
     setMode(next);
@@ -377,12 +412,14 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     setMode("auto");
     setAutoStrategy("location");
     setThemeLocation(nextLocation);
+    setAutoLocationPrompted(true);
   }, []);
 
   const disableLocationAuto = useCallback(async () => {
     setMode("auto");
     setAutoStrategy("device");
     setThemeLocation(null);
+    setAutoLocationPrompted(true);
   }, []);
 
   const resolvedMode = resolveThemeMode(

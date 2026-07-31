@@ -49,7 +49,6 @@ export default function FacilityTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarShowIcon: false,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
@@ -57,9 +56,9 @@ export default function FacilityTabsLayout() {
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 8 : 10,
+          fontSize: compactTabs ? 10 : 10,
           fontWeight: "700",
-          lineHeight: compactTabs ? 10 : 12,
+          lineHeight: compactTabs ? 12 : 12,
           textAlign: "center"
         },
         tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
@@ -74,17 +73,22 @@ export default function FacilityTabsLayout() {
     >
       <Tabs.Screen
         name="dashboard"
-        options={{ title: "Dashboard", tabBarLabel: "Dashboard" }}
+        options={{ title: "Dashboard", tabBarLabel: "Dash" }}
       />
-      <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen name="sop-runs" options={{ title: "SOPs" }} />
+      <Tabs.Screen name="grows" options={{ title: "Grows", tabBarLabel: "Grows" }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarLabel: "Tasks" }} />
       <Tabs.Screen
         name="compliance"
-        options={{ title: "Compliance", tabBarLabel: "Compliance" }}
+        options={{ title: "Compliance", tabBarLabel: "Comp" }}
       />
+      <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", tabBarLabel: "Profile" }}
+      />
+      <Tabs.Screen name="rooms" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="plants" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="sop-runs" options={{ href: null, tabBarButton: () => null }} />
       <Tabs.Screen
         name="logs"
         options={{ title: "Logs", href: null, tabBarButton: () => null }}
@@ -101,41 +105,17 @@ export default function FacilityTabsLayout() {
         name="transfers"
         options={{ title: "Sales", href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen
-        name="team"
-        options={{ title: "Team", href: null, tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="reports"
-        options={{ title: "Reports", href: null, tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{ title: "Analytics", href: null, tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="team" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="reports" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="analytics" options={{ href: null, tabBarButton: () => null }} />
       <Tabs.Screen
         name="integrations"
-        options={{ title: "Integrations", href: null, tabBarButton: () => null }}
+        options={{ href: null, tabBarButton: () => null }}
       />
-      <Tabs.Screen
-        name="ai-tools"
-        options={{
-          title: "AI Tools",
-          tabBarLabel: "AI",
-          href: compactTabs ? null : undefined
-        }}
-      />
+      <Tabs.Screen name="ai-tools" options={{ href: null, tabBarButton: () => null }} />
       <Tabs.Screen
         name="ai-ask"
         options={{ title: "AI", tabBarLabel: "AI", href: null, tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="more"
-        options={{ title: "More", href: null, tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
       <Tabs.Screen
         name="ai-diagnosis-photo"
