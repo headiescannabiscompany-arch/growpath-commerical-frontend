@@ -1,9 +1,12 @@
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const TOOLS = [
@@ -43,13 +46,23 @@ const LIBRARY = [
 export default function FacilityAiToolsRoute() {
   const router = useRouter();
   const { selectedId: facilityId, selected: facility } = useFacility();
+  const { palette } = useAppTheme();
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Facility Grow Intelligence</Text>
-      <Text style={styles.subtitle}>
-        Shared AI and calculation capabilities. Lifecycle work stays attached to its room,
-        grow, batch, or production record.
-      </Text>
+    <AppPage
+      routeKey="facility-ai-tools"
+      railOverride={null}
+      header={
+        <View>
+          <Text style={[styles.title, { color: palette.text }]}>
+            Facility Grow Intelligence
+          </Text>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+            Shared AI and calculation capabilities. Lifecycle work stays attached to its
+            room, grow, batch, or production record.
+          </Text>
+        </View>
+      }
+    >
       <TokenBalanceWidget
         workspaceType="facility"
         facilityId={String(facilityId || "")}
@@ -57,58 +70,56 @@ export default function FacilityAiToolsRoute() {
       />
       <View style={styles.grid}>
         {TOOLS.map(([title, description, href]) => (
-          <View key={href} style={styles.card}>
-            <Text style={styles.cardTitle}>{title}</Text>
-            <Text style={styles.description}>{description}</Text>
-            <Pressable style={styles.button} onPress={() => router.push(href as any)}>
-              <Text style={styles.buttonText}>Open</Text>
+          <AppCard key={href} style={styles.card}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>
+            <Text style={[styles.description, { color: palette.textMuted }]}>
+              {description}
+            </Text>
+            <Pressable
+              style={[styles.button, { backgroundColor: palette.accent }]}
+              onPress={() => router.push(href as any)}
+            >
+              <Text style={[styles.buttonText, { color: palette.accentText }]}>Open</Text>
             </Pressable>
-          </View>
+          </AppCard>
         ))}
       </View>
-      <Text style={styles.section}>Tool Library</Text>
+      <Text style={[styles.section, { color: palette.textMuted }]}>Tool Library</Text>
       <View style={styles.library}>
         {LIBRARY.map(([title, href]) => (
           <Pressable
             key={href}
-            style={styles.libraryButton}
+            style={[styles.libraryButton, { borderColor: palette.accent }]}
             onPress={() => router.push(href as any)}
           >
-            <Text style={styles.libraryText}>{title}</Text>
+            <Text style={[styles.libraryText, { color: palette.accent }]}>{title}</Text>
           </Pressable>
         ))}
       </View>
-    </ScrollView>
+    </AppPage>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 48, gap: 12 },
-  title: { color: "#111827", fontSize: 26, fontWeight: "900" },
-  subtitle: { color: "#64748B", lineHeight: 20, maxWidth: 760 },
+  title: { fontSize: 26, fontWeight: "900" },
+  subtitle: { lineHeight: 20, maxWidth: 760 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   card: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
     flexBasis: 280,
     flexGrow: 1,
     gap: 8,
-    padding: 16
+    minWidth: 250
   },
-  cardTitle: { color: "#111827", fontSize: 17, fontWeight: "900" },
-  description: { color: "#475569", lineHeight: 19 },
+  cardTitle: { fontSize: 17, fontWeight: "900" },
+  description: { lineHeight: 19 },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: "#166534",
     borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 9
   },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
+  buttonText: { fontWeight: "800" },
   section: {
-    color: "#475569",
     fontSize: 13,
     fontWeight: "800",
     marginTop: 12,
@@ -116,11 +127,10 @@ const styles = StyleSheet.create({
   },
   library: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   libraryButton: {
-    borderColor: "#166534",
     borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
-  libraryText: { color: "#166534", fontWeight: "800" }
+  libraryText: { fontWeight: "800" }
 });

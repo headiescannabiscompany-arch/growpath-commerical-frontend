@@ -6,6 +6,7 @@ import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 const TOOLS = [
   {
@@ -49,13 +50,14 @@ const TOOLS = [
 ] as const;
 
 export default function CommercialToolsIndex() {
+  const { palette } = useAppTheme();
   return (
     <AppPage
       routeKey="commercial-tools"
       header={
         <View>
-          <Text style={styles.title}>Commercial Tools</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: palette.text }]}>Commercial Tools</Text>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Start with grow intelligence here. Harvest, scheduling, and lifecycle
             workflows live inside the grow, trial, or batch they affect.
           </Text>
@@ -66,8 +68,10 @@ export default function CommercialToolsIndex() {
       <View style={styles.grid}>
         {TOOLS.map((tool) => (
           <AppCard key={tool.href} style={styles.card}>
-            <Text style={styles.cardTitle}>{tool.title}</Text>
-            <Text style={styles.cardDescription}>{tool.description}</Text>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>{tool.title}</Text>
+            <Text style={[styles.cardDescription, { color: palette.textMuted }]}>
+              {tool.description}
+            </Text>
             <Link
               href={tool.href}
               asChild
@@ -80,9 +84,15 @@ export default function CommercialToolsIndex() {
               <Pressable
                 accessibilityRole="link"
                 accessibilityLabel={`Open ${tool.title}`}
-                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                style={({ pressed }) => [
+                  styles.button,
+                  { backgroundColor: palette.accent },
+                  pressed && styles.buttonPressed
+                ]}
               >
-                <Text style={styles.buttonText}>Open tool</Text>
+                <Text style={[styles.buttonText, { color: palette.accentText }]}>
+                  Open tool
+                </Text>
               </Pressable>
             </Link>
           </AppCard>
@@ -93,20 +103,19 @@ export default function CommercialToolsIndex() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: "#111827", fontSize: 26, fontWeight: "900" },
-  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 6, maxWidth: 760 },
+  title: { fontSize: 26, fontWeight: "900" },
+  subtitle: { lineHeight: 20, marginTop: 6, maxWidth: 760 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   card: { flexBasis: 280, flexGrow: 1, gap: 8, minWidth: 250 },
-  cardTitle: { color: "#111827", fontSize: 17, fontWeight: "900" },
-  cardDescription: { color: "#475569", flexGrow: 1, lineHeight: 19 },
+  cardTitle: { fontSize: 17, fontWeight: "900" },
+  cardDescription: { flexGrow: 1, lineHeight: 19 },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: "#166534",
     borderRadius: radius.card,
     marginTop: 4,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
   buttonPressed: { opacity: 0.7 },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" }
+  buttonText: { fontWeight: "800" }
 });
