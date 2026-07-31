@@ -1,11 +1,5 @@
-import { apiRequest } from "@/api/apiRequest";
-import { endpoints } from "@/api/endpoints";
-import { InlineError } from "@/components/InlineError";
-import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { useFacility } from "@/state/useFacility";
-import { radius } from "@/theme/theme";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,7 +9,15 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
+import { InlineError } from "@/components/InlineError";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -55,6 +57,7 @@ export default function FacilityGrowsTab() {
     roomName?: string;
   }>();
   const { selectedId: facilityId } = useFacility();
+  const { palette } = useAppTheme();
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -133,20 +136,22 @@ export default function FacilityGrowsTab() {
       showBack
       backFallbackHref="/home/facility/rooms"
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: palette.page }]}>
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>
-            {roomName ? `${roomName} → Grows` : "Facility Grows"}
+          <Text style={[styles.h1, { color: palette.text }]}>
+            {roomName ? `${roomName} > Grows` : "Facility Grows"}
           </Text>
-          <Text style={styles.muted}>{header}</Text>
+          <Text style={[styles.muted, { color: palette.textMuted }]}>{header}</Text>
         </View>
 
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading grows...</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
+              Loading grows...
+            </Text>
           </View>
         ) : null}
 
@@ -163,11 +168,16 @@ export default function FacilityGrowsTab() {
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             !loading ? (
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>
+              <View
+                style={[
+                  styles.empty,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
+                <Text style={[styles.emptyTitle, { color: palette.text }]}>
                   {roomId ? "No grows in this room yet" : "No facility grows yet"}
                 </Text>
-                <Text style={styles.muted}>
+                <Text style={[styles.muted, { color: palette.textMuted }]}>
                   {roomId
                     ? `Start a grow in ${roomLabel} to connect its plants, tasks, logs, and AI context.`
                     : "Start a grow to connect rooms, plants, tasks, logs, and AI context."}
@@ -178,9 +188,13 @@ export default function FacilityGrowsTab() {
                     roomId ? `Start grow in ${roomLabel}` : "Start facility grow"
                   }
                   onPress={openStartGrow}
-                  style={({ pressed }) => [styles.startButton, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.startButton,
+                    { backgroundColor: palette.accent, borderColor: palette.accent },
+                    pressed && styles.pressed
+                  ]}
                 >
-                  <Text style={styles.startButtonText}>
+                  <Text style={[styles.startButtonText, { color: palette.accentText }]}>
                     {roomId ? "Start a grow in this room" : "Start a facility grow"}
                   </Text>
                 </Pressable>
@@ -198,19 +212,32 @@ export default function FacilityGrowsTab() {
                   if (!id) return;
                   router.push({ pathname: "/home/facility/grows/[id]", params: { id } });
                 }}
-                style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.row,
+                  {
+                    backgroundColor: palette.surface,
+                    borderColor: palette.border
+                  },
+                  pressed && styles.pressed
+                ]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    style={[styles.rowTitle, { color: palette.text }]}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (
-                    <Text style={styles.rowSub} numberOfLines={1}>
+                    <Text
+                      style={[styles.rowSub, { color: palette.textMuted }]}
+                      numberOfLines={1}
+                    >
                       {subtitle}
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>{">"}</Text>
+                <Text style={[styles.chev, { color: palette.textMuted }]}>{">"}</Text>
               </Pressable>
             );
           }}
@@ -225,32 +252,33 @@ const styles = StyleSheet.create({
   headerRow: { marginBottom: 12 },
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
   muted: { opacity: 0.7 },
-
-  loading: { paddingVertical: 18, alignItems: "center" },
+  loading: { alignItems: "center", paddingVertical: 18 },
   list: { paddingVertical: 6 },
-
   row: {
-    flexDirection: "row",
     alignItems: "center",
-    padding: 14,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
+    flexDirection: "row",
+    padding: 14
   },
   pressed: { opacity: 0.85 },
   rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
   rowSub: { opacity: 0.7 },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
-
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+  empty: {
+    alignItems: "center",
+    borderRadius: radius.card,
+    borderWidth: 1,
+    gap: 8,
+    paddingVertical: 26
+  },
   emptyTitle: { fontSize: 16, fontWeight: "900" },
   startButton: {
-    backgroundColor: "#166534",
     borderRadius: radius.card,
+    borderWidth: 1,
     marginTop: 4,
     paddingHorizontal: 14,
     paddingVertical: 11
   },
-  startButtonText: { color: "white", fontWeight: "900" }
+  startButtonText: { fontWeight: "900" }
 });
