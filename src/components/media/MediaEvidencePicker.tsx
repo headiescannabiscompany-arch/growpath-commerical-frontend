@@ -12,6 +12,7 @@ import {
   extractVideoFrameCandidates,
   type VideoFrameCandidate
 } from "@/features/personal/harvest/videoFrameExtraction";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type {
   EvidenceAsset,
@@ -138,6 +139,8 @@ export default function MediaEvidencePicker({
   value,
   onChange
 }: Props) {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const [internalAssets, setInternalAssets] = useState<EvidenceAsset[]>(value || []);
   const [videoFeedback, setVideoFeedback] = useState("");
   const assets = value || internalAssets;
@@ -399,48 +402,64 @@ export default function MediaEvidencePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 12
-  },
-  header: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  summary: { color: "#475569", fontWeight: "700" },
-  help: { color: "#64748B", lineHeight: 18 },
-  guidance: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    padding: 10
-  },
-  guidanceTitle: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
-  guidanceItem: { color: "#334155", fontSize: 12, lineHeight: 18 },
-  guidanceNote: { color: "#475569", fontSize: 12, lineHeight: 18, marginTop: 3 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  button: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.45 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  asset: { minWidth: 130, width: 150 },
-  preview: { backgroundColor: "#E2E8F0", borderRadius: radius.card, height: 110 },
-  videoPreview: { alignItems: "center", justifyContent: "center" },
-  videoText: { color: "#0F172A", fontWeight: "800" },
-  videoMeta: { color: "#475569", marginTop: 4 },
-  videoFeedback: { color: "#334155", lineHeight: 18 },
-  status: { color: "#475569", fontSize: 12, marginTop: 4, textTransform: "capitalize" },
-  error: { color: "#B91C1C", fontSize: 12, marginTop: 3 },
-  warning: { color: "#92400E", fontSize: 12, marginTop: 3 },
-  remove: { alignItems: "center", paddingVertical: 7 },
-  removeText: { color: "#991B1B", fontWeight: "700" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    header: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    title: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    summary: { color: palette.textMuted, fontWeight: "700" },
+    help: { color: palette.textMuted, lineHeight: 18 },
+    guidance: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      padding: 10
+    },
+    guidanceTitle: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    guidanceItem: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    guidanceNote: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18,
+      marginTop: 3
+    },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.45 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    asset: { minWidth: 130, width: 150 },
+    preview: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      height: 110
+    },
+    videoPreview: { alignItems: "center", justifyContent: "center" },
+    videoText: { color: palette.text, fontWeight: "800" },
+    videoMeta: { color: palette.textMuted, marginTop: 4 },
+    videoFeedback: { color: palette.textMuted, lineHeight: 18 },
+    status: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginTop: 4,
+      textTransform: "capitalize"
+    },
+    error: { color: palette.danger, fontSize: 12, marginTop: 3 },
+    warning: { color: palette.warning, fontSize: 12, marginTop: 3 },
+    remove: { alignItems: "center", paddingVertical: 7 },
+    removeText: { color: palette.danger, fontWeight: "700" }
+  });
