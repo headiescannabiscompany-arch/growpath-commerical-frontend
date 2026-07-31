@@ -6,10 +6,14 @@ describe("personal navigation release surface", () => {
     path.join(process.cwd(), "src/app/home/personal/(tabs)/_layout.tsx"),
     "utf8"
   );
+  const more = fs.readFileSync(
+    path.join(process.cwd(), "src/app/home/personal/(tabs)/more.tsx"),
+    "utf8"
+  );
   const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  test("keeps core personal destinations in the bottom tabs", () => {
-    for (const name of ["index", "grows", "tools", "community", "courses", "profile"]) {
+  test("keeps the compact personal destinations in the bottom tabs", () => {
+    for (const name of ["index", "grows", "community", "discover", "more", "profile"]) {
       expect(layout).toMatch(new RegExp(`name="${name}"`));
       expect(layout).not.toMatch(
         new RegExp(`name="${name}"\\s+options=\\{\\{[^}]*href:\\s*null`)
@@ -18,11 +22,37 @@ describe("personal navigation release surface", () => {
   });
 
   test("keeps contextual destinations out of primary bottom navigation", () => {
-    for (const name of ["ai", "forum", "diagnose", "field-studies/index", "field-studies/[studyId]"]) {
+    for (const name of [
+      "tools",
+      "courses",
+      "ai",
+      "forum",
+      "diagnose",
+      "logs",
+      "tasks",
+      "field-studies/index",
+      "field-studies/[studyId]"
+    ]) {
       expect(layout).toMatch(new RegExp(`name="${escapeRegExp(name)}"`));
       expect(layout).toMatch(
         new RegExp(`name="${escapeRegExp(name)}"\\s+options=\\{\\{[^}]*href:\\s*null`)
       );
+    }
+  });
+
+  test("keeps overflow destinations reachable from More", () => {
+    for (const href of [
+      "/home/personal/tools",
+      "/home/personal/diagnose",
+      "/field-observations",
+      "/courses",
+      "/videos?tab=library",
+      "/home/personal/grows",
+      "/home/personal/tasks",
+      "/home/personal/profile",
+      "/account/mode"
+    ]) {
+      expect(more).toContain(`href: "${href}"`);
     }
   });
 });
