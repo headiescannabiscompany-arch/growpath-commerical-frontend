@@ -10,15 +10,19 @@ import {
   availableWorkspaceModes,
   workspaceHomeHref
 } from "@/features/mode/workspaceOptions";
+import { useAppTheme } from "@/theme/appTheme";
 
 export function LoginWorkspaceChoiceContent() {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
 
   if (!entitlements.ready) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator />
-        <Text style={styles.loadingText}>Loading your workspaces...</Text>
+        <Text style={[styles.loadingText, { color: palette.textMuted }]}>
+          Loading your workspaces...
+        </Text>
       </View>
     );
   }
@@ -45,9 +49,15 @@ export function LoginWorkspaceChoiceContent() {
       routeKey="login-workspace"
       header={
         <View style={styles.header}>
-          <Text style={styles.kicker}>Signed in</Text>
-          <Text style={styles.title}>Choose where you are working</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.kicker, { color: palette.link }]}>Signed in</Text>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
+            Choose where you are working
+          </Text>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             This login has access to more than one workspace. {choiceDescription} You can
             switch again later from Profile.
           </Text>

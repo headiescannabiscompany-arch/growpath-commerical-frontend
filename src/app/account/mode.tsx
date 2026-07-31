@@ -6,8 +6,10 @@ import { ModeSwitcher } from "@/components/ModeSwitcher";
 import AppPage from "@/components/layout/AppPage";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 function AccountModePageContent() {
+  const { palette } = useAppTheme();
   return (
     <AppPage
       routeKey="account-mode"
@@ -15,11 +17,15 @@ function AccountModePageContent() {
       backFallbackHref="/profile"
       header={
         <View style={styles.header}>
-          <Text style={styles.kicker}>Account mode</Text>
-          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          <Text style={[styles.kicker, { color: palette.link }]}>Account mode</Text>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
             Choose Workspace
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Pick whether you are acting as yourself, a commercial brand, or a facility
             team before creating records or posting.
           </Text>
@@ -28,9 +34,14 @@ function AccountModePageContent() {
     >
       <ModeSwitcher />
       <ThemeModeSelector />
-      <View style={styles.noteCard}>
-        <Text style={styles.noteTitle}>Mode boundaries</Text>
-        <Text style={styles.noteText}>
+      <View
+        style={[
+          styles.noteCard,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
+      >
+        <Text style={[styles.noteTitle, { color: palette.text }]}>Mode boundaries</Text>
+        <Text style={[styles.noteText, { color: palette.textMuted }]}>
           Personal creates personal grow records and Forum/Q&A posts. Commercial manages
           storefront products, courses, lives, Feed/Campaigns, orders, and analytics.
           Facility manages rooms, operational runs, staff tasks, inventory, sensors,
