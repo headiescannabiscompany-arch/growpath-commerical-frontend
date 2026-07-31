@@ -12,6 +12,7 @@ import {
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
+import { unpublishCourse } from "@/api/courses";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { useAppTheme } from "@/theme/appTheme";
@@ -113,6 +114,9 @@ export default function CoursesScreen({ navigation } = {}) {
   const [err, setErr] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
+  const [courseActionId, setCourseActionId] = useState("");
+  const [courseActionFeedback, setCourseActionFeedback] = useState("");
+  const [courseActionError, setCourseActionError] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -195,6 +199,31 @@ export default function CoursesScreen({ navigation } = {}) {
       setInviteMessage("Invite sent!");
     } catch (_e) {
       setInviteMessage("Failed to invite user");
+    }
+  };
+
+  const handleUnpublish = async (event, course) => {
+    event?.stopPropagation?.();
+    const id = String(course?._id || course?.id || "");
+    if (!id || courseActionId) return;
+
+    setCourseActionId(id);
+    setCourseActionFeedback("");
+    setCourseActionError("");
+    try {
+      await unpublishCourse(id);
+      setCourses((current) =>
+        current.map((item) =>
+          String(item?._id || item?.id || "") === id
+            ? { ...item, isPublished: false, status: "draft" }
+            : item
+        )
+      );
+      setCourseActionFeedback("Course unpublished and removed from public discovery.");
+    } catch (error) {
+      setCourseActionError(error?.message || "Unable to unpublish course.");
+    } finally {
+      setCourseActionId("");
     }
   };
 
@@ -334,6 +363,14 @@ export default function CoursesScreen({ navigation } = {}) {
       ) : null}
 
       {err ? <Text style={[styles.error, { color: palette.danger }]}>{err}</Text> : null}
+      {courseActionFeedback ? (
+        <Text style={[styles.meta, { color: palette.success }]}>
+          {courseActionFeedback}
+        </Text>
+      ) : null}
+      {courseActionError ? (
+        <Text style={[styles.error, { color: palette.danger }]}>{courseActionError}</Text>
+      ) : null}
 
       {!loading && !err && courses.length === 0 ? (
         <Text style={[styles.meta, { color: palette.textMuted }]}>
@@ -376,10 +413,21 @@ export default function CoursesScreen({ navigation } = {}) {
               Views: {item?.analytics?.views ?? 0}
             </Text>
           ) : null}
-          {isSignedIn && access.canPublishCourses && item?.isPublished ? (
-            <Pressable accessibilityRole="button" style={styles.smallBtn}>
+          {isSignedIn &&
+          access.canPublishCourses &&
+          item?._viewerOwnsCourse &&
+          isPublishedCourse(item) ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Unpublish ${String(item?.title || item?.name || "course")}`}
+              disabled={courseActionId === String(item?._id || item?.id || "")}
+              onPress={(event) => void handleUnpublish(event, item)}
+              style={styles.smallBtn}
+            >
               <Text style={[styles.smallBtnText, { color: palette.link }]}>
-                Unpublish
+                {courseActionId === String(item?._id || item?.id || "")
+                  ? "Unpublishing..."
+                  : "Unpublish"}
               </Text>
             </Pressable>
           ) : null}

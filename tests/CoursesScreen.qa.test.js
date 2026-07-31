@@ -266,12 +266,43 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "personal",
       limits: {},
       can: (cap) =>
-        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COURSES_CREATE" ||
+        cap === "PUBLISH_COURSES"
     });
-    const { getByText } = await renderWithNav();
+    const { getByText, findByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Unpublish")).toBeTruthy();
     });
+
+    fireEvent.press(getByText("Unpublish"));
+
+    expect(
+      await findByText("Course unpublished and removed from public discovery.")
+    ).toBeTruthy();
+    expect(
+      global.fetch.mock.calls.some(
+        ([url, options]) =>
+          String(url || "").includes("/api/courses/1/unpublish") &&
+          options?.method === "PUT"
+      )
+    ).toBe(true);
+  });
+
+  it("does not show unpublish controls for courses the viewer does not own", async () => {
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: {},
+      can: (cap) =>
+        cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
+    });
+
+    const { getByText, queryByText } = await renderWithNav();
+
+    await waitFor(() => expect(getByText("Free Course")).toBeTruthy());
+    expect(queryByText("Unpublish")).toBeNull();
   });
 
   it("invites a user and shows feedback", async () => {
