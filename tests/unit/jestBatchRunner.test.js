@@ -15,5 +15,13 @@ describe("batched Jest CI runner", () => {
   it("prints child-process errors instead of returning an unexplained exit code", () => {
     expect(source).toContain("[jest-batches] child process failed:");
     expect(source).toContain("result.error.message");
+    expect(source).toContain("reportBatchFailure(result");
+    expect(source).toContain("status=${String(result.status)}");
+  });
+
+  it("keeps passing batch logs concise and expands output only for failures", () => {
+    expect(source).toContain("{ echo: false }");
+    expect(source).toContain("✓ Jest batch ${batchNumber}/${totalBatches} passed");
+    expect(source).toContain("if (result.stdout) process.stdout.write(result.stdout)");
   });
 });

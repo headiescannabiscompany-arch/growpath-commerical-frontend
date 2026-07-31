@@ -42,6 +42,15 @@ function run(command, args, options = {}) {
   return result;
 }
 
+function reportBatchFailure(result, label) {
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  console.error(
+    `[jest-batches] ${label} failed ` +
+      `(status=${String(result.status)}, signal=${String(result.signal || "none")})`
+  );
+}
+
 const listResult = run(process.execPath, [jestBin, "--listTests", "--json"], {
   echo: false
 });
@@ -112,10 +121,11 @@ for (const test of soloTests) {
       "--runTestsByPath",
       test
     ],
-    { echo: true }
+    { echo: false }
   );
 
   if (result.status !== 0) {
+    reportBatchFailure(result, `batch ${batchNumber}/${totalBatches}`);
     trace(
       JSON.stringify({
         batchNumber,
@@ -127,6 +137,8 @@ for (const test of soloTests) {
     );
     process.exit(result.status || 1);
   }
+
+  console.log(`✓ Jest batch ${batchNumber}/${totalBatches} passed`);
 
   trace(
     JSON.stringify({
@@ -170,10 +182,11 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
         "--runTestsByPath",
         ...batch
       ],
-      { echo: true }
+      { echo: false }
     );
 
     if (result.status !== 0) {
+      reportBatchFailure(result, `batch ${batchNumber}/${totalBatches}`);
       trace(
         JSON.stringify({
           batchNumber,
@@ -187,6 +200,8 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
       );
       process.exit(result.status || 1);
     }
+
+    console.log(`✓ Jest batch ${batchNumber}/${totalBatches} passed`);
 
     trace(
       JSON.stringify({
