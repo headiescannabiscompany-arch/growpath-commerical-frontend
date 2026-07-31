@@ -251,13 +251,20 @@ const NOTIFICATION_INBOX_FILTERS = NOTIFICATION_PREFERENCE_OPTIONS.filter(
 
 export default function NotificationCenterRoute() {
   const auth = useAuth();
+  const params = useLocalSearchParams<{
+    notificationId?: string | string[];
+    workspace?: string | string[];
+  }>();
+  const requestedWorkspace = Array.isArray(params.workspace)
+    ? params.workspace[0]
+    : params.workspace;
+  const workspaceMode = requestedWorkspace || auth.ctx?.mode;
   const profileHref =
-    auth.ctx?.mode === "facility"
+    workspaceMode === "facility"
       ? "/home/facility/profile"
-      : auth.ctx?.mode === "commercial"
+      : workspaceMode === "commercial"
         ? "/home/commercial/profile"
         : "/home/personal/profile";
-  const params = useLocalSearchParams<{ notificationId?: string | string[] }>();
   const focusedNotificationId = Array.isArray(params.notificationId)
     ? params.notificationId[0]
     : params.notificationId;

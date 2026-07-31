@@ -121,7 +121,7 @@ const workspaceGroups: Array<{
       },
       {
         label: "Notifications",
-        href: "/home/notifications",
+        href: "/home/notifications?workspace=facility",
         description: "Review alerts, delivery status, and notification preferences."
       }
     ]

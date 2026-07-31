@@ -5,6 +5,7 @@ import NotificationCenterRoute from "@/app/home/notifications";
 
 const mockApiRequest = jest.fn();
 let mockWorkspaceMode = "personal";
+let mockWorkspaceParam: string | undefined;
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -39,7 +40,10 @@ jest.mock("expo-router", () => {
         children,
         React.createElement(Text, { accessibilityLabel: `Notification link ${href}` })
       ),
-    useLocalSearchParams: () => ({ notificationId: "notification-1" })
+    useLocalSearchParams: () => ({
+      notificationId: "notification-1",
+      workspace: mockWorkspaceParam
+    })
   };
 });
 
@@ -49,6 +53,7 @@ describe("NotificationCenterRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockWorkspaceMode = "personal";
+    mockWorkspaceParam = undefined;
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/notifications" && options?.method === "GET") {
         return Promise.resolve({
@@ -266,7 +271,7 @@ describe("NotificationCenterRoute", () => {
   });
 
   it("opens profile settings in the active workspace", async () => {
-    mockWorkspaceMode = "facility";
+    mockWorkspaceParam = "facility";
     const screen = render(<NotificationCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
