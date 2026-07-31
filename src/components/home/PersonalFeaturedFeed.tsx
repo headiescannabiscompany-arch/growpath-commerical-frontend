@@ -49,6 +49,7 @@ export function isPublicTestContent(row: any) {
   );
   return (
     PUBLIC_TEST_TITLE_PATTERNS.some((pattern) => pattern.test(title)) ||
+    PUBLIC_TEST_TITLE_PATTERNS.some((pattern) => pattern.test(detail)) ||
     /\bqa[- ]only\b/i.test(detail)
   );
 }

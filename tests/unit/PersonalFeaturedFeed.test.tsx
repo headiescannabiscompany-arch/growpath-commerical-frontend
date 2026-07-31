@@ -44,8 +44,8 @@ describe("PersonalFeaturedFeed", () => {
     mockListForumPosts.mockResolvedValue([
       {
         id: "qa-post",
-        title: "Testing post creation",
-        body: "QA thread",
+        title: "Popular forum discussion",
+        body: "Testing post creation, navigation, and image storage.",
         likeCount: 100
       },
       {
@@ -74,6 +74,12 @@ describe("PersonalFeaturedFeed", () => {
   it("recognizes explicit QA and test-only records without blocking normal testing topics", () => {
     expect(isPublicTestContent({ title: "QA ONLY course" })).toBe(true);
     expect(isPublicTestContent({ title: "Testing post creation" })).toBe(true);
+    expect(
+      isPublicTestContent({
+        title: "Popular forum discussion",
+        body: "Testing post creation and navigation."
+      })
+    ).toBe(true);
     expect(isPublicTestContent({ isTest: true, title: "Hidden record" })).toBe(true);
     expect(isPublicTestContent({ title: "Soil testing fundamentals" })).toBe(false);
   });
