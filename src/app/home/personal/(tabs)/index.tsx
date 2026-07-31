@@ -20,6 +20,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
 type HomeAlert = HomeModel["alerts"][number];
@@ -41,6 +42,7 @@ function alertSeverityStyle(severity: HomeAlert["severity"]) {
 }
 
 export default function PersonalHomeTab() {
+  const { palette } = useAppTheme();
   const auth = useAuth();
   const ent = useEntitlements();
   const canCreateGrow = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
@@ -150,11 +152,14 @@ export default function PersonalHomeTab() {
       routeKey="home"
       header={
         <View>
-          <Text style={styles.kicker}>Personal workspace</Text>
-          <Text accessibilityRole="header" style={styles.headerTitle}>
+          <Text style={[styles.kicker, { color: palette.link }]}>Personal workspace</Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.headerTitle, { color: palette.text }]}
+          >
             Your Garden
           </Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerSubtitle, { color: palette.textMuted }]}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
           </Text>
         </View>
@@ -448,7 +453,9 @@ export default function PersonalHomeTab() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Discovery globe</Text>
         <AppCard style={styles.globeCard}>
-          <Text style={styles.cardTitle}>Shared plant findings</Text>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Shared plant findings
+          </Text>
           <Text style={styles.cardDescription}>
             Opt-in public observations appear on the globe. Personal details stay excluded
             from this shared view.

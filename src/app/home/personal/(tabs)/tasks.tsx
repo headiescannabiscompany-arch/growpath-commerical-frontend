@@ -23,6 +23,7 @@ import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
@@ -361,6 +362,7 @@ function scheduleSummary(task: PersonalTask) {
 }
 
 export default function PersonalTaskCenterRoute() {
+  const { palette } = useAppTheme();
   const entitlements = useEntitlements();
   const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
 
@@ -585,11 +587,14 @@ export default function PersonalTaskCenterRoute() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>
+    <ScrollView
+      style={[styles.screen, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
+      <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
         Task Center / Schedule
       </Text>
-      <Text style={styles.subtitle}>
+      <Text style={[styles.subtitle, { color: palette.textMuted }]}>
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
         product-linked notes, alerts, and sensor follow-ups.
       </Text>

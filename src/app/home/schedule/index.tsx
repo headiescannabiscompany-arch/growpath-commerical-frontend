@@ -13,6 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CalendarItem = {
@@ -419,6 +420,7 @@ function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
 }
 
 export default function HomeScheduleRoute() {
+  const { palette } = useAppTheme();
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
@@ -553,7 +555,10 @@ export default function HomeScheduleRoute() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.screen, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.backRow}>
         <Link href="/home/personal" asChild>
           <Pressable accessibilityRole="link" style={styles.backButton}>
@@ -563,11 +568,15 @@ export default function HomeScheduleRoute() {
       </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
-          <Text style={styles.kicker}>GrowPath schedule</Text>
-          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          <Text style={[styles.kicker, { color: palette.link }]}>GrowPath schedule</Text>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
             Schedule / Agenda
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             One calendar view for tasks, lives, course releases, feed campaigns,
             storefront work, grow reminders, and facility follow-up.
           </Text>
