@@ -238,10 +238,10 @@ export default function CoursesScreen({ navigation } = {}) {
     return (
       <View
         accessibilityLabel={selectedId ? `Selected course ${selectedId}` : undefined}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: palette.page }]}
       >
         <Pressable onPress={() => setSelectedCourse(null)} style={styles.backBtn}>
-          <Text style={styles.backText}>Back to courses</Text>
+          <Text style={[styles.backText, { color: palette.link }]}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
           route={{
@@ -378,7 +378,9 @@ export default function CoursesScreen({ navigation } = {}) {
           ) : null}
           {isSignedIn && access.canPublishCourses && item?.isPublished ? (
             <Pressable accessibilityRole="button" style={styles.smallBtn}>
-              <Text style={styles.smallBtnText}>Unpublish</Text>
+              <Text style={[styles.smallBtnText, { color: palette.link }]}>
+                Unpublish
+              </Text>
             </Pressable>
           ) : null}
           <Text style={[styles.link, { color: palette.link }]}>
@@ -391,25 +393,36 @@ export default function CoursesScreen({ navigation } = {}) {
 
       {canCreateCourses ? (
         <>
-          <View style={styles.builderCard}>
-            <Text style={styles.cardTitle}>Course Builder Workflow</Text>
-            <Text style={styles.meta}>
+          <View
+            style={[
+              styles.builderCard,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Course Builder Workflow
+            </Text>
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
               Start with the basics, build lessons, add media or a live session, choose
               who can access it, preview the learner experience, and publish when ready.
             </Text>
-            <Text style={styles.meta}>
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
               GrowPath keeps course media, live sessions, pricing, and linked grow or
               forum resources together in this workflow.
             </Text>
           </View>
-          <Text style={styles.meta}>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
             Paid course limit:{" "}
             {access.maxPaidCourses === null
               ? "unlimited"
               : `${paidCourseCount}/${access.maxPaidCourses}`}
           </Text>
-          <Text style={styles.meta}>Course media: ready for uploads</Text>
-          <Text style={styles.meta}>Live sessions this month: 0 scheduled</Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            Course media: ready for uploads
+          </Text>
+          <Text style={[styles.meta, { color: palette.textMuted }]}>
+            Live sessions this month: 0 scheduled
+          </Text>
         </>
       ) : null}
 
@@ -423,7 +436,14 @@ export default function CoursesScreen({ navigation } = {}) {
             paidLimitReached && access.canSellPaidCourses && styles.btnDisabled
           ]}
         >
-          <Text style={styles.btnText}>Create Course</Text>
+          <Text
+            style={[
+              styles.btnText,
+              { backgroundColor: palette.accent, color: palette.accentText }
+            ]}
+          >
+            Create Course
+          </Text>
         </Pressable>
       ) : null}
 
@@ -443,9 +463,13 @@ export default function CoursesScreen({ navigation } = {}) {
             style={styles.inviteBtn}
             onPress={handleInvite}
           >
-            <Text style={styles.inviteText}>Invite</Text>
+            <Text style={[styles.inviteText, { color: palette.link }]}>Invite</Text>
           </Pressable>
-          {inviteMessage ? <Text style={styles.meta}>{inviteMessage}</Text> : null}
+          {inviteMessage ? (
+            <Text style={[styles.meta, { color: palette.textMuted }]}>
+              {inviteMessage}
+            </Text>
+          ) : null}
         </View>
       ) : null}
       <PersonalFeedPlacement placement="bottom" routeKey="personal_courses" longContent />
