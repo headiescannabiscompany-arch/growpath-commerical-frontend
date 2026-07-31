@@ -21,6 +21,7 @@ import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRun
 import { buildVpdNotices } from "@/features/personal/tools/vpdNotices";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { getImportedTelemetryToolContext } from "@/api/telemetry";
 
@@ -43,6 +44,8 @@ export default function VpdToolScreen() {
   const growId = coerceParam(rawGrowId);
   const initialPlantId = coerceParam(rawPlantId);
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOLS_VPD);
 
   const plantContext = useToolPlantContext(growId, initialPlantId);
@@ -352,35 +355,38 @@ export default function VpdToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 120, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 4 },
-  context: { color: "#166534", fontWeight: "700" },
-  row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  pill: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
-  pillText: { fontWeight: "800" },
-  pillTextOn: { color: "#FFFFFF" },
-  label: { fontSize: 14, fontWeight: "600", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12
-  },
-  lockedCard: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  lockedTitle: { fontWeight: "800", color: "#0F172A" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 120, backgroundColor: palette.page, gap: 8 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { fontSize: 13, color: palette.textMuted, marginBottom: 4 },
+    context: { color: palette.accent, fontWeight: "700" },
+    row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
+    pill: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    pillOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { color: palette.textMuted, fontWeight: "800" },
+    pillTextOn: { color: palette.accentText },
+    label: { color: palette.text, fontSize: 14, fontWeight: "600", marginTop: 4 },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 12
+    },
+    lockedCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    lockedTitle: { fontWeight: "800", color: palette.text }
+  });
