@@ -564,7 +564,9 @@ export default function HomeScheduleRoute() {
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <Text style={styles.kicker}>GrowPath schedule</Text>
-          <Text style={styles.title}>Schedule / Agenda</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Schedule / Agenda
+          </Text>
           <Text style={styles.subtitle}>
             One calendar view for tasks, lives, course releases, feed campaigns,
             storefront work, grow reminders, and facility follow-up.

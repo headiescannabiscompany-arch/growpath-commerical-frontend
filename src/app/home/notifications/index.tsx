@@ -461,7 +461,9 @@ export default function NotificationCenterRoute() {
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>GrowPath reminders</Text>
-        <Text style={styles.title}>Notification Center</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Notification Center
+        </Text>
         <Text style={styles.subtitle}>
           One inbox for task reminders, forum replies, videos, courses, commerce, and
           facility follow-up.

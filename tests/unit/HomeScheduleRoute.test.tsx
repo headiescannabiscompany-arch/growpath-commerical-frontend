@@ -273,6 +273,7 @@ describe("HomeScheduleRoute", () => {
     const screen = render(<HomeScheduleRoute />);
 
     await waitFor(() => expect(screen.getByText("Schedule / Agenda")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Schedule / Agenda" })).toBeTruthy();
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/tasks", {
         method: "GET"

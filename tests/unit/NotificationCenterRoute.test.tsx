@@ -275,6 +275,7 @@ describe("NotificationCenterRoute", () => {
     const screen = render(<NotificationCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Notification Center" })).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/profile")
     ).toBeTruthy();
