@@ -164,10 +164,10 @@ function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={`Open ${label}`}
-        style={[
+        style={StyleSheet.flatten([
           styles.destination,
           { backgroundColor: palette.surface, borderColor: palette.border }
-        ]}
+        ])}
       >
         <Text style={[styles.destinationTitle, { color: palette.text }]}>{label}</Text>
         <Text style={[styles.destinationDescription, { color: palette.textMuted }]}>
