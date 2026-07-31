@@ -30,6 +30,7 @@ import {
 } from "@/features/facility/transfers";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type InventoryItem = {
   id?: string;
@@ -74,6 +75,8 @@ function money(value: number) {
 }
 
 export default function FacilityTransfersScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
   const role = String(ent.facilityRole || "VIEWER").toUpperCase();
@@ -219,17 +222,17 @@ export default function FacilityTransfersScreen() {
         <View style={styles.metrics}>
           <View>
             <Text style={styles.metric}>{transfers.length}</Text>
-            <Text>records</Text>
+            <Text style={styles.metricLabel}>records</Text>
           </View>
           <View>
             <Text style={styles.metric}>
               {transfers.filter((x) => x.status === "draft").length}
             </Text>
-            <Text>drafts</Text>
+            <Text style={styles.metricLabel}>drafts</Text>
           </View>
           <View>
             <Text style={styles.metric}>{money(shippedRevenue)}</Text>
-            <Text>shipped sales</Text>
+            <Text style={styles.metricLabel}>shipped sales</Text>
           </View>
         </View>
 
@@ -265,7 +268,7 @@ export default function FacilityTransfersScreen() {
                     <Text style={styles.choiceTitle}>
                       {item.name || item.sku || "Inventory item"}
                     </Text>
-                    <Text>
+                    <Text style={styles.bodyText}>
                       {item.lotNumber || item.batchNumber || item.sku || "No lot"} ·{" "}
                       {Number(item.quantity ?? item.quantityOnHand ?? 0)}{" "}
                       {item.unit || "units"}
@@ -278,6 +281,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Transfer quantity"
               placeholder="Quantity"
+              placeholderTextColor={palette.textMuted}
               keyboardType="decimal-pad"
               value={form.quantity}
               onChangeText={(value) => setForm({ ...form, quantity: value })}
@@ -286,6 +290,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Unit price"
               placeholder="Unit price (USD)"
+              placeholderTextColor={palette.textMuted}
               keyboardType="decimal-pad"
               value={form.unitPrice}
               onChangeText={(value) => setForm({ ...form, unitPrice: value })}
@@ -295,6 +300,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Recipient business"
               placeholder="Licensed dispensary / business name"
+              placeholderTextColor={palette.textMuted}
               value={form.recipientName}
               onChangeText={(value) => setForm({ ...form, recipientName: value })}
               style={styles.input}
@@ -302,6 +308,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Recipient license"
               placeholder="Recipient license number"
+              placeholderTextColor={palette.textMuted}
               value={form.recipientLicense}
               onChangeText={(value) => setForm({ ...form, recipientLicense: value })}
               style={styles.input}
@@ -309,6 +316,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Recipient license type"
               placeholder="License type"
+              placeholderTextColor={palette.textMuted}
               value={form.recipientLicenseType}
               onChangeText={(value) => setForm({ ...form, recipientLicenseType: value })}
               style={styles.input}
@@ -316,6 +324,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Recipient jurisdiction"
               placeholder="State / jurisdiction"
+              placeholderTextColor={palette.textMuted}
               value={form.recipientState}
               onChangeText={(value) => setForm({ ...form, recipientState: value })}
               style={styles.input}
@@ -323,6 +332,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Destination address"
               placeholder="Ship-to address"
+              placeholderTextColor={palette.textMuted}
               value={form.destinationAddress}
               onChangeText={(value) => setForm({ ...form, destinationAddress: value })}
               style={styles.input}
@@ -331,6 +341,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Manifest number"
               placeholder="Manifest / transfer number"
+              placeholderTextColor={palette.textMuted}
               value={form.manifestNumber}
               onChangeText={(value) => setForm({ ...form, manifestNumber: value })}
               style={styles.input}
@@ -338,6 +349,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Carrier"
               placeholder="Transporter / carrier"
+              placeholderTextColor={palette.textMuted}
               value={form.carrier}
               onChangeText={(value) => setForm({ ...form, carrier: value })}
               style={styles.input}
@@ -345,6 +357,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Tracking number"
               placeholder="Tracking / vehicle reference"
+              placeholderTextColor={palette.textMuted}
               value={form.trackingNumber}
               onChangeText={(value) => setForm({ ...form, trackingNumber: value })}
               style={styles.input}
@@ -352,6 +365,7 @@ export default function FacilityTransfersScreen() {
             <TextInput
               accessibilityLabel="Transfer notes"
               placeholder="Notes"
+              placeholderTextColor={palette.textMuted}
               multiline
               value={form.notes}
               onChangeText={(value) => setForm({ ...form, notes: value })}
@@ -377,7 +391,7 @@ export default function FacilityTransfersScreen() {
                 <Text style={styles.cardTitle}>{transfer.itemName}</Text>
                 <Text style={styles.status}>{transfer.status}</Text>
               </View>
-              <Text>
+              <Text style={styles.bodyText}>
                 {transfer.quantity} {transfer.unit} · {money(transfer.total)}
               </Text>
               <Text style={styles.detail}>
@@ -427,75 +441,83 @@ export default function FacilityTransfersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: { padding: 18, gap: 12, paddingBottom: 60 },
-  h1: { fontSize: 28, fontWeight: "900" },
-  lead: { color: "#475569", lineHeight: 21 },
-  notice: {
-    backgroundColor: "#fffbeb",
-    borderColor: "#f59e0b",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 13
-  },
-  noticeTitle: { fontWeight: "900", color: "#78350f" },
-  noticeText: { color: "#78350f", marginTop: 4, lineHeight: 19 },
-  metrics: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 28,
-    backgroundColor: "#f8fafc",
-    padding: 14,
-    borderRadius: radius.card
-  },
-  metric: { fontSize: 20, fontWeight: "900" },
-  primary: {
-    backgroundColor: "#166534",
-    padding: 12,
-    borderRadius: radius.card,
-    alignItems: "center"
-  },
-  primaryText: { color: "white", fontWeight: "900" },
-  secondary: {
-    borderColor: "#166534",
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: radius.card,
-    alignItems: "center",
-    marginTop: 8
-  },
-  secondaryText: { color: "#166534", fontWeight: "900" },
-  card: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    padding: 14,
-    gap: 9
-  },
-  cardTitle: { fontSize: 17, fontWeight: "900" },
-  choiceRow: { gap: 8 },
-  choice: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  choiceActive: { borderColor: "#166534", borderWidth: 2, backgroundColor: "#f0fdf4" },
-  choiceTitle: { fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  notes: { minHeight: 70, textAlignVertical: "top" },
-  total: { fontSize: 18, fontWeight: "900", color: "#166534" },
-  sectionTitle: { fontSize: 21, fontWeight: "900", marginTop: 10 },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
-  status: { textTransform: "uppercase", fontWeight: "900", color: "#166534" },
-  detail: { color: "#475569" },
-  readOnly: { color: "#475569", fontWeight: "700" },
-  empty: { color: "#64748b", paddingVertical: 20 },
-  disabled: { opacity: 0.55 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    page: { padding: 18, gap: 12, paddingBottom: 60 },
+    h1: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    lead: { color: palette.textMuted, lineHeight: 21 },
+    notice: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 13
+    },
+    noticeTitle: { fontWeight: "900", color: palette.warning },
+    noticeText: { color: palette.text, marginTop: 4, lineHeight: 19 },
+    metrics: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 28,
+      backgroundColor: palette.surfaceMuted,
+      padding: 14,
+      borderRadius: radius.card
+    },
+    metric: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted },
+    primary: {
+      backgroundColor: palette.accent,
+      padding: 12,
+      borderRadius: radius.card,
+      alignItems: "center"
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondary: {
+      borderColor: palette.accent,
+      borderWidth: 1,
+      padding: 10,
+      borderRadius: radius.card,
+      alignItems: "center",
+      marginTop: 8
+    },
+    secondaryText: { color: palette.link, fontWeight: "900" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      gap: 9
+    },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    bodyText: { color: palette.text },
+    choiceRow: { gap: 8 },
+    choice: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    choiceActive: {
+      borderColor: palette.accent,
+      borderWidth: 2,
+      backgroundColor: palette.accentSoft
+    },
+    choiceTitle: { color: palette.text, fontWeight: "800" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      color: palette.text,
+      paddingVertical: 10
+    },
+    notes: { minHeight: 70, textAlignVertical: "top" },
+    total: { fontSize: 18, fontWeight: "900", color: palette.success },
+    sectionTitle: { color: palette.text, fontSize: 21, fontWeight: "900", marginTop: 10 },
+    row: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
+    status: { textTransform: "uppercase", fontWeight: "900", color: palette.success },
+    detail: { color: palette.textMuted },
+    readOnly: { color: palette.textMuted, fontWeight: "700" },
+    empty: { color: palette.textMuted, paddingVertical: 20 },
+    disabled: { opacity: 0.55 }
+  });

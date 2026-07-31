@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -14,6 +14,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type SopRunListItem = {
   id?: string;
@@ -71,6 +72,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 
 export default function FacilitySopRunsIndexRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const [items, setItems] = useState<SopRunListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -243,64 +246,70 @@ export default function FacilitySopRunsIndexRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  list: { flex: 1, padding: 16 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  header: { marginBottom: 10, gap: 8 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  links: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
-  link: { color: "#2563eb", fontWeight: "800" },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#eff6ff",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16
-  },
-  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
-  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
-  warnText: { color: "#b45309" },
-  alertCard: {
-    borderWidth: 1,
-    borderColor: "#fca5a5",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#fef2f2"
-  },
-  alertTitle: { color: "#991b1b", fontWeight: "900" },
-  alertText: { color: "#7f1d1d", fontWeight: "700", lineHeight: 18 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#fff",
-    marginBottom: 10
-  },
-  title: { fontWeight: "800" },
-  sub: { opacity: 0.75 },
-  progressRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "space-between",
-    marginTop: 8
-  },
-  progressText: { color: "#334155", fontWeight: "800" },
-  badge: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
-  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
-  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
-  empty: { opacity: 0.7 },
-  err: { color: "#b91c1c", fontWeight: "700" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    list: { backgroundColor: palette.page, flex: 1, padding: 16 },
+    center: {
+      backgroundColor: palette.page,
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    header: { marginBottom: 10, gap: 8 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    links: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
+    link: { color: palette.link, fontWeight: "800" },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16
+    },
+    summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    warnText: { color: palette.warning },
+    alertCard: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    alertTitle: { color: palette.danger, fontWeight: "900" },
+    alertText: { color: palette.text, fontWeight: "700", lineHeight: 18 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      marginBottom: 10
+    },
+    title: { color: palette.text, fontWeight: "800" },
+    sub: { color: palette.textMuted },
+    progressRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between",
+      marginTop: 8
+    },
+    progressText: { color: palette.textMuted, fontWeight: "800" },
+    badge: {
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    badgeOk: { color: palette.success, backgroundColor: palette.surfaceStrong },
+    badgeWarn: { color: palette.warning, backgroundColor: palette.surfaceStrong },
+    badgeDanger: { color: palette.danger, backgroundColor: palette.surfaceStrong },
+    empty: { color: palette.textMuted },
+    err: { color: palette.danger, fontWeight: "700" }
+  });
