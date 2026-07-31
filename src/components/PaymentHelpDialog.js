@@ -9,11 +9,14 @@ import {
 } from "react-native";
 
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const SUPPORT_EMAIL = SUPPORT_CONTACTS.billing;
 
 export default function PaymentHelpDialog({ onClose }) {
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const openEmail = () => {
     Linking.openURL(
       `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Payment Issue")}`
@@ -89,92 +92,95 @@ export default function PaymentHelpDialog({ onClose }) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20
-  },
-  dialog: {
-    backgroundColor: "#FFF",
-    borderRadius: radius.card,
-    padding: 24,
-    maxHeight: "90%",
-    width: "100%",
-    maxWidth: 500
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
-    textAlign: "center"
-  },
-  section: {
-    marginBottom: 20
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 12
-  },
-  problem: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: "#F8F9FA",
-    borderRadius: radius.card
-  },
-  problemTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8
-  },
-  problemText: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20
-  },
-  bulletText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-    marginLeft: 4
-  },
-  emailButton: {
-    backgroundColor: "#007AFF",
-    padding: 16,
-    borderRadius: radius.card,
-    alignItems: "center",
-    marginBottom: 12
-  },
-  emailButtonText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "600"
-  },
-  emailAddress: {
-    color: "#FFF",
-    fontSize: 14,
-    marginTop: 4,
-    opacity: 0.9
-  },
-  closeButton: {
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#DDD",
-    alignItems: "center"
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: "#666"
-  }
-});
+const createStyles = (palette) =>
+  StyleSheet.create({
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.7)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20
+    },
+    dialog: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 24,
+      maxHeight: "90%",
+      width: "100%",
+      maxWidth: 500
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: palette.text,
+      marginBottom: 20,
+      textAlign: "center"
+    },
+    section: {
+      marginBottom: 20
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.text,
+      marginBottom: 12
+    },
+    problem: {
+      marginBottom: 16,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card
+    },
+    problemTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: palette.text,
+      marginBottom: 8
+    },
+    problemText: {
+      fontSize: 14,
+      color: palette.textMuted,
+      lineHeight: 20
+    },
+    bulletText: {
+      fontSize: 14,
+      color: palette.textMuted,
+      marginBottom: 8,
+      marginLeft: 4
+    },
+    emailButton: {
+      backgroundColor: palette.accent,
+      padding: 16,
+      borderRadius: radius.card,
+      alignItems: "center",
+      marginBottom: 12
+    },
+    emailButtonText: {
+      color: "#FFF",
+      fontSize: 18,
+      fontWeight: "600"
+    },
+    emailAddress: {
+      color: "#FFF",
+      fontSize: 14,
+      marginTop: 4,
+      opacity: 0.9
+    },
+    closeButton: {
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      alignItems: "center"
+    },
+    closeButtonText: {
+      fontSize: 16,
+      color: palette.textMuted
+    }
+  });

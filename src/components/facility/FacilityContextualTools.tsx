@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export type FacilityToolKey =
@@ -59,6 +60,8 @@ export default function FacilityContextualTools({
   ...context
 }: Props) {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
 
   return (
     <View style={styles.container}>
@@ -83,26 +86,27 @@ export default function FacilityContextualTools({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    margin: 16,
-    padding: 12
-  },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  helper: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  actionText: { color: "#166534", fontSize: 13, fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      margin: 16,
+      padding: 12
+    },
+    title: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    helper: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    actionText: { color: palette.accent, fontSize: 13, fontWeight: "900" }
+  });
