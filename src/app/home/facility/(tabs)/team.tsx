@@ -28,6 +28,7 @@ import type { FacilityRole } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type AnyRec = Record<string, any>;
 
@@ -59,6 +60,8 @@ function pickSubtitle(x: AnyRec): string {
 
 export default function FacilityTeamTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
   const facilityRole = (ent.facilityRole as any) ?? null;
@@ -235,6 +238,7 @@ export default function FacilityTeamTab() {
               value={inviteEmail}
               onChangeText={setInviteEmail}
               placeholder="email@company.com"
+              placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
               keyboardType="email-address"
               style={styles.input}
@@ -407,80 +411,85 @@ export default function FacilityTeamTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { marginBottom: 12 },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7 },
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    headerRow: { marginBottom: 12 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    muted: { color: palette.textMuted },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    marginBottom: 12
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "white",
-    marginBottom: 10
-  },
-  btn: {
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  btnDisabled: { opacity: 0.5 },
-  btnText: { fontWeight: "900" },
-  roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
-  roleButton: {
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  roleSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  roleText: { fontWeight: "800" },
-  roleTextSelected: { color: "white" },
-  feedback: { color: "#166534", fontWeight: "800", marginTop: 10 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      marginBottom: 12
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 10 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      marginBottom: 10
+    },
+    btn: {
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    btnDisabled: { opacity: 0.5 },
+    btnText: { color: palette.text, fontWeight: "900" },
+    roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+    roleButton: {
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    roleSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    roleText: { color: palette.text, fontWeight: "800" },
+    roleTextSelected: { color: palette.accentText },
+    feedback: { color: palette.success, fontWeight: "800", marginTop: 10 },
 
-  pressed: { opacity: 0.85 },
+    pressed: { opacity: 0.85 },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
-  list: { paddingVertical: 6 },
+    loading: { paddingVertical: 18, alignItems: "center" },
+    list: { paddingVertical: 6 },
 
-  row: {
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
-  rowSub: { opacity: 0.7 },
-  memberActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  smallButton: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  smallButtonSelected: { backgroundColor: "#DCFCE7", borderColor: "#16A34A" },
-  smallButtonText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  removeButton: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
-  removeButtonText: { color: "#991B1B", fontSize: 12, fontWeight: "800" },
+    row: {
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 4 },
+    rowSub: { color: palette.textMuted },
+    memberActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    smallButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    smallButtonSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    smallButtonText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    removeButton: { borderColor: palette.danger, backgroundColor: palette.surfaceStrong },
+    removeButtonText: { color: palette.danger, fontSize: 12, fontWeight: "800" },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
-});
+    empty: { paddingVertical: 26, alignItems: "center" },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  });

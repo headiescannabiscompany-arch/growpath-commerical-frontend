@@ -8,11 +8,13 @@ import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function FacilityCreateInventoryItemScreen() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
 
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
@@ -60,8 +62,8 @@ export default function FacilityCreateInventoryItemScreen() {
         backFallbackHref="/home/facility/inventory"
       >
         <View accessibilityRole="alert" style={styles.container}>
-          <Text style={styles.h1}>Inventory is read-only</Text>
-          <Text style={styles.lockedText}>
+          <Text style={[styles.h1, { color: palette.text }]}>Inventory is read-only</Text>
+          <Text style={[styles.lockedText, { color: palette.warning }]}>
             Your facility role or plan does not allow inventory changes. Ask an owner or
             manager to update inventory access.
           </Text>
@@ -69,9 +71,11 @@ export default function FacilityCreateInventoryItemScreen() {
             accessibilityRole="button"
             accessibilityLabel="Return to facility inventory"
             onPress={() => router.replace("/home/facility/inventory")}
-            style={styles.button}
+            style={[styles.button, { backgroundColor: palette.accent }]}
           >
-            <Text style={styles.buttonText}>Return to Inventory</Text>
+            <Text style={[styles.buttonText, { color: palette.accentText }]}>
+              Return to Inventory
+            </Text>
           </Pressable>
         </View>
       </ScreenBoundary>
@@ -85,20 +89,36 @@ export default function FacilityCreateInventoryItemScreen() {
       backFallbackHref="/home/facility/inventory"
     >
       <View style={styles.container}>
-        <Text style={styles.h1}>Create Inventory Item</Text>
+        <Text style={[styles.h1, { color: palette.text }]}>Create Inventory Item</Text>
         <TextInput
           value={name}
           onChangeText={setName}
           accessibilityLabel="Inventory item name"
           placeholder="Name"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
         />
         <TextInput
           value={sku}
           onChangeText={setSku}
           accessibilityLabel="Inventory item SKU"
           placeholder="SKU (optional)"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
         />
         <TextInput
           value={quantity}
@@ -106,14 +126,30 @@ export default function FacilityCreateInventoryItemScreen() {
           accessibilityLabel="Inventory item quantity"
           placeholder="Quantity"
           keyboardType="numeric"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
         />
         <TextInput
           value={unit}
           onChangeText={setUnit}
           accessibilityLabel="Inventory item unit"
           placeholder="Unit (bags, bottles, grams)"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
         />
         <TextInput
           value={reorderPoint}
@@ -121,16 +157,30 @@ export default function FacilityCreateInventoryItemScreen() {
           accessibilityLabel="Inventory item reorder point"
           placeholder="Reorder point"
           keyboardType="numeric"
-          style={styles.input}
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            {
+              backgroundColor: palette.surface,
+              borderColor: palette.border,
+              color: palette.text
+            }
+          ]}
         />
         <Pressable
           onPress={createItem}
           disabled={!canSave}
           accessibilityRole="button"
           accessibilityLabel="Create inventory item"
-          style={[styles.button, !canSave && styles.disabled]}
+          style={[
+            styles.button,
+            { backgroundColor: palette.accent },
+            !canSave && styles.disabled
+          ]}
         >
-          <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
+          <Text style={[styles.buttonText, { color: palette.accentText }]}>
+            {saving ? "Saving..." : "Create Item"}
+          </Text>
         </Pressable>
       </View>
     </ScreenBoundary>
@@ -142,19 +192,17 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
   input: {
     borderWidth: 1,
-    borderColor: "#d1d5db",
     borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   button: {
     marginTop: 6,
-    backgroundColor: "#166534",
     borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },
   disabled: { opacity: 0.55 },
-  buttonText: { color: "#fff", fontWeight: "800" },
-  lockedText: { color: "#92400e", fontWeight: "800" }
+  buttonText: { fontWeight: "800" },
+  lockedText: { fontWeight: "800" }
 });

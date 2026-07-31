@@ -19,6 +19,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type InventoryItem = {
   _id?: string;
@@ -67,6 +68,8 @@ function stockStatus(item: InventoryItem) {
 
 export default function FacilityInventoryTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
   const apiErr: any = useApiErrorHandler();
@@ -322,90 +325,91 @@ export default function FacilityInventoryTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  headerRow: {
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { color: "#475569", fontWeight: "700" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  ghostButton: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  ghostText: { color: "#0f172a", fontWeight: "900" },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#eff6ff",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    marginBottom: 12
-  },
-  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
-  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
-  warnText: { color: "#b45309" },
-  dangerText: { color: "#991b1b" },
-  lockedText: { color: "#92400e", fontWeight: "800", marginBottom: 12 },
-  emptyCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 14
-  },
-  emptyTitle: {
-    color: "#0F172A",
-    fontSize: 15,
-    fontWeight: "900",
-    marginBottom: 4
-  },
-  primaryButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 12
-  },
-  primaryText: { color: "white", fontWeight: "900" },
-  empty: { color: "#64748b", fontWeight: "700" },
-  list: { paddingBottom: 24 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white"
-  },
-  rowMain: { flex: 1 },
-  rowTitle: { color: "#0f172a", fontSize: 16, fontWeight: "900" },
-  rowSub: { color: "#475569", fontWeight: "700", marginTop: 4 },
-  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  badge: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
-  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
-  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
-  pressed: { opacity: 0.85 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    headerRow: {
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginBottom: 12
+    },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    muted: { color: palette.textMuted, fontWeight: "700" },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    ghostButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    ghostText: { color: palette.text, fontWeight: "900" },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      marginBottom: 12
+    },
+    summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    warnText: { color: palette.warning },
+    dangerText: { color: palette.danger },
+    lockedText: { color: palette.warning, fontWeight: "800", marginBottom: 12 },
+    emptyCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 14
+    },
+    emptyTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "900",
+      marginBottom: 4
+    },
+    primaryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      marginBottom: 12
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    empty: { color: palette.textMuted, fontWeight: "700" },
+    list: { paddingBottom: 24 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface
+    },
+    rowMain: { flex: 1 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    rowSub: { color: palette.textMuted, fontWeight: "700", marginTop: 4 },
+    badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    badge: {
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    badgeOk: { color: palette.success, backgroundColor: palette.surfaceStrong },
+    badgeWarn: { color: palette.warning, backgroundColor: palette.surfaceStrong },
+    badgeDanger: { color: palette.danger, backgroundColor: palette.surfaceStrong },
+    chev: { color: palette.textMuted, fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+    pressed: { opacity: 0.85 }
+  });

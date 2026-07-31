@@ -37,6 +37,7 @@ import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function rowId(row: any) {
   return String(row?._id || row?.id || "");
@@ -300,6 +301,8 @@ function buildRoomImportPreview(rawText: string) {
 
 export default function FacilityRoomsTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     roomId?: string;
     importDevices?: string;
@@ -946,6 +949,7 @@ export default function FacilityRoomsTab() {
               style={styles.input}
               accessibilityLabel="Facility import provider"
               placeholder="Provider, e.g. TrolMaster, Pulse, Growlink"
+              placeholderTextColor={palette.textMuted}
             />
             <TextInput
               value={importDeviceText}
@@ -954,6 +958,7 @@ export default function FacilityRoomsTab() {
               accessibilityLabel="Facility import device list"
               multiline
               placeholder={"Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH"}
+              placeholderTextColor={palette.textMuted}
             />
             {roomImportPreview.length ? (
               <View style={styles.importPreviewList}>
@@ -1019,6 +1024,7 @@ export default function FacilityRoomsTab() {
                 accessibilityLabel="Describe new room for AI assistance"
                 multiline
                 placeholder="Describe the space, dimensions, crop purpose, known temperature/RH, equipment, and location if outdoor."
+                placeholderTextColor={palette.textMuted}
               />
               <Pressable
                 onPress={getRoomFormHelp}
@@ -1076,6 +1082,7 @@ export default function FacilityRoomsTab() {
                 style={styles.input}
                 accessibilityLabel="New room name"
                 placeholder="Room name"
+                placeholderTextColor={palette.textMuted}
               />
               <TextInput
                 value={roomZoneName}
@@ -1083,6 +1090,7 @@ export default function FacilityRoomsTab() {
                 style={styles.input}
                 accessibilityLabel="New room zone or area"
                 placeholder="Zone or area, optional"
+                placeholderTextColor={palette.textMuted}
               />
               {(roomType === "outdoor bed" || roomType === "greenhouse") && (
                 <TextInput
@@ -1091,6 +1099,7 @@ export default function FacilityRoomsTab() {
                   style={styles.input}
                   accessibilityLabel="New room city or region"
                   placeholder="City, region, or postal code for weather context"
+                  placeholderTextColor={palette.textMuted}
                 />
               )}
               <View style={styles.pillRow}>
@@ -1328,6 +1337,7 @@ export default function FacilityRoomsTab() {
                     style={styles.input}
                     accessibilityLabel="Equipment name"
                     placeholder="Equipment name"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <TextInput
                     value={equipmentType}
@@ -1335,6 +1345,7 @@ export default function FacilityRoomsTab() {
                     style={styles.input}
                     accessibilityLabel="Equipment type"
                     placeholder="Equipment type"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <Pressable
                     onPress={addEquipment}
@@ -1397,6 +1408,7 @@ export default function FacilityRoomsTab() {
                     style={styles.input}
                     accessibilityLabel="Batch cycle name"
                     placeholder="Cycle name"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <TextInput
                     value={cycleStage}
@@ -1404,6 +1416,7 @@ export default function FacilityRoomsTab() {
                     style={styles.input}
                     accessibilityLabel="Batch cycle stage"
                     placeholder="Stage"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <View style={styles.pillRow}>
                     {CYCLE_STAGES.map((stage) => (
@@ -1454,6 +1467,7 @@ export default function FacilityRoomsTab() {
                     style={styles.input}
                     accessibilityLabel="Batch cycle estimated plant count"
                     placeholder="Estimated plant count"
+                    placeholderTextColor={palette.textMuted}
                     keyboardType="numeric"
                   />
                   <Pressable
@@ -1524,131 +1538,133 @@ export default function FacilityRoomsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32, gap: 12 },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  h1: { fontSize: 22, fontWeight: "900" },
-  muted: { opacity: 0.7, lineHeight: 19 },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 10
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900" },
-  sectionTitle: { fontSize: 14, fontWeight: "900", marginTop: 2 },
-  form: { gap: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  textArea: { minHeight: 118, textAlignVertical: "top" },
-  importPreviewList: { gap: 8, marginTop: 2 },
-  importPreviewRow: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryText: { color: "white", fontWeight: "800" },
-  dangerBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  inlineDanger: { alignSelf: "flex-start", marginTop: 8 },
-  dangerText: { color: "#B91C1C", fontWeight: "800" },
-  disabled: { opacity: 0.55 },
-  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    backgroundColor: "white"
-  },
-  pillSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  pillText: { fontWeight: "800", color: "#0F172A" },
-  pillTextSelected: { color: "white" },
-  aiPanel: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  detailBlock: { gap: 8, marginTop: 4 },
-  detailTitle: { fontSize: 17, fontWeight: "900" },
-  row: {
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.08)",
-    paddingTop: 10,
-    gap: 3
-  },
-  roomWorkspace: { gap: 3 },
-  openWorkspace: { color: "#166534", fontWeight: "800", marginTop: 3 },
-  orderControls: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 7 },
-  orderButton: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#F8FAFC"
-  },
-  orderButtonText: { color: "#0F172A", fontWeight: "800" },
-  rowTitle: { fontWeight: "900" },
-  rowMeta: { opacity: 0.7 },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#d1fae5",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#ecfdf5",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16
-  },
-  summaryValue: { color: "#065f46", fontSize: 20, fontWeight: "900" },
-  summaryLabel: { color: "#047857", fontSize: 12, fontWeight: "800" },
-  statusLine: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
-  statusPill: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  statusActive: { color: "#92400e", backgroundColor: "#fef3c7" },
-  statusComplete: { color: "#065f46", backgroundColor: "#d1fae5" },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 16, paddingBottom: 32, gap: 12 },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    muted: { color: palette.textMuted, lineHeight: 19 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 10
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    sectionTitle: { color: palette.text, fontSize: 14, fontWeight: "900", marginTop: 2 },
+    form: { gap: 8 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    textArea: { minHeight: 118, textAlignVertical: "top" },
+    importPreviewList: { gap: 8, marginTop: 2 },
+    importPreviewRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    dangerBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    inlineDanger: { alignSelf: "flex-start", marginTop: 8 },
+    dangerText: { color: palette.danger, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
+    pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    pill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    pillSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { fontWeight: "800", color: palette.text },
+    pillTextSelected: { color: palette.accentText },
+    aiPanel: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    detailBlock: { gap: 8, marginTop: 4 },
+    detailTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    row: {
+      borderTopWidth: 1,
+      borderTopColor: palette.borderSoft,
+      paddingTop: 10,
+      gap: 3
+    },
+    roomWorkspace: { gap: 3 },
+    openWorkspace: { color: palette.link, fontWeight: "800", marginTop: 3 },
+    orderControls: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 7 },
+    orderButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surfaceMuted
+    },
+    orderButtonText: { color: palette.text, fontWeight: "800" },
+    rowTitle: { color: palette.text, fontWeight: "900" },
+    rowMeta: { color: palette.textMuted },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16
+    },
+    summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    statusLine: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+    statusPill: {
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    statusActive: { color: palette.warning, backgroundColor: palette.surfaceStrong },
+    statusComplete: { color: palette.success, backgroundColor: palette.surfaceStrong },
+    feedback: {
+      color: palette.text,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });
