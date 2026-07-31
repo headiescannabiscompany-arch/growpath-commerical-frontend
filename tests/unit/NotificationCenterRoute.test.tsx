@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import NotificationCenterRoute from "@/app/home/notifications";
 
 const mockApiRequest = jest.fn();
+let mockWorkspaceMode = "personal";
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -11,6 +12,7 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
+    ctx: { mode: mockWorkspaceMode },
     user: {
       notificationPreferences: {
         pushEnabled: true,
@@ -46,6 +48,7 @@ jest.setTimeout(15000);
 describe("NotificationCenterRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockWorkspaceMode = "personal";
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/notifications" && options?.method === "GET") {
         return Promise.resolve({
@@ -262,15 +265,23 @@ describe("NotificationCenterRoute", () => {
     });
   });
 
+  it("opens profile settings in the active workspace", async () => {
+    mockWorkspaceMode = "facility";
+    const screen = render(<NotificationCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Notification link /home/facility/profile")
+    ).toBeTruthy();
+  });
+
   it("loads notifications, filters by source, and marks one read", async () => {
     const screen = render(<NotificationCenterRoute />);
 
     await waitFor(() =>
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
-    expect(
-      screen.getByText("Device push is enabled for this account.")
-    ).toBeTruthy();
+    expect(screen.getByText("Device push is enabled for this account.")).toBeTruthy();
     expect(screen.getByText(/Join the soil mixing demo/)).toBeTruthy();
     expect(screen.getByLabelText("Focused notification notification-1")).toBeTruthy();
     expect(screen.getByText(/Source live/)).toBeTruthy();
