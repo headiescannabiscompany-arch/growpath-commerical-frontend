@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import * as ExpoRouter from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export type ContextualWorkflowKey =
   | "auto-grow-calendar"
@@ -100,6 +101,8 @@ export default function ContextualWorkflowLinks({
   ...context
 }: Props) {
   const router = useContextualRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
 
   return (
     <View style={styles.container}>
@@ -128,33 +131,34 @@ export default function ContextualWorkflowLinks({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    marginTop: 12,
-    padding: 12
-  },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  helper: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  actionTitle: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  actionDescription: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 3
-  }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      marginTop: 12,
+      padding: 12
+    },
+    title: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    helper: { color: palette.textMuted, fontSize: 12, fontWeight: "700", lineHeight: 18 },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 180,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    actionTitle: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    actionDescription: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "700",
+      marginTop: 3
+    }
+  });

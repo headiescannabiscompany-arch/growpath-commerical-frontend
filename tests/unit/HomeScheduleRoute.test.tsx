@@ -420,4 +420,30 @@ describe("HomeScheduleRoute", () => {
     fireEvent.press(screen.getByLabelText("Schedule next period"));
     expect(screen.getByText("Bloom Mix Product Launch")).toBeTruthy();
   });
+
+  it("falls back to personal tasks when the global task feed is unavailable", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/tasks")
+        return Promise.reject(new Error("global tasks unavailable"));
+      if (path === "/api/personal/tasks") {
+        return Promise.resolve({
+          tasks: [
+            {
+              id: "personal-fallback-task",
+              title: "Water the fallback grow",
+              dueAt: "2099-07-16T10:00:00Z",
+              status: "open",
+              workspaceType: "personal"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<HomeScheduleRoute />);
+
+    await waitFor(() => expect(screen.getByText("Water the fallback grow")).toBeTruthy());
+    expect(screen.queryByText("Unable to load schedule.")).toBeNull();
+  });
 });

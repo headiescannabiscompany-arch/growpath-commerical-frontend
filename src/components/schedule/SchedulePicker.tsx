@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type SchedulePickerProps = {
   dueDate: string;
@@ -76,6 +77,8 @@ export default function SchedulePicker({
   reminderPlaceholder = "Reminder, e.g. 24 hours before",
   recurrencePlaceholder = "Recurrence, e.g. every 7 days"
 }: SchedulePickerProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const resolvedTimezone =
     timezone || Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "local time";
   const quickDates = [
@@ -150,6 +153,7 @@ export default function SchedulePicker({
         <TextInput
           style={styles.flexInput}
           placeholder={reminderPlaceholder}
+          placeholderTextColor={palette.textMuted}
           value={reminder}
           onChangeText={onReminderChange}
           accessibilityLabel={
@@ -217,6 +221,7 @@ export default function SchedulePicker({
         <TextInput
           style={styles.flexInput}
           placeholder={recurrencePlaceholder}
+          placeholderTextColor={palette.textMuted}
           value={recurrence}
           onChangeText={onRecurrenceChange}
           accessibilityLabel={
@@ -244,53 +249,56 @@ export default function SchedulePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: 10 },
-  summaryRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  summary: {
-    color: "#334155",
-    flex: 1,
-    fontSize: 12,
-    fontWeight: "700",
-    minWidth: 220
-  },
-  clearButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  clearText: { color: "#475569", fontSize: 12, fontWeight: "900" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  dateField: { flex: 1, minWidth: 220 },
-  flexInput: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    minWidth: 180,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  label: { color: "#334155", fontSize: 13, fontWeight: "900" },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  chipSelected: { backgroundColor: "#DCFCE7", borderColor: "#16A34A" },
-  chipText: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  chipTextOn: { color: "#14532D" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    wrap: { gap: 10 },
+    summaryRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    summary: {
+      color: palette.textMuted,
+      flex: 1,
+      fontSize: 12,
+      fontWeight: "700",
+      minWidth: 220
+    },
+    clearButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    clearText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    dateField: { flex: 1, minWidth: 220 },
+    flexInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flex: 1,
+      minWidth: 180,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    label: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    chipSelected: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    chipText: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    chipTextOn: { color: palette.link }
+  });

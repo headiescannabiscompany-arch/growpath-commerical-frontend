@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type DateMode = "date" | "datetime";
 
@@ -138,6 +139,8 @@ export default function CalendarDateField({
   optional = true,
   testID
 }: CalendarDateFieldProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const currentYear = new Date().getFullYear();
   const storedYear =
     Number(String(value || "").slice(0, 4)) || initialYear || currentYear;
@@ -427,106 +430,107 @@ export default function CalendarDateField({
   );
 }
 
-const styles = StyleSheet.create({
-  fieldWrap: { gap: 6 },
-  label: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  fieldButton: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    minHeight: 46,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  fieldValue: { color: "#0F172A", flex: 1, fontSize: 14, fontWeight: "700" },
-  placeholder: { color: "#64748B", fontWeight: "600" },
-  fieldAction: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  disabled: { opacity: 0.45 },
-  backdrop: {
-    alignItems: "center",
-    backgroundColor: "rgba(15, 23, 42, 0.58)",
-    flex: 1,
-    justifyContent: "center",
-    padding: 18
-  },
-  panelScroll: {
-    maxHeight: "94%",
-    maxWidth: 520,
-    width: "100%"
-  },
-  panel: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: radius.card,
-    padding: 16
-  },
-  title: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  guidance: { color: "#475569", fontSize: 12, marginBottom: 10, marginTop: 3 },
-  selectRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  selectWrap: { flex: 1, minWidth: 150 },
-  selectLabel: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  picker: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    minHeight: 44
-  },
-  monthHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-    marginTop: 10
-  },
-  monthButton: { paddingHorizontal: 14, paddingVertical: 8 },
-  monthButtonText: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  monthTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  weekRow: { flexDirection: "row" },
-  weekDay: {
-    color: "#64748B",
-    flexBasis: "14.2857%",
-    fontSize: 10,
-    fontWeight: "900",
-    textAlign: "center"
-  },
-  calendarGrid: { flexDirection: "row", flexWrap: "wrap", marginTop: 4 },
-  dayButton: {
-    alignItems: "center",
-    aspectRatio: 1,
-    flexBasis: "14.2857%",
-    justifyContent: "center"
-  },
-  dayButtonSelected: { backgroundColor: "#15803D", borderRadius: 999 },
-  dayText: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
-  dayTextOutside: { color: "#94A3B8" },
-  dayTextSelected: { color: "#FFFFFF" },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "flex-end",
-    marginTop: 14
-  },
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#475569", fontSize: 12, fontWeight: "900" },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryText: { color: "#FFFFFF", fontSize: 12, fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    fieldWrap: { gap: 6 },
+    label: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    fieldButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between",
+      minHeight: 46,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    fieldValue: { color: palette.text, flex: 1, fontSize: 14, fontWeight: "700" },
+    placeholder: { color: palette.textMuted, fontWeight: "600" },
+    fieldAction: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    disabled: { opacity: 0.45 },
+    backdrop: {
+      alignItems: "center",
+      backgroundColor: "rgba(15, 23, 42, 0.58)",
+      flex: 1,
+      justifyContent: "center",
+      padding: 18
+    },
+    panelScroll: {
+      maxHeight: "94%",
+      maxWidth: 520,
+      width: "100%"
+    },
+    panel: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      padding: 16
+    },
+    title: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    guidance: { color: palette.textMuted, fontSize: 12, marginBottom: 10, marginTop: 3 },
+    selectRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    selectWrap: { flex: 1, minWidth: 150 },
+    selectLabel: { color: palette.text, fontSize: 12, fontWeight: "900" },
+    picker: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 44
+    },
+    monthHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 8,
+      marginTop: 10
+    },
+    monthButton: { paddingHorizontal: 14, paddingVertical: 8 },
+    monthButtonText: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    monthTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    weekRow: { flexDirection: "row" },
+    weekDay: {
+      color: palette.textMuted,
+      flexBasis: "14.2857%",
+      fontSize: 10,
+      fontWeight: "900",
+      textAlign: "center"
+    },
+    calendarGrid: { flexDirection: "row", flexWrap: "wrap", marginTop: 4 },
+    dayButton: {
+      alignItems: "center",
+      aspectRatio: 1,
+      flexBasis: "14.2857%",
+      justifyContent: "center"
+    },
+    dayButtonSelected: { backgroundColor: palette.accent, borderRadius: 999 },
+    dayText: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    dayTextOutside: { color: palette.textMuted },
+    dayTextSelected: { color: palette.accentText },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "flex-end",
+      marginTop: 14
+    },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryText: { color: palette.accentText, fontSize: 12, fontWeight: "900" }
+  });

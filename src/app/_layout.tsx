@@ -1,7 +1,8 @@
 import { initUnauthorizedHandler } from "@/auth/initUnauthorized";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Slot } from "expo-router";
 import { View } from "react-native";
+import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { enableScreens } from "react-native-screens";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../auth/AuthContext";
@@ -29,17 +30,35 @@ const queryClient = new QueryClient({
 
 function RootShell() {
   const { palette } = useAppTheme();
+  const navigationTheme = useMemo(
+    () => ({
+      ...DefaultTheme,
+      dark: palette.resolvedMode === "night",
+      colors: {
+        ...DefaultTheme.colors,
+        primary: palette.accent,
+        background: palette.page,
+        card: palette.surface,
+        text: palette.text,
+        border: palette.border,
+        notification: palette.danger
+      }
+    }),
+    [palette]
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: palette.page }}>
-      <GlobalApiStatusBanner />
-      <View style={{ flex: 1 }}>
-        <RouteAccessGuard>
-          <Slot />
-        </RouteAccessGuard>
+    <ThemeProvider value={navigationTheme}>
+      <View style={{ flex: 1, backgroundColor: palette.page }}>
+        <GlobalApiStatusBanner />
+        <View style={{ flex: 1, backgroundColor: palette.page }}>
+          <RouteAccessGuard>
+            <Slot />
+          </RouteAccessGuard>
+        </View>
+        <GlobalReportBugButton />
       </View>
-      <GlobalReportBugButton />
-    </View>
+    </ThemeProvider>
   );
 }
 

@@ -11,6 +11,7 @@ import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { listPersonalTasks } from "@/api/tasks";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -436,7 +437,9 @@ export default function HomeScheduleRoute() {
     try {
       const [tasksRes, livesRes, courseLivesRes, coursesRes, feedRes, campaignsRes] =
         await Promise.all([
-          apiRequest(endpoints.tasksGlobal, { method: "GET" }),
+          apiRequest(endpoints.tasksGlobal, { method: "GET" }).catch(async () => ({
+            tasks: await listPersonalTasks()
+          })),
           apiRequest("/api/commercial/lives", { method: "GET" }).catch(() => ({
             lives: []
           })),
