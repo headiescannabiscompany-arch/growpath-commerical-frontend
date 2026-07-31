@@ -91,6 +91,21 @@ function isPublishedCourse(course) {
   );
 }
 
+function entityId(value) {
+  if (value && typeof value === "object") {
+    return String(value._id || value.id || value.userId || "");
+  }
+  return String(value || "");
+}
+
+export function viewerOwnsCourse(course, user) {
+  const viewerId = entityId(user);
+  const creatorId = entityId(
+    course?.creator || course?.createdBy || course?.owner || course?.userId
+  );
+  return Boolean(viewerId && creatorId && viewerId === creatorId);
+}
+
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -155,7 +170,14 @@ export default function CoursesScreen({ navigation } = {}) {
             ? normalizeList(commercialResult.value)
             : []
         );
-        const publicationScoped = isSignedIn ? list : list.filter(isPublishedCourse);
+        const ownershipScoped = list.map((course) => ({
+          ...course,
+          _viewerOwnsCourse:
+            Boolean(course?._viewerOwnsCourse) || viewerOwnsCourse(course, auth.user)
+        }));
+        const publicationScoped = isSignedIn
+          ? ownershipScoped
+          : ownershipScoped.filter(isPublishedCourse);
         const filtered = access.canSeePaidCourses
           ? publicationScoped
           : publicationScoped.filter(
@@ -174,7 +196,13 @@ export default function CoursesScreen({ navigation } = {}) {
     return () => {
       alive = false;
     };
-  }, [access.canSeePaidCourses, access.canViewCourses, canCreateCourses, isSignedIn]);
+  }, [
+    access.canSeePaidCourses,
+    access.canViewCourses,
+    auth.user,
+    canCreateCourses,
+    isSignedIn
+  ]);
 
   useEffect(() => {
     if (!requestedCourseId || selectedCourse || courses.length === 0) return;

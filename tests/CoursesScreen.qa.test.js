@@ -64,7 +64,8 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 
 import CoursesScreen, {
   courseInterestTags,
-  matchesCourseInterests
+  matchesCourseInterests,
+  viewerOwnsCourse
 } from "../src/screens/CoursesScreen.js";
 
 // All plan/role logic is now capability-driven in the app. These tests simulate plan switching via UI, but assertions should reflect capability-driven gating.
@@ -145,6 +146,18 @@ describe("CoursesScreen QA (capability-driven)", () => {
     expect(matchesCourseInterests(tomatoCourse, ["Vegetables", "Indoor"])).toBe(true);
     expect(
       matchesCourseInterests(tomatoCourse, ["Fruit Trees & Bushes", "Outdoor"])
+    ).toBe(false);
+  });
+
+  it("recognizes production course creator ids without relying on the mine endpoint", () => {
+    expect(
+      viewerOwnsCourse(
+        { creator: "6a6606473d6f112f71b2fcaa" },
+        { id: "6a6606473d6f112f71b2fcaa" }
+      )
+    ).toBe(true);
+    expect(
+      viewerOwnsCourse({ createdBy: { _id: "another-user" } }, { _id: "course-user" })
     ).toBe(false);
   });
 
