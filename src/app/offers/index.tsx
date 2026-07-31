@@ -13,6 +13,7 @@ import { useLocalSearchParams } from "expo-router";
 
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
+import PaymentHelpDialog from "@/components/PaymentHelpDialog";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { FREE_POLICY } from "@/config/freePolicy";
 
@@ -54,6 +56,8 @@ async function openCheckoutUrl(url: string) {
 export default function Offers() {
   const auth = useAuth();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const { width } = useWindowDimensions();
   const searchParams = useLocalSearchParams<{
     subscription?: string | string[];
@@ -76,6 +80,7 @@ export default function Offers() {
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
+  const [showPaymentHelp, setShowPaymentHelp] = useState(false);
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -302,6 +307,18 @@ export default function Offers() {
         </Text>
       </View>
 
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open payment help"
+        onPress={() => setShowPaymentHelp(true)}
+        style={styles.helpButton}
+      >
+        <Text style={styles.helpButtonTitle}>Payment or subscription problem?</Text>
+        <Text style={styles.helpButtonText}>
+          Open payment help without starting checkout.
+        </Text>
+      </Pressable>
+
       <AppCard style={styles.giftCard}>
         <Text style={styles.eyebrow}>Gift subscription</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
@@ -487,121 +504,135 @@ export default function Offers() {
           );
         })}
       </View>
+      {showPaymentHelp ? (
+        <PaymentHelpDialog onClose={() => setShowPaymentHelp(false)} />
+      ) : null}
     </AppPage>
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 8 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  headerTitle: {
-    color: "#111827",
-    fontSize: 30,
-    fontWeight: "900"
-  },
-  headerSubtitle: {
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: "700",
-    maxWidth: 760
-  },
-  segment: {
-    alignSelf: "flex-start",
-    backgroundColor: "#e2e8f0",
-    borderRadius: radius.card,
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 8,
-    padding: 4
-  },
-  segmentButton: {
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  segmentButtonActive: { backgroundColor: "#111827" },
-  segmentText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  segmentTextActive: { color: "#ffffff" },
-  feedback: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  feedbackText: { color: "#166534", fontWeight: "800" },
-  giftCard: { gap: 10 },
-  modeBanner: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  modeBannerLive: {
-    backgroundColor: "#fff7ed",
-    borderColor: "#fb923c"
-  },
-  modeBannerTest: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac"
-  },
-  modeBannerUnknown: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1"
-  },
-  modeBannerText: { color: "#334155", fontWeight: "900" },
-  modeBannerTextLive: { color: "#9a3412" },
-  planGrid: { gap: 12 },
-  planGridWide: { flexDirection: "row" },
-  planCard: { flex: 1, gap: 10 },
-  freeCard: { gap: 8 },
-  current: { borderColor: "#166534" },
-  eyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  cardTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
-  helper: { color: "#64748b", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: {
-    minHeight: 92,
-    textAlignVertical: "top"
-  },
-  price: { color: "#111827", fontSize: 30, fontWeight: "900" },
-  priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
-  billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  cardDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  sectionLabel: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  details: { gap: 4 },
-  detail: { color: "#334155", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  bullets: { gap: 6 },
-  bullet: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 4,
-    paddingVertical: 12
-  },
-  buttonDisabled: { opacity: 0.55 },
-  buttonText: { color: "#ffffff", fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    header: { gap: 8 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    headerTitle: {
+      color: palette.text,
+      fontSize: 30,
+      fontWeight: "900"
+    },
+    headerSubtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      fontWeight: "700",
+      maxWidth: 760
+    },
+    segment: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      flexDirection: "row",
+      gap: 4,
+      marginTop: 8,
+      padding: 4
+    },
+    segmentButton: {
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    segmentButtonActive: { backgroundColor: palette.accent },
+    segmentText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    segmentTextActive: { color: palette.accentText },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    feedbackText: { color: palette.text, fontWeight: "800" },
+    helpButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    helpButtonTitle: { color: palette.accent, fontWeight: "900" },
+    helpButtonText: { color: palette.textMuted, fontSize: 12, marginTop: 3 },
+    giftCard: { gap: 10 },
+    modeBanner: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    modeBannerLive: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning
+    },
+    modeBannerTest: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success
+    },
+    modeBannerUnknown: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    modeBannerText: { color: palette.text, fontWeight: "900" },
+    modeBannerTextLive: { color: palette.warning },
+    planGrid: { gap: 12 },
+    planGridWide: { flexDirection: "row" },
+    planCard: { flex: 1, gap: 10 },
+    freeCard: { gap: 8 },
+    current: { borderColor: palette.accent },
+    eyebrow: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    cardTitle: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    helper: { color: palette.textMuted, fontSize: 12, fontWeight: "700", lineHeight: 18 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      color: palette.text,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      fontSize: 15,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: {
+      minHeight: 92,
+      textAlignVertical: "top"
+    },
+    price: { color: palette.text, fontSize: 30, fontWeight: "900" },
+    priceMeta: { color: palette.textMuted, fontSize: 13, fontWeight: "800" },
+    billingNote: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    cardDesc: { color: palette.textSoft, fontWeight: "700", lineHeight: 20 },
+    sectionLabel: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    details: { gap: 4 },
+    detail: { color: palette.textMuted, fontSize: 12, fontWeight: "700", lineHeight: 18 },
+    bullets: { gap: 6 },
+    bullet: { color: palette.textMuted, fontSize: 13, fontWeight: "800" },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 4,
+      paddingVertical: 12
+    },
+    buttonDisabled: { opacity: 0.55 },
+    buttonText: { color: palette.accentText, fontWeight: "900" }
+  });

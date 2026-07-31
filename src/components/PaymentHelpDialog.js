@@ -5,7 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Linking
+  Linking,
+  Modal
 } from "react-native";
 
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
@@ -24,71 +25,73 @@ export default function PaymentHelpDialog({ onClose }) {
   };
 
   return (
-    <View style={styles.overlay}>
-      <View style={styles.dialog}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Payment Issues Help</Text>
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible>
+      <View style={styles.overlay}>
+        <View style={styles.dialog}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.title}>Payment Issues Help</Text>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Common Problems</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Common Problems</Text>
 
-            <View style={styles.problem}>
-              <Text style={styles.problemTitle}>Payment Declined</Text>
-              <Text style={styles.problemText}>
-                - Check if your card has sufficient funds{"\n"}- Verify your billing
-                address is correct{"\n"}- Try a different payment method{"\n"}- Contact
-                your bank to authorize the transaction
-              </Text>
+              <View style={styles.problem}>
+                <Text style={styles.problemTitle}>Payment Declined</Text>
+                <Text style={styles.problemText}>
+                  - Check if your card has sufficient funds{"\n"}- Verify your billing
+                  address is correct{"\n"}- Try a different payment method{"\n"}- Contact
+                  your bank to authorize the transaction
+                </Text>
+              </View>
+
+              <View style={styles.problem}>
+                <Text style={styles.problemTitle}>Subscription Not Active</Text>
+                <Text style={styles.problemText}>
+                  - Wait up to 5 minutes for processing{"\n"}- Force close and reopen the
+                  app{"\n"}- Check if payment went through in your bank statement{"\n"}-
+                  Contact support if issue persists
+                </Text>
+              </View>
+
+              <View style={styles.problem}>
+                <Text style={styles.problemTitle}>Can{"'"}t Cancel Subscription</Text>
+                <Text style={styles.problemText}>
+                  - Go to Profile / Subscription / Cancel{"\n"}- If using Apple/Google:
+                  Cancel through App Store/Play Store{"\n"}- Email support for immediate
+                  cancellation
+                </Text>
+              </View>
+
+              <View style={styles.problem}>
+                <Text style={styles.problemTitle}>Refund Request</Text>
+                <Text style={styles.problemText}>
+                  Refunds are processed within 7-14 business days.{"\n\n"}
+                  Email us with your account email and reason for refund request.
+                </Text>
+              </View>
             </View>
 
-            <View style={styles.problem}>
-              <Text style={styles.problemTitle}>Subscription Not Active</Text>
-              <Text style={styles.problemText}>
-                - Wait up to 5 minutes for processing{"\n"}- Force close and reopen the
-                app{"\n"}- Check if payment went through in your bank statement{"\n"}-
-                Contact support if issue persists
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                What to Include When Contacting Support
               </Text>
+              <Text style={styles.bulletText}>- Your account email address</Text>
+              <Text style={styles.bulletText}>- Description of the problem</Text>
+              <Text style={styles.bulletText}>- Screenshot of error (if applicable)</Text>
+              <Text style={styles.bulletText}>- Transaction ID or receipt</Text>
             </View>
 
-            <View style={styles.problem}>
-              <Text style={styles.problemTitle}>Can{"'"}t Cancel Subscription</Text>
-              <Text style={styles.problemText}>
-                - Go to Profile / Subscription / Cancel{"\n"}- If using Apple/Google:
-                Cancel through App Store/Play Store{"\n"}- Email support for immediate
-                cancellation
-              </Text>
-            </View>
+            <TouchableOpacity style={styles.emailButton} onPress={openEmail}>
+              <Text style={styles.emailButtonText}>Email Support</Text>
+              <Text style={styles.emailAddress}>{SUPPORT_EMAIL}</Text>
+            </TouchableOpacity>
 
-            <View style={styles.problem}>
-              <Text style={styles.problemTitle}>Refund Request</Text>
-              <Text style={styles.problemText}>
-                Refunds are processed within 7-14 business days.{"\n\n"}
-                Email us with your account email and reason for refund request.
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              What to Include When Contacting Support
-            </Text>
-            <Text style={styles.bulletText}>- Your account email address</Text>
-            <Text style={styles.bulletText}>- Description of the problem</Text>
-            <Text style={styles.bulletText}>- Screenshot of error (if applicable)</Text>
-            <Text style={styles.bulletText}>- Transaction ID or receipt</Text>
-          </View>
-
-          <TouchableOpacity style={styles.emailButton} onPress={openEmail}>
-            <Text style={styles.emailButtonText}>Email Support</Text>
-            <Text style={styles.emailAddress}>{SUPPORT_EMAIL}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
       </View>
-    </View>
+    </Modal>
   );
 }
 

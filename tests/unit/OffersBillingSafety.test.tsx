@@ -96,6 +96,21 @@ describe("Offers billing safety", () => {
     );
   });
 
+  it("opens payment help without starting checkout", async () => {
+    const screen = render(<Offers />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+
+    fireEvent.press(screen.getByLabelText("Open payment help"));
+
+    expect(screen.getByText("Payment Issues Help")).toBeTruthy();
+    expect(screen.getByText("billing@growpathai.com")).toBeTruthy();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Close"));
+    expect(screen.queryByText("Payment Issues Help")).toBeNull();
+  });
+
   it("shows success-return feedback and refreshes the account session", async () => {
     mockSearchParams.subscription = "success";
     mockRetryMe.mockResolvedValue(undefined);
