@@ -33,6 +33,7 @@ import {
   prepareLessonMediaSubmission
 } from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 import { persistImageUri, persistImageUris, resolveImageUri } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "@/utils/growInterests";
 
@@ -145,12 +146,77 @@ export default function CreateCourseScreen({
   const router = useRouter();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
+  const { palette } = useAppTheme();
   const backTarget =
     entitlements.mode === "commercial"
       ? "/home/commercial/courses"
       : entitlements.mode === "facility"
         ? "/courses"
         : "/home/personal/courses";
+  const themeStyles = useMemo(
+    () => ({
+      title: [styles.title, { color: palette.heroText }],
+      workflowCard: [
+        styles.workflowCard,
+        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+      ],
+      workflowTitle: [styles.workflowTitle, { color: palette.link }],
+      lockedCard: [
+        styles.lockedCard,
+        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+      ],
+      lockedTitle: [styles.lockedTitle, { color: palette.text }],
+      sectionCard: [
+        styles.sectionCard,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ],
+      sectionTitle: [styles.sectionTitle, { color: palette.text }],
+      label: [styles.label, { color: palette.textMuted, opacity: 1 }],
+      helpText: [styles.helpText, { color: palette.textMuted }],
+      input: [
+        styles.input,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          color: palette.text
+        }
+      ],
+      uploadButton: [themeStyles.uploadButton, { borderColor: palette.accent }],
+      uploadButtonText: [styles.uploadButtonText, { color: palette.link }],
+      secondaryButton: [styles.secondaryButton, { borderColor: palette.accent }],
+      secondaryButtonText: [styles.secondaryButtonText, { color: palette.link }],
+      button: [styles.button, { backgroundColor: palette.accent }],
+      buttonText: [styles.buttonText, { color: palette.accentText }],
+      lessonPlanner: [
+        styles.lessonPlanner,
+        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+      ],
+      lessonPlanCard: [
+        styles.lessonPlanCard,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ],
+      integrationCard: [
+        styles.integrationCard,
+        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+      ],
+      integrationMessage: [styles.integrationMessage, { color: palette.info }],
+      integrationHelpText: [styles.integrationHelpText, { color: palette.textMuted }],
+      readyText: [styles.readyText, { color: palette.success }],
+      pricingModeButton: [
+        themeStyles.pricingModeButton,
+        { backgroundColor: palette.surface, borderColor: palette.border }
+      ],
+      pricingModeButtonActive: [
+        themeStyles.pricingModeButtonActive,
+        { backgroundColor: palette.accentSoft, borderColor: palette.accent }
+      ],
+      pricingModeText: [styles.pricingModeText, { color: palette.link }],
+      pricePreview: [styles.pricePreview, { color: palette.link }],
+      lessonNumber: [styles.lessonNumber, { color: palette.textMuted }],
+      uploadRowButton: styles.uploadRowButton
+    }),
+    [palette]
+  );
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -609,7 +675,7 @@ export default function CreateCourseScreen({
     <ScreenContainer scroll>
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          <Text accessibilityRole="header" aria-level={1} style={themeStyles.title}>
             Create Course
           </Text>
           {showBackToCourses ? (
@@ -617,68 +683,72 @@ export default function CreateCourseScreen({
               onPress={backToCourses}
               accessibilityRole="button"
               accessibilityLabel="Back to Courses"
-              style={styles.secondaryButton}
+              style={themeStyles.secondaryButton}
             >
-              <Text style={styles.secondaryButtonText}>Back to Courses</Text>
+              <Text style={themeStyles.secondaryButtonText}>Back to Courses</Text>
             </TouchableOpacity>
           ) : null}
         </View>
         <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
-        <View style={styles.workflowCard}>
-          <Text style={styles.workflowTitle}>Course builder workflow</Text>
-          <Text style={styles.helpText}>
+        <View style={themeStyles.workflowCard}>
+          <Text style={themeStyles.workflowTitle}>Course builder workflow</Text>
+          <Text style={themeStyles.helpText}>
             1. Course basics 2. Curriculum / lessons 3. Documents / media 4. Live sessions
             5. Links 6. Pricing / access 7. Preview / publish
           </Text>
         </View>
         {!access.canCreateCourses ? (
-          <View style={styles.lockedCard}>
-            <Text style={styles.lockedTitle}>Course creation unavailable</Text>
-            <Text style={styles.helpText}>
+          <View style={themeStyles.lockedCard}>
+            <Text style={themeStyles.lockedTitle}>Course creation unavailable</Text>
+            <Text style={themeStyles.helpText}>
               Sign in to an account with course access to create drafts.
             </Text>
           </View>
         ) : null}
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             1. Course basics
           </Text>
-          <Text style={styles.label}>Course title</Text>
+          <Text style={themeStyles.label}>Course title</Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             placeholder="Enter a course title"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Course title"
           />
-          <Text style={styles.label}>Summary</Text>
+          <Text style={themeStyles.label}>Summary</Text>
           <TextInput
             value={summary}
             onChangeText={setSummary}
             placeholder="What learners will get from this course"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course summary"
           />
-          <Text style={styles.label}>Description / outline</Text>
+          <Text style={themeStyles.label}>Description / outline</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
             placeholder="Longer course description, outcomes, and prerequisites"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course description"
           />
-          <Text style={styles.label}>Cover image URL</Text>
+          <Text style={themeStyles.label}>Cover image URL</Text>
           <TextInput
             value={coverImageUrl}
             onChangeText={setCoverImageUrl}
             placeholder="Paste image URL or upload from device"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Course cover image URL"
           />
           <TouchableOpacity
@@ -687,11 +757,11 @@ export default function CreateCourseScreen({
             accessibilityRole="button"
             accessibilityLabel="Upload course cover image"
             style={[
-              styles.uploadButton,
+              themeStyles.uploadButton,
               (!access.canCreateCourses || submitting) && styles.buttonDisabled
             ]}
           >
-            <Text style={styles.uploadButtonText}>
+            <Text style={themeStyles.uploadButtonText}>
               {coverImageUrl ? "Change Cover Image" : "Upload Cover Image"}
             </Text>
           </TouchableOpacity>
@@ -703,22 +773,22 @@ export default function CreateCourseScreen({
               accessibilityLabel="Course cover image preview"
             />
           ) : null}
-          <Text style={styles.label}>Category</Text>
+          <Text style={themeStyles.label}>Category</Text>
           <TextInput
             value={category}
             onChangeText={setCategory}
             placeholder="Plant health, living soil, lighting, business, etc."
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Course category"
           />
-          <Text style={styles.label}>Difficulty</Text>
+          <Text style={themeStyles.label}>Difficulty</Text>
           <TextInput
             value={difficulty}
             onChangeText={setDifficulty}
             placeholder="Beginner, intermediate, advanced, or pro"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Course difficulty"
           />
           <GrowInterestPicker
@@ -728,7 +798,10 @@ export default function CreateCourseScreen({
             onChange={setGrowInterestSelections}
             defaultExpanded={false}
           />
-          <Text style={styles.helpText} accessibilityLabel="Selected course crop types">
+          <Text
+            style={themeStyles.helpText}
+            accessibilityLabel="Selected course crop types"
+          >
             Crop type:{" "}
             {selectedCropTypes.length
               ? selectedCropTypes.join(", ")
@@ -736,11 +809,15 @@ export default function CreateCourseScreen({
           </Text>
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             2. Curriculum / lessons
           </Text>
-          <Text style={styles.helpText}>
+          <Text style={themeStyles.helpText}>
             Put each lesson, assignment, checklist, or section on its own line.
           </Text>
           <TextInput
@@ -749,14 +826,14 @@ export default function CreateCourseScreen({
             placeholder={"Lesson 1: Soil basics\nLesson 2: Amendment timing"}
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course curriculum lessons"
           />
           {plannedLessonTitles.length ? (
-            <View style={styles.lessonPlanner}>
+            <View style={themeStyles.lessonPlanner}>
               <View>
-                <Text style={styles.workflowTitle}>Lesson media plan</Text>
-                <Text style={styles.helpText}>
+                <Text style={themeStyles.workflowTitle}>Lesson media plan</Text>
+                <Text style={themeStyles.helpText}>
                   Add an optional provider-aware video to any planned lesson now. You can
                   also finish or replace it later from Add/Edit Lesson.
                 </Text>
@@ -768,11 +845,14 @@ export default function CreateCourseScreen({
                   ? "GrowPath upload selected"
                   : prepared.mediaSource?.providerLabel || "No video selected";
                 return (
-                  <View key={`${lessonTitle}-${index}`} style={styles.lessonPlanCard}>
+                  <View
+                    key={`${lessonTitle}-${index}`}
+                    style={themeStyles.lessonPlanCard}
+                  >
                     <View style={styles.lessonPlanCopy}>
-                      <Text style={styles.lessonNumber}>Lesson {index + 1}</Text>
-                      <Text style={styles.workflowTitle}>{lessonTitle}</Text>
-                      <Text style={styles.helpText}>{providerLabel}</Text>
+                      <Text style={themeStyles.lessonNumber}>Lesson {index + 1}</Text>
+                      <Text style={themeStyles.workflowTitle}>{lessonTitle}</Text>
+                      <Text style={themeStyles.helpText}>{providerLabel}</Text>
                     </View>
                     <Pressable
                       accessibilityRole="button"
@@ -783,9 +863,9 @@ export default function CreateCourseScreen({
                           current === index ? null : index
                         )
                       }
-                      style={styles.secondaryButton}
+                      style={themeStyles.secondaryButton}
                     >
-                      <Text style={styles.secondaryButtonText}>
+                      <Text style={themeStyles.secondaryButtonText}>
                         {activeLessonMediaIndex === index
                           ? "Close Video Setup"
                           : "Add / Review Video"}
@@ -816,13 +896,13 @@ export default function CreateCourseScreen({
               ) : null}
             </View>
           ) : (
-            <Text style={styles.helpText}>
+            <Text style={themeStyles.helpText}>
               Add lesson titles above to configure YouTube, Rumble, Vimeo, GrowPath
               uploads, or another video URL.
             </Text>
           )}
-          <Text style={styles.label}>Quiz outline</Text>
-          <Text style={styles.helpText}>
+          <Text style={themeStyles.label}>Quiz outline</Text>
+          <Text style={themeStyles.helpText}>
             Put one question per line. Add answer choices after vertical bars.
           </Text>
           <TextInput
@@ -831,13 +911,17 @@ export default function CreateCourseScreen({
             placeholder={"What controls nutrient availability? | pH | Pot color"}
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course quiz outline"
           />
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             3. Documents / media
           </Text>
           <TextInput
@@ -846,7 +930,7 @@ export default function CreateCourseScreen({
             placeholder="PDFs, worksheets, checklists, SOPs, or handouts"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course documents"
           />
           <TouchableOpacity
@@ -855,11 +939,11 @@ export default function CreateCourseScreen({
             accessibilityRole="button"
             accessibilityLabel="Upload course documents"
             style={[
-              styles.uploadButton,
+              themeStyles.uploadButton,
               (!access.canCreateCourses || submitting) && styles.buttonDisabled
             ]}
           >
-            <Text style={styles.uploadButtonText}>
+            <Text style={themeStyles.uploadButtonText}>
               {documentFiles.length
                 ? `${documentFiles.length} Document${documentFiles.length === 1 ? "" : "s"} Selected`
                 : "Upload Documents"}
@@ -871,7 +955,7 @@ export default function CreateCourseScreen({
             placeholder="Video topics, replay files, image sets, estimated storage needs"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={[styles.input, styles.multiline]}
+            style={[themeStyles.input, styles.multiline]}
             accessibilityLabel="Course media plan"
           />
           <View style={styles.uploadRow}>
@@ -881,12 +965,12 @@ export default function CreateCourseScreen({
               accessibilityRole="button"
               accessibilityLabel="Upload course media files"
               style={[
-                styles.uploadButton,
+                themeStyles.uploadButton,
                 styles.uploadRowButton,
                 (!access.canCreateCourses || submitting) && styles.buttonDisabled
               ]}
             >
-              <Text style={styles.uploadButtonText}>
+              <Text style={themeStyles.uploadButtonText}>
                 {mediaFiles.length
                   ? `${mediaFiles.length} Media File${mediaFiles.length === 1 ? "" : "s"}`
                   : "Upload Video / Audio"}
@@ -898,12 +982,12 @@ export default function CreateCourseScreen({
               accessibilityRole="button"
               accessibilityLabel="Upload course image set"
               style={[
-                styles.uploadButton,
+                themeStyles.uploadButton,
                 styles.uploadRowButton,
                 (!access.canCreateCourses || submitting) && styles.buttonDisabled
               ]}
             >
-              <Text style={styles.uploadButtonText}>
+              <Text style={themeStyles.uploadButtonText}>
                 {mediaImages.length
                   ? `${mediaImages.length} Image${mediaImages.length === 1 ? "" : "s"}`
                   : "Upload Images"}
@@ -925,18 +1009,22 @@ export default function CreateCourseScreen({
           ) : null}
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             4. Live sessions
           </Text>
-          <Text style={styles.helpText}>
+          <Text style={themeStyles.helpText}>
             Schedule a real Twitch live. The course event appears in GrowPath Schedule;
             learners can RSVP, receive notification context, and create a dated task
             reminder.
           </Text>
-          <View style={styles.integrationCard}>
-            <Text style={styles.workflowTitle}>Twitch, calendar, and reminders</Text>
-            <Text style={[styles.helpText, styles.integrationHelpText]}>
+          <View style={themeStyles.integrationCard}>
+            <Text style={themeStyles.workflowTitle}>Twitch, calendar, and reminders</Text>
+            <Text style={themeStyles.integrationHelpText}>
               {!twitchConnection
                 ? "Checking Twitch connection..."
                 : !twitchConnection.configured
@@ -953,7 +1041,7 @@ export default function CreateCourseScreen({
                       }.`}
             </Text>
             {twitchMessage ? (
-              <Text style={styles.integrationMessage}>{twitchMessage}</Text>
+              <Text style={themeStyles.integrationMessage}>{twitchMessage}</Text>
             ) : null}
             <View style={styles.linkRow}>
               <Pressable
@@ -962,12 +1050,12 @@ export default function CreateCourseScreen({
                 disabled={twitchBusy || twitchConnection?.configured === false}
                 onPress={connectTwitch}
                 style={[
-                  styles.uploadButton,
+                  themeStyles.uploadButton,
                   (twitchBusy || twitchConnection?.configured === false) &&
                     styles.buttonDisabled
                 ]}
               >
-                <Text style={styles.uploadButtonText}>
+                <Text style={themeStyles.uploadButtonText}>
                   {twitchBusy
                     ? "Checking Twitch..."
                     : twitchConnection?.connection?.status === "connected"
@@ -980,26 +1068,26 @@ export default function CreateCourseScreen({
                 accessibilityLabel="Refresh Twitch for course lives"
                 disabled={twitchBusy}
                 onPress={() => refreshTwitchConnection(true)}
-                style={[styles.secondaryButton, twitchBusy && styles.buttonDisabled]}
+                style={[themeStyles.secondaryButton, twitchBusy && styles.buttonDisabled]}
               >
-                <Text style={styles.secondaryButtonText}>Refresh Twitch</Text>
+                <Text style={themeStyles.secondaryButtonText}>Refresh Twitch</Text>
               </Pressable>
               <Link href="/home/schedule" asChild>
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel="Open shared GrowPath Schedule"
-                  style={styles.secondaryButton}
+                  style={themeStyles.secondaryButton}
                 >
-                  <Text style={styles.secondaryButtonText}>Open Schedule</Text>
+                  <Text style={themeStyles.secondaryButtonText}>Open Schedule</Text>
                 </Pressable>
               </Link>
               <Link href="/home/notifications" asChild>
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel="Open GrowPath Notification Center"
-                  style={styles.secondaryButton}
+                  style={themeStyles.secondaryButton}
                 >
-                  <Text style={styles.secondaryButtonText}>Notifications</Text>
+                  <Text style={themeStyles.secondaryButtonText}>Notifications</Text>
                 </Pressable>
               </Link>
               {entitlements.mode === "commercial" ? (
@@ -1007,21 +1095,23 @@ export default function CreateCourseScreen({
                   <Pressable
                     accessibilityRole="link"
                     accessibilityLabel="Open advanced commercial live setup"
-                    style={styles.secondaryButton}
+                    style={themeStyles.secondaryButton}
                   >
-                    <Text style={styles.secondaryButtonText}>Advanced Live Setup</Text>
+                    <Text style={themeStyles.secondaryButtonText}>
+                      Advanced Live Setup
+                    </Text>
                   </Pressable>
                 </Link>
               ) : null}
             </View>
           </View>
-          <Text style={styles.label}>Session title</Text>
+          <Text style={themeStyles.label}>Session title</Text>
           <TextInput
             value={liveTitle}
             onChangeText={setLiveTitle}
             placeholder="Live soil-building Q&A"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Live session title"
           />
           <CalendarDateField
@@ -1042,23 +1132,23 @@ export default function CreateCourseScreen({
             disabled={!access.canCreateCourses || submitting}
             accessibilityLabel="Live session end"
           />
-          <Text style={styles.label}>Timezone</Text>
+          <Text style={themeStyles.label}>Timezone</Text>
           <TextInput
             value={liveTimezone}
             onChangeText={setLiveTimezone}
             placeholder="America/New_York"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Live session timezone"
           />
-          <Text style={styles.label}>Twitch channel</Text>
+          <Text style={themeStyles.label}>Twitch channel</Text>
           <TextInput
             value={twitchChannel}
             onChangeText={setTwitchChannel}
             placeholder="Channel name or twitch.tv/channel URL"
             autoCapitalize="none"
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Live session Twitch channel"
           />
           <TouchableOpacity
@@ -1113,24 +1203,24 @@ export default function CreateCourseScreen({
               setLiveEnd("");
             }}
             style={[
-              styles.uploadButton,
+              themeStyles.uploadButton,
               (!liveTitle.trim() || !liveStart.trim() || !twitchChannel.trim()) &&
                 styles.buttonDisabled
             ]}
           >
-            <Text style={styles.uploadButtonText}>Add Scheduled Live</Text>
+            <Text style={themeStyles.uploadButtonText}>Add Scheduled Live</Text>
           </TouchableOpacity>
           {liveSessions.map((session, index) => (
             <View key={session.id} style={styles.workflowCard}>
-              <Text style={styles.workflowTitle}>{session.title}</Text>
-              <Text style={styles.helpText}>
+              <Text style={themeStyles.workflowTitle}>{session.title}</Text>
+              <Text style={themeStyles.helpText}>
                 {session.scheduledStart} · {session.timezone}
               </Text>
-              <Text style={styles.helpText}>{session.meetingUrl}</Text>
-              <Text style={styles.readyText}>
+              <Text style={themeStyles.helpText}>{session.meetingUrl}</Text>
+              <Text style={themeStyles.readyText}>
                 Shared calendar · RSVP · Notification Center · 1-hour task reminder
               </Text>
-              <Text style={styles.helpText}>
+              <Text style={themeStyles.helpText}>
                 Twitch {session.twitchConnectionStatus} · EventSub{" "}
                 {session.eventSubStatus}
               </Text>
@@ -1141,14 +1231,18 @@ export default function CreateCourseScreen({
                   setLiveSessions((current) => current.filter((_, row) => row !== index))
                 }
               >
-                <Text style={styles.secondaryButtonText}>Remove</Text>
+                <Text style={themeStyles.secondaryButtonText}>Remove</Text>
               </TouchableOpacity>
             </View>
           ))}
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             5. Links
           </Text>
           <TextInput
@@ -1157,7 +1251,7 @@ export default function CreateCourseScreen({
             placeholder="Linked product IDs, one per line"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Linked product ids"
           />
           <TextInput
@@ -1166,7 +1260,7 @@ export default function CreateCourseScreen({
             placeholder="Linked grow IDs, one per line"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Linked grow ids"
           />
           <TextInput
@@ -1175,17 +1269,21 @@ export default function CreateCourseScreen({
             placeholder="Linked forum thread IDs, one per line"
             multiline
             editable={access.canCreateCourses && !submitting}
-            style={styles.input}
+            style={themeStyles.input}
             accessibilityLabel="Linked forum thread ids"
           />
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             6. Pricing / access
           </Text>
           {!access.canSellPaidCourses ? (
-            <Text style={styles.helpText}>
+            <Text style={themeStyles.helpText}>
               Paid pricing should be available on every plan. Refresh the account or
               contact support@growpathai.com if it remains unavailable.
             </Text>
@@ -1206,11 +1304,11 @@ export default function CreateCourseScreen({
               accessibilityState={{ checked: pricingMode === "free" }}
               accessibilityLabel="Make course free"
               style={[
-                styles.pricingModeButton,
-                pricingMode === "free" && styles.pricingModeButtonActive
+                themeStyles.pricingModeButton,
+                pricingMode === "free" && themeStyles.pricingModeButtonActive
               ]}
             >
-              <Text style={styles.pricingModeText}>Free</Text>
+              <Text style={themeStyles.pricingModeText}>Free</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setPricingMode("paid")}
@@ -1222,17 +1320,17 @@ export default function CreateCourseScreen({
               accessibilityState={{ checked: pricingMode === "paid" }}
               accessibilityLabel="Set a paid course fee"
               style={[
-                styles.pricingModeButton,
-                pricingMode === "paid" && styles.pricingModeButtonActive,
+                themeStyles.pricingModeButton,
+                pricingMode === "paid" && themeStyles.pricingModeButtonActive,
                 (!access.canSellPaidCourses || submitting) && styles.buttonDisabled
               ]}
             >
-              <Text style={styles.pricingModeText}>Paid</Text>
+              <Text style={themeStyles.pricingModeText}>Paid</Text>
             </TouchableOpacity>
           </View>
           {pricingMode === "paid" ? (
             <>
-              <Text style={styles.label}>Course fee (USD)</Text>
+              <Text style={themeStyles.label}>Course fee (USD)</Text>
               <TextInput
                 value={price}
                 onChangeText={setPrice}
@@ -1241,32 +1339,40 @@ export default function CreateCourseScreen({
                 editable={
                   access.canCreateCourses && access.canSellPaidCourses && !submitting
                 }
-                style={styles.input}
+                style={themeStyles.input}
                 accessibilityLabel="Course price USD"
               />
-              <Text style={styles.pricePreview}>
+              <Text style={themeStyles.pricePreview}>
                 Learners will see:{" "}
                 {priceCents ? `$${(priceCents / 100).toFixed(2)}` : "Enter a fee"}
               </Text>
             </>
           ) : (
-            <Text style={styles.pricePreview}>Learners will see: Free</Text>
+            <Text style={themeStyles.pricePreview}>Learners will see: Free</Text>
           )}
-          <Text style={styles.helpText}>
+          <Text style={themeStyles.helpText}>
             Paid course limit:{" "}
             {access.maxPaidCourses === null ? "unlimited" : access.maxPaidCourses}
           </Text>
-          <Text style={styles.helpText}>Lessons: 0 / plan limit</Text>
-          <Text style={styles.helpText}>Storage used: 0 MB / plan limit</Text>
-          <Text style={styles.helpText}>Live sessions this month: 0 / plan limit</Text>
-          <Text style={styles.helpText}>Uploaded video storage: 0 GB / plan limit</Text>
+          <Text style={themeStyles.helpText}>Lessons: 0 / plan limit</Text>
+          <Text style={themeStyles.helpText}>Storage used: 0 MB / plan limit</Text>
+          <Text style={themeStyles.helpText}>
+            Live sessions this month: 0 / plan limit
+          </Text>
+          <Text style={themeStyles.helpText}>
+            Uploaded video storage: 0 GB / plan limit
+          </Text>
         </View>
 
-        <View style={styles.sectionCard}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        <View style={themeStyles.sectionCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={themeStyles.sectionTitle}
+          >
             7. Preview / publish
           </Text>
-          <Text style={styles.helpText}>
+          <Text style={themeStyles.helpText}>
             This saves a draft. Use course detail to review, add uploaded assets, preview,
             and publish when the course is ready.
           </Text>
@@ -1278,9 +1384,9 @@ export default function CreateCourseScreen({
           disabled={!canSubmit}
           accessibilityRole="button"
           accessibilityLabel="Create course draft"
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          style={[themeStyles.button, !canSubmit && styles.buttonDisabled]}
         >
-          <Text style={styles.buttonText}>
+          <Text style={themeStyles.buttonText}>
             {submitting ? "Creating..." : "Create Draft"}
           </Text>
         </TouchableOpacity>
