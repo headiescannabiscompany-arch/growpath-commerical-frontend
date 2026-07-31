@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View
 } from "react-native";
@@ -12,6 +13,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
+import { updateNotificationPreferences } from "@/api/users";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   NOTIFICATION_PREFERENCE_OPTIONS,
@@ -274,10 +276,10 @@ export default function NotificationCenterRoute() {
   const [filter, setFilter] = useState<FilterKey>("unread");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
-  const notificationPrefs = useMemo(
-    () => preferenceState(auth.user?.notificationPreferences),
-    [auth.user?.notificationPreferences]
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
+    () => preferenceState(auth.user?.notificationPreferences)
   );
+  const [preferencesSaving, setPreferencesSaving] = useState(false);
   const enabledCategories = useMemo(
     () =>
       NOTIFICATION_INBOX_FILTERS.filter((option) => notificationPrefs[option.key]).map(
@@ -285,6 +287,21 @@ export default function NotificationCenterRoute() {
       ),
     [notificationPrefs]
   );
+
+  async function saveNotificationPreferences() {
+    setPreferencesSaving(true);
+    setError("");
+    setFeedback("");
+    try {
+      await updateNotificationPreferences(notificationPrefs);
+      await auth.retryMe?.();
+      setFeedback("Notification settings saved.");
+    } catch (err: any) {
+      setError(err?.message || "Unable to save notification settings.");
+    } finally {
+      setPreferencesSaving(false);
+    }
+  }
 
   async function loadNotifications() {
     setLoading(true);
@@ -459,6 +476,37 @@ export default function NotificationCenterRoute() {
             ? `Enabled categories: ${enabledCategories.join(", ")}`
             : "All notification categories are muted in Profile."}
         </Text>
+        <View style={styles.preferenceList}>
+          {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+            <View key={String(option.key)} style={styles.preferenceRow}>
+              <View style={styles.preferenceCopy}>
+                <Text style={styles.preferenceTitle}>{option.title}</Text>
+                <Text style={styles.metaText}>{option.description}</Text>
+              </View>
+              <Switch
+                accessibilityLabel={`Toggle ${option.title}`}
+                value={Boolean(notificationPrefs[option.key])}
+                onValueChange={(value) =>
+                  setNotificationPrefs((current) => ({
+                    ...current,
+                    [option.key]: value
+                  }))
+                }
+              />
+            </View>
+          ))}
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Save notification settings"
+          disabled={preferencesSaving}
+          onPress={saveNotificationPreferences}
+          style={[styles.primaryButton, preferencesSaving && styles.disabled]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {preferencesSaving ? "Saving..." : "Save notification settings"}
+          </Text>
+        </Pressable>
         <Link href={profileHref as any} asChild>
           <Pressable accessibilityRole="link" style={styles.linkButton}>
             <Text style={styles.linkButtonText}>Open Profile settings</Text>
@@ -630,6 +678,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   primaryButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
+  disabled: { opacity: 0.55 },
   disabledButton: { opacity: 0.45 },
   card: {
     borderRadius: radius.card,
@@ -652,6 +701,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: { color: "#111827", fontSize: 16, fontWeight: "900", flex: 1 },
   cardText: { color: "#374151", fontSize: 13, lineHeight: 19 },
+  preferenceList: { marginTop: 12, gap: 10 },
+  preferenceRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between"
+  },
+  preferenceCopy: { flex: 1 },
+  preferenceTitle: { color: "#111827", fontSize: 14, fontWeight: "800" },
   metaText: { color: "#64748b", fontSize: 12, fontWeight: "700" },
   badge: {
     overflow: "hidden",

@@ -280,6 +280,25 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
   });
 
+  it("lets facility users change and save notification types", async () => {
+    mockWorkspaceParam = "facility";
+    const screen = render(<NotificationCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
+    fireEvent(screen.getByLabelText("Toggle Facility alerts"), "valueChange", false);
+    fireEvent.press(screen.getByLabelText("Save notification settings"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ facilityAlerts: false })
+        })
+      )
+    );
+  });
+
   it("loads notifications, filters by source, and marks one read", async () => {
     const screen = render(<NotificationCenterRoute />);
 
