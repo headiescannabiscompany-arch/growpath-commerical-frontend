@@ -25,6 +25,7 @@ import {
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 import { providerEvidencePayload } from "@/api/evidence";
@@ -159,6 +160,8 @@ export default function DiagnoseRoute({
   const routeGrowId = param(params.growId);
   const initialPlantId = param(params.plantId);
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const enabled = entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI);
 
   const [grows, setGrows] = useState<PersonalGrow[]>([]);
@@ -1504,139 +1507,160 @@ export default function DiagnoseRoute({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 120, backgroundColor: "#FFFFFF", gap: 10 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "700" },
-  section: { gap: 7 },
-  label: { color: "#334155", fontWeight: "800" },
-  measurementLabel: {
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "700",
-    alignSelf: "center"
-  },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 7
-  },
-  pillOn: { backgroundColor: "#166534", borderColor: "#166534" },
-  pillText: { color: "#334155", fontWeight: "700", fontSize: 12 },
-  pillTextOn: { color: "#FFFFFF" },
-  notes: {
-    minHeight: 110,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12,
-    textAlignVertical: "top"
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12
-  },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  gridInput: {
-    minWidth: 140,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12
-  },
-  photo: {
-    width: "100%",
-    height: 240,
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  photoReady: {
-    color: "#166534",
-    backgroundColor: "#F0FDF4",
-    borderWidth: 1,
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    padding: 10,
-    lineHeight: 19
-  },
-  photoWarning: {
-    color: "#9A3412",
-    backgroundColor: "#FFF7ED",
-    borderWidth: 1,
-    borderColor: "#FDBA74",
-    borderRadius: radius.card,
-    padding: 10,
-    lineHeight: 19
-  },
-  primaryButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  locked: {
-    color: "#9A3412",
-    backgroundColor: "#FFF7ED",
-    padding: 10,
-    borderRadius: radius.card
-  },
-  feedback: { color: "#334155", fontWeight: "700" },
-  readinessPanel: {
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 10,
-    gap: 4
-  },
-  readinessReady: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
-  readinessMissing: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
-  readinessTitle: { color: "#0F172A", fontWeight: "800" },
-  readinessText: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  providerPanel: {
-    borderWidth: 1,
-    borderColor: "#D9E2EC",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 5
-  },
-  providerTitle: { color: "#0F172A", fontWeight: "800", marginTop: 4 },
-  providerMeta: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  providerLine: { color: "#334155", fontSize: 12, lineHeight: 18 },
-  cropContextPanel: {
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 10,
-    gap: 4
-  },
-  cropContextReady: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
-  cropContextNeedsReview: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
-  cropContextTitle: { color: "#0F172A", fontWeight: "800" },
-  cropContextText: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  followUpCard: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#F8FAFC"
-  }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      padding: 20,
+      paddingBottom: 120,
+      backgroundColor: palette.page,
+      gap: 10
+    },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.accent, fontWeight: "700" },
+    section: { gap: 7 },
+    label: { color: palette.text, fontWeight: "800" },
+    measurementLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      alignSelf: "center"
+    },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    pill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 7
+    },
+    pillOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { color: palette.textMuted, fontWeight: "700", fontSize: 12 },
+    pillTextOn: { color: palette.accentText },
+    notes: {
+      minHeight: 110,
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      color: palette.text,
+      borderRadius: radius.card,
+      padding: 12,
+      textAlignVertical: "top"
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      color: palette.text,
+      borderRadius: radius.card,
+      padding: 12
+    },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    gridInput: {
+      backgroundColor: palette.surface,
+      minWidth: 140,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      color: palette.text,
+      borderRadius: radius.card,
+      padding: 12
+    },
+    photo: {
+      width: "100%",
+      height: 240,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong
+    },
+    photoPolicy: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    photoReady: {
+      color: palette.text,
+      backgroundColor: palette.accentSoft,
+      borderWidth: 1,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      padding: 10,
+      lineHeight: 19
+    },
+    photoWarning: {
+      color: palette.warning,
+      backgroundColor: palette.surfaceMuted,
+      borderWidth: 1,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      padding: 10,
+      lineHeight: 19
+    },
+    primaryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.accent, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    locked: {
+      color: palette.warning,
+      backgroundColor: palette.surfaceMuted,
+      padding: 10,
+      borderRadius: radius.card
+    },
+    feedback: { color: palette.text, fontWeight: "700" },
+    readinessPanel: {
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 10,
+      gap: 4
+    },
+    readinessReady: { borderColor: palette.success, backgroundColor: palette.accentSoft },
+    readinessMissing: {
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceMuted
+    },
+    readinessTitle: { color: palette.text, fontWeight: "800" },
+    readinessText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    providerPanel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 5
+    },
+    providerTitle: { color: palette.text, fontWeight: "800", marginTop: 4 },
+    providerMeta: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    providerLine: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    cropContextPanel: {
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 10,
+      gap: 4
+    },
+    cropContextReady: {
+      borderColor: palette.success,
+      backgroundColor: palette.accentSoft
+    },
+    cropContextNeedsReview: {
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceMuted
+    },
+    cropContextTitle: { color: palette.text, fontWeight: "800" },
+    cropContextText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    followUpCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    }
+  });
