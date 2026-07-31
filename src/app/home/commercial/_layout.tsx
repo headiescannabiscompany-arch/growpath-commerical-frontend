@@ -79,31 +79,19 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="grows/index"
-        options={{ title: "Grows", tabBarLabel: "Grows" }}
+        options={{ title: "Grows", tabBarLabel: "Grows", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/index"
-        options={{ title: "AI Tools", tabBarLabel: "AI Tools" }}
+        options={{ title: "AI Tools", tabBarLabel: "AI Tools", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover" }}
+        options={{ title: "Discover", tabBarLabel: "Discover", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="courses"
-        options={{ title: "Courses", tabBarLabel: "Courses" }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: "Forum / Q&A",
-          tabBarLabel: "Forum",
-          headerShown: false
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: "Profile", tabBarLabel: "Profile" }}
+        options={{ title: "Courses", tabBarLabel: "Courses", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="products/index"
@@ -113,8 +101,15 @@ export default function CommercialTabsLayout() {
         name="feed"
         options={{
           title: "Feed / Campaigns",
-          tabBarButton: () => null,
           tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns",
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
+        name="community"
+        options={{
+          title: "Forum / Q&A",
+          tabBarLabel: "Forum",
           headerShown: false
         }}
       />
@@ -148,9 +143,13 @@ export default function CommercialTabsLayout() {
         name="more"
         options={{
           title: "More",
-          tabBarButton: () => null,
+          tabBarLabel: "More",
           headerShown: false
         }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", tabBarLabel: "Profile" }}
       />
       <Tabs.Screen
         name="storefront/edit"

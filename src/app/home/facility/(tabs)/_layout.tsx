@@ -73,11 +73,17 @@ export default function FacilityTabsLayout() {
         name="dashboard"
         options={{ title: "Dashboard", tabBarLabel: "Dashboard" }}
       />
-      <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
+      <Tabs.Screen name="rooms" options={{ title: "Rooms", tabBarButton: () => null }} />
       <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
+      <Tabs.Screen
+        name="plants"
+        options={{ title: "Plants", tabBarButton: () => null }}
+      />
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen name="sop-runs" options={{ title: "SOPs" }} />
+      <Tabs.Screen
+        name="sop-runs"
+        options={{ title: "SOPs", tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="compliance"
         options={{ title: "Compliance", tabBarLabel: "Compliance" }}
@@ -108,7 +114,7 @@ export default function FacilityTabsLayout() {
         name="integrations"
         options={{ title: "Integrations", tabBarButton: () => null }}
       />
-      <Tabs.Screen name="ai-tools" options={{ href: compactTabs ? null : undefined }} />
+      <Tabs.Screen name="ai-tools" options={{ tabBarButton: () => null }} />
       <Tabs.Screen
         name="ai-ask"
         options={{ title: "AI", tabBarLabel: "AI", tabBarButton: () => null }}
