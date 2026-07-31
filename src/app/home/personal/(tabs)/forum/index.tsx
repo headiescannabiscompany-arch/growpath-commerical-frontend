@@ -252,7 +252,10 @@ export default function ForumRoute() {
         )}
         <Link href="/videos?tab=library" asChild>
           <Pressable
-            style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
+            style={StyleSheet.flatten([
+              styles.primaryBtn,
+              { backgroundColor: palette.accent }
+            ])}
             accessibilityRole="button"
             accessibilityLabel="Open video library"
           >
@@ -263,10 +266,10 @@ export default function ForumRoute() {
         </Link>
         <Link href="/videos?tab=discover" asChild>
           <Pressable
-            style={[
+            style={StyleSheet.flatten([
               styles.secondaryBtn,
               { borderColor: palette.accent, backgroundColor: palette.surfaceMuted }
-            ]}
+            ])}
             accessibilityRole="button"
             accessibilityLabel="Browse videos"
           >
