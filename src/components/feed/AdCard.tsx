@@ -37,6 +37,7 @@ export default function AdCard({
   compact = false
 }: AdCardProps) {
   const { palette } = useAppTheme();
+  const campaignAccent = palette.resolvedMode === "night" ? palette.link : "#C2410C";
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const { width } = useWindowDimensions();
   const compactMedia = width >= 760;
@@ -121,7 +122,7 @@ export default function AdCard({
       ) : null}
       <View style={styles.copy}>
         <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: palette.accent }]}>Promoted campaign</Text>
+          <Text style={[styles.label, { color: campaignAccent }]}>Promoted campaign</Text>
           {strategyLabel ? (
             <Text style={[styles.strategy, { color: palette.textMuted }]}>
               {strategyLabel}
@@ -135,7 +136,7 @@ export default function AdCard({
         >
           {body}
         </Text>
-        <Text style={[styles.link, { color: palette.link }]}>
+        <Text style={[styles.link, { color: campaignAccent }]}>
           {cta} {"\u2192"}
         </Text>
       </View>
