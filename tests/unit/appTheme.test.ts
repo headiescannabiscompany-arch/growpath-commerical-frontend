@@ -6,6 +6,21 @@ describe("app theme modes", () => {
     expect(resolveThemeMode("auto", "dark")).toBe("night");
   });
 
+  it("resolves location auto mode from sunrise and sunset instead of device theme", () => {
+    const location = {
+      latitude: 0,
+      longitude: 0,
+      updatedAt: "2026-06-21T00:00:00.000Z"
+    };
+    const midday = new Date(2026, 5, 21, 12, 0, 0).getTime();
+    const midnight = new Date(2026, 5, 21, 0, 0, 0).getTime();
+
+    expect(resolveThemeMode("auto", "dark", "location", location, midday)).toBe("day");
+    expect(resolveThemeMode("auto", "light", "location", location, midnight)).toBe(
+      "night"
+    );
+  });
+
   it("keeps day mode aligned with the forum-style green theme", () => {
     const palette = getThemePalette("day", "dark");
     expect(palette.resolvedMode).toBe("day");
