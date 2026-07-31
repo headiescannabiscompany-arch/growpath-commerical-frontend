@@ -6,14 +6,14 @@ export type WorkspaceAccessSnapshot = {
   facilityId?: string | null;
   selectedFacilityId?: string | null;
   facilityRole?: string | null;
+  commercialWorkspaceAccess?: boolean;
   can?: (capability: string | string[]) => boolean;
 };
 
 export function availableWorkspaceModes(access: WorkspaceAccessSnapshot): AccountMode[] {
   const modes: AccountMode[] = ["personal"];
   const canCommercial =
-    access.mode === "commercial" ||
-    access.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME) === true;
+    access.mode === "commercial" || access.commercialWorkspaceAccess === true;
   const canFacility =
     access.mode === "facility" ||
     Boolean(access.facilityId || access.selectedFacilityId || access.facilityRole) ||

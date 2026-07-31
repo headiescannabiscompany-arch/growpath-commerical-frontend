@@ -62,6 +62,28 @@ describe("login workspace choice", () => {
     ).toEqual(["personal", "facility"]);
   });
 
+  it("does not mistake Facility-derived commercial capabilities for a brand workspace", () => {
+    expect(
+      availableWorkspaceModes({
+        mode: "facility",
+        facilityId: "facility-1",
+        facilityRole: "VIEWER",
+        commercialWorkspaceAccess: false,
+        can: (capability: string | string[]) => capability === "COMMERCIAL_HOME"
+      })
+    ).toEqual(["personal", "facility"]);
+  });
+
+  it("includes Commercial only when the authenticated context grants that workspace", () => {
+    expect(
+      availableWorkspaceModes({
+        mode: "personal",
+        commercialWorkspaceAccess: true,
+        can: () => false
+      })
+    ).toEqual(["personal", "commercial"]);
+  });
+
   it("sends a single-workspace account directly to Personal", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,

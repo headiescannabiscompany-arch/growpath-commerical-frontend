@@ -30,6 +30,7 @@ export type EntitlementsState = {
   facilityId: string | null;
   selectedFacilityId: string | null; // Alias for facilityId (backward compatibility)
   facilityRole: string | null; // User's role in facility mode
+  commercialWorkspaceAccess: boolean;
   capabilities: Record<string, any>;
   limits: Record<string, any>;
   can: ((capability: string | string[]) => boolean) & Record<string, boolean>;
@@ -46,6 +47,7 @@ const DEFAULT_STATE: Omit<EntitlementsState, "can"> = {
   facilityId: null,
   selectedFacilityId: null,
   facilityRole: null,
+  commercialWorkspaceAccess: false,
   capabilities: {},
   limits: {}
 };
@@ -457,6 +459,10 @@ function applyServerCtx(
   const plan = devPlan ?? resolveWorkspaceAccessPlan(mode, accountPlan, effectiveCtx);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
+  const commercialWorkspaceAccess =
+    pickMode(effectiveCtx?.mode) === "commercial" ||
+    hasCommercialAccess(effectiveCtx) ||
+    String(accountPlan).toLowerCase() === "commercial";
 
   const normalized: Record<string, boolean> = {};
   const unknownKeys: string[] = [];
@@ -504,6 +510,7 @@ function applyServerCtx(
     facilityId,
     selectedFacilityId: facilityId, // Alias
     facilityRole,
+    commercialWorkspaceAccess,
     capabilities: normalized,
     limits: applyDefaultCourseLimits(
       effectiveCtx?.limits && typeof effectiveCtx.limits === "object"
@@ -544,6 +551,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         bootstrapError: null,
         selectedFacilityId: null,
         facilityRole: null,
+        commercialWorkspaceAccess: false,
         mode: "personal",
         plan: "free",
         facilityId: null,
