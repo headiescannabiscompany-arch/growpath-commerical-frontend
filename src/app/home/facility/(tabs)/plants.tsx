@@ -21,6 +21,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -92,6 +93,7 @@ export default function FacilityPlantsTab() {
   }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
+  const { palette } = useAppTheme();
   const { rooms } = useFacilityRooms(facilityId);
   const { grows } = useFacilityGrows(facilityId);
   const contextGrowId = String(firstParam(params.growId) || "");
@@ -210,6 +212,7 @@ export default function FacilityPlantsTab() {
         : grows,
     [grows, roomId]
   );
+  const styles = useMemo(() => buildStyles(palette), [palette]);
 
   return (
     <ScreenBoundary
@@ -263,6 +266,7 @@ export default function FacilityPlantsTab() {
                 onChangeText={setPlantName}
                 style={styles.input}
                 placeholder="Plant name"
+                placeholderTextColor={palette.textMuted}
               />
               <TextInput
                 accessibilityLabel="Plant tag"
@@ -270,6 +274,7 @@ export default function FacilityPlantsTab() {
                 onChangeText={setPlantTag}
                 style={styles.input}
                 placeholder="Tag or label"
+                placeholderTextColor={palette.textMuted}
               />
               <TextInput
                 accessibilityLabel="Plant strain"
@@ -277,6 +282,7 @@ export default function FacilityPlantsTab() {
                 onChangeText={setPlantStrain}
                 style={styles.input}
                 placeholder="Strain"
+                placeholderTextColor={palette.textMuted}
               />
               <View style={styles.pillRow}>
                 {STAGES.map((stage) => (
@@ -386,7 +392,7 @@ export default function FacilityPlantsTab() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading plants...</Text>
           </View>
         ) : null}
@@ -466,102 +472,110 @@ export default function FacilityPlantsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { marginBottom: 12 },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700",
-    marginBottom: 10
-  },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#eff6ff",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    marginBottom: 12
-  },
-  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
-  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
-  warnText: { color: "#b45309" },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 10,
-    marginBottom: 12
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900" },
-  form: { gap: 8 },
-  label: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    backgroundColor: "white"
-  },
-  pillSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  pillText: { fontWeight: "800", color: "#0F172A" },
-  pillTextSelected: { color: "white" },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryText: { color: "white", fontWeight: "800" },
-  disabled: { opacity: 0.55 },
+function buildStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, backgroundColor: palette.page },
+    headerRow: { marginBottom: 12 },
+    h1: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "900",
+      marginBottom: 4
+    },
+    muted: { color: palette.textMuted },
+    feedback: {
+      color: palette.textMuted,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700",
+      marginBottom: 10
+    },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      marginBottom: 12
+    },
+    summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    warnText: { color: palette.warning },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 10,
+      marginBottom: 12
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    form: { gap: 8 },
+    label: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    pill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    pillSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { fontWeight: "800", color: palette.text },
+    pillTextSelected: { color: palette.accentText },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
-  list: { paddingVertical: 6 },
+    loading: { paddingVertical: 18, alignItems: "center" },
+    list: { paddingVertical: 6 },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  pressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
-  rowSub: { opacity: 0.7 },
-  traceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  badge: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
-  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    pressed: { opacity: 0.85 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 4 },
+    rowSub: { color: palette.textMuted },
+    traceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    badge: {
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    badgeOk: { color: palette.success, backgroundColor: palette.surfaceMuted },
+    badgeWarn: { color: palette.warning, backgroundColor: palette.surfaceMuted },
+    chev: { color: palette.textMuted, fontSize: 22, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
-});
+    empty: { paddingVertical: 26, alignItems: "center" },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  });
+}

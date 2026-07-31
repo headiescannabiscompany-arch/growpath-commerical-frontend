@@ -23,6 +23,7 @@ import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -282,6 +283,7 @@ export default function FacilityTasksRoute() {
   }>();
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
+  const { palette } = useAppTheme();
   const { rooms } = useFacilityRooms(facilityId);
   const { grows } = useFacilityGrows(facilityId);
   const contextGrowId = String(firstParam(params.growId) || "");
@@ -330,6 +332,7 @@ export default function FacilityTasksRoute() {
   });
   const canWrite = taskAccess.canCreateTask;
   const canAssign = taskAccess.canAssignTask;
+  const styles = useMemo(() => buildStyles(palette), [palette]);
   const availableGrows = useMemo(
     () =>
       newRoomId
@@ -559,6 +562,7 @@ export default function FacilityTasksRoute() {
                 onChangeText={setNewTitle}
                 style={styles.input}
                 placeholder="Task title"
+                placeholderTextColor={palette.textMuted}
               />
 
               <Text style={styles.label}>Notes (optional)</Text>
@@ -568,6 +572,7 @@ export default function FacilityTasksRoute() {
                 onChangeText={setNewNotes}
                 style={[styles.input, styles.inputMultiline]}
                 placeholder="Notes"
+                placeholderTextColor={palette.textMuted}
                 multiline
               />
 
@@ -740,6 +745,7 @@ export default function FacilityTasksRoute() {
                     onChangeText={setNewSourceObjectId}
                     style={styles.input}
                     placeholder="Optional linked record ID"
+                    placeholderTextColor={palette.textMuted}
                   />
                 </View>
               ) : null}
@@ -797,7 +803,7 @@ export default function FacilityTasksRoute() {
         </View>
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
@@ -920,97 +926,130 @@ export default function FacilityTasksRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { marginBottom: 12 },
-  h1: { fontSize: 22, fontWeight: "800", marginBottom: 4 },
-  muted: { opacity: 0.7 },
+function buildStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: palette.page
+    },
+    headerRow: { marginBottom: 12 },
+    h1: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    muted: { color: palette.textMuted },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    marginBottom: 12
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
-  contextBanner: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    marginBottom: 8,
-    padding: 10
-  },
-  contextTitle: { color: "#166534", fontWeight: "900" },
-  form: { gap: 8 },
-  label: { fontSize: 12, opacity: 0.7 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.18)",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "white"
-  },
-  chipSelected: { backgroundColor: "#0f172a", borderColor: "#0f172a" },
-  chipText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
-  chipTextSelected: { color: "white" },
-  inlineInputs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  inlineInput: { minWidth: 160, flexGrow: 1 },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  inputMultiline: { minHeight: 64, textAlignVertical: "top" },
-  primaryBtn: {
-    marginTop: 8,
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  primaryBtnDisabled: { opacity: 0.6 },
-  primaryBtnText: { color: "white", fontWeight: "800" },
-  secondaryBtn: {
-    alignItems: "center",
-    borderColor: "rgba(0,0,0,0.16)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  secondaryText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  advancedPanel: {
-    backgroundColor: "#f8fafc",
-    borderRadius: radius.card,
-    gap: 8,
-    padding: 10
-  },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      marginBottom: 12
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 8
+    },
+    contextBanner: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      marginBottom: 8,
+      padding: 10
+    },
+    contextTitle: { color: palette.accent, fontWeight: "900" },
+    form: { gap: 8 },
+    label: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    chipSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    chipText: {
+      color: palette.text,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    chipTextSelected: { color: palette.accentText },
+    inlineInputs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    inlineInput: { minWidth: 160, flexGrow: 1 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    inputMultiline: { minHeight: 64, textAlignVertical: "top" },
+    primaryBtn: {
+      marginTop: 8,
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      alignItems: "center"
+    },
+    primaryBtnDisabled: { opacity: 0.6 },
+    primaryBtnText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    secondaryText: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    advancedPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      gap: 8,
+      padding: 10
+    },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
+    loading: { paddingVertical: 18, alignItems: "center" },
 
-  list: { paddingVertical: 6 },
+    list: { paddingVertical: 6 },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  rowPressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "800", marginBottom: 4 },
-  rowSub: { opacity: 0.7 },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    rowPressed: { opacity: 0.85 },
+    rowTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    rowSub: { color: palette.textMuted },
+    chev: { color: palette.textMuted, fontSize: 22, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "800", marginBottom: 6 }
-});
+    empty: { paddingVertical: 26, alignItems: "center" },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800", marginBottom: 6 }
+  });
+}

@@ -28,6 +28,7 @@ import type { FacilityRole } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
 
 type AnyRec = Record<string, any>;
 
@@ -61,6 +62,7 @@ export default function FacilityTeamTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
   const facilityRole = (ent.facilityRole as any) ?? null;
   const canInvite =
     Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) || can(facilityRole, "TEAM_INVITE");
@@ -213,22 +215,30 @@ export default function FacilityTeamTab() {
 
   return (
     <ScreenBoundary title="Team" showBack backFallbackHref="/home/facility/dashboard">
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: palette.page }]}>
         {error ? <InlineError error={error} /> : null}
         {memberFeedback ? (
-          <Text style={styles.feedback} accessibilityLiveRegion="polite">
+          <Text
+            style={[styles.feedback, { color: palette.success }]}
+            accessibilityLiveRegion="polite"
+          >
             {memberFeedback}
           </Text>
         ) : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Team</Text>
-          <Text style={styles.muted}>{header}</Text>
+          <Text style={[styles.h1, { color: palette.text }]}>Facility Team</Text>
+          <Text style={[styles.muted, { color: palette.textMuted }]}>{header}</Text>
         </View>
 
         {canInvite ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Invite member</Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Invite member</Text>
 
             <TextInput
               accessibilityLabel="Invite team member email"
@@ -237,7 +247,15 @@ export default function FacilityTeamTab() {
               placeholder="email@company.com"
               autoCapitalize="none"
               keyboardType="email-address"
-              style={styles.input}
+              placeholderTextColor={palette.textMuted}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.border,
+                  color: palette.text
+                }
+              ]}
             />
 
             <View style={styles.roleRow}>
@@ -247,12 +265,22 @@ export default function FacilityTeamTab() {
                   onPress={() => setInviteRole(role)}
                   accessibilityRole="button"
                   accessibilityLabel={`Invite as ${role.toLowerCase()}`}
-                  style={[styles.roleButton, inviteRole === role && styles.roleSelected]}
+                  style={[
+                    styles.roleButton,
+                    {
+                      backgroundColor:
+                        inviteRole === role ? palette.accent : palette.surface,
+                      borderColor: inviteRole === role ? palette.accent : palette.border
+                    }
+                  ]}
                 >
                   <Text
                     style={[
                       styles.roleText,
-                      inviteRole === role && styles.roleTextSelected
+                      {
+                        color:
+                          inviteRole === role ? palette.accentText : palette.textMuted
+                      }
                     ]}
                   >
                     {role.charAt(0) + role.slice(1).toLowerCase()}
@@ -268,22 +296,30 @@ export default function FacilityTeamTab() {
               disabled={inviting || !inviteEmail.trim()}
               style={({ pressed }) => [
                 styles.btn,
+                { backgroundColor: palette.accent, borderColor: palette.accent },
                 (inviting || !inviteEmail.trim()) && styles.btnDisabled,
                 pressed && styles.pressed
               ]}
             >
-              <Text style={styles.btnText}>
+              <Text style={[styles.btnText, { color: palette.accentText }]}>
                 {inviting ? "Sending..." : "Send invite"}
               </Text>
             </Pressable>
             {inviteFeedback ? (
-              <Text style={styles.feedback}>{inviteFeedback}</Text>
+              <Text style={[styles.feedback, { color: palette.success }]}>
+                {inviteFeedback}
+              </Text>
             ) : null}
           </View>
         ) : (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Team access</Text>
-            <Text style={styles.muted}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Team access</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
               {canAssignTasks
                 ? "You can view the team and assign work. Only the facility owner can invite members or change access roles."
                 : "You can view the team. Only owners and managers can assign work, and only the facility owner can manage access roles."}
@@ -294,7 +330,9 @@ export default function FacilityTeamTab() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading team...</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
+              Loading team...
+            </Text>
           </View>
         ) : null}
 
@@ -312,8 +350,10 @@ export default function FacilityTeamTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No members yet</Text>
-                <Text style={styles.muted}>
+                <Text style={[styles.emptyTitle, { color: palette.text }]}>
+                  No members yet
+                </Text>
+                <Text style={[styles.muted, { color: palette.textMuted }]}>
                   {canInvite
                     ? "Invite your first team member above."
                     : "The facility owner can add members and assign access."}
@@ -337,13 +377,24 @@ export default function FacilityTeamTab() {
               .join(" - ");
 
             return (
-              <View style={styles.row}>
+              <View
+                style={[
+                  styles.row,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    style={[styles.rowTitle, { color: palette.text }]}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (
-                    <Text style={styles.rowSub} numberOfLines={1}>
+                    <Text
+                      style={[styles.rowSub, { color: palette.textMuted }]}
+                      numberOfLines={1}
+                    >
                       {subtitle}
                     </Text>
                   ) : null}
@@ -357,9 +408,19 @@ export default function FacilityTeamTab() {
                             `/home/facility/tasks?assignee=${encodeURIComponent(memberId)}` as any
                           )
                         }
-                        style={styles.smallButton}
+                        style={[
+                          styles.smallButton,
+                          {
+                            backgroundColor: palette.surface,
+                            borderColor: palette.border
+                          }
+                        ]}
                       >
-                        <Text style={styles.smallButtonText}>Assign task</Text>
+                        <Text
+                          style={[styles.smallButtonText, { color: palette.textMuted }]}
+                        >
+                          Assign task
+                        </Text>
                       </Pressable>
                     ) : null}
                     {canManageMember
@@ -372,10 +433,25 @@ export default function FacilityTeamTab() {
                             onPress={() => changeRole(memberId, role)}
                             style={[
                               styles.smallButton,
-                              memberRole === role && styles.smallButtonSelected
+                              {
+                                backgroundColor:
+                                  memberRole === role ? palette.accent : palette.surface,
+                                borderColor:
+                                  memberRole === role ? palette.accent : palette.border
+                              }
                             ]}
                           >
-                            <Text style={styles.smallButtonText}>
+                            <Text
+                              style={[
+                                styles.smallButtonText,
+                                {
+                                  color:
+                                    memberRole === role
+                                      ? palette.accentText
+                                      : palette.textMuted
+                                }
+                              ]}
+                            >
                               {role.charAt(0) + role.slice(1).toLowerCase()}
                             </Text>
                           </Pressable>
@@ -389,9 +465,17 @@ export default function FacilityTeamTab() {
                         onPress={() =>
                           confirmRemoveMember(memberId, removalLabel || "This member")
                         }
-                        style={[styles.smallButton, styles.removeButton]}
+                        style={[
+                          styles.smallButton,
+                          {
+                            backgroundColor: palette.surface,
+                            borderColor: palette.danger
+                          }
+                        ]}
                       >
-                        <Text style={styles.removeButtonText}>
+                        <Text
+                          style={[styles.removeButtonText, { color: palette.danger }]}
+                        >
                           {busyMemberId === memberId ? "Working..." : "Remove"}
                         </Text>
                       </Pressable>
@@ -415,44 +499,35 @@ const styles = StyleSheet.create({
 
   card: {
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
     borderRadius: radius.card,
     padding: 14,
-    backgroundColor: "white",
     marginBottom: 12
   },
   cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 10 },
   input: {
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
     borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "white",
     marginBottom: 10
   },
   btn: {
     borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
+    borderWidth: 1
   },
   btnDisabled: { opacity: 0.5 },
   btnText: { fontWeight: "900" },
   roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
   roleButton: {
-    borderColor: "rgba(0,0,0,0.14)",
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
-  roleSelected: { backgroundColor: "#166534", borderColor: "#166534" },
   roleText: { fontWeight: "800" },
-  roleTextSelected: { color: "white" },
-  feedback: { color: "#166534", fontWeight: "800", marginTop: 10 },
+  feedback: { fontWeight: "800", marginTop: 10 },
 
   pressed: { opacity: 0.85 },
 
@@ -462,24 +537,19 @@ const styles = StyleSheet.create({
   row: {
     padding: 14,
     borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
+    borderWidth: 1
   },
   rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
   rowSub: { opacity: 0.7 },
   memberActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   smallButton: {
     borderWidth: 1,
-    borderColor: "#CBD5E1",
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 7
   },
-  smallButtonSelected: { backgroundColor: "#DCFCE7", borderColor: "#16A34A" },
-  smallButtonText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  removeButton: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
-  removeButtonText: { color: "#991B1B", fontSize: 12, fontWeight: "800" },
+  smallButtonText: { fontSize: 12, fontWeight: "800" },
+  removeButtonText: { fontSize: 12, fontWeight: "800" },
 
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }

@@ -18,6 +18,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type InventoryItem = {
@@ -69,6 +70,7 @@ export default function FacilityInventoryTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
   const apiErr: any = useApiErrorHandler();
   const handleApiError = useMemo(
     () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
@@ -157,7 +159,7 @@ export default function FacilityInventoryTab() {
   if (loading) {
     return (
       <ScreenBoundary title="Inventory">
-        <View style={styles.center}>
+        <View style={[styles.center, { backgroundColor: palette.page }]}>
           <ActivityIndicator />
         </View>
       </ScreenBoundary>
@@ -166,13 +168,13 @@ export default function FacilityInventoryTab() {
 
   return (
     <ScreenBoundary title="Inventory">
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: palette.page }]}>
         <InlineError error={error} />
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Inventory</Text>
-            <Text style={styles.muted}>
+            <Text style={[styles.h1, { color: palette.text }]}>Inventory</Text>
+            <Text style={[styles.muted, { color: palette.textMuted }]}>
               {items.length} items | {totalQuantity} units on hand
             </Text>
           </View>
@@ -181,9 +183,12 @@ export default function FacilityInventoryTab() {
               accessibilityRole="button"
               accessibilityLabel="Reload inventory"
               onPress={load}
-              style={styles.ghostButton}
+              style={[
+                styles.ghostButton,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
             >
-              <Text style={styles.ghostText}>Reload</Text>
+              <Text style={[styles.ghostText, { color: palette.text }]}>Reload</Text>
             </Pressable>
             {items.length ? (
               <Pressable
@@ -192,9 +197,12 @@ export default function FacilityInventoryTab() {
                 onPress={() =>
                   router.push("/home/facility/ai-ask?preset=inventory" as any)
                 }
-                style={styles.ghostButton}
+                style={[
+                  styles.ghostButton,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
               >
-                <Text style={styles.ghostText}>AI review</Text>
+                <Text style={[styles.ghostText, { color: palette.text }]}>AI review</Text>
               </Pressable>
             ) : null}
           </View>
@@ -204,36 +212,70 @@ export default function FacilityInventoryTab() {
           accessibilityRole="button"
           accessibilityLabel="Open sales and transfers"
           onPress={() => router.push("/home/facility/transfers" as any)}
-          style={styles.ghostButton}
+          style={[
+            styles.ghostButton,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
         >
-          <Text style={styles.ghostText}>Sales & licensed transfers</Text>
+          <Text style={[styles.ghostText, { color: palette.text }]}>
+            Sales & licensed transfers
+          </Text>
         </Pressable>
 
         {sorted.length ? (
-          <View style={styles.summaryCard}>
+          <View
+            style={[
+              styles.summaryCard,
+              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
+            ]}
+          >
             <View>
-              <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: palette.text },
+                  outOfStock ? styles.dangerText : null
+                ]}
+              >
                 {outOfStock}
               </Text>
-              <Text style={styles.summaryLabel}>out of stock</Text>
+              <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>
+                out of stock
+              </Text>
             </View>
             <View>
-              <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: palette.text },
+                  lowStock ? styles.warnText : null
+                ]}
+              >
                 {lowStock}
               </Text>
-              <Text style={styles.summaryLabel}>low stock</Text>
+              <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>
+                low stock
+              </Text>
             </View>
             <View>
-              <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: palette.text },
+                  missingSku ? styles.warnText : null
+                ]}
+              >
                 {missingSku}
               </Text>
-              <Text style={styles.summaryLabel}>missing SKU</Text>
+              <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>
+                missing SKU
+              </Text>
             </View>
           </View>
         ) : null}
 
         {!canWriteInventory ? (
-          <Text style={styles.lockedText}>
+          <Text style={[styles.lockedText, { color: palette.warning }]}>
             Your facility role or plan does not allow inventory changes. Viewers remain
             read-only; owners and managers can manage stock when inventory access is
             active.
@@ -243,16 +285,28 @@ export default function FacilityInventoryTab() {
             accessibilityRole="button"
             accessibilityLabel="Create inventory item"
             onPress={() => router.push("/home/facility/inventory/new")}
-            style={styles.primaryButton}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: palette.accent, borderColor: palette.accent }
+            ]}
           >
-            <Text style={styles.primaryText}>Create Item</Text>
+            <Text style={[styles.primaryText, { color: palette.accentText }]}>
+              Create Item
+            </Text>
           </Pressable>
         )}
 
         {sorted.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No inventory items yet.</Text>
-            <Text style={styles.empty}>
+          <View
+            style={[
+              styles.emptyCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.emptyTitle, { color: palette.text }]}>
+              No inventory items yet.
+            </Text>
+            <Text style={[styles.empty, { color: palette.textMuted }]}>
               Add real inputs, products, packaging, tools, or facility supplies before
               running AI reorder or stock-risk review.
             </Text>
@@ -283,11 +337,17 @@ export default function FacilityInventoryTab() {
                       params: { id }
                     });
                   }}
-                  style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.row,
+                    { backgroundColor: palette.surface, borderColor: palette.border },
+                    pressed && styles.pressed
+                  ]}
                 >
                   <View style={styles.rowMain}>
-                    <Text style={styles.rowTitle}>{item.name || "Inventory Item"}</Text>
-                    <Text style={styles.rowSub}>
+                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                      {item.name || "Inventory Item"}
+                    </Text>
+                    <Text style={[styles.rowSub, { color: palette.textMuted }]}>
                       SKU: {item.sku || "missing"} | Qty: {qty}
                       {unit}
                     </Text>
@@ -295,9 +355,20 @@ export default function FacilityInventoryTab() {
                       <Text
                         style={[
                           styles.badge,
-                          status === "ok" && styles.badgeOk,
-                          status === "low" && styles.badgeWarn,
-                          status === "out" && styles.badgeDanger
+                          {
+                            backgroundColor:
+                              status === "ok"
+                                ? palette.surfaceMuted
+                                : status === "low"
+                                  ? palette.surfaceStrong
+                                  : palette.surfaceStrong,
+                            color:
+                              status === "ok"
+                                ? palette.success
+                                : status === "low"
+                                  ? palette.warning
+                                  : palette.danger
+                          }
                         ]}
                       >
                         {status === "ok"
@@ -307,11 +378,21 @@ export default function FacilityInventoryTab() {
                             : "out of stock"}
                       </Text>
                       {!item.sku ? (
-                        <Text style={[styles.badge, styles.badgeWarn]}>missing SKU</Text>
+                        <Text
+                          style={[
+                            styles.badge,
+                            {
+                              backgroundColor: palette.surfaceStrong,
+                              color: palette.warning
+                            }
+                          ]}
+                        >
+                          missing SKU
+                        </Text>
                       ) : null}
                     </View>
                   </View>
-                  <Text style={styles.chev}>{">"}</Text>
+                  <Text style={[styles.chev, { color: palette.textMuted }]}>{">"}</Text>
                 </Pressable>
               );
             }}
