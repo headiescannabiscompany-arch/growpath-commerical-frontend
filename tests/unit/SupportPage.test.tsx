@@ -14,10 +14,11 @@ describe("SupportPage", () => {
     mockParams = {};
   });
 
-  it("routes support request topics to the support inbox", () => {
+  it("routes support request topics to the confirmed specialized inboxes", () => {
     const screen = render(<SupportPage />);
 
     expect(screen.getByText("Support")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Support" })).toBeTruthy();
     expect(
       screen.getByText(
         /account, billing, orders, sales, technical, privacy, legal, security, commercial, courses, live events, partner, and facility support/
@@ -32,10 +33,10 @@ describe("SupportPage", () => {
     expect(screen.getByText("Privacy Requests")).toBeTruthy();
     expect(screen.getByText("Legal Notices")).toBeTruthy();
     expect(screen.getByText("Security Reports")).toBeTruthy();
-    expect(screen.queryByText(/Email billing@growpathai\.com/)).toBeNull();
-    expect(screen.queryByText(/Email privacy@growpathai\.com/)).toBeNull();
-    expect(screen.queryByText(/Email legal@growpathai\.com/)).toBeNull();
-    expect(screen.queryByText(/Email security@growpathai\.com/)).toBeNull();
+    expect(screen.getByText(/Email billing@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email privacy@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email legal@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email security@growpathai\.com/)).toBeTruthy();
     expect(screen.queryByText(/Email noreply@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email notifications@growpathai\.com/)).toBeNull();
   });

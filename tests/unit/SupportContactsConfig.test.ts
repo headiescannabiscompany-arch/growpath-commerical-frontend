@@ -4,34 +4,50 @@ import {
 } from "../../src/config/supportContacts";
 
 describe("support contact alias config", () => {
-  it("routes public support aliases through the support inbox", () => {
+  it("uses the confirmed live public support aliases", () => {
     expect(SUPPORT_CONTACTS).toEqual({
       general: "support@growpathai.com",
-      help: "support@growpathai.com",
-      contact: "support@growpathai.com",
-      hello: "support@growpathai.com",
-      info: "support@growpathai.com",
-      admin: "support@growpathai.com",
-      billing: "support@growpathai.com",
-      orders: "support@growpathai.com",
-      sales: "support@growpathai.com",
-      partners: "support@growpathai.com",
-      privacy: "support@growpathai.com",
-      legal: "support@growpathai.com",
-      security: "support@growpathai.com",
-      commercial: "support@growpathai.com",
-      facility: "support@growpathai.com",
-      courses: "support@growpathai.com",
-      live: "support@growpathai.com",
+      help: "help@growpathai.com",
+      contact: "contact@growpathai.com",
+      hello: "hello@growpathai.com",
+      info: "info@growpathai.com",
+      admin: "admin@growpathai.com",
+      billing: "billing@growpathai.com",
+      orders: "orders@growpathai.com",
+      sales: "sales@growpathai.com",
+      partners: "partners@growpathai.com",
+      privacy: "privacy@growpathai.com",
+      legal: "legal@growpathai.com",
+      security: "security@growpathai.com",
+      commercial: "commercial@growpathai.com",
+      facility: "facility@growpathai.com",
+      courses: "courses@growpathai.com",
+      live: "live@growpathai.com",
       noreply: "noreply@growpathai.com",
       notifications: "notifications@growpathai.com"
     });
   });
 
-  it("routes public support topics to the shared support inbox", () => {
+  it("routes public support topics to the matching specialized inboxes", () => {
     const routedEmails = SUPPORT_CONTACT_ROUTING.map((route) => route.email);
 
-    expect(new Set(routedEmails)).toEqual(new Set([SUPPORT_CONTACTS.general]));
+    expect(routedEmails).toEqual(
+      expect.arrayContaining([
+        SUPPORT_CONTACTS.general,
+        SUPPORT_CONTACTS.billing,
+        SUPPORT_CONTACTS.orders,
+        SUPPORT_CONTACTS.sales,
+        SUPPORT_CONTACTS.commercial,
+        SUPPORT_CONTACTS.courses,
+        SUPPORT_CONTACTS.live,
+        SUPPORT_CONTACTS.facility,
+        SUPPORT_CONTACTS.partners,
+        SUPPORT_CONTACTS.contact,
+        SUPPORT_CONTACTS.privacy,
+        SUPPORT_CONTACTS.legal,
+        SUPPORT_CONTACTS.security
+      ])
+    );
   });
 
   it("keeps sender-only aliases out of public support routing", () => {

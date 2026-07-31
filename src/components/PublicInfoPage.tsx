@@ -23,7 +23,9 @@ export default function PublicInfoPage({
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.brand}>GrowPath</Text>
-        <Text style={styles.title}>{title}</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          {title}
+        </Text>
         {updated ? <Text style={styles.updated}>Last updated: {updated}</Text> : null}
         <Text style={styles.intro}>{intro}</Text>
       </View>
@@ -31,7 +33,9 @@ export default function PublicInfoPage({
       <View style={styles.sections}>
         {sections.map((section) => (
           <View key={section.title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              {section.title}
+            </Text>
             <Text style={styles.body}>{section.body}</Text>
           </View>
         ))}

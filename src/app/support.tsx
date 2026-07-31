@@ -158,7 +158,9 @@ export default function SupportPage() {
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.brand}>GrowPath</Text>
-        <Text style={styles.title}>Support</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Support
+        </Text>
         <Text style={styles.intro}>
           Send account, billing, orders, sales, technical, privacy, legal, security,
           commercial, courses, live events, partner, and facility support requests to the
@@ -167,7 +169,9 @@ export default function SupportPage() {
       </View>
 
       <View style={styles.form}>
-        <Text style={styles.sectionTitle}>Send a Support Email</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Send a Support Email
+        </Text>
 
         <View style={styles.topicGrid}>
           {TOPICS.map((item) => {
