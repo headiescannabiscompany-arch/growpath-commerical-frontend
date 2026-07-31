@@ -215,6 +215,12 @@ export default function ForumRoute() {
           >
             Forum / Q&A
           </Text>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+            Discussion, Q&amp;A, grow help, course/product/live questions, and community
+            replies. Promotional feed placements around this page are campaign ads, not
+            forum threads.
+          </Text>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Forum videos</Text>
         </View>
         {videoLibraryLoading ? (
           <Text style={[styles.cardText, { color: palette.textMuted }]}>
@@ -279,6 +285,64 @@ export default function ForumRoute() {
           </Pressable>
         </Link>
       </View>
+
+      {canPost ? (
+        <Link href="/forum/new-post" asChild>
+          <Pressable
+            style={StyleSheet.flatten([
+              styles.composer,
+              { backgroundColor: palette.accentSoft, borderColor: palette.accent }
+            ])}
+            accessibilityRole="button"
+            accessibilityLabel="Create forum post"
+          >
+            <Text style={[styles.composerTitle, { color: palette.accent }]}>
+              New Discussion
+            </Text>
+            <Text style={[styles.cardText, { color: palette.textMuted }]}>
+              Ask or share with growers like you.
+            </Text>
+          </Pressable>
+        </Link>
+      ) : null}
+
+      {!isSignedIn ? (
+        <View
+          style={[
+            styles.publicAccessCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Sign in to browse Forum / Q&amp;A
+          </Text>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
+            Public visitors can learn what the GrowPath Forum covers here. Sign in or
+            create a free account to browse discussions, follow grow interests, ask
+            questions, or reply.
+          </Text>
+          <View style={styles.publicActionRow}>
+            <Link
+              href="/login"
+              style={StyleSheet.flatten([
+                styles.publicPrimaryLink,
+                { backgroundColor: palette.accent, color: palette.accentText }
+              ])}
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/register"
+              style={StyleSheet.flatten([
+                styles.publicSecondaryLink,
+                { borderColor: palette.accent, color: palette.accent }
+              ])}
+            >
+              Create free account
+            </Link>
+          </View>
+        </View>
+      ) : null}
 
       <View style={[styles.feedHeader, { borderBottomColor: palette.border }]}>
         <Text style={[styles.feedTitle, { color: palette.text }]}>Forum Feed</Text>
