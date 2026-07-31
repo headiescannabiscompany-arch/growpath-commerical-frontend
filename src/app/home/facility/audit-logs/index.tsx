@@ -7,6 +7,7 @@ import { useFacility } from "@/state/useFacility";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import {
   formatFacilityAuditAction,
   formatFacilityAuditDetails,
@@ -32,6 +33,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 function AuditLogsHeading() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
       Audit Logs
@@ -40,15 +43,19 @@ function AuditLogsHeading() {
 }
 
 function AuditLogsStatus({ message }: { message: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <View style={styles.container}>
       <AuditLogsHeading />
-      <Text>{message}</Text>
+      <Text style={styles.sub}>{message}</Text>
     </View>
   );
 }
 
 export default function FacilityAuditLogsIndexRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId } = useFacility();
   const { logs, isLoading, isRefreshing, error, refetch } = useAuditLogs(selectedId);
   const items = useMemo(
@@ -109,22 +116,23 @@ export default function FacilityAuditLogsIndexRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  list: { flex: 1, padding: 16 },
-  container: { flex: 1, padding: 16, justifyContent: "center" },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 10 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: "#fff",
-    gap: 4
-  },
-  title: { fontWeight: "800" },
-  sub: { opacity: 0.75 },
-  meta: { color: "#64748B", fontSize: 12 },
-  link: { color: "#2563eb", fontWeight: "700" },
-  empty: { opacity: 0.7 }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    list: { flex: 1, padding: 16 },
+    container: { flex: 1, padding: 16, justifyContent: "center" },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 10 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 10,
+      backgroundColor: palette.surface,
+      gap: 4
+    },
+    title: { color: palette.text, fontWeight: "800" },
+    sub: { color: palette.textMuted },
+    meta: { color: palette.textMuted, fontSize: 12 },
+    link: { color: palette.link, fontWeight: "700" },
+    empty: { color: palette.textMuted }
+  });

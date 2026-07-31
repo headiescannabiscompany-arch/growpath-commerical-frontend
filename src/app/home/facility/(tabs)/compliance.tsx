@@ -32,6 +32,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import {
   formatFacilityAuditAction,
   formatFacilityAuditDetails
@@ -62,6 +63,8 @@ function openDeviation(row: Deviation) {
 
 export default function FacilityComplianceTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const ent = useEntitlements();
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
 
@@ -369,6 +372,7 @@ export default function FacilityComplianceTab() {
                     onChangeText={setDeviationTitle}
                     style={styles.input}
                     placeholder="Deviation title"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <TextInput
                     accessibilityLabel="Deviation severity"
@@ -376,6 +380,7 @@ export default function FacilityComplianceTab() {
                     onChangeText={setDeviationSeverity}
                     style={styles.input}
                     placeholder="Severity"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <TextInput
                     accessibilityLabel="Deviation description"
@@ -384,6 +389,7 @@ export default function FacilityComplianceTab() {
                     style={[styles.input, styles.multiline]}
                     multiline
                     placeholder="Description"
+                    placeholderTextColor={palette.textMuted}
                   />
                   <Pressable
                     accessibilityRole="button"
@@ -443,6 +449,7 @@ export default function FacilityComplianceTab() {
                     onChangeText={setRejectReason}
                     style={styles.input}
                     placeholder="Reject reason, optional"
+                    placeholderTextColor={palette.textMuted}
                   />
                   {pendingVerifications.map((record) => {
                     const id = rowId(record);
@@ -571,89 +578,96 @@ export default function FacilityComplianceTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 120, gap: 12 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  headerText: { flex: 1, minWidth: 0 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  muted: { flexShrink: 1, opacity: 0.7, lineHeight: 19 },
-  ownerLine: { color: "#166534", fontWeight: "800", marginTop: 4 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  tile: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "white"
-  },
-  tileValue: { fontSize: 22, fontWeight: "900" },
-  tileLabel: { opacity: 0.7, fontWeight: "800" },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 10
-  },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  cardTitle: { fontSize: 16, fontWeight: "900" },
-  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  actionBtn: {
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  actionText: { color: "white", fontWeight: "900" },
-  form: { gap: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  multiline: { minHeight: 74, textAlignVertical: "top" },
-  row: { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)", paddingTop: 10, gap: 4 },
-  rowTitle: { fontWeight: "900" },
-  rowMeta: { opacity: 0.72 },
-  buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "white", fontWeight: "800" },
-  secondaryBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.18)",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { fontWeight: "800" },
-  dangerBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  dangerText: { color: "#B91C1C", fontWeight: "800" },
-  disabled: { opacity: 0.55 },
-  link: { color: "#2563eb", fontWeight: "800" },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 16, paddingBottom: 120, gap: 12 },
+    headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    headerText: { flex: 1, minWidth: 0 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    muted: { color: palette.textMuted, flexShrink: 1, lineHeight: 19 },
+    ownerLine: { color: palette.link, fontWeight: "800", marginTop: 4 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    tile: {
+      flexBasis: "47%",
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface
+    },
+    tileValue: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    tileLabel: { color: palette.textMuted, fontWeight: "800" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 10
+    },
+    cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    actionBtn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    actionText: { color: palette.accentText, fontWeight: "900" },
+    form: { gap: 8 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    multiline: { minHeight: 74, textAlignVertical: "top" },
+    row: {
+      borderTopWidth: 1,
+      borderTopColor: palette.borderSoft,
+      paddingTop: 10,
+      gap: 4
+    },
+    rowTitle: { color: palette.text, fontWeight: "900" },
+    rowMeta: { color: palette.textMuted },
+    buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    dangerBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    dangerText: { color: palette.danger, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
+    link: { color: palette.link, fontWeight: "800" },
+    feedback: {
+      color: palette.text,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });

@@ -19,6 +19,7 @@ import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type AnyRec = Record<string, any>;
 
@@ -63,6 +64,8 @@ const LOG_TYPES = ["OBSERVATION", "WATER", "FEED", "IPM", "TRAINING"] as const;
 
 export default function FacilityLogsTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     growId?: string | string[];
     contextName?: string | string[];
@@ -221,6 +224,7 @@ export default function FacilityLogsTab() {
               onChangeText={setTitle}
               style={styles.input}
               placeholder="What happened?"
+              placeholderTextColor={palette.textMuted}
             />
             <TextInput
               accessibilityLabel="Facility journal note"
@@ -228,6 +232,7 @@ export default function FacilityLogsTab() {
               onChangeText={setNote}
               style={[styles.input, styles.textArea]}
               placeholder="Observation, readings, materials used, and follow-up"
+              placeholderTextColor={palette.textMuted}
               multiline
             />
             <Pressable
@@ -305,75 +310,77 @@ export default function FacilityLogsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { marginBottom: 12 },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7 },
-  feedback: {
-    backgroundColor: "#ecfdf5",
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "800",
-    marginBottom: 10,
-    padding: 10
-  },
-  card: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    marginBottom: 12,
-    padding: 14
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900" },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.16)",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  chipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  chipTextSelected: { color: "white" },
-  input: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  textArea: { minHeight: 76, textAlignVertical: "top" },
-  primaryBtn: {
-    alignItems: "center",
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    padding: 11
-  },
-  primaryText: { color: "white", fontWeight: "900" },
-  disabled: { opacity: 0.5 },
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    headerRow: { marginBottom: 12 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    muted: { color: palette.textMuted },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      color: palette.success,
+      fontWeight: "800",
+      marginBottom: 10,
+      padding: 10
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      marginBottom: 12,
+      padding: 14
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    chip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    chipTextSelected: { color: palette.accentText },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      padding: 10
+    },
+    textArea: { minHeight: 76, textAlignVertical: "top" },
+    primaryBtn: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 11
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.5 },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
-  list: { paddingVertical: 6 },
+    loading: { paddingVertical: 18, alignItems: "center" },
+    list: { paddingVertical: 6 },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  pressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
-  rowSub: { opacity: 0.7 },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    pressed: { opacity: 0.85 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 4 },
+    rowSub: { color: palette.textMuted },
+    chev: { color: palette.textMuted, fontSize: 22, opacity: 0.5, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center" },
-  emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
-});
+    empty: { paddingVertical: 26, alignItems: "center" },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 6 }
+  });

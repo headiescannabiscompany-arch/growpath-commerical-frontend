@@ -19,6 +19,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
@@ -46,7 +47,11 @@ function unwrapRecord(res: any): AnyRec | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
-function renderKV(obj: AnyRec | null, key: string) {
+function renderKV(
+  obj: AnyRec | null,
+  key: string,
+  styles: ReturnType<typeof createStyles>
+) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
@@ -90,6 +95,8 @@ function ProfileAction({
   accessibilityLabel: string;
   danger?: boolean;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <Pressable
       accessibilityRole="button"
@@ -104,6 +111,8 @@ function ProfileAction({
 
 export default function FacilityProfileRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const auth = useAuth();
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
 
@@ -291,7 +300,7 @@ export default function FacilityProfileRoute() {
 
           {facility ? (
             <View style={styles.kvWrap}>
-              {facilityKeys.map((k) => renderKV(facility, k))}
+              {facilityKeys.map((k) => renderKV(facility, k, styles))}
             </View>
           ) : (
             <Text style={styles.muted}>
@@ -353,7 +362,9 @@ export default function FacilityProfileRoute() {
           <Text style={styles.h1}>Account</Text>
 
           {me ? (
-            <View style={styles.kvWrap}>{meKeys.map((k) => renderKV(me, k))}</View>
+            <View style={styles.kvWrap}>
+              {meKeys.map((k) => renderKV(me, k, styles))}
+            </View>
           ) : (
             <Text style={styles.muted}>Account details are unavailable right now.</Text>
           )}
@@ -412,84 +423,85 @@ export default function FacilityProfileRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 28 },
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 16, paddingBottom: 28 },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
-  muted: { opacity: 0.7 },
-  mutedText: { color: "#64748B", fontSize: 12, lineHeight: 18, marginTop: 4 },
-  feedback: { color: "#047857", fontSize: 12, fontWeight: "700", marginTop: 8 },
-  error: { color: "#DC2626", fontSize: 12, fontWeight: "700", marginTop: 8 },
+    loading: { paddingVertical: 18, alignItems: "center" },
+    muted: { color: palette.textMuted },
+    mutedText: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 4 },
+    feedback: { color: palette.success, fontSize: 12, fontWeight: "700", marginTop: 8 },
+    error: { color: palette.danger, fontSize: 12, fontWeight: "700", marginTop: 8 },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    marginBottom: 12
-  },
-  workspaceCard: {
-    backgroundColor: "#172317",
-    borderColor: "#2f402f"
-  },
-  kicker: {
-    color: "#BFD6C0",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0,
-    marginBottom: 6,
-    textTransform: "uppercase"
-  },
-  h1: { fontSize: 18, fontWeight: "900", marginBottom: 6 },
-  workspaceTitle: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "900",
-    marginBottom: 6
-  },
-  workspaceText: { color: "#E8F1E7", fontSize: 14, lineHeight: 21 },
-  actionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12
-  },
-  actionButton: {
-    alignItems: "center",
-    backgroundColor: "#EEF7EE",
-    borderColor: "#BFD6C0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  actionText: { color: "#172317", fontWeight: "900" },
-  dangerActionButton: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#DC2626"
-  },
-  dangerActionText: { color: "#991B1B" },
-  notificationRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    paddingVertical: 8
-  },
-  notificationCopy: { flex: 1, minWidth: 0 },
-  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
-  notificationDescription: {
-    color: "#64748B",
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 2
-  },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      marginBottom: 12
+    },
+    workspaceCard: {
+      backgroundColor: palette.hero,
+      borderColor: palette.border
+    },
+    kicker: {
+      color: palette.heroMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      letterSpacing: 0,
+      marginBottom: 6,
+      textTransform: "uppercase"
+    },
+    h1: { color: palette.text, fontSize: 18, fontWeight: "900", marginBottom: 6 },
+    workspaceTitle: {
+      color: palette.heroText,
+      fontSize: 18,
+      fontWeight: "900",
+      marginBottom: 6
+    },
+    workspaceText: { color: palette.heroMuted, fontSize: 14, lineHeight: 21 },
+    actionRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12
+    },
+    actionButton: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    actionText: { color: palette.text, fontWeight: "900" },
+    dangerActionButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.danger
+    },
+    dangerActionText: { color: palette.danger },
+    notificationRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      paddingVertical: 8
+    },
+    notificationCopy: { flex: 1, minWidth: 0 },
+    notificationTitle: { color: palette.text, fontSize: 14, fontWeight: "800" },
+    notificationDescription: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 2
+    },
 
-  kvWrap: { marginTop: 8 },
-  kv: { marginBottom: 10 },
-  k: { fontSize: 12, opacity: 0.7, marginBottom: 3 },
-  v: { fontSize: 14 }
-});
+    kvWrap: { marginTop: 8 },
+    kv: { marginBottom: 10 },
+    k: { color: palette.textMuted, fontSize: 12, marginBottom: 3 },
+    v: { color: palette.text, fontSize: 14 }
+  });

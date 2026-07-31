@@ -19,6 +19,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 const EXPORT_COUNT_LABELS: Array<[string, string]> = [
   ["facility", "Facility"],
@@ -117,6 +118,8 @@ function StatTile({
   value: number | string;
   detail?: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <View style={styles.tile}>
       <Text style={styles.tileValue}>{String(value)}</Text>
@@ -158,6 +161,8 @@ export function facilityComplianceExportFilenameFromSources(
 
 export default function FacilityReportsTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const canExportCompliance = Boolean(
     entitlements.can?.(CAPABILITY_KEYS.EXPORT_COMPLIANCE)
@@ -510,96 +515,108 @@ export default function FacilityReportsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32 },
-  headerRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7 },
-  button: {
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "white", fontWeight: "900" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
-  success: { color: "#166534", fontWeight: "800", marginBottom: 8 },
-  exportHeader: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between",
-    marginBottom: 10
-  },
-  fileName: {
-    color: "#334155",
-    flexShrink: 1,
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  readinessPanel: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    marginBottom: 12,
-    padding: 12
-  },
-  readinessOk: { backgroundColor: "#ecfdf5", borderColor: "#86efac" },
-  readinessWarn: { backgroundColor: "#fffbeb", borderColor: "#fcd34d" },
-  readinessDanger: { backgroundColor: "#fef2f2", borderColor: "#fca5a5" },
-  readinessTitle: { color: "#0f172a", fontWeight: "900" },
-  readinessIssue: { color: "#334155", fontWeight: "700", lineHeight: 18 },
-  nextActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
-  secondaryButton: {
-    backgroundColor: "white",
-    borderColor: "rgba(15,23,42,0.18)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#0f172a", fontWeight: "900" },
-  evidencePanel: {
-    borderTopColor: "rgba(0,0,0,0.08)",
-    borderTopWidth: 1,
-    marginTop: 12,
-    paddingTop: 12
-  },
-  evidenceTitle: { color: "#0f172a", fontWeight: "900", marginBottom: 10 },
-  loading: { alignItems: "center", paddingVertical: 24 },
-  card: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 12,
-    padding: 14
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 10 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  tile: {
-    borderColor: "rgba(0,0,0,0.10)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    padding: 12
-  },
-  tileValue: { fontSize: 22, fontWeight: "900" },
-  tileLabel: { fontWeight: "800", marginTop: 4, opacity: 0.76 },
-  tileDetail: { fontSize: 12, marginTop: 2, opacity: 0.64 },
-  row: {
-    borderTopColor: "rgba(0,0,0,0.08)",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    paddingVertical: 10
-  },
-  rowTitle: { flex: 1, fontWeight: "800" },
-  rowValue: { fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 16, paddingBottom: 32 },
+    headerRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginBottom: 12
+    },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    muted: { color: palette.textMuted },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    buttonDisabled: { opacity: 0.6 },
+    buttonText: { color: palette.accentText, fontWeight: "900" },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "flex-end"
+    },
+    success: { color: palette.success, fontWeight: "800", marginBottom: 8 },
+    exportHeader: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between",
+      marginBottom: 10
+    },
+    fileName: {
+      color: palette.textMuted,
+      flexShrink: 1,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    readinessPanel: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      marginBottom: 12,
+      padding: 12
+    },
+    readinessOk: { backgroundColor: palette.surfaceMuted, borderColor: palette.success },
+    readinessWarn: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning
+    },
+    readinessDanger: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger
+    },
+    readinessTitle: { color: palette.text, fontWeight: "900" },
+    readinessIssue: { color: palette.textMuted, fontWeight: "700", lineHeight: 18 },
+    nextActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "900" },
+    evidencePanel: {
+      borderTopColor: palette.borderSoft,
+      borderTopWidth: 1,
+      marginTop: 12,
+      paddingTop: 12
+    },
+    evidenceTitle: { color: palette.text, fontWeight: "900", marginBottom: 10 },
+    loading: { alignItems: "center", paddingVertical: 24 },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 14
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 10 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    tile: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      padding: 12
+    },
+    tileValue: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    tileLabel: { color: palette.textMuted, fontWeight: "800", marginTop: 4 },
+    tileDetail: { color: palette.textMuted, fontSize: 12, marginTop: 2 },
+    row: {
+      borderTopColor: palette.borderSoft,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      paddingVertical: 10
+    },
+    rowTitle: { color: palette.text, flex: 1, fontWeight: "800" },
+    rowValue: { color: palette.text, fontWeight: "900" }
+  });

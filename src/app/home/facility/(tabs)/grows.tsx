@@ -5,6 +5,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -50,6 +51,8 @@ function pickSubtitle(x: AnyRec): string {
 
 export default function FacilityGrowsTab() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { roomId, roomName } = useLocalSearchParams<{
     roomId?: string;
     roomName?: string;
@@ -220,37 +223,38 @@ export default function FacilityGrowsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  headerRow: { marginBottom: 12 },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7 },
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    headerRow: { marginBottom: 12 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    muted: { color: palette.textMuted },
 
-  loading: { paddingVertical: 18, alignItems: "center" },
-  list: { paddingVertical: 6 },
+    loading: { paddingVertical: 18, alignItems: "center" },
+    list: { paddingVertical: 6 },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  pressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "900", marginBottom: 4 },
-  rowSub: { opacity: 0.7 },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    pressed: { opacity: 0.85 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 4 },
+    rowSub: { color: palette.textMuted },
+    chev: { color: palette.textMuted, fontSize: 22, opacity: 0.5, paddingLeft: 10 },
 
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "900" },
-  startButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  startButtonText: { color: "white", fontWeight: "900" }
-});
+    empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    startButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 4,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    startButtonText: { color: palette.accentText, fontWeight: "900" }
+  });
