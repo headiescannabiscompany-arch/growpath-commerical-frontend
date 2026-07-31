@@ -307,6 +307,7 @@ export default function DiscoverDirectory() {
   return (
     <AppPage
       routeKey="discover"
+      railOverride={null}
       header={
         <View>
           <Text

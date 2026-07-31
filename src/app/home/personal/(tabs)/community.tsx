@@ -27,6 +27,7 @@ import {
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -124,6 +125,7 @@ function postPhotos(post: SocialPost) {
 
 export default function CommunityTab() {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
 
@@ -139,6 +141,12 @@ export default function CommunityTab() {
     () => notifications.filter((item) => !item.read).length,
     [notifications]
   );
+  const pageSurface = { backgroundColor: palette.surface, borderColor: palette.border };
+  const mutedSurface = {
+    backgroundColor: palette.surfaceMuted,
+    borderColor: palette.border
+  };
+  const heroSurface = { backgroundColor: palette.hero, borderColor: palette.border };
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -226,7 +234,7 @@ export default function CommunityTab() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
@@ -235,42 +243,66 @@ export default function CommunityTab() {
         />
       }
     >
-      <View style={styles.hero}>
+      <View style={[styles.hero, heroSurface]}>
         <View style={styles.heroCopy}>
-          <Text style={styles.eyebrow}>Grower community</Text>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text style={[styles.eyebrow, { color: palette.heroMuted }]}>
+            Grower community
+          </Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: palette.heroText }]}
+          >
             Forum / Q&A
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Ask questions, share grow updates, follow useful discussions, and connect with
             groups built around the way you grow.
           </Text>
         </View>
         <View style={styles.pulseRow}>
-          <View style={styles.pulse}>
-            <Text style={styles.pulseValue}>{posts.length}</Text>
-            <Text style={styles.pulseLabel}>Discussions</Text>
+          <View style={[styles.pulse, mutedSurface]}>
+            <Text style={[styles.pulseValue, { color: palette.text }]}>
+              {posts.length}
+            </Text>
+            <Text style={[styles.pulseLabel, { color: palette.accent }]}>
+              Discussions
+            </Text>
           </View>
-          <View style={styles.pulse}>
-            <Text style={styles.pulseValue}>{guilds.length}</Text>
-            <Text style={styles.pulseLabel}>Groups</Text>
+          <View style={[styles.pulse, mutedSurface]}>
+            <Text style={[styles.pulseValue, { color: palette.text }]}>
+              {guilds.length}
+            </Text>
+            <Text style={[styles.pulseLabel, { color: palette.accent }]}>Groups</Text>
           </View>
-          <View style={styles.pulse}>
-            <Text style={styles.pulseValue}>{unreadCount}</Text>
-            <Text style={styles.pulseLabel}>Unread</Text>
+          <View style={[styles.pulse, mutedSurface]}>
+            <Text style={[styles.pulseValue, { color: palette.text }]}>
+              {unreadCount}
+            </Text>
+            <Text style={[styles.pulseLabel, { color: palette.accent }]}>Unread</Text>
           </View>
         </View>
       </View>
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {feedback ? (
+        <Text style={[styles.feedback, pageSurface, { color: palette.text }]}>
+          {feedback}
+        </Text>
+      ) : null}
 
       {canView ? (
-        <View style={styles.composer}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>You</Text>
+        <View style={[styles.composer, pageSurface]}>
+          <View
+            style={[
+              styles.avatar,
+              { backgroundColor: palette.accentSoft, borderColor: palette.border }
+            ]}
+          >
+            <Text style={[styles.avatarText, { color: palette.accent }]}>You</Text>
           </View>
           <View style={styles.composerCopy}>
-            <Text style={styles.composerTitle}>What do you want to ask or share?</Text>
-            <Text style={styles.composerText}>
+            <Text style={[styles.composerTitle, { color: palette.text }]}>
+              What do you want to ask or share?
+            </Text>
+            <Text style={[styles.composerText, { color: palette.textMuted }]}>
               Start a grow question, add photos, or share an update with useful context.
             </Text>
             <View style={styles.discoveryActions}>
@@ -278,35 +310,41 @@ export default function CommunityTab() {
                 <Link href="/forum/new-post" asChild>
                   <Pressable
                     testID="community-new-post"
-                    style={styles.primaryBtn}
+                    style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
                     accessibilityRole="button"
                     accessibilityLabel="Start a new forum discussion"
                   >
-                    <Text style={styles.primaryText}>Start a Discussion</Text>
+                    <Text style={[styles.primaryText, { color: palette.accentText }]}>
+                      Start a Discussion
+                    </Text>
                   </Pressable>
                 </Link>
               ) : null}
               <Link href="/forum" asChild>
                 <Pressable
-                  style={styles.secondaryBtn}
+                  style={[styles.secondaryBtn, mutedSurface]}
                   accessibilityRole="button"
                   accessibilityLabel="Browse all forum discussions"
                 >
-                  <Text style={styles.secondaryText}>Browse All</Text>
+                  <Text style={[styles.secondaryText, { color: palette.text }]}>
+                    Browse All
+                  </Text>
                 </Pressable>
               </Link>
               <Link href="/communities" asChild>
                 <Pressable
-                  style={styles.secondaryBtn}
+                  style={[styles.secondaryBtn, mutedSurface]}
                   accessibilityRole="button"
                   accessibilityLabel="Find forum groups"
                 >
-                  <Text style={styles.secondaryText}>Find Groups</Text>
+                  <Text style={[styles.secondaryText, { color: palette.text }]}>
+                    Find Groups
+                  </Text>
                 </Pressable>
               </Link>
             </View>
             {!canPost ? (
-              <Text style={styles.cardText}>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
                 Posting is not available on this account.
               </Text>
             ) : null}
@@ -314,64 +352,72 @@ export default function CommunityTab() {
         </View>
       ) : null}
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Forum videos</Text>
-        <Text style={styles.cardText}>
+      <View style={[styles.card, pageSurface]}>
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Forum videos</Text>
+        <Text style={[styles.cardText, { color: palette.textMuted }]}>
           Videos belong in Forum/Q&A, not only through Discover. Open the shared library
           to upload clips, review storage, and browse public or followed videos.
         </Text>
         <View style={styles.discoveryActions}>
           <Link href="/videos?tab=library" asChild>
             <Pressable
-              style={styles.secondaryBtn}
+              style={[styles.secondaryBtn, mutedSurface]}
               accessibilityRole="button"
               accessibilityLabel="Open video library"
             >
-              <Text style={styles.secondaryText}>Open Video Library</Text>
+              <Text style={[styles.secondaryText, { color: palette.text }]}>
+                Open Video Library
+              </Text>
             </Pressable>
           </Link>
           <Link href="/videos?tab=discover" asChild>
             <Pressable
-              style={styles.secondaryBtn}
+              style={[styles.secondaryBtn, mutedSurface]}
               accessibilityRole="button"
               accessibilityLabel="Browse videos"
             >
-              <Text style={styles.secondaryText}>Browse Videos</Text>
+              <Text style={[styles.secondaryText, { color: palette.text }]}>
+                Browse Videos
+              </Text>
             </Pressable>
           </Link>
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Forum lives</Text>
-        <Text style={styles.cardText}>
+      <View style={[styles.card, pageSurface]}>
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Forum lives</Text>
+        <Text style={[styles.cardText, { color: palette.textMuted }]}>
           Live sessions stay campaign-linked and replay-friendly. Browse them here instead
           of treating Lives like a generic join list.
         </Text>
         <View style={styles.discoveryActions}>
           <Link href="/lives" asChild>
             <Pressable
-              style={styles.secondaryBtn}
+              style={[styles.secondaryBtn, mutedSurface]}
               accessibilityRole="button"
               accessibilityLabel="Open lives browser"
             >
-              <Text style={styles.secondaryText}>Open Lives</Text>
+              <Text style={[styles.secondaryText, { color: palette.text }]}>
+                Open Lives
+              </Text>
             </Pressable>
           </Link>
         </View>
       </View>
 
       {!canView ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Forum unavailable</Text>
-          <Text style={styles.cardText}>
+        <View style={[styles.card, pageSurface]}>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Forum unavailable
+          </Text>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
             This account does not have the `FORUM_VIEW` capability.
           </Text>
         </View>
       ) : null}
 
       {loading ? (
-        <View style={styles.card}>
+        <View style={[styles.card, pageSurface]}>
           <ActivityIndicator />
         </View>
       ) : null}
@@ -380,8 +426,10 @@ export default function CommunityTab() {
         <>
           <View style={styles.feedHeader}>
             <View>
-              <Text style={styles.feedTitle}>Latest discussions</Text>
-              <Text style={styles.feedSubtitle}>
+              <Text style={[styles.feedTitle, { color: palette.text }]}>
+                Latest discussions
+              </Text>
+              <Text style={[styles.feedSubtitle, { color: palette.textMuted }]}>
                 Expand replies below a post, or open its full page for likes, reports,
                 media replies, and grow actions.
               </Text>
@@ -391,7 +439,7 @@ export default function CommunityTab() {
                 accessibilityRole="button"
                 accessibilityLabel="Open complete Forum and Q&A feed"
               >
-                <Text style={styles.cta}>See all</Text>
+                <Text style={[styles.cta, { color: palette.link }]}>See all</Text>
               </Pressable>
             </Link>
           </View>
@@ -405,19 +453,36 @@ export default function CommunityTab() {
             const replyCount = post.commentCount ?? post.comments?.length ?? 0;
             return (
               <React.Fragment key={id || title}>
-                <View style={styles.postCard}>
+                <View style={[styles.postCard, pageSurface]}>
                   <View style={styles.authorRow}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{authorInitials(author)}</Text>
+                    <View
+                      style={[
+                        styles.avatar,
+                        {
+                          backgroundColor: palette.accentSoft,
+                          borderColor: palette.border
+                        }
+                      ]}
+                    >
+                      <Text style={[styles.avatarText, { color: palette.accent }]}>
+                        {authorInitials(author)}
+                      </Text>
                     </View>
                     <View style={styles.authorCopy}>
-                      <Text style={styles.authorName}>{author}</Text>
-                      <Text style={styles.rowMeta}>{postTime(post)}</Text>
+                      <Text style={[styles.authorName, { color: palette.text }]}>
+                        {author}
+                      </Text>
+                      <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
+                        {postTime(post)}
+                      </Text>
                     </View>
                   </View>
-                  <Text style={styles.postTitle}>{title}</Text>
+                  <Text style={[styles.postTitle, { color: palette.text }]}>{title}</Text>
                   {body && body !== title ? (
-                    <Text style={styles.postBody} numberOfLines={4}>
+                    <Text
+                      style={[styles.postBody, { color: palette.textSoft }]}
+                      numberOfLines={4}
+                    >
                       {body}
                     </Text>
                   ) : null}
@@ -429,6 +494,10 @@ export default function CommunityTab() {
                           source={{ uri: photo }}
                           style={[
                             styles.postImage,
+                            {
+                              backgroundColor: palette.surfaceMuted,
+                              borderColor: palette.border
+                            },
                             photos.length > 1 ? styles.postImageMultiple : null
                           ]}
                           resizeMode="cover"
@@ -440,14 +509,24 @@ export default function CommunityTab() {
                   {tags.length ? (
                     <View style={styles.tagRow}>
                       {tags.map((tag) => (
-                        <Text key={tag} style={styles.tag}>
+                        <Text
+                          key={tag}
+                          style={[
+                            styles.tag,
+                            {
+                              backgroundColor: palette.accentSoft,
+                              borderColor: palette.border,
+                              color: palette.accent
+                            }
+                          ]}
+                        >
                           {tag}
                         </Text>
                       ))}
                     </View>
                   ) : null}
                   <View style={styles.engagementRow}>
-                    <Text style={styles.engagementText}>
+                    <Text style={[styles.engagementText, { color: palette.textMuted }]}>
                       {post.likeCount || post.likes?.length || 0} likes
                     </Text>
                   </View>
@@ -470,9 +549,11 @@ export default function CommunityTab() {
             );
           })}
           {!loading && !posts.length ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.cardTitle}>No discussions yet</Text>
-              <Text style={styles.cardText}>
+            <View style={[styles.emptyCard, pageSurface]}>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>
+                No discussions yet
+              </Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
                 Start the first discussion, ask for grow help, or pull down to refresh.
               </Text>
             </View>
@@ -487,26 +568,26 @@ export default function CommunityTab() {
           ) : null}
 
           <View style={styles.secondaryGrid}>
-            <View style={[styles.card, styles.secondaryPanel]}>
-              <Text style={styles.cardTitle}>Your groups</Text>
+            <View style={[styles.card, styles.secondaryPanel, pageSurface]}>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>Your groups</Text>
               {guilds.slice(0, 4).map((guild) => {
                 const joined = Boolean(guild.joined || guild.isMember);
                 const name = guild.name || "Forum group";
                 return (
                   <View key={rowId(guild) || guild.name} style={styles.row}>
-                    <Text style={styles.rowTitle}>{name}</Text>
-                    <Text style={styles.rowMeta}>
+                    <Text style={[styles.rowTitle, { color: palette.text }]}>{name}</Text>
+                    <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
                       {guild.description || "No description"} | {guild.memberCount || 0}{" "}
                       members
                     </Text>
                     <Pressable
                       disabled={saving}
                       onPress={() => toggleGuild(guild)}
-                      style={styles.secondaryBtn}
+                      style={[styles.secondaryBtn, mutedSurface]}
                       accessibilityRole="button"
                       accessibilityLabel={`${joined ? "Leave" : "Join"} ${name}`}
                     >
-                      <Text style={styles.secondaryText}>
+                      <Text style={[styles.secondaryText, { color: palette.text }]}>
                         {joined ? "Leave" : "Join"}
                       </Text>
                     </Pressable>
@@ -514,21 +595,27 @@ export default function CommunityTab() {
                 );
               })}
               {!guilds.length ? (
-                <Text style={styles.cardText}>No forum groups returned.</Text>
+                <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                  No forum groups returned.
+                </Text>
               ) : null}
               <Link href="/communities" asChild>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Browse all groups"
                 >
-                  <Text style={styles.cta}>Browse all groups</Text>
+                  <Text style={[styles.cta, { color: palette.link }]}>
+                    Browse all groups
+                  </Text>
                 </Pressable>
               </Link>
             </View>
 
-            <View style={[styles.card, styles.secondaryPanel]}>
+            <View style={[styles.card, styles.secondaryPanel, pageSurface]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Inbox notifications</Text>
+                <Text style={[styles.cardTitle, { color: palette.text }]}>
+                  Inbox notifications
+                </Text>
                 {unreadCount ? (
                   <Pressable
                     disabled={saving}
@@ -536,12 +623,16 @@ export default function CommunityTab() {
                     accessibilityRole="button"
                     accessibilityLabel="Mark all forum notifications read"
                   >
-                    <Text style={styles.cta}>Mark all read</Text>
+                    <Text style={[styles.cta, { color: palette.link }]}>
+                      Mark all read
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>
-              <Text style={styles.cardText}>{unreadCount} unread notifications</Text>
-              <Text style={styles.cardText}>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                {unreadCount} unread notifications
+              </Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
                 These are inbox items, not tasks. Use Profile to control which types can
                 reach your device.
               </Text>
@@ -550,37 +641,47 @@ export default function CommunityTab() {
                   accessibilityRole="button"
                   accessibilityLabel="Open notification settings"
                 >
-                  <Text style={styles.cta}>Notification settings</Text>
+                  <Text style={[styles.cta, { color: palette.link }]}>
+                    Notification settings
+                  </Text>
                 </Pressable>
               </Link>
               {notifications.slice(0, 4).map((notification) => (
                 <View key={rowId(notification) || notification.title} style={styles.row}>
-                  <Text style={styles.rowTitle}>
+                  <Text style={[styles.rowTitle, { color: palette.text }]}>
                     {notification.title || "Notification"}
                   </Text>
-                  <Text style={styles.rowMeta}>{notification.message || ""}</Text>
+                  <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
+                    {notification.message || ""}
+                  </Text>
                   {!notification.read ? (
                     <Pressable
                       disabled={saving}
                       onPress={() => markRead(notification)}
-                      style={styles.secondaryBtn}
+                      style={[styles.secondaryBtn, mutedSurface]}
                       accessibilityRole="button"
                       accessibilityLabel={`Mark ${notification.title || "notification"} read`}
                     >
-                      <Text style={styles.secondaryText}>Mark read</Text>
+                      <Text style={[styles.secondaryText, { color: palette.text }]}>
+                        Mark read
+                      </Text>
                     </Pressable>
                   ) : null}
                 </View>
               ))}
               {!notifications.length ? (
-                <Text style={styles.cardText}>No notifications.</Text>
+                <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                  No notifications.
+                </Text>
               ) : null}
             </View>
           </View>
 
-          <View style={styles.discoveryCard}>
-            <Text style={styles.cardTitle}>Explore beyond the Forum</Text>
-            <Text style={styles.cardText}>
+          <View style={[styles.discoveryCard, mutedSurface]}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>
+              Explore beyond the Forum
+            </Text>
+            <Text style={[styles.cardText, { color: palette.textMuted }]}>
               These links open commercial discovery, campaigns, learning, and offers. They
               stay separate from grower discussions.
             </Text>
@@ -594,11 +695,13 @@ export default function CommunityTab() {
               ].map(([label, href]) => (
                 <Link key={href} href={href as any} asChild>
                   <Pressable
-                    style={styles.secondaryBtn}
+                    style={[styles.secondaryBtn, mutedSurface]}
                     accessibilityRole="button"
                     accessibilityLabel={label}
                   >
-                    <Text style={styles.secondaryText}>{label}</Text>
+                    <Text style={[styles.secondaryText, { color: palette.text }]}>
+                      {label}
+                    </Text>
                   </Pressable>
                 </Link>
               ))}
