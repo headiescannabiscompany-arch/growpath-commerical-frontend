@@ -3,6 +3,7 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { makeTabBarIcon, resolveTabLabel } from "@/components/nav/tabBar";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 
@@ -48,11 +49,12 @@ export default function FacilityTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
-        tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
+        tabBarShowLabel: true,
+        tabBarLabelStyle: { fontSize: compactTabs ? 9 : 10, fontWeight: "700" },
+        tabBarItemStyle: { minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
@@ -64,18 +66,38 @@ export default function FacilityTabsLayout() {
     >
       <Tabs.Screen
         name="dashboard"
-        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
+        options={{
+          title: "Dashboard",
+          tabBarLabel: resolveTabLabel("Dashboard", "Dash", compactTabs),
+          tabBarIcon: makeTabBarIcon("view-dashboard-outline")
+        }}
       />
-      <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen name="sop-runs" options={{ title: "SOPs" }} />
+      <Tabs.Screen
+        name="rooms"
+        options={{ title: "Rooms", tabBarIcon: makeTabBarIcon("floor-plan") }}
+      />
+      <Tabs.Screen
+        name="grows"
+        options={{ title: "Grows", tabBarIcon: makeTabBarIcon("leaf-outline") }}
+      />
+      <Tabs.Screen
+        name="plants"
+        options={{ title: "Plants", tabBarIcon: makeTabBarIcon("flower-outline") }}
+      />
+      <Tabs.Screen
+        name="tasks"
+        options={{ title: "Tasks", tabBarIcon: makeTabBarIcon("check-circle-outline") }}
+      />
+      <Tabs.Screen
+        name="sop-runs"
+        options={{ title: "SOPs", tabBarIcon: makeTabBarIcon("clipboard-text-outline") }}
+      />
       <Tabs.Screen
         name="compliance"
         options={{
           title: "Compliance",
-          tabBarLabel: compactTabs ? "Comp" : "Compliance"
+          tabBarLabel: resolveTabLabel("Compliance", "Comp", compactTabs),
+          tabBarIcon: makeTabBarIcon("shield-check-outline")
         }}
       />
       <Tabs.Screen name="logs" options={{ title: "Logs", tabBarButton: () => null }} />

@@ -1,14 +1,17 @@
 import React from "react";
 import { Tabs, Redirect, usePathname } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme } from "@/theme/appTheme";
+import { makeTabBarIcon, resolveTabLabel } from "@/components/nav/tabBar";
 
 export default function PersonalTabsLayout() {
   const ent = useEntitlements();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
   const { palette } = useAppTheme();
+  const compactTabs = width < 760;
   const hideTabBar =
     pathname.startsWith("/home/personal/tools/") && pathname !== "/home/personal/tools";
 
@@ -29,25 +32,76 @@ export default function PersonalTabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        tabBarShowLabel: true,
+        tabBarLabelStyle: { fontSize: compactTabs ? 9 : 11, fontWeight: "700" },
+        tabBarItemStyle: { minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" }
           : {
               backgroundColor: palette.tabBar,
-              borderTopColor: palette.tabBarBorder
+              borderTopColor: palette.tabBarBorder,
+              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
             }
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="tools" options={{ title: "AI Tools" }} />
-      <Tabs.Screen name="community" options={{ title: "Forum / Q&A" }} />
-      <Tabs.Screen name="discover" options={{ title: "Discover" }} />
-      <Tabs.Screen name="courses" options={{ title: "Courses" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarLabel: resolveTabLabel("Home", "Home", compactTabs),
+          tabBarIcon: makeTabBarIcon("home-outline")
+        }}
+      />
+      <Tabs.Screen
+        name="grows"
+        options={{
+          title: "Grows",
+          tabBarLabel: resolveTabLabel("Grows", "Grows", compactTabs),
+          tabBarIcon: makeTabBarIcon("leaf-outline")
+        }}
+      />
+      <Tabs.Screen
+        name="tools"
+        options={{
+          title: "AI Tools",
+          tabBarLabel: resolveTabLabel("AI Tools", "AI", compactTabs),
+          tabBarIcon: makeTabBarIcon("robot-outline")
+        }}
+      />
+      <Tabs.Screen
+        name="community"
+        options={{
+          title: "Forum / Q&A",
+          tabBarLabel: resolveTabLabel("Forum / Q&A", "Forum", compactTabs),
+          tabBarIcon: makeTabBarIcon("forum-outline")
+        }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{
+          title: "Discover",
+          tabBarLabel: resolveTabLabel("Discover", "Map", compactTabs),
+          tabBarIcon: makeTabBarIcon("earth")
+        }}
+      />
+      <Tabs.Screen
+        name="courses"
+        options={{
+          title: "Courses",
+          tabBarLabel: resolveTabLabel("Courses", "Learn", compactTabs),
+          tabBarIcon: makeTabBarIcon("school-outline")
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarLabel: resolveTabLabel("Profile", "Me", compactTabs),
+          tabBarIcon: makeTabBarIcon("account-outline")
+        }}
+      />
       <Tabs.Screen
         name="field-studies/index"
         options={{ tabBarButton: () => null, title: "Field Studies" }}

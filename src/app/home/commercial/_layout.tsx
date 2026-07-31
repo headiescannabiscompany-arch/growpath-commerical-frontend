@@ -3,6 +3,7 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { makeTabBarIcon, resolveTabLabel } from "@/components/nav/tabBar";
 import { useAppTheme } from "@/theme/appTheme";
 
 export default function CommercialTabsLayout() {
@@ -46,18 +47,17 @@ export default function CommercialTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
-        tabBarIconStyle: { display: "none" },
-        tabBarLabelPosition: "beside-icon",
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
+        tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: compactTabs ? 11 : 12,
+          fontSize: compactTabs ? 9 : 12,
           fontWeight: "700",
           marginStart: 0,
           marginEnd: 0
         },
+        tabBarItemStyle: { minWidth: 0 },
         tabBarStyle: hideTabBar
           ? { display: "none" as const }
           : {
@@ -69,34 +69,69 @@ export default function CommercialTabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
+        options={{
+          title: "Dashboard",
+          tabBarLabel: resolveTabLabel("Dashboard", "Dash", compactTabs),
+          tabBarIcon: makeTabBarIcon("view-dashboard-outline")
+        }}
       />
       <Tabs.Screen
         name="storefront/index"
-        options={{ title: "Storefront", tabBarLabel: "Storefront" }}
+        options={{
+          title: "Storefront",
+          tabBarLabel: resolveTabLabel("Storefront", "Store", compactTabs),
+          tabBarIcon: makeTabBarIcon("store-outline")
+        }}
       />
       <Tabs.Screen
         name="grows/index"
-        options={{ title: "Grows", tabBarLabel: "Grows" }}
+        options={{
+          title: "Grows",
+          tabBarLabel: resolveTabLabel("Grows", "Grows", compactTabs),
+          tabBarIcon: makeTabBarIcon("leaf-outline")
+        }}
       />
       <Tabs.Screen
         name="tools/index"
-        options={{ title: "AI Tools", tabBarLabel: "AI Tools" }}
+        options={{
+          title: "AI Tools",
+          tabBarLabel: resolveTabLabel("AI Tools", "AI", compactTabs),
+          tabBarIcon: makeTabBarIcon("robot-outline")
+        }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover" }}
+        options={{
+          title: "Discover",
+          tabBarLabel: resolveTabLabel("Discover", "Map", compactTabs),
+          tabBarIcon: makeTabBarIcon("earth")
+        }}
       />
-      <Tabs.Screen name="courses" options={{ title: "Courses" }} />
+      <Tabs.Screen
+        name="courses"
+        options={{
+          title: "Courses",
+          tabBarLabel: resolveTabLabel("Courses", "Learn", compactTabs),
+          tabBarIcon: makeTabBarIcon("school-outline")
+        }}
+      />
       <Tabs.Screen
         name="community"
         options={{
           title: "Forum / Q&A",
-          tabBarLabel: compactTabs ? "Forum" : "Forum / Q&A",
+          tabBarLabel: resolveTabLabel("Forum / Q&A", "Forum", compactTabs),
+          tabBarIcon: makeTabBarIcon("forum-outline"),
           headerShown: false
         }}
       />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarLabel: resolveTabLabel("Profile", "Me", compactTabs),
+          tabBarIcon: makeTabBarIcon("account-outline")
+        }}
+      />
       <Tabs.Screen
         name="products/index"
         options={{ title: "Products", tabBarButton: () => null }}
