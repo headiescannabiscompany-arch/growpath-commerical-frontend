@@ -15,7 +15,7 @@ import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
 import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function formatDate(value?: string) {
@@ -73,7 +73,7 @@ function isActiveGrow(grow?: PersonalGrow | null) {
   return growStatus(grow).toLowerCase() !== "harvested";
 }
 
-function statusTone(status: string) {
+function statusTone(status: string, styles: ReturnType<typeof createStyles>) {
   const lower = String(status || "").toLowerCase();
   if (lower === "vegetating") return styles.statusVegetating;
   if (lower === "flowering") return styles.statusFlowering;
@@ -82,7 +82,7 @@ function statusTone(status: string) {
   return styles.statusActive;
 }
 
-function metricTone(index: number) {
+function metricTone(index: number, styles: ReturnType<typeof createStyles>) {
   const tones = [
     styles.metricGreen,
     styles.metricBlue,
@@ -113,6 +113,7 @@ function ActionButton({
 }) {
   const router = useRouter();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <Pressable
       accessibilityRole="link"
@@ -146,6 +147,7 @@ function ActionButton({
 export default function PersonalGrowsRoute() {
   const ent = useEntitlements();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const hasCreateCapability = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
   const grows = items;
@@ -397,7 +399,12 @@ export default function PersonalGrowsRoute() {
         <PersonalFeaturedFeed />
 
         {error ? (
-          <AppCard style={styles.stateCard}>
+          <AppCard
+            style={[
+              styles.stateCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <Text style={styles.stateTitle}>Unable to load grows</Text>
             <Text style={styles.stateText}>{error}</Text>
             <Pressable
@@ -420,14 +427,19 @@ export default function PersonalGrowsRoute() {
 
         <View style={styles.summaryGrid}>
           {summaryCards.map((card, index) => (
-            <View key={card.label} style={[styles.metricCard, metricTone(index)]}>
+            <View key={card.label} style={[styles.metricCard, metricTone(index, styles)]}>
               <Text style={styles.metricValue}>{card.value}</Text>
               <Text style={styles.metricLabel}>{card.label}</Text>
             </View>
           ))}
         </View>
 
-        <AppCard style={styles.featuredCard}>
+        <AppCard
+          style={[
+            styles.featuredCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <View style={styles.featuredTopRow}>
             <View style={styles.featuredCopy}>
               <Text style={styles.cardKicker}>Latest grow</Text>
@@ -444,7 +456,9 @@ export default function PersonalGrowsRoute() {
               ) : null}
             </View>
             {latestGrow ? (
-              <View style={[styles.statusChip, statusTone(growStatus(latestGrow))]}>
+              <View
+                style={[styles.statusChip, statusTone(growStatus(latestGrow), styles)]}
+              >
                 <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
                 <Text style={styles.statusChipLabel}>
                   {growPhotoCount(latestGrow)} photos
@@ -471,12 +485,18 @@ export default function PersonalGrowsRoute() {
           )}
         </AppCard>
 
-        <AppCard style={styles.searchCard}>
+        <AppCard
+          style={[
+            styles.searchCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
           <Text style={styles.cardKicker}>Search</Text>
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search grows"
+            placeholderTextColor={palette.textMuted}
             style={styles.searchInput}
           />
           <Text style={styles.searchHint}>
@@ -490,8 +510,13 @@ export default function PersonalGrowsRoute() {
         </View>
 
         {loading && !sortedGrows.length ? (
-          <AppCard style={styles.stateCard}>
-            <ActivityIndicator />
+          <AppCard
+            style={[
+              styles.stateCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <ActivityIndicator color={palette.accent} />
             <Text style={[styles.stateText, { marginTop: 10 }]}>
               Loading grow dashboard...
             </Text>
@@ -499,7 +524,12 @@ export default function PersonalGrowsRoute() {
         ) : null}
 
         {!loading && !filteredGrows.length ? (
-          <AppCard style={styles.emptyCard}>
+          <AppCard
+            style={[
+              styles.emptyCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
             <Text style={styles.emptyTitle}>
               {sortedGrows.length ? "No grows match your search" : "No grows yet"}
             </Text>
@@ -544,14 +574,20 @@ export default function PersonalGrowsRoute() {
             const note = safeText(grow?.notes);
 
             return (
-              <AppCard key={id} style={styles.growCard}>
+              <AppCard
+                key={id}
+                style={[
+                  styles.growCard,
+                  { backgroundColor: palette.surface, borderColor: palette.border }
+                ]}
+              >
                 <View style={styles.growHeader}>
                   <View style={styles.growCopy}>
                     <Text style={styles.growName}>{growName(grow)}</Text>
                     <Text style={styles.growIdentity}>{growIdentity(grow)}</Text>
                     <Text style={styles.growMeta}>{growSummary(grow)}</Text>
                   </View>
-                  <View style={[styles.statusChip, statusTone(status)]}>
+                  <View style={[styles.statusChip, statusTone(status, styles)]}>
                     <Text style={styles.statusChipValue}>{status}</Text>
                     <Text style={styles.statusChipLabel}>
                       {growPhotoCount(grow)} photos
@@ -587,374 +623,380 @@ export default function PersonalGrowsRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: "#F1F5F9"
-  },
-  pageContent: {
-    alignSelf: "center",
-    maxWidth: 1200,
-    padding: 20,
-    width: "100%"
-  },
-  stack: {
-    gap: 14
-  },
-  heroCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0"
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 4,
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900"
-  },
-  subtitle: {
-    color: "#475569",
-    fontWeight: "700",
-    lineHeight: 20,
-    marginTop: 4
-  },
-  heroActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  limitText: {
-    color: "#64748B",
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 10
-  },
-  limitHeading: {
-    color: "#B45309",
-    fontSize: 12,
-    fontWeight: "900",
-    marginTop: 10,
-    textTransform: "uppercase"
-  },
-  roadmapCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#C7F9CC"
-  },
-  roadmapTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900",
-    lineHeight: 21
-  },
-  roadmapText: {
-    color: "#475569",
-    lineHeight: 20,
-    marginTop: 4
-  },
-  roadmapActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  stateCard: {
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  stateTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  stateText: {
-    color: "#475569",
-    lineHeight: 19,
-    marginTop: 6,
-    textAlign: "center"
-  },
-  retryButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  ctaText: {
-    color: "#FFFFFF",
-    fontWeight: "900"
-  },
-  sectionHeaderRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4
-  },
-  sectionTitle: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  sectionCount: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 4
-  },
-  summaryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  metricCard: {
-    borderWidth: 1,
-    borderRadius: radius.card,
-    flexGrow: 1,
-    minWidth: 110,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  metricGreen: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0"
-  },
-  metricBlue: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE"
-  },
-  metricAmber: {
-    backgroundColor: "#FFFBEB",
-    borderColor: "#FCD34D"
-  },
-  metricSlate: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0"
-  },
-  metricPurple: {
-    backgroundColor: "#FAF5FF",
-    borderColor: "#D8B4FE"
-  },
-  metricValue: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  metricLabel: {
-    color: "#475569",
-    fontSize: 11,
-    fontWeight: "900",
-    marginTop: 1
-  },
-  featuredCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1FAE5"
-  },
-  featuredTopRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  featuredCopy: {
-    flex: 1,
-    minWidth: 220
-  },
-  cardKicker: {
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  featuredName: {
-    color: "#0F172A",
-    fontSize: 20,
-    fontWeight: "900",
-    marginTop: 2
-  },
-  featuredMeta: {
-    color: "#475569",
-    lineHeight: 19,
-    marginTop: 4
-  },
-  statusChip: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 110,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  statusActive: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1"
-  },
-  statusVegetating: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0"
-  },
-  statusFlowering: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74"
-  },
-  statusCuring: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE"
-  },
-  statusHarvested: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "#CBD5E1"
-  },
-  statusChipValue: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900",
-    textTransform: "capitalize"
-  },
-  statusChipLabel: {
-    color: "#475569",
-    fontSize: 11,
-    fontWeight: "800",
-    marginTop: 2
-  },
-  featuredActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  searchCard: {
-    backgroundColor: "#FFFFFF"
-  },
-  searchInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    marginTop: 8,
-    minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  searchHint: {
-    color: "#64748B",
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 8
-  },
-  emptyCard: {
-    backgroundColor: "#FFFFFF"
-  },
-  emptyTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  emptyText: {
-    color: "#475569",
-    lineHeight: 20,
-    marginTop: 5
-  },
-  emptyActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  growList: {
-    gap: 12
-  },
-  growCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1
-  },
-  growHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  growCopy: {
-    flex: 1,
-    minWidth: 220
-  },
-  growName: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  growIdentity: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 4
-  },
-  growMeta: {
-    color: "#475569",
-    lineHeight: 19,
-    marginTop: 4
-  },
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  chip: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  chipText: {
-    color: "#334155",
-    fontSize: 11,
-    fontWeight: "800"
-  },
-  note: {
-    color: "#334155",
-    lineHeight: 20,
-    marginTop: 10
-  },
-  growActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  action: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionPrimary: {
-    backgroundColor: "#166534",
-    borderColor: "#166534"
-  },
-  actionText: {
-    color: "#166534",
-    fontWeight: "800"
-  },
-  actionTextPrimary: {
-    color: "#FFFFFF"
-  }
-});
+function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    page: {
+      flex: 1,
+      backgroundColor: palette.page
+    },
+    pageContent: {
+      alignSelf: "center",
+      maxWidth: 1200,
+      padding: 20,
+      width: "100%"
+    },
+    stack: {
+      gap: 14
+    },
+    heroCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 4,
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900"
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontWeight: "700",
+      lineHeight: 20,
+      marginTop: 4
+    },
+    heroActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    limitText: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 10
+    },
+    limitHeading: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 10,
+      textTransform: "uppercase"
+    },
+    roadmapCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    roadmapTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      lineHeight: 21
+    },
+    roadmapText: {
+      color: palette.textMuted,
+      lineHeight: 20,
+      marginTop: 4
+    },
+    roadmapActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    stateCard: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      justifyContent: "center"
+    },
+    stateTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900"
+    },
+    stateText: {
+      color: palette.textMuted,
+      lineHeight: 19,
+      marginTop: 6,
+      textAlign: "center"
+    },
+    retryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    ctaText: {
+      color: palette.accentText,
+      fontWeight: "900"
+    },
+    sectionHeaderRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 4
+    },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    sectionCount: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 4
+    },
+    summaryGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    metricCard: {
+      borderWidth: 1,
+      borderRadius: radius.card,
+      flexGrow: 1,
+      minWidth: 110,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    metricGreen: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success
+    },
+    metricBlue: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.info
+    },
+    metricAmber: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.warning
+    },
+    metricSlate: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    metricPurple: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      marginTop: 1
+    },
+    featuredCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    featuredTopRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    featuredCopy: {
+      flex: 1,
+      minWidth: 220
+    },
+    cardKicker: {
+      color: palette.accent,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    featuredName: {
+      color: palette.text,
+      fontSize: 20,
+      fontWeight: "900",
+      marginTop: 2
+    },
+    featuredMeta: {
+      color: palette.textMuted,
+      lineHeight: 19,
+      marginTop: 4
+    },
+    statusChip: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 110,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    statusActive: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    statusVegetating: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success
+    },
+    statusFlowering: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.warning
+    },
+    statusCuring: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.info
+    },
+    statusHarvested: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    statusChipValue: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      textTransform: "capitalize"
+    },
+    statusChipLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "800",
+      marginTop: 2
+    },
+    featuredActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    searchCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    searchInput: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginTop: 8,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    searchHint: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 8
+    },
+    emptyCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    emptyTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900"
+    },
+    emptyText: {
+      color: palette.textMuted,
+      lineHeight: 20,
+      marginTop: 5
+    },
+    emptyActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    growList: {
+      gap: 12
+    },
+    growCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1
+    },
+    growHeader: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    growCopy: {
+      flex: 1,
+      minWidth: 220
+    },
+    growName: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    growIdentity: {
+      color: palette.accent,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    growMeta: {
+      color: palette.textMuted,
+      lineHeight: 19,
+      marginTop: 4
+    },
+    chipRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    chip: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    chipText: {
+      color: palette.textSoft,
+      fontSize: 11,
+      fontWeight: "800"
+    },
+    note: {
+      color: palette.textSoft,
+      lineHeight: 20,
+      marginTop: 10
+    },
+    growActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    action: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionPrimary: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    actionText: {
+      color: palette.link,
+      fontWeight: "800"
+    },
+    actionTextPrimary: {
+      color: palette.accentText
+    }
+  });
+}
