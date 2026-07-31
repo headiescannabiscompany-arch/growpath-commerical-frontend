@@ -156,7 +156,7 @@ describe("PersonalHomeRoute", () => {
     expect(
       StyleSheet.flatten(screen.getByText("grower@example.com | pro plan").props.style)
         .color
-    ).toBe("#475569");
+    ).toBe("#5F6F5F");
     expect(screen.getByText("Personal command center")).toBeTruthy();
     expect(screen.getByText("Stage")).toBeTruthy();
     expect(screen.getAllByText("Open tasks").length).toBeGreaterThan(0);
