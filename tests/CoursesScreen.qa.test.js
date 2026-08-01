@@ -25,6 +25,7 @@
 // Uses Jest + React Native Testing Library (RNTL)
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
@@ -238,7 +239,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
         cap === "COURSES_CREATE" ||
         cap === "COURSES_SELL_PAID"
     });
-    const { getByText } = await renderWithNav();
+    const { getByRole, getByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Create Course")).toBeTruthy();
       expect(getByText("Paid course limit: 1/1")).toBeTruthy();
@@ -246,6 +247,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
       expect(getByText("Live sessions this month: 0 scheduled")).toBeTruthy();
       expect(getByText("Course Builder Workflow")).toBeTruthy();
     });
+    expect(getByRole("header", { name: "Courses" }).props["aria-level"]).toBe(1);
+    expect(
+      getByRole("header", { name: "Course Builder Workflow" }).props["aria-level"]
+    ).toBe(2);
+    expect(getByRole("header", { name: "Free Course" }).props["aria-level"]).toBe(2);
   });
 
   it("lets free course creators sell paid courses within limits", async () => {
@@ -341,7 +347,13 @@ describe("CoursesScreen QA (capability-driven)", () => {
       return;
     }
     fireEvent.press(getByText("Invite"));
-    fireEvent.changeText(getByLabelText("Invite user name input"), "Test User");
+    const inviteField = getByLabelText("Invite user name input");
+    const inviteFieldStyle = StyleSheet.flatten(inviteField.props.style);
+    expect(inviteFieldStyle.backgroundColor).toBeTruthy();
+    expect(inviteFieldStyle.borderColor).toBeTruthy();
+    expect(inviteFieldStyle.color).toBeTruthy();
+    expect(inviteField.props.placeholderTextColor).toBeTruthy();
+    fireEvent.changeText(inviteField, "Test User");
     fireEvent.press(getByText("Invite"));
     expect(await findByText("Invite sent!")).toBeTruthy();
   });

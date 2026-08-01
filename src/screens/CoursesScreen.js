@@ -325,6 +325,7 @@ export default function CoursesScreen({ navigation } = {}) {
     >
       <Text
         accessibilityRole="header"
+        aria-level={1}
         style={[styles.title, { color: palette.heroText }]}
       >
         Courses
@@ -338,7 +339,11 @@ export default function CoursesScreen({ navigation } = {}) {
             { backgroundColor: palette.surface, borderColor: palette.border }
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.cardTitle, { color: palette.text }]}
+          >
             Published course catalog
           </Text>
           <Text style={[styles.meta, { color: palette.textMuted }]}>
@@ -380,7 +385,11 @@ export default function CoursesScreen({ navigation } = {}) {
             { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
           ]}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.cardTitle, { color: palette.text }]}
+          >
             Courses unavailable
           </Text>
           <Text style={[styles.meta, { color: palette.textMuted }]}>
@@ -409,7 +418,11 @@ export default function CoursesScreen({ navigation } = {}) {
       ) : null}
 
       {!loading && !err && courses.length === 0 ? (
-        <Text style={[styles.meta, { color: palette.textMuted }]}>
+        <Text
+          accessibilityRole="header"
+          aria-level={2}
+          style={[styles.emptyTitle, { color: palette.textMuted }]}
+        >
           {isSignedIn ? "No courses found" : "No published courses yet"}
         </Text>
       ) : null}
@@ -421,7 +434,11 @@ export default function CoursesScreen({ navigation } = {}) {
           disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Text style={[styles.cardTitle, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.cardTitle, { color: palette.text }]}
+          >
             {String(item?.title || item?.name || "Untitled")}
           </Text>
           <Text style={[styles.statusText, { color: palette.success }]}>
@@ -483,7 +500,11 @@ export default function CoursesScreen({ navigation } = {}) {
               { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
             ]}
           >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.cardTitle, { color: palette.text }]}
+            >
               Course Builder Workflow
             </Text>
             <Text style={[styles.meta, { color: palette.textMuted }]}>
@@ -537,10 +558,18 @@ export default function CoursesScreen({ navigation } = {}) {
         <View style={styles.inviteCard}>
           <TextInput
             accessibilityLabel="Invite user name input"
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                color: palette.text
+              }
+            ]}
             value={inviteName}
             onChangeText={setInviteName}
             placeholder="Invite user name"
+            placeholderTextColor={palette.textMuted}
           />
           <Pressable
             accessibilityRole="button"
@@ -567,6 +596,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
+  emptyTitle: { fontSize: 16, fontWeight: "800", marginTop: 8 },
   error: { color: "crimson", marginBottom: 10 },
   lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
   statusText: { color: "#166534", fontWeight: "800", marginTop: 4 },
