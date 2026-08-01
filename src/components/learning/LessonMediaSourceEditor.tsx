@@ -10,6 +10,7 @@ import {
   lessonMediaPublishIssues,
   normalizeLessonMediaDraft
 } from "@/features/learning/lessonMedia";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type Props = {
@@ -53,6 +54,8 @@ function ChoiceRow<T extends string>({
   onChange: (next: T) => void;
   disabled?: boolean;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -91,6 +94,8 @@ function AccessibleToggle({
   onChange: (next: boolean) => void;
   disabled?: boolean;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <Pressable
       accessibilityLabel={label}
@@ -115,6 +120,8 @@ export default function LessonMediaSourceEditor({
   pendingUploadName,
   onRemove
 }: Props) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const normalized = useMemo(() => normalizeLessonMediaDraft(value), [value]);
   const media = normalized.mediaSource;
   const publishIssues = useMemo(
@@ -390,116 +397,118 @@ export default function LessonMediaSourceEditor({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    padding: 14,
-    marginVertical: 12,
-    backgroundColor: "#f8fafc",
-    gap: 10
-  },
-  title: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
-  fieldGroup: { gap: 7 },
-  fieldLabel: { fontSize: 14, fontWeight: "700", color: "#0f172a" },
-  help: { fontSize: 12, lineHeight: 17, color: "#475569" },
-  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  choice: {
-    borderWidth: 1,
-    borderColor: "#94a3b8",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-    backgroundColor: "#fff"
-  },
-  choiceSelected: { borderColor: "#166534", backgroundColor: "#dcfce7" },
-  choiceText: { color: "#334155", fontWeight: "600", fontSize: 12 },
-  choiceTextSelected: { color: "#14532d" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#94a3b8",
-    borderRadius: radius.card,
-    paddingHorizontal: 11,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    color: "#0f172a"
-  },
-  textArea: { minHeight: 92, textAlignVertical: "top" },
-  preview: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#2563eb",
-    paddingLeft: 10,
-    gap: 4
-  },
-  previewTitle: { fontWeight: "800", color: "#1e3a8a" },
-  status: { color: "#334155", fontSize: 12, lineHeight: 17 },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "800" },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#2563eb",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    backgroundColor: "#eff6ff"
-  },
-  secondaryButtonText: { color: "#1d4ed8", fontWeight: "700" },
-  dangerButton: {
-    borderWidth: 1,
-    borderColor: "#dc2626",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    backgroundColor: "#fff"
-  },
-  dangerButtonText: { color: "#b91c1c", fontWeight: "700" },
-  switchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 14,
-    paddingVertical: 3
-  },
-  switchCopy: { flex: 1 },
-  toggle: {
-    minWidth: 58,
-    borderWidth: 1,
-    borderColor: "#94a3b8",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    alignItems: "center",
-    backgroundColor: "#e2e8f0"
-  },
-  toggleOn: { borderColor: "#166534", backgroundColor: "#dcfce7" },
-  toggleText: { color: "#475569", fontWeight: "800", fontSize: 12 },
-  toggleTextOn: { color: "#166534" },
-  warningBox: {
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    backgroundColor: "#fffbeb",
-    borderRadius: radius.card,
-    padding: 11,
-    gap: 3
-  },
-  warningTitle: { color: "#92400e", fontWeight: "800" },
-  warningText: { color: "#92400e", fontSize: 12, lineHeight: 17 },
-  readyBox: {
-    borderWidth: 1,
-    borderColor: "#16a34a",
-    backgroundColor: "#f0fdf4",
-    borderRadius: radius.card,
-    padding: 11
-  },
-  readyText: { color: "#166534", fontWeight: "700", fontSize: 12 },
-  error: { color: "#b91c1c", fontSize: 12, fontWeight: "600" },
-  disabled: { opacity: 0.5 }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      marginVertical: 12,
+      backgroundColor: palette.surface,
+      gap: 10
+    },
+    title: { fontSize: 18, fontWeight: "800", color: palette.text },
+    fieldGroup: { gap: 7 },
+    fieldLabel: { fontSize: 14, fontWeight: "700", color: palette.text },
+    help: { fontSize: 12, lineHeight: 17, color: palette.textMuted },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    choice: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    choiceSelected: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    choiceText: { color: palette.text, fontWeight: "600", fontSize: 12 },
+    choiceTextSelected: { color: palette.link },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 11,
+      paddingVertical: 10,
+      backgroundColor: palette.surfaceMuted,
+      color: palette.text
+    },
+    textArea: { minHeight: 92, textAlignVertical: "top" },
+    preview: {
+      borderLeftWidth: 4,
+      borderLeftColor: palette.info,
+      paddingLeft: 10,
+      gap: 4
+    },
+    previewTitle: { fontWeight: "800", color: palette.info },
+    status: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 11,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      backgroundColor: palette.surfaceMuted
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "700" },
+    dangerButton: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      backgroundColor: palette.surfaceMuted
+    },
+    dangerButtonText: { color: palette.danger, fontWeight: "700" },
+    switchRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 14,
+      paddingVertical: 3
+    },
+    switchCopy: { flex: 1 },
+    toggle: {
+      minWidth: 58,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted
+    },
+    toggleOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    toggleText: { color: palette.textMuted, fontWeight: "800", fontSize: 12 },
+    toggleTextOn: { color: palette.link },
+    warningBox: {
+      borderWidth: 1,
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 11,
+      gap: 3
+    },
+    warningTitle: { color: palette.warning, fontWeight: "800" },
+    warningText: { color: palette.text, fontSize: 12, lineHeight: 17 },
+    readyBox: {
+      borderWidth: 1,
+      borderColor: palette.success,
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.card,
+      padding: 11
+    },
+    readyText: { color: palette.success, fontWeight: "700", fontSize: 12 },
+    error: { color: palette.danger, fontSize: 12, fontWeight: "600" },
+    disabled: { opacity: 0.5 }
+  });
+}

@@ -2,8 +2,11 @@ import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
-import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import LessonMediaSourceEditor, {
+  createStyles as createEditorStyles
+} from "@/components/learning/LessonMediaSourceEditor";
 import { emptyLessonMediaDraft } from "@/features/learning/lessonMedia";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockGetVideoPlayback = jest.fn();
 
@@ -28,6 +31,19 @@ describe("lesson media authoring and playback", () => {
   beforeEach(() => {
     mockGetVideoPlayback.mockReset();
   });
+
+  it("uses the active palette for authoring choices and fields", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createEditorStyles(palette);
+
+    expect(styles.card.backgroundColor).toBe(palette.surface);
+    expect(styles.choice.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.choice.borderColor).toBe(palette.border);
+    expect(styles.input.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.choiceSelected.backgroundColor).toBe(palette.accentSoft);
+  });
+
   it("detects a provider while preserving author metadata controls", () => {
     let value = emptyLessonMediaDraft("other_url");
     const onChange = jest.fn((next) => {
