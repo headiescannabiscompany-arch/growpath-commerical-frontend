@@ -8,6 +8,7 @@ const {
   addFieldStudyCollaborator,
   createFieldObservation,
   createFieldStudy,
+  getPublicFieldStudy,
   listFieldStudies,
   listPublicFieldObservations,
   removeFieldStudyCollaborator
@@ -141,7 +142,7 @@ describe("Field Studies API", () => {
     ).resolves.toEqual([
       expect.objectContaining({ id: "observation-1", _id: "observation-1" })
     ]);
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/field-observations/public", {
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/personal/field-studies/public", {
       auth: true,
       params: {
         q: "rose",
@@ -151,5 +152,23 @@ describe("Field Studies API", () => {
         limit: 250
       }
     });
+  });
+
+  it("loads public study detail from the deployed Field Studies route family", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      study: { id: "study-1", slug: "roadside-survey" },
+      observations: [{ id: "observation-1", title: "Public rose" }]
+    });
+
+    await expect(getPublicFieldStudy("roadside-survey")).resolves.toEqual({
+      study: expect.objectContaining({ id: "study-1", _id: "study-1" }),
+      observations: [
+        expect.objectContaining({ id: "observation-1", _id: "observation-1" })
+      ]
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/personal/field-studies/public/studies/roadside-survey",
+      { auth: true }
+    );
   });
 });

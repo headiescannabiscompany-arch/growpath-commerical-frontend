@@ -282,7 +282,7 @@ export async function listPublicFieldObservations(
 ): Promise<FieldObservation[]> {
   const query = typeof input === "string" ? { q: input } : input;
   return observationsFromResponse(
-    await apiRequest("/api/field-observations/public", {
+    await apiRequest("/api/personal/field-studies/public", {
       auth: true,
       params: {
         q: query.q?.trim() || undefined,
@@ -300,7 +300,7 @@ export async function getPublicFieldStudy(slug: string): Promise<{
   observations: FieldObservation[];
 }> {
   const response: any = await apiRequest(
-    `/api/field-observations/public/studies/${encodeURIComponent(slug)}`,
+    `/api/personal/field-studies/public/studies/${encodeURIComponent(slug)}`,
     { auth: true }
   );
   const study = response?.study ?? response?.data?.study;

@@ -15,6 +15,8 @@ import { FieldObservation, listPublicFieldObservations } from "@/api/fieldStudie
 import FieldObservationGlobe, {
   type FieldObservationViewport
 } from "@/components/fieldStudies/FieldObservationGlobe";
+import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const VERIFICATION_FILTERS = [
@@ -51,7 +53,20 @@ function readableStatus(value = "") {
   return value.replaceAll("_", " ");
 }
 
+export function fieldStudiesDestination(mode: string) {
+  return mode === "personal" ? "/home/personal/field-studies" : "/account/mode";
+}
+
+export function fieldStudiesActionLabel(mode: string) {
+  return mode === "personal"
+    ? "Start a Field Study"
+    : "Switch to Personal for Field Studies";
+}
+
 export default function PublicFieldObservationsScreen() {
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [verificationStatus, setVerificationStatus] =
@@ -152,7 +167,7 @@ export default function PublicFieldObservationsScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         Explore the living world
       </Text>
       <Text style={styles.subtitle}>
@@ -167,11 +182,17 @@ export default function PublicFieldObservationsScreen() {
           onChangeText={setQuery}
           onSubmitEditing={submitSearch}
           placeholder="Search common name, scientific name, family, or region"
+          placeholderTextColor={palette.textMuted}
           returnKeyType="search"
           style={styles.searchInput}
           value={query}
         />
-        <Pressable onPress={submitSearch} style={styles.searchButton}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Search public plant observations"
+          onPress={submitSearch}
+          style={styles.searchButton}
+        >
           <Text style={styles.searchButtonText}>Search</Text>
         </Pressable>
       </View>
@@ -181,6 +202,8 @@ export default function PublicFieldObservationsScreen() {
         <View style={styles.filterRow}>
           {VERIFICATION_FILTERS.map((filter) => (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Filter identification review: ${filter.label}`}
               accessibilityState={{ selected: verificationStatus === filter.value }}
               key={filter.value || "all-verification"}
               onPress={() => setVerificationStatus(filter.value)}
@@ -204,6 +227,8 @@ export default function PublicFieldObservationsScreen() {
         <View style={styles.filterRow}>
           {INVASIVE_FILTERS.map((filter) => (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Filter field finding: ${filter.label}`}
               accessibilityState={{ selected: invasiveStatus === filter.value }}
               key={filter.value || "all-invasive"}
               onPress={() => setInvasiveStatus(filter.value)}
@@ -227,7 +252,7 @@ export default function PublicFieldObservationsScreen() {
 
       <View style={styles.mapPanel}>
         <View style={styles.mapHeader}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             Discovery globe
           </Text>
           <Text style={styles.mapCount}>{mappedCount} pins in view</Text>
@@ -255,7 +280,7 @@ export default function PublicFieldObservationsScreen() {
         {highlightedObservations.length > 1 ? (
           <View style={styles.clusterCard}>
             <Text style={styles.selectedEyebrow}>Selected pin group</Text>
-            <Text style={styles.cardTitle}>
+            <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
               {highlightedObservations.length} field findings
             </Text>
             <Text style={styles.cardMeta}>
@@ -299,7 +324,9 @@ export default function PublicFieldObservationsScreen() {
             ) : null}
             <View style={styles.selectedBody}>
               <Text style={styles.selectedEyebrow}>Selected field finding</Text>
-              <Text style={styles.cardTitle}>{observationName(selectedObservation)}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                {observationName(selectedObservation)}
+              </Text>
               {selectedObservation.identity?.scientificName ? (
                 <Text style={styles.scientificName}>
                   {selectedObservation.identity.scientificName}
@@ -327,31 +354,40 @@ export default function PublicFieldObservationsScreen() {
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Published observations
         </Text>
-        <Link href="/home/personal/field-studies" asChild>
+        <Link href={fieldStudiesDestination(entitlements.mode)} asChild>
           <Pressable accessibilityRole="link">
-            <Text style={styles.linkText}>Start a Field Study</Text>
+            <Text style={styles.linkText}>
+              {fieldStudiesActionLabel(entitlements.mode)}
+            </Text>
           </Pressable>
         </Link>
       </View>
 
       {loading ? (
         <View style={styles.status}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.muted}>Loading public observations...</Text>
         </View>
       ) : error ? (
         <View style={styles.status}>
           <Text style={styles.error}>{error}</Text>
-          <Pressable onPress={() => void load(activeQuery)} style={styles.retryButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry public plant observations"
+            onPress={() => void load(activeQuery)}
+            style={styles.retryButton}
+          >
             <Text style={styles.retryText}>Try again</Text>
           </Pressable>
         </View>
       ) : !observations.length ? (
         <View style={styles.status}>
-          <Text style={styles.statusTitle}>No matching public observations</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.statusTitle}>
+            No matching public observations
+          </Text>
           <Text style={styles.muted}>
             Public Field Studies only show observations that contributors deliberately
             published with media evidence.
@@ -371,7 +407,9 @@ export default function PublicFieldObservationsScreen() {
                 ) && styles.cardSelected
               ]}
             >
-              <Text style={styles.cardTitle}>{observationName(observation)}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                {observationName(observation)}
+              </Text>
               {observation.identity?.scientificName ? (
                 <Text style={styles.scientificName}>
                   {observation.identity.scientificName}
@@ -409,157 +447,161 @@ export default function PublicFieldObservationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { gap: 15, padding: 20, paddingBottom: 56 },
-  title: { color: "#0F172A", fontSize: 29, fontWeight: "800" },
-  subtitle: { color: "#475569", fontSize: 15, lineHeight: 22 },
-  filterPanel: { gap: 8 },
-  filterLabel: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  filterChip: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    minHeight: 38,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  filterChipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  filterChipText: { color: "#334155", fontSize: 13, fontWeight: "700" },
-  filterChipTextSelected: { color: "#FFFFFF" },
-  searchRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  searchInput: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    minHeight: 46,
-    minWidth: 230,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  searchButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 46,
-    paddingHorizontal: 17
-  },
-  searchButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  mapPanel: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14
-  },
-  mapHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 20, fontWeight: "800" },
-  mapCount: { color: "#166534", fontWeight: "800" },
-  mapHelp: { color: "#64748B", lineHeight: 20 },
-  legend: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
-  legendItem: { alignItems: "center", flexDirection: "row", gap: 6 },
-  legendDot: { borderRadius: 999, height: 10, width: 10 },
-  legendText: { color: "#475569", fontSize: 12 },
-  clusterCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 7,
-    padding: 12
-  },
-  clusterList: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 4
-  },
-  clusterListItem: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#BBF7D0",
-    borderRadius: 10,
-    borderWidth: 1,
-    minWidth: 190,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  clusterListTitle: { color: "#14532D", fontWeight: "800" },
-  selectedCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    padding: 12
-  },
-  selectedImage: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 10,
-    height: 112,
-    width: 136
-  },
-  selectedBody: {
-    flex: 1,
-    gap: 4,
-    justifyContent: "center",
-    minWidth: 220
-  },
-  selectedEyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  linkText: { color: "#166534", fontWeight: "800" },
-  status: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16
-  },
-  statusTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  muted: { color: "#64748B", lineHeight: 20 },
-  error: { color: "#B91C1C", lineHeight: 20 },
-  retryButton: {
-    alignSelf: "flex-start",
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  retryText: { color: "#0F172A", fontWeight: "700" },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1D5DB",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 15
-  },
-  cardSelected: { borderColor: "#16A34A", borderWidth: 2 },
-  cardTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  scientificName: { color: "#334155", fontStyle: "italic" },
-  cardMeta: { color: "#64748B", fontSize: 13, lineHeight: 18 },
-  cardBody: { color: "#334155", lineHeight: 20, marginVertical: 4 }
-});
+export const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { gap: 15, padding: 20, paddingBottom: 56 },
+    title: { color: palette.heroText, fontSize: 29, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, fontSize: 15, lineHeight: 22 },
+    filterPanel: { gap: 8 },
+    filterLabel: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    filterChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      minHeight: 38,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    filterChipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    filterChipText: { color: palette.textMuted, fontSize: 13, fontWeight: "700" },
+    filterChipTextSelected: { color: palette.accentText },
+    searchRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    searchInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flex: 1,
+      minHeight: 46,
+      minWidth: 230,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      color: palette.text
+    },
+    searchButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 46,
+      paddingHorizontal: 17
+    },
+    searchButtonText: { color: palette.accentText, fontWeight: "800" },
+    mapPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    mapHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    sectionTitle: { color: palette.text, fontSize: 20, fontWeight: "800" },
+    mapCount: { color: palette.accent, fontWeight: "800" },
+    mapHelp: { color: palette.textMuted, lineHeight: 20 },
+    legend: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
+    legendItem: { alignItems: "center", flexDirection: "row", gap: 6 },
+    legendDot: { borderRadius: 999, height: 10, width: 10 },
+    legendText: { color: palette.textMuted, fontSize: 12 },
+    clusterCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 7,
+      padding: 12
+    },
+    clusterList: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 4
+    },
+    clusterListItem: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 10,
+      borderWidth: 1,
+      minWidth: 190,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    clusterListTitle: { color: palette.text, fontWeight: "800" },
+    selectedCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      padding: 12
+    },
+    selectedImage: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 10,
+      height: 112,
+      width: 136
+    },
+    selectedBody: {
+      flex: 1,
+      gap: 4,
+      justifyContent: "center",
+      minWidth: 220
+    },
+    selectedEyebrow: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    linkText: { color: palette.link, fontWeight: "800" },
+    status: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 16
+    },
+    statusTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    muted: { color: palette.textMuted, lineHeight: 20 },
+    error: { color: palette.danger, lineHeight: 20 },
+    retryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    retryText: { color: palette.link, fontWeight: "700" },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 15
+    },
+    cardSelected: { borderColor: palette.accent, borderWidth: 2 },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    scientificName: { color: palette.textMuted, fontStyle: "italic" },
+    cardMeta: { color: palette.textMuted, fontSize: 13, lineHeight: 18 },
+    cardBody: { color: palette.text, lineHeight: 20, marginVertical: 4 }
+  });
