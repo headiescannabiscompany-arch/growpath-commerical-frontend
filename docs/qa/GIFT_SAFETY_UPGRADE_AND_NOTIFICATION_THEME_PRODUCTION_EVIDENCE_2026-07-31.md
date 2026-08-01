@@ -1724,6 +1724,27 @@ new non-route screen path.
   audit event, billing, or record action was invoked, and the Viewer session
   remained signed in.
 
+## Shared global Report Bug control Night theme
+
+The global Report Bug control was the remaining bright white element previously
+measured on the otherwise-correct shared Profile page. The same hard-coded white
+button and mobile dock followed the user across Facility inventory and other
+routes under resolved Night mode. Frontend `99e88068` moves the shared button,
+warning border/text, dock surface, and dock border to the active palette without
+changing the support destination, prefilled report context, layout, or behavior.
+
+- Production Build Preflight `30701824482` and Frontend CI `30701824484`
+  passed. Four focused docking, palette, and report-routing tests passed, along
+  with targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check`.
+- Signed-in Facility Viewer acceptance on clean production
+  `/home/facility/inventory/new` confirmed the global button changed from white
+  `rgb(255, 255, 255)` to Night surface `rgb(21, 29, 39)`, with warning border
+  and label `rgb(227, 190, 99)`. The surrounding application surface remained
+  dark and the inventory route retained its one-H1, form-free read-only state.
+- No Report Bug action, support navigation, field, inventory action, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
