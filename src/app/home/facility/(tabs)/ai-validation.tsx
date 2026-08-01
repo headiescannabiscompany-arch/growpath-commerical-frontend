@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { aiCompare, aiFeedback, aiTrainingExport, aiVerify } from "@/api/aiValidation";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { buildFeedbackPayload, parseJsonObject } from "@/utils/aiValidationLab";
 import { radius } from "@/theme/theme";
 
 export default function FacilityAiValidationRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAiValidationStyles(palette), [palette]);
   const [predictionJson, setPredictionJson] = useState(
     JSON.stringify({ humidity: 80, dewPointSpread: 1.4 }, null, 2)
   );
@@ -54,6 +57,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setPredictionJson}
         style={[styles.input, styles.code]}
         placeholder="Prediction JSON"
+        placeholderTextColor={palette.textSoft}
         multiline
       />
       <TextInput
@@ -62,6 +66,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setObservedJson}
         style={[styles.input, styles.code]}
         placeholder="Observed JSON"
+        placeholderTextColor={palette.textSoft}
         multiline
       />
 
@@ -72,6 +77,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setBaselineJson}
         style={[styles.input, styles.code]}
         placeholder="Baseline JSON"
+        placeholderTextColor={palette.textSoft}
         multiline
       />
       <TextInput
@@ -80,6 +86,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setCandidateJson}
         style={[styles.input, styles.code]}
         placeholder="Candidate JSON"
+        placeholderTextColor={palette.textSoft}
         multiline
       />
 
@@ -90,6 +97,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setTargetType}
         style={styles.input}
         placeholder="Target Type"
+        placeholderTextColor={palette.textSoft}
       />
       <TextInput
         accessibilityLabel="AI feedback target id"
@@ -97,6 +105,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setTargetId}
         style={styles.input}
         placeholder="Target ID"
+        placeholderTextColor={palette.textSoft}
       />
       <TextInput
         accessibilityLabel="AI feedback rating"
@@ -104,6 +113,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setRating}
         style={styles.input}
         placeholder="Rating 1-5"
+        placeholderTextColor={palette.textSoft}
         keyboardType="numeric"
       />
       <TextInput
@@ -112,6 +122,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setComment}
         style={styles.input}
         placeholder="Comment"
+        placeholderTextColor={palette.textSoft}
       />
       <TextInput
         accessibilityLabel="AI feedback labels"
@@ -119,6 +130,7 @@ export default function FacilityAiValidationRoute() {
         onChangeText={setLabels}
         style={styles.input}
         placeholder="Labels, comma separated"
+        placeholderTextColor={palette.textSoft}
       />
 
       <View style={styles.buttonGrid}>
@@ -203,45 +215,53 @@ export default function FacilityAiValidationRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { opacity: 0.75, marginBottom: 4 },
-  label: { fontWeight: "700", marginTop: 2 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  code: { minHeight: 92, textAlignVertical: "top", fontFamily: "monospace" },
-  choiceRow: { flexDirection: "row", gap: 8 },
-  choice: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#d1d5db"
-  },
-  choiceActive: { borderColor: "#1d4ed8", backgroundColor: "#dbeafe" },
-  choiceText: { color: "#111827", textTransform: "capitalize" },
-  choiceTextActive: { color: "#1e3a8a", fontWeight: "700", textTransform: "capitalize" },
-  buttonGrid: { marginTop: 4, gap: 8 },
-  button: { borderRadius: radius.card, paddingVertical: 12, alignItems: "center" },
-  buttonPrimary: { backgroundColor: "#111827" },
-  buttonSecondary: { backgroundColor: "#1f2937" },
-  disabled: { opacity: 0.55 },
-  buttonText: { color: "#fff", fontWeight: "800" },
-  error: { color: "#b91c1c", marginTop: 6 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff",
-    marginTop: 8
-  },
-  cardTitle: { fontWeight: "800", marginBottom: 4 },
-  codeText: { fontFamily: "monospace", fontSize: 12 }
-});
+export function createFacilityAiValidationStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 16, gap: 10, backgroundColor: palette.page },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted, marginBottom: 4 },
+    label: { color: palette.text, fontWeight: "700", marginTop: 2 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: palette.text,
+      backgroundColor: palette.surface
+    },
+    code: { minHeight: 92, textAlignVertical: "top", fontFamily: "monospace" },
+    choiceRow: { flexDirection: "row", gap: 8 },
+    choice: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    choiceActive: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    choiceText: { color: palette.text, textTransform: "capitalize" },
+    choiceTextActive: {
+      color: palette.accent,
+      fontWeight: "700",
+      textTransform: "capitalize"
+    },
+    buttonGrid: { marginTop: 4, gap: 8 },
+    button: { borderRadius: radius.card, paddingVertical: 12, alignItems: "center" },
+    buttonPrimary: { backgroundColor: palette.accent },
+    buttonSecondary: { backgroundColor: palette.surfaceStrong },
+    disabled: { opacity: 0.55 },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    error: { color: palette.danger, marginTop: 6 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.card,
+      marginTop: 8
+    },
+    cardTitle: { color: palette.text, fontWeight: "800", marginBottom: 4 },
+    codeText: { color: palette.text, fontFamily: "monospace", fontSize: 12 }
+  });
+}

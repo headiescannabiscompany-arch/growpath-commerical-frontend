@@ -1,5 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { createFacilityAiValidationStyles } from "../../src/app/home/facility/(tabs)/ai-validation";
+import { getThemePalette } from "../../src/theme/appTheme";
 import {
   buildFeedbackPayload,
   labelsFromText,
@@ -8,6 +10,19 @@ import {
 } from "../../src/utils/aiValidationLab";
 
 describe("ai validation lab helpers", () => {
+  it("uses the active Night palette for the lab and its inputs", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityAiValidationStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.sub.color).toBe(palette.textMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.error.color).toBe(palette.danger);
+  });
+
   it("parses JSON objects and rejects arrays", () => {
     expect(parseJsonObject('{"humidity":80}', "prediction")).toEqual({
       humidity: 80
