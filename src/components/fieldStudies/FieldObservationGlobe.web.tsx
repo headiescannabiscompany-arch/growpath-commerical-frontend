@@ -68,6 +68,7 @@ function loadMapLibreModule() {
 }
 
 import type { FieldObservation } from "@/api/fieldStudies";
+import { useAppTheme } from "@/theme/appTheme";
 
 export type FieldObservationViewport = {
   west: number;
@@ -169,6 +170,7 @@ export default function FieldObservationGlobe({
   onSelectObservations,
   onViewportChange
 }: Props) {
+  const { palette } = useAppTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const observationsRef = useRef(observations);
@@ -455,7 +457,7 @@ export default function FieldObservationGlobe({
           width: 100%;
         }
         .growpath-field-globe {
-          background: #dbeafe;
+          background: ${palette.surfaceMuted};
           border-radius: 16px;
           height: min(64vh, 620px);
           min-height: 420px;
@@ -468,9 +470,10 @@ export default function FieldObservationGlobe({
         }
         .growpath-field-globe-status,
         .growpath-field-globe-error {
-          background: rgba(255, 255, 255, 0.94);
+          background: ${palette.surface};
+          border: 1px solid ${palette.border};
           border-radius: 10px;
-          color: #334155;
+          color: ${palette.text};
           left: 50%;
           padding: 10px 14px;
           position: absolute;
@@ -479,11 +482,12 @@ export default function FieldObservationGlobe({
           z-index: 4;
         }
         .growpath-field-globe-error {
-          color: #991b1b;
+          color: ${palette.danger};
         }
         .growpath-field-globe-location {
           align-items: center;
-          background: rgba(255, 255, 255, 0.95);
+          background: ${palette.surface};
+          border: 1px solid ${palette.border};
           border-radius: 10px;
           bottom: 10px;
           box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
@@ -496,10 +500,10 @@ export default function FieldObservationGlobe({
           z-index: 4;
         }
         .growpath-field-globe-location button {
-          background: #166534;
+          background: ${palette.accent};
           border: 0;
           border-radius: 8px;
-          color: #fff;
+          color: ${palette.accentText};
           cursor: pointer;
           font: inherit;
           font-weight: 800;
@@ -512,9 +516,27 @@ export default function FieldObservationGlobe({
           opacity: 0.55;
         }
         .growpath-field-globe-location span {
-          color: #334155;
+          color: ${palette.textMuted};
           font-size: 12px;
           line-height: 16px;
+        }
+        .growpath-field-globe .maplibregl-ctrl-group,
+        .growpath-field-globe .maplibregl-ctrl-attrib {
+          background: ${palette.surface};
+          color: ${palette.textMuted};
+        }
+        .growpath-field-globe .maplibregl-ctrl-group button {
+          background-color: ${palette.surface};
+          border-color: ${palette.border};
+        }
+        .growpath-field-globe .maplibregl-ctrl-group button:hover {
+          background-color: ${palette.surfaceMuted};
+        }
+        .growpath-field-globe .maplibregl-ctrl button .maplibregl-ctrl-icon {
+          filter: ${palette.resolvedMode === "night" ? "invert(1)" : "none"};
+        }
+        .growpath-field-globe .maplibregl-ctrl-attrib a {
+          color: ${palette.link};
         }
         @media (max-width: 640px) {
           .growpath-field-globe {
