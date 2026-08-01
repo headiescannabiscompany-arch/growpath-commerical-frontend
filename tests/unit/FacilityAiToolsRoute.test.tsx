@@ -30,9 +30,19 @@ jest.mock("expo-router", () => {
 describe("FacilityAiToolsRoute", () => {
   it("consolidates the legacy second AI page into the command center", () => {
     const screen = render(<FacilityAiToolsRoute />);
-    expect(screen.getByText("Facility Grow Intelligence")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Facility Grow Intelligence" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
     expect(screen.getByText("Ask AI")).toBeTruthy();
-    expect(screen.getByText("Tool Library")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Tool Library" }).props["aria-level"]).toBe(
+      2
+    );
+    expect(screen.getByRole("button", { name: "Open Ask AI" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Open Nutrient Mix Builder" })
+    ).toBeTruthy();
     expect(mockTokenBalanceWidget).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceType: "facility",

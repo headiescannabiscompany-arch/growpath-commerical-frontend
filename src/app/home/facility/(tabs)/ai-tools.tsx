@@ -53,7 +53,11 @@ export default function FacilityAiToolsRoute() {
       railOverride={null}
       header={
         <View>
-          <Text style={[styles.title, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
             Facility Grow Intelligence
           </Text>
           <Text style={[styles.subtitle, { color: palette.textMuted }]}>
@@ -71,11 +75,19 @@ export default function FacilityAiToolsRoute() {
       <View style={styles.grid}>
         {TOOLS.map(([title, description, href]) => (
           <AppCard key={href} style={styles.card}>
-            <Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.cardTitle, { color: palette.text }]}
+            >
+              {title}
+            </Text>
             <Text style={[styles.description, { color: palette.textMuted }]}>
               {description}
             </Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${title}`}
               style={[styles.button, { backgroundColor: palette.accent }]}
               onPress={() => router.push(href as any)}
             >
@@ -84,11 +96,19 @@ export default function FacilityAiToolsRoute() {
           </AppCard>
         ))}
       </View>
-      <Text style={[styles.section, { color: palette.textMuted }]}>Tool Library</Text>
+      <Text
+        accessibilityRole="header"
+        aria-level={2}
+        style={[styles.section, { color: palette.textMuted }]}
+      >
+        Tool Library
+      </Text>
       <View style={styles.library}>
         {LIBRARY.map(([title, href]) => (
           <Pressable
             key={href}
+            accessibilityRole="button"
+            accessibilityLabel={`Open ${title}`}
             style={[styles.libraryButton, { borderColor: palette.accent }]}
             onPress={() => router.push(href as any)}
           >

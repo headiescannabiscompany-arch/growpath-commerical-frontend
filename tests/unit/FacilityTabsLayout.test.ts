@@ -36,4 +36,9 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("ai-diagnosis-photo")).toBe(false);
     expect(shouldShowFacilityRouteHeader("ai-ask")).toBe(true);
   });
+
+  it("lets Facility Grow Intelligence own its accurate semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("ai-tools")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("reports")).toBe(true);
+  });
 });
