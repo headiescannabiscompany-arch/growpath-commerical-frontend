@@ -25,6 +25,7 @@ import {
 } from "@/features/sops/standardSopLibrary";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type PendingDocument = {
@@ -77,6 +78,8 @@ function attachmentLabel(attachment: SOPAttachment) {
 }
 
 export default function FacilitySopRunsPresetsRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySopLibraryStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const entitlements = useEntitlements();
   const canManage = Boolean(entitlements?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
@@ -684,215 +687,222 @@ export default function FacilitySopRunsPresetsRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 48 },
-  header: { gap: 10 },
-  h1: { color: "#0f172a", fontSize: 26, fontWeight: "900" },
-  h2: { color: "#0f172a", fontSize: 19, fontWeight: "900", marginTop: 8 },
-  h3: { color: "#0f172a", fontSize: 16, fontWeight: "900", marginTop: 4 },
-  lead: { color: "#334155", fontWeight: "700", lineHeight: 21 },
-  sub: { color: "#64748b", fontWeight: "700", lineHeight: 19 },
-  starterRow: { gap: 10, paddingVertical: 4, paddingRight: 16 },
-  starterCard: {
-    width: 280,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 7,
-    backgroundColor: "#fff"
-  },
-  starterTitle: { color: "#0f172a", fontSize: 16, fontWeight: "900" },
-  starterMeta: { color: "#166534", fontSize: 12, fontWeight: "900" },
-  starterBody: { color: "#475569", lineHeight: 18, minHeight: 72 },
-  editorCard: {
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    borderRadius: radius.card,
-    padding: 14,
-    gap: 9,
-    backgroundColor: "#f0fdf4"
-  },
-  editorHeadingRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  flex: { flex: 1 },
-  label: { color: "#1e293b", fontWeight: "900", marginTop: 4 },
-  help: { color: "#64748b", fontSize: 12, fontWeight: "700" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff",
-    color: "#0f172a"
-  },
-  stepsInput: { minHeight: 180, textAlignVertical: "top" },
-  notesInput: { minHeight: 90, textAlignVertical: "top" },
-  count: { color: "#166534", fontSize: 12, fontWeight: "900" },
-  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  choice: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#fff"
-  },
-  choiceSelected: { borderColor: "#15803d", backgroundColor: "#dcfce7" },
-  choiceText: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  choiceTextSelected: { color: "#166534" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#15803d",
-    borderRadius: radius.card,
-    padding: 12
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "900" },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#15803d",
-    borderRadius: radius.card,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-    backgroundColor: "#fff"
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "900" },
-  textButton: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#fff"
-  },
-  textButtonText: { color: "#334155", fontWeight: "900" },
-  retireButton: {
-    borderWidth: 1,
-    borderColor: "#b91c1c",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#fff"
-  },
-  retireButtonText: { color: "#991b1b", fontWeight: "900" },
-  retireConfirm: {
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    borderRadius: radius.card,
-    padding: 11,
-    gap: 8,
-    backgroundColor: "#fef2f2"
-  },
-  retireTitle: { color: "#7f1d1d", fontWeight: "900" },
-  retireCopy: { color: "#991b1b", fontWeight: "700", lineHeight: 19 },
-  retireConfirmButton: {
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#b91c1c"
-  },
-  retireConfirmButtonText: { color: "#fff", fontWeight: "900" },
-  disabled: { opacity: 0.45 },
-  reviewRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 6
-  },
-  checkbox: {
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#64748b",
-    borderRadius: 4,
-    height: 22,
-    justifyContent: "center",
-    width: 22,
-    backgroundColor: "#fff"
-  },
-  checkboxSelected: { borderColor: "#15803d", backgroundColor: "#15803d" },
-  checkmark: { color: "#fff", fontWeight: "900" },
-  reviewText: { color: "#334155", flex: 1, fontWeight: "700", lineHeight: 19 },
-  documentRow: {
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between",
-    padding: 9,
-    backgroundColor: "#eff6ff"
-  },
-  documentLink: { flex: 1 },
-  documentLinkText: { color: "#1d4ed8", fontWeight: "900" },
-  pendingDocument: { color: "#1e40af", flex: 1, fontWeight: "800" },
-  removeButton: { padding: 6 },
-  removeButtonText: { color: "#b91c1c", fontSize: 12, fontWeight: "900" },
-  readOnlyCard: {
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 5,
-    backgroundColor: "#eff6ff"
-  },
-  readOnlyTitle: { color: "#1e3a8a", fontWeight: "900" },
-  message: {
-    borderRadius: radius.card,
-    color: "#1e3a8a",
-    fontWeight: "800",
-    padding: 10,
-    backgroundColor: "#dbeafe"
-  },
-  empty: { color: "#64748b", fontWeight: "700", paddingVertical: 18 },
-  savedCard: {
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#fff",
-    marginTop: 10,
-    gap: 8
-  },
-  savedHeading: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  savedTitle: { color: "#0f172a", fontSize: 17, fontWeight: "900" },
-  savedMeta: { color: "#64748b", fontSize: 12, fontWeight: "800", marginTop: 2 },
-  starterBadge: {
-    borderRadius: radius.pill,
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#dcfce7"
-  },
-  savedBody: { color: "#475569", lineHeight: 19 },
-  safetySummary: { color: "#92400e", fontSize: 12, fontWeight: "800" },
-  savedDocumentLink: {
-    alignSelf: "flex-start",
-    borderRadius: radius.card,
-    paddingVertical: 5
-  },
-  savedActions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  startLink: {
-    color: "#fff",
-    fontWeight: "900",
-    overflow: "hidden",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#2563eb"
-  }
-});
+export function createFacilitySopLibraryStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 16, paddingBottom: 48 },
+    header: { gap: 10 },
+    h1: { color: palette.text, fontSize: 26, fontWeight: "900" },
+    h2: { color: palette.text, fontSize: 19, fontWeight: "900", marginTop: 8 },
+    h3: { color: palette.text, fontSize: 16, fontWeight: "900", marginTop: 4 },
+    lead: { color: palette.textMuted, fontWeight: "700", lineHeight: 21 },
+    sub: { color: palette.textMuted, fontWeight: "700", lineHeight: 19 },
+    starterRow: { gap: 10, paddingVertical: 4, paddingRight: 16 },
+    starterCard: {
+      width: 280,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 7,
+      backgroundColor: palette.card
+    },
+    starterTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    starterMeta: { color: palette.success, fontSize: 12, fontWeight: "900" },
+    starterBody: { color: palette.textMuted, lineHeight: 18, minHeight: 72 },
+    editorCard: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      padding: 14,
+      gap: 9,
+      backgroundColor: palette.surfaceMuted
+    },
+    editorHeadingRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    flex: { flex: 1 },
+    label: { color: palette.text, fontWeight: "900", marginTop: 4 },
+    help: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    stepsInput: { minHeight: 180, textAlignVertical: "top" },
+    notesInput: { minHeight: 90, textAlignVertical: "top" },
+    count: { color: palette.success, fontSize: 12, fontWeight: "900" },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    choice: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    choiceSelected: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    choiceText: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    choiceTextSelected: { color: palette.link },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 12
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 11,
+      paddingVertical: 8,
+      backgroundColor: palette.surface
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "900" },
+    textButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    textButtonText: { color: palette.text, fontWeight: "900" },
+    retireButton: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    retireButtonText: { color: palette.danger, fontWeight: "900" },
+    retireConfirm: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      padding: 11,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    retireTitle: { color: palette.danger, fontWeight: "900" },
+    retireCopy: { color: palette.textMuted, fontWeight: "700", lineHeight: 19 },
+    retireConfirmButton: {
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.danger
+    },
+    retireConfirmButtonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.45 },
+    reviewRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      paddingVertical: 6
+    },
+    checkbox: {
+      alignItems: "center",
+      borderWidth: 2,
+      borderColor: palette.border,
+      borderRadius: 4,
+      height: 22,
+      justifyContent: "center",
+      width: 22,
+      backgroundColor: palette.surface
+    },
+    checkboxSelected: { borderColor: palette.accent, backgroundColor: palette.accent },
+    checkmark: { color: palette.accentText, fontWeight: "900" },
+    reviewText: { color: palette.textMuted, flex: 1, fontWeight: "700", lineHeight: 19 },
+    documentRow: {
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between",
+      padding: 9,
+      backgroundColor: palette.surfaceMuted
+    },
+    documentLink: { flex: 1 },
+    documentLinkText: { color: palette.link, fontWeight: "900" },
+    pendingDocument: { color: palette.text, flex: 1, fontWeight: "800" },
+    removeButton: { padding: 6 },
+    removeButtonText: { color: palette.danger, fontSize: 12, fontWeight: "900" },
+    readOnlyCard: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 5,
+      backgroundColor: palette.surfaceMuted
+    },
+    readOnlyTitle: { color: palette.link, fontWeight: "900" },
+    message: {
+      borderRadius: radius.card,
+      color: palette.text,
+      fontWeight: "800",
+      padding: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    empty: { color: palette.textMuted, fontWeight: "700", paddingVertical: 18 },
+    savedCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.card,
+      marginTop: 10,
+      gap: 8
+    },
+    savedHeading: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    savedTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    savedMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 2
+    },
+    starterBadge: {
+      borderRadius: radius.pill,
+      color: palette.success,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      backgroundColor: palette.accentSoft
+    },
+    savedBody: { color: palette.textMuted, lineHeight: 19 },
+    safetySummary: { color: palette.warning, fontSize: 12, fontWeight: "800" },
+    savedDocumentLink: {
+      alignSelf: "flex-start",
+      borderRadius: radius.card,
+      paddingVertical: 5
+    },
+    savedActions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    startLink: {
+      color: palette.accentText,
+      fontWeight: "900",
+      overflow: "hidden",
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.accent
+    }
+  });
+}

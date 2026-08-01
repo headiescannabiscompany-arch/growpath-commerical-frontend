@@ -5,8 +5,11 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FacilitySopRunDetailRoute from "@/app/home/facility/sop-runs/[id]";
 import FacilitySopRunsCompareRoute from "@/app/home/facility/sop-runs/compare";
 import FacilitySopRunsCompareResultRoute from "@/app/home/facility/sop-runs/compare-result";
-import FacilitySopRunsPresetsRoute from "@/app/home/facility/sop-runs/presets";
+import FacilitySopRunsPresetsRoute, {
+  createFacilitySopLibraryStyles
+} from "@/app/home/facility/sop-runs/presets";
 import FacilitySopRunsStartRoute from "@/app/home/facility/sop-runs/start";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
@@ -211,6 +214,18 @@ describe("facility SOP run nested back behavior", () => {
     const presets = render(<FacilitySopRunsPresetsRoute />);
     expect(presets.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy();
     expect(presets.getByText("SOP Library")).toBeTruthy();
+  });
+
+  it("uses the active Night palette for the SOP library and editor surfaces", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilitySopLibraryStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.starterCard.backgroundColor).toBe(palette.card);
+    expect(styles.readOnlyCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.savedCard.backgroundColor).toBe(palette.card);
+    expect(styles.editorCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
   });
 
   it("uses shared back behavior on SOP compare routes", async () => {
