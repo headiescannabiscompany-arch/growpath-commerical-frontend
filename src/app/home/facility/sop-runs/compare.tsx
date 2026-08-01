@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SopRunListItem = {
@@ -46,6 +47,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilitySopRunsCompareRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySopCompareStyles(palette), [palette]);
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const [runs, setRuns] = useState<SopRunListItem[]>([]);
@@ -91,7 +94,9 @@ export default function FacilitySopRunsCompareRoute() {
       backFallbackHref="/home/facility/sop-runs"
     >
       <View style={styles.container}>
-        <Text style={styles.h1}>Compare SOP Runs</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          Compare SOP Runs
+        </Text>
         <Text style={styles.sub}>
           Choose two saved runs. GrowPath compares their recorded checklist evidence and
           outcomes; no internal IDs are required.
@@ -188,50 +193,52 @@ function formatLabel(value: string) {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 8 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { color: "#475569", fontWeight: "700", lineHeight: 19 },
-  selectionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  selectionCard: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 220,
-    padding: 10
-  },
-  selectionLabel: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  selectionValue: { color: "#0f172a", fontWeight: "900", marginTop: 2 },
-  btn: {
-    backgroundColor: "#2563eb",
-    borderRadius: radius.card,
-    padding: 10,
-    alignItems: "center"
-  },
-  btnText: { color: "#fff", fontWeight: "800" },
-  disabled: { opacity: 0.45 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    marginTop: 10,
-    backgroundColor: "#fff"
-  },
-  cardSelected: { borderColor: "#2563eb", borderWidth: 2 },
-  title: { fontWeight: "800" },
-  row: { flexDirection: "row", gap: 12, marginTop: 6 },
-  choice: {
-    borderColor: "#bfdbfe",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 7
-  },
-  choiceActive: { backgroundColor: "#dbeafe", borderColor: "#2563eb" },
-  link: { color: "#2563eb", fontWeight: "800" },
-  empty: { color: "#64748b", fontWeight: "700", paddingVertical: 18 },
-  err: { color: "#b91c1c", fontWeight: "700" }
-});
+export function createFacilitySopCompareStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 8 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted, fontWeight: "700", lineHeight: 19 },
+    selectionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    selectionCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 220,
+      padding: 10
+    },
+    selectionLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    selectionValue: { color: palette.text, fontWeight: "900", marginTop: 2 },
+    btn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 10,
+      alignItems: "center"
+    },
+    btnText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.45 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      marginTop: 10,
+      backgroundColor: palette.card
+    },
+    cardSelected: { borderColor: palette.accent, borderWidth: 2 },
+    title: { color: palette.text, fontWeight: "800" },
+    row: { flexDirection: "row", gap: 12, marginTop: 6 },
+    choice: {
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 9,
+      paddingVertical: 7
+    },
+    choiceActive: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    link: { color: palette.link, fontWeight: "800" },
+    empty: { color: palette.textMuted, fontWeight: "700", paddingVertical: 18 },
+    err: { color: palette.danger, fontWeight: "700" }
+  });
+}

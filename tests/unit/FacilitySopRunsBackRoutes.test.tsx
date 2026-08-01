@@ -3,7 +3,9 @@ import * as DocumentPicker from "expo-document-picker";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilitySopRunDetailRoute from "@/app/home/facility/sop-runs/[id]";
-import FacilitySopRunsCompareRoute from "@/app/home/facility/sop-runs/compare";
+import FacilitySopRunsCompareRoute, {
+  createFacilitySopCompareStyles
+} from "@/app/home/facility/sop-runs/compare";
 import FacilitySopRunsCompareResultRoute from "@/app/home/facility/sop-runs/compare-result";
 import FacilitySopRunsPresetsRoute, {
   createFacilitySopLibraryStyles
@@ -242,6 +244,18 @@ describe("facility SOP run nested back behavior", () => {
     expect(styles.input.color).toBe(palette.text);
     expect(styles.templatePanel.backgroundColor).toBe(palette.surfaceMuted);
     expect(styles.templateCard.backgroundColor).toBe(palette.card);
+    expect(styles.btn.backgroundColor).toBe(palette.accent);
+  });
+
+  it("uses the active Night palette for the SOP comparison chooser", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilitySopCompareStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.selectionCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.selectionValue.color).toBe(palette.text);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.empty.color).toBe(palette.textMuted);
     expect(styles.btn.backgroundColor).toBe(palette.accent);
   });
 
