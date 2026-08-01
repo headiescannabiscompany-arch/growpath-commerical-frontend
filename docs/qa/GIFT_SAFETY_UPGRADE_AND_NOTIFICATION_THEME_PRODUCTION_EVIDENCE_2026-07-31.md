@@ -1805,3 +1805,27 @@ Free-plan locked behavior did not change.
 - No field, interest, photo, upload, post, campaign, Forum action, support
   action, workspace, account, session, billing, audit event, or record action
   was invoked, and the Viewer session remained signed in.
+
+## Shared Forum Directory Night theme and hierarchy
+
+Production `/communities` retained a white search field plus day-only summary,
+create/privacy, feedback, category/meta, action, loading, empty, and populated
+group treatments under the signed-in Facility Viewer's resolved Night mode. It
+also exposed no semantic headings. Frontend `f924f066` moves the complete Forum
+Directory surface to the active palette and establishes one `Forum Directory`
+H1 plus H2s for the creation and empty/populated group sections; the conditional
+privacy question is an H3. Directory loading/search, group creation, public or
+private choice, join/leave behavior, API payloads, and campaign placement did
+not change.
+
+- Production Build Preflight `30702655492` and Frontend CI `30702655495`
+  passed. All 16 focused Forum/Directory tests, targeted source ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. Existing non-failing
+  test `act` warnings remain unrelated.
+- Signed-in Facility Viewer acceptance on the clean production URL confirmed
+  one H1, two H2s in the truthful zero-group state, a dark untouched search
+  field at surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright text
+  `rgb(244, 247, 251)`, with zero white page-content surfaces.
+- No create form, field, privacy option, search, refresh, group, join/leave,
+  campaign, Forum action, workspace, account, session, billing, audit event, or
+  record action was invoked, and the Viewer session remained signed in.
