@@ -6,6 +6,8 @@ import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 
+export const FACILITY_TASKS_TAB_LABEL = "Tasks";
+
 export function shouldHideFacilityTabBar(pathname = "") {
   return (
     pathname.includes("/ai-diagnosis-photo") ||
@@ -105,6 +107,7 @@ export default function FacilityTabsLayout() {
         name="tasks"
         options={{
           title: "Facility Tasks",
+          tabBarLabel: FACILITY_TASKS_TAB_LABEL,
           headerShown: shouldShowFacilityRouteHeader("tasks")
         }}
       />

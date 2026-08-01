@@ -1,4 +1,5 @@
 import {
+  FACILITY_TASKS_TAB_LABEL,
   shouldHideFacilityTabBar,
   shouldShowFacilityRouteHeader
 } from "@/app/home/facility/(tabs)/_layout";
@@ -69,6 +70,7 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Tasks own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("tasks")).toBe(false);
+    expect(FACILITY_TASKS_TAB_LABEL).toBe("Tasks");
     expect(shouldShowFacilityRouteHeader("compliance")).toBe(true);
   });
 
