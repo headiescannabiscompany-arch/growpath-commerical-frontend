@@ -102,7 +102,8 @@ jest.mock("@/components/videos/VideoCard", () => ({
   }
 }));
 
-import VideosRoute from "@/app/videos";
+import VideosRoute, { createVideosRouteStyles } from "@/app/videos";
+import { getThemePalette } from "@/theme/appTheme";
 
 jest.setTimeout(15000);
 
@@ -114,6 +115,18 @@ describe("universal Videos route", () => {
     mockSearchVideos.mockReset();
     mockDeleteVideo.mockReset();
     mockDeleteVideo.mockResolvedValue({ deleted: true });
+  });
+
+  it("uses the active Night palette for the shared library and writer surfaces", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createVideosRouteStyles(palette);
+
+    expect(styles.pageTitle.color).toBe(palette.text);
+    expect(styles.libraryMetric.backgroundColor).toBe(palette.card);
+    expect(styles.libraryMetricValue.color).toBe(palette.text);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.choice.borderColor).toBe(palette.border);
+    expect(styles.primaryButton.backgroundColor).toBe(palette.accent);
   });
 
   it("gives a Free personal account its library and truthful storage", async () => {

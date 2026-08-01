@@ -43,6 +43,7 @@ import {
   getTier1Options
 } from "@/utils/growInterests";
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const VISIBILITY_OPTIONS: Array<{ value: VideoVisibility; label: string }> = [
@@ -97,6 +98,8 @@ export default function VideosRoute() {
   const router = useRouter();
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createVideosRouteStyles(palette), [palette]);
   const workspaceType = entitlements.mode as VideoWorkspaceType;
   const [tab, setTab] = useState<"discover" | "library">(() => initialTab(params.tab));
   const [query, setQuery] = useState("");
@@ -414,7 +417,7 @@ export default function VideosRoute() {
       routeKey="videos"
       header={
         <View>
-          <Text accessibilityRole="header" style={styles.pageTitle}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.pageTitle}>
             Videos
           </Text>
           <Text style={styles.subtitle}>
@@ -460,6 +463,7 @@ export default function VideosRoute() {
               onChangeText={setQuery}
               onSubmitEditing={() => void loadDiscover()}
               placeholder="Search titles, descriptions, tags, transcripts, or accounts"
+              placeholderTextColor={palette.textMuted}
               returnKeyType="search"
               style={styles.input}
               value={query}
@@ -618,6 +622,7 @@ export default function VideosRoute() {
                 accessibilityLabel="Video title"
                 onChangeText={setTitle}
                 placeholder="Video title"
+                placeholderTextColor={palette.textMuted}
                 style={styles.input}
                 value={title}
               />
@@ -626,6 +631,7 @@ export default function VideosRoute() {
                 multiline
                 onChangeText={setDescription}
                 placeholder="Explain what viewers will learn or see"
+                placeholderTextColor={palette.textMuted}
                 style={[styles.input, styles.textArea]}
                 value={description}
               />
@@ -685,6 +691,7 @@ export default function VideosRoute() {
                 accessibilityLabel="Video tags"
                 onChangeText={setTags}
                 placeholder="Tags, comma separated"
+                placeholderTextColor={palette.textMuted}
                 style={styles.input}
                 value={tags}
               />
@@ -850,123 +857,129 @@ export default function VideosRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  pageTitle: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 4 },
-  cardTitle: { color: "#0F172A", fontSize: 19, fontWeight: "800", marginBottom: 8 },
-  tabs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  tab: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  tabSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  tabText: { color: "#334155", fontWeight: "800" },
-  tabTextSelected: { color: "#FFFFFF" },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  textArea: { minHeight: 100, textAlignVertical: "top" },
-  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
-  choice: {
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  choiceSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  choiceText: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  choiceTextSelected: { color: "#FFFFFF" },
-  scopeRow: { marginTop: 6 },
-  scopeChip: { minWidth: 150 },
-  librarySummaryRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 4,
-    marginTop: 6
-  },
-  libraryMetric: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  libraryMetricValue: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  libraryMetricLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  checkbox: {
-    alignSelf: "flex-start",
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 2,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  checkboxSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  fieldLabel: { color: "#0F172A", fontWeight: "800", marginBottom: 8 },
-  uploadProgress: {
-    alignItems: "center",
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
-    padding: 11
-  },
-  uploadProgressCopy: { flex: 1 },
-  primaryButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  secondaryText: { color: "#334155", fontWeight: "800" },
-  dangerButton: {
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  dangerText: { color: "#B91C1C", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  help: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  warning: { color: "#92400E", lineHeight: 19 },
-  success: { color: "#166534", fontWeight: "800" },
-  empty: { color: "#64748B", paddingVertical: 8 },
-  grid: { gap: 14 },
-  quota: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  meter: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    height: 10,
-    marginBottom: 8,
-    marginTop: 8,
-    overflow: "hidden"
-  },
-  meterFill: { backgroundColor: "#16A34A", height: "100%" }
-});
+export const createVideosRouteStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    pageTitle: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },
+    cardTitle: { color: palette.text, fontSize: 19, fontWeight: "800", marginBottom: 8 },
+    tabs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    tab: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    tabSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    tabText: { color: palette.text, fontWeight: "800" },
+    tabTextSelected: { color: palette.accentText },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      color: palette.text
+    },
+    textArea: { minHeight: 100, textAlignVertical: "top" },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+    choice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    choiceSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    choiceText: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    choiceTextSelected: { color: palette.accentText },
+    scopeRow: { marginTop: 6 },
+    scopeChip: { minWidth: 150 },
+    librarySummaryRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginBottom: 4,
+      marginTop: 6
+    },
+    libraryMetric: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    libraryMetricValue: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    libraryMetricLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    checkbox: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 2,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    checkboxSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    fieldLabel: { color: palette.text, fontWeight: "800", marginBottom: 8 },
+    uploadProgress: {
+      alignItems: "center",
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      marginBottom: 12,
+      padding: 11
+    },
+    uploadProgressCopy: { flex: 1 },
+    primaryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    dangerButton: {
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    dangerText: { color: palette.danger, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    help: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    warning: { color: palette.warning, lineHeight: 19 },
+    success: { color: palette.success, fontWeight: "800" },
+    empty: { color: palette.textMuted, paddingVertical: 8 },
+    grid: { gap: 14 },
+    quota: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    meter: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      height: 10,
+      marginBottom: 8,
+      marginTop: 8,
+      overflow: "hidden"
+    },
+    meterFill: { backgroundColor: palette.success, height: "100%" }
+  });
