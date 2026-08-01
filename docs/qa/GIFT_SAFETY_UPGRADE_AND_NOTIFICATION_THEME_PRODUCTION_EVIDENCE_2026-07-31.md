@@ -21,6 +21,10 @@ Date: 2026-07-31 (America/New_York)
 - Facility Integrations active-theme fix: `612c4cab`
 - Facility Integrations Frontend CI: `30677646664` (passed)
 - Facility Integrations Production Build Preflight: `30677646668` (passed)
+- Facility Pulse protection/theme implementation: `ee1ee1d4`
+- Facility history-import combined release: `52b42ba6`
+- Combined Frontend CI: `30678355952` (passed)
+- Combined Production Build Preflight: `30678355928` (passed)
 
 ## Confirmed gift defect and safety boundary
 
@@ -106,6 +110,38 @@ entries. The Viewer boundary still prevented adding a Pulse connection. No
 provider was selected, no external email link opened, no file was uploaded,
 and no integration or mapping record changed.
 
+## Facility integration direct-route protection
+
+The production Viewer could not press `Connect Pulse` from Integrations, but
+direct navigation to `/home/facility/tools/pulse` bypassed that presentation
+guard and exposed the connection label, secret API-key input, and verification
+action. The form also retained a white card, white fields, and a day-only green
+action in resolved Night mode. The linked history-import route similarly
+rendered nearly black explanatory/empty-state text on the dark canvas, and its
+Integrations entry was still actionable for the Viewer.
+
+Frontend `ee1ee1d4` added owner/manager enforcement inside the Pulse route,
+removed provider credential and verification controls for other roles, moved
+the route to the active palette, and corrected its page/subheading hierarchy.
+Frontend `52b42ba6` applied the same owner/manager boundary before grow loading
+or importer rendering, themed the history route, and disabled both write entry
+points on the Integrations page for the Viewer. The newer combined release
+superseded the standalone Pulse preflight, so production acceptance relies on
+the two passing `52b42ba6` safeguards listed above.
+
+Live final-SHA acceptance proved:
+
+- `Connect Facility Pulse` and `Import Facility grow history` both exposed
+  `aria-disabled=true` on Integrations.
+- Direct Pulse showed a Night-themed `Pulse connection setup is read-only`
+  alert, one level-one page heading, one level-two status heading, and no label,
+  API-key, verification, or discovered-device controls.
+- Direct history import showed a Night-themed `Grow history import is
+  read-only` alert, one level-one page heading, one level-two status heading,
+  and no grow selector, grow API result, or shared importer/uploader.
+- No API key, file, provider request, connection, mapping, grow, or imported
+  history record was created or changed.
+
 ## Automated verification
 
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
@@ -117,6 +153,12 @@ and no integration or mapping record changed.
   single-heading ownership rule.
 - Facility Integrations: 3 focused tests passed, including an explicit Night
   palette regression and the existing mapping workflow coverage.
+- Facility Pulse: 3 focused tests passed for Night styling, owner/manager
+  access, Viewer direct-route denial, connection verification, device discovery,
+  and mapping handoff.
+- Facility history/Integrations boundary: 8 focused tests passed for Night
+  styling, owner/manager access, Viewer direct-route denial, disabled entry
+  points, grow selection, importer handoff, and integration mapping behavior.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
