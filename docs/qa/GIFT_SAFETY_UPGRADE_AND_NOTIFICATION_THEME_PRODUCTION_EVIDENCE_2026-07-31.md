@@ -1639,6 +1639,32 @@ navigation behavior did not change.
   session, billing, or record action was invoked, and the Viewer session
   remained signed in.
 
+## Facility room-onboarding direct-route protection
+
+The shared first-room setup screen retained a fixed light canvas, white card and
+fields, day-only copy, and no semantic page heading. More importantly, its
+direct route had no Facility role gate, so a Viewer in an empty Facility could
+receive five prefilled room records plus create/add/remove/type controls; an
+existing Facility only hid the flaw through a data-dependent redirect.
+Frontend `9b7de094` applies the central `ROOMS_CREATE` role matrix inside the
+screen, prevents the redirect from bypassing the protected state, moves loading,
+authorized, validation, progress, and read-only states to the active palette,
+and establishes one page H1. Owner, Manager, and Staff retain room creation;
+Viewer receives a form-free handoff to Facility Rooms. The onboarding router's
+transient splash now also follows the active page palette.
+
+- Production Build Preflight `30700261074` and Frontend CI `30700261106`
+  passed. Eleven focused first-setup, grow-onboarding, room-route, permission,
+  and Night-palette tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. Existing non-failing Expo Go
+  and test `act` warnings remained unrelated.
+- Signed-in Facility Viewer acceptance on the clean production URL confirmed
+  one `Room setup is read-only` H1, zero fields, zero room/type selections,
+  zero add/remove/create/skip actions, and only `Back to facility rooms`.
+- No field, type, room, equipment, grow, onboarding step, workspace, account,
+  session, audit event, billing, or record action was invoked, and the Viewer
+  session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
