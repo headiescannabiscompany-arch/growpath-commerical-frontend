@@ -1055,6 +1055,42 @@ changed.
   task, log, plant history, harvest batch, audit event, billing, or record
   action was invoked, and the session remained signed in.
 
+## Shared Feeding Schedule Night theme and Facility AI handoff
+
+Production Facility Feeding Schedule retained a white day-only canvas, black
+field values on transparent inputs, white result metrics, green day-only
+actions, and no semantic structure below the shell heading under resolved
+Night mode. The result surface's shared `Ask AI About This` action also routed
+Facility users into Personal AI. Frontend `4b1a5894` moved the shared planner
+and reusable result surface to the active palette and structured their visible
+titles; the live retest then confirmed the cross-workspace AI destination, and
+follow-up `c3916684` kept the generated review prompt inside Facility AI Ask.
+Neither revision changed schedule generation, rule review, AI charging, or
+journal/task writebacks.
+
+- Final Production Build Preflight `30692358799` passed in 3m10s and final
+  Frontend CI `30692358811` passed in 5m32s. The first theme deployment also
+  passed, but was not accepted as final after live review exposed the Facility
+  AI handoff mismatch.
+- Fifteen focused Feeding Schedule generation/review/task-metadata, shared-back,
+  Night-palette, result-surface, and Facility-AI destination tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one `Feeding
+  Schedule` heading; level-two `Feeding Schedule Planner`, `AI grow-context
+  prefill`, and `Feeding schedule` headings; and one level-three `Assumptions`
+  heading. All 11 inspected inputs use Night surface `rgb(21, 29, 39)`, border
+  `rgb(40, 53, 69)`, and bright text `rgb(244, 247, 251)`. Secondary result
+  actions use the same Night surface with accent border/text
+  `rgb(120, 170, 255)`, every heading uses bright text, and the separate Report
+  Bug control was the only detected white element.
+- The live no-grow state retained its disabled AI prefill, free rule-engine
+  disclosure, zero schedule rows, LOW review risk with its truthful warning,
+  and no save/writeback actions. Navigation-only acceptance of `Ask AI About
+  This` landed on `/home/facility/ai-ask` with the review prompt prefilled;
+  Send was not invoked. No input, generate, copy, AI Send, credit, schedule,
+  ToolRun, Saved Run, journal, task, grow, audit event, billing, or record action
+  was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
