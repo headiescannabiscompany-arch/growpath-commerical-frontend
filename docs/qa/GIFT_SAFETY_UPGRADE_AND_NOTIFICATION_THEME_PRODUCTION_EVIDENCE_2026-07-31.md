@@ -2126,3 +2126,29 @@ campaign behavior.
 - No Browse Forum, comment, photo, like, report, task, grow-log, campaign,
   workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
+
+## Shared access-denied and failed-session guard hierarchy
+
+Signed-in Facility navigation to legacy `/orders` correctly redirected into
+the Commercial-only Orders guard. Its denial copy, dashboard action, logout,
+support, and Night palette were already correct, but the `Access denied` title
+had no semantic heading. The same missing H1 affected RouteAccessGuard and
+RequireAuth failed-session states, while the unresolved entitlement loader had
+no active-palette color. Frontend `4a47603a` adds one H1 to all shared denial
+and failed-session states and themes the loader without changing route policy,
+retry, session clearing, logout, support, or workspace behavior.
+
+- Three focused authentication-bootstrap and wrong-workspace tests passed,
+  including the Commercial-only Orders explanation and all intended dashboard,
+  logout, and support actions. Targeted source ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30708470473` and Frontend CI `30708470470`
+  passed. Clean production `/orders` under the Facility Viewer rendered one
+  bright `Access denied` H1, exact Commercial-only copy, all intended actions,
+  and zero white/light page-content surfaces.
+- Commercial Orders data, fulfillment, checkout-return, and analytics evidence
+  remain separately role-gated and were not inferred from this denial-state
+  acceptance.
+- No dashboard, logout, support, Report Bug, order, checkout, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
