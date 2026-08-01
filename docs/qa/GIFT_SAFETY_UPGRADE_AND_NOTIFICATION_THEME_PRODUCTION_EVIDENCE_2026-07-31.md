@@ -1902,3 +1902,32 @@ destination remain unchanged.
 - No search, follow filter, campaign, directory result, Nature action, globe,
   location, workspace, account, session, billing, audit event, or record action
   was invoked, and the Viewer session remained signed in.
+
+## Public Store directory Night theme and hierarchy
+
+Production `/store` used Night AppPage/AppCard surfaces but retained day-only
+near-black page, section, field, result, privacy, and action copy. Its three
+transparent search fields also used near-black text and light borders on dark
+cards, and the route exposed no semantic headings. Frontend `60cc2a25` moves
+the complete public directory, storefront lookup, and dispensary-search surface
+to the active palette and establishes one `Store` H1 plus H2s for Public
+storefronts, Find Storefronts, and Find Dispensaries. Conditional Commercial
+management and populated result titles receive the same hierarchy and palette;
+search, location, storefront/profile routing, dispensary handoff, and commerce
+behavior do not change.
+
+- All eight focused Store tests passed, including active-palette coverage and
+  the existing slug, similar-store, search, dispensary, location, Commercial,
+  and Personal routing boundaries. Source ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The test-file lint warning is
+  the repository's intentional test ignore.
+- Production Build Preflight `30704843479` and Frontend CI `30704843476`
+  passed. Signed-in Facility Viewer verification on the deployed asset
+  confirmed one H1, three H2s, and all three untouched fields at Night surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright text
+  `rgb(244, 247, 251)`, with a white page title and zero white page-content
+  surfaces.
+- No slug, brand query, state, radius, storefront, profile, dispensary search,
+  location, Commercial management, campaign, support, workspace, account,
+  session, billing, audit event, or record action was invoked, and the Viewer
+  session remained signed in.
