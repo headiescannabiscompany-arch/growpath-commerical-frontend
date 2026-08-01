@@ -1239,6 +1239,28 @@ mutation handlers remain unchanged.
   quantity, reason, save, removal, refresh, inventory, audit event, billing, or
   record action was invoked, and the session remained signed in.
 
+## Facility Plant Issue Diagnosis Night-theme no-change acceptance
+
+Production Facility Plant Issue Diagnosis was audited immediately after the
+Inventory Detail correction. The reported color problem was not reproducible
+on this shared Facility diagnosis route: its form, guidance, evidence controls,
+readiness state, and page title already use the active Night palette. No
+speculative code change was made.
+
+- Thirty-one focused shared diagnosis, root-route, and Facility-tab tests
+  passed. Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed. The existing Expo Go notification warning did not fail the suites.
+- Signed-in Viewer production acceptance confirmed one level-one `Plant Issue
+  Diagnosis` heading. All 12 inspected text inputs use Night surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright text
+  `rgb(244, 247, 251)`. The separate Report Bug control was the only detected
+  white element.
+- The route retained crop-identity caution, written/context inputs, media
+  privacy and evidence guidance, provider/image-readiness disclosure, and a
+  disabled diagnosis action until evidence exists. No field, media, upload,
+  diagnosis, AI request, credit, result, ToolRun, task, log, grow, audit event,
+  billing, or record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
