@@ -143,7 +143,7 @@ Live final-SHA acceptance proved:
   alert, one level-one page heading, one level-two status heading, and no label,
   API-key, verification, or discovered-device controls.
 - Direct history import showed a Night-themed `Grow history import is
-  read-only` alert, one level-one page heading, one level-two status heading,
+read-only` alert, one level-one page heading, one level-two status heading,
   and no grow selector, grow API result, or shared importer/uploader.
 - No API key, file, provider request, connection, mapping, grow, or imported
   history record was created or changed.
@@ -868,7 +868,7 @@ the accurate route title.
   white element.
 - The Viewer exposed zero create-item controls on the inventory list. Direct
   navigation to `/home/facility/inventory/new` retained one `Inventory is
-  read-only` heading, the same Night colors, an Owner/Manager access notice, a
+read-only` heading, the same Night colors, an Owner/Manager access notice, a
   safe return action, and zero form fields or create actions. No reload, sales,
   transfer, AI review, create, return, item, inventory, audit event, billing, or
   record action was invoked, and the session remained signed in.
@@ -974,7 +974,7 @@ the active palette and structuring its evidence headings.
   Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
   The suites retained their existing Expo Go warnings without a test failure.
 - Signed-in Viewer production acceptance confirmed one level-one `SOP Library
-  & Runs` heading; level-two `Run evidence summary` and `Run history` headings;
+& Runs` heading; level-two `Run evidence summary` and `Run history` headings;
   the real one-of-one completed run with three-of-three reviewed steps and zero
   pending steps; retained SOP Library and Compare links; the Night canvas
   `rgb(14, 20, 27)`; and no Start Run link.
@@ -1041,8 +1041,8 @@ changed.
   `tsc --noEmit`, and `git diff --check` passed. Existing React test-timing
   warnings did not fail the suite.
 - Signed-in Viewer production acceptance confirmed one level-one `Harvest
-  Readiness` heading; level-two `Harvest Readiness Estimate`, `How this tool
-  works`, and `AI trichome photo estimate (optional)` headings; and one
+Readiness` heading; level-two `Harvest Readiness Estimate`, `How this tool
+works`, and `AI trichome photo estimate (optional)` headings; and one
   level-three `Photo checklist before analysis` heading. The checklist and
   notes now use Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and
   bright text `rgb(244, 247, 251)`. All visible headings use the same bright
@@ -1076,8 +1076,8 @@ journal/task writebacks.
   Night-palette, result-surface, and Facility-AI destination tests passed.
   Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
 - Signed-in Viewer production acceptance confirmed one level-one `Feeding
-  Schedule` heading; level-two `Feeding Schedule Planner`, `AI grow-context
-  prefill`, and `Feeding schedule` headings; and one level-three `Assumptions`
+Schedule` heading; level-two `Feeding Schedule Planner`, `AI grow-context
+prefill`, and `Feeding schedule` headings; and one level-three `Assumptions`
   heading. All 11 inspected inputs use Night surface `rgb(21, 29, 39)`, border
   `rgb(40, 53, 69)`, and bright text `rgb(244, 247, 251)`. Secondary result
   actions use the same Night surface with accent border/text
@@ -1086,7 +1086,7 @@ journal/task writebacks.
 - The live no-grow state retained its disabled AI prefill, free rule-engine
   disclosure, zero schedule rows, LOW review risk with its truthful warning,
   and no save/writeback actions. Navigation-only acceptance of `Ask AI About
-  This` landed on `/home/facility/ai-ask` with the review prompt prefilled;
+This` landed on `/home/facility/ai-ask` with the review prompt prefilled;
   Send was not invoked. No input, generate, copy, AI Send, credit, schedule,
   ToolRun, Saved Run, journal, task, grow, audit event, billing, or record action
   was invoked, and the session remained signed in.
@@ -1105,8 +1105,8 @@ provider. No speculative route-specific code change was made.
   palette tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
   `git diff --check` passed.
 - Signed-in Viewer production acceptance confirmed one level-one `Dry
-  Amendment Mix` heading; level-two `Dry Amendment Mix Builder` and `How this
-  tool works` headings; all 21 inspected inputs on Night surface
+Amendment Mix` heading; level-two `Dry Amendment Mix Builder` and `How this
+tool works` headings; all 21 inspected inputs on Night surface
   `rgb(21, 29, 39)` with border `rgb(40, 53, 69)` and bright text
   `rgb(244, 247, 251)`; themed local-brief and calculation actions; and zero
   white page-content surfaces. The separate Report Bug control was the only
@@ -1136,8 +1136,8 @@ visible workflow sections without changing campaign permissions or behavior.
   ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed. The suites
   retained their existing Expo Go warning without a test failure.
 - Signed-in Viewer production acceptance confirmed one level-one `Facility
-  Outreach` heading and level-two `Promoted Outreach`, `Filter`, and `No
-  campaigns yet` headings. The selected filter uses accent surface/border
+Outreach` heading and level-two `Promoted Outreach`, `Filter`, and `No
+campaigns yet` headings. The selected filter uses accent surface/border
   `rgb(120, 170, 255)` with white text; four unselected filters and the search
   field use Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and
   bright text `rgb(244, 247, 251)`. The search placeholder is readable muted
@@ -1198,7 +1198,7 @@ routes remain read-only; no mutation behavior was added.
   `tsc --noEmit`, and `git diff --check` passed.
 - Signed-in Viewer production acceptance was intentionally limited to the real
   zero-record condition: direct safe references produced level-one `Grow not
-  found`, `Plant not found`, and `Log entry not found` headings with bright
+found`, `Plant not found`, and `Log entry not found` headings with bright
   Night text `rgb(244, 247, 251)`. None exposed a white page-content surface;
   the separate Report Bug control was the only detected white element.
 - Focused loaded-state tests prove that grow cards/summary/workspace actions,
@@ -1228,7 +1228,7 @@ mutation handlers remain unchanged.
   state tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
   `git diff --check` passed.
 - Signed-in Viewer production acceptance confirmed one level-one `Inventory
-  item not found` heading in bright Night text `rgb(244, 247, 251)`. Its single
+item not found` heading in bright Night text `rgb(244, 247, 251)`. Its single
   content card uses Night surface `rgb(21, 29, 39)` and border
   `rgb(40, 53, 69)`. The route contains zero inputs and only Back plus the
   separate Report Bug control; Report Bug was the only detected white element.
@@ -1251,7 +1251,7 @@ speculative code change was made.
   passed. Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check`
   passed. The existing Expo Go notification warning did not fail the suites.
 - Signed-in Viewer production acceptance confirmed one level-one `Plant Issue
-  Diagnosis` heading. All 12 inspected text inputs use Night surface
+Diagnosis` heading. All 12 inspected text inputs use Night surface
   `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright text
   `rgb(244, 247, 251)`. The separate Report Bug control was the only detected
   white element.
@@ -1282,7 +1282,7 @@ follow-up `9010a0db` established one page H1 and level-two workflow headings.
   the final revision. Forced targeted ESLint, full frontend `tsc --noEmit`, and
   `git diff --check` passed.
 - Signed-in Viewer production acceptance confirmed one level-one `Compliance
-  Logs` heading and one level-two `No compliance logs yet` heading, both in
+Logs` heading and one level-two `No compliance logs yet` heading, both in
   bright Night text `rgb(244, 247, 251)`. The empty-state card uses Night
   surface `rgb(21, 29, 39)` and border `rgb(40, 53, 69)`. The Viewer receives
   zero inputs and only Back plus the separate Report Bug control; Report Bug
@@ -1311,7 +1311,7 @@ logic, identifiers, and record behavior were not changed.
   evidence, back-route, Night-palette, and hierarchy tests passed. Targeted
   ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
 - Signed-in Viewer production acceptance confirmed one level-one `SOP Compare
-  Result` heading in bright Night text `rgb(244, 247, 251)`, the accurate
+Result` heading in bright Night text `rgb(244, 247, 251)`, the accurate
   select-two-runs handoff, and no white page-content surface. The separate
   Report Bug control was the only detected white element.
 - Production contains only one completed SOP run, so a genuine two-run result
@@ -1341,7 +1341,7 @@ The Owner workflow and API handlers remain intact.
   `tsc --noEmit`, and `git diff --check` passed. Existing Expo Go notification
   warnings did not fail the suites.
 - Signed-in Viewer production acceptance confirmed one level-one `AI Validation
-  Lab` heading and one level-two `Owner access required` heading, both in bright
+Lab` heading and one level-two `Owner access required` heading, both in bright
   Night text `rgb(244, 247, 251)`. The route exposes zero inputs, zero verify,
   compare, feedback, or export controls, and zero white page-content surfaces;
   the separate Report Bug control was the only detected white element.
@@ -1451,7 +1451,7 @@ profile actions, billing, logout, or content controls.
 - Signed-in Viewer production acceptance confirmed one level-one `Profile`
   heading, eight level-two headings (`Operational facility identity`,
   `Facility`, `Day, night, or auto`, `Notification settings`, `Account`, `AI
-  usage`, `Cannabis content and parental lock`, and `Facility setup`), and one
+usage`, `Cannabis content and parental lock`, and `Facility setup`), and one
   level-three `Auto theme behavior` heading. All are readable in Night mode;
   the separate Report Bug control was the only detected white element.
 - Auto remained resolved to Night and all seven notification controls remained
@@ -2530,7 +2530,7 @@ persistence, tasks, product drafts, or production-batch actions.
   passed. Clean signed-in Facility Viewer production verification measured
   38/38 named Nutrient controls and 34/34 named Soil controls. Each route
   rendered exactly one visible bright H1; Soil retained its bright `How this
-  tool works` H2. Every inspected field retained Night surface
+tool works` H2. Every inspected field retained Night surface
   `rgb(21, 29, 39)` with bright text `rgb(244, 247, 251)`, and both pages had
   zero white/light page-content surfaces.
 - Nutrient's deeper workflow-section hierarchy was separately audited and
@@ -2586,7 +2586,7 @@ gates, inventory, calculations, manifests, shipping, or record behavior.
 - Production Build Preflight `30715361643` and Frontend CI `30715361646`
   passed. Clean signed-in Facility Viewer production verification rendered one
   `Licensed Sales & Transfers` H1 plus the `Verification stays with your
-  facility` and `Transfer history` H2s. The truthful zero-record state retained
+facility` and `Transfer history` H2s. The truthful zero-record state retained
   zero fields, zero transfer-write actions, its explicit Viewer read-only copy,
   and zero white/light page-content surfaces.
 - No field, inventory lot, recipient, license, jurisdiction, destination,
@@ -2802,3 +2802,31 @@ changing visible copy or workflow behavior.
   Saved Run, task, log, product, batch, grow, workspace, account, session,
   billing, audit event, or record action was invoked, and the Viewer session
   remained signed in.
+
+## Shared Ask AI workspace hierarchy and prompt name
+
+Production Facility Ask AI already used the active Night palette, disclosed
+Facility-credit billing before submission, kept empty Send disabled, and
+exposed no save/task/log writes to the Viewer, but its three visible workspace,
+context, and evidence section titles were plain text beneath the AI H1. Its
+prompt also depended on placeholder text for its accessible name. Frontend
+`fc4a1172` marks the three existing section titles as H2s and gives the prompt
+the stable `Ask GrowPath AI` name without changing prompts, uploads, credits,
+submission, context, workspace routing, or permissions.
+
+- Source lint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  Production Build Preflight `30718686818` and Frontend CI `30718686828`
+  passed.
+- Clean signed-in Facility Viewer production verification on bundle
+  `index-9537b5c4...` rendered one `AI` H1 plus `AI workspace options`, `Context
+Loaded`, and `Photos and video evidence` H2s. The prompt was named `Ask
+GrowPath AI`; empty Send remained disabled; the Facility-credit notice and
+  10-photo/1-video limits remained present; no save/task/log write actions were
+  exposed; and the route retained zero opaque white/light page-content
+  surfaces.
+- The Facility New Inventory role gate was also checked read-only during this
+  rollout: it retained the Night palette, one accurate `Inventory is read-only`
+  H1, zero fields, and zero opaque white/light page-content surfaces.
+- No prompt, media, Send, credit, AI request, inventory, field, route,
+  workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
