@@ -80,8 +80,8 @@ Core:
 - `/home/facility/logs/[id].tsx`  Functional (Unverified)
 - `/home/facility/(tabs)/team.tsx`  Functional (Unverified) (OWNER/MANAGER invite only)
 - `/home/facility/(tabs)/inventory.tsx`  Functional (Unverified)
-- `/home/facility/(tabs)/InventoryItemDetailScreen.tsx`  Functional (Unverified)
-- `/home/facility/(tabs)/CreateInventoryItemScreen.tsx`  Planned
+- `/home/facility/inventory/[id]`  Functional
+- `/home/facility/inventory/new`  Functional
 
 Compliance/audit/SOP/AI:
 - `/home/facility/(tabs)/compliance.tsx`  Planned

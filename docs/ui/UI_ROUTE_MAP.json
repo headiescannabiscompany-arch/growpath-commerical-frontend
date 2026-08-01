@@ -1533,13 +1533,6 @@
         "notes":  null
     },
     {
-        "file":  "src\\app\\home\\facility\\(tabs)\\CreateInventoryItemScreen.tsx",
-        "route":  null,
-        "shell":  null,
-        "type":  "screen",
-        "notes":  null
-    },
-    {
         "file":  "src\\app\\home\\facility\\(tabs)\\dashboard.tsx",
         "route":  null,
         "shell":  null,
@@ -1590,13 +1583,6 @@
     },
     {
         "file":  "src\\app\\home\\facility\\(tabs)\\logs.tsx",
-        "route":  null,
-        "shell":  null,
-        "type":  "screen",
-        "notes":  null
-    },
-    {
-        "file":  "src\\app\\home\\facility\\(tabs)\\InventoryItemDetailScreen.tsx",
         "route":  null,
         "shell":  null,
         "type":  "screen",

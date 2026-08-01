@@ -1,3 +1,3 @@
-import InventoryItemDetailScreen from "@/app/home/facility/(tabs)/InventoryItemDetailScreen";
+import InventoryItemDetailScreen from "@/screens/facility/FacilityInventoryItemDetailScreen";
 
 export default InventoryItemDetailScreen;

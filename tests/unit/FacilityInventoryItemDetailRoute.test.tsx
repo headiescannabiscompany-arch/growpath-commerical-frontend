@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import InventoryItemDetailScreen from "@/app/home/facility/inventory/[id]";
-import { createFacilityInventoryDetailStyles } from "@/app/home/facility/(tabs)/InventoryItemDetailScreen";
+import { createFacilityInventoryDetailStyles } from "@/screens/facility/FacilityInventoryItemDetailScreen";
 import type { ThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();

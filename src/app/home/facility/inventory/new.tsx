@@ -1,3 +1,3 @@
-import FacilityCreateInventoryItemScreen from "@/app/home/facility/(tabs)/CreateInventoryItemScreen";
+import FacilityCreateInventoryItemScreen from "@/screens/facility/FacilityCreateInventoryItemScreen";
 
 export default FacilityCreateInventoryItemScreen;

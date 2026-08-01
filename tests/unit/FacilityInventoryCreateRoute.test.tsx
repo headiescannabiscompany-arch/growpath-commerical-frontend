@@ -50,7 +50,9 @@ describe("FacilityCreateInventoryItemRoute", () => {
   it("uses the shared back control for the canonical nested create route", () => {
     const screen = render(<FacilityCreateInventoryItemRoute />);
 
-    expect(screen.getAllByText("Create Inventory Item").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("header", { name: "Create Inventory Item" }).props["aria-level"]
+    ).toBe(1);
     expect(screen.getByText("Shared Back /home/facility/inventory")).toBeTruthy();
     expect(screen.getByLabelText("Inventory item name")).toBeTruthy();
   });

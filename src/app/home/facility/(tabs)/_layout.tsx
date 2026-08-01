@@ -19,9 +19,7 @@ export function shouldHideFacilityTabBar(pathname = "") {
     pathname.includes("/ai-template") ||
     pathname.includes("/inventory/new") ||
     pathname.includes("/inventory/") ||
-    pathname.includes("/tools/") ||
-    pathname.includes("/CreateInventoryItemScreen") ||
-    pathname.includes("/InventoryItemDetailScreen")
+    pathname.includes("/tools/")
   );
 }
 
@@ -248,14 +246,6 @@ export default function FacilityTabsLayout() {
           headerShown: shouldShowFacilityRouteHeader("ai-validation"),
           tabBarButton: () => null
         }}
-      />
-      <Tabs.Screen
-        name="CreateInventoryItemScreen"
-        options={{ title: "Create Inventory Item", tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="InventoryItemDetailScreen"
-        options={{ title: "Inventory Item", tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="tools/environment"

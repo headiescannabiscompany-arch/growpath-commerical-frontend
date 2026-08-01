@@ -7,8 +7,8 @@ import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { radius } from "@/theme/theme";
 import { useAppTheme } from "@/theme/appTheme";
+import { radius } from "@/theme/theme";
 
 export default function FacilityCreateInventoryItemScreen() {
   const router = useRouter();
@@ -95,7 +95,13 @@ export default function FacilityCreateInventoryItemScreen() {
       backFallbackHref="/home/facility/inventory"
     >
       <View style={styles.container}>
-        <Text style={[styles.h1, { color: palette.text }]}>Create Inventory Item</Text>
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={[styles.h1, { color: palette.text }]}
+        >
+          Create Inventory Item
+        </Text>
         <TextInput
           value={name}
           onChangeText={setName}
