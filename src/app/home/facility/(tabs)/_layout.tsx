@@ -19,9 +19,14 @@ export function shouldHideFacilityTabBar(pathname = "") {
 }
 
 export function shouldShowFacilityRouteHeader(routeName = "") {
-  return !["more", "ai-template", "ai-diagnosis-photo", "ai-tools", "reports"].includes(
-    routeName
-  );
+  return ![
+    "more",
+    "ai-template",
+    "ai-diagnosis-photo",
+    "ai-tools",
+    "reports",
+    "analytics"
+  ].includes(routeName);
 }
 
 export default function FacilityTabsLayout() {
@@ -117,7 +122,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Analytics", tabBarButton: () => null }}
+        options={{
+          title: "Facility Analytics",
+          headerShown: shouldShowFacilityRouteHeader("analytics"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="integrations"

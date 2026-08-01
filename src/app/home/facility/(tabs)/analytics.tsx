@@ -15,7 +15,9 @@ function Metric({ label, value, detail }: { label: string; value: any; detail: s
   return (
     <View style={styles.metric}>
       <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+        {label}
+      </Text>
       <Text style={styles.detail}>{detail}</Text>
     </View>
   );
@@ -45,7 +47,9 @@ export default function FacilityAnalyticsRoute() {
       header={
         <View>
           <Text style={styles.kicker}>Facility workspace</Text>
-          <Text style={styles.title}>Facility Analytics</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Facility Analytics
+          </Text>
           <Text style={styles.subtitle}>
             Recorded operational outcomes for the selected facility. Unknown room
             stability remains unknown until a room-linked environment event explicitly

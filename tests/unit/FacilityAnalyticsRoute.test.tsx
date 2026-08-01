@@ -41,10 +41,15 @@ describe("FacilityAnalyticsRoute", () => {
     const screen = render(<FacilityAnalyticsRoute />);
     await waitFor(() => expect(screen.getByText("2/3")).toBeTruthy());
     expect(fetchFacilityAnalyticsOverview).toHaveBeenCalledWith("facility-1");
+    expect(
+      screen.getByRole("header", { name: "Facility Analytics" }).props["aria-level"]
+    ).toBe(1);
     expect(screen.getByText("1 rooms unknown")).toBeTruthy();
-    expect(screen.getByText("SOP compliance")).toBeTruthy();
-    expect(screen.getByText("Sensor alerts")).toBeTruthy();
-    expect(screen.getByText("Active batches")).toBeTruthy();
-    expect(screen.getByText("Training completion")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "SOP compliance" }).props["aria-level"]
+    ).toBe(2);
+    expect(screen.getByRole("header", { name: "Sensor alerts" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Active batches" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Training completion" })).toBeTruthy();
   });
 });
