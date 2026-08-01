@@ -1209,6 +1209,36 @@ routes remain read-only; no mutation behavior was added.
   plant, journal entry, task, AI request, credit, audit event, billing, or record
   action was invoked, and the session remained signed in.
 
+## Facility Inventory Detail Night theme and truthful unavailable state
+
+Production's safe unavailable-item route rendered three white day-only cards,
+five empty disabled inputs, disabled save controls, and a generic record-summary
+shell under resolved Night mode. It had no semantic heading. Although the
+Viewer could not submit those controls, the empty edit form misleadingly
+presented a nonexistent record as editable inventory. Frontend `0f230792`
+moved the complete loaded, read-only, writer, status, feedback, metadata, and
+destructive states to the active palette; added a page title plus structured
+section headings for real records; and replaces unavailable records with one
+concise read-only handoff. The centralized inventory-write gate and all
+mutation handlers remain unchanged.
+
+- Production Build Preflight `30693842830` and Frontend CI `30693842838`
+  passed.
+- Four focused route, shared-back, mutation, Night-palette, and unavailable-
+  state tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one `Inventory
+  item not found` heading in bright Night text `rgb(244, 247, 251)`. Its single
+  content card uses Night surface `rgb(21, 29, 39)` and border
+  `rgb(40, 53, 69)`. The route contains zero inputs and only Back plus the
+  separate Report Bug control; Report Bug was the only detected white element.
+- The workspace truthfully contains zero inventory items, so populated live-
+  record acceptance remains open. Focused loaded-state tests prove that item,
+  quantity, metadata, form, and writer-only destructive surfaces derive from
+  the active palette. No item was created to force evidence. No field,
+  quantity, reason, save, removal, refresh, inventory, audit event, billing, or
+  record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
