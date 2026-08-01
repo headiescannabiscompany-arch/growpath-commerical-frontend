@@ -1,4 +1,7 @@
-import { shouldHideFacilityTabBar } from "@/app/home/facility/(tabs)/_layout";
+import {
+  shouldHideFacilityTabBar,
+  shouldShowFacilityRouteHeader
+} from "@/app/home/facility/(tabs)/_layout";
 
 describe("Facility tabs layout", () => {
   it("hides the tab bar for canonical nested facility inventory routes", () => {
@@ -17,5 +20,10 @@ describe("Facility tabs layout", () => {
 
   it("leaves the facility inventory root as a tabbed root page", () => {
     expect(shouldHideFacilityTabBar("/home/facility/inventory")).toBe(false);
+  });
+
+  it("lets the More page own its single semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("more")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("dashboard")).toBe(true);
   });
 });

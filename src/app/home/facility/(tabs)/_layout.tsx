@@ -18,6 +18,10 @@ export function shouldHideFacilityTabBar(pathname = "") {
   );
 }
 
+export function shouldShowFacilityRouteHeader(routeName = "") {
+  return routeName !== "more";
+}
+
 export default function FacilityTabsLayout() {
   const ent = useEntitlements();
   const { selectedId } = useFacility();
@@ -118,7 +122,10 @@ export default function FacilityTabsLayout() {
         name="ai-ask"
         options={{ title: "AI", tabBarLabel: "AI", tabBarButton: () => null }}
       />
-      <Tabs.Screen name="more" options={{ title: "More" }} />
+      <Tabs.Screen
+        name="more"
+        options={{ title: "More", headerShown: shouldShowFacilityRouteHeader("more") }}
+      />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
