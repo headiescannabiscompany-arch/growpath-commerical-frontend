@@ -2256,3 +2256,28 @@ scheduling, pricing, validation, and creation behavior did not change.
   live, link, pricing, preview, draft, course, workspace, account, session,
   billing, audit event, or record action was invoked, and the Viewer session
   remained signed in.
+
+## Shared reusable Video Library picker Night theme
+
+Production `/courses/add-lesson` retained three fixed-white inactive Video
+Library filters under the signed-in Facility Viewer's resolved Night mode; the
+selected filter and surrounding authoring surfaces were already dark. Frontend
+`2f9ada66` moves the reusable picker's container, all four filters, loaded video
+choices, selection state, empty/loading/error copy, and detach action to the
+active palette without changing workspace scoping, library loading, filtering,
+attachment, or detachment behavior.
+
+- Five focused Video Library picker and Add Lesson tests passed, including
+  active Night palette assertions plus loaded filtering, attachment, and detach
+  behavior. Targeted source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed; the existing non-failing Expo Go notification
+  warning remained in the Add Lesson suite.
+- Production Build Preflight `30710396460` and Frontend CI `30710396467`
+  passed. Clean signed-in production verification measured the selected filter
+  at Night accent-soft `rgb(22, 38, 58)` with accent border/text, all three
+  inactive filters at Night surface `rgb(21, 29, 39)` with border
+  `rgb(40, 53, 69)` and bright text `rgb(244, 247, 251)`, and zero white/light
+  page-content surfaces.
+- No filter, field, video, upload, attachment, detachment, media, lesson,
+  course, workspace, account, session, billing, audit event, or record action
+  was invoked, and the Viewer session remained signed in.
