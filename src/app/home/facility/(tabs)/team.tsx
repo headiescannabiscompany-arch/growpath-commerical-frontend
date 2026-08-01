@@ -319,10 +319,17 @@ export default function FacilityTeamTab() {
           }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <Text accessibilityRole="header" aria-level={2} style={styles.listTitle}>
+              Team members
+            </Text>
+          }
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No members yet</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.emptyTitle}>
+                  No members yet
+                </Text>
                 <Text style={styles.muted}>
                   {canInvite
                     ? "Invite your first team member above."
@@ -349,7 +356,12 @@ export default function FacilityTeamTab() {
             return (
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.rowTitle}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (
@@ -433,6 +445,7 @@ const createStyles = (palette: ThemePalette) =>
       marginBottom: 12
     },
     cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 10 },
+    listTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 10 },
     input: {
       borderWidth: 1,
       borderColor: palette.border,
