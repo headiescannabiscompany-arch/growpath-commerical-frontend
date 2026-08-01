@@ -2,8 +2,10 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 import PublicLandingPage, {
   PUBLIC_PAGE_COPY,
+  createPublicLandingStyles,
   usesCompactPublicLayout
 } from "@/components/marketing/PublicLandingPage";
+import { getThemePalette } from "@/theme/appTheme";
 
 describe("PublicLandingPage", () => {
   it("renders crawl-aligned facility workflow copy and public navigation", () => {
@@ -34,6 +36,45 @@ describe("PublicLandingPage", () => {
       expect(screen.getByText(title).props["aria-level"]).toBe(2);
     }
   });
+
+  it.each([
+    ["Day", getThemePalette("day", "light")],
+    ["Night", getThemePalette("night", "dark")]
+  ])(
+    "uses the active %s palette across public navigation, hero, actions, cards, and footer",
+    (_label, palette) => {
+      const styles = createPublicLandingStyles(palette);
+
+      expect(styles.page.backgroundColor).toBe(palette.page);
+      expect(styles.brand.color).toBe(palette.text);
+      expect(styles.link.color).toBe(palette.link);
+      expect(styles.hero.backgroundColor).toBe(palette.hero);
+      expect(styles.eyebrow.color).toBe(palette.heroMuted);
+      expect(styles.title.color).toBe(palette.heroText);
+      expect(styles.intro.color).toBe(palette.heroMuted);
+      expect(styles.primary).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.accent,
+          color: palette.accentText
+        })
+      );
+      expect(styles.secondary).toEqual(
+        expect.objectContaining({
+          borderColor: palette.accent,
+          color: palette.link
+        })
+      );
+      expect(styles.card).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.card,
+          borderColor: palette.border
+        })
+      );
+      expect(styles.cardTitle.color).toBe(palette.text);
+      expect(styles.cardBody.color).toBe(palette.textMuted);
+      expect(styles.footer.borderTopColor).toBe(palette.border);
+    }
+  );
 
   it("describes course publishing without a creator-support application", () => {
     const pricing = PUBLIC_PAGE_COPY.pricing;

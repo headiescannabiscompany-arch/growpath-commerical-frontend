@@ -20,6 +20,7 @@ import {
   updateFieldStudy,
   updateFieldObservation
 } from "@/api/fieldStudies";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
 
@@ -35,6 +36,8 @@ function observationName(observation: FieldObservation) {
 export default function FieldStudyDetailScreen() {
   const params = useLocalSearchParams<{ studyId?: string }>();
   const studyId = String(params.studyId || "");
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFieldStudyDetailStyles(palette), [palette]);
   const [study, setStudy] = useState<FieldStudy | null>(null);
   const [observations, setObservations] = useState<FieldObservation[]>([]);
   const [email, setEmail] = useState("");
@@ -151,7 +154,7 @@ export default function FieldStudyDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
         <Text style={styles.muted}>Loading Field Study...</Text>
       </View>
     );
@@ -261,6 +264,8 @@ export default function FieldStudyDetailScreen() {
             keyboardType="email-address"
             onChangeText={setEmail}
             placeholder="Collaborator email"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={styles.input}
             value={email}
           />
@@ -444,156 +449,161 @@ export default function FieldStudyDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { gap: 14, padding: 20, paddingBottom: 48 },
-  centered: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    flex: 1,
-    gap: 10,
-    justifyContent: "center",
-    padding: 24
-  },
-  backLink: { color: "#166534", fontWeight: "800" },
-  headerRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  headerCopy: { flex: 1, gap: 4 },
-  title: { color: "#0F172A", fontSize: 27, fontWeight: "800" },
-  description: { color: "#334155", fontSize: 15, lineHeight: 22 },
-  muted: { color: "#64748B", lineHeight: 20 },
-  error: { color: "#B91C1C", lineHeight: 20 },
-  badge: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontSize: 11,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    textTransform: "uppercase"
-  },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 9 },
-  primaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 42,
-    paddingHorizontal: 14,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 42,
-    paddingHorizontal: 14,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  privacyPanel: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 15
-  },
-  panel: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 15
-  },
-  panelTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  panelText: { color: "#475569", lineHeight: 20 },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  roleButton: {
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 7
-  },
-  roleButtonSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  roleText: { color: "#334155", fontWeight: "700", textTransform: "capitalize" },
-  roleTextSelected: { color: "#FFFFFF" },
-  disabled: { opacity: 0.5 },
-  collaborator: { color: "#334155", fontSize: 13, textTransform: "capitalize" },
-  collaboratorRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 9,
-    justifyContent: "space-between"
-  },
-  removeButton: {
-    borderColor: "#FCA5A5",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  removeButtonText: {
-    color: "#B91C1C",
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 20, fontWeight: "800", marginTop: 4 },
-  empty: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    gap: 6,
-    padding: 16
-  },
-  observationCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1D5DB",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 15
-  },
-  observationTitle: { color: "#0F172A", flex: 1, fontSize: 17, fontWeight: "800" },
-  scientificName: { color: "#334155", fontStyle: "italic" },
-  missing: { color: "#92400E", lineHeight: 20, marginTop: 3 },
-  observationActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 7,
-    marginTop: 7
-  },
-  smallButton: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  smallButtonText: { color: "#0F172A", fontSize: 12, fontWeight: "800" }
-});
+export function createFieldStudyDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { gap: 14, padding: 20, paddingBottom: 48 },
+    centered: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      gap: 10,
+      justifyContent: "center",
+      padding: 24
+    },
+    backLink: { color: palette.link, fontWeight: "800" },
+    headerRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    headerCopy: { flex: 1, gap: 4 },
+    title: { color: palette.text, fontSize: 27, fontWeight: "800" },
+    description: { color: palette.textSoft, fontSize: 15, lineHeight: 22 },
+    muted: { color: palette.textMuted, lineHeight: 20 },
+    error: { color: palette.danger, lineHeight: 20 },
+    badge: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      textTransform: "uppercase"
+    },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 9 },
+    primaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    privacyPanel: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 15
+    },
+    panel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 15
+    },
+    panelTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    panelText: { color: palette.textMuted, lineHeight: 20 },
+    input: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    roleButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 7
+    },
+    roleButtonSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    roleText: { color: palette.text, fontWeight: "700", textTransform: "capitalize" },
+    roleTextSelected: { color: palette.accentText },
+    disabled: { opacity: 0.5 },
+    collaborator: { color: palette.textSoft, fontSize: 13, textTransform: "capitalize" },
+    collaboratorRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 9,
+      justifyContent: "space-between"
+    },
+    removeButton: {
+      borderColor: palette.danger,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    removeButtonText: {
+      color: palette.danger,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    sectionTitle: { color: palette.text, fontSize: 20, fontWeight: "800", marginTop: 4 },
+    empty: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderStyle: "dashed",
+      borderWidth: 1,
+      gap: 6,
+      padding: 16
+    },
+    observationCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 15
+    },
+    observationTitle: { color: palette.text, flex: 1, fontSize: 17, fontWeight: "800" },
+    scientificName: { color: palette.textSoft, fontStyle: "italic" },
+    missing: { color: palette.warning, lineHeight: 20, marginTop: 3 },
+    observationActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 7,
+      marginTop: 7
+    },
+    smallButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    smallButtonText: { color: palette.text, fontSize: 12, fontWeight: "800" }
+  });
+}

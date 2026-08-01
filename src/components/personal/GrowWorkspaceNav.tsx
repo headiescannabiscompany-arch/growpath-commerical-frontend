@@ -1,33 +1,36 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-const styles = StyleSheet.create({
-  row: {
-    marginTop: 10,
-    marginBottom: 12
-  },
-  content: {
-    flexDirection: "row",
-    flexWrap: "nowrap",
-    gap: 8,
-    alignItems: "center"
-  },
-  pill: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    backgroundColor: "#FFFFFF"
-  },
-  pillActive: {
-    borderColor: "#166534",
-    backgroundColor: "#166534"
-  },
-  text: { fontWeight: "700", color: "#0F172A", fontSize: 12 },
-  textActive: { color: "#FFFFFF" }
-});
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+
+export const createGrowWorkspaceNavStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    row: {
+      marginTop: 10,
+      marginBottom: 12
+    },
+    content: {
+      flexDirection: "row",
+      flexWrap: "nowrap",
+      gap: 8,
+      alignItems: "center"
+    },
+    pill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingVertical: 7,
+      paddingHorizontal: 11,
+      backgroundColor: palette.surface
+    },
+    pillActive: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accent
+    },
+    text: { fontWeight: "700", color: palette.text, fontSize: 12 },
+    textActive: { color: palette.accentText }
+  });
 
 type Section =
   | "overview"
@@ -51,6 +54,8 @@ export default function GrowWorkspaceNav({
   growId: string;
   active: Section;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowWorkspaceNavStyles(palette), [palette]);
   const tabs: { key: Section; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "plants", label: "Plants" },

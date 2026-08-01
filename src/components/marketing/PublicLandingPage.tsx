@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "expo-router";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export type PublicPageKey =
   | "home"
@@ -277,6 +279,8 @@ export function usesCompactPublicLayout(width: number) {
 export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
   const copy = PUBLIC_PAGE_COPY[page];
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPublicLandingStyles(palette), [palette]);
   const isCompact = usesCompactPublicLayout(width);
   return (
     <ScrollView
@@ -378,92 +382,94 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
   );
 }
 
-const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f5f8f4" },
-  content: { width: "100%", maxWidth: 1120, alignSelf: "center", padding: 24, gap: 28 },
-  contentCompact: { padding: 16, gap: 20 },
-  nav: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 16
-  },
-  navCompact: {
-    flexDirection: "column",
-    alignItems: "stretch",
-    justifyContent: "flex-start",
-    gap: 12
-  },
-  brand: {
-    color: "#173f2a",
-    fontSize: 22,
-    fontWeight: "900",
-    textDecorationLine: "none"
-  },
-  navLinks: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  navLinksCompact: { width: "100%", gap: 12 },
-  link: { color: "#285d3d", fontWeight: "700", textDecorationLine: "none" },
-  hero: { backgroundColor: "#e1eee2", borderRadius: 24, padding: 32, gap: 14 },
-  heroCompact: { borderRadius: 18, padding: 20, gap: 12 },
-  eyebrow: {
-    color: "#2f6b45",
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1
-  },
-  eyebrowCompact: { fontSize: 13, lineHeight: 19 },
-  title: {
-    color: "#123221",
-    fontSize: 42,
-    lineHeight: 48,
-    fontWeight: "900",
-    maxWidth: 820
-  },
-  titleCompact: { fontSize: 32, lineHeight: 38, maxWidth: "100%" },
-  intro: { color: "#294636", fontSize: 19, lineHeight: 29, maxWidth: 840 },
-  introCompact: { fontSize: 17, lineHeight: 26 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8 },
-  actionsCompact: { flexDirection: "column", alignItems: "stretch" },
-  primary: {
-    backgroundColor: "#1f6a3b",
-    color: "#fff",
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    fontWeight: "800",
-    textDecorationLine: "none"
-  },
-  actionCompact: { width: "100%", textAlign: "center" },
-  secondary: {
-    borderColor: "#1f6a3b",
-    borderWidth: 1,
-    color: "#1f6a3b",
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    fontWeight: "800",
-    textDecorationLine: "none"
-  },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  card: {
-    flexGrow: 1,
-    flexBasis: 280,
-    backgroundColor: "#fff",
-    borderColor: "#d8e3d8",
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 22,
-    gap: 9
-  },
-  cardTitle: { color: "#173f2a", fontSize: 20, fontWeight: "800" },
-  cardBody: { color: "#44564a", fontSize: 16, lineHeight: 24 },
-  footer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 18,
-    borderTopColor: "#d8e3d8",
-    borderTopWidth: 1,
-    paddingVertical: 22
-  }
-});
+export function createPublicLandingStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    page: { flex: 1, backgroundColor: palette.page },
+    content: { width: "100%", maxWidth: 1120, alignSelf: "center", padding: 24, gap: 28 },
+    contentCompact: { padding: 16, gap: 20 },
+    nav: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 16
+    },
+    navCompact: {
+      flexDirection: "column",
+      alignItems: "stretch",
+      justifyContent: "flex-start",
+      gap: 12
+    },
+    brand: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "900",
+      textDecorationLine: "none"
+    },
+    navLinks: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
+    navLinksCompact: { width: "100%", gap: 12 },
+    link: { color: palette.link, fontWeight: "700", textDecorationLine: "none" },
+    hero: { backgroundColor: palette.hero, borderRadius: 24, padding: 32, gap: 14 },
+    heroCompact: { borderRadius: 18, padding: 20, gap: 12 },
+    eyebrow: {
+      color: palette.heroMuted,
+      fontWeight: "800",
+      textTransform: "uppercase",
+      letterSpacing: 1
+    },
+    eyebrowCompact: { fontSize: 13, lineHeight: 19 },
+    title: {
+      color: palette.heroText,
+      fontSize: 42,
+      lineHeight: 48,
+      fontWeight: "900",
+      maxWidth: 820
+    },
+    titleCompact: { fontSize: 32, lineHeight: 38, maxWidth: "100%" },
+    intro: { color: palette.heroMuted, fontSize: 19, lineHeight: 29, maxWidth: 840 },
+    introCompact: { fontSize: 17, lineHeight: 26 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8 },
+    actionsCompact: { flexDirection: "column", alignItems: "stretch" },
+    primary: {
+      backgroundColor: palette.accent,
+      color: palette.accentText,
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      borderRadius: 12,
+      fontWeight: "800",
+      textDecorationLine: "none"
+    },
+    actionCompact: { width: "100%", textAlign: "center" },
+    secondary: {
+      borderColor: palette.accent,
+      borderWidth: 1,
+      color: palette.link,
+      paddingVertical: 11,
+      paddingHorizontal: 18,
+      borderRadius: 12,
+      fontWeight: "800",
+      textDecorationLine: "none"
+    },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
+    card: {
+      flexGrow: 1,
+      flexBasis: 280,
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: 18,
+      padding: 22,
+      gap: 9
+    },
+    cardTitle: { color: palette.text, fontSize: 20, fontWeight: "800" },
+    cardBody: { color: palette.textMuted, fontSize: 16, lineHeight: 24 },
+    footer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 18,
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      paddingVertical: 22
+    }
+  });
+}

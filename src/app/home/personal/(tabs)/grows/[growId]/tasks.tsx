@@ -25,6 +25,7 @@ import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
 
@@ -364,95 +365,99 @@ function scheduleSummary(task: PersonalTask) {
   return parts.join(" | ");
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 36 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#64748B", marginBottom: 10 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  form: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-    gap: 8,
-    marginBottom: 10
-  },
-  label: { color: "#334155", fontWeight: "800", fontSize: 12 },
-  input: {
-    minWidth: 170,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  addBtn: {
-    minHeight: 40,
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    borderRadius: radius.card,
-    backgroundColor: "#166534"
-  },
-  addBtnText: { color: "#FFFFFF", fontWeight: "700" },
-  card: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  focusedCard: {
-    borderColor: "#166534",
-    borderWidth: 2,
-    backgroundColor: "#F0FDF4"
-  },
-  focusedLabel: {
-    color: "#166534",
-    fontWeight: "800",
-    fontSize: 12,
-    marginBottom: 6
-  },
-  taskTitle: { fontWeight: "700", color: "#0F172A" },
-  taskMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  actionBtn: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  dangerBtn: {
-    borderWidth: 1,
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  actionText: { fontWeight: "700", color: "#0F172A" },
-  dangerText: { fontWeight: "800", color: "#B91C1C" },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    backgroundColor: "#FFFFFF"
-  },
-  chipOn: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontWeight: "800", fontSize: 12 },
-  chipTextOn: { color: "#FFFFFF" }
-});
+export const createGrowTasksStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 36 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700", marginBottom: 8 },
+    subtitle: { color: palette.textMuted, marginBottom: 10 },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    form: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 12,
+      gap: 8,
+      marginBottom: 10
+    },
+    label: { color: palette.text, fontWeight: "800", fontSize: 12 },
+    input: {
+      minWidth: 170,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    addBtn: {
+      minHeight: 40,
+      alignSelf: "flex-start",
+      paddingHorizontal: 12,
+      justifyContent: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.accent
+    },
+    addBtnText: { color: palette.accentText, fontWeight: "700" },
+    card: {
+      marginTop: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface
+    },
+    focusedCard: {
+      borderColor: palette.accent,
+      borderWidth: 2,
+      backgroundColor: palette.accentSoft
+    },
+    focusedLabel: {
+      color: palette.link,
+      fontWeight: "800",
+      fontSize: 12,
+      marginBottom: 6
+    },
+    taskTitle: { fontWeight: "700", color: palette.text },
+    taskMeta: { color: palette.textMuted, marginTop: 4, fontSize: 12 },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    actionBtn: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    dangerBtn: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    actionText: { fontWeight: "700", color: palette.text },
+    dangerText: { fontWeight: "800", color: palette.danger },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 9,
+      paddingVertical: 6,
+      backgroundColor: palette.surface
+    },
+    chipOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.textMuted, fontWeight: "800", fontSize: 12 },
+    chipTextOn: { color: palette.accentText }
+  });
 
 export default function GrowTasksScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowTasksStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const params = useLocalSearchParams<{
@@ -601,6 +606,8 @@ export default function GrowTasksScreen() {
           <TextInput
             style={styles.input}
             placeholder="Add task title"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             value={newTitle}
             onChangeText={setNewTitle}
             accessibilityLabel="Task title"
@@ -609,6 +616,8 @@ export default function GrowTasksScreen() {
           <TextInput
             style={styles.input}
             placeholder="What needs to happen?"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             value={newDescription}
             onChangeText={setNewDescription}
             accessibilityLabel="Task description"
@@ -672,6 +681,8 @@ export default function GrowTasksScreen() {
             <TextInput
               style={styles.input}
               placeholder="Source object ID"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={newSourceObjectId}
               onChangeText={setNewSourceObjectId}
               accessibilityLabel="Task source object"
@@ -679,6 +690,8 @@ export default function GrowTasksScreen() {
             <TextInput
               style={styles.input}
               placeholder="ToolRun ID"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={newToolRunId}
               onChangeText={setNewToolRunId}
               accessibilityLabel="Task ToolRun"
@@ -686,6 +699,8 @@ export default function GrowTasksScreen() {
             <TextInput
               style={styles.input}
               placeholder="Diagnosis ID"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={newDiagnosisId}
               onChangeText={setNewDiagnosisId}
               accessibilityLabel="Task diagnosis"
@@ -693,6 +708,8 @@ export default function GrowTasksScreen() {
             <TextInput
               style={styles.input}
               placeholder="Linked grow log ID"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={newLinkedLogId}
               onChangeText={setNewLinkedLogId}
               accessibilityLabel="Task linked log"
@@ -736,7 +753,7 @@ export default function GrowTasksScreen() {
 
       {loading ? (
         <View style={styles.card}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       ) : tasks.length === 0 ? (
         <View style={styles.card}>

@@ -13,6 +13,7 @@ import { Link } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -291,6 +292,8 @@ function scheduleSummary(task: CommercialTask) {
 }
 
 export default function CommercialTasksRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialTasksStyles(palette), [palette]);
   const [tasks, setTasks] = useState<CommercialTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -578,6 +581,8 @@ export default function CommercialTasksRoute() {
           accessibilityLabel="Commercial task title"
           style={styles.input}
           placeholder="Task title"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           value={title}
           onChangeText={setTitle}
         />
@@ -585,6 +590,8 @@ export default function CommercialTasksRoute() {
           accessibilityLabel="Commercial task description"
           style={[styles.input, styles.textArea]}
           placeholder="Description"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -635,6 +642,8 @@ export default function CommercialTasksRoute() {
             accessibilityLabel="Commercial task source ID"
             style={styles.flexInput}
             placeholder="Source ID"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             value={sourceId}
             onChangeText={setSourceId}
             autoCapitalize="none"
@@ -643,6 +652,8 @@ export default function CommercialTasksRoute() {
             accessibilityLabel="Commercial task assignee"
             style={styles.flexInput}
             placeholder="Assignee user ID"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             value={assignee}
             onChangeText={setAssignee}
             autoCapitalize="none"
@@ -665,7 +676,7 @@ export default function CommercialTasksRoute() {
 
       {loading ? (
         <View style={styles.taskCard}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading commercial tasks...</Text>
         </View>
       ) : (
@@ -680,148 +691,150 @@ export default function CommercialTasksRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: "#F8FAFC", flex: 1 },
-  content: { gap: 12, padding: 20, paddingBottom: 44 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 26, fontWeight: "900" },
-  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metricCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
-  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
-  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
-  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
-  form: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 14
-  },
-  formTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  label: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: { minHeight: 76, textAlignVertical: "top" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  flexInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flex: 1,
-    minWidth: 190,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  chipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  chipTextOn: { color: "#FFFFFF" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  feedback: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#047857",
-    fontWeight: "800",
-    padding: 10
-  },
-  section: { gap: 8 },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  countPill: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 4
-  },
-  taskCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 14
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  taskTitle: { color: "#0F172A", flex: 1, fontSize: 16, fontWeight: "900" },
-  sourcePill: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: 999,
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    paddingHorizontal: 9,
-    paddingVertical: 4
-  },
-  meta: { color: "#475569", lineHeight: 19 },
-  taskActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  secondaryButton: {
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#FFFFFF", fontWeight: "900" },
-  ghostButton: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  ghostButtonText: { color: "#0F172A", fontWeight: "900" },
-  empty: { color: "#64748B", fontWeight: "700" }
-});
+export function createCommercialTasksStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { backgroundColor: palette.page, flex: 1 },
+    content: { gap: 12, padding: 20, paddingBottom: 44 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 26, fontWeight: "900" },
+    subtitle: { color: palette.textSoft, fontWeight: "700", lineHeight: 20 },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metricCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    redMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.danger },
+    greenMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.success },
+    blueMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.info },
+    slateMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "900" },
+    form: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 14
+    },
+    formTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    label: { color: palette.textSoft, fontSize: 12, fontWeight: "900" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: { minHeight: 76, textAlignVertical: "top" },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    flexInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flex: 1,
+      minWidth: 190,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.textSoft, fontSize: 12, fontWeight: "900" },
+    chipTextOn: { color: palette.accentText },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      fontWeight: "800",
+      padding: 10
+    },
+    section: { gap: 8 },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    countPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 4
+    },
+    taskCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 14
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    taskTitle: { color: palette.text, flex: 1, fontSize: 16, fontWeight: "900" },
+    sourcePill: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "900",
+      paddingHorizontal: 9,
+      paddingVertical: 4
+    },
+    meta: { color: palette.textMuted, lineHeight: 19 },
+    taskActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    secondaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    ghostButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    ghostButtonText: { color: palette.link, fontWeight: "900" },
+    empty: { color: palette.textMuted, fontWeight: "700" }
+  });
+}

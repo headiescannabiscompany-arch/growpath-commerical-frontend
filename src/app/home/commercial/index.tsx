@@ -9,6 +9,7 @@ import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { InlineError } from "@/components/InlineError";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type Action = {
@@ -263,6 +264,9 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
 ];
 
 function ActionButton({ action }: { action: Action }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardStyles(palette), [palette]);
+
   return (
     <Link href={action.href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -352,6 +356,9 @@ function DashboardCard({
   section: DashboardSection;
   counts: Record<string, number>;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardStyles(palette), [palette]);
+
   return (
     <AppCard>
       <View style={styles.cardHeader}>
@@ -381,6 +388,8 @@ function DashboardCard({
 }
 
 export default function CommercialHome() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardStyles(palette), [palette]);
   const router = useRouter();
   const auth = useAuth();
   const ent = useEntitlements();
@@ -729,280 +738,283 @@ export default function CommercialHome() {
   );
 }
 
-const styles = StyleSheet.create({
-  headerRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "space-between"
-  },
-  headerText: {
-    flex: 1,
-    minWidth: 280
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  headerTitle: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  headerSubtitle: {
-    color: "#64748B",
-    fontSize: 14,
-    marginTop: 4
-  },
-  headerDescription: {
-    color: "#475569",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 8
-  },
-  logoutButton: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  logoutText: {
-    color: "#991B1B",
-    fontWeight: "900"
-  },
-  commandCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0"
-  },
-  commandHeader: {
-    alignItems: "stretch",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "space-between"
-  },
-  commandCopy: {
-    flex: 1,
-    minWidth: 260
-  },
-  pulseStack: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  pulse: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    padding: 10
-  },
-  pulseValue: {
-    color: "#14532D",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  pulseLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "800",
-    marginTop: 2,
-    textTransform: "uppercase"
-  },
-  storefrontPrimaryActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 16
-  },
-  storefrontPrimaryAction: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  storefrontPrimaryActionText: {
-    color: "#FFFFFF",
-    fontWeight: "900"
-  },
-  sectionGrid: {
-    gap: 14
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  cardTitle: {
-    color: "#0F172A",
-    flex: 1,
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  cardDesc: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 6
-  },
-  dashboardMeta: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 18,
-    marginTop: 10
-  },
-  dashboardLaunchCopy: {
-    color: "#475569",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  launchChecklist: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 14
-  },
-  launchChecklistItem: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#C7E5D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 112,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  launchChecklistValue: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900",
-    lineHeight: 17
-  },
-  launchChecklistLabel: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "800",
-    marginTop: 2,
-    textTransform: "uppercase"
-  },
-  actionItemList: {
-    gap: 8,
-    marginTop: 12
-  },
-  actionItem: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  actionItemTitle: {
-    color: "#0F172A",
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  actionItemMeta: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 3
-  },
-  taskButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  taskButtonText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  feedback: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#166534",
-    fontWeight: "800",
-    marginTop: 10,
-    padding: 10
-  },
-  guidance: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 8
-  },
-  aiHelperCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1"
-  },
-  statusPill: {
-    backgroundColor: "#E0F2FE",
-    borderRadius: 999,
-    color: "#075985",
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    textTransform: "uppercase"
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    padding: 9
-  },
-  metricValue: {
-    color: "#0F172A",
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  metricLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    marginTop: 2
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  sharedCoreCard: {
-    marginTop: 16
-  },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900"
-  }
-});
+export function createCommercialDashboardStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    headerRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      justifyContent: "space-between"
+    },
+    headerText: {
+      flex: 1,
+      minWidth: 280
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    headerTitle: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    headerSubtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      marginTop: 4
+    },
+    headerDescription: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 8
+    },
+    logoutButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    logoutText: {
+      color: palette.danger,
+      fontWeight: "900"
+    },
+    commandCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border
+    },
+    commandHeader: {
+      alignItems: "stretch",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      justifyContent: "space-between"
+    },
+    commandCopy: {
+      flex: 1,
+      minWidth: 260
+    },
+    pulseStack: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    pulse: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      padding: 10
+    },
+    pulseValue: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    pulseLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 2,
+      textTransform: "uppercase"
+    },
+    storefrontPrimaryActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 16
+    },
+    storefrontPrimaryAction: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    storefrontPrimaryActionText: {
+      color: palette.accentText,
+      fontWeight: "900"
+    },
+    sectionGrid: {
+      gap: 14
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    cardTitle: {
+      color: palette.text,
+      flex: 1,
+      fontSize: 17,
+      fontWeight: "900"
+    },
+    cardDesc: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 20,
+      marginTop: 6
+    },
+    dashboardMeta: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "800",
+      lineHeight: 18,
+      marginTop: 10
+    },
+    dashboardLaunchCopy: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    launchChecklist: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 14
+    },
+    launchChecklistItem: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 112,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    launchChecklistValue: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900",
+      lineHeight: 17
+    },
+    launchChecklistLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "800",
+      marginTop: 2,
+      textTransform: "uppercase"
+    },
+    actionItemList: {
+      gap: 8,
+      marginTop: 12
+    },
+    actionItem: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    actionItemTitle: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    actionItemMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 3
+    },
+    taskButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    taskButtonText: {
+      color: palette.accentText,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      fontWeight: "800",
+      marginTop: 10,
+      padding: 10
+    },
+    guidance: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 20,
+      marginTop: 8
+    },
+    aiHelperCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    statusPill: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 999,
+      color: palette.info,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      textTransform: "uppercase"
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      padding: 9
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "900"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginTop: 2
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    sharedCoreCard: {
+      marginTop: 16
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900"
+    }
+  });
+}

@@ -25,6 +25,7 @@ import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function param(value?: string | string[]) {
@@ -45,6 +46,8 @@ function splitTags(value: string) {
 
 export default function LogDetailScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createLogDetailStyles(palette), [palette]);
   const { width: windowWidth } = useWindowDimensions();
   const { logId: rawLogId } = useLocalSearchParams<{ logId?: string | string[] }>();
   const logId = useMemo(() => param(rawLogId), [rawLogId]);
@@ -149,7 +152,7 @@ export default function LogDetailScreen() {
         backFallbackHref="/home/personal/grows"
       >
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       </ScreenBoundary>
     );
@@ -187,6 +190,8 @@ export default function LogDetailScreen() {
               style={styles.input}
               value={form.title}
               onChangeText={(title) => setForm((current) => ({ ...current, title }))}
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Edit log title"
             />
             <CalendarDateField
@@ -202,6 +207,8 @@ export default function LogDetailScreen() {
               style={styles.input}
               value={form.type}
               onChangeText={(type) => setForm((current) => ({ ...current, type }))}
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Edit log type"
             />
             <Text style={styles.label}>Notes</Text>
@@ -210,6 +217,8 @@ export default function LogDetailScreen() {
               value={form.notes}
               onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
               multiline
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Edit log notes"
             />
             <Text style={styles.label}>Tags</Text>
@@ -218,6 +227,8 @@ export default function LogDetailScreen() {
               value={form.tags}
               onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
               placeholder="watering, deficiency, follow-up"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Edit log tags"
             />
             <View style={styles.row}>
@@ -399,105 +410,118 @@ export default function LogDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 40, gap: 10 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  meta: { fontSize: 13, color: "#64748B" },
-  card: {
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    gap: 8
-  },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  notes: { color: "#334155", lineHeight: 20 },
-  linkMeta: { color: "#475569", lineHeight: 19 },
-  label: { color: "#334155", fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  notesInput: {
-    minHeight: 130,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10,
-    textAlignVertical: "top"
-  },
-  tags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tag: {
-    borderRadius: 999,
-    backgroundColor: "#DCFCE7",
-    color: "#166534",
-    fontWeight: "800",
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    overflow: "hidden"
-  },
-  rejectedTag: {
-    borderRadius: 999,
-    backgroundColor: "#FEE2E2",
-    color: "#991B1B",
-    fontWeight: "800",
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    overflow: "hidden"
-  },
-  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  photoTile: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    overflow: "hidden",
-    backgroundColor: "#FFFFFF"
-  },
-  photoThumb: { width: "100%", height: 88, backgroundColor: "#E2E8F0" },
-  photoFallback: {
-    height: 88,
-    backgroundColor: "#FFF7ED",
-    padding: 8,
-    justifyContent: "center"
-  },
-  photoFallbackTitle: { color: "#9A3412", fontWeight: "800", fontSize: 12 },
-  photoFallbackText: { color: "#9A3412", fontSize: 11, marginTop: 3 },
-  photoMeta: { padding: 6, color: "#64748B", fontSize: 11, fontWeight: "700" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
-  dangerButton: {
-    borderWidth: 1,
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  dangerButtonText: { color: "#B91C1C", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+export function createLogDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: "center",
+      backgroundColor: palette.page,
+      justifyContent: "center"
+    },
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 40, gap: 10 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    meta: { fontSize: 13, color: palette.textMuted },
+    card: {
+      padding: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.card,
+      gap: 8
+    },
+    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    notes: { color: palette.textSoft, lineHeight: 20 },
+    linkMeta: { color: palette.textMuted, lineHeight: 19 },
+    label: { color: palette.text, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surfaceStrong,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10
+    },
+    notesInput: {
+      minHeight: 130,
+      backgroundColor: palette.surfaceStrong,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10,
+      textAlignVertical: "top"
+    },
+    tags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    tag: {
+      borderRadius: 999,
+      backgroundColor: palette.accentSoft,
+      color: palette.success,
+      fontWeight: "800",
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      overflow: "hidden"
+    },
+    rejectedTag: {
+      borderRadius: 999,
+      backgroundColor: palette.surfaceMuted,
+      color: palette.danger,
+      fontWeight: "800",
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      overflow: "hidden"
+    },
+    photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    photoTile: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      overflow: "hidden",
+      backgroundColor: palette.card
+    },
+    photoThumb: { width: "100%", height: 88, backgroundColor: palette.surfaceStrong },
+    photoFallback: {
+      height: 88,
+      backgroundColor: palette.surfaceMuted,
+      padding: 8,
+      justifyContent: "center"
+    },
+    photoFallbackTitle: { color: palette.warning, fontWeight: "800", fontSize: 12 },
+    photoFallbackText: { color: palette.warning, fontSize: 11, marginTop: 3 },
+    photoMeta: { padding: 6, color: palette.textMuted, fontSize: 11, fontWeight: "700" },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "800" },
+    dangerButton: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    dangerButtonText: { color: palette.danger, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    feedback: {
+      color: palette.textSoft,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });
+}

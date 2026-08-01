@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Link } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,9 +12,12 @@ import {
 } from "react-native";
 
 import { createFieldStudy, FieldStudy, listFieldStudies } from "@/api/fieldStudies";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function FieldStudiesScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFieldStudiesStyles(palette), [palette]);
   const [studies, setStudies] = useState<FieldStudy[]>([]);
   const [title, setTitle] = useState("");
   const [regionLabel, setRegionLabel] = useState("");
@@ -93,6 +96,8 @@ export default function FieldStudiesScreen() {
           accessibilityLabel="Field Study title"
           onChangeText={setTitle}
           placeholder="Example: Patapsco roadside plant survey"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={styles.input}
           value={title}
         />
@@ -100,6 +105,8 @@ export default function FieldStudiesScreen() {
           accessibilityLabel="Field Study region"
           onChangeText={setRegionLabel}
           placeholder="General region (optional)"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={styles.input}
           value={regionLabel}
         />
@@ -132,7 +139,7 @@ export default function FieldStudiesScreen() {
 
       {loading ? (
         <View style={styles.status}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.statusText}>Loading Field Studies...</Text>
         </View>
       ) : error && !studies.length ? (
@@ -173,106 +180,109 @@ export default function FieldStudiesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 48, gap: 14 },
-  title: { color: "#0F172A", fontSize: 27, fontWeight: "800" },
-  subtitle: { color: "#475569", fontSize: 15, lineHeight: 22 },
-  notice: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 14
-  },
-  noticeTitle: { color: "#065F46", fontSize: 15, fontWeight: "800" },
-  noticeText: { color: "#166534", lineHeight: 20, marginTop: 5 },
-  panel: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 16
-  },
-  panelTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    minHeight: 46,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  primaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  pressed: { opacity: 0.8 },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 19, fontWeight: "800" },
-  textLink: { color: "#166534", fontWeight: "800" },
-  status: {
-    alignItems: "flex-start",
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16
-  },
-  statusTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  statusText: { color: "#64748B", lineHeight: 20 },
-  errorText: { color: "#B91C1C", lineHeight: 20 },
-  secondaryButton: {
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "700" },
-  studyCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1D5DB",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 15
-  },
-  cardTop: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  studyTitle: { color: "#0F172A", flex: 1, fontSize: 17, fontWeight: "800" },
-  badge: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontSize: 11,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    textTransform: "uppercase"
-  },
-  studyMeta: { color: "#64748B", fontSize: 13, textTransform: "capitalize" },
-  cardLink: { color: "#166534", fontWeight: "800", marginTop: 4 }
-});
+export function createFieldStudiesStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 48, gap: 14 },
+    title: { color: palette.text, fontSize: 27, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, fontSize: 15, lineHeight: 22 },
+    notice: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 14
+    },
+    noticeTitle: { color: palette.success, fontSize: 15, fontWeight: "800" },
+    noticeText: { color: palette.textSoft, lineHeight: 20, marginTop: 5 },
+    panel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 16
+    },
+    panelTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 46,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    primaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    pressed: { opacity: 0.8 },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 4
+    },
+    sectionTitle: { color: palette.text, fontSize: 19, fontWeight: "800" },
+    textLink: { color: palette.link, fontWeight: "800" },
+    status: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 16
+    },
+    statusTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    statusText: { color: palette.textMuted, lineHeight: 20 },
+    errorText: { color: palette.danger, lineHeight: 20 },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "700" },
+    studyCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 15
+    },
+    cardTop: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    studyTitle: { color: palette.text, flex: 1, fontSize: 17, fontWeight: "800" },
+    badge: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      textTransform: "uppercase"
+    },
+    studyMeta: { color: palette.textMuted, fontSize: 13, textTransform: "capitalize" },
+    cardLink: { color: palette.link, fontWeight: "800", marginTop: 4 }
+  });
+}

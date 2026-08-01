@@ -23,8 +23,11 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function GrowPlantsContent() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowPlantsStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const hasPlantWriteCapability = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
   const maxPlants = Number(entitlements.limits?.maxPlants ?? 0);
@@ -274,6 +277,8 @@ function GrowPlantsContent() {
             value={name}
             onChangeText={setName}
             placeholder="Plant 1"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             accessibilityLabel="Plant name"
           />
           <Text style={styles.label}>Cultivar / strain</Text>
@@ -282,6 +287,8 @@ function GrowPlantsContent() {
             value={cultivar}
             onChangeText={setCultivar}
             placeholder="Optional"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             accessibilityLabel="Cultivar or strain"
           />
           <Text style={styles.label}>Crop species</Text>
@@ -295,6 +302,8 @@ function GrowPlantsContent() {
               value={cropCommonName}
               onChangeText={setCropCommonName}
               placeholder="Tomato, olive, blueberry..."
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant crop common name"
             />
             <TextInput
@@ -302,6 +311,8 @@ function GrowPlantsContent() {
               value={scientificName}
               onChangeText={setScientificName}
               placeholder="Scientific name optional"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant scientific name"
             />
           </View>
@@ -347,6 +358,8 @@ function GrowPlantsContent() {
             value={medium}
             onChangeText={setMedium}
             placeholder="Soil, coco, hydro..."
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             accessibilityLabel="Plant medium"
           />
           <Text style={styles.label}>Growth overlay</Text>
@@ -357,6 +370,8 @@ function GrowPlantsContent() {
               onChangeText={setCanopyWidthCm}
               keyboardType="numeric"
               placeholder="Canopy width cm"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant canopy width"
             />
             <TextInput
@@ -365,6 +380,8 @@ function GrowPlantsContent() {
               onChangeText={setTimingOffsetDays}
               keyboardType="numeric"
               placeholder="Timing offset days"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant timing offset"
             />
             <TextInput
@@ -372,6 +389,8 @@ function GrowPlantsContent() {
               value={waterDemand}
               onChangeText={setWaterDemand}
               placeholder="Water demand"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant water demand"
             />
             <TextInput
@@ -379,6 +398,8 @@ function GrowPlantsContent() {
               value={phenoLabel}
               onChangeText={setPhenoLabel}
               placeholder="Pheno notes"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               accessibilityLabel="Plant pheno label"
             />
           </View>
@@ -403,7 +424,7 @@ function GrowPlantsContent() {
         longContent
       />
       {loading ? (
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       ) : plants.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.cardTitle}>No plants yet</Text>
@@ -521,92 +542,95 @@ export default function GrowPlantsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 40, gap: 10 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { color: "#64748B", lineHeight: 19 },
-  help: { color: "#64748B", fontSize: 12, lineHeight: 17 },
-  form: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-    gap: 8
-  },
-  label: { color: "#334155", fontWeight: "700" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10
-  },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
-  gridInput: {
-    minWidth: 145,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10
-  },
-  primaryButton: {
-    alignSelf: "flex-start",
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  disabled: { opacity: 0.55 },
-  feedback: { color: "#334155", fontWeight: "700" },
-  profileMatch: { color: "#166534", fontWeight: "800", alignSelf: "center" },
-  empty: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 14,
-    gap: 5
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    gap: 4
-  },
-  cardFocused: {
-    borderColor: "#0F766E",
-    borderWidth: 2,
-    shadowColor: "#0F766E",
-    shadowOpacity: 0.12,
-    shadowRadius: 8
-  },
-  cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  meta: { color: "#475569", fontSize: 12 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  quickAction: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#F0FDF4"
-  },
-  quickActionText: { color: "#166534", fontWeight: "800", fontSize: 12 }
-});
+export const createGrowPlantsStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 40, gap: 10 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { color: palette.textMuted, lineHeight: 19 },
+    help: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    form: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 12,
+      gap: 8
+    },
+    label: { color: palette.text, fontWeight: "700" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 10
+    },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
+    gridInput: {
+      minWidth: 145,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 10
+    },
+    primaryButton: {
+      alignSelf: "flex-start",
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
+    feedback: { color: palette.textMuted, fontWeight: "700" },
+    profileMatch: { color: palette.link, fontWeight: "800", alignSelf: "center" },
+    empty: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 14,
+      gap: 5
+    },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 12,
+      gap: 4
+    },
+    cardFocused: {
+      borderColor: palette.accent,
+      borderWidth: 2,
+      shadowColor: palette.shadow,
+      shadowOpacity: 0.12,
+      shadowRadius: 8
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    meta: { color: palette.textMuted, fontSize: 12 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    quickAction: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.accentSoft
+    },
+    quickActionText: { color: palette.link, fontWeight: "800", fontSize: 12 }
+  });

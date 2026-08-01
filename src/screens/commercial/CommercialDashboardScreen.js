@@ -22,6 +22,7 @@ import {
   fetchCommercialLives
 } from "../../api/commercialWorkflows";
 import ScreenContainer from "../../components/ScreenContainer";
+import { useAppTheme } from "../../theme/appTheme";
 import { radius } from "../../theme/theme";
 
 function rows(payload, key) {
@@ -50,6 +51,9 @@ function isPublished(item) {
 }
 
 function StatCard({ label, value, detail, route, navigation }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardScreenStyles(palette), [palette]);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -64,6 +68,9 @@ function StatCard({ label, value, detail, route, navigation }) {
 }
 
 function ActionRow({ title, subtitle, route, navigation }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardScreenStyles(palette), [palette]);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -80,6 +87,8 @@ function ActionRow({ title, subtitle, route, navigation }) {
 }
 
 export default function CommercialDashboardScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialDashboardScreenStyles(palette), [palette]);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -181,8 +190,10 @@ export default function CommercialDashboardScreen() {
       <ScrollView
         refreshControl={
           <RefreshControl
+            colors={[palette.accent]}
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
           />
         }
         contentContainerStyle={styles.content}
@@ -205,7 +216,7 @@ export default function CommercialDashboardScreen() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.meta}>Loading commercial modules...</Text>
           </View>
         ) : (
@@ -378,96 +389,100 @@ export default function CommercialDashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingBottom: 80 },
-  headerRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 14
-  },
-  eyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase"
-  },
-  header: { color: "#111827", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#64748B", marginTop: 4, maxWidth: 620 },
-  refreshButton: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  refreshText: { color: "#334155", fontWeight: "800" },
-  error: {
-    backgroundColor: "#FEE2E2",
-    borderRadius: radius.card,
-    color: "#991B1B",
-    marginBottom: 10,
-    padding: 10
-  },
-  loading: { alignItems: "center", gap: 8, padding: 32 },
-  hero: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 14,
-    padding: 16
-  },
-  heroTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
-  heroActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 14 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  secondaryButtonText: { color: "#334155", fontWeight: "800" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
-  statCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "31%",
-    flexGrow: 1,
-    minWidth: 150,
-    padding: 14
-  },
-  statValue: { color: "#111827", fontSize: 26, fontWeight: "900" },
-  statLabel: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  statDetail: { color: "#64748B", marginTop: 4 },
-  panel: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 14,
-    padding: 14
-  },
-  sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "900" },
-  revenue: { color: "#166534", fontSize: 28, fontWeight: "900", marginTop: 6 },
-  actionRow: {
-    alignItems: "center",
-    borderTopColor: "#E2E8F0",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 12
-  },
-  actionText: { flex: 1 },
-  actionTitle: { color: "#111827", fontWeight: "900" },
-  actionSubtitle: { color: "#64748B", marginTop: 3 },
-  actionArrow: { color: "#166534", fontWeight: "900" },
-  meta: { color: "#64748B", marginTop: 4 }
-});
+export function createCommercialDashboardScreenStyles(palette) {
+  return StyleSheet.create({
+    content: { paddingBottom: 80 },
+    headerRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 14
+    },
+    eyebrow: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase"
+    },
+    header: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, marginTop: 4, maxWidth: 620 },
+    refreshButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    refreshText: { color: palette.link, fontWeight: "800" },
+    error: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.danger,
+      marginBottom: 10,
+      padding: 10
+    },
+    loading: { alignItems: "center", gap: 8, padding: 32 },
+    hero: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 14,
+      padding: 16
+    },
+    heroTitle: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    heroActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 14 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
+    statCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "31%",
+      flexGrow: 1,
+      minWidth: 150,
+      padding: 14
+    },
+    statValue: { color: palette.text, fontSize: 26, fontWeight: "900" },
+    statLabel: { color: palette.textSoft, fontWeight: "800", marginTop: 4 },
+    statDetail: { color: palette.textMuted, marginTop: 4 },
+    panel: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 14,
+      padding: 14
+    },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    revenue: { color: palette.success, fontSize: 28, fontWeight: "900", marginTop: 6 },
+    actionRow: {
+      alignItems: "center",
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      paddingVertical: 12
+    },
+    actionText: { flex: 1 },
+    actionTitle: { color: palette.text, fontWeight: "900" },
+    actionSubtitle: { color: palette.textMuted, marginTop: 3 },
+    actionArrow: { color: palette.link, fontWeight: "900" },
+    meta: { color: palette.textMuted, marginTop: 4 }
+  });
+}
