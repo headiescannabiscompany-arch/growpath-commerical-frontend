@@ -2309,3 +2309,34 @@ from the obsolete unsafe phrase to the safe fallback and guidance requirement.
 - No field, upload, course, lesson, exception, report, support, workspace,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Shared Add Lesson direct-entry, Night theme, and accessibility
+
+Production `/courses/add-lesson` without a course ID exposed the complete
+five-field authoring workflow, uploads, media/library choices, and Save Lesson
+copy even though no course could receive the lesson. The valid form also had no
+semantic heading; four legacy fields and their labels were gray/black in Night
+mode; and title, order, text, PDF URL, upload, image, and save controls lacked
+explicit accessible names. Frontend `dafbf518` replaces missing-course entry
+with a form-free handoff, gives the valid form one H1, moves its remaining
+legacy surfaces to the active palette, and names the controls without changing
+valid upload or save payload behavior.
+
+- Nine focused Add Lesson, authoring-route, and Video Library tests passed,
+  covering missing-course exclusion/handoff, valid route/back behavior, Night
+  fields, hierarchy, names, image persistence, provider media uploads, and
+  reusable video behavior. Targeted source lint, full frontend `tsc --noEmit`,
+  and `git diff --check` passed; the existing non-failing Expo Go notification
+  warning remained in the Add Lesson suite.
+- Production Build Preflight `30711251396` and Frontend CI `30711251382`
+  passed. Clean signed-in missing-course production verification rendered one
+  bright H1, truthful guidance, only Back/Browse Courses/Report Bug actions,
+  zero fields, zero upload/save actions, and zero white/light page-content
+  surfaces.
+- Production contained no existing course link for a genuine valid-ID form
+  comparison, so the valid form's palette, hierarchy, names, and unchanged
+  save/upload behavior remain source/test-proven rather than invented through
+  a fake course reference.
+- No Browse Courses, field, video, upload, attachment, media, lesson, course,
+  workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
