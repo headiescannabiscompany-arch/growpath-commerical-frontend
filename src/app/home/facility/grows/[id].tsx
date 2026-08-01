@@ -18,6 +18,7 @@ import FacilityContextualTools from "@/components/facility/FacilityContextualToo
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type AnyRec = Record<string, any>;
 
@@ -39,6 +40,8 @@ function readableDate(value: unknown) {
 
 export default function FacilityGrowDetail() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityGrowDetailStyles(palette), [palette]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
 
@@ -114,7 +117,9 @@ export default function FacilityGrowDetail() {
 
         {!loading && !item ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Not found</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.emptyTitle}>
+              Grow not found
+            </Text>
             <Text style={styles.muted}>This grow could not be loaded.</Text>
           </View>
         ) : null}
@@ -122,7 +127,9 @@ export default function FacilityGrowDetail() {
         {item ? (
           <>
             <View style={styles.card}>
-              <Text style={styles.h1}>Overview</Text>
+              <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+                {pickTitle(item)}
+              </Text>
               <Text style={styles.muted}>
                 {item.roomName ? `${item.roomName} → ` : ""}
                 {pickTitle(item)}
@@ -153,7 +160,9 @@ export default function FacilityGrowDetail() {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.sectionTitle}>Grow workspace</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+                Grow workspace
+              </Text>
               <View style={styles.workspaceGrid}>
                 {[
                   ["Plants", "/home/facility/plants"],
@@ -209,40 +218,41 @@ export default function FacilityGrowDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 12, padding: 16 },
-  loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
-  muted: { opacity: 0.7 },
-  card: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14
-  },
-  h1: { fontSize: 18, fontWeight: "900" },
-  sectionTitle: { fontSize: 14, fontWeight: "900", marginTop: 4 },
-  summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  summaryItem: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 10,
-    minWidth: 120,
-    padding: 10
-  },
-  summaryLabel: { color: "#64748b", fontSize: 11, fontWeight: "800" },
-  summaryValue: { color: "#172317", fontSize: 14, fontWeight: "900", marginTop: 3 },
-  empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" },
-  workspaceGrid: { gap: 8, marginTop: 4 },
-  workspaceAction: {
-    alignItems: "center",
-    backgroundColor: "rgba(35, 118, 74, 0.07)",
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 12
-  },
-  workspaceLabel: { fontSize: 14, fontWeight: "800" },
-  workspaceArrow: { fontSize: 18, opacity: 0.55 }
-});
+export const createFacilityGrowDetailStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { backgroundColor: palette.page, gap: 12, padding: 16 },
+    loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
+    muted: { color: palette.textMuted },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    h1: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    sectionTitle: { color: palette.text, fontSize: 14, fontWeight: "900", marginTop: 4 },
+    summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    summaryItem: {
+      backgroundColor: palette.surface,
+      borderRadius: 10,
+      minWidth: 120,
+      padding: 10
+    },
+    summaryLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "800" },
+    summaryValue: { color: palette.text, fontSize: 14, fontWeight: "900", marginTop: 3 },
+    empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    workspaceGrid: { gap: 8, marginTop: 4 },
+    workspaceAction: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      padding: 12
+    },
+    workspaceLabel: { color: palette.link, fontSize: 14, fontWeight: "800" },
+    workspaceArrow: { color: palette.link, fontSize: 18, opacity: 0.75 }
+  });

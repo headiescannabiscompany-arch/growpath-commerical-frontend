@@ -16,6 +16,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type AnyRec = Record<string, any>;
 
@@ -23,7 +24,7 @@ function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.type ?? x?.category ?? x?.kind ?? "Log Detail");
 }
 
-function renderKV(obj: AnyRec, key: string) {
+function renderKV(obj: AnyRec, key: string, styles: AnyRec) {
   const v = obj?.[key];
   if (v === undefined || v === null || v === "") return null;
   return (
@@ -36,6 +37,8 @@ function renderKV(obj: AnyRec, key: string) {
 
 export default function FacilityLogDetail() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityLogDetailStyles(palette), [palette]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
 
@@ -130,17 +133,23 @@ export default function FacilityLogDetail() {
 
         {!loading && !item ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Not found</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.emptyTitle}>
+              Log entry not found
+            </Text>
             <Text style={styles.muted}>This log entry could not be loaded.</Text>
           </View>
         ) : null}
 
         {item ? (
           <View style={styles.card}>
-            <Text style={styles.h1}>{pickTitle(item)}</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              {pickTitle(item)}
+            </Text>
             <Text style={styles.muted}>ID: {String(id)}</Text>
 
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            <View style={styles.kvWrap}>
+              {keys.map((k) => renderKV(item, k, styles))}
+            </View>
           </View>
         ) : null}
       </ScrollView>
@@ -148,26 +157,27 @@ export default function FacilityLogDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
-  muted: { opacity: 0.7 },
+export const createFacilityLogDetailStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { backgroundColor: palette.page, padding: 16, gap: 12 },
+    loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    muted: { color: palette.textMuted },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 10
-  },
-  h1: { fontSize: 18, fontWeight: "900" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.card,
+      gap: 10
+    },
+    h1: { color: palette.text, fontSize: 18, fontWeight: "900" },
 
-  kvWrap: { gap: 10, marginTop: 8 },
-  kv: { gap: 4 },
-  k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
+    kvWrap: { gap: 10, marginTop: 8 },
+    kv: { gap: 4 },
+    k: { color: palette.textMuted, fontSize: 12 },
+    v: { color: palette.text, fontSize: 14 },
 
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" }
-});
+    empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" }
+  });

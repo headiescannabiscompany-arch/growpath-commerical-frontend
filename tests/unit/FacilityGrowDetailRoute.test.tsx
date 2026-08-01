@@ -57,7 +57,21 @@ describe("FacilityGrowDetailRoute", () => {
   it("presents one grow workspace and passes context into downstream workflows", async () => {
     const screen = render(<FacilityGrowDetailRoute />);
 
-    await waitFor(() => expect(screen.getByText(/Summer crop/)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getAllByText(/Summer crop/).length).toBeGreaterThan(0)
+    );
+    expect(
+      screen
+        .getAllByText("Summer crop")
+        .some(
+          (node) =>
+            node.props.accessibilityRole === "header" && node.props["aria-level"] === 1
+        )
+    ).toBe(true);
+    expect(screen.getByText("Grow workspace").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 2
+    });
     expect(screen.getByText("Contextual grow tools")).toBeTruthy();
     expect(screen.queryByText(/\{\s*"/)).toBeNull();
 
