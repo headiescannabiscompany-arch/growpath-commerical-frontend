@@ -16,6 +16,7 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
 import { useAccountMode } from "@/state/useAccountMode";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function AcceptFacilityInviteScreen() {
@@ -23,6 +24,8 @@ export default function AcceptFacilityInviteScreen() {
   const auth = useAuth();
   const entitlements = useEntitlements();
   const facilityStore = useFacility();
+  const { palette } = useAppTheme();
+  const styles = createAcceptFacilityInviteStyles(palette);
   const { setMode } = useAccountMode();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [displayName, setDisplayName] = useState("");
@@ -95,10 +98,33 @@ export default function AcceptFacilityInviteScreen() {
     }
   }
 
+  if (!token) {
+    return (
+      <ScrollView contentContainerStyle={styles.page}>
+        <View style={styles.card}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Join facility workspace
+          </Text>
+          <Text style={styles.copy}>This invitation link is missing its token.</Text>
+          <Pressable
+            onPress={() => router.replace("/login")}
+            style={styles.button}
+            accessibilityRole="button"
+            accessibilityLabel="Go to sign in"
+          >
+            <Text style={styles.buttonText}>Go to sign in</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       <View style={styles.card}>
-        <Text style={styles.title}>Join facility workspace</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Join facility workspace
+        </Text>
         <Text style={styles.copy}>
           Create a password for your GrowPathAI login. If this email already has an
           account, enter its existing password.
@@ -113,6 +139,7 @@ export default function AcceptFacilityInviteScreen() {
           value={displayName}
           onChangeText={setDisplayName}
           placeholder="Your name"
+          placeholderTextColor={palette.textMuted}
         />
         <CalendarDateField
           accessibilityLabel="Invite date of birth"
@@ -134,6 +161,7 @@ export default function AcceptFacilityInviteScreen() {
           value={password}
           onChangeText={setPassword}
           placeholder="Password (8+ characters)"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
         />
         <TextInput
@@ -141,6 +169,7 @@ export default function AcceptFacilityInviteScreen() {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm password"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
         />
         {password && confirmPassword && password !== confirmPassword ? (
@@ -154,7 +183,7 @@ export default function AcceptFacilityInviteScreen() {
           accessibilityRole="button"
         >
           {submitting ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.buttonText}>Accept invitation and sign in</Text>
           )}
@@ -164,42 +193,44 @@ export default function AcceptFacilityInviteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: {
-    alignItems: "center",
-    backgroundColor: "#f0fdf4",
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 20
-  },
-  card: {
-    backgroundColor: "white",
-    borderColor: "#bbf7d0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 12,
-    maxWidth: 520,
-    padding: 22,
-    width: "100%"
-  },
-  title: { color: "#14532d", fontSize: 24, fontWeight: "900" },
-  copy: { color: "#475569", lineHeight: 21 },
-  helper: { color: "#64748b", fontSize: 12, lineHeight: 17 },
-  input: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    padding: 13
-  },
-  buttonText: { color: "white", fontWeight: "900" },
-  disabled: { opacity: 0.45 },
-  error: { color: "#b91c1c", fontWeight: "700" }
-});
+export const createAcceptFacilityInviteStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    page: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flexGrow: 1,
+      justifyContent: "center",
+      padding: 20
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      maxWidth: 520,
+      padding: 22,
+      width: "100%"
+    },
+    title: { color: palette.text, fontSize: 24, fontWeight: "900" },
+    copy: { color: palette.textSoft, lineHeight: 21 },
+    helper: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 13
+    },
+    buttonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.45 },
+    error: { color: palette.danger, fontWeight: "700" }
+  });

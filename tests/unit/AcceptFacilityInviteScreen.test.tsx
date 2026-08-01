@@ -13,6 +13,7 @@ const mockRouter = { replace: mockReplace };
 
 let mockAuthState: any;
 let mockEntitlementsState: any;
+let mockParams: { token?: string };
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -39,7 +40,7 @@ jest.mock("@/state/useAccountMode", () => ({
 }));
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ token: "invite-token" }),
+  useLocalSearchParams: () => mockParams,
   useRouter: () => mockRouter
 }));
 
@@ -56,6 +57,7 @@ describe("AcceptFacilityInviteScreen", () => {
       facilityId: null,
       setPreferredMode: (...args: any[]) => mockSetPreferredMode(...args)
     };
+    mockParams = { token: "invite-token" };
     mockApiRequest.mockResolvedValue({
       accepted: true,
       email: "member@example.com",
@@ -100,4 +102,14 @@ describe("AcceptFacilityInviteScreen", () => {
       expect(mockReplace).toHaveBeenCalledWith("/home/facility");
     });
   }, 15_000);
+
+  it("shows a truthful non-writing state when the invitation token is missing", () => {
+    mockParams = {};
+    const screen = render(<AcceptFacilityInviteScreen />);
+
+    expect(screen.getByRole("header", { name: "Join facility workspace" })).toBeTruthy();
+    expect(screen.getByText("This invitation link is missing its token.")).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Password (8+ characters)")).toBeNull();
+    expect(screen.queryByText("Accept invitation and sign in")).toBeNull();
+  });
 });

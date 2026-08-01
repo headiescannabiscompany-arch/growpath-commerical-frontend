@@ -12,7 +12,9 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
 import { useCreateFacility } from "@/hooks/useCreateFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function CreateFacilityScreen() {
@@ -23,8 +25,11 @@ export default function CreateFacilityScreen() {
   const createFacility = useCreateFacility();
   const router = useRouter();
   const auth = useAuth();
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createFacilityStyles(palette);
 
-  if (auth.isHydrating) {
+  if (auth.isHydrating || !entitlements.ready) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" />
@@ -34,6 +39,38 @@ export default function CreateFacilityScreen() {
 
   if (!auth.token) {
     return <Redirect href="/login" />;
+  }
+
+  if (entitlements.facilityId) {
+    return (
+      <AppPage
+        routeKey="create-facility"
+        railOverride={null}
+        header={
+          <View style={styles.header}>
+            <Text style={styles.kicker}>Facility setup</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Facility already connected
+            </Text>
+            <Text style={styles.subtitle}>
+              This account already belongs to a Facility workspace. Open that workspace
+              instead of creating another one.
+            </Text>
+          </View>
+        }
+      >
+        <AppCard>
+          <Pressable
+            onPress={() => router.replace("/home/facility")}
+            accessibilityRole="button"
+            accessibilityLabel="Open facility workspace"
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Open facility workspace</Text>
+          </Pressable>
+        </AppCard>
+      </AppPage>
+    );
   }
 
   const trimmedName = name.trim();
@@ -60,7 +97,9 @@ export default function CreateFacilityScreen() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Facility setup</Text>
-          <Text style={styles.title}>Create your facility</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Create your facility
+          </Text>
           <Text style={styles.subtitle}>
             Each account is limited to one facility. If one already exists, GrowPath
             returns that facility instead of creating a duplicate.
@@ -74,7 +113,7 @@ export default function CreateFacilityScreen() {
           <TextInput
             style={styles.input}
             placeholder="Facility name"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={palette.textMuted}
             value={name}
             onChangeText={setName}
             onBlur={() => setTouched(true)}
@@ -132,7 +171,7 @@ export default function CreateFacilityScreen() {
             style={[styles.primaryButton, !canCreate && styles.disabledButton]}
           >
             {createFacility.isPending ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.primaryButtonText}>Create facility</Text>
             )}
@@ -152,78 +191,79 @@ export default function CreateFacilityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    flex: 1,
-    justifyContent: "center"
-  },
-  header: { gap: 6 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#111827",
-    fontSize: 30,
-    fontWeight: "900"
-  },
-  subtitle: {
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20,
-    maxWidth: 760
-  },
-  form: { gap: 12 },
-  typeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  typeButton: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  typeButtonSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  typeButtonText: { color: "#475569", fontWeight: "800" },
-  typeButtonTextSelected: { color: "#ffffff" },
-  label: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    fontSize: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 12
-  },
-  error: { color: "#b91c1c", fontWeight: "800" },
-  feedback: { color: "#047857", fontWeight: "800" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  disabledButton: { opacity: 0.55 },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingVertical: 12
-  },
-  secondaryButtonText: { color: "#111827", fontWeight: "900" }
-});
+export const createFacilityStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      justifyContent: "center"
+    },
+    header: { gap: 6 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 30,
+      fontWeight: "900"
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      fontWeight: "700",
+      lineHeight: 20,
+      maxWidth: 760
+    },
+    form: { gap: 12 },
+    typeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    typeButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    typeButtonSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    typeButtonText: { color: palette.textSoft, fontWeight: "800" },
+    typeButtonTextSelected: { color: palette.accentText },
+    label: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      fontSize: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 12
+    },
+    error: { color: palette.danger, fontWeight: "800" },
+    feedback: { color: palette.success, fontWeight: "800" },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    disabledButton: { opacity: 0.55 },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingVertical: 12
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "900" }
+  });

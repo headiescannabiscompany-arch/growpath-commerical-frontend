@@ -14,6 +14,8 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useFacility } from "@/facility/FacilityProvider";
 import { apiRequest } from "@/api/apiRequest";
+import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type InvitePreview = {
@@ -31,6 +33,9 @@ export default function JoinFacilityScreen() {
   const auth = useAuth();
   const router = useRouter();
   const facilityStore = useFacility();
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createJoinFacilityStyles(palette);
 
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +48,7 @@ export default function JoinFacilityScreen() {
   );
   const canAccept = !!preview && !loading;
 
-  if (auth.isHydrating) {
+  if (auth.isHydrating || !entitlements.ready) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" />
@@ -53,6 +58,28 @@ export default function JoinFacilityScreen() {
 
   if (!auth.token) {
     return <Redirect href="/login" />;
+  }
+
+  if (entitlements.facilityId) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Facility already connected
+        </Text>
+        <Text style={styles.subtitle}>
+          This account already belongs to a Facility workspace. Open that workspace
+          instead of joining another one.
+        </Text>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => router.replace("/home/facility" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Open facility workspace"
+        >
+          <Text style={styles.primaryButtonText}>Open facility workspace</Text>
+        </Pressable>
+      </ScrollView>
+    );
   }
 
   const loadInvite = async () => {
@@ -134,7 +161,9 @@ export default function JoinFacilityScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Join a Facility</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+        Join a Facility
+      </Text>
       <Text style={styles.subtitle}>
         Paste the invite token from your facility invitation email.
       </Text>
@@ -146,6 +175,8 @@ export default function JoinFacilityScreen() {
         autoCapitalize="none"
         autoCorrect={false}
         placeholder="Invite token"
+        placeholderTextColor={palette.textMuted}
+        accessibilityLabel="Invite token"
       />
 
       <Pressable
@@ -200,48 +231,51 @@ export default function JoinFacilityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  content: { padding: 16, gap: 12 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#4b5563", fontSize: 14 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    fontSize: 15,
-    backgroundColor: "#fff"
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#f9fafb"
-  },
-  cardTitle: { fontSize: 17, fontWeight: "700" },
-  meta: { fontSize: 13, color: "#4b5563" },
-  primaryButton: {
-    borderRadius: radius.card,
-    backgroundColor: "#111827",
-    paddingVertical: 11,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "700" },
-  secondaryButton: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    paddingVertical: 10,
-    alignItems: "center"
-  },
-  secondaryButtonText: { color: "#111827", fontWeight: "700" },
-  disabled: { opacity: 0.6 },
-  errorText: { color: "#b91c1c", fontSize: 13 },
-  linkButton: { paddingVertical: 10, alignItems: "center" },
-  linkText: { color: "#2563eb", fontWeight: "700" }
-});
+export const createJoinFacilityStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 16, gap: 12 },
+    centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textSoft, fontSize: 14 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 15,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "700" },
+    meta: { fontSize: 13, color: palette.textSoft },
+    primaryButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingVertical: 11,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "700" },
+    secondaryButton: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      paddingVertical: 10,
+      alignItems: "center"
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "700" },
+    disabled: { opacity: 0.6 },
+    errorText: { color: palette.danger, fontSize: 13 },
+    linkButton: { paddingVertical: 10, alignItems: "center" },
+    linkText: { color: palette.link, fontWeight: "700" }
+  });
