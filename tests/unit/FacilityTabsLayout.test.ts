@@ -35,7 +35,7 @@ describe("Facility tabs layout", () => {
 
   it("lets AI Templates own its single semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("ai-template")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("ai-validation")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("ai-validation")).toBe(false);
   });
 
   it("lets photo diagnosis own its accurate semantic page heading", () => {

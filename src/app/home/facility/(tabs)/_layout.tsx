@@ -29,6 +29,7 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
   return ![
     "more",
     "ai-template",
+    "ai-validation",
     "ai-diagnosis-photo",
     "ai-tools",
     "reports",
@@ -242,7 +243,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="ai-validation"
-        options={{ title: "AI QA", tabBarButton: () => null }}
+        options={{
+          title: "AI Validation Lab",
+          headerShown: shouldShowFacilityRouteHeader("ai-validation"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
