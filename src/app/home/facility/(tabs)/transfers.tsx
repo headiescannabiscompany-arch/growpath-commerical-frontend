@@ -214,7 +214,9 @@ export default function FacilityTransfersScreen() {
           cannabis checkout.
         </Text>
         <View style={styles.notice}>
-          <Text style={styles.noticeTitle}>Verification stays with your facility</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.noticeTitle}>
+            Verification stays with your facility
+          </Text>
           <Text style={styles.noticeText}>
             Record the recipient license and required manifest. GrowPath stores the
             workflow; it does not determine whether a transfer is permitted in your
@@ -256,7 +258,9 @@ export default function FacilityTransfersScreen() {
 
         {showForm ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>1. Select inventory lot</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              1. Select inventory lot
+            </Text>
             <View style={styles.choiceRow}>
               {items.map((item) => {
                 const id = idOf(item);
@@ -279,7 +283,9 @@ export default function FacilityTransfersScreen() {
                 );
               })}
             </View>
-            <Text style={styles.cardTitle}>2. Sale and recipient</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              2. Sale and recipient
+            </Text>
             <TextInput
               accessibilityLabel="Transfer quantity"
               placeholder="Quantity"
@@ -339,7 +345,9 @@ export default function FacilityTransfersScreen() {
               onChangeText={(value) => setForm({ ...form, destinationAddress: value })}
               style={styles.input}
             />
-            <Text style={styles.cardTitle}>3. Manifest and shipment</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              3. Manifest and shipment
+            </Text>
             <TextInput
               accessibilityLabel="Manifest number"
               placeholder="Manifest / transfer number"
@@ -385,12 +393,16 @@ export default function FacilityTransfersScreen() {
           </View>
         ) : null}
 
-        <Text style={styles.sectionTitle}>Transfer history</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Transfer history
+        </Text>
         {transfers.length ? (
           transfers.map((transfer) => (
             <View key={idOf(transfer)} style={styles.card}>
               <View style={styles.row}>
-                <Text style={styles.cardTitle}>{transfer.itemName}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                  {transfer.itemName}
+                </Text>
                 <Text style={styles.status}>{transfer.status}</Text>
               </View>
               <Text style={styles.bodyText}>

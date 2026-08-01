@@ -56,5 +56,13 @@ describe("FacilityTransfersScreen", () => {
     );
     expect(screen.getByText("Your viewer role can view shipment records.")).toBeTruthy();
     expect(screen.queryByText("New licensed transfer")).toBeNull();
+    expect(
+      screen.getByRole("header", { name: "Verification stays with your facility" }).props[
+        "aria-level"
+      ]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Transfer history" }).props["aria-level"]
+    ).toBe(2);
   });
 });
