@@ -1830,7 +1830,7 @@ not change.
   campaign, Forum action, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
 
-## Public Discovery Night theme, hierarchy, and workspace handoff
+## Public Discovery Night theme, API contract, and workspace handoff
 
 Production `/field-observations` retained a white page canvas, white filter
 chips, a light search field, day-only map/result surfaces, and three competing
@@ -1854,11 +1854,28 @@ Personal for Field Studies` routed through workspace selection.
   `rgb(244, 247, 251)`. All eight filter choices and Search exposed explicit
   button names, the Facility handoff targeted `/account/mode`, and zero white
   page-content surfaces remained.
-- The deployed public observation request still ended in `Not found` after the
-  frontend route-family correction. The route existence probe only established
-  that `/api/personal/field-studies/public` is authenticated rather than absent;
-  it did not prove the signed-in response contract. This data/API mismatch
-  remains open and is not hidden as an empty state or claimed as fixed.
+- The live retest proved the route-family correction alone was insufficient:
+  the production backend contained no Field Studies models or routes. Backend
+  `8b64be2` implements the complete existing frontend contract for private and
+  shared studies, collaborator roles, observations, and authenticated public
+  discovery. Publication now requires uploaded media owned by the contributor;
+  exact coordinates require explicit confirmation; sensitive-species locations
+  are obscured; and private user, grow, ToolRun, and collaborator identifiers
+  are removed from public responses. Backend CI `30703867623` passed. Four new
+  database-backed privacy/permission tests and 29 related Personal/mount/route
+  regressions passed. The wider local core/system sweep exceeded five minutes
+  after encountering the repository's existing Windows Mongo-memory metadata
+  file lock in `me.test.js`; no Field Studies assertion failed.
+- A final clean production pass confirmed the API now returns HTTP 200 and the
+  truthful `No matching public observations` state, with no `Not found` text or
+  Retry action. That pass exposed MapLibre's location, navigation, status, and
+  attribution overlays as the final light islands. Frontend `ab0485ab` moves
+  those controls to the active palette. Production Build Preflight
+  `30704012730` and Frontend CI `30704012733` passed; the live location and
+  attribution panels measured Night surface `rgb(21, 29, 39)`, Night border
+  `rgb(40, 53, 69)`, and muted text `rgb(201, 212, 223)`. The completed page
+  retained one H1, two H2s, one truthful empty-state H3, and zero white content
+  or map-control surfaces.
 - No search, filter, retry, location, globe, workspace, Field Study, support,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
