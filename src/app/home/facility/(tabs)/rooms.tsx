@@ -871,7 +871,13 @@ export default function FacilityRoomsTab() {
                     accessibilityLabel={`Open grows for ${room.name || "room"}`}
                     style={styles.roomWorkspace}
                   >
-                    <Text style={styles.rowTitle}>{room.name || "Room"}</Text>
+                    <Text
+                      accessibilityRole="header"
+                      aria-level={3}
+                      style={styles.rowTitle}
+                    >
+                      {room.name || "Room"}
+                    </Text>
                     <Text style={styles.rowMeta}>
                       {[
                         room.roomType || "room",

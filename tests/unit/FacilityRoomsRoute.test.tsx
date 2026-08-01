@@ -138,6 +138,11 @@ describe("FacilityRoomsTab", () => {
       screen.getByRole("header", { name: "Room Workspace" }).props["aria-level"]
     ).toBe(2);
     expect(
+      screen
+        .getAllByRole("header", { name: "Existing Dry Room" })
+        .every((heading) => heading.props["aria-level"] === 3)
+    ).toBe(true);
+    expect(
       screen.getByText("Only facility owners and managers can create rooms.")
     ).toBeTruthy();
     expect(screen.queryByLabelText("Create Room")).toBeNull();
