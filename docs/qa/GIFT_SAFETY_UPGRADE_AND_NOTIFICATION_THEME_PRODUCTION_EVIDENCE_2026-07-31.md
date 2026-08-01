@@ -1987,3 +1987,26 @@ visibility, and owner behavior do not change.
 - No playback, provider link, follow, report, topic, search, filter, edit,
   publication, deletion, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
+
+## Public Lives browser Night theme and hierarchy
+
+Production `/lives` retained eleven fixed white surfaces under the signed-in
+Facility Viewer's resolved Night mode: the hero, four metrics, search field,
+four inactive filter chips, and empty-state card. Its copy and field treatment
+were day-only, and the route exposed no semantic headings. Frontend `60eacaa6`
+moves the complete empty, loaded, loading, error, session-card, badge, and
+action surface to the active palette, provides a readable themed placeholder,
+and establishes the `Lives` title as H1 plus visible section and empty-state
+titles as H2. Search, filtering, campaign navigation, session navigation,
+RSVP, and playback behavior did not change.
+
+- Two focused Lives behavior/theme tests passed. Targeted source ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30706165967` and Frontend CI `30706165959`
+  passed. Clean production `/lives` then measured one white H1, one bright H2
+  in the truthful zero-session state, zero white page-content surfaces, and the
+  untouched search field at Night surface `rgb(21, 29, 39)`, border
+  `rgb(40, 53, 69)`, and text `rgb(244, 247, 251)`.
+- No search, filter, campaign, session, RSVP, playback, report, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
