@@ -42,6 +42,7 @@ import {
 } from "@/features/personal/tools/nutrientChemistry/engine";
 import { nutrientContextState } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
@@ -66,10 +67,6 @@ function toReferenceUrl(value: string) {
   return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : null;
 }
 
-function pillStyle(active: boolean) {
-  return [styles.pill, active ? styles.pillOn : null];
-}
-
 function nutrientChemistryTaskMetadata(hasWarnings: boolean) {
   return {
     allDay: true,
@@ -85,6 +82,9 @@ function nutrientChemistryTaskMetadata(hasWarnings: boolean) {
 }
 
 export default function NutrientChemistryToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createNutrientChemistryStyles(palette), [palette]);
+  const pillStyle = (active: boolean) => [styles.pill, active ? styles.pillOn : null];
   const router = useRouter();
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -114,6 +114,7 @@ export default function NutrientChemistryToolScreen() {
     Record<string, Record<string, string>>
   >({});
   const [savedMessage, setSavedMessage] = useState("");
+  const [savedMessageKind, setSavedMessageKind] = useState<"success" | "error" | "">("");
   const [saving, setSaving] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
 
@@ -234,6 +235,7 @@ export default function NutrientChemistryToolScreen() {
     if (!growId || saving || !activeRecommendation) return;
     setSaving(true);
     setSavedMessage("");
+    setSavedMessageKind("");
     const result = await saveToolRunAndOpenJournal({
       router,
       growId,
@@ -272,6 +274,7 @@ export default function NutrientChemistryToolScreen() {
       }
     });
     setSavedMessage(result.ok ? "Saved to grow journal." : result.error);
+    setSavedMessageKind(result.ok ? "success" : "error");
     setSaving(false);
   }
 
@@ -279,6 +282,7 @@ export default function NutrientChemistryToolScreen() {
     if (!growId || creatingTask || !activeRecommendation) return;
     setCreatingTask(true);
     setSavedMessage("");
+    setSavedMessageKind("");
     const result = await saveToolRunAndCreateTask({
       growId,
       ...plantContext.toolRunContext,
@@ -330,6 +334,7 @@ export default function NutrientChemistryToolScreen() {
       ...nutrientChemistryTaskMetadata(compatibilityWarnings.length > 0)
     });
     setSavedMessage(result.ok ? "Created nutrient review task." : result.error);
+    setSavedMessageKind(result.ok ? "success" : "error");
     setCreatingTask(false);
   }
 
@@ -459,6 +464,8 @@ export default function NutrientChemistryToolScreen() {
                 style={styles.input}
                 value={soilTempC}
                 onChangeText={setSoilTempC}
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
                 keyboardType="numeric"
               />
             </View>
@@ -468,6 +475,8 @@ export default function NutrientChemistryToolScreen() {
                 style={styles.input}
                 value={pH}
                 onChangeText={setPH}
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
                 keyboardType="numeric"
               />
             </View>
@@ -477,6 +486,8 @@ export default function NutrientChemistryToolScreen() {
                 style={styles.input}
                 value={daysUntilNeed}
                 onChangeText={setDaysUntilNeed}
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
                 keyboardType="numeric"
               />
             </View>
@@ -694,6 +705,8 @@ export default function NutrientChemistryToolScreen() {
                           [ingredient.id]: value
                         }))
                       }
+                      placeholderTextColor={palette.textMuted}
+                      selectionColor={palette.accent}
                       keyboardType="decimal-pad"
                     />
                   ) : null}
@@ -708,6 +721,8 @@ export default function NutrientChemistryToolScreen() {
                       }))
                     }
                     placeholder="Manufacturer/reference URL"
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
                     autoCapitalize="none"
                     keyboardType="url"
                   />
@@ -733,6 +748,8 @@ export default function NutrientChemistryToolScreen() {
                               element as keyof typeof ingredient.elemental
                             ]
                           )}
+                          placeholderTextColor={palette.textMuted}
+                          selectionColor={palette.accent}
                           keyboardType="decimal-pad"
                         />
                       </View>
@@ -898,7 +915,17 @@ export default function NutrientChemistryToolScreen() {
               Add a grow context to save this recommendation.
             </Text>
           )}
-          {savedMessage ? <Text style={styles.helperText}>{savedMessage}</Text> : null}
+          {savedMessage ? (
+            <Text
+              style={
+                savedMessageKind === "error"
+                  ? styles.feedbackError
+                  : styles.feedbackSuccess
+              }
+            >
+              {savedMessage}
+            </Text>
+          ) : null}
         </View>
 
         <PersonalFeedPlacement
@@ -911,240 +938,263 @@ export default function NutrientChemistryToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 34, gap: 12 },
-  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
-  subtitle: { fontSize: 14, color: "#475569", lineHeight: 20 },
-  context: {
-    color: "#166534",
-    fontWeight: "700",
-    backgroundColor: "#F0FDF4",
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  contextPanel: {
-    borderWidth: 1,
-    borderColor: "#FBBF24",
-    backgroundColor: "#FFFBEB",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 4
-  },
-  contextPanelOk: {
-    borderColor: "#BBF7D0",
-    backgroundColor: "#F0FDF4"
-  },
-  contextPanelTitle: { color: "#0F172A", fontWeight: "800" },
-  panel: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 14,
-    gap: 10
-  },
-  sectionTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#FFFFFF"
-  },
-  pillOn: { backgroundColor: "#14532D", borderColor: "#14532D" },
-  pillText: { color: "#334155", fontWeight: "700", fontSize: 12 },
-  pillTextOn: { color: "#FFFFFF" },
-  inlineRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
-  flex1: { flex: 1, gap: 6 },
-  label: { fontSize: 12, fontWeight: "700", color: "#334155" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  toggleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  toggle: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  toggleOn: { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" },
-  toggleText: { fontWeight: "700", color: "#334155" },
-  toggleTextOn: { color: "#14532D" },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    backgroundColor: "#ECFDF5",
-    padding: 14,
-    gap: 6
-  },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#14532D" },
-  summaryName: { fontSize: 20, fontWeight: "800", color: "#052E16" },
-  summaryMeta: { color: "#166534", fontWeight: "700" },
-  summaryText: { color: "#14532D", lineHeight: 20 },
-  warning: {
-    color: "#9A3412",
-    backgroundColor: "#FFF7ED",
-    padding: 10,
-    borderRadius: radius.card
-  },
-  compatibilityIssue: {
-    borderWidth: 1,
-    borderColor: "#FED7AA",
-    borderRadius: radius.card,
-    backgroundColor: "#FFF7ED",
-    padding: 10,
-    gap: 6
-  },
-  issueHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
-  severityBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 11,
-    fontWeight: "800",
-    overflow: "hidden"
-  },
-  severityHigh: { color: "#991B1B", backgroundColor: "#FEE2E2" },
-  severityMedium: { color: "#9A3412", backgroundColor: "#FFEDD5" },
-  severityLow: { color: "#365314", backgroundColor: "#ECFCCB" },
-  issueCode: { color: "#7C2D12", fontSize: 12, fontWeight: "800" },
-  issueMessage: { color: "#7C2D12", lineHeight: 19 },
-  issueRemediation: { color: "#9A3412", lineHeight: 19, fontWeight: "700" },
-  recommendationCard: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    gap: 8
-  },
-  recommendationCardOn: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
-  recommendationHeader: { flexDirection: "row", gap: 10, alignItems: "center" },
-  recommendationTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
-  recommendationMeta: { fontSize: 12, color: "#64748B", marginTop: 2 },
-  recommendationBody: { color: "#475569", lineHeight: 19 },
-  compareButton: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  compareButtonOn: { backgroundColor: "#14532D", borderColor: "#14532D" },
-  compareButtonText: { color: "#334155", fontWeight: "800", fontSize: 12 },
-  compareButtonTextOn: { color: "#FFFFFF" },
-  releaseGroup: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  releaseLabel: { fontSize: 12, fontWeight: "800", color: "#14532D" },
-  releaseItems: { color: "#334155", marginTop: 4, lineHeight: 18 },
-  helperText: { color: "#64748B", lineHeight: 19 },
-  compareRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0"
-  },
-  rateRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0"
-  },
-  rateInput: {
-    width: 78,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF",
-    textAlign: "right"
-  },
-  referenceInput: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF"
-  },
-  labRow: { width: "100%", flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  labField: { width: 92, gap: 4 },
-  labInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF"
-  },
-  referenceLink: { color: "#166534", fontWeight: "700", textDecorationLine: "underline" },
-  compareName: { fontWeight: "800", color: "#0F172A", flex: 1 },
-  compareMeta: { color: "#64748B", flex: 1, textAlign: "right" },
-  detailName: { fontSize: 18, fontWeight: "800", color: "#0F172A" },
-  detailMeta: { color: "#64748B" },
-  evidenceText: {
-    color: "#166534",
-    backgroundColor: "#F0FDF4",
-    borderRadius: radius.card,
-    padding: 8,
-    textTransform: "capitalize"
-  },
-  detailSubhead: { fontSize: 13, fontWeight: "800", color: "#334155", marginTop: 6 },
-  formCard: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 4
-  },
-  formTitle: { fontWeight: "800", color: "#0F172A" },
-  formMeta: { color: "#64748B", fontSize: 12 },
-  formNotes: { color: "#334155", fontSize: 13, lineHeight: 18 },
-  primaryButton: {
-    borderRadius: radius.card,
-    backgroundColor: "#14532D",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#14532D",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center"
-  },
-  secondaryButtonText: { color: "#14532D", fontWeight: "800" },
-  disabled: { opacity: 0.6 }
-});
+export const createNutrientChemistryStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 34, gap: 12 },
+    title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    subtitle: { fontSize: 14, color: palette.textMuted, lineHeight: 20 },
+    context: {
+      color: palette.link,
+      fontWeight: "700",
+      backgroundColor: palette.accentSoft,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    contextPanel: {
+      borderWidth: 1,
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 4
+    },
+    contextPanelOk: {
+      borderColor: palette.success,
+      backgroundColor: palette.accentSoft
+    },
+    contextPanelTitle: { color: palette.text, fontWeight: "800" },
+    panel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 14,
+      gap: 10
+    },
+    sectionTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    pill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      backgroundColor: palette.surface
+    },
+    pillOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { color: palette.text, fontWeight: "700", fontSize: 12 },
+    pillTextOn: { color: palette.accentText },
+    inlineRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+    flex1: { flex: 1, gap: 6 },
+    label: { fontSize: 12, fontWeight: "700", color: palette.text },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    toggleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    toggle: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface
+    },
+    toggleOn: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    toggleText: { fontWeight: "700", color: palette.text },
+    toggleTextOn: { color: palette.link },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      backgroundColor: palette.accentSoft,
+      padding: 14,
+      gap: 6
+    },
+    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.link },
+    summaryName: { fontSize: 20, fontWeight: "800", color: palette.text },
+    summaryMeta: { color: palette.accent, fontWeight: "700" },
+    summaryText: { color: palette.textSoft, lineHeight: 20 },
+    warning: {
+      color: palette.warning,
+      backgroundColor: palette.surfaceStrong,
+      padding: 10,
+      borderRadius: radius.card
+    },
+    compatibilityIssue: {
+      borderWidth: 1,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong,
+      padding: 10,
+      gap: 6
+    },
+    issueHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+    severityBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden"
+    },
+    severityHigh: { color: palette.danger, backgroundColor: palette.surfaceMuted },
+    severityMedium: { color: palette.warning, backgroundColor: palette.surfaceMuted },
+    severityLow: { color: palette.success, backgroundColor: palette.accentSoft },
+    issueCode: { color: palette.warning, fontSize: 12, fontWeight: "800" },
+    issueMessage: { color: palette.text, lineHeight: 19 },
+    issueRemediation: {
+      color: palette.warning,
+      lineHeight: 19,
+      fontWeight: "700"
+    },
+    recommendationCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 12,
+      gap: 8
+    },
+    recommendationCardOn: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft
+    },
+    recommendationHeader: { flexDirection: "row", gap: 10, alignItems: "center" },
+    recommendationTitle: { fontSize: 15, fontWeight: "800", color: palette.text },
+    recommendationMeta: { fontSize: 12, color: palette.textMuted, marginTop: 2 },
+    recommendationBody: { color: palette.textSoft, lineHeight: 19 },
+    compareButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    compareButtonOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    compareButtonText: { color: palette.link, fontWeight: "800", fontSize: 12 },
+    compareButtonTextOn: { color: palette.accentText },
+    releaseGroup: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    releaseLabel: { fontSize: 12, fontWeight: "800", color: palette.link },
+    releaseItems: { color: palette.textSoft, marginTop: 4, lineHeight: 18 },
+    helperText: { color: palette.textMuted, lineHeight: 19 },
+    compareRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 10,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.border
+    },
+    rateRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: 10,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.border
+    },
+    rateInput: {
+      width: 78,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      textAlign: "right"
+    },
+    referenceInput: {
+      width: "100%",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    labRow: { width: "100%", flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    labField: { width: 92, gap: 4 },
+    labInput: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    referenceLink: {
+      color: palette.link,
+      fontWeight: "700",
+      textDecorationLine: "underline"
+    },
+    compareName: { fontWeight: "800", color: palette.text, flex: 1 },
+    compareMeta: { color: palette.textMuted, flex: 1, textAlign: "right" },
+    detailName: { fontSize: 18, fontWeight: "800", color: palette.text },
+    detailMeta: { color: palette.textMuted },
+    evidenceText: {
+      color: palette.link,
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.card,
+      padding: 8,
+      textTransform: "capitalize"
+    },
+    detailSubhead: {
+      fontSize: 13,
+      fontWeight: "800",
+      color: palette.text,
+      marginTop: 6
+    },
+    formCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 4
+    },
+    formTitle: { fontWeight: "800", color: palette.text },
+    formMeta: { color: palette.textMuted, fontSize: 12 },
+    formNotes: { color: palette.textSoft, fontSize: 13, lineHeight: 18 },
+    primaryButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      alignItems: "center"
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    feedbackSuccess: { color: palette.success, lineHeight: 19, fontWeight: "700" },
+    feedbackError: { color: palette.danger, lineHeight: 19, fontWeight: "700" },
+    disabled: { opacity: 0.6 }
+  });

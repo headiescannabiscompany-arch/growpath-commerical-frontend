@@ -1,13 +1,16 @@
 import React from "react";
+import { ActivityIndicator, StyleSheet, TextInput } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import PlatformAdminRoute from "@/app/admin";
+import PlatformAdminRoute, { createPlatformAdminStyles } from "@/app/admin";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
+let mockThemeMode: "day" | "night" = "night";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRouteParams,
@@ -19,22 +22,37 @@ jest.mock("@/auth/AuthContext", () => ({
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({
+      palette: actual.getThemePalette(
+        mockThemeMode,
+        mockThemeMode === "night" ? "dark" : "light"
+      )
+    })
+  };
+});
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ header, children }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ header, children }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return ({ title, subtitle, children }: any) =>
-    React.createElement(
+  return function MockAppCard({ title, subtitle, children }: any) {
+    return React.createElement(
       View,
       null,
       React.createElement(Text, null, title),
       React.createElement(Text, null, subtitle),
       children
     );
+  };
 });
 
 const overview = {
@@ -115,6 +133,7 @@ describe("PlatformAdminRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = "admin";
+    mockThemeMode = "night";
     mockRouteParams = {};
     mockPush.mockReset();
     mockReplace.mockReset();
@@ -137,6 +156,81 @@ describe("PlatformAdminRoute", () => {
       })
     );
   });
+
+  it.each(["day", "night"] as const)(
+    "uses the active %s palette for loaded admin surfaces and form controls",
+    async (mode) => {
+      mockThemeMode = mode;
+      const palette = getThemePalette(mode, mode === "night" ? "dark" : "light");
+      const themedStyles = createPlatformAdminStyles(palette);
+      const screen = render(<PlatformAdminRoute />);
+
+      expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
+      await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
+
+      expect(
+        StyleSheet.flatten(screen.getByText("Administration").props.style).color
+      ).toBe(palette.text);
+      expect(StyleSheet.flatten(screen.getByText("Online now").props.style).color).toBe(
+        palette.textMuted
+      );
+      expect(StyleSheet.flatten(screen.getByText("42").props.style).color).toBe(
+        palette.text
+      );
+      expect(StyleSheet.flatten(themedStyles.metric)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        })
+      );
+      expect(StyleSheet.flatten(themedStyles.activityRow)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.borderSoft
+        })
+      );
+      expect(StyleSheet.flatten(themedStyles.secondaryButton)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        })
+      );
+      expect(StyleSheet.flatten(themedStyles.error)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.danger,
+          color: palette.danger
+        })
+      );
+      expect(StyleSheet.flatten(themedStyles.warningButton)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.warning
+        })
+      );
+      expect(StyleSheet.flatten(themedStyles.dangerButton)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.danger
+        })
+      );
+      expect(themedStyles.warningText.color).toBe(palette.warning);
+      expect(themedStyles.dangerText.color).toBe(palette.danger);
+
+      fireEvent.press(screen.getByText("Email notice"));
+      screen.UNSAFE_getAllByType(TextInput).forEach((input) => {
+        expect(input.props.placeholderTextColor).toBe(palette.textMuted);
+        expect(input.props.selectionColor).toBe(palette.accent);
+        expect(StyleSheet.flatten(input.props.style)).toEqual(
+          expect.objectContaining({
+            backgroundColor: palette.surface,
+            borderColor: palette.border,
+            color: palette.text
+          })
+        );
+      });
+    }
+  );
 
   it("keeps working Admin sections visible when one independent section fails", async () => {
     mockApiRequest.mockImplementation((path: string) =>
@@ -317,10 +411,30 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
-  it("denies ordinary users even when they know the route", () => {
-    mockRole = "user";
-    const screen = render(<PlatformAdminRoute />);
-    expect(screen.getByText("Platform owner access required")).toBeTruthy();
-    expect(mockApiRequest).not.toHaveBeenCalled();
-  });
+  it.each(["day", "night"] as const)(
+    "denies the current non-admin account with the active %s palette",
+    (mode) => {
+      mockRole = "user";
+      mockThemeMode = mode;
+      const palette = getThemePalette(mode, mode === "night" ? "dark" : "light");
+      const screen = render(<PlatformAdminRoute />);
+
+      const denial = screen.UNSAFE_getByProps({ accessibilityRole: "alert" });
+      expect(StyleSheet.flatten(denial.props.style).backgroundColor).toBe(palette.page);
+      expect(
+        StyleSheet.flatten(screen.getByText("Platform owner access required").props.style)
+          .color
+      ).toBe(palette.text);
+      expect(
+        StyleSheet.flatten(
+          screen.getByText("This workspace is separate from Facility ownership.").props
+            .style
+        ).color
+      ).toBe(palette.textMuted);
+      expect(mockApiRequest).not.toHaveBeenCalled();
+
+      fireEvent.press(screen.getByText("Return to GrowPathAI"));
+      expect(mockReplace).toHaveBeenCalledWith("/home");
+    }
+  );
 });

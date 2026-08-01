@@ -7,7 +7,8 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
+  TextInput as NativeTextInput,
+  type TextInputProps,
   View
 } from "react-native";
 
@@ -22,6 +23,7 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import {
@@ -99,6 +101,17 @@ const notificationPlan = [
   "replay_available"
 ];
 
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
+
 function formatLiveLabel(value: unknown) {
   const normalized = String(value || "")
     .trim()
@@ -167,6 +180,9 @@ function liveThumbnail(live: CommercialLiveEvent) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialLivesStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -177,6 +193,8 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialLivesRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialLivesStyles(palette), [palette]);
   const params = useLocalSearchParams<{ liveId?: string | string[] }>();
   const focusedLiveId = Array.isArray(params.liveId) ? params.liveId[0] : params.liveId;
   const [lives, setLives] = useState<CommercialLiveEvent[]>([]);
@@ -875,167 +893,205 @@ export default function CommercialLivesRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    justifyContent: "space-between"
-  },
-  headerText: { flex: 1, minWidth: 260 },
-  headerActions: {
-    alignContent: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    maxWidth: 460
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900", marginTop: 4 },
-  subtitle: { color: "#475569", fontSize: 15, lineHeight: 22, marginTop: 6 },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  body: { color: "#475569", fontSize: 14, lineHeight: 21, marginTop: 8 },
-  muted: { color: "#64748B", fontWeight: "700", marginTop: 8 },
-  success: { color: "#166534", fontWeight: "900", marginTop: 8 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    padding: 9
-  },
-  metricValue: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "800" },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  integrationStatus: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  integrationStatusValue: {
-    color: "#0F172A",
-    fontSize: 14,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  textArea: { minHeight: 92, textAlignVertical: "top" },
-  formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  fullWidth: { width: "100%" },
-  mediaTools: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10,
-    width: "100%"
-  },
-  mediaButton: {
-    backgroundColor: "#111827",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  mediaButtonText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  clearButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  clearButtonText: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  livePreview: {
-    aspectRatio: 16 / 9,
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    marginTop: 10,
-    maxWidth: 520,
-    width: "100%"
-  },
-  label: { color: "#334155", fontSize: 12, fontWeight: "900", marginTop: 12 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  action: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  actionText: { color: "#0F172A", fontWeight: "800" },
-  actionTextSelected: { color: "#FFFFFF" },
-  notice: { color: "#475569", fontSize: 12, fontWeight: "700", marginTop: 10 },
-  warningBox: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  warningTitle: {
-    color: "#9A3412",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
-  primaryAction: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryActionText: { color: "#FFFFFF", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  list: { gap: 10, marginTop: 10 },
-  liveRow: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  liveRowFocused: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#16A34A",
-    borderWidth: 2
-  },
-  liveTitle: { color: "#0F172A", fontWeight: "900" },
-  liveThumbnail: {
-    aspectRatio: 16 / 9,
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    marginTop: 8,
-    width: "100%"
-  },
-  liveMeta: { color: "#64748B", fontSize: 12, fontWeight: "700", marginTop: 5 }
-});
+export function createCommercialLivesStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      justifyContent: "space-between"
+    },
+    headerText: { flex: 1, minWidth: 260 },
+    headerActions: {
+      alignContent: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      maxWidth: 460
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900", marginTop: 4 },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 6
+    },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    body: { color: palette.textSoft, fontSize: 14, lineHeight: 21, marginTop: 8 },
+    muted: { color: palette.textMuted, fontWeight: "700", marginTop: 8 },
+    success: { color: palette.success, fontWeight: "900", marginTop: 8 },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      padding: 9
+    },
+    metricValue: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    integrationStatus: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    integrationStatusValue: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    textArea: { minHeight: 92, textAlignVertical: "top" },
+    formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    fullWidth: { width: "100%" },
+    mediaTools: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 10,
+      width: "100%"
+    },
+    mediaButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    mediaButtonText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    clearButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    clearButtonText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    livePreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      marginTop: 10,
+      maxWidth: 520,
+      width: "100%"
+    },
+    label: { color: palette.text, fontSize: 12, fontWeight: "900", marginTop: 12 },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    actionText: { color: palette.link, fontWeight: "800" },
+    actionTextSelected: { color: palette.accentText },
+    notice: {
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 10
+    },
+    warningBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    warningTitle: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    warningText: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    primaryAction: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryActionText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    list: { gap: 10, marginTop: 10 },
+    liveRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    liveRowFocused: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    liveTitle: { color: palette.text, fontWeight: "900" },
+    liveThumbnail: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      marginTop: 8,
+      width: "100%"
+    },
+    liveMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 5
+    }
+  });
+}

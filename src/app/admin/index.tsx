@@ -14,6 +14,7 @@ import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type Overview = {
@@ -211,6 +212,9 @@ function Metric({
   value: number;
   helper: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPlatformAdminStyles(palette), [palette]);
+
   return (
     <View style={styles.metric}>
       <Text style={styles.metricLabel}>{label}</Text>
@@ -222,6 +226,15 @@ function Metric({
 
 export default function PlatformAdminRoute() {
   const { user } = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPlatformAdminStyles(palette), [palette]);
+  const inputThemeProps = useMemo(
+    () => ({
+      placeholderTextColor: palette.textMuted,
+      selectionColor: palette.accent
+    }),
+    [palette.accent, palette.textMuted]
+  );
   const router = useRouter();
   const routeParams = useLocalSearchParams<{ moderationCaseId?: string | string[] }>();
   const focusedModerationCaseId = String(
@@ -636,7 +649,7 @@ export default function PlatformAdminRoute() {
           {error}
         </Text>
       ) : null}
-      {loading && !overview ? <ActivityIndicator /> : null}
+      {loading && !overview ? <ActivityIndicator color={palette.accent} /> : null}
       {overview ? (
         <View style={styles.metrics}>
           <Metric
@@ -712,6 +725,7 @@ export default function PlatformAdminRoute() {
             <Text style={styles.secondaryText}>{knowledgeDraft.entryType}</Text>
           </Pressable>
           <TextInput
+            {...inputThemeProps}
             value={knowledgeDraft.entryId}
             onChangeText={(entryId) =>
               setKnowledgeDraft((value) => ({ ...value, entryId }))
@@ -720,6 +734,7 @@ export default function PlatformAdminRoute() {
             style={styles.input}
           />
           <TextInput
+            {...inputThemeProps}
             value={knowledgeDraft.title}
             onChangeText={(title) => setKnowledgeDraft((value) => ({ ...value, title }))}
             placeholder="Source or method title"
@@ -727,6 +742,7 @@ export default function PlatformAdminRoute() {
           />
         </View>
         <TextInput
+          {...inputThemeProps}
           value={knowledgeDraft.domain}
           onChangeText={(domain) => setKnowledgeDraft((value) => ({ ...value, domain }))}
           placeholder="Domain (sources only)"
@@ -735,6 +751,7 @@ export default function PlatformAdminRoute() {
         {knowledgeDraft.entryType === "source" ? (
           <>
             <TextInput
+              {...inputThemeProps}
               value={knowledgeDraft.preferredAuthors}
               onChangeText={(preferredAuthors) =>
                 setKnowledgeDraft((value) => ({ ...value, preferredAuthors }))
@@ -743,6 +760,7 @@ export default function PlatformAdminRoute() {
               style={styles.input}
             />
             <TextInput
+              {...inputThemeProps}
               value={knowledgeDraft.trustedFor}
               onChangeText={(trustedFor) =>
                 setKnowledgeDraft((value) => ({ ...value, trustedFor }))
@@ -751,6 +769,7 @@ export default function PlatformAdminRoute() {
               style={styles.input}
             />
             <TextInput
+              {...inputThemeProps}
               value={knowledgeDraft.notTrustedFor}
               onChangeText={(notTrustedFor) =>
                 setKnowledgeDraft((value) => ({ ...value, notTrustedFor }))
@@ -794,6 +813,7 @@ export default function PlatformAdminRoute() {
             </View>
             {knowledgeDraft.requiresCrossCheck ? (
               <TextInput
+                {...inputThemeProps}
                 value={knowledgeDraft.crossCheckRequirements}
                 onChangeText={(crossCheckRequirements) =>
                   setKnowledgeDraft((value) => ({
@@ -808,6 +828,7 @@ export default function PlatformAdminRoute() {
           </>
         ) : null}
         <TextInput
+          {...inputThemeProps}
           value={knowledgeDraft.guidance}
           onChangeText={(guidance) =>
             setKnowledgeDraft((value) => ({ ...value, guidance }))
@@ -821,6 +842,7 @@ export default function PlatformAdminRoute() {
           style={[styles.input, styles.messageInput]}
         />
         <TextInput
+          {...inputThemeProps}
           value={knowledgeDraft.changeNote}
           onChangeText={(changeNote) =>
             setKnowledgeDraft((value) => ({ ...value, changeNote }))
@@ -920,6 +942,7 @@ export default function PlatformAdminRoute() {
       >
         <View style={styles.searchRow}>
           <TextInput
+            {...inputThemeProps}
             value={reviewMethodId}
             onChangeText={setReviewMethodId}
             placeholder="Method ID, for example plant-diagnosis-etgu"
@@ -982,6 +1005,7 @@ export default function PlatformAdminRoute() {
       >
         <View style={styles.searchRow}>
           <TextInput
+            {...inputThemeProps}
             accessibilityLabel="Search users"
             placeholder="Email or display name"
             value={query}
@@ -1111,6 +1135,7 @@ export default function PlatformAdminRoute() {
         subtitle="Review reports and evidence before acting. Hide and soft-remove clear shared feeds; restore is reversible. Every action remains in the case and platform audit trail."
       >
         <TextInput
+          {...inputThemeProps}
           value={moveCategory}
           onChangeText={setMoveCategory}
           placeholder="Destination category"
@@ -1284,12 +1309,14 @@ export default function PlatformAdminRoute() {
           subtitle="The delivery and administrator are recorded in the audit trail."
         >
           <TextInput
+            {...inputThemeProps}
             value={noticeSubject}
             onChangeText={setNoticeSubject}
             placeholder="Subject"
             style={styles.input}
           />
           <TextInput
+            {...inputThemeProps}
             value={noticeMessage}
             onChangeText={setNoticeMessage}
             placeholder="Explain the concern, required action, and policy involved"
@@ -1310,107 +1337,154 @@ export default function PlatformAdminRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  activityGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  activityRow: {
-    backgroundColor: "#F8FAFC",
-    borderRadius: radius.card,
-    minWidth: 150,
-    padding: 10
-  },
-  activityLabel: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  activityValue: { color: "#0F172A", fontSize: 22, fontWeight: "900", marginTop: 3 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  body: { color: "#475569", lineHeight: 21, marginTop: 6 },
-  caseCopy: { flex: 1, minWidth: 220 },
-  caseRow: {
-    borderBottomColor: "#E2E8F0",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    paddingVertical: 12
-  },
-  focusedCaseRow: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#16A34A",
-    borderRadius: radius.card,
-    borderWidth: 2,
-    marginVertical: 8,
-    paddingHorizontal: 12
-  },
-  focusedCaseLabel: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 4
-  },
-  caseTitle: { color: "#0F172A", fontWeight: "900", textTransform: "capitalize" },
-  evidencePreview: {
-    color: "#334155",
-    backgroundColor: "#F8FAFC",
-    borderRadius: radius.card,
-    marginTop: 6,
-    padding: 9,
-    lineHeight: 19
-  },
-  dangerButton: {
-    backgroundColor: "#991B1B",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  dangerText: { color: "#FFFFFF", fontWeight: "800" },
-  denied: { alignItems: "center", flex: 1, justifyContent: "center", padding: 24 },
-  error: { backgroundColor: "#FEF2F2", color: "#991B1B", padding: 12 },
-  eyebrow: { color: "#166534", fontSize: 12, fontWeight: "900", letterSpacing: 1 },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    minWidth: 220,
-    padding: 12
-  },
-  messageInput: { minHeight: 120, marginTop: 10, textAlignVertical: "top" },
-  meta: { color: "#64748B", lineHeight: 20, marginTop: 4 },
-  metric: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#DDE7E0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    minWidth: 180,
-    padding: 16
-  },
-  metricLabel: { color: "#475569", fontWeight: "800" },
-  metricValue: { color: "#0F172A", fontSize: 30, fontWeight: "900", marginTop: 6 },
-  metrics: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  searchRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900", marginTop: 4 },
-  userList: { gap: 12 },
-  warningButton: {
-    backgroundColor: "#FEF3C7",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  warningText: { color: "#92400E", fontWeight: "800" }
-});
+export const createPlatformAdminStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    activityGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    activityRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 150,
+      padding: 10
+    },
+    activityLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    activityValue: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "900",
+      marginTop: 3
+    },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    body: { color: palette.textMuted, lineHeight: 21, marginTop: 6 },
+    caseCopy: { flex: 1, minWidth: 220 },
+    caseRow: {
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      paddingVertical: 12
+    },
+    focusedCaseRow: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 2,
+      marginVertical: 8,
+      paddingHorizontal: 12
+    },
+    focusedCaseLabel: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 4
+    },
+    caseTitle: {
+      color: palette.text,
+      fontWeight: "900",
+      textTransform: "capitalize"
+    },
+    evidencePreview: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.textSoft,
+      lineHeight: 19,
+      marginTop: 6,
+      padding: 9
+    },
+    dangerButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    dangerText: { color: palette.danger, fontWeight: "800" },
+    denied: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      justifyContent: "center",
+      padding: 24
+    },
+    error: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.danger,
+      padding: 12
+    },
+    eyebrow: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 1
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flex: 1,
+      minWidth: 220,
+      padding: 12
+    },
+    messageInput: { minHeight: 120, marginTop: 10, textAlignVertical: "top" },
+    meta: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },
+    metric: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flex: 1,
+      minWidth: 180,
+      padding: 16
+    },
+    metricLabel: { color: palette.textMuted, fontWeight: "800" },
+    metricValue: {
+      color: palette.text,
+      fontSize: 30,
+      fontWeight: "900",
+      marginTop: 6
+    },
+    metrics: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    searchRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900", marginTop: 4 },
+    userList: { gap: 12 },
+    warningButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    warningText: { color: palette.warning, fontWeight: "800" }
+  });

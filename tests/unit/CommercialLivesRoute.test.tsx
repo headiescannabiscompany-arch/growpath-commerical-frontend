@@ -46,13 +46,17 @@ jest.mock("@/components/InlineError", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 describe("CommercialLivesRoute", () => {
@@ -124,6 +128,26 @@ describe("CommercialLivesRoute", () => {
     const screen = render(<CommercialLivesRoute />);
 
     await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+
+    [
+      "Commercial live title",
+      "Commercial live description",
+      "Commercial live thumbnail",
+      "Commercial live Twitch channel",
+      "Commercial live Twitch channel ID",
+      "Commercial live Twitch embed URL",
+      "Commercial live timezone",
+      "Commercial live related course",
+      "Commercial live related product",
+      "Commercial live related feed campaign",
+      "Commercial live Forum Q&A thread",
+      "Commercial live grow interests",
+      "Commercial live replay URL"
+    ].forEach((label) => {
+      const input = screen.getByLabelText(label);
+      expect(input.props.placeholderTextColor).toEqual(expect.any(String));
+      expect(input.props.selectionColor).toEqual(expect.any(String));
+    });
 
     expect(screen.getByText("Shared Schedule")).toBeTruthy();
     expect(screen.getByText("Notifications")).toBeTruthy();
