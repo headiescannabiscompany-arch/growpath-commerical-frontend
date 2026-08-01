@@ -196,6 +196,27 @@ production acceptance covered:
 
 ## Automated verification
 
+## Shared Products & Label Library Night theme
+
+Production Facility Products & Label Library retained a white canvas, dark
+day-only headings, white actions and inputs, and a light empty-state card under
+resolved Night mode. Frontend `23749f92` moved the shared Personal/Facility
+catalog canvas, text, cards, selection states, inputs, chips, and actions to the
+active palette.
+
+- Production Build Preflight `30680714742` passed in 3m10s and Frontend CI
+  `30680714723` passed in 6m33s.
+- Six focused catalog/chooser tests passed, including an explicit Night-palette
+  regression. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in production checks covered `/home/facility/tools/ingredient-library`
+  and `/home/personal/tools/ingredient-library`, including the empty catalog,
+  actions, media/AI disclosure, and actual populated/default form-control area.
+- No action that changes state was invoked: no media upload, AI extraction,
+  favorite/confidence/release toggle, value edit, save, archive, ingredient,
+  credit, or other record changed.
+- The session was returned to the Facility dashboard without logout.
+
 ## Shared Soil Mix Builder Night theme
 
 Production Facility Soil Mix Builder retained a white canvas, dark day-only
