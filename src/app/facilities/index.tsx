@@ -10,105 +10,113 @@ import {
 } from "react-native";
 import { useFacility } from "@/facility/FacilityProvider";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { useRouter } from "expo-router";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 24
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  emptyMessage: {
-    fontSize: 14,
-    color: "#999",
-    textAlign: "center",
-    marginTop: 16
-  },
-  primaryButton: {
-    alignItems: "center",
-    alignSelf: "center",
-    backgroundColor: "#111827",
-    borderRadius: radius.card,
-    marginTop: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 12
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  facilitiesList: {
-    marginBottom: 32
-  },
-  facilityCard: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: radius.card,
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: "#f9f9f9"
-  },
-  facilityCardSelected: {
-    borderColor: "#4CAF50",
-    backgroundColor: "#f1f8f4"
-  },
-  facilityName: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4
-  },
-  facilityDetail: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 2
-  },
-  selectedBadge: {
-    marginTop: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#4CAF50",
-    borderRadius: radius.pill,
-    alignSelf: "flex-start"
-  },
-  selectedBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#fff"
-  },
-  errorContainer: {
-    backgroundColor: "#fee",
-    borderColor: "#f99",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 16
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#d00",
-    textAlign: "center"
-  }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.page,
+      padding: 20
+    },
+    title: {
+      color: palette.text,
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 8
+    },
+    subtitle: {
+      fontSize: 14,
+      color: palette.textMuted,
+      marginBottom: 24
+    },
+    loaderContainer: {
+      flex: 1,
+      backgroundColor: palette.page,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    emptyMessage: {
+      fontSize: 14,
+      color: palette.textMuted,
+      textAlign: "center",
+      marginTop: 16
+    },
+    primaryButton: {
+      alignItems: "center",
+      alignSelf: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 18,
+      paddingHorizontal: 18,
+      paddingVertical: 12
+    },
+    primaryButtonText: {
+      color: palette.accentText,
+      fontSize: 14,
+      fontWeight: "800"
+    },
+    facilitiesList: {
+      marginBottom: 32
+    },
+    facilityCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 16,
+      marginBottom: 12,
+      backgroundColor: palette.surface
+    },
+    facilityCardSelected: {
+      borderColor: palette.accent,
+      backgroundColor: palette.surfaceMuted
+    },
+    facilityName: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 4
+    },
+    facilityDetail: {
+      fontSize: 12,
+      color: palette.textMuted,
+      marginBottom: 2
+    },
+    selectedBadge: {
+      marginTop: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      backgroundColor: palette.accent,
+      borderRadius: radius.pill,
+      alignSelf: "flex-start"
+    },
+    selectedBadgeText: {
+      fontSize: 11,
+      fontWeight: "600",
+      color: palette.accentText
+    },
+    errorContainer: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 16
+    },
+    errorText: {
+      fontSize: 12,
+      color: palette.danger,
+      textAlign: "center"
+    }
+  });
+}
 
 export default function FacilitiesScreen() {
   const router = useRouter();
   const facility = useFacility();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const [selectedForAction, setSelectedForAction] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -133,8 +141,10 @@ export default function FacilitiesScreen() {
   if (facility.isLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 16 }}>Loading facilities...</Text>
+        <ActivityIndicator color={palette.accent} size="large" />
+        <Text style={{ color: palette.textMuted, marginTop: 16 }}>
+          Loading facilities...
+        </Text>
       </View>
     );
   }
@@ -144,7 +154,9 @@ export default function FacilitiesScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
-      <Text style={styles.title}>Your Facility</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+        Your Facility
+      </Text>
       <Text style={styles.subtitle}>
         Manage the single facility attached to this account
       </Text>
@@ -210,8 +222,10 @@ export default function FacilitiesScreen() {
 
       {selectedForAction && actionLoading && (
         <View style={{ marginTop: 32, alignItems: "center" }}>
-          <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 16 }}>Switching facility...</Text>
+          <ActivityIndicator color={palette.accent} size="large" />
+          <Text style={{ color: palette.textMuted, marginTop: 16 }}>
+            Switching facility...
+          </Text>
         </View>
       )}
     </ScrollView>
