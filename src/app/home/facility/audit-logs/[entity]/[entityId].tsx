@@ -7,6 +7,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
   formatFacilityAuditAction,
@@ -37,6 +38,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilityAuditLogEntityRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAuditEntityStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     entity?: string | string[];
     entityId?: string | string[];
@@ -75,25 +78,27 @@ export default function FacilityAuditLogEntityRoute() {
   if (isLoading)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Loading audit logs...</Text>
+        <Text style={styles.status}>Loading audit logs...</Text>
       </View>
     );
   if (!selectedId)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Select a facility first.</Text>
+        <Text style={styles.status}>Select a facility first.</Text>
       </View>
     );
   if (!entity || !entityId)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Missing entity route params.</Text>
+        <Text style={styles.status}>Missing entity route params.</Text>
       </View>
     );
   if (error)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text>
+        <Text style={styles.status}>
+          {getErrorMessage(error, "Failed to load audit logs.")}
+        </Text>
       </View>
     );
 
@@ -104,7 +109,9 @@ export default function FacilityAuditLogEntityRoute() {
       keyExtractor={pickId}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text style={styles.h1}>Audit Logs for Entity</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            Audit Logs for Entity
+          </Text>
           <Text style={styles.sub}>{formatFacilityAuditAction(entity)} history</Text>
         </View>
       }
@@ -144,22 +151,25 @@ export default function FacilityAuditLogEntityRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  list: { flex: 1, padding: 16 },
-  container: { flex: 1, padding: 16 },
-  header: { marginBottom: 10 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  title: { fontWeight: "800" },
-  sub: { opacity: 0.75 },
-  meta: { color: "#64748B", fontSize: 12 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: "#fff",
-    gap: 4
-  },
-  link: { color: "#2563eb", fontWeight: "700" }
-});
+export function createFacilityAuditEntityStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    list: { flex: 1, padding: 16, backgroundColor: palette.page },
+    container: { flex: 1, padding: 16, backgroundColor: palette.page },
+    header: { marginBottom: 10 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    title: { color: palette.text, fontWeight: "800" },
+    status: { color: palette.text },
+    sub: { color: palette.textMuted },
+    meta: { color: palette.textMuted, fontSize: 12 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 10,
+      backgroundColor: palette.card,
+      gap: 4
+    },
+    link: { color: palette.link, fontWeight: "700" }
+  });
+}

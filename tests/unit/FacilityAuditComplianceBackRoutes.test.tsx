@@ -4,7 +4,9 @@ import { render } from "@testing-library/react-native";
 import FacilityAuditLogDetailRoute, {
   createFacilityAuditDetailStyles
 } from "@/app/home/facility/audit-logs/[id]";
-import FacilityAuditLogEntityRoute from "@/app/home/facility/audit-logs/[entity]/[entityId]";
+import FacilityAuditLogEntityRoute, {
+  createFacilityAuditEntityStyles
+} from "@/app/home/facility/audit-logs/[entity]/[entityId]";
 import FacilityAuditLogsIndexRoute from "@/app/home/facility/audit-logs";
 import FacilityComplianceAiDashboardRoute from "@/app/home/facility/compliance/ai4.dashboard";
 import FacilityComplianceReportDetailRoute from "@/app/home/facility/compliance/report-detail";
@@ -67,6 +69,18 @@ describe("facility audit and compliance nested back behavior", () => {
     expect(styles.card.backgroundColor).toBe(palette.surface);
     expect(styles.json.color).toBe(palette.text);
     expect(styles.status.color).toBe(palette.text);
+  });
+
+  it("uses the active Night palette for entity audit history", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityAuditEntityStyles(palette);
+
+    expect(styles.list.backgroundColor).toBe(palette.page);
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.sub.color).toBe(palette.textMuted);
+    expect(styles.link.color).toBe(palette.link);
   });
 
   beforeEach(() => {
