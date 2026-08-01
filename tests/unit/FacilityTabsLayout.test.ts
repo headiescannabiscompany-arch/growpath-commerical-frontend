@@ -39,7 +39,7 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Grow Intelligence own its accurate semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("ai-tools")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("tasks")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("plants")).toBe(true);
   });
 
   it("lets Facility Reports own its semantic page heading", () => {
@@ -67,8 +67,13 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("grows")).toBe(true);
   });
 
+  it("lets Facility Tasks own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("tasks")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("compliance")).toBe(true);
+  });
+
   it("lets Facility Team own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("team")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("tasks")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 });

@@ -11,6 +11,8 @@ const mockReplace = jest.fn();
 const mockClearError = jest.fn();
 const mockHandleApiError = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
+let mockFacilityRole = "MANAGER";
+let mockCanWrite = true;
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -50,8 +52,8 @@ jest.mock("@/components/ScreenBoundary", () => {
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
-    facilityRole: "MANAGER",
-    can: () => true
+    facilityRole: mockFacilityRole,
+    can: () => mockCanWrite
   })
 }));
 
@@ -89,6 +91,8 @@ jest.mock("@/features/facility/useFacilityGrows", () => ({
 describe("FacilityTasksRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFacilityRole = "MANAGER";
+    mockCanWrite = true;
     mockGetFacilityTasks.mockResolvedValue([
       {
         id: "task-1",
@@ -151,6 +155,28 @@ describe("FacilityTasksRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Facility task queue filter overdue"));
     expect(screen.getByText("Review production batch")).toBeTruthy();
+  });
+
+  it("owns a clear heading hierarchy and stays read-only for a Viewer", async () => {
+    mockFacilityRole = "VIEWER";
+    mockCanWrite = false;
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Facility Tasks" }).props["aria-level"]
+    ).toBe(1);
+    expect(screen.getByRole("header", { name: "Task access" }).props["aria-level"]).toBe(
+      2
+    );
+    expect(screen.getByRole("header", { name: "Task queue" }).props["aria-level"]).toBe(
+      2
+    );
+    expect(screen.getByRole("header", { name: "Status" }).props["aria-level"]).toBe(3);
+    expect(screen.getByRole("header", { name: "Source" }).props["aria-level"]).toBe(3);
+    expect(screen.getByText("You do not have permission to create tasks.")).toBeTruthy();
+    expect(screen.queryByLabelText("Toggle facility task creator")).toBeNull();
+    expect(screen.queryByLabelText("Create facility task")).toBeNull();
   });
 
   it("opens the selected task detail with a concrete web-safe route", async () => {

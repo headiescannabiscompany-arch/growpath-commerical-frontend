@@ -512,8 +512,13 @@ export default function FacilityTasksRoute() {
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          {contextName ? `${contextName} Tasks` : "Facility Tasks"}
+        </Text>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{canWrite ? "New Task" : "Task access"}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            {canWrite ? "New Task" : "Task access"}
+          </Text>
           {canWrite ? (
             <Pressable
               accessibilityRole="button"
@@ -808,9 +813,13 @@ export default function FacilityTasksRoute() {
           </View>
         ) : null}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Task queue</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Task queue
+          </Text>
           <Text style={styles.muted}>{header}</Text>
-          <Text style={styles.label}>Status</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.label}>
+            Status
+          </Text>
           <View style={styles.chipRow}>
             {(
               [
@@ -840,7 +849,9 @@ export default function FacilityTasksRoute() {
               </Pressable>
             ))}
           </View>
-          <Text style={styles.label}>Source</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.label}>
+            Source
+          </Text>
           <View style={styles.chipRow}>
             {availableSourceFilters.map((option) => (
               <Pressable
