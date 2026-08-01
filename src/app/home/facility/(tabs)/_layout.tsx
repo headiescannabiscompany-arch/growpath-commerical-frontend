@@ -19,7 +19,7 @@ export function shouldHideFacilityTabBar(pathname = "") {
 }
 
 export function shouldShowFacilityRouteHeader(routeName = "") {
-  return routeName !== "more";
+  return !["more", "ai-template"].includes(routeName);
 }
 
 export default function FacilityTabsLayout() {
@@ -136,7 +136,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="ai-template"
-        options={{ title: "AI Templates", tabBarButton: () => null }}
+        options={{
+          title: "AI Templates",
+          headerShown: shouldShowFacilityRouteHeader("ai-template"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="ai-validation"
