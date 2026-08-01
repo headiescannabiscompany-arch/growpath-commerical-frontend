@@ -474,7 +474,9 @@ export default function NotificationCenterRoute() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Delivery status</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Delivery status
+        </Text>
         <Text style={styles.cardText}>{pushStatusText}</Text>
         <Text style={styles.metaText}>
           {enabledCategories.length
@@ -485,7 +487,13 @@ export default function NotificationCenterRoute() {
           {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
             <View key={String(option.key)} style={styles.preferenceRow}>
               <View style={styles.preferenceCopy}>
-                <Text style={styles.preferenceTitle}>{option.title}</Text>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={3}
+                  style={styles.preferenceTitle}
+                >
+                  {option.title}
+                </Text>
                 <Text style={styles.metaText}>{option.description}</Text>
               </View>
               <Switch
@@ -519,6 +527,9 @@ export default function NotificationCenterRoute() {
         </Link>
       </View>
 
+      <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        Notification inbox
+      </Text>
       <View style={styles.toolbar}>
         {filterOptions.map((item) => (
           <Pressable
@@ -565,7 +576,9 @@ export default function NotificationCenterRoute() {
 
       {!loading && !filtered.length ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>No notifications</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+            No notifications
+          </Text>
           <Text style={styles.cardText}>
             Notifications that match your current filter will appear here when available.
           </Text>
@@ -589,7 +602,9 @@ export default function NotificationCenterRoute() {
             ]}
           >
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{row.title || "Notification"}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                {row.title || "Notification"}
+              </Text>
               <Text style={[styles.badge, unread && styles.unreadBadge]}>
                 {unread ? "unread" : "read"}
               </Text>
@@ -664,6 +679,7 @@ export function createNotificationCenterStyles(palette: ThemePalette) {
     },
     title: { color: palette.text, fontSize: 24, fontWeight: "900" },
     subtitle: { color: palette.textMuted, fontSize: 14, lineHeight: 20 },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
     toolbar: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     filterButton: {
       borderRadius: radius.card,

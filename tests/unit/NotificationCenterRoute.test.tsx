@@ -289,7 +289,18 @@ describe("NotificationCenterRoute", () => {
     const screen = render(<NotificationCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
-    expect(screen.getByRole("header", { name: "Notification Center" })).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Notification Center" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Delivery status" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Notification inbox" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Facility alerts" }).props["aria-level"]
+    ).toBe(3);
     expect(
       screen.getByLabelText("Notification link /home/facility/profile")
     ).toBeTruthy();
