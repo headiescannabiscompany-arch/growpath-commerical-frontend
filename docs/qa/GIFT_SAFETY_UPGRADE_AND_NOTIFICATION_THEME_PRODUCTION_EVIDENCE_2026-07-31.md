@@ -3173,3 +3173,37 @@ denied` H1, zero fields, and zero opaque light surfaces.
   action, workspace, account, session, billing, audit event, or record action
   was invoked. The five unfinished gift frontend files remained unstaged and
   outside the release.
+
+## Commercial workflows, record details, and Personal utilities active palette
+
+Frontend `da6250a83b68efc993c46f9cee6ad87deb4d58db` removes the next
+confirmed fixed-Day surfaces without changing workflow behavior:
+
+- Commercial Trials and Trial Detail, Product Lines and Product Line Detail,
+  Community, Marketing, Analytics, plus Commercial alert and log details;
+- Personal Dew Point Guard; and
+- Personal Analytics, Links, and QA utility screens.
+
+- Twelve combined suites passed, totaling 71 tests across existing trial,
+  product-line, campaign, analytics, forum-post, alert/log, Dew Point Guard,
+  link CRUD, QA, and utility behavior plus explicit Day/Night and source-guard
+  coverage. Forced source/test lint, full frontend `tsc --noEmit`, Prettier
+  verification, and `git diff --check` passed. The known non-failing Expo Go
+  remote-notification warning appeared in applicable suites.
+- Production Build Preflight `30724086968` and Frontend CI `30724086923`
+  passed against the exact commit above. Production changed from bundle
+  `index-54c13676...` to `index-fee33403eac5f69a12e1fcec30c3fc17.js`.
+- Signed-in Facility Viewer verification confirmed Facility Dashboard retained
+  zero opaque light surfaces. Direct Commercial Trials, Product Lines,
+  Community, Marketing, and Analytics routes and direct Personal Dew Point
+  Guard, Analytics, Links, and QA routes each retained one themed `Access
+denied` H1, zero fields, and zero opaque light surfaces.
+- The current account cannot load Personal or Commercial workspace states
+  without changing mode. Those loaded forms and the alert/log record detail
+  states remain behavior-and-palette test verified; no role bypass, fake
+  record, or false populated-state acceptance is claimed.
+- No field, file, image, upload, trial, product line, campaign, forum post,
+  alert, log, calculation, link, utility action, route action, workspace,
+  account, session, billing, audit event, or record action was invoked. The
+  five unfinished gift frontend files remained unstaged and outside the
+  release.
