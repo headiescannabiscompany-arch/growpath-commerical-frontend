@@ -3116,7 +3116,7 @@ shared active palette without changing their workflow behavior:
   Dashboard retained its active Night palette and zero opaque light surfaces.
   Direct Field Studies, Journal Log Detail, grow Tasks, grow Plants, Commercial
   Dashboard, and Commercial Tasks URLs each retained one themed `Access
-  denied` H1, zero fields, and zero opaque light surfaces without changing the
+denied` H1, zero fields, and zero opaque light surfaces without changing the
   session or workspace.
 - Loaded Personal and Commercial states remain behavior-and-theme verified by
   the 72-test matrix because the available account cannot render those modes
@@ -3129,3 +3129,47 @@ shared active palette without changing their workflow behavior:
   route action, workspace, account, session, billing, audit event, or record
   action was invoked. The five unfinished gift frontend files remained
   unstaged and outside the release.
+
+## Batch, comparison, discovery filter, evidence review, and admin heading palette
+
+Frontend `7255be5940445ba80ec933ab1856d87ed1913c1e` removes the next
+confirmed fixed-Day surfaces without changing batch, comparison, discovery,
+evidence, or authorization behavior:
+
+- Commercial Batch Planner and Batch Detail, including record selectors,
+  metrics, rows, warnings, actions, and all 21 input surfaces;
+- Personal Run Comparison, including the comparison workspace, selector and
+  summary panels, actions, feedback, and both input surfaces;
+- the shared Evidence Review panel and Discover video selected/unselected
+  filters; and
+- the Platform Admin current-account denial's missing semantic level-one
+  heading, with its authorization, visible copy, routing, and palette retained.
+
+- Six combined suites passed, totaling 55 tests across existing batch,
+  comparison, discovery, evidence-review, and admin authorization behavior plus
+  explicit Day/Night coverage. Forced source/test lint, full frontend
+  `tsc --noEmit`, Prettier verification, and `git diff --check` passed. The
+  known non-failing Expo Go remote-notification warning appeared in applicable
+  suites.
+- Production Build Preflight `30723739545` and Frontend CI `30723739543`
+  passed against the exact commit above. Production changed from bundle
+  `index-3112f1d5...` to `index-54c13676bdcd837833a433e1fe2172aa.js`.
+- Signed-in Facility Viewer verification confirmed Facility Dashboard and
+  Discover each rendered zero opaque light surfaces. Discover loaded its real
+  Videos section; the selected `All videos` filter used the Night accent
+  background/border `rgb(120, 170, 255)` with white child text, while the
+  unselected `Following only` filter used the Night surface/border and muted
+  text. No filter was changed.
+- `/admin` rendered `Platform owner access required` as the sole semantic H1,
+  with zero fields and zero opaque light surfaces. Direct Commercial Batch
+  Planner and Personal Run Comparison URLs each retained one themed `Access
+denied` H1, zero fields, and zero opaque light surfaces.
+- The signed-in account is not in Personal, Commercial, or Platform Admin mode,
+  so loaded role-specific batch/comparison/admin states remain behavior-and-
+  palette test verified. The Evidence Review panel is conditional on eligible
+  evidence data and likewise remains source-and-test verified; no permission
+  bypass or fake record was used.
+- No filter, field, batch, comparison, evidence review, admin action, route
+  action, workspace, account, session, billing, audit event, or record action
+  was invoked. The five unfinished gift frontend files remained unstaged and
+  outside the release.
