@@ -2533,9 +2533,35 @@ persistence, tasks, product drafts, or production-batch actions.
   tool works` H2. Every inspected field retained Night surface
   `rgb(21, 29, 39)` with bright text `rgb(244, 247, 251)`, and both pages had
   zero white/light page-content surfaces.
-- Nutrient's deeper workflow-section hierarchy remains a separate audit item;
-  this acceptance proves its page-title ownership and complete control names,
-  not an H2/H3 claim that production does not yet support.
+- Nutrient's deeper workflow-section hierarchy was separately audited and
+  closed by frontend `d4ba3292` in the follow-up evidence below.
+- No field, selector, preset, AI request, credit, calculation, recipe, ToolRun,
+  Saved Run, task, log, product, batch, grow, workspace, account, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
+
+## Shared Nutrient Mix Builder section hierarchy
+
+After the title/control-name correction, production Nutrient Mix Builder still
+had zero semantic workflow sections despite visible science, AI guidance,
+presets, context, target, water, product, micronutrient, and guaranteed-analysis
+titles. Frontend `d4ba3292` marks those existing titles as seven H2s and two
+H3s, adds conditional Saved Recipes and result-detail semantics, and marks the
+shared science/evidence card as an H2 for both canonical builders without
+changing visible copy or workflow behavior.
+
+- Both complete Nutrient and Soil builder suites passed, totaling 12 tests and
+  covering the new hierarchy alongside existing label/elemental math, presets,
+  AI handoffs, tasks, recipes, product drafts, Soil calculation, and production
+  batch conversion. Production-source lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30714441262` and Frontend CI `30714441224`
+  passed. Clean signed-in Facility Viewer production verification rendered one
+  bright Nutrient H1, seven bright H2 workflow sections, and two readable H3
+  ingredient subsections while retaining 38/38 named controls. Soil retained
+  one bright H1, both `How this tool works` and `Soil mix science and evidence`
+  H2s, and 34/34 named controls. Both routes retained zero white/light
+  page-content surfaces.
 - No field, selector, preset, AI request, credit, calculation, recipe, ToolRun,
   Saved Run, task, log, product, batch, grow, workspace, account, session,
   billing, audit event, or record action was invoked, and the Viewer session
