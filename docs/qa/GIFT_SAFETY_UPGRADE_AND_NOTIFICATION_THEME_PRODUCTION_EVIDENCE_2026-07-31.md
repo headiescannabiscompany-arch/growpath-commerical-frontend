@@ -2830,3 +2830,36 @@ GrowPath AI`; empty Send remained disabled; the Facility-credit notice and
 - No prompt, media, Send, credit, AI request, inventory, field, route,
   workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
+
+## Shared Courses Night field and workflow hierarchy
+
+Production `/courses` used the active Night canvas and retained the shared
+account's course-creation and invitation capabilities, but the Invite field was
+transparent with browser-default black text, black placeholder text, and a
+light-gray border. The empty-library and Course Builder Workflow titles were
+also plain text beneath the Courses H1. Frontend `17744cf1` moves the field to
+the active palette and marks the existing public-catalog, unavailable,
+empty-library, loaded-course, and builder titles as conditional H2s without
+changing discovery, ownership, creation, invitations, publishing, or access.
+
+- All 15 focused Courses suites passed, including capability-driven discovery,
+  commercial-course routing, query-parameter handling, heading semantics, and
+  active-palette field coverage. Forced source/test lint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. Existing non-failing React
+  test-timing warnings remained in two suites.
+- Production Build Preflight `30720334415` and Frontend CI `30720334380`
+  passed. Clean signed-in production verification on bundle
+  `index-63fff16b...` rendered one `Courses` H1 plus `No courses found` and
+  `Course Builder Workflow` H2s. The named Invite field rendered Night surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, bright text
+  `rgb(244, 247, 251)`, and placeholder `rgb(201, 212, 223)`. Create Course and
+  Invite remained present, and the route retained zero opaque white
+  page-content surfaces.
+- A `Connection problem` banner and false access/empty combination seen during
+  the preceding backend deployment disappeared after the production API
+  recovered. API health then returned `ok: true`; the recovered course route
+  retained the correct account capability. No speculative network or
+  entitlement change was made.
+- No field, invitation, course, creation, publishing, campaign, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Facility session remained signed in.
