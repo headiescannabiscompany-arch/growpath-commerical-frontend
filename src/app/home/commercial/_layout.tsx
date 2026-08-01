@@ -312,7 +312,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="tools/ingredient-library"
-        options={{ title: "Ingredients", tabBarButton: () => null }}
+        options={{
+          title: "Products & Label Library",
+          headerShown: false,
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"

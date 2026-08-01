@@ -42,7 +42,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "inventory",
     "plants",
     "logs",
-    "tools/environment"
+    "tools/environment",
+    "tools/ingredient-library"
   ].includes(routeName);
 }
 
@@ -277,7 +278,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="tools/ingredient-library"
-        options={{ title: "Ingredients", tabBarButton: () => null }}
+        options={{
+          title: "Products & Label Library",
+          headerShown: shouldShowFacilityRouteHeader("tools/ingredient-library"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/npk"

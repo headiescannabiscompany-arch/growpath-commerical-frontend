@@ -153,7 +153,7 @@ export default function ToolsLayout() {
       />
       <Stack.Screen
         name="ingredient-library"
-        options={{ title: "Products & Label Library" }}
+        options={{ title: "Products & Label Library", headerShown: false }}
       />
       <Stack.Screen name="npk" options={{ title: "Nutrient Mix Builder" }} />
       <Stack.Screen name="watering" options={{ title: "Watering Planner" }} />

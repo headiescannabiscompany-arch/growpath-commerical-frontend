@@ -384,7 +384,9 @@ export default function IngredientLibraryRoute() {
     >
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Products & Label Library</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Products & Label Library
+          </Text>
           <Text style={styles.subtitle}>
             Manage user-entered nutrients, amendments, soil inputs, and source confidence.
             Guaranteed analysis is stored as label N-P2O5-K2O; elemental conversions
@@ -431,7 +433,11 @@ export default function IngredientLibraryRoute() {
                   onPress={() => selectItem(item)}
                   style={[styles.card, active && styles.cardOn]}
                 >
-                  <Text style={styles.cardTitle}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={2}
+                    style={styles.cardTitle}
+                  >
                     {item.favorite ? "* " : ""}
                     {item.name}
                   </Text>
@@ -478,7 +484,9 @@ export default function IngredientLibraryRoute() {
           </View>
         ) : (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>No ingredients yet</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              No ingredients yet
+            </Text>
             <Text style={styles.meta}>
               Create one to use in recipes and amendment planning.
             </Text>
@@ -492,7 +500,7 @@ export default function IngredientLibraryRoute() {
         />
 
         <View style={styles.form}>
-          <Text style={styles.sectionTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             {selected ? "Edit ingredient" : "Create ingredient"}
           </Text>
 

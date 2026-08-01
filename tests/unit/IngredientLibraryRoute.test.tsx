@@ -131,6 +131,15 @@ describe("IngredientLibraryRoute", () => {
     const screen = render(<IngredientLibraryRoute />);
 
     await waitFor(() => expect(screen.getByText("Kelp meal")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Products & Label Library" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(screen.getByRole("header", { name: "Kelp meal" })).toHaveProp("aria-level", 2);
+    expect(screen.getByRole("header", { name: "Create ingredient" })).toHaveProp(
+      "aria-level",
+      2
+    );
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(
       screen.getByText(/Guaranteed analysis is stored as label N-P2O5-K2O/)

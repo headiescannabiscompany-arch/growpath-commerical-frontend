@@ -59,6 +59,11 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("tools/pulse")).toBe(true);
   });
 
+  it("lets Products & Label Library own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("tools/ingredient-library")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("tools/pulse")).toBe(true);
+  });
+
   it("lets Licensed Sales & Transfers own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("transfers")).toBe(false);
     expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
