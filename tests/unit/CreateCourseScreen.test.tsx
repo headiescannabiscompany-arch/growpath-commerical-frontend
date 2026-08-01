@@ -184,6 +184,9 @@ describe("CreateCourseScreen", () => {
     expect(screen.getByText("Twitch, calendar, and reminders")).toBeTruthy();
     expect(screen.getByText("Open Schedule")).toBeTruthy();
     expect(screen.getByText("Notifications")).toBeTruthy();
+    expect(
+      Array.isArray(screen.getByLabelText("Open shared GrowPath Schedule").props.style)
+    ).toBe(false);
   });
 
   it("creates structured draft payloads for lessons, documents, lives, and links", async () => {

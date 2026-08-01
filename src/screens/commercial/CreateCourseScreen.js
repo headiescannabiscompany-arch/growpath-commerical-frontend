@@ -183,7 +183,10 @@ export default function CreateCourseScreen({
       ],
       uploadButton: [styles.uploadButton, { borderColor: palette.accent }],
       uploadButtonText: [styles.uploadButtonText, { color: palette.link }],
-      secondaryButton: [styles.secondaryButton, { borderColor: palette.accent }],
+      secondaryButton: StyleSheet.flatten([
+        styles.secondaryButton,
+        { borderColor: palette.accent }
+      ]),
       secondaryButtonText: [styles.secondaryButtonText, { color: palette.link }],
       button: [styles.button, { backgroundColor: palette.accent }],
       buttonText: [styles.buttonText, { color: palette.accentText }],
