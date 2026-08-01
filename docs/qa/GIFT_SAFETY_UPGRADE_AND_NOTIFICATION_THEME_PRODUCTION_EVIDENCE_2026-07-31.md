@@ -1180,6 +1180,35 @@ headings without changing task data or permissions.
   event, billing, or record action was invoked, and the session remained signed
   in.
 
+## Facility Grow, Plant, and Journal Detail Night themes
+
+Production's Facility workspace truthfully contained zero grows, zero plants,
+and zero journal entries, so no populated detail record could be opened without
+manufacturing data. Safe direct navigation confirmed all three not-found states
+had no semantic heading. Authoritative route source also confirmed each loaded
+detail card still hardcoded white/day colors. Frontend `789bc78a` moved the
+complete grow overview/workspace, plant evidence, and journal evidence detail
+states to the active palette and added accurate loaded/not-found headings. The
+routes remain read-only; no mutation behavior was added.
+
+- Production Build Preflight `30693532144` passed in 3m20s and Frontend CI
+  `30693532141` passed in 5m26s.
+- Ten focused loaded-grow, grow/plant index, detail-heading, and explicit
+  grow/plant/journal Night-palette tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Viewer production acceptance was intentionally limited to the real
+  zero-record condition: direct safe references produced level-one `Grow not
+  found`, `Plant not found`, and `Log entry not found` headings with bright
+  Night text `rgb(244, 247, 251)`. None exposed a white page-content surface;
+  the separate Report Bug control was the only detected white element.
+- Focused loaded-state tests prove that grow cards/summary/workspace actions,
+  plant key/value evidence, and journal key/value evidence use their active
+  palette. This is not claimed as populated production-record acceptance; a
+  genuine future record is still required for that live evidence. No record was
+  created to force it. No refresh, contextual tool, workspace action, grow,
+  plant, journal entry, task, AI request, credit, audit event, billing, or record
+  action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
