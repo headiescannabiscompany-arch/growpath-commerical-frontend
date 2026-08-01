@@ -16,12 +16,15 @@ import { requestEmailVerification } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ email?: string; reset?: string }>();
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = createLoginStyles(palette);
 
   const [email, setEmail] = useState(String(params.email || ""));
   const [password, setPassword] = useState("");
@@ -131,7 +134,7 @@ export default function LoginScreen() {
             autoCorrect={false}
             keyboardType="email-address"
             placeholder="Email"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={palette.textMuted}
             value={email}
             onChangeText={setEmail}
           />
@@ -139,7 +142,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={palette.textMuted}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -167,7 +170,7 @@ export default function LoginScreen() {
                 ]}
               >
                 {resendingVerification ? (
-                  <ActivityIndicator color="#166534" />
+                  <ActivityIndicator color={palette.accent} />
                 ) : (
                   <Text style={styles.secondaryButtonText}>
                     Resend verification email
@@ -185,7 +188,7 @@ export default function LoginScreen() {
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.buttonText}>Sign in</Text>
             )}
@@ -235,130 +238,131 @@ function loginErrorMessage(error: ApiError) {
   return backendMessage || error.message || "Invalid email or password";
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#f8fafc" },
-  content: {
-    alignItems: "center",
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 16
-  },
-  shell: {
-    alignItems: "center",
-    gap: 18,
-    maxWidth: 720,
-    width: "100%"
-  },
-  visualPanel: { maxWidth: 680, width: "100%" },
-  bannerFrame: {
-    width: "100%",
-    aspectRatio: 1.42,
-    alignSelf: "center",
-    borderRadius: radius.card,
-    overflow: "hidden",
-    backgroundColor: "#eef2f7"
-  },
-  bannerImage: {
-    width: "100%",
-    height: "100%"
-  },
-  brandBlock: {
-    alignItems: "center",
-    paddingBottom: 18
-  },
-  logoMark: {
-    width: 72,
-    height: 72,
-    borderRadius: radius.card,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#d1d5db"
-  },
-  logo: {
-    width: 58,
-    height: 58
-  },
-  brand: {
-    color: "#111827",
-    fontSize: 32,
-    fontWeight: "800"
-  },
-  tagline: {
-    color: "#475569",
-    fontSize: 15,
-    fontWeight: "600",
-    marginTop: 6
-  },
-  formCard: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d8ded6",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 24,
-    maxWidth: 460,
-    width: "100%"
-  },
-  title: { fontSize: 24, fontWeight: "800", marginBottom: 16, color: "#111827" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#ffffff",
-    color: "#111827",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: radius.card,
-    marginBottom: 12
-  },
-  error: { color: "#b91c1c", marginBottom: 12, fontWeight: "600" },
-  successMessage: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "800",
-    marginBottom: 12
-  },
-  verificationBox: {
-    borderWidth: 1,
-    borderColor: "#bfdbfe",
-    backgroundColor: "#eff6ff",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 12,
-    gap: 8
-  },
-  verificationText: {
-    color: "#1e3a8a",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 18
-  },
-  verificationNote: {
-    color: "#1f2937",
-    fontSize: 13,
-    lineHeight: 18
-  },
-  button: {
-    paddingVertical: 12,
-    borderRadius: radius.card,
-    alignItems: "center",
-    backgroundColor: "#166534"
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { fontWeight: "800", color: "#ffffff" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#93c5fd",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 12
-  },
-  secondaryButtonText: { fontWeight: "800", color: "#166534" },
-  linkBtn: { marginTop: 14, alignItems: "center" },
-  linkBtnTight: { marginTop: 8, alignItems: "center" },
-  linkText: { fontWeight: "800", color: "#166534" }
-});
+export const createLoginStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: palette.page },
+    content: {
+      alignItems: "center",
+      flexGrow: 1,
+      justifyContent: "center",
+      padding: 16
+    },
+    shell: {
+      alignItems: "center",
+      gap: 18,
+      maxWidth: 720,
+      width: "100%"
+    },
+    visualPanel: { maxWidth: 680, width: "100%" },
+    bannerFrame: {
+      width: "100%",
+      aspectRatio: 1.42,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      overflow: "hidden",
+      backgroundColor: palette.surfaceMuted
+    },
+    bannerImage: {
+      width: "100%",
+      height: "100%"
+    },
+    brandBlock: {
+      alignItems: "center",
+      paddingBottom: 18
+    },
+    logoMark: {
+      width: 72,
+      height: 72,
+      borderRadius: radius.card,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 10,
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    logo: {
+      width: 58,
+      height: 58
+    },
+    brand: {
+      color: palette.text,
+      fontSize: 32,
+      fontWeight: "800"
+    },
+    tagline: {
+      color: palette.textSoft,
+      fontSize: 15,
+      fontWeight: "600",
+      marginTop: 6
+    },
+    formCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 24,
+      maxWidth: 460,
+      width: "100%"
+    },
+    title: { fontSize: 24, fontWeight: "800", marginBottom: 16, color: palette.text },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      borderRadius: radius.card,
+      marginBottom: 12
+    },
+    error: { color: palette.danger, marginBottom: 12, fontWeight: "600" },
+    successMessage: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800",
+      marginBottom: 12
+    },
+    verificationBox: {
+      borderWidth: 1,
+      borderColor: palette.info,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 12,
+      gap: 8
+    },
+    verificationText: {
+      color: palette.info,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    verificationNote: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 18
+    },
+    button: {
+      paddingVertical: 12,
+      borderRadius: radius.card,
+      alignItems: "center",
+      backgroundColor: palette.accent
+    },
+    buttonDisabled: { opacity: 0.5 },
+    buttonText: { fontWeight: "800", color: palette.accentText },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.info,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 12
+    },
+    secondaryButtonText: { fontWeight: "800", color: palette.link },
+    linkBtn: { marginTop: 14, alignItems: "center" },
+    linkBtnTight: { marginTop: 8, alignItems: "center" },
+    linkText: { fontWeight: "800", color: palette.link }
+  });

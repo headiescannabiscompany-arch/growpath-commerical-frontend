@@ -12,10 +12,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { resetPassword } from "@/api/auth";
 import BackButton from "@/components/nav/BackButton";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = createResetPasswordStyles(palette);
   const params = useLocalSearchParams<{
     token?: string | string[];
     resetToken?: string | string[];
@@ -105,7 +108,7 @@ export default function ResetPasswordScreen() {
         <TextInput
           accessibilityLabel="New password"
           placeholder="New password"
-          placeholderTextColor="#6b7280"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -115,7 +118,7 @@ export default function ResetPasswordScreen() {
         <TextInput
           accessibilityLabel="Confirm new password"
           placeholder="Confirm new password"
-          placeholderTextColor="#6b7280"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -145,7 +148,7 @@ export default function ResetPasswordScreen() {
           style={[styles.button, !canSubmit && styles.buttonDisabled]}
         >
           {submitting ? (
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.buttonText}>Update password</Text>
           )}
@@ -215,68 +218,69 @@ function resetErrorMessage(error: ApiError) {
   return error.message || "Unable to reset password.";
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    padding: 16
-  },
-  panel: {
-    width: "100%",
-    maxWidth: 420,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#dbe3ea",
-    backgroundColor: "#ffffff",
-    padding: 22,
-    gap: 14
-  },
-  title: {
-    color: "#111827",
-    fontSize: 22,
-    fontWeight: "800"
-  },
-  message: {
-    color: "#374151",
-    fontSize: 15,
-    lineHeight: 22
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#ffffff",
-    color: "#111827",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: radius.card
-  },
-  error: {
-    color: "#b91c1c",
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  success: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 18
-  },
-  button: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 44,
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    paddingHorizontal: 16
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "700"
-  },
-  linkButton: { alignItems: "center" },
-  linkText: { color: "#166534", fontSize: 14, fontWeight: "800" }
-});
+export const createResetPasswordStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: palette.page,
+      padding: 16
+    },
+    panel: {
+      width: "100%",
+      maxWidth: 420,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      padding: 22,
+      gap: 14
+    },
+    title: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "800"
+    },
+    message: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      borderRadius: radius.card
+    },
+    error: {
+      color: palette.danger,
+      fontSize: 13,
+      fontWeight: "700"
+    },
+    success: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    button: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingHorizontal: 16
+    },
+    buttonDisabled: { opacity: 0.5 },
+    buttonText: {
+      color: palette.accentText,
+      fontSize: 15,
+      fontWeight: "700"
+    },
+    linkButton: { alignItems: "center" },
+    linkText: { color: palette.link, fontSize: 14, fontWeight: "800" }
+  });

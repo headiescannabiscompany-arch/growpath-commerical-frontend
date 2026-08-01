@@ -4,12 +4,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { confirmEmailVerification } from "@/api/auth";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type VerifyState = "checking" | "success" | "error";
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = createVerifyEmailStyles(palette);
   const params = useLocalSearchParams<{ token?: string | string[] }>();
   const token = useMemo(() => {
     const raw = params.token;
@@ -58,7 +61,7 @@ export default function VerifyEmailScreen() {
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Email verification
         </Text>
-        {state === "checking" ? <ActivityIndicator color="#2563eb" /> : null}
+        {state === "checking" ? <ActivityIndicator color={palette.info} /> : null}
         <Text style={styles.message}>{message}</Text>
         <Pressable
           accessibilityRole="button"
@@ -73,45 +76,46 @@ export default function VerifyEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    padding: 16
-  },
-  panel: {
-    width: "100%",
-    maxWidth: 420,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#dbe3ea",
-    backgroundColor: "#ffffff",
-    padding: 22,
-    gap: 14
-  },
-  title: {
-    color: "#111827",
-    fontSize: 22,
-    fontWeight: "800"
-  },
-  message: {
-    color: "#374151",
-    fontSize: 15,
-    lineHeight: 22
-  },
-  button: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 44,
-    borderRadius: radius.card,
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 16
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "700"
-  }
-});
+export const createVerifyEmailStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: palette.page,
+      padding: 16
+    },
+    panel: {
+      width: "100%",
+      maxWidth: 420,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      padding: 22,
+      gap: 14
+    },
+    title: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "800"
+    },
+    message: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22
+    },
+    button: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      borderRadius: radius.card,
+      backgroundColor: palette.info,
+      paddingHorizontal: 16
+    },
+    buttonText: {
+      color: palette.accentText,
+      fontSize: 15,
+      fontWeight: "700"
+    }
+  });

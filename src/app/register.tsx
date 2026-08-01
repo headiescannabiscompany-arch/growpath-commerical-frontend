@@ -16,6 +16,7 @@ import { SignupBody } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AccountChoice = {
@@ -79,6 +80,8 @@ function ageFromDate(value: string) {
 export default function RegisterScreen() {
   const router = useRouter();
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = createRegisterStyles(palette);
   const { width } = useWindowDimensions();
   const isWide = width >= 860;
 
@@ -203,7 +206,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Register name"
             style={styles.input}
             placeholder="Name"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={palette.textMuted}
             value={name}
             onChangeText={setName}
           />
@@ -215,7 +218,7 @@ export default function RegisterScreen() {
             autoCorrect={false}
             keyboardType="email-address"
             placeholder="Email"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={palette.textMuted}
             value={email}
             onChangeText={setEmail}
           />
@@ -224,7 +227,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Register password"
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={palette.textMuted}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -293,7 +296,7 @@ export default function RegisterScreen() {
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.buttonText}>Create {choice.label} account</Text>
             )}
@@ -315,121 +318,130 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: "#f4f6f3", flex: 1 },
-  content: {
-    alignItems: "center",
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 16
-  },
-  shell: { gap: 14, maxWidth: 1120, width: "100%" },
-  shellWide: { alignItems: "flex-start", flexDirection: "row", gap: 24 },
-  planPanel: { flex: 1, minWidth: 0 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 6,
-    textTransform: "uppercase"
-  },
-  title: { color: "#111827", fontSize: 34, fontWeight: "900", marginBottom: 8 },
-  subtitle: {
-    color: "#475569",
-    fontSize: 15,
-    fontWeight: "700",
-    lineHeight: 22,
-    marginBottom: 16,
-    maxWidth: 640
-  },
-  choiceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  choice: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d7ddd2",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 142,
-    padding: 14,
-    width: "100%"
-  },
-  choiceActive: { borderColor: "#166534", borderWidth: 2 },
-  choiceHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10
-  },
-  choiceLabel: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  radio: {
-    borderColor: "#94a3b8",
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    height: 16,
-    width: 16
-  },
-  radioActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  choiceTitle: {
-    color: "#111827",
-    fontSize: 17,
-    fontWeight: "900",
-    marginBottom: 6
-  },
-  choiceDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  formCard: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d7ddd2",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 16,
-    width: "100%"
-  },
-  formCardWide: { padding: 22, width: 390 },
-  formTitle: {
-    color: "#111827",
-    fontSize: 22,
-    fontWeight: "900",
-    marginBottom: 6
-  },
-  formSub: { color: "#64748b", fontWeight: "700", lineHeight: 20, marginBottom: 16 },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12
-  },
-  dateField: { marginBottom: 12 },
-  ageHelper: { color: "#64748b", fontSize: 12, lineHeight: 17 },
-  contentChoice: {
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    marginBottom: 12,
-    marginTop: 10,
-    padding: 11
-  },
-  contentChoiceSelected: { backgroundColor: "#F0FDF4", borderColor: "#166534" },
-  contentChoiceTitle: { color: "#0F172A", fontWeight: "900" },
-  error: { color: "#b91c1c", fontWeight: "700", marginBottom: 12 },
-  success: { color: "#166534", fontWeight: "700", marginBottom: 12 },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#ffffff", fontWeight: "900" },
-  linkBtn: { alignItems: "center", marginTop: 14 },
-  linkText: { color: "#166534", fontWeight: "900" },
-  pressed: { opacity: 0.84 }
-});
+export const createRegisterStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: { backgroundColor: palette.page, flex: 1 },
+    content: {
+      alignItems: "center",
+      flexGrow: 1,
+      justifyContent: "center",
+      padding: 16
+    },
+    shell: { gap: 14, maxWidth: 1120, width: "100%" },
+    shellWide: { alignItems: "flex-start", flexDirection: "row", gap: 24 },
+    planPanel: { flex: 1, minWidth: 0 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 6,
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 34, fontWeight: "900", marginBottom: 8 },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      fontWeight: "700",
+      lineHeight: 22,
+      marginBottom: 16,
+      maxWidth: 640
+    },
+    choiceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    choice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 142,
+      padding: 14,
+      width: "100%"
+    },
+    choiceActive: { borderColor: palette.accent, borderWidth: 2 },
+    choiceHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 10
+    },
+    choiceLabel: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    radio: {
+      borderColor: palette.textMuted,
+      borderRadius: radius.pill,
+      borderWidth: 2,
+      height: 16,
+      width: 16
+    },
+    radioActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    choiceTitle: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "900",
+      marginBottom: 6
+    },
+    choiceDesc: { color: palette.textSoft, fontWeight: "700", lineHeight: 20 },
+    formCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 16,
+      width: "100%"
+    },
+    formCardWide: { padding: 22, width: 390 },
+    formTitle: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "900",
+      marginBottom: 6
+    },
+    formSub: {
+      color: palette.textMuted,
+      fontWeight: "700",
+      lineHeight: 20,
+      marginBottom: 16
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginBottom: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 12
+    },
+    dateField: { marginBottom: 12 },
+    ageHelper: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    contentChoice: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      marginBottom: 12,
+      marginTop: 10,
+      padding: 11
+    },
+    contentChoiceSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    contentChoiceTitle: { color: palette.text, fontWeight: "900" },
+    error: { color: palette.danger, fontWeight: "700", marginBottom: 12 },
+    success: { color: palette.success, fontWeight: "700", marginBottom: 12 },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    buttonDisabled: { opacity: 0.5 },
+    buttonText: { color: palette.accentText, fontWeight: "900" },
+    linkBtn: { alignItems: "center", marginTop: 14 },
+    linkText: { color: palette.link, fontWeight: "900" },
+    pressed: { opacity: 0.84 }
+  });
