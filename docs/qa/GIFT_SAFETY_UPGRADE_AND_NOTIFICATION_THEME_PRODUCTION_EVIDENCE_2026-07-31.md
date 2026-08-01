@@ -2034,3 +2034,32 @@ free acquisition, or paid checkout behavior.
 - No search, filter, refresh, offer, detail, checkout, purchase, library,
   report, workspace, account, session, billing, audit event, or record action
   was invoked, and the Viewer session remained signed in.
+
+## Shared Live Session direct-route safety, Night theme, and hierarchy
+
+Production `/live-session` silently substituted fake identifier `session-1`
+when no real session query parameter existed. It sent both detail and RSVP API
+requests, then displayed the backend's raw MongoDB ObjectId cast failure on a
+light canvas with no semantic headings. Source inspection also confirmed that
+the valid loaded-session card, badges, embedded-media surround, linked context,
+RSVP/reminder/report/moderation actions, feedback, and completion states were
+fixed to daytime colors. Frontend `a16f97f3` removes the synthetic fallback,
+sends no live-session requests without a real identifier, converts technical
+not-found/backend failures into safe user copy with a Browse Lives handoff,
+moves every route state to the active palette, and establishes the route title
+as H1 plus the unavailable or loaded-session title as H2. Legitimate playback,
+RSVP, task reminder, reporting, moderation, analytics, campaign, product,
+course, and Forum behavior did not change.
+
+- Fifteen focused Lives directory/detail, moderation, RSVP, reminder, context,
+  reporting, theme, missing-ID, and error-sanitization tests passed. The
+  missing-ID test explicitly proves zero API calls. Targeted source ESLint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30706864328` and Frontend CI `30706864340`
+  passed. Clean production `/live-session` then showed one white H1, one bright
+  H2, the truthful `Choose a live session from Lives.` explanation, a visible
+  Browse Lives control, zero white/light page-content surfaces, and no ObjectId,
+  model, path, or other database implementation detail.
+- No Browse Lives, playback, RSVP, reminder, report, moderation, campaign,
+  product, course, Forum, workspace, account, session, billing, audit event, or
+  record action was invoked, and the Viewer session remained signed in.
