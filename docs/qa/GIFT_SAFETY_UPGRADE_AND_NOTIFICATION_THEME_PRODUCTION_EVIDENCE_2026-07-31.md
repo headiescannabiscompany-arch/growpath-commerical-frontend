@@ -903,6 +903,36 @@ gate.
   plant, stage, room, grow, refresh, link, create, audit event, billing, or
   record action was invoked, and the session remained signed in.
 
+## Facility Grow Journal hierarchy and centralized write gate
+
+Production Facility Logs already used the correct Night palette, truthful
+zero-entry state, and read-only Viewer presentation. Its tab shell owned the
+generic `Logs` level-one heading while the useful journal title and empty-state
+title were ordinary text. Source verification also found that the write UI
+checked role only and bypassed the centralized `GROWLOGS_WRITE` capability.
+Frontend `73b00f69` established page-owned journal and empty-state headings and
+requires both the centralized capability and an Owner/Manager/Staff role. The
+first live retest caught that the visible root heading still said only `Grow
+Journal` while the route title said `Facility Grow Journal`; follow-up
+`39b5a9a3` aligned the final visible title and added root-route coverage.
+
+- Final Production Build Preflight `30690355620` passed in 2m59s and final
+  Frontend CI `30690355627` passed in 6m57s. The superseded first deployment was
+  not accepted after live verification exposed the title mismatch.
+- Fifty-nine focused Facility Logs Staff/Viewer, stale-capability, root/context
+  heading, tab-shell, role-policy, and mode-access tests passed. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed. The
+  suites retained their existing Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  `Facility Grow Journal` heading; one level-two `No log entries yet` heading;
+  the truthful `0 entries` state; the Night canvas `rgb(14, 20, 27)`; bright
+  heading text `rgb(244, 247, 251)`; and no white page-content surface. The
+  separate Report Bug control was the only detected white element.
+- The Viewer exposed zero journal-type, title, note, save, or entry-link
+  controls. No journal type, title, note, save, refresh, entry, link, audit
+  event, billing, or record action was invoked, and the session remained signed
+  in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
