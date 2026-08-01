@@ -2363,3 +2363,25 @@ navigation, onboarding, or Facility membership behavior.
 - No Facility selection, navigation, onboarding, membership, create, edit,
   delete, invite, save, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
+
+## Shared Profile semantic hierarchy
+
+Production `/profile` already used the correct Night palette and retained the
+expected account actions, but it exposed no semantic headings. Frontend
+`224ad315` establishes one `Profile` H1 and section H2s for sign-in email, plan
+status, conditional commercial brand identity, account type, session, and
+privacy/account data without changing account behavior or palette styling.
+
+- The focused hierarchy source test passed, enforcing exactly one H1 and all
+  six possible H2 declarations. Targeted source lint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30711991609` and Frontend CI `30711991617`
+  passed. Clean signed-in Facility Viewer verification rendered one bright
+  `Profile` H1 and the five applicable bright H2s; the conditional commercial
+  brand section was correctly absent for this account. Both existing fields
+  retained explicit names and Night surface `rgb(21, 29, 39)` with bright text
+  `rgb(244, 247, 251)`. The Log out action remained present, and the page had
+  zero white/light page-content surfaces.
+- No field, workspace, account, plan, logout, export, delete, privacy, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
