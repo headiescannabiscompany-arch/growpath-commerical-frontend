@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import NotificationCenterRoute from "@/app/home/notifications";
+import NotificationCenterRoute, {
+  createNotificationCenterStyles
+} from "@/app/home/notifications";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 let mockWorkspaceMode = "personal";
@@ -50,6 +53,17 @@ jest.mock("expo-router", () => {
 jest.setTimeout(15000);
 
 describe("NotificationCenterRoute", () => {
+  it("uses the active app palette for night surfaces and text", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createNotificationCenterStyles(palette);
+
+    expect(styles.root.backgroundColor).toBe(palette.page);
+    expect(styles.header.backgroundColor).toBe(palette.surface);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.primaryButton.backgroundColor).toBe(palette.accent);
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockWorkspaceMode = "personal";

@@ -21,6 +21,7 @@ import {
   NotificationPreferenceState,
   notificationPreferenceKeyForSourceType
 } from "@/notifications/notificationPreferences";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -253,6 +254,8 @@ const NOTIFICATION_INBOX_FILTERS = NOTIFICATION_PREFERENCE_OPTIONS.filter(
 
 export default function NotificationCenterRoute() {
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createNotificationCenterStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     notificationId?: string | string[];
     workspace?: string | string[];
@@ -558,7 +561,7 @@ export default function NotificationCenterRoute() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
 
-      {loading ? <ActivityIndicator color="#166534" /> : null}
+      {loading ? <ActivityIndicator color={palette.accent} /> : null}
 
       {!loading && !filtered.length ? (
         <View style={styles.card}>
@@ -640,107 +643,109 @@ export default function NotificationCenterRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#f4f8f5" },
-  content: { padding: 16, gap: 14 },
-  header: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#cfe3d5",
-    backgroundColor: "#ffffff",
-    padding: 16,
-    gap: 6
-  },
-  eyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0
-  },
-  title: { color: "#111827", fontSize: 24, fontWeight: "900" },
-  subtitle: { color: "#374151", fontSize: 14, lineHeight: 20 },
-  toolbar: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  filterButton: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  filterButtonActive: { borderColor: "#166534", backgroundColor: "#166534" },
-  filterButtonText: { color: "#374151", fontSize: 13, fontWeight: "800" },
-  filterButtonTextActive: { color: "#ffffff" },
-  primaryButton: {
-    alignItems: "center",
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    paddingHorizontal: 14,
-    paddingVertical: 12
-  },
-  primaryButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  disabledButton: { opacity: 0.45 },
-  card: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#dbe3ea",
-    backgroundColor: "#ffffff",
-    padding: 14,
-    gap: 8
-  },
-  unreadCard: { borderColor: "#86efac", backgroundColor: "#f0fdf4" },
-  focusedCard: {
-    borderColor: "#166534",
-    borderWidth: 2
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10
-  },
-  cardTitle: { color: "#111827", fontSize: 16, fontWeight: "900", flex: 1 },
-  cardText: { color: "#374151", fontSize: 13, lineHeight: 19 },
-  preferenceList: { marginTop: 12, gap: 10 },
-  preferenceRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between"
-  },
-  preferenceCopy: { flex: 1 },
-  preferenceTitle: { color: "#111827", fontSize: 14, fontWeight: "800" },
-  metaText: { color: "#64748b", fontSize: 12, fontWeight: "700" },
-  badge: {
-    overflow: "hidden",
-    borderRadius: radius.card,
-    backgroundColor: "#e5e7eb",
-    color: "#374151",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  unreadBadge: { backgroundColor: "#166534", color: "#ffffff" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  secondaryButton: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#166534",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  linkButton: {
-    borderRadius: radius.card,
-    backgroundColor: "#111827",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  linkButtonText: { color: "#ffffff", fontSize: 13, fontWeight: "900" },
-  error: { color: "#b91c1c", fontSize: 13, fontWeight: "800" },
-  success: { color: "#166534", fontSize: 13, fontWeight: "800" }
-});
+export function createNotificationCenterStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 16, gap: 14 },
+    header: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      padding: 16,
+      gap: 6
+    },
+    eyebrow: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase",
+      letterSpacing: 0
+    },
+    title: { color: palette.text, fontSize: 24, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, fontSize: 14, lineHeight: 20 },
+    toolbar: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    filterButton: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    filterButtonActive: { borderColor: palette.accent, backgroundColor: palette.accent },
+    filterButtonText: { color: palette.textMuted, fontSize: 13, fontWeight: "800" },
+    filterButtonTextActive: { color: palette.accentText },
+    primaryButton: {
+      alignItems: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingHorizontal: 14,
+      paddingVertical: 12
+    },
+    primaryButtonText: { color: palette.accentText, fontSize: 14, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    disabledButton: { opacity: 0.45 },
+    card: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      padding: 14,
+      gap: 8
+    },
+    unreadCard: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    focusedCard: {
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    cardHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900", flex: 1 },
+    cardText: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    preferenceList: { marginTop: 12, gap: 10 },
+    preferenceRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between"
+    },
+    preferenceCopy: { flex: 1 },
+    preferenceTitle: { color: palette.text, fontSize: 14, fontWeight: "800" },
+    metaText: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    badge: {
+      overflow: "hidden",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong,
+      color: palette.textMuted,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    unreadBadge: { backgroundColor: palette.accent, color: palette.accentText },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    secondaryButton: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    linkButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    linkButtonText: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    error: { color: palette.danger, fontSize: 13, fontWeight: "800" },
+    success: { color: palette.success, fontSize: 13, fontWeight: "800" }
+  });
+}
