@@ -398,6 +398,33 @@ that shared panel to the palette as well.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
+## Facility Compliance AI Dashboard Night theme and report presentation
+
+Production Facility Compliance AI Dashboard used a Night canvas with unreadable
+day-only heading and explanatory copy, then exposed the complete backend report
+as a raw JSON block. Frontend `fd12330e` moved the route to the active palette
+and replaced that developer representation with read-only operational cards
+while preserving every value and its source semantics.
+
+- Production Build Preflight `30683445378` passed in 2m44s and Frontend CI
+  `30683445381` passed in 5m22s. The production host published the new
+  `index-400fc34a43b07938332b33e1de46db2c.js` asset.
+- Ten focused audit/compliance tests passed, including readable report sections,
+  raw-JSON exclusion, truthful unknown-value handling, and an explicit Night
+  palette regression. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one Compliance AI
+  Dashboard heading and level-two Tasks, Compliance records, Automation, and
+  Team sections. Live values remained Tasks `1 / 0 / 0 / 0`, Compliance logs
+  `0` with missed in seven days shown as `Unknown`, Automation `0 / 0`, and
+  Team `4` with Manager, Owner, Staff, and Viewer each `1`.
+- The raw backend JSON was absent from the user-facing page, the resolved Night
+  canvas was `rgb(14, 20, 27)`, primary headings were `rgb(244, 247, 251)`, and
+  supporting labels were `rgb(201, 212, 223)`.
+- No AI call, compliance action, task, team, automation, token, audit event, or
+  record changed. The session was returned to the Facility dashboard without
+  logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
