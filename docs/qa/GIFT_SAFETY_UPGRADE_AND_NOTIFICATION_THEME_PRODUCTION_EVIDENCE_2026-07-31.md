@@ -18,6 +18,9 @@ Date: 2026-07-31 (America/New_York)
 - Facility More heading hierarchy: `18b1e149`
 - Facility More Frontend CI: `30677284453` (passed)
 - Facility More Production Build Preflight: `30677284452` (passed)
+- Facility Integrations active-theme fix: `612c4cab`
+- Facility Integrations Frontend CI: `30677646664` (passed)
+- Facility Integrations Production Build Preflight: `30677646668` (passed)
 
 ## Confirmed gift defect and safety boundary
 
@@ -87,6 +90,22 @@ four explicit level-two group headings. The Night palette remained intact and
 all Facility operations, admin/records, learning/community, and workspace links
 remained visible. No destination or record action was invoked.
 
+## Facility Integrations Night theme
+
+The next signed-in production inspection confirmed that
+`/home/facility/integrations` still rendered a fixed light canvas, white
+provider cards, off-white content cards, and day-only green actions while the
+Facility account was resolved to Night.
+
+Frontend `612c4cab` moved the page, provider choices, cards, inputs, mapping
+rows, provider statuses, text, borders, feedback, and actions onto the active
+app palette. After both safeguards passed, the production route displayed the
+dark blue-gray canvas and cards, bright text, and blue actions while retaining
+Pulse, TrolMaster, controller-history import, and all eight planned provider
+entries. The Viewer boundary still prevented adding a Pulse connection. No
+provider was selected, no external email link opened, no file was uploaded,
+and no integration or mapping record changed.
+
 ## Automated verification
 
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
@@ -96,6 +115,8 @@ remained visible. No destination or record action was invoked.
   palette regression.
 - Facility tab policy: 4 focused tests passed, including the More route's
   single-heading ownership rule.
+- Facility Integrations: 3 focused tests passed, including an explicit Night
+  palette regression and the existing mapping workflow coverage.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
