@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
+import FeedingScheduleToolScreen, {
+  createFeedingScheduleStyles
+} from "@/app/home/personal/(tabs)/tools/feeding-schedule";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockGenerateSchedule = jest.fn();
 const mockSaveToolRunAndCreateLog = jest.fn();
@@ -124,6 +127,17 @@ describe("FeedingScheduleToolScreen", () => {
       toolRunId: "toolrun-1",
       taskId: "task-1"
     });
+  });
+
+  it("uses the active Night palette for the planner", () => {
+    const palette = getThemePalette("night", "dark");
+    const screenStyles = createFeedingScheduleStyles(palette);
+
+    expect(screenStyles.container.backgroundColor).toBe(palette.page);
+    expect(screenStyles.title.color).toBe(palette.text);
+    expect(screenStyles.input.backgroundColor).toBe(palette.surface);
+    expect(screenStyles.input.color).toBe(palette.text);
+    expect(screenStyles.aiCard.backgroundColor).toBe(palette.surfaceMuted);
   });
 
   it("creates feeding review tasks with shared Schedule metadata", async () => {

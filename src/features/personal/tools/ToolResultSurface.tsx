@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
 import type { EvidenceReview } from "@/features/personal/evidence/evidenceReview";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export type ToolResultSeverity = "info" | "low" | "medium" | "high";
 
@@ -183,6 +184,8 @@ export default function ToolResultSurface({
   onAskAI
 }: ToolResultSurfaceProps) {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createToolResultStyles(palette), [palette]);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [actionFeedback, setActionFeedback] = useState("");
 
@@ -290,7 +293,9 @@ export default function ToolResultSurface({
   return (
     <View style={styles.card} accessibilityRole="summary">
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          {title}
+        </Text>
         {status ? <Text style={styles.status}>{status}</Text> : null}
       </View>
       {summary ? <Text style={styles.summary}>{summary}</Text> : null}
@@ -309,7 +314,9 @@ export default function ToolResultSurface({
         <View style={styles.dataGrid}>
           {inputEntries.length ? (
             <View style={styles.dataColumn}>
-              <Text style={styles.sectionTitle}>Inputs</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+                Inputs
+              </Text>
               {inputEntries.map((entry) => (
                 <View key={`input-${entry.key}`} style={styles.dataRow}>
                   <Text style={styles.dataLabel}>{entry.label}</Text>
@@ -320,7 +327,9 @@ export default function ToolResultSurface({
           ) : null}
           {outputEntries.length ? (
             <View style={styles.dataColumn}>
-              <Text style={styles.sectionTitle}>Outputs</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+                Outputs
+              </Text>
               {outputEntries.map((entry) => (
                 <View key={`output-${entry.key}`} style={styles.dataRow}>
                   <Text style={styles.dataLabel}>{entry.label}</Text>
@@ -360,7 +369,9 @@ export default function ToolResultSurface({
 
       {recommendations.length ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recommendations</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+            Recommendations
+          </Text>
           {recommendations.map((item) => (
             <Text key={item} style={styles.listItem}>
               - {item}
@@ -371,7 +382,9 @@ export default function ToolResultSurface({
 
       {formulas.length ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Formula / Why It Matters</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+            Formula / Why It Matters
+          </Text>
           {formulas.map((item) => (
             <Text key={item} style={styles.detail}>
               - {item}
@@ -382,7 +395,9 @@ export default function ToolResultSurface({
 
       {uncertainty || confidence ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Uncertainty / Confidence</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+            Uncertainty / Confidence
+          </Text>
           {confidence ? (
             <Text style={styles.detail}>Confidence: {confidence}</Text>
           ) : null}
@@ -398,7 +413,9 @@ export default function ToolResultSurface({
 
       {assumptions.length ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Assumptions</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+            Assumptions
+          </Text>
           {assumptions.map((item) => (
             <Text key={item} style={styles.detail}>
               - {item}
@@ -452,103 +469,104 @@ export default function ToolResultSurface({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 8,
-    backgroundColor: "#F8FAFC",
-    padding: 14,
-    gap: 10
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10
-  },
-  title: { fontSize: 17, fontWeight: "800", color: "#0F172A" },
-  status: {
-    color: "#166534",
-    backgroundColor: "#DCFCE7",
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    fontSize: 11,
-    fontWeight: "800",
-    overflow: "hidden"
-  },
-  summary: { color: "#334155", lineHeight: 20 },
-  metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metric: {
-    minWidth: 130,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 3
-  },
-  metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  metricValue: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  detail: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  dataGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  dataColumn: {
-    minWidth: 210,
-    flexGrow: 1,
-    flexBasis: 240,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 6
-  },
-  dataRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 10
-  },
-  dataLabel: {
-    flex: 1,
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    textTransform: "capitalize"
-  },
-  dataValue: {
-    flex: 1.25,
-    flexShrink: 1,
-    minWidth: 120,
-    color: "#0F172A",
-    fontSize: 12,
-    fontWeight: "700",
-    textAlign: "left"
-  },
-  notice: { borderRadius: 8, padding: 10, gap: 4 },
-  noticeHigh: { backgroundColor: "#FEE2E2" },
-  noticeMedium: { backgroundColor: "#FFEDD5" },
-  noticeInfo: { backgroundColor: "#E0F2FE" },
-  noticeLabel: { color: "#7C2D12", fontSize: 11, fontWeight: "800" },
-  noticeText: { color: "#7C2D12", lineHeight: 19 },
-  remediation: { color: "#9A3412", fontWeight: "700", lineHeight: 19 },
-  section: { gap: 4 },
-  sectionTitle: { color: "#334155", fontWeight: "800" },
-  listItem: { color: "#475569", lineHeight: 19 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  action: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  actionPrimary: { backgroundColor: "#166534", borderColor: "#166534" },
-  actionSecondary: { backgroundColor: "#FFFFFF", borderColor: "#166534" },
-  actionPrimaryText: { color: "#FFFFFF", fontWeight: "800" },
-  actionSecondaryText: { color: "#166534", fontWeight: "800" },
-  actionDisabled: { opacity: 0.55 },
-  feedback: { color: "#334155", fontSize: 12, fontWeight: "700" }
-});
+export const createToolResultStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      backgroundColor: palette.card,
+      padding: 14,
+      gap: 10
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10
+    },
+    title: { fontSize: 17, fontWeight: "800", color: palette.text },
+    status: {
+      color: palette.text,
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden"
+    },
+    summary: { color: palette.textMuted, lineHeight: 20 },
+    metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metric: {
+      minWidth: 130,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 3
+    },
+    metricLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    metricValue: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    detail: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    dataGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    dataColumn: {
+      minWidth: 210,
+      flexGrow: 1,
+      flexBasis: 240,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 6
+    },
+    dataRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 10
+    },
+    dataLabel: {
+      flex: 1,
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      textTransform: "capitalize"
+    },
+    dataValue: {
+      flex: 1.25,
+      flexShrink: 1,
+      minWidth: 120,
+      color: palette.text,
+      fontSize: 12,
+      fontWeight: "700",
+      textAlign: "left"
+    },
+    notice: { borderRadius: 8, padding: 10, gap: 4 },
+    noticeHigh: { backgroundColor: palette.surfaceStrong },
+    noticeMedium: { backgroundColor: palette.surfaceStrong },
+    noticeInfo: { backgroundColor: palette.surfaceMuted },
+    noticeLabel: { color: palette.warning, fontSize: 11, fontWeight: "800" },
+    noticeText: { color: palette.text, lineHeight: 19 },
+    remediation: { color: palette.warning, fontWeight: "700", lineHeight: 19 },
+    section: { gap: 4 },
+    sectionTitle: { color: palette.text, fontWeight: "800" },
+    listItem: { color: palette.textMuted, lineHeight: 19 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    action: {
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    actionPrimary: { backgroundColor: palette.accent, borderColor: palette.accent },
+    actionSecondary: { backgroundColor: palette.surface, borderColor: palette.accent },
+    actionPrimaryText: { color: palette.accentText, fontWeight: "800" },
+    actionSecondaryText: { color: palette.link, fontWeight: "800" },
+    actionDisabled: { opacity: 0.55 },
+    feedback: { color: palette.text, fontSize: 12, fontWeight: "700" }
+  });

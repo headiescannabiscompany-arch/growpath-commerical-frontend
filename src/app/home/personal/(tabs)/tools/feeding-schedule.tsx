@@ -18,6 +18,7 @@ import {
 import { reviewFeedingSchedule } from "@/features/personal/tools/feedingScheduleReview";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
 
 function coerceParam(value?: string | string[]) {
@@ -82,6 +83,8 @@ export default function FeedingScheduleToolScreen() {
   const plantContext = useToolPlantContext(growId, initialPlantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFeedingScheduleStyles(palette), [palette]);
 
   const [productName, setProductName] = useState("Base nutrient");
   const [medium, setMedium] = useState("Soil");
@@ -268,7 +271,9 @@ export default function FeedingScheduleToolScreen() {
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Feeding Schedule Planner</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          Feeding Schedule Planner
+        </Text>
         <Text style={styles.subtitle}>
           Build a conservative schedule and review EC, pH, runoff, medium, and crop-stage
           risks without using AI credits.
@@ -287,7 +292,9 @@ export default function FeedingScheduleToolScreen() {
         />
 
         <View style={styles.aiCard}>
-          <Text style={styles.aiTitle}>AI grow-context prefill</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.aiTitle}>
+            AI grow-context prefill
+          </Text>
           <Text style={styles.aiText}>
             Fill saved recipe, medium, water, stage, and pH/EC fields. The nutrient engine
             still calculates and reviews the schedule.
@@ -387,6 +394,7 @@ export default function FeedingScheduleToolScreen() {
           value={waterSource}
           onChangeText={setWaterSource}
           placeholder="RO, city, well, rain"
+          placeholderTextColor={palette.textMuted}
         />
 
         {!enabled ? (
@@ -519,37 +527,40 @@ export default function FeedingScheduleToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800" },
-  label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  button: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  rows: { gap: 5 },
-  rowText: { color: "#334155", lineHeight: 19 },
-  aiCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  aiTitle: { color: "#14532D", fontWeight: "800" },
-  aiText: { color: "#475569", lineHeight: 19 }
-});
+export const createFeedingScheduleStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 20, paddingBottom: 40, backgroundColor: palette.page, gap: 8 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.link, fontWeight: "800" },
+    label: { color: palette.text, fontWeight: "800", marginTop: 4 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 10
+    },
+    button: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    rows: { gap: 5 },
+    rowText: { color: palette.textMuted, lineHeight: 19 },
+    aiCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    aiTitle: { color: palette.text, fontWeight: "800" },
+    aiText: { color: palette.textMuted, lineHeight: 19 }
+  });
