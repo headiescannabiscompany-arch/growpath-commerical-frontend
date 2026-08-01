@@ -2409,3 +2409,39 @@ schedule loading, aggregation, filtering, navigation, or records.
   storefront, notification, product, order, alert, recipe, tool run, facility,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Facility Environment Review heading ownership
+
+Production `/home/facility/tools/environment` already used the correct Night
+palette, named all nine inputs, disclosed that deterministic review uses no AI
+credits, distinguished the optional provider-backed handoff, and prevented
+grow-linked prefill/save behavior when no grow existed. The navigator and page
+visibly repeated `Environment Review`, while only the navigator title was
+semantic. Frontend `54148154` gives the shared Personal/Facility page one H1
+and hides only the redundant Facility navigator header without changing
+calculation, telemetry, persistence, task, copy, or AI behavior.
+
+- Twenty-two focused Facility tab-layout and Environment Review tests passed,
+  covering header ownership, the new H1, active Night palette, deterministic
+  analysis, and linked task/Schedule metadata. Production-source lint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. Forced linting of the
+  pre-existing test fixture still reports its two anonymous mock-component
+  display-name errors; they predate and are unrelated to this product change.
+- Production Build Preflight `30712775428` and Frontend CI `30712775433`
+  passed. Clean signed-in Facility Viewer verification rendered exactly one
+  visible and semantic `Environment Review` title, one `Environment analysis`
+  H2, and one `Assumptions` H3. All nine untouched fields retained explicit
+  names and Night surface `rgb(21, 29, 39)` with bright text
+  `rgb(244, 247, 251)`; grow-linked prefill remained disabled, and the page had
+  zero white/light page-content surfaces.
+- Read-only precursor audits found Facility Integrations correctly exposing no
+  credential fields and disabling Connect/Import for the Viewer; Facility
+  Reports and Analytics retained truthful metrics with no write/export/AI
+  controls; and Facility AI Tools retained its credit balance/disclosures and
+  navigation without presenting a paid request on entry. Each used one H1,
+  structured H2s, and zero white/light page-content surfaces, so no speculative
+  changes were made to those routes.
+- No field, prefill, analysis, copy, AI request, credit, save, task, log,
+  integration, import, report, analytics, tool, workspace, account, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
