@@ -15,6 +15,9 @@ Date: 2026-07-31 (America/New_York)
 - Notification Center active-theme fix: `520ede43`
 - Notification Frontend CI: `30676909346` (passed)
 - Notification Production Build Preflight: `30676909387` (passed)
+- Facility More heading hierarchy: `18b1e149`
+- Facility More Frontend CI: `30677284453` (passed)
+- Facility More Production Build Preflight: `30677284452` (passed)
 
 ## Confirmed gift defect and safety boundary
 
@@ -70,6 +73,20 @@ saved during acceptance.
 The Browser was returned to `/home/facility/dashboard`; the account was not
 logged out.
 
+## Facility More heading hierarchy
+
+The same signed-in production pass found two level-one headings on
+`/home/facility/more`: the navigator title `More` and the page-owned title
+`More Facility Workspaces`. Frontend `18b1e149` hides only that route's
+navigator header and keeps the descriptive page heading plus every destination
+and compact bottom tab.
+
+After both safeguards passed, the final production DOM contained one native
+`h1` / one explicit level-one heading, `More Facility Workspaces`, followed by
+four explicit level-two group headings. The Night palette remained intact and
+all Facility operations, admin/records, learning/community, and workspace links
+remained visible. No destination or record action was invoked.
+
 ## Automated verification
 
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
@@ -77,6 +94,8 @@ logged out.
 - Personal upgrade heading/navigation: 23 focused tests passed.
 - Notification Center: 5 focused tests passed, including an explicit Night
   palette regression.
+- Facility tab policy: 4 focused tests passed, including the More route's
+  single-heading ownership rule.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
