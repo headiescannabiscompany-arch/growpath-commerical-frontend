@@ -11,6 +11,9 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import CalendarDateField from "@/components/forms/CalendarDateField";
+import { useEntitlements } from "@/entitlements";
+import { can, type FacilityRole } from "@/facility/roleGates";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
@@ -29,6 +32,9 @@ export function facilityRoomGrowsHref(id: string, name: string) {
 }
 
 export default function StartGrowWizard() {
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createStartGrowStyles(palette);
   const { roomId: requestedRoomId, roomName: requestedRoomName } = useLocalSearchParams<{
     roomId?: string;
     roomName?: string;
@@ -41,6 +47,10 @@ export default function StartGrowWizard() {
   const createGrow = useCreateGrow();
   const router = useRouter();
   const selectionInitialized = useRef(false);
+  const facilityRole = String(
+    entitlements.facilityRole || "VIEWER"
+  ).toUpperCase() as FacilityRole;
+  const canCreateGrow = can(facilityRole, "GROWS_CREATE");
 
   const validRooms = useMemo(
     () => (rooms || []).filter((room: any) => roomId(room)),
@@ -119,11 +129,38 @@ export default function StartGrowWizard() {
     router.replace(returnToGrows as any);
   }
 
+  if (entitlements.ready && !canCreateGrow) {
+    return (
+      <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.kicker}>Batch cycle</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Grow setup is read-only
+          </Text>
+          <Text style={styles.subtitle}>
+            Your Facility role can view grows but cannot create a production cycle. Ask an
+            owner or manager to start the grow.
+          </Text>
+        </View>
+        <Pressable
+          onPress={returnToOrigin}
+          accessibilityRole="button"
+          accessibilityLabel="Back to facility grows"
+          style={styles.secondaryButton}
+        >
+          <Text style={styles.secondaryButtonText}>Back to facility grows</Text>
+        </Pressable>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.kicker}>{requestedRoom ? "Room grow" : "Batch cycle"}</Text>
-        <Text style={styles.title}>Start a grow</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Start a grow
+        </Text>
         <Text style={styles.subtitle}>
           {requestedRoom
             ? `Create a production cycle in ${requestedRoomLabel}. Plants, tasks, logs, and AI context will attach to this grow.`
@@ -137,7 +174,7 @@ export default function StartGrowWizard() {
           accessibilityLabel="Grow or batch name"
           style={styles.input}
           placeholder="Batch Cycle 1"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={name}
           onChangeText={(value) => {
             setName(value);
@@ -215,7 +252,7 @@ export default function StartGrowWizard() {
             style={[styles.primaryButton, !canStart && styles.disabledButton]}
           >
             {createGrow.isPending ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.primaryButtonText}>Start grow</Text>
             )}
@@ -243,92 +280,93 @@ export default function StartGrowWizard() {
   );
 }
 
-const styles = StyleSheet.create({
-  page: { backgroundColor: "#f8fafc", flex: 1 },
-  content: {
-    alignSelf: "center",
-    maxWidth: 900,
-    padding: 20,
-    width: "100%"
-  },
-  header: { gap: 6, marginBottom: 16 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#111827", fontSize: 30, fontWeight: "900" },
-  subtitle: {
-    color: "#475569",
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 21
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d7ddd2",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 12,
-    padding: 16
-  },
-  label: {
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  sectionHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  helper: { color: "#64748b", fontWeight: "700" },
-  loadingRow: { alignItems: "center", flexDirection: "row", gap: 8 },
-  roomGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  roomChip: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  roomChipActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  roomChipText: { color: "#334155", fontWeight: "900" },
-  roomChipTextActive: { color: "#ffffff" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    flexGrow: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12
-  },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12
-  },
-  secondaryButtonText: { color: "#111827", fontWeight: "900" },
-  disabledButton: { opacity: 0.55 },
-  error: { color: "#b91c1c", fontWeight: "800" }
-});
+export const createStartGrowStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    page: { backgroundColor: palette.page, flex: 1 },
+    content: {
+      alignSelf: "center",
+      maxWidth: 900,
+      padding: 20,
+      width: "100%"
+    },
+    header: { gap: 6, marginBottom: 16 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 30, fontWeight: "900" },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 14,
+      fontWeight: "700",
+      lineHeight: 21
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      padding: 16
+    },
+    label: {
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      fontSize: 15,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    sectionHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    helper: { color: palette.textMuted, fontWeight: "700" },
+    loadingRow: { alignItems: "center", flexDirection: "row", gap: 8 },
+    roomGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    roomChip: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    roomChipActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    roomChipText: { color: palette.textSoft, fontWeight: "900" },
+    roomChipTextActive: { color: palette.accentText },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      flexGrow: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 12
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 12
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "900" },
+    disabledButton: { opacity: 0.55 },
+    error: { color: palette.danger, fontWeight: "800" }
+  });

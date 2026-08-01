@@ -10,6 +10,11 @@ const mockBack = jest.fn();
 const mockCanGoBack = jest.fn();
 const mockAssign = jest.fn();
 let mockParams: Record<string, string> = {};
+let mockEntitlements: any;
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => mockEntitlements
+}));
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
@@ -42,6 +47,7 @@ describe("StartGrowWizard", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockParams = { roomId: "room-1", roomName: "Flower Room" };
+    mockEntitlements = { ready: true, facilityRole: "OWNER" };
     mockMutateAsync.mockResolvedValue({ id: "grow-1" });
     mockCanGoBack.mockReturnValue(true);
   });
@@ -128,5 +134,15 @@ describe("StartGrowWizard", () => {
     });
     expect(screen.getByLabelText("Select room Flower Room")).toBeTruthy();
     expect(screen.getByLabelText("Select room Veg Room")).toBeTruthy();
+  });
+
+  it("removes all grow creation controls from a Viewer direct route", () => {
+    mockEntitlements = { ready: true, facilityRole: "VIEWER" };
+    const screen = render(<StartGrowWizard />);
+
+    expect(screen.getByRole("header", { name: "Grow setup is read-only" })).toBeTruthy();
+    expect(screen.queryByLabelText("Grow or batch name")).toBeNull();
+    expect(screen.queryByLabelText("Start grow")).toBeNull();
+    expect(screen.getByLabelText("Back to facility grows")).toBeTruthy();
   });
 });
