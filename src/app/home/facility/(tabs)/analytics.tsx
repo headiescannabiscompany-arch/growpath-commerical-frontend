@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { fetchFacilityAnalyticsOverview } from "@/api/facilityAnalytics";
@@ -6,9 +6,12 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function Metric({ label, value, detail }: { label: string; value: any; detail: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAnalyticsStyles(palette), [palette]);
   return (
     <View style={styles.metric}>
       <Text style={styles.value}>{value}</Text>
@@ -19,6 +22,8 @@ function Metric({ label, value, detail }: { label: string; value: any; detail: s
 }
 
 export default function FacilityAnalyticsRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAnalyticsStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const [data, setData] = useState<any>({});
   const [error, setError] = useState<any>(null);
@@ -89,20 +94,22 @@ export default function FacilityAnalyticsRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  kicker: { color: "#166534", fontWeight: "800", textTransform: "uppercase" },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "800", marginTop: 4 },
-  subtitle: { color: "#475569", lineHeight: 21, marginTop: 7, maxWidth: 760 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 210,
-    padding: 14
-  },
-  value: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
-  label: { color: "#334155", fontWeight: "800", marginTop: 5 },
-  detail: { color: "#64748B", lineHeight: 18, marginTop: 4 }
-});
+export function createFacilityAnalyticsStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    kicker: { color: palette.success, fontWeight: "800", textTransform: "uppercase" },
+    title: { color: palette.text, fontSize: 28, fontWeight: "800", marginTop: 4 },
+    subtitle: { color: palette.textMuted, lineHeight: 21, marginTop: 7, maxWidth: 760 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    metric: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 210,
+      padding: 14
+    },
+    value: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    label: { color: palette.text, fontWeight: "800", marginTop: 5 },
+    detail: { color: palette.textMuted, lineHeight: 18, marginTop: 4 }
+  });
+}

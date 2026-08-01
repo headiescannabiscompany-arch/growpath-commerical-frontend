@@ -1,8 +1,11 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-import FacilityAnalyticsRoute from "@/app/home/facility/(tabs)/analytics";
+import FacilityAnalyticsRoute, {
+  createFacilityAnalyticsStyles
+} from "@/app/home/facility/(tabs)/analytics";
 import { fetchFacilityAnalyticsOverview } from "@/api/facilityAnalytics";
+import { getThemePalette } from "@/theme/appTheme";
 
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
@@ -13,6 +16,18 @@ jest.mock("@/api/facilityAnalytics", () => ({
 }));
 
 describe("FacilityAnalyticsRoute", () => {
+  it("uses the active Night palette for headings and metric text", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityAnalyticsStyles(palette);
+
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.subtitle.color).toBe(palette.textMuted);
+    expect(styles.metric.borderColor).toBe(palette.border);
+    expect(styles.value.color).toBe(palette.text);
+    expect(styles.label.color).toBe(palette.text);
+    expect(styles.detail.color).toBe(palette.textMuted);
+  });
+
   it("renders recorded facility analytics and unknown stability coverage", async () => {
     jest.mocked(fetchFacilityAnalyticsOverview).mockResolvedValue({
       roomStability: { stableRooms: 2, measuredRooms: 3, unknownRooms: 1 },
