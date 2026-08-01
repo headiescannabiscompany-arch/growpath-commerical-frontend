@@ -1322,6 +1322,36 @@ logic, identifiers, and record behavior were not changed.
   status, note, refresh, audit event, billing, or record action was invoked,
   and the session remained signed in.
 
+## Facility AI Validation Lab direct-route protection
+
+Production hid the AI Validation Lab from the tab bar but did not protect its
+direct route. The signed-in Viewer could open all nine raw payload fields and
+all four verify, compare, feedback, and training-feedback export actions. The
+route also relied on the generic shell `AI QA` title instead of owning its
+accurate hierarchy. Frontend `4bc18119` requires both Facility Owner role and
+the centralized `FACILITY_SETTINGS_EDIT` capability, rejects a stale capability
+on non-owner roles, removes every operational field/action for other roles, and
+establishes an accurate page-owned heading plus read-only access explanation.
+The Owner workflow and API handlers remain intact.
+
+- Production Build Preflight `30695212093` and Frontend CI `30695212050`
+  passed.
+- Twenty-eight focused Viewer/Manager/Owner access, validation helper, Night-
+  palette, and Facility-tab/header tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. Existing Expo Go notification
+  warnings did not fail the suites.
+- Signed-in Viewer production acceptance confirmed one level-one `AI Validation
+  Lab` heading and one level-two `Owner access required` heading, both in bright
+  Night text `rgb(244, 247, 251)`. The route exposes zero inputs, zero verify,
+  compare, feedback, or export controls, and zero white page-content surfaces;
+  the separate Report Bug control was the only detected white element.
+- Focused Owner coverage proves the nine payload fields and operational actions
+  remain available only when both role and capability agree. A genuine signed-
+  in Facility Owner production account is still required for non-mutating
+  owner-side rendering acceptance. No payload, validation, comparison,
+  feedback, training export, AI request, credit, audit event, billing, or record
+  action was invoked, and the Viewer session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
