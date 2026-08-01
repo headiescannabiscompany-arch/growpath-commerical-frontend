@@ -404,13 +404,11 @@ export default function ForumPostDetailRoute() {
               <Link href="/forum" asChild>
                 <Pressable
                   accessibilityRole="button"
-                  style={[
-                    styles.secondaryBtn,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: palette.surfaceMuted
-                    }
-                  ]}
+                  style={{
+                    ...styles.secondaryBtn,
+                    borderColor: palette.accent,
+                    backgroundColor: palette.surfaceMuted
+                  }}
                 >
                   <Text style={[styles.secondaryText, { color: palette.accent }]}>
                     Browse Forum / Q&amp;A

@@ -114,7 +114,9 @@ describe("ForumPostDetailRoute", () => {
     expect(
       screen.getByRole("header", { name: "Forum discussion unavailable" })
     ).toHaveProp("aria-level", 1);
-    expect(screen.getByTestId("forum-link-/forum")).toBeTruthy();
+    const browseForum = screen.getByTestId("forum-link-/forum");
+    expect(browseForum).toBeTruthy();
+    expect(Array.isArray(browseForum.props.style)).toBe(false);
     expect(screen.queryByLabelText("Forum comment")).toBeNull();
     expect(screen.queryByLabelText("Attach forum comment photos")).toBeNull();
     expect(screen.queryByLabelText("Submit forum comment")).toBeNull();
