@@ -3,6 +3,8 @@ import { render } from "@testing-library/react-native";
 
 import PrivacyPage from "../../src/app/privacy";
 import TermsPage from "../../src/app/terms";
+import { createPublicInfoPageStyles } from "../../src/components/PublicInfoPage";
+import { getThemePalette } from "../../src/theme/appTheme";
 
 describe("public policy contact aliases", () => {
   it("routes policy contact copy to the specialized live aliases", () => {
@@ -20,5 +22,19 @@ describe("public policy contact aliases", () => {
       terms.getByText(/terms, legal, or account notices.*legal@growpathai\.com/i)
     ).toBeTruthy();
     expect(terms.getByText(/support@growpathai\.com/)).toBeTruthy();
+  });
+
+  it("uses the active Night palette for every shared policy surface", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createPublicInfoPageStyles(palette);
+
+    expect(styles.root.backgroundColor).toBe(palette.page);
+    expect(styles.brand.color).toBe(palette.accent);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.updated.color).toBe(palette.textMuted);
+    expect(styles.intro.color).toBe(palette.textSoft);
+    expect(styles.section.borderTopColor).toBe(palette.border);
+    expect(styles.sectionTitle.color).toBe(palette.text);
+    expect(styles.body.color).toBe(palette.textSoft);
   });
 });
