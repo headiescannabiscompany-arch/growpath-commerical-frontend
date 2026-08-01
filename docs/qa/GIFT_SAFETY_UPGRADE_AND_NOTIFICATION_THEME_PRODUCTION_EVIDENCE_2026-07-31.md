@@ -28,6 +28,9 @@ Date: 2026-07-31 (America/New_York)
 - Shared Environment Review active-theme fix: `af2acc6f`
 - Environment Review Frontend CI: `30678713687` (passed)
 - Environment Review Production Build Preflight: `30678713688` (passed)
+- Shared mix-builder chooser active-theme fix: `092ce73b`
+- Mix-builder chooser Frontend CI: `30679308195` (passed)
+- Mix-builder chooser Production Build Preflight: `30679308212` (passed)
 
 ## Confirmed gift defect and safety boundary
 
@@ -168,6 +171,29 @@ through both routes:
   was copied, and no tool run, log, task, grow, credit, or other record changed.
 - The session was returned to `/home/facility/dashboard`.
 
+## Shared mix-builder chooser Night theme
+
+The Facility Soil & Nutrient Mix Builders hub retained nearly black headings
+and explanation text on the Night canvas, white builder cards, and a day-only
+green library action. The route wraps the same chooser used by Personal, so the
+fixed styles were shared even though each workspace preserved different
+destination paths and context.
+
+Frontend `092ce73b` moved the chooser canvas, text, cards, separators, and
+library action to the active app palette. After both safeguards passed,
+production acceptance covered:
+
+- `/home/facility/tools/recipe-builder`, with Night-themed Nutrient Mix Builder,
+  Soil Mix Builder, and Products & Label Library destinations retaining their
+  Facility paths.
+- `/home/personal/tools/recipe-builder`, with the same Night palette and all
+  three destinations retaining their Personal paths after a workspace switch.
+- The two-builder semantic boundary remained explicit: the reusable label
+  library stores shared inputs and is not presented as a third mix builder.
+- No destination was opened, no form or product label was changed, and no mix,
+  tool run, task, log, grow, credit, or other record changed.
+- The session was returned to `/home/facility/dashboard` without logout.
+
 ## Automated verification
 
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
@@ -188,6 +214,9 @@ through both routes:
 - Shared Environment Review: 11 focused environment/back-route tests passed,
   including an explicit Night palette regression and existing task metadata,
   analysis, and shared-back contracts.
+- Shared mix-builder chooser: 3 focused tests passed for the Night palette,
+  canonical two-builder boundary, label-library link, and Personal/Facility
+  destination-context preservation.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
