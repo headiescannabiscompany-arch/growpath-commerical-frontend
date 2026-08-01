@@ -196,6 +196,34 @@ production acceptance covered:
 
 ## Automated verification
 
+## Facility SOP Start and Compare Night theme
+
+Production Start SOP Run and Compare SOP Runs retained dark-on-dark headings
+and copy, white day-only inputs/cards, and fixed day actions on the Night
+canvas. Frontend `87bb32c7` moved the start form to the active palette and
+added an explicit level-one page heading. Frontend `c2fc55b5` moved the compare
+chooser, selection summaries, run cards, actions, and empty/error states to the
+palette and includes the Start fix in the final deployed asset.
+
+- SOP Start Production Build Preflight `30681990245` and Frontend CI
+  `30681990244` passed. Final combined SOP Compare Production Build Preflight
+  `30682494069` passed in 3m19s and Frontend CI `30682494076` passed in 6m56s.
+- Sixteen focused SOP tests passed across run evidence, completed-run locking,
+  back routes, Library/Start/Compare Night palettes, comparison semantics,
+  authoring, upload, retirement, and one-off creation. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- The production host initially retained the prior asset after the Start gates;
+  acceptance waited until it published `index-0e41fd6fc35a77343c421ed10231d1d1.js`,
+  which contains final `c2fc55b5`.
+- Signed-in production acceptance confirmed both pages use the Night palette
+  and one level-one page heading. Start retained empty title, optional/unselected
+  template, untouched one-off steps/notes, and disabled Start. Compare retained
+  zero selected runs, its truthful insufficient-history message, and disabled
+  Compare.
+- No template was selected, no text was entered, and no SOP, run, checklist,
+  comparison, task, audit event, or record changed. The session was returned to
+  the Facility dashboard without logout.
+
 ## Facility SOP Library Night theme and heading hierarchy
 
 Production SOP Library retained nearly black headings/copy, white starter and
