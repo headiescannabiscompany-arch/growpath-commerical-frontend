@@ -2997,3 +2997,48 @@ preserving the existing data, authorization, navigation, and mutation paths:
   account, session, billing, audit event, or record action was invoked. The
   five unfinished gift frontend files remained unstaged and outside the
   release.
+
+## Personal field/grow, Commercial dashboard/task, and public landing palette
+
+Frontend `f27f061d` moves the next confirmed fixed-Day surfaces onto the
+shared active palette without changing their workflow behavior:
+
+- Personal Field Studies list/detail and Journal Log Detail, including private
+  defaults, collaborator/publishing/observation states, photos, fields,
+  notices, errors, and actions;
+- Personal grow-level Tasks and Plants plus the shared grow workspace
+  navigation, including selected/focused cards, filters, fields, pills,
+  loading, empty, and danger states;
+- both active Commercial Dashboard implementations and Commercial Task Center,
+  including command/pulse/checklist/metric cards, forms, filters, records,
+  statuses, errors, loading, and actions;
+- the public signed-out landing page, including its canvas, navigation, hero,
+  calls to action, cards, copy, and footer.
+
+- Ten combined suites passed, totaling 72 tests across Commercial workflow and
+  task behavior, Personal field studies/log detail/grow tasks, public field
+  study routing, and public landing behavior. Forced source/test lint, full
+  frontend `tsc --noEmit`, Prettier verification, and `git diff --check`
+  passed. The known non-failing Expo Go remote-notification warning appeared in
+  four suites.
+- Production Build Preflight `30722683242` and Frontend CI `30722683254`
+  passed against exact commit
+  `f27f061ddd81ce25db639603422a2f75e77648e2`. Production served bundle
+  `index-4405d8be...` after the rollout.
+- Signed-in Facility Viewer production verification confirmed Facility
+  Dashboard retained its active Night palette and zero opaque light surfaces.
+  Direct Field Studies, Journal Log Detail, grow Tasks, grow Plants, Commercial
+  Dashboard, and Commercial Tasks URLs each retained one themed `Access
+  denied` H1, zero fields, and zero opaque light surfaces without changing the
+  session or workspace.
+- Loaded Personal and Commercial states remain behavior-and-theme verified by
+  the 72-test matrix because the available account cannot render those modes
+  without a workspace change. The public landing page remains render- and
+  palette-test verified because the signed-in session redirects away from the
+  signed-out landing state; the session was not cleared to manufacture visual
+  evidence.
+- No field, study, collaborator, publication, observation, journal, photo,
+  upload, grow task, plant, dashboard action, Commercial task, landing link,
+  route action, workspace, account, session, billing, audit event, or record
+  action was invoked. The five unfinished gift frontend files remained
+  unstaged and outside the release.
