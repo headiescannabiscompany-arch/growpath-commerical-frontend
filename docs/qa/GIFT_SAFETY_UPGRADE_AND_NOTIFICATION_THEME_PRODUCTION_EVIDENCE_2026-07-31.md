@@ -1506,6 +1506,36 @@ active palette without changing any policy text or account-deletion behavior.
   link, support request, export, delete, account, session, billing, or record
   action was invoked, and the session remained signed in.
 
+## Authentication and account-recovery Night theme
+
+Production Sign in, Register, Forgot Password, Reset Password, and Verify Email
+all retained legacy light cards, near-black copy, light borders, and white form
+fields inside the resolved Night shell. Frontend `1b02d37a` moved all five
+routes—including account choices, fields, verification/resend notices,
+missing-token states, validation, success/error feedback, actions, and disabled
+states—to the active palette. The first production retest then confirmed Chrome
+autofill still forced saved email/password fields to pale blue with black text;
+follow-up `93835559` adds an auth-route-scoped palette-aware autofill overlay.
+Authentication, registration, recovery, verification, navigation, and API
+behavior did not change.
+
+- Final Production Build Preflight `30698329195` and Frontend CI `30698329180`
+  passed. Twenty focused login, password recovery, email verification, and
+  Night/autofill theme tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The existing Expo Go
+  notification warning did not fail the suites.
+- Signed-in Facility Viewer production acceptance separately confirmed one
+  bright Night H1 on each of the five routes. Login and Register contain no
+  white page-content surfaces; their saved email/password autofill fields use
+  a Night inset surface `rgb(21, 29, 39)`, bright text-fill
+  `rgb(244, 247, 251)`, and Night border `rgb(40, 53, 69)`.
+- Forgot Password retained one untouched dark email field; Reset Password
+  retained two untouched dark password fields; Verify Email retained the
+  truthful missing-token state. Report Bug was the only white element on each
+  route. No credential was edited, and no sign-in, account creation, reset
+  email, password change, verification, resend, account, session, billing, or
+  record action was invoked; the existing session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
