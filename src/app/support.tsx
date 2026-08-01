@@ -16,6 +16,7 @@ import {
   SUPPORT_CONTACTS,
   supportLine
 } from "@/config/supportContacts";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const TOPICS: { key: SupportContactTopic; label: string }[] = [
@@ -51,6 +52,8 @@ function topicFromParam(value: string): SupportContactTopic | null {
 }
 
 export default function SupportPage() {
+  const { palette } = useAppTheme();
+  const styles = createSupportStyles(palette);
   const params = useLocalSearchParams<{
     topic?: string | string[];
     name?: string | string[];
@@ -195,7 +198,7 @@ export default function SupportPage() {
         <TextInput
           accessibilityLabel="Support name"
           placeholder="Your name"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={name}
           onChangeText={setName}
           style={styles.input}
@@ -206,7 +209,7 @@ export default function SupportPage() {
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="Reply email"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={email}
           onChangeText={setEmail}
           style={styles.input}
@@ -217,7 +220,7 @@ export default function SupportPage() {
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="Account email, if different"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={accountEmail}
           onChangeText={setAccountEmail}
           style={styles.input}
@@ -225,7 +228,7 @@ export default function SupportPage() {
         <TextInput
           accessibilityLabel="Support subject"
           placeholder="Subject"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={subject}
           onChangeText={setSubject}
           style={styles.input}
@@ -234,7 +237,7 @@ export default function SupportPage() {
           accessibilityLabel="Support message"
           multiline
           placeholder="Describe what happened, what page you were on, and what account email is affected. Do not send passwords or API keys."
-          placeholderTextColor="#64748b"
+          placeholderTextColor={palette.textMuted}
           value={message}
           onChangeText={setMessage}
           style={[styles.input, styles.message]}
@@ -257,7 +260,7 @@ export default function SupportPage() {
           style={[styles.sendButton, !canSubmit && styles.sendButtonDisabled]}
         >
           {submitting ? (
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.sendButtonText}>Send support request</Text>
           )}
@@ -266,7 +269,9 @@ export default function SupportPage() {
 
       <View style={styles.sections}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Direct Inboxes</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+            Direct Inboxes
+          </Text>
           <Text style={styles.body}>
             Start with {SUPPORT_CONTACTS.general} if you are unsure. For urgent production
             incidents, include URGENT in the subject and describe the business impact.
@@ -274,7 +279,9 @@ export default function SupportPage() {
         </View>
         {SUPPORT_CONTACT_ROUTING.map((item) => (
           <View key={item.title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{item.title}</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              {item.title}
+            </Text>
             <Text style={styles.body}>{supportLine(item.email, item.body)}</Text>
           </View>
         ))}
@@ -283,78 +290,79 @@ export default function SupportPage() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: "#f8fafc", flex: 1 },
-  content: {
-    alignSelf: "center",
-    maxWidth: 920,
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-    width: "100%"
-  },
-  header: { marginBottom: 24 },
-  brand: { color: "#166534", fontSize: 16, fontWeight: "800", marginBottom: 10 },
-  title: { color: "#111827", fontSize: 34, fontWeight: "800", marginBottom: 10 },
-  intro: { color: "#334155", fontSize: 17, lineHeight: 26 },
-  form: {
-    backgroundColor: "#ffffff",
-    borderColor: "#dbe3ea",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 12,
-    marginBottom: 28,
-    padding: 18
-  },
-  topicGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  topicButton: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  topicButtonActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  topicText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  topicTextActive: { color: "#ffffff" },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  message: { minHeight: 130, textAlignVertical: "top" },
-  honeypot: {
-    height: 0,
-    opacity: 0,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    width: 0
-  },
-  feedback: { color: "#166534", fontWeight: "800", lineHeight: 20 },
-  sendButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  sendButtonDisabled: { opacity: 0.55 },
-  sendButtonText: { color: "#ffffff", fontWeight: "900" },
-  sections: { gap: 22 },
-  section: {
-    borderTopColor: "#dbe3ea",
-    borderTopWidth: 1,
-    paddingTop: 20
-  },
-  sectionTitle: {
-    color: "#111827",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  body: { color: "#334155", fontSize: 16, lineHeight: 25 }
-});
+export const createSupportStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: { backgroundColor: palette.page, flex: 1 },
+    content: {
+      alignSelf: "center",
+      maxWidth: 920,
+      paddingHorizontal: 24,
+      paddingVertical: 40,
+      width: "100%"
+    },
+    header: { marginBottom: 24 },
+    brand: { color: palette.accent, fontSize: 16, fontWeight: "800", marginBottom: 10 },
+    title: { color: palette.text, fontSize: 34, fontWeight: "800", marginBottom: 10 },
+    intro: { color: palette.textSoft, fontSize: 17, lineHeight: 26 },
+    form: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      marginBottom: 28,
+      padding: 18
+    },
+    topicGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    topicButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    topicButtonActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    topicText: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
+    topicTextActive: { color: palette.accentText },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    message: { minHeight: 130, textAlignVertical: "top" },
+    honeypot: {
+      height: 0,
+      opacity: 0,
+      overflow: "hidden",
+      padding: 0,
+      position: "absolute",
+      width: 0
+    },
+    feedback: { color: palette.success, fontWeight: "800", lineHeight: 20 },
+    sendButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    sendButtonDisabled: { opacity: 0.55 },
+    sendButtonText: { color: palette.accentText, fontWeight: "900" },
+    sections: { gap: 22 },
+    section: {
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      paddingTop: 20
+    },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 20,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    body: { color: palette.textSoft, fontSize: 16, lineHeight: 25 }
+  });

@@ -1,7 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
-import SupportPage from "@/app/support";
+import SupportPage, { createSupportStyles } from "@/app/support";
+import { getThemePalette } from "@/theme/appTheme";
 
 let mockParams: Record<string, string> = {};
 
@@ -19,6 +20,8 @@ describe("SupportPage", () => {
 
     expect(screen.getByText("Support")).toBeTruthy();
     expect(screen.getByRole("header", { name: "Support" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Send a Support Email" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Direct Inboxes" })).toBeTruthy();
     expect(
       screen.getByText(
         /account, billing, orders, sales, technical, privacy, legal, security, commercial, courses, live events, partner, and facility support/
@@ -39,6 +42,24 @@ describe("SupportPage", () => {
     expect(screen.getByText(/Email security@growpathai\.com/)).toBeTruthy();
     expect(screen.queryByText(/Email noreply@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email notifications@growpathai\.com/)).toBeNull();
+  });
+
+  it("uses the active Night palette across the complete support surface", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createSupportStyles(palette);
+
+    expect(styles.root.backgroundColor).toBe(palette.page);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.intro.color).toBe(palette.textSoft);
+    expect(styles.form.backgroundColor).toBe(palette.surface);
+    expect(styles.form.borderColor).toBe(palette.border);
+    expect(styles.topicButton.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.topicButtonActive.backgroundColor).toBe(palette.accent);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.borderColor).toBe(palette.border);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.sectionTitle.color).toBe(palette.text);
+    expect(styles.body.color).toBe(palette.textSoft);
   });
 
   it("prefills structured bug report details from query params", () => {
