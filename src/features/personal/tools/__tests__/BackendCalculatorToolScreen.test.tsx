@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
-import BackendCalculatorToolScreen from "../BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  createBackendCalculatorStyles
+} from "../BackendCalculatorToolScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
@@ -104,6 +107,18 @@ function renderCloneRootingTool() {
 }
 
 describe("BackendCalculatorToolScreen beta access", () => {
+  it("uses the active Night palette for the shared calculator surface", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createBackendCalculatorStyles(palette);
+
+    expect(styles.screen.backgroundColor).toBe(palette.page);
+    expect(styles.guidanceCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.label.color).toBe(palette.text);
+    expect(styles.button.backgroundColor).toBe(palette.accent);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     Object.defineProperty(window, "location", {

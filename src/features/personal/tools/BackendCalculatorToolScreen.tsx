@@ -38,6 +38,7 @@ import {
 import { buildModuleRecordInput } from "@/features/personal/tools/moduleRecordPersistence";
 import { createFacilityTask } from "@/api/facilityTasks";
 import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function inferEvidenceReview(outputs: Record<string, any>, payload: Record<string, any>) {
   const media = outputs.mediaAnalysis || outputs.photoAnalysis || outputs.imageAnalysis;
@@ -292,6 +293,8 @@ export default function BackendCalculatorToolScreen({
   assistantBrief,
   aiPrefill
 }: BackendCalculatorToolScreenProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createBackendCalculatorStyles(palette), [palette]);
   const routeParams = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -1056,95 +1059,98 @@ export default function BackendCalculatorToolScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 36, gap: 10 },
-  title: { fontSize: 22, fontWeight: "700", color: "#0F172A" },
-  subtitle: { fontSize: 13, color: "#64748B" },
-  context: { color: "#166534", fontWeight: "700" },
-  growPicker: { gap: 7 },
-  growPickerRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  growPill: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  growPillOn: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
-  growPillText: { color: "#334155", fontWeight: "700" },
-  growPillTextOn: { color: "#166534" },
-  guidanceCard: {
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: 8,
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#F0FDF4"
-  },
-  resultTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
-  guidanceText: { color: "#334155", lineHeight: 19 },
-  guidanceStrong: { color: "#334155", fontWeight: "800" },
-  formSection: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "800",
-    marginTop: 8
-  },
-  fieldHelp: { color: "#64748B", fontSize: 12, lineHeight: 17 },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: 8,
-    paddingVertical: 10,
-    alignItems: "center",
-    backgroundColor: "#FFFFFF"
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  briefBox: {
-    borderWidth: 1,
-    borderColor: "#D9F99D",
-    borderRadius: 8,
-    padding: 10,
-    gap: 6,
-    backgroundColor: "#FFFFFF"
-  },
-  briefText: { color: "#0F172A", lineHeight: 19 },
-  form: { gap: 10 },
-  field: { gap: 6 },
-  label: { fontSize: 13, fontWeight: "700", color: "#334155" },
-  optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  optionCard: {
-    minWidth: 150,
-    flexGrow: 1,
-    flexBasis: 180,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 8,
-    padding: 10,
-    gap: 3,
-    backgroundColor: "#FFFFFF"
-  },
-  optionCardOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
-  optionCardLabel: { color: "#334155", fontWeight: "800" },
-  optionCardLabelOn: { color: "#166534" },
-  optionCardDescription: { color: "#64748B", fontSize: 12, lineHeight: 16 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  textArea: { minHeight: 88, textAlignVertical: "top" },
-  button: {
-    borderRadius: 8,
-    backgroundColor: "#166534",
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  disabled: { opacity: 0.6 },
-  buttonText: { color: "#FFFFFF", fontWeight: "700" },
-  feedback: { color: "#991B1B", fontWeight: "700" }
-});
+export function createBackendCalculatorStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 36, gap: 10 },
+    title: { fontSize: 22, fontWeight: "700", color: palette.text },
+    subtitle: { fontSize: 13, color: palette.textMuted },
+    context: { color: palette.link, fontWeight: "700" },
+    growPicker: { gap: 7 },
+    growPickerRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    growPill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    growPillOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    growPillText: { color: palette.textMuted, fontWeight: "700" },
+    growPillTextOn: { color: palette.link },
+    guidanceCard: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: 8,
+      padding: 12,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    resultTitle: { fontSize: 15, fontWeight: "800", color: palette.text },
+    guidanceText: { color: palette.textMuted, lineHeight: 19 },
+    guidanceStrong: { color: palette.text, fontWeight: "800" },
+    formSection: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "800",
+      marginTop: 8
+    },
+    fieldHelp: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: 8,
+      paddingVertical: 10,
+      alignItems: "center",
+      backgroundColor: palette.surface
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    briefBox: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: 8,
+      padding: 10,
+      gap: 6,
+      backgroundColor: palette.surface
+    },
+    briefText: { color: palette.text, lineHeight: 19 },
+    form: { gap: 10 },
+    field: { gap: 6 },
+    label: { fontSize: 13, fontWeight: "700", color: palette.text },
+    optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    optionCard: {
+      minWidth: 150,
+      flexGrow: 1,
+      flexBasis: 180,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      padding: 10,
+      gap: 3,
+      backgroundColor: palette.surface
+    },
+    optionCardOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    optionCardLabel: { color: palette.text, fontWeight: "800" },
+    optionCardLabelOn: { color: palette.link },
+    optionCardDescription: { color: palette.textMuted, fontSize: 12, lineHeight: 16 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    textArea: { minHeight: 88, textAlignVertical: "top" },
+    button: {
+      borderRadius: 8,
+      backgroundColor: palette.accent,
+      paddingVertical: 12,
+      alignItems: "center"
+    },
+    disabled: { opacity: 0.6 },
+    buttonText: { color: palette.accentText, fontWeight: "700" },
+    feedback: { color: palette.danger, fontWeight: "700" }
+  });
+}
