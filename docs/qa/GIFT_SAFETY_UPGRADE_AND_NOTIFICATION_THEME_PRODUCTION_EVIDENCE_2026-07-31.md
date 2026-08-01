@@ -472,6 +472,32 @@ placeholders, actions, errors, choices, and response card to the active palette.
 - No field was changed and no verify, compare, feedback, training export, AI,
   credit, audit, task, or record action was invoked.
 
+## Facility AI Templates Night theme and heading ownership
+
+Production Facility AI Templates retained black day-only title and guidance,
+four white workflow cards, and a raw route-name shell heading under resolved
+Night. Frontend `a1acb469` moved the page and all workflow cards to the active
+palette and named the route. Its first live retest correctly caught duplicate
+level-one headings; follow-up `6bdc6e39` let the page own the single semantic
+heading while preserving the corrected palette.
+
+- Final Production Build Preflight `30684597821` passed in 3m26s and Frontend
+  CI `30684597811` passed in 4m35s. The palette implementation gates also
+  passed: preflight `30684328317` in 3m13s and Frontend CI `30684328316` in
+  6m40s. The production host published the final
+  `index-ee37a4e4b8b9733f928018cd83d01cd5.js` asset.
+- Six focused template-theme and Facility tab-shell tests passed, including the
+  Night palette and single-heading ownership contracts. Targeted ESLint
+  completed without errors, full frontend `tsc --noEmit` passed, and
+  `git diff --check` passed. The test runner emitted its existing Expo Go push
+  warning without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one AI
+  Templates heading, Night workflow cards `rgb(21, 29, 39)`, primary card copy
+  `rgb(244, 247, 251)`, supporting copy `rgb(201, 212, 223)`, and zero white
+  workflow cards. All four named template links remained present.
+- No template link was opened and no prompt, AI request, credit, task, audit
+  event, or record changed.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
