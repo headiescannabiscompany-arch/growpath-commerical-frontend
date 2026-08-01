@@ -2010,3 +2010,27 @@ RSVP, and playback behavior did not change.
 - No search, filter, campaign, session, RSVP, playback, report, workspace,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Storefront Offers directory Night theme and hierarchy
+
+Production `/marketplace` retained a light-gray search field, daytime category
+chips, nearly black title and inactive-filter copy, and no semantic headings
+under the signed-in Facility Viewer's resolved Night mode. Frontend `25d5ef45`
+moves the directory and its loaded card, detail, checkout, loading, feedback,
+and empty states to the active palette. It adds a readable themed placeholder,
+explicit filter selection semantics, one directory/detail H1, and an empty-state
+H2 without changing browsing, searching, pagination, refresh, detail loading,
+free acquisition, or paid checkout behavior.
+
+- Four focused Storefront Offers copy, behavior, detail, and theme tests passed.
+  Targeted source ESLint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed.
+- Production Build Preflight `30706463187` and Frontend CI `30706463216`
+  passed. Clean production `/marketplace` then measured one bright H1, one
+  muted-bright H2 in the truthful zero-offer state, zero white/light content
+  surfaces, and the untouched search field at Night surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and text
+  `rgb(244, 247, 251)`.
+- No search, filter, refresh, offer, detail, checkout, purchase, library,
+  report, workspace, account, session, billing, audit event, or record action
+  was invoked, and the Viewer session remained signed in.
