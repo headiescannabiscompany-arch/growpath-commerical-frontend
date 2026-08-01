@@ -23,7 +23,10 @@ describe("UpgradePlan pricing", () => {
     (createCheckoutSession as jest.Mock).mockResolvedValue({
       url: "https://checkout.example.com/session"
     });
-    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({ mode: "test" });
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
+      mode: "test",
+      giftCheckoutConfigured: false
+    });
   });
 
   it("uses shared plan prices and sends the selected yearly interval to checkout", async () => {
@@ -70,41 +73,18 @@ describe("UpgradePlan pricing", () => {
     expect(openExternalUrl).toHaveBeenCalledWith("https://checkout.example.com/session");
   });
 
-  it("supports gift checkout with recipient email and custom return URLs", async () => {
-    const previousWindow = global.window;
-    global.window = { location: { origin: "https://app.example" } } as any;
+  it("blocks gift checkout until recipient fulfillment is configured", async () => {
+    const screen = render(<UpgradePlan />);
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
-    try {
-      const screen = render(<UpgradePlan />);
-      await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
-
-      fireEvent.press(screen.getByLabelText("Gift subscription mode"));
-      fireEvent.changeText(
-        screen.getByLabelText("Gift recipient email"),
-        "friend@example.com"
-      );
-      fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Friend Name");
-      fireEvent.changeText(screen.getByLabelText("Gift message"), "Happy growing!");
-      fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-
-      await waitFor(() =>
-        expect(createCheckoutSession).toHaveBeenCalledWith({
-          plan: "pro",
-          interval: "monthly",
-          giftMode: true,
-          giftRecipientEmail: "friend@example.com",
-          giftRecipientName: "Friend Name",
-          giftMessage: "Happy growing!",
-          giftTerm: "monthly",
-          successUrl: "https://app.example/home/personal/upgrade?gift=success",
-          cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
-        })
-      );
-      expect(openExternalUrl).toHaveBeenCalledWith(
-        "https://checkout.example.com/session"
-      );
-    } finally {
-      global.window = previousWindow;
-    }
+    expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled();
+    expect(
+      screen.getByText(
+        "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    expect(openExternalUrl).not.toHaveBeenCalled();
   });
 });

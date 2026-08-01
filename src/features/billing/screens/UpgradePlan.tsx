@@ -73,6 +73,7 @@ export default function UpgradePlan() {
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
+  const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
@@ -90,6 +91,9 @@ export default function UpgradePlan() {
         const mode = String(status?.mode || "unknown").toLowerCase();
         if (mounted && ["live", "test", "unknown"].includes(mode)) {
           setCheckoutMode(mode as CheckoutMode);
+        }
+        if (mounted) {
+          setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
         }
       })
       .catch(() => {
@@ -121,6 +125,13 @@ export default function UpgradePlan() {
     const recipient = giftRecipientValue;
     const recipientName = giftRecipientName.trim();
     const note = giftMessage.trim();
+
+    if (giftMode && !giftCheckoutConfigured) {
+      setFeedback(
+        "Gift subscriptions are not available yet. No checkout or payment was created."
+      );
+      return;
+    }
 
     if (giftMode && !giftRecipientValid) {
       setFeedback("Enter a valid recipient email before starting a gift checkout.");
@@ -237,9 +248,9 @@ export default function UpgradePlan() {
         <Text style={styles.eyebrow}>Gift subscription</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
-          Turn this into a gift checkout, enter the recipient email, and use the monthly
-          or yearly selector above for the gift term. Optional name and message fields are
-          passed into the checkout payload so the backend can build the handoff flow.
+          {giftCheckoutConfigured
+            ? "Enter the recipient email and choose the monthly or yearly gift term. Stripe opens only after recipient fulfillment is available."
+            : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
           {(
@@ -252,15 +263,24 @@ export default function UpgradePlan() {
             return (
               <Pressable
                 key={item.key}
+                disabled={item.key === "gift" && !giftCheckoutConfigured}
                 onPress={() => {
                   setGiftMode(item.key === "gift");
                   setFeedback("");
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={
-                  item.key === "gift" ? "Gift subscription mode" : "Buy for me mode"
+                  item.key === "gift"
+                    ? giftCheckoutConfigured
+                      ? "Gift subscription mode"
+                      : "Gift subscriptions unavailable"
+                    : "Buy for me mode"
                 }
-                style={[styles.segmentButton, active && styles.segmentButtonActive]}
+                style={[
+                  styles.segmentButton,
+                  active && styles.segmentButtonActive,
+                  item.key === "gift" && !giftCheckoutConfigured && styles.buttonDisabled
+                ]}
               >
                 <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
                   {item.label}
@@ -316,7 +336,9 @@ export default function UpgradePlan() {
           </>
         ) : (
           <Text style={styles.helper}>
-            Switch to gift mode when you want the checkout tied to another email address.
+            {giftCheckoutConfigured
+              ? "Switch to gift mode when you want the checkout tied to another email address."
+              : "Buy for me remains available. Gift controls will open only after the recipient handoff is ready."}
           </Text>
         )}
       </AppCard>

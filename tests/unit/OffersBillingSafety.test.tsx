@@ -64,6 +64,7 @@ describe("Offers billing safety", () => {
     (getSubscriptionSetupStatus as jest.Mock).mockReset();
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "live",
+      giftCheckoutConfigured: false,
       trial: { enabled: true, days: 30 }
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
@@ -182,39 +183,18 @@ describe("Offers billing safety", () => {
     expect(screen.getByLabelText("Review paid Facility checkout")).toBeDisabled();
   });
 
-  it("supports gift checkout with recipient details and gift return URLs", async () => {
-    const previousWindow = global.window;
-    global.window = { location: { origin: "https://app.example", href: "" } } as any;
+  it("blocks gift checkout until recipient fulfillment is configured", async () => {
+    const screen = render(<Offers />);
 
-    try {
-      const screen = render(<Offers />);
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
-      await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
-
-      fireEvent.press(screen.getByLabelText("Gift subscription mode"));
-      fireEvent.changeText(
-        screen.getByLabelText("Gift recipient email"),
-        "Friend@Example.com"
-      );
-      fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Friend Name");
-      fireEvent.changeText(screen.getByLabelText("Gift message"), "Happy growing!");
-      fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-
-      await waitFor(() =>
-        expect(createCheckoutSession).toHaveBeenCalledWith({
-          plan: "pro",
-          interval: "monthly",
-          giftMode: true,
-          giftRecipientEmail: "friend@example.com",
-          giftRecipientName: "Friend Name",
-          giftMessage: "Happy growing!",
-          giftTerm: "monthly",
-          successUrl: "https://app.example/offers?gift=success",
-          cancelUrl: "https://app.example/offers?gift=canceled"
-        })
-      );
-    } finally {
-      global.window = previousWindow;
-    }
+    expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled();
+    expect(
+      screen.getByText(
+        "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 });
