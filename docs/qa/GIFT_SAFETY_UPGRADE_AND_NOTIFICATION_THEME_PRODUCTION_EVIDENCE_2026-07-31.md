@@ -2152,3 +2152,32 @@ retry, session clearing, logout, support, or workspace behavior.
 - No dashboard, logout, support, Report Bug, order, checkout, workspace,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Shared Alert Center Night theme, hierarchy, and truthful zero state
+
+Production `/home/alerts` retained a large fixed-white scheduling panel, white
+task-assignee field, white inactive filter chips, daytime metrics/cards/actions,
+and no semantic headings under the signed-in Facility Viewer's resolved Night
+mode. Although the workspace truthfully had zero alerts, it also exposed the
+complete follow-up due-date, reminder, recurrence, assignee, and filter workflow
+with no alert available to consume those choices. Frontend `9ad40084` moves
+empty, loaded, notification-backed, alert-backed, metric, scheduler, card,
+badge, feedback, filter, action, and input states to the active palette; adds
+one route H1, schedule/alert/empty H2s, readable placeholders, and explicit
+filter selection state; and hides the scheduler and filters until at least one
+real alert exists. Load fallback, mark-read, resolve, snooze, assignment, source
+links, AI handoff, and source-linked task creation did not change.
+
+- Six focused Alert Center and shared Schedule tests passed, covering the
+  action-free zero state, loaded H1/H2 hierarchy, active palette, notification
+  fallback, source links, task metadata, resolution, and snoozing. Targeted
+  source ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30708837017` and Frontend CI `30708837016`
+  passed. Clean production `/home/alerts` then rendered one bright H1, one
+  muted-bright zero-state H2, four dark readable metrics with distinct accent,
+  success, danger, and neutral borders, zero scheduler/filter controls, and
+  zero white/light page-content surfaces.
+- No schedule, filter, assignment, mark-read, resolve, snooze, source, AI,
+  task, alert, notification, Report Bug, workspace, account, session, billing,
+  audit event, or record action was invoked, and the Viewer session remained
+  signed in.
