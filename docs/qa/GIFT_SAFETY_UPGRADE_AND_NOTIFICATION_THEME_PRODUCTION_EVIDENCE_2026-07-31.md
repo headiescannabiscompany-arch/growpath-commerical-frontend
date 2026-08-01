@@ -196,6 +196,24 @@ production acceptance covered:
 
 ## Automated verification
 
+## Facility Analytics Night contrast
+
+Production Facility Analytics used the Night canvas but retained nearly black
+day-only title, explanatory copy, metric values, labels, and details, making
+the operational summary unreadable. Frontend `c00d8702` moved those headings,
+metrics, details, and borders to the active palette.
+
+- Production Build Preflight `30681037874` passed in 2m25s and Frontend CI
+  `30681037883` passed in 6m52s.
+- Two focused analytics tests passed, including the recorded/unknown stability
+  contract and an explicit Night-palette regression. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in production acceptance confirmed readable Facility Analytics title,
+  explanatory copy, all six metric values/labels/details, and the correctly
+  rendered training-assignment separator under `AUTO / Resolved: NIGHT`.
+- No refresh, campaign, metric, navigation, or record mutation was invoked; the
+  session was returned to the Facility dashboard without logout.
+
 ## Shared Products & Label Library Night theme
 
 Production Facility Products & Label Library retained a white canvas, dark
