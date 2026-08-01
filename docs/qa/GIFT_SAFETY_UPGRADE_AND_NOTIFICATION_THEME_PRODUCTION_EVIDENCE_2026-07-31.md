@@ -1118,6 +1118,38 @@ provider. No speculative route-specific code change was made.
   grow, log, task, plant history, credit, audit event, billing, or record action
   was invoked, and the session remained signed in.
 
+## Facility Feed Night theme and Viewer read-only acceptance
+
+Production Facility Feed rendered its outreach heading, explanatory card,
+filter panel, chips, search field, and empty state with white day-only surfaces
+and dark text under resolved Night mode. Viewer publishing controls were
+correctly absent. Frontend `2cdff5f3` moved the complete shared
+Commercial/Facility campaign surface—including owner-only creation,
+destination, schedule, review, analytics, populated post, and action states—to
+the active palette, added readable placeholder colors, and structured the
+visible workflow sections without changing campaign permissions or behavior.
+
+- Production Build Preflight `30692783353` passed in 3m25s and Frontend CI
+  `30692783365` passed in 6m42s.
+- Sixteen focused Facility Viewer/Owner, Commercial campaign, destination,
+  schedule/review, source-link, and shared Night-palette tests passed. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed. The suites
+  retained their existing Expo Go warning without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one `Facility
+  Outreach` heading and level-two `Promoted Outreach`, `Filter`, and `No
+  campaigns yet` headings. The selected filter uses accent surface/border
+  `rgb(120, 170, 255)` with white text; four unselected filters and the search
+  field use Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and
+  bright text `rgb(244, 247, 251)`. The search placeholder is readable muted
+  text `rgb(201, 212, 223)`, all page headings are readable, and the separate
+  Report Bug control was the only detected white element.
+- The truthful zero-campaign state, direct-sales prohibition, and five filter
+  choices remained present. The Viewer exposed zero campaign title/body,
+  create, upload, destination, schedule, publish, analytics, or management
+  controls. No filter, search, refresh, campaign, destination, image, schedule,
+  report, hide, publish, analytics, audit event, billing, or record action was
+  invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
