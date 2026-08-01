@@ -570,6 +570,31 @@ changing any destinations or AI-credit behavior.
   credit, task, log, audit event, or record changed. The session returned to the
   Facility dashboard without logout.
 
+## Facility Reports heading hierarchy
+
+Production Facility Reports already used the correct Night palette and truthful
+report values, but the tab shell owned a generic `Reports` level-one heading.
+The visible `Facility Reports` title and Tasks, Compliance, Team, and Automation
+sections were ordinary text. Frontend `eb0368ff` established one accurate
+page-owned heading and four semantic report-section headings without changing
+refresh, export, report loading, or values.
+
+- Production Build Preflight `30685832550` passed in 3m22s and Frontend CI
+  `30685832545` passed in 6m28s. The production host published the new
+  `index-280d17f670ccdbc52f454bc19f37f499.js` asset.
+- Nine focused Facility Reports viewer-access and tab-shell tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  The test runner emitted its existing Expo Go push warning without a test
+  failure.
+- Signed-in Viewer production acceptance confirmed one level-one Facility
+  Reports heading; level-two Tasks, Compliance, Team, and Automation headings;
+  Tasks `1 / 0 / 0 / 0`; Compliance logs `0` with missed `Not tracked`; Team
+  `4` with Staff, Viewer, Owner, and Manager each `1`; Automation `0 / 0`; the
+  Night canvas `rgb(14, 20, 27)`; and zero white content surfaces.
+- Refresh and export were not invoked. No download, report, compliance action,
+  task, team, automation, audit event, or record changed. The session returned
+  to the Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
