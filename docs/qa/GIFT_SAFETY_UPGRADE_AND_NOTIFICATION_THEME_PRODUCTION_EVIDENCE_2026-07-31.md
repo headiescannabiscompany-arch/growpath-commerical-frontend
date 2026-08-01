@@ -1879,3 +1879,26 @@ Personal for Field Studies` routed through workspace selection.
 - No search, filter, retry, location, globe, workspace, Field Study, support,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Discover Directory duplicate Nature preview removal
+
+Production `/discover` rendered Discovery Nature twice: an embedded compact
+globe card loaded the public observations API and map runtime, then the normal
+Discovery Nature directory section repeated the same title, explanation, and
+destination immediately below it. Frontend `fab8f0cc` removes only the
+redundant preview, its duplicate state/request, and its preview-only styles.
+The canonical Discovery Nature directory card and `/field-observations`
+destination remain unchanged.
+
+- Three focused Discover/public-observation tests passed, including an explicit
+  one-section/no-preview regression. Source ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The test-file lint warning is
+  the repository's intentional test ignore, not a source error.
+- Production Build Preflight `30704484927` and Frontend CI `30704484936`
+  passed. Signed-in Facility Viewer verification on the deployed asset measured
+  exactly one `Discovery Nature` title, one `Open Discovery Nature` result,
+  zero embedded globe instances, zero obsolete preview controls, and zero white
+  page-content surfaces.
+- No search, follow filter, campaign, directory result, Nature action, globe,
+  location, workspace, account, session, billing, audit event, or record action
+  was invoked, and the Viewer session remained signed in.
