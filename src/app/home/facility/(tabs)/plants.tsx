@@ -16,7 +16,7 @@ import { endpoints } from "@/api/endpoints";
 import { createPlant } from "@/api/plants";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
@@ -72,10 +72,6 @@ function isActivePlant(x: AnyRec) {
   return x?.isActive !== false && status !== "deleted" && status !== "inactive";
 }
 
-function canCreatePlant(role: unknown) {
-  return ["OWNER", "MANAGER", "STAFF"].includes(String(role || "").toUpperCase());
-}
-
 function firstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -94,6 +90,10 @@ export default function FacilityPlantsTab() {
     contextName?: string | string[];
   }>();
   const ent = useEntitlements();
+  const facilityRole = String(ent?.facilityRole || "").toUpperCase();
+  const canWritePlants =
+    Boolean(ent?.can?.(CAPABILITY_KEYS.PLANTS_WRITE)) &&
+    ["OWNER", "MANAGER"].includes(facilityRole);
   const { selectedId: facilityId } = useFacility();
   const { rooms } = useFacilityRooms(facilityId);
   const { grows } = useFacilityGrows(facilityId);
@@ -155,7 +155,7 @@ export default function FacilityPlantsTab() {
   );
 
   async function addPlant() {
-    if (!facilityId || !canCreatePlant(ent?.facilityRole) || !plantName.trim()) return;
+    if (!facilityId || !canWritePlants || !plantName.trim()) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -227,13 +227,20 @@ export default function FacilityPlantsTab() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
             {contextName ? `${contextName} → Plants` : "Facility Plants"}
           </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 
         <View style={styles.summaryCard}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.cardTitle, styles.summaryHeading]}
+          >
+            Plant coverage
+          </Text>
           <View>
             <Text style={styles.summaryValue}>{activeCount}</Text>
             <Text style={styles.summaryLabel}>active plants</Text>
@@ -257,8 +264,10 @@ export default function FacilityPlantsTab() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Add Plant</Text>
-          {canCreatePlant(ent?.facilityRole) ? (
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Add Plant
+          </Text>
+          {canWritePlants ? (
             <View style={styles.form}>
               <TextInput
                 accessibilityLabel="Plant name"
@@ -386,7 +395,9 @@ export default function FacilityPlantsTab() {
               </Pressable>
             </View>
           ) : (
-            <Text style={styles.muted}>Only facility staff can create plants.</Text>
+            <Text style={styles.muted}>
+              Only facility owners and managers can create plants.
+            </Text>
           )}
         </View>
 
@@ -411,7 +422,9 @@ export default function FacilityPlantsTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No plants yet</Text>
+                <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
+                  No plants yet
+                </Text>
                 <Text style={styles.muted}>
                   Create a plant above or link plants from a grow/room to start tracking
                   room and batch coverage.
@@ -498,6 +511,7 @@ const createStyles = (palette: ThemePalette) =>
       marginBottom: 12
     },
     summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryHeading: { width: "100%" },
     summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
     warnText: { color: palette.warning },
     card: {

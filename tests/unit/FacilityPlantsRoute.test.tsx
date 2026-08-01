@@ -8,6 +8,8 @@ const mockCreatePlant = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
+let mockFacilityRole = "manager";
+let mockCanWritePlants = true;
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -27,7 +29,11 @@ jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ facilityRole: "staff" })
+  CAPABILITY_KEYS: { PLANTS_WRITE: "plants_write" },
+  useEntitlements: () => ({
+    facilityRole: mockFacilityRole,
+    can: () => mockCanWritePlants
+  })
 }));
 jest.mock("@/features/facility/useFacilityRooms", () => ({
   useFacilityRooms: () => ({ rooms: [{ id: "room-1", name: "Flower room" }] })
@@ -54,6 +60,8 @@ jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
 describe("FacilityPlantsRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFacilityRole = "manager";
+    mockCanWritePlants = true;
     mockApiRequest.mockResolvedValue({ plants: [{ id: "plant-1", name: "Plant A" }] });
     mockCreatePlant.mockResolvedValue({ id: "plant-2" });
   });
@@ -62,6 +70,12 @@ describe("FacilityPlantsRoute", () => {
     const screen = render(<FacilityPlantsRoute />);
 
     await waitFor(() => expect(screen.getByText("Plant A")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Summer crop → Plants" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Plant coverage" }).props["aria-level"]
+    ).toBe(2);
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/facility/facility-1/plants?growId=grow-1&roomId=room-1"
     );
@@ -80,5 +94,34 @@ describe("FacilityPlantsRoute", () => {
         growId: "grow-1"
       })
     );
+  });
+
+  it.each(["staff", "viewer"])(
+    "keeps the %s role read-only even if a stale capability claims write access",
+    async (role) => {
+      mockFacilityRole = role;
+      mockCanWritePlants = true;
+      mockApiRequest.mockResolvedValue({ plants: [] });
+
+      const screen = render(<FacilityPlantsRoute />);
+
+      await waitFor(() => expect(screen.getByText("No plants yet")).toBeTruthy());
+      expect(
+        screen.getByText("Only facility owners and managers can create plants.")
+      ).toBeTruthy();
+      expect(screen.queryByLabelText("Plant name")).toBeNull();
+      expect(screen.queryByLabelText("Create facility plant")).toBeNull();
+      expect(mockCreatePlant).not.toHaveBeenCalled();
+    }
+  );
+
+  it("keeps a manager read-only when the plants-write capability is unavailable", async () => {
+    mockCanWritePlants = false;
+
+    const screen = render(<FacilityPlantsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Plant A")).toBeTruthy());
+    expect(screen.queryByLabelText("Plant name")).toBeNull();
+    expect(screen.queryByLabelText("Create facility plant")).toBeNull();
   });
 });
