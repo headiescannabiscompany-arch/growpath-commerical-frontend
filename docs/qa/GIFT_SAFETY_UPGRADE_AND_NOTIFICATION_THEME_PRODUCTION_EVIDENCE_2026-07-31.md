@@ -933,6 +933,28 @@ Journal` while the route title said `Facility Grow Journal`; follow-up
   event, billing, or record action was invoked, and the session remained signed
   in.
 
+## Facility Audit Logs Night theme and 67-event evidence acceptance
+
+Production Facility Audit Logs was re-audited after the surrounding Facility
+workflow corrections. The reported color issue was not reproducible on this
+route: its canvas, heading, event cards, metadata, and detail links already use
+the active Night palette. The route also retained one accurate page heading and
+the full real evidence trail, so no speculative code change was made.
+
+- Eleven focused Facility audit-list/detail/entity, Night-palette, readable
+  evidence, loading-heading, and shared-back tests passed. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  `Audit Logs` heading; 67 rendered event cards and 67 read-only `Open Detail`
+  links after scrolling through the complete list; the real token reset, team,
+  SOP, compliance, inventory, task, room, and other historical events; the
+  Night canvas `rgb(14, 20, 27)`; bright heading text `rgb(244, 247, 251)`; and
+  no white page-content surface. The separate Report Bug control was the only
+  detected white element.
+- No refresh, detail link, event, team, SOP, compliance, inventory, task, room,
+  token, audit, billing, or record action was invoked. Scrolling only rendered
+  the remaining virtualized rows; the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
