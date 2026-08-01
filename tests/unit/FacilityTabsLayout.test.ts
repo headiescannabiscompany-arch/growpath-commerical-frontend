@@ -31,4 +31,9 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("ai-template")).toBe(false);
     expect(shouldShowFacilityRouteHeader("ai-validation")).toBe(true);
   });
+
+  it("lets photo diagnosis own its accurate semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("ai-diagnosis-photo")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("ai-ask")).toBe(true);
+  });
 });
