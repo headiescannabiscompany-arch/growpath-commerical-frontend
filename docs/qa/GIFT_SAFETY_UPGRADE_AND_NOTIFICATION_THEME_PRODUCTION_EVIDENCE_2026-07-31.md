@@ -2181,3 +2181,29 @@ links, AI handoff, and source-linked task creation did not change.
   task, alert, notification, Report Bug, workspace, account, session, billing,
   audit event, or record action was invoked, and the Viewer session remained
   signed in.
+
+## Shared video-source editor Night theme
+
+Production `/videos?tab=library` retained five fixed-white authoring controls
+under the signed-in Facility Viewer's resolved Night mode: the GrowPath upload,
+Rumble, Vimeo, and Other URL provider choices plus the video-page URL field.
+The surrounding Videos route and loaded reusable VideoCard were already themed.
+Frontend `93250584` moves the complete reusable source editor—provider and
+availability choices, fields, switches, previews, status panels, warnings, and
+actions—to the active palette without changing upload, provider detection,
+availability, rights, accessibility, removal, or publication behavior.
+
+- Twelve focused Videos route and lesson-media tests passed, including a Night
+  palette regression assertion for the editor card, choices, selected state,
+  and input. Targeted source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30709344909` and Frontend CI `30709344911`
+  passed. Clean signed-in production verification then measured all four
+  provider choices at Night muted-surface `rgb(26, 35, 48)` with border
+  `rgb(40, 53, 69)`, and the untouched URL field at the same surface/border
+  with bright text `rgb(244, 247, 251)`. The route contained zero white/light
+  page-content surfaces.
+- No provider, URL, upload, media, availability, rights, accessibility,
+  remove, publish, video, course, workspace, account, session, billing, audit
+  event, or record action was invoked, and the Viewer session remained signed
+  in.
