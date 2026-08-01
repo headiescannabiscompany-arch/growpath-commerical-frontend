@@ -15,6 +15,8 @@ const mockApiErrorHandler = {
 };
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockParams: Record<string, string> = {};
+let mockFacilityRole = "MANAGER";
+let mockCanWriteGrows = true;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
@@ -35,6 +37,14 @@ jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
 
+jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: { GROWS_WRITE: "GROWS_WRITE" },
+  useEntitlements: () => ({
+    facilityRole: mockFacilityRole,
+    can: () => mockCanWriteGrows
+  })
+}));
+
 jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => mockApiErrorHandler
 }));
@@ -42,6 +52,8 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
 describe("FacilityGrowsTab", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFacilityRole = "MANAGER";
+    mockCanWriteGrows = true;
     mockParams = { roomId: "room-1", roomName: "Flower Room" };
     mockApiRequest.mockResolvedValue({ grows: [] });
   });
@@ -64,5 +76,24 @@ describe("FacilityGrowsTab", () => {
       pathname: "/onboarding/start-grow",
       params: { roomId: "room-1", roomName: "Flower Room" }
     });
+  });
+
+  it("owns the page heading and hides grow creation from a Viewer", async () => {
+    mockParams = {};
+    mockFacilityRole = "VIEWER";
+    mockCanWriteGrows = false;
+    const screen = render(<FacilityGrowsTab />);
+
+    await waitFor(() => expect(screen.getByText("No facility grows yet")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Facility Grows" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "No facility grows yet" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByText("Only facility owners and managers can start grows.")
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Start facility grow")).toBeNull();
   });
 });

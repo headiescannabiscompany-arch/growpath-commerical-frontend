@@ -4,6 +4,7 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -58,6 +59,11 @@ export default function FacilityGrowsTab() {
     roomName?: string;
   }>();
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
+  const facilityRole = String(ent.facilityRole || "VIEWER").toUpperCase();
+  const canStartGrow =
+    Boolean(ent?.can?.(CAPABILITY_KEYS.GROWS_WRITE)) &&
+    (facilityRole === "OWNER" || facilityRole === "MANAGER");
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -140,7 +146,7 @@ export default function FacilityGrowsTab() {
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
             {roomName ? `${roomName} → Grows` : "Facility Grows"}
           </Text>
           <Text style={styles.muted}>{header}</Text>
@@ -167,26 +173,33 @@ export default function FacilityGrowsTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>
+                <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
                   {roomId ? "No grows in this room yet" : "No facility grows yet"}
                 </Text>
                 <Text style={styles.muted}>
-                  {roomId
-                    ? `Start a grow in ${roomLabel} to connect its plants, tasks, logs, and AI context.`
-                    : "Start a grow to connect rooms, plants, tasks, logs, and AI context."}
+                  {canStartGrow
+                    ? roomId
+                      ? `Start a grow in ${roomLabel} to connect its plants, tasks, logs, and AI context.`
+                      : "Start a grow to connect rooms, plants, tasks, logs, and AI context."
+                    : "Only facility owners and managers can start grows."}
                 </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    roomId ? `Start grow in ${roomLabel}` : "Start facility grow"
-                  }
-                  onPress={openStartGrow}
-                  style={({ pressed }) => [styles.startButton, pressed && styles.pressed]}
-                >
-                  <Text style={styles.startButtonText}>
-                    {roomId ? "Start a grow in this room" : "Start a facility grow"}
-                  </Text>
-                </Pressable>
+                {canStartGrow ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      roomId ? `Start grow in ${roomLabel}` : "Start facility grow"
+                    }
+                    onPress={openStartGrow}
+                    style={({ pressed }) => [
+                      styles.startButton,
+                      pressed && styles.pressed
+                    ]}
+                  >
+                    <Text style={styles.startButtonText}>
+                      {roomId ? "Start a grow in this room" : "Start a facility grow"}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null
           }

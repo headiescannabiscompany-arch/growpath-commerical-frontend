@@ -8,6 +8,7 @@ import { useAppTheme } from "@/theme/appTheme";
 
 export const FACILITY_TASKS_TAB_LABEL = "Tasks";
 export const FACILITY_COMPLIANCE_TAB_LABEL = "Compliance";
+export const FACILITY_GROWS_TAB_LABEL = "Grows";
 
 export function shouldHideFacilityTabBar(pathname = "") {
   return (
@@ -34,7 +35,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "transfers",
     "rooms",
     "tasks",
-    "compliance"
+    "compliance",
+    "grows"
   ].includes(routeName);
 }
 
@@ -100,7 +102,14 @@ export default function FacilityTabsLayout() {
           tabBarButton: () => null
         }}
       />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
+      <Tabs.Screen
+        name="grows"
+        options={{
+          title: "Facility Grows",
+          tabBarLabel: FACILITY_GROWS_TAB_LABEL,
+          headerShown: shouldShowFacilityRouteHeader("grows")
+        }}
+      />
       <Tabs.Screen
         name="plants"
         options={{ title: "Plants", tabBarButton: () => null }}

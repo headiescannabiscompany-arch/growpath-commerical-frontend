@@ -1,5 +1,6 @@
 import {
   FACILITY_COMPLIANCE_TAB_LABEL,
+  FACILITY_GROWS_TAB_LABEL,
   FACILITY_TASKS_TAB_LABEL,
   shouldHideFacilityTabBar,
   shouldShowFacilityRouteHeader
@@ -66,7 +67,13 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Rooms & Workspaces own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("rooms")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("grows")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("plants")).toBe(true);
+  });
+
+  it("lets Facility Grows own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("grows")).toBe(false);
+    expect(FACILITY_GROWS_TAB_LABEL).toBe("Grows");
+    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
   });
 
   it("lets Facility Tasks own its semantic page heading", () => {
