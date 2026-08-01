@@ -955,6 +955,42 @@ the full real evidence trail, so no speculative code change was made.
   token, audit, billing, or record action was invoked. Scrolling only rendered
   the remaining virtualized rows; the session remained signed in.
 
+## Facility SOP Runs Night theme and Viewer mutation gates
+
+Production Facility SOP Runs retained a correct Night index and real completed
+run evidence, but the Viewer saw a Start Run link and the direct start route had
+no entitlement guard. The run-detail route also relied only on completed status
+to disable mutations, so an active run could expose checklist and completion
+writes to a read-only role. Its detail evidence remained day-only with a white
+card and lacked page-owned semantic headings. Frontend `a027a1a1` applied the
+centralized `SOP_RUNS_WRITE` gate across the index, direct start route, and
+detail mutation handlers/controls, while moving the complete detail surface to
+the active palette and structuring its evidence headings.
+
+- Production Build Preflight `30690905972` passed in 3m07s and Frontend CI
+  `30690905927` passed in 6m39s.
+- Sixty-one focused SOP index/start/detail, Owner/Manager/Viewer,
+  compliance-link, Night-palette, role-policy, and mode-access tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  The suites retained their existing Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one `SOP Library
+  & Runs` heading; level-two `Run evidence summary` and `Run history` headings;
+  the real one-of-one completed run with three-of-three reviewed steps and zero
+  pending steps; retained SOP Library and Compare links; the Night canvas
+  `rgb(14, 20, 27)`; and no Start Run link.
+- Direct Viewer navigation to `/home/facility/sop-runs/start` produced a
+  form-free `SOP runs are read-only` handoff with an Owner/Manager notice and a
+  safe return action. The real completed run detail retained its title, status,
+  timestamps, three reviewed checklist steps, and locked-evidence notice under
+  one level-one run heading and one level-two `Checklist evidence` heading.
+  Its Night detail used bright heading text `rgb(244, 247, 251)` and zero white
+  page-content surfaces; the separate Report Bug control was the only detected
+  white element.
+- The Viewer detail exposed zero step-update, add-step, or complete-run
+  controls. No template, comparison, step, note, status, completion, refresh,
+  SOP write, audit event, billing, or record action was invoked; only read-only
+  route navigation occurred, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
