@@ -1407,6 +1407,31 @@ PIN security, and save handlers were not changed.
   profile, audit event, billing, or record action was invoked, and the session
   remained signed in.
 
+## Facility Dashboard hierarchy and Night-theme no-change acceptance
+
+Production Facility Dashboard already used the active Night palette, retained
+its real operational counts, and exposed no white page-content surfaces, so no
+color rewrite was made. The live audit did confirm that `Operations Live`,
+`Learning & community`, `At a glance`, `Priority status`, and `Command actions`
+were visual titles without semantic structure under the shell-owned Dashboard
+heading. Frontend `7a78017d` established those five level-two headings without
+changing metrics, refresh, navigation, role visibility, or theme behavior.
+
+- Production Build Preflight `30696304941` and Frontend CI `30696304863`
+  passed.
+- Twenty focused dashboard-hierarchy and Facility-tab/header tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  The existing Expo Go notification warning did not fail the suites.
+- Signed-in Viewer production acceptance confirmed one level-one `Dashboard`
+  heading followed by five level-two operational headings. Every heading is
+  readable in Night mode, and the separate Report Bug control was the only
+  detected white element.
+- The same live dashboard retained 15 rooms, zero grows, one SOP, 67 audit
+  events, 30 named action controls, Auto resolved to Night, and the existing
+  Viewer-specific tile visibility. No theme, location, refresh, metric,
+  navigation, room, grow, SOP, audit, task, compliance, AI, export, billing, or
+  record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
