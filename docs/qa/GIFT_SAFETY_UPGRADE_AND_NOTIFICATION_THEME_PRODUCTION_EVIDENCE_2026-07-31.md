@@ -2231,3 +2231,28 @@ behavior did not change.
 - No AI request, credit, balance, refresh, calculator, diagnosis, save, task,
   log, workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
+
+## Shared Course Builder web crash correction
+
+Production `/courses/create` crashed before rendering and exposed a raw browser
+stack because Expo Router's `Link asChild` forwarded a React Native style array
+from the shared secondary action into a raw web anchor. Frontend `7b7b594a`
+flattens that palette-aware style into one object before it reaches Schedule,
+Notifications, or advanced-live links. Course access, fields, uploads, Twitch,
+scheduling, pricing, validation, and creation behavior did not change.
+
+- All eight focused Create Course workflow tests passed, covering the complete
+  seven-section builder, structured drafts, provider-safe video, unsafe-markup
+  rejection, GrowPath upload, paid pricing, cover upload, and document/media
+  uploads. The regression test asserts the shared Schedule link receives a
+  non-array style. Forced targeted source ESLint, full frontend `tsc --noEmit`,
+  and `git diff --check` passed.
+- Production Build Preflight `30710121967` and Frontend CI `30710121931`
+  passed. Clean signed-in production verification rendered one Create Course
+  H1, all seven workflow H2s, 16 untouched fields, working Schedule and
+  Notifications anchors, no crash/TypeError/stack, and a disabled empty-form
+  Create Draft action.
+- No field, upload, interest, lesson, media, Twitch, schedule, notification,
+  live, link, pricing, preview, draft, course, workspace, account, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
