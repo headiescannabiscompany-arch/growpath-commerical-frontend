@@ -2863,3 +2863,51 @@ changing discovery, ownership, creation, invitations, publishing, or access.
 - No field, invitation, course, creation, publishing, campaign, workspace,
   account, session, billing, audit event, or record action was invoked, and the
   Facility session remained signed in.
+
+## Legacy course, storefront, Commercial course, and utility active palette
+
+The signed-in Facility Viewer's selected `Auto` theme correctly resolved to the
+softer blue-gray `Night` palette used by the Facility dashboard, Profile,
+Notifications, and Inventory. The remaining defect was isolated to older
+feature screens that bypassed the shared palette with fixed white, near-black,
+slate, and light-gray values. Frontend `fd223948` moves the following complete
+surfaces to the active palette without changing their workflows:
+
+- shared Course Detail and Edit Lesson;
+- public storefront, brand, product detail, and paid/free course detail;
+- Commercial course list/quick builder and course/lesson detail editor;
+- Creator Course Analytics, Debug, and Vendor Signup.
+
+The corrected fields also receive active-palette placeholder text, while cards,
+loading/error/empty states, linked rows, progress, status/warning/success
+treatments, and primary/secondary/destructive actions now follow the same Day
+or Night palette as their page shell.
+
+- Seven focused suites passed, totaling 60 tests across shared course behavior,
+  Edit Lesson, creator analytics, public Commercial route aliases, Commercial
+  workflow behavior, Commercial course theme coverage, and legacy utility
+  styles. Forced source and test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The Commercial style test emitted the existing
+  non-failing Expo Go remote-notification warning.
+- Production Build Preflight `30721186513` and Frontend CI `30721186506`
+  passed against exact commit `fd223948fdf0ae814c8ec729b25f6d43b7757ac0`.
+  Production changed from `index-63fff16b...` to `index-c08844bc...`.
+- Post-rollout signed-in checks confirmed Profile still reported `Current:
+AUTO / Resolved: NIGHT`, had one Profile H1, and had zero opaque light
+  surfaces. Facility New Inventory retained one accurate `Inventory is
+read-only` H1, zero fields, and zero opaque light surfaces. Shared Courses
+  retained one H1, both applicable H2s, its dark/readable Invite field, and zero
+  opaque light surfaces. Direct Commercial Courses correctly returned one
+  `Access denied` H1, zero editor fields, and zero opaque light surfaces for the
+  Facility Viewer.
+- Production currently has no published storefront/course records, and the
+  signed-in account has no Commercial role. Therefore loaded storefront,
+  learner, checkout, analytics, and Commercial editor states are source-and-
+  focused-test verified rather than falsely claimed as live-populated
+  acceptance. Browser policy also blocked direct Debug, Creator Analytics, and
+  Vendor Signup inspection; those theme mappings remain test-proven. No records
+  or accounts were manufactured and no role boundary was bypassed.
+- No field, link, course, lesson, store, product, checkout, refund, report,
+  analytics action, debug action, vendor submission, Commercial editor,
+  workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
