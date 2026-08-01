@@ -1829,3 +1829,36 @@ not change.
 - No create form, field, privacy option, search, refresh, group, join/leave,
   campaign, Forum action, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
+
+## Public Discovery Night theme, hierarchy, and workspace handoff
+
+Production `/field-observations` retained a white page canvas, white filter
+chips, a light search field, day-only map/result surfaces, and three competing
+H1s under the signed-in Facility Viewer's resolved Night mode. It also offered
+`Start a Field Study` directly into the Personal workspace from Facility mode.
+Frontend `9be9f0ac` moves the complete Discovery surface to the active palette,
+establishes one `Explore the living world` H1 plus `Discovery globe` and
+`Published observations` H2s, gives search/filter/retry controls explicit
+accessible names, and replaces the cross-workspace action with `Switch to
+Personal for Field Studies` routed through workspace selection.
+
+- Production Build Preflight `30703114291` and Frontend CI `30703114270`
+  passed. Seven focused API/route tests plus three navigation-surface tests,
+  targeted source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The two test files are intentionally ignored by
+  the source lint configuration; Jest executed them successfully. The existing
+  non-failing Expo Go notification warning remained unrelated.
+- Signed-in Facility Viewer acceptance on the deployed production asset
+  confirmed one H1, two H2s, a dark untouched search field at surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright text
+  `rgb(244, 247, 251)`. All eight filter choices and Search exposed explicit
+  button names, the Facility handoff targeted `/account/mode`, and zero white
+  page-content surfaces remained.
+- The deployed public observation request still ended in `Not found` after the
+  frontend route-family correction. The route existence probe only established
+  that `/api/personal/field-studies/public` is authenticated rather than absent;
+  it did not prove the signed-in response contract. This data/API mismatch
+  remains open and is not hidden as an empty state or claimed as fixed.
+- No search, filter, retry, location, globe, workspace, Field Study, support,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
