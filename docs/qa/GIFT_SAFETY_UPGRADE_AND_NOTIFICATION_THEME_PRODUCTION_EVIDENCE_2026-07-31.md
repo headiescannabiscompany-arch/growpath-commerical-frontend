@@ -1459,6 +1459,31 @@ profile actions, billing, logout, or content controls.
   PIN, content-control, audit event, billing, or record action was invoked, and
   the session remained signed in.
 
+## Shared Support Night theme and heading hierarchy
+
+Production `/support` retained a light-only page under resolved Night mode: its
+page and form headings were nearly black, the complete form was a white panel,
+and all five visible fields used white backgrounds and light borders. Only the
+page title and form title were semantic headings despite every direct-inbox
+title being presented as a section title. Frontend `09a75fc4` moved the complete
+Support route to the active palette and established the direct-inbox titles as
+level-two headings. Support routing, validation, honeypot protection, request
+submission, and response handling did not change.
+
+- Production Build Preflight `30697403586` and Frontend CI `30697403581`
+  passed. Three focused Support routing, structured-prefill, hierarchy, and
+  Night-palette tests passed. Targeted ESLint, full frontend `tsc --noEmit`,
+  and `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance confirmed one bright Night
+  level-one `Support` heading plus sixteen bright Night level-two form and
+  direct-inbox headings. The untouched name, reply-email, account-email,
+  subject, and message fields use Night surface `rgb(21, 29, 39)`, border
+  `rgb(40, 53, 69)`, and text `rgb(244, 247, 251)`.
+- No white page-content surface remained. All fourteen support-topic controls
+  remained present, and the empty-form Send support request action remained
+  disabled. No topic, field, support request, email, account, session, billing,
+  or record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
