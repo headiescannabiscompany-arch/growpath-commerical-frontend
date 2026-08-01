@@ -620,6 +620,33 @@ data loading, calculations, campaign placement, or styling.
   record action was invoked. The session returned to the Facility dashboard
   without logout.
 
+## Facility Integrations heading hierarchy
+
+Production Facility Integrations retained the previously verified Night palette
+and Viewer-safe disabled controls, but its tab shell owned a generic
+`Integrations` level-one heading. The accurate `Connect rooms and sensor data`
+title and operational sections were ordinary text. Frontend `92d48fea`
+established one accurate page-owned heading and semantic headings for every
+integration card, including the conditional connection/mapping surfaces,
+without changing permissions or workflow behavior.
+
+- Production Build Preflight `30686480340` passed in 3m28s and Frontend CI
+  `30686480332` passed in 6m25s. The production host published the new
+  `index-a5c329f3b62e84a22e168219b67b9a19.js` asset.
+- Fourteen focused Facility Integrations and tab-shell tests passed, including
+  Viewer denial, provider selection, mapping confirmation, auto-build, Night
+  palette, and heading ownership. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The test runner emitted its
+  existing Expo Go push warning without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one Connect rooms
+  and sensor data heading; level-two Pulse read-only telemetry, Import
+  controller and grow history, and More providers headings; the Night canvas
+  `rgb(14, 20, 27)`; zero white content surfaces; and both write actions still
+  disabled for the Viewer.
+- No provider selection, connector, import, mapping, auto-build, email,
+  developer portal, room, telemetry, audit event, or record action was invoked.
+  The session returned to the Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
