@@ -2594,6 +2594,55 @@ gates, inventory, calculations, manifests, shipping, or record behavior.
   audit event, workspace, account, session, or record action was invoked, and
   the Viewer session remained signed in.
 
+## Facility Team roster hierarchy
+
+Production Facility Team already used the active Night palette and correctly
+restricted the Viewer to member visibility, but the real four-member roster
+had no section heading and each member name was plain text. Frontend
+`7e0d2571` adds a `Team members` H2 plus H3 semantics for member names and the
+empty state without changing invitations, task assignment, role management,
+member removal, or facility permissions.
+
+- Both focused Facility Team/layout suites passed, totaling 25 tests and
+  covering Owner, Manager, Viewer, role-change, removal-confirmation,
+  page-heading, and navigation behavior. Source lint, forced test lint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. Existing non-failing
+  React test-timing and Expo Go notification warnings remained in the suites.
+- Production Build Preflight `30715705456` and Frontend CI `30715705465`
+  passed. After the host advanced to bundle `index-65b9c174...`, clean signed-in
+  Facility Viewer verification rendered one `Facility Team` H1, `Team access`
+  and `Team members` H2s, and four H3 member names. The route retained zero
+  fields, zero invite/assign/role-change/removal actions, and zero white/light
+  page-content surfaces.
+- No invite, assignment, role, removal, member, facility, workspace, account,
+  session, billing, audit event, or record action was invoked, and the Viewer
+  session remained signed in.
+
+## Shared Notification Center type controls and hierarchy
+
+Production Notification Center already exposed the requested Facility
+notification-type controls and used the active Night palette, but its delivery,
+preference, inbox, and empty-state titles were plain text beneath one H1.
+Frontend `6c333266` adds Delivery status and Notification inbox H2s plus H3
+semantics for every preference and notification/empty-state title without
+changing preferences, filters, delivery, marking, or navigation behavior.
+
+- All five focused Notification Center tests passed, including Facility
+  category saving, active-workspace Profile routing, source filtering,
+  single-notification marking, mark-all behavior, and Night palette coverage.
+  Source lint, forced test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30716411779` and Frontend CI `30716411781`
+  passed. Clean signed-in Facility Viewer verification on bundle
+  `index-65b9c174...` rendered one H1, two H2s, seven preference H3s, and the
+  truthful `No notifications` H3. Device push plus Task reminders, Forum
+  replies, Video activity, Courses and lives, Commerce updates, and Facility
+  alerts were all present as named on/off controls and remained enabled. The
+  route retained zero white/light page-content surfaces.
+- No preference, toggle, save, filter, mark-read, notification, Profile,
+  workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
