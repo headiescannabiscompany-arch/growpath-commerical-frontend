@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { GrowPathVideo } from "@/api/videos";
 import { formatBytes, formatDuration } from "@/features/videos/videoPresentation";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -33,6 +34,8 @@ export default function VideoCard({
   onDelete
 }: Props) {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const thumbnail = resolveImageUri(
     video.thumbnailUrl || video.mediaSource?.thumbnailUrl || ""
   );
@@ -134,66 +137,69 @@ export default function VideoCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    overflow: "hidden"
-  },
-  compact: { width: 285 },
-  thumbnail: { backgroundColor: "#0F172A", height: 160, width: "100%" },
-  placeholder: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    height: 160,
-    justifyContent: "center"
-  },
-  placeholderText: { color: "#FFFFFF", fontSize: 22, fontWeight: "800" },
-  copy: { gap: 7, padding: 13 },
-  titleRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  title: { color: "#0F172A", flex: 1, fontSize: 17, fontWeight: "800" },
-  status: {
-    backgroundColor: "#E0F2FE",
-    borderRadius: 999,
-    color: "#075985",
-    fontSize: 11,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  },
-  meta: { color: "#64748B", fontSize: 12, lineHeight: 17 },
-  description: { color: "#334155", lineHeight: 19 },
-  storage: { color: "#475569", fontSize: 12, fontWeight: "700" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    borderColor: "#94A3B8",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#334155", fontWeight: "800" },
-  dangerButton: {
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  dangerText: { color: "#B91C1C", fontWeight: "800" }
-});
+export const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      overflow: "hidden"
+    },
+    compact: { width: 285 },
+    thumbnail: { backgroundColor: "#0F172A", height: 160, width: "100%" },
+    placeholder: {
+      alignItems: "center",
+      backgroundColor: "#0F172A",
+      height: 160,
+      justifyContent: "center"
+    },
+    placeholderText: { color: palette.heroText, fontSize: 22, fontWeight: "800" },
+    copy: { gap: 7, padding: 13 },
+    titleRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    title: { color: palette.text, flex: 1, fontSize: 17, fontWeight: "800" },
+    status: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.info,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    },
+    meta: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    description: { color: palette.text, lineHeight: 19 },
+    storage: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    dangerButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    dangerText: { color: palette.danger, fontWeight: "800" }
+  });
