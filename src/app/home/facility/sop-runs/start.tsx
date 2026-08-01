@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -9,6 +9,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import type { SOPTemplate } from "@/api/sop";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type CreatedRun = { id?: string; _id?: string; runId?: string };
@@ -27,6 +28,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilitySopRunsStartRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySopStartStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams<{ templateId?: string; templateTitle?: string }>();
   const { selectedId: facilityId } = useFacility();
@@ -109,7 +112,9 @@ export default function FacilitySopRunsStartRoute() {
       backFallbackHref="/home/facility/sop-runs"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.h1}>Start SOP Run</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          Start SOP Run
+        </Text>
         <Text style={styles.sub}>
           Choose an approved template, or enter one checklist step per line for a one-off
           run. Completed checklist evidence becomes part of facility exports.
@@ -217,68 +222,76 @@ export default function FacilitySopRunsStartRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff"
-  },
-  templatePanel: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    gap: 8,
-    backgroundColor: "#f8fafc"
-  },
-  panelHeader: { gap: 2 },
-  panelTitle: { color: "#0f172a", fontWeight: "900" },
-  panelMeta: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  templateCard: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff"
-  },
-  templateCardActive: { borderColor: "#16a34a", borderWidth: 2 },
-  templateTitle: { color: "#111827", fontWeight: "900" },
-  templateBody: { color: "#475569", fontSize: 12, lineHeight: 18, marginTop: 4 },
-  muted: { color: "#64748b", fontWeight: "700" },
-  emptyPanel: { gap: 8 },
-  libraryBtn: {
-    alignSelf: "flex-start",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  libraryBtnText: { color: "#334155", fontWeight: "900" },
-  clearBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#fff"
-  },
-  clearBtnText: { color: "#334155", fontWeight: "900" },
-  notes: { minHeight: 90, textAlignVertical: "top" },
-  steps: { minHeight: 110, textAlignVertical: "top" },
-  btn: {
-    backgroundColor: "#16a34a",
-    borderRadius: radius.card,
-    padding: 12,
-    alignItems: "center"
-  },
-  btnText: { color: "#fff", fontWeight: "800" },
-  disabled: { opacity: 0.45 },
-  msg: { color: "#b91c1c", fontWeight: "700" }
-});
+export function createFacilitySopStartStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 16, gap: 10 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    templatePanel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    panelHeader: { gap: 2 },
+    panelTitle: { color: palette.text, fontWeight: "900" },
+    panelMeta: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    templateCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.card
+    },
+    templateCardActive: { borderColor: palette.accent, borderWidth: 2 },
+    templateTitle: { color: palette.text, fontWeight: "900" },
+    templateBody: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18,
+      marginTop: 4
+    },
+    muted: { color: palette.textMuted, fontWeight: "700" },
+    emptyPanel: { gap: 8 },
+    libraryBtn: {
+      alignSelf: "flex-start",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    libraryBtnText: { color: palette.link, fontWeight: "900" },
+    clearBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface
+    },
+    clearBtnText: { color: palette.link, fontWeight: "900" },
+    notes: { minHeight: 90, textAlignVertical: "top" },
+    steps: { minHeight: 110, textAlignVertical: "top" },
+    btn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 12,
+      alignItems: "center"
+    },
+    btnText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.45 },
+    msg: { color: palette.danger, fontWeight: "700" }
+  });
+}

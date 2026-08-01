@@ -8,7 +8,9 @@ import FacilitySopRunsCompareResultRoute from "@/app/home/facility/sop-runs/comp
 import FacilitySopRunsPresetsRoute, {
   createFacilitySopLibraryStyles
 } from "@/app/home/facility/sop-runs/presets";
-import FacilitySopRunsStartRoute from "@/app/home/facility/sop-runs/start";
+import FacilitySopRunsStartRoute, {
+  createFacilitySopStartStyles
+} from "@/app/home/facility/sop-runs/start";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
@@ -229,6 +231,18 @@ describe("facility SOP run nested back behavior", () => {
     expect(styles.savedCard.backgroundColor).toBe(palette.card);
     expect(styles.editorCard.backgroundColor).toBe(palette.surfaceMuted);
     expect(styles.input.backgroundColor).toBe(palette.surface);
+  });
+
+  it("uses the active Night palette for the SOP start form", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilitySopStartStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.templatePanel.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.templateCard.backgroundColor).toBe(palette.card);
+    expect(styles.btn.backgroundColor).toBe(palette.accent);
   });
 
   it("uses shared back behavior on SOP compare routes", async () => {
