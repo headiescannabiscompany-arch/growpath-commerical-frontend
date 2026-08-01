@@ -991,6 +991,34 @@ the active palette and structuring its evidence headings.
   SOP write, audit event, billing, or record action was invoked; only read-only
   route navigation occurred, and the session remained signed in.
 
+## Facility AI Ask workspace-selector Night theme and credit disclosure
+
+Production Facility AI Ask already rendered its canvas, context, assistant
+message, evidence picker, composer, and input with the active Night palette,
+but its three workspace choices retained fixed daytime-blue styling. It also
+offered Send without a nearby explanation of when that action uses a credit.
+Frontend `f938e5ff` moved the selector's inactive and active states to the
+current palette and added a pre-send Facility-credit disclosure without
+changing request, evidence, entitlement, or billing behavior.
+
+- Production Build Preflight `30691319619` passed in 3m20s and Frontend CI
+  `30691319611` passed in 6m36s.
+- Six focused shared AI-screen and Facility AI Ask palette tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  The suites retained their existing Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one `AI` heading;
+  retained Single user, Commercial, and Facility workspace choices; Night
+  inactive selector surfaces `rgb(21, 29, 39)` with accent borders/text
+  `rgb(120, 170, 255)`; active Facility surface `rgb(120, 170, 255)` with white
+  text; and input surface `rgb(21, 29, 39)` with bright text
+  `rgb(244, 247, 251)`. The separate Report Bug control was the only detected
+  white element.
+- The deployed composer now states that an accepted request uses Facility AI
+  credits and that adding evidence alone does not use a credit. Send remained
+  disabled with an empty prompt. No workspace, prompt, media, Send, AI request,
+  credit, task, log, diagnosis, tool run, audit event, billing, or record action
+  was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
