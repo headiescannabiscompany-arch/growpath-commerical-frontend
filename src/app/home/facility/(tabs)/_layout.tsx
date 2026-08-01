@@ -36,7 +36,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "rooms",
     "tasks",
     "compliance",
-    "grows"
+    "grows",
+    "inventory"
   ].includes(routeName);
 }
 

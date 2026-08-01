@@ -60,6 +60,14 @@ describe("FacilityInventoryTab", () => {
     const screen = render(<FacilityInventoryTab />);
 
     await waitFor(() => {
+      expect(
+        screen.getByRole("header", { name: "Facility Inventory" }).props["aria-level"]
+      ).toBe(1);
+      expect(
+        screen.getByRole("header", { name: "No inventory items yet." }).props[
+          "aria-level"
+        ]
+      ).toBe(2);
       expect(screen.getByText("No inventory items yet.")).toBeTruthy();
       expect(
         screen.getByText(

@@ -174,7 +174,9 @@ export default function FacilityInventoryTab() {
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Inventory</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              Facility Inventory
+            </Text>
             <Text style={styles.muted}>
               {items.length} items | {totalQuantity} units on hand
             </Text>
@@ -254,7 +256,9 @@ export default function FacilityInventoryTab() {
 
         {sorted.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No inventory items yet.</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
+              No inventory items yet.
+            </Text>
             <Text style={styles.empty}>
               Add real inputs, products, packaging, tools, or facility supplies before
               running AI reorder or stock-risk review.
