@@ -43,7 +43,9 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "plants",
     "logs",
     "tools/environment",
-    "tools/ingredient-library"
+    "tools/ingredient-library",
+    "tools/npk",
+    "tools/soil-builder"
   ].includes(routeName);
 }
 
@@ -286,11 +288,19 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="tools/npk"
-        options={{ title: "Nutrient Mix Builder", tabBarButton: () => null }}
+        options={{
+          title: "Nutrient Mix Builder",
+          headerShown: shouldShowFacilityRouteHeader("tools/npk"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/soil-builder"
-        options={{ title: "Soil Mix Builder", tabBarButton: () => null }}
+        options={{
+          title: "Soil Mix Builder",
+          headerShown: shouldShowFacilityRouteHeader("tools/soil-builder"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/feeding-schedule"

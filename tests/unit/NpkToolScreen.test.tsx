@@ -178,6 +178,44 @@ describe("NpkToolScreen", () => {
     const screen = await renderNpkToolScreen();
 
     expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Nutrient Mix Builder" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    [
+      "NPK batch volume",
+      "NPK recipe name",
+      "NPK recipe mode",
+      "NPK growth stage",
+      "NPK growing medium",
+      "NPK days until harvest",
+      "NPK soil temperature Celsius",
+      "NPK dry mix weight pounds",
+      "NPK Target N",
+      "NPK Target P",
+      "NPK Target K",
+      "NPK desired release profile",
+      "NPK Source EC",
+      "NPK Source pH",
+      "NPK Alkalinity ppm",
+      "NPK Water Ca ppm",
+      "NPK Water Mg ppm",
+      "NPK Measured EC",
+      "NPK Measured pH",
+      "NPK ingredient 1 name",
+      "NPK ingredient 1 chemical form",
+      "NPK ingredient 1 evidence source",
+      "NPK ingredient 1 release speed",
+      "NPK ingredient 1 release window",
+      "NPK ingredient 1 amount",
+      "NPK ingredient 1 Fe percent",
+      "NPK ingredient 1 Mn percent",
+      "NPK ingredient 1 Zn percent",
+      "NPK ingredient 1 Cu percent",
+      "NPK ingredient 1 B percent",
+      "NPK ingredient 1 Mo percent",
+      "NPK ingredient 1 Si percent"
+    ].forEach((name) => expect(screen.getByLabelText(name)).toBeTruthy());
     expect(screen.getByText("Nutrient mix science and evidence")).toBeTruthy();
     expect(screen.getByText(/verified product labels/)).toBeTruthy();
     expect(screen.getByText(/does not prove product superiority/)).toBeTruthy();

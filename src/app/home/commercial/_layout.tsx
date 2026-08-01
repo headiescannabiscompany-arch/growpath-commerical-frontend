@@ -300,11 +300,19 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="tools/npk"
-        options={{ title: "Nutrient Mix Builder", tabBarButton: () => null }}
+        options={{
+          title: "Nutrient Mix Builder",
+          headerShown: false,
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/soil-builder"
-        options={{ title: "Soil Mix Builder", tabBarButton: () => null }}
+        options={{
+          title: "Soil Mix Builder",
+          headerShown: false,
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/dry-amendment-mix"

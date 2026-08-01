@@ -891,7 +891,9 @@ export default function NpkToolScreen() {
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Nutrient Mix Builder</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Nutrient Mix Builder
+        </Text>
         <Text style={styles.subtitle}>
           Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
           label N-P2O5-K2O, source water, and release timing. Fertilizer label P and K are
@@ -951,6 +953,7 @@ export default function NpkToolScreen() {
         <Text style={styles.label}>Batch volume</Text>
         <View style={styles.row}>
           <TextInput
+            accessibilityLabel="NPK batch volume"
             style={styles.volumeInput}
             value={batchVolume}
             onChangeText={setBatchVolume}
@@ -971,6 +974,7 @@ export default function NpkToolScreen() {
 
         <Text style={styles.label}>Recipe name</Text>
         <TextInput
+          accessibilityLabel="NPK recipe name"
           style={styles.fullInput}
           value={recipeName}
           onChangeText={setRecipeName}
@@ -1040,6 +1044,7 @@ export default function NpkToolScreen() {
         <View style={styles.row}>
           <View style={styles.selectWrap}>
             <Picker
+              accessibilityLabel="NPK recipe mode"
               selectedValue={recipeMode}
               onValueChange={setRecipeMode}
               style={styles.picker}
@@ -1057,7 +1062,12 @@ export default function NpkToolScreen() {
             </Picker>
           </View>
           <View style={styles.selectWrap}>
-            <Picker selectedValue={stage} onValueChange={setStage} style={styles.picker}>
+            <Picker
+              accessibilityLabel="NPK growth stage"
+              selectedValue={stage}
+              onValueChange={setStage}
+              style={styles.picker}
+            >
               {[
                 "seedling",
                 "veg",
@@ -1072,6 +1082,7 @@ export default function NpkToolScreen() {
           </View>
           <View style={styles.selectWrap}>
             <Picker
+              accessibilityLabel="NPK growing medium"
               selectedValue={medium}
               onValueChange={setMedium}
               style={styles.picker}
@@ -1082,6 +1093,7 @@ export default function NpkToolScreen() {
             </Picker>
           </View>
           <TextInput
+            accessibilityLabel="NPK days until harvest"
             style={styles.input}
             value={daysUntilHarvest}
             onChangeText={setDaysUntilHarvest}
@@ -1089,6 +1101,7 @@ export default function NpkToolScreen() {
             placeholder="Days until harvest"
           />
           <TextInput
+            accessibilityLabel="NPK soil temperature Celsius"
             style={styles.input}
             value={soilTempC}
             onChangeText={setSoilTempC}
@@ -1096,6 +1109,7 @@ export default function NpkToolScreen() {
             placeholder="Soil temp C"
           />
           <TextInput
+            accessibilityLabel="NPK dry mix weight pounds"
             style={styles.input}
             value={dryMixWeightLb}
             onChangeText={setDryMixWeightLb}
@@ -1118,6 +1132,7 @@ export default function NpkToolScreen() {
             <View key={label} style={styles.analysisField}>
               <Text style={styles.analysisLabel}>{label}</Text>
               <TextInput
+                accessibilityLabel={`NPK ${label}`}
                 style={styles.analysisInput}
                 value={value}
                 onChangeText={setter}
@@ -1127,6 +1142,7 @@ export default function NpkToolScreen() {
           ))}
           <View style={styles.selectWrapFull}>
             <Picker
+              accessibilityLabel="NPK desired release profile"
               selectedValue={desiredReleaseProfile}
               onValueChange={setDesiredReleaseProfile}
               style={styles.picker}
@@ -1185,6 +1201,7 @@ export default function NpkToolScreen() {
             <View key={label} style={styles.analysisFieldWide}>
               <Text style={styles.analysisLabel}>{label}</Text>
               <TextInput
+                accessibilityLabel={`NPK ${label}`}
                 style={styles.analysisInput}
                 value={value}
                 onChangeText={setter}
@@ -1209,6 +1226,7 @@ export default function NpkToolScreen() {
               ) : null}
             </View>
             <TextInput
+              accessibilityLabel={`NPK ingredient ${index + 1} name`}
               style={styles.fullInput}
               value={row.name}
               onChangeText={(value) => updateRow(row.id, "name", value)}
@@ -1217,6 +1235,7 @@ export default function NpkToolScreen() {
             <Text style={styles.fieldHint}>Chemical form and evidence</Text>
             <View style={styles.selectWrapFull}>
               <Picker
+                accessibilityLabel={`NPK ingredient ${index + 1} chemical form`}
                 selectedValue={row.chemistryKey}
                 onValueChange={(value) => updateRow(row.id, "chemistryKey", value)}
                 style={styles.picker}
@@ -1228,6 +1247,7 @@ export default function NpkToolScreen() {
             </View>
             <View style={styles.selectWrapFull}>
               <Picker
+                accessibilityLabel={`NPK ingredient ${index + 1} evidence source`}
                 selectedValue={row.sourceType}
                 onValueChange={(value) => updateRow(row.id, "sourceType", value)}
                 style={styles.picker}
@@ -1242,6 +1262,7 @@ export default function NpkToolScreen() {
             <View style={styles.row}>
               <View style={styles.selectWrap}>
                 <Picker
+                  accessibilityLabel={`NPK ingredient ${index + 1} release speed`}
                   selectedValue={row.releaseSpeed}
                   onValueChange={(value) => updateRow(row.id, "releaseSpeed", value)}
                   style={styles.picker}
@@ -1255,6 +1276,7 @@ export default function NpkToolScreen() {
               </View>
               <View style={styles.selectWrap}>
                 <Picker
+                  accessibilityLabel={`NPK ingredient ${index + 1} release window`}
                   selectedValue={row.releaseWindow}
                   onValueChange={(value) => updateRow(row.id, "releaseWindow", value)}
                   style={styles.picker}
@@ -1275,6 +1297,7 @@ export default function NpkToolScreen() {
             </Text>
             <View style={styles.row}>
               <TextInput
+                accessibilityLabel={`NPK ingredient ${index + 1} amount`}
                 style={styles.input}
                 value={row.amount}
                 onChangeText={(value) => updateRow(row.id, "amount", value)}
@@ -1315,6 +1338,7 @@ export default function NpkToolScreen() {
                 <View key={key} style={styles.analysisField}>
                   <Text style={styles.analysisLabel}>{key}%</Text>
                   <TextInput
+                    accessibilityLabel={`NPK ingredient ${index + 1} ${key} percent`}
                     style={styles.analysisInput}
                     value={row[key]}
                     onChangeText={(value) => updateRow(row.id, key, value)}

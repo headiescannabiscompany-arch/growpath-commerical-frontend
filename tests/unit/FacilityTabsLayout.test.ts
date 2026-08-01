@@ -64,6 +64,12 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("tools/pulse")).toBe(true);
   });
 
+  it("lets both canonical mix builders own their semantic page headings", () => {
+    expect(shouldShowFacilityRouteHeader("tools/npk")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("tools/soil-builder")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("tools/pulse")).toBe(true);
+  });
+
   it("lets Licensed Sales & Transfers own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("transfers")).toBe(false);
     expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);

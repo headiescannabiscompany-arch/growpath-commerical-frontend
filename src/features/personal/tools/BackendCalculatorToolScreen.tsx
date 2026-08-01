@@ -93,6 +93,7 @@ type BackendCalculatorToolScreenProps = {
   toolKey: string;
   title: string;
   subtitle: string;
+  pageHeadingLevel?: 1 | 2;
   growOptional?: boolean;
   noGrowContextMessage?: string;
   backFallbackHref?: string;
@@ -271,6 +272,7 @@ export default function BackendCalculatorToolScreen({
   toolKey,
   title,
   subtitle,
+  pageHeadingLevel = 2,
   growOptional = false,
   noGrowContextMessage,
   backFallbackHref = "/home/personal/tools",
@@ -695,7 +697,11 @@ export default function BackendCalculatorToolScreen({
     return (
       <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          <Text
+            accessibilityRole="header"
+            aria-level={pageHeadingLevel}
+            style={styles.title}
+          >
             {title}
           </Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
@@ -729,7 +735,11 @@ export default function BackendCalculatorToolScreen({
   return (
     <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+        <Text
+          accessibilityRole="header"
+          aria-level={pageHeadingLevel}
+          style={styles.title}
+        >
           {title}
         </Text>
         <Text style={styles.subtitle}>{subtitle}</Text>

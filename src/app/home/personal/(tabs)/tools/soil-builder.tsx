@@ -266,6 +266,7 @@ export default function SoilBuilderToolScreen() {
       tool="soil-builder"
       toolKey="soil-builder"
       title="Soil Mix Builder"
+      pageHeadingLevel={1}
       subtitle="Build science-based soil mixes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
       formHeader={<MixBuilderScienceBasis variant="soil" />}
       aiPrefill={{
