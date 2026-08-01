@@ -1931,3 +1931,30 @@ behavior do not change.
   location, Commercial management, campaign, support, workspace, account,
   session, billing, audit event, or record action was invoked, and the Viewer
   session remained signed in.
+
+## Shared published video-card Night theme
+
+Production `/videos` already used the active Night palette for its page,
+navigation, filters, and search field, but the genuine published video result
+still rendered through a fixed white shared `VideoCard`. Its title,
+description, metadata, status, storage copy, and secondary/owner actions were
+also day-only. Frontend `c3951b46` moves the reusable loaded/compact/owner card
+surface, copy, status, and all action variants to the active palette without
+changing video discovery, playback routing, publication, editing, deletion, or
+storage behavior.
+
+- Seven focused VideoCard/Videos-route tests passed, including direct active-
+  palette coverage. Source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The new test file's lint warning is the
+  repository's intentional test ignore.
+- Production Build Preflight `30705222464` and Frontend CI `30705222463`
+  passed. Signed-in Facility Viewer acceptance measured the real published
+  `Build a Garden That Feeds Itself. Stop buying fertility. Start growing it.`
+  card at Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright
+  title text `rgb(244, 247, 251)`, with zero white page-content surfaces.
+- The public APIs returned zero published storefronts and zero public courses,
+  so loaded storefront/product/course detail acceptance remains unavailable
+  without manufacturing commercial content. No video, Watch, search, filter,
+  follow, edit, publish, delete, storage, storefront, course, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
