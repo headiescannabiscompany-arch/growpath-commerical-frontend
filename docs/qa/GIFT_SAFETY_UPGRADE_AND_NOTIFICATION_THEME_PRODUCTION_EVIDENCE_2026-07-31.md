@@ -841,6 +841,38 @@ without changing Manager behavior.
   audit event, billing, or record action was invoked, and the session remained
   signed in.
 
+## Facility Inventory hierarchy, Night theme, and Viewer write gate
+
+Production Facility Inventory already used the correct Night palette, truthful
+zero-inventory state, and Viewer write restriction, including a safe read-only
+handoff at the direct create URL. Its tab shell nevertheless owned the generic
+`Inventory` level-one heading while the accurate route title and empty-state
+title were ordinary text. Frontend `725e55cc` established a page-owned Facility
+Inventory heading and structured empty-state heading. The first live retest
+caught that the Inventory tab declaration had not wired the shared header
+policy, so follow-up `063f32b0` hid the duplicate shell heading and preserved
+the accurate route title.
+
+- Final Production Build Preflight `30689517665` passed in 2m51s and final
+  Frontend CI `30689517661` passed in 6m55s. The superseded first deployment was
+  not accepted after live verification exposed its duplicate heading.
+- Twenty-one focused Facility Inventory list/create-route and tab-shell tests
+  passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The suite retained its existing Expo Go warning
+  without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  `Facility Inventory` heading; one level-two `No inventory items yet.`
+  heading; the truthful `0 items | 0 units on hand` state; the Night canvas
+  `rgb(14, 20, 27)`; bright heading text `rgb(244, 247, 251)`; and no white
+  page-content surface. The separate Report Bug control was the only detected
+  white element.
+- The Viewer exposed zero create-item controls on the inventory list. Direct
+  navigation to `/home/facility/inventory/new` retained one `Inventory is
+  read-only` heading, the same Night colors, an Owner/Manager access notice, a
+  safe return action, and zero form fields or create actions. No reload, sales,
+  transfer, AI review, create, return, item, inventory, audit event, billing, or
+  record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
