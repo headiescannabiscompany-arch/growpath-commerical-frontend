@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const basis = {
@@ -29,6 +30,8 @@ export default function MixBuilderScienceBasis({
 }: {
   variant: keyof typeof basis;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createMixBuilderScienceBasisStyles(palette), [palette]);
   const content = basis[variant];
   return (
     <View style={styles.card} accessibilityLabel={`${content.title} basis`}>
@@ -40,16 +43,18 @@ export default function MixBuilderScienceBasis({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    backgroundColor: "#F0FDF4",
-    padding: 12,
-    gap: 6
-  },
-  title: { color: "#14532D", fontWeight: "800", fontSize: 15 },
-  line: { color: "#334155", lineHeight: 19 },
-  limit: { color: "#9A3412", lineHeight: 19, fontWeight: "700" }
-});
+export function createMixBuilderScienceBasisStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 12,
+      gap: 6
+    },
+    title: { color: palette.text, fontWeight: "800", fontSize: 15 },
+    line: { color: palette.textMuted, lineHeight: 19 },
+    limit: { color: palette.warning, lineHeight: 19, fontWeight: "700" }
+  });
+}

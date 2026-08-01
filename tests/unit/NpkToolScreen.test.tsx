@@ -2,6 +2,7 @@ import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import NpkToolScreen, { createNpkStyles } from "@/app/home/personal/(tabs)/tools/npk";
+import { createMixBuilderScienceBasisStyles } from "@/features/personal/tools/MixBuilderScienceBasis";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockRunCalculator = jest.fn();
@@ -124,12 +125,15 @@ describe("NpkToolScreen", () => {
   it("uses the active Night palette across inputs, cards, results, and saved recipes", () => {
     const palette = getThemePalette("night", "dark");
     const styles = createNpkStyles(palette);
+    const scienceStyles = createMixBuilderScienceBasisStyles(palette);
 
     expect(styles.container.backgroundColor).toBe(palette.page);
     expect(styles.guidanceCard.backgroundColor).toBe(palette.surfaceMuted);
     expect(styles.input.backgroundColor).toBe(palette.surface);
     expect(styles.resultCard.backgroundColor).toBe(palette.card);
     expect(styles.savedRecipeOn.backgroundColor).toBe(palette.accentSoft);
+    expect(scienceStyles.card.backgroundColor).toBe(palette.surfaceMuted);
+    expect(scienceStyles.title.color).toBe(palette.text);
   });
 
   beforeEach(() => {
