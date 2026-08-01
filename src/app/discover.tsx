@@ -12,12 +12,10 @@ import {
 } from "react-native";
 
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
-import { listPublicFieldObservations } from "@/api/fieldStudies";
 import { searchContent } from "@/api/marketplace";
 import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
-import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import AppPage from "@/components/layout/AppPage";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -90,8 +88,6 @@ export default function DiscoverDirectory() {
   const [courses, setCourses] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [videoFollowingOnly, setVideoFollowingOnly] = useState(false);
-  const [globeObservations, setGlobeObservations] = useState<any[]>([]);
-  const [globeLoading, setGlobeLoading] = useState(true);
 
   const load = useCallback(async (q = "", followingOnly = false) => {
     setLoading(true);
@@ -140,27 +136,6 @@ export default function DiscoverDirectory() {
   useEffect(() => {
     void load(activeQuery, videoFollowingOnly);
   }, [activeQuery, load, videoFollowingOnly]);
-
-  useEffect(() => {
-    let alive = true;
-    async function loadGlobePreview() {
-      setGlobeLoading(true);
-      try {
-        const observations = await listPublicFieldObservations({ limit: 12 });
-        if (alive) {
-          setGlobeObservations(Array.isArray(observations) ? observations : []);
-        }
-      } catch {
-        if (alive) setGlobeObservations([]);
-      } finally {
-        if (alive) setGlobeLoading(false);
-      }
-    }
-    void loadGlobePreview();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   const sections = useMemo<Section[]>(() => {
     const ordinaryFeed = feed.filter(
@@ -388,55 +363,6 @@ export default function DiscoverDirectory() {
       {error ? (
         <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>
       ) : null}
-      <AppCard
-        style={[
-          styles.previewCard,
-          { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-        ]}
-      >
-        <View style={styles.previewHeader}>
-          <View>
-            <Text style={[styles.sectionTitle, { color: palette.text }]}>
-              Discovery Nature
-            </Text>
-            <Text style={[styles.ranking, { color: palette.textMuted }]}>
-              Shared, opt-in plant findings
-            </Text>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open Discovery Nature globe"
-            onPress={() => router.push("/field-observations")}
-            style={({ pressed }) => [
-              styles.browseButton,
-              {
-                backgroundColor: palette.surface,
-                borderColor: palette.border
-              },
-              pressed && styles.buttonPressed
-            ]}
-          >
-            <Text style={[styles.browseButtonText, { color: palette.link }]}>
-              Open Nature Globe
-            </Text>
-          </Pressable>
-        </View>
-        <Text style={[styles.previewMeta, { color: palette.textMuted }]}>
-          Share/view opted-in plant findings. Discover species of mapped areas and find
-          invasive species.
-        </Text>
-        <View style={styles.previewFrame}>
-          {globeLoading ? (
-            <ActivityIndicator accessibilityLabel="Loading globe preview" />
-          ) : null}
-          <FieldObservationGlobe
-            compact
-            observations={globeObservations}
-            onSelectObservations={() => {}}
-            onViewportChange={() => {}}
-          />
-        </View>
-      </AppCard>
       {!loading &&
         sections.map((section) => (
           <View
@@ -621,21 +547,6 @@ const styles = StyleSheet.create({
   clearText: { color: "#334155", fontWeight: "800" },
   meta: { color: "#64748B", marginTop: 10 },
   error: { color: "#B91C1C" },
-  previewCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#D1FAE5",
-    marginBottom: 8
-  },
-  previewHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8
-  },
-  previewMeta: { color: "#475569", lineHeight: 20, marginBottom: 10 },
-  previewFrame: {
-    minHeight: 180
-  },
   section: { marginVertical: 8 },
   sectionHeader: {
     alignItems: "center",

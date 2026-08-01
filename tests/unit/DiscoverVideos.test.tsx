@@ -71,6 +71,9 @@ describe("Discover video search", () => {
       expect(screen.getByText("Tomato training")).toBeTruthy();
     });
     expect(screen.getByText("Videos")).toBeTruthy();
+    expect(screen.getAllByText("Discovery Nature")).toHaveLength(1);
+    expect(screen.queryByLabelText("Loading globe preview")).toBeNull();
+    expect(screen.queryByLabelText("Open Discovery Nature globe")).toBeNull();
     expect(mockSearchVideos).toHaveBeenCalledWith({
       q: undefined,
       sort: "new",
