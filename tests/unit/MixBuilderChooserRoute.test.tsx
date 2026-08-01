@@ -1,7 +1,10 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
-import UnifiedRecipeBuilderRoute from "@/app/home/personal/(tabs)/tools/recipe-builder";
+import UnifiedRecipeBuilderRoute, {
+  createMixBuilderChooserStyles
+} from "@/app/home/personal/(tabs)/tools/recipe-builder";
+import { getThemePalette } from "@/theme/appTheme";
 
 let mockParams: Record<string, string> = { growId: "grow-1" };
 
@@ -24,6 +27,17 @@ jest.mock("@/components/ScreenBoundary", () => {
 });
 
 describe("mix builder chooser", () => {
+  it("uses the active Night palette in every workspace wrapper", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createMixBuilderChooserStyles(palette);
+
+    expect(styles.body.backgroundColor).toBe(palette.page);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.heading.color).toBe(palette.text);
+    expect(styles.description.color).toBe(palette.textMuted);
+    expect(styles.supportLink.borderColor).toBe(palette.accent);
+  });
+
   beforeEach(() => {
     mockParams = { growId: "grow-1" };
   });
