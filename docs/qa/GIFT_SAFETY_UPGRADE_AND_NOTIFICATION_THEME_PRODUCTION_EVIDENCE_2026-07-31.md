@@ -545,6 +545,31 @@ accurate page-owned heading without changing the diagnosis workflow.
   audit event, or record changed. The session returned to the Facility dashboard
   without logout.
 
+## Facility Grow Intelligence hierarchy and action names
+
+Production Facility AI Tools already used the correct Night palette, but the tab
+shell exposed raw route name `ai-tools` as the page's only level-one heading.
+The visible `Facility Grow Intelligence` title and tool groups were ordinary
+text, and eight actions reused generic visual labels without unique accessible
+names. Frontend `ebd87b2c` established an accurate page-owned heading,
+level-two workflow/tool-library headings, and uniquely named actions without
+changing any destinations or AI-credit behavior.
+
+- Production Build Preflight `30685472965` passed in 3m36s and Frontend CI
+  `30685472958` passed in 6m36s. The production host published the new
+  `index-65d9df489c10807f1bd8fd9701a81d0a.js` asset.
+- Eight focused AI-tools and Facility tab-shell tests passed. Targeted ESLint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed. The test runner
+  emitted its existing Expo Go push warning without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one Facility Grow
+  Intelligence heading; six level-two headings for five workflows and Tool
+  Library; eight uniquely named Open actions; the Night canvas
+  `rgb(14, 20, 27)`; title `rgb(244, 247, 251)`; and zero white content
+  surfaces.
+- No campaign, credit-help link, AI/tool/report action, prompt, AI request,
+  credit, task, log, audit event, or record changed. The session returned to the
+  Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
