@@ -2,11 +2,16 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import GuildOnboardingScreen from "@/app/onboarding/guilds";
-import WalkthroughsScreen from "@/app/onboarding/walkthroughs";
+import WalkthroughsScreen, {
+  createWalkthroughStyles
+} from "@/app/onboarding/walkthroughs";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListGuilds = jest.fn();
 const mockReplace = jest.fn();
 let mockParams: Record<string, any> = {};
+let mockAuthState: any;
+let mockEntitlements: any;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
@@ -23,13 +28,22 @@ jest.mock("@/api/users", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { growInterests: {} }, retryMe: jest.fn() })
+  useAuth: () => mockAuthState
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => mockEntitlements
 }));
 
 describe("onboarding Forum/Q&A copy", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockParams = {};
+    mockAuthState = {
+      user: { growInterests: {}, subscriptionStatus: "inactive" },
+      retryMe: jest.fn()
+    };
+    mockEntitlements = { mode: "personal" };
     mockListGuilds.mockResolvedValue([
       {
         id: "soil-group",
@@ -76,5 +90,34 @@ describe("onboarding Forum/Q&A copy", () => {
     expect(screen.getByText("Keep Forum/Q&A separated")).toBeTruthy();
     expect(screen.getByText(/forum-group selections shape Feed campaigns/)).toBeTruthy();
     expect(screen.queryByText("Keep community separated")).toBeNull();
+  });
+
+  it("uses canonical Facility trial state instead of offering a direct Pro checkout", () => {
+    mockEntitlements = { mode: "facility" };
+    mockAuthState = {
+      ...mockAuthState,
+      user: { ...mockAuthState.user, subscriptionStatus: "trialing" }
+    };
+    const screen = render(<WalkthroughsScreen />);
+
+    expect(screen.getByRole("header", { name: "Facility walkthrough" })).toBeTruthy();
+    expect(screen.getByText("Available in this workspace")).toBeTruthy();
+    expect(screen.getByLabelText("Open Facility workspace")).toBeTruthy();
+    expect(screen.queryByText("Pro grower walkthrough")).toBeNull();
+    expect(screen.queryByLabelText("Continue to Pro checkout")).toBeNull();
+  });
+
+  it("uses the active Night palette across walkthrough and checkout states", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createWalkthroughStyles(palette);
+
+    expect(styles.root.backgroundColor).toBe(palette.page);
+    expect(styles.main.backgroundColor).toBe(palette.surface);
+    expect(styles.main.borderColor).toBe(palette.border);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.stepTitle.color).toBe(palette.text);
+    expect(styles.side.backgroundColor).toBe(palette.surfaceStrong);
+    expect(styles.sideTitle.color).toBe(palette.text);
+    expect(styles.button.backgroundColor).toBe(palette.accent);
   });
 });

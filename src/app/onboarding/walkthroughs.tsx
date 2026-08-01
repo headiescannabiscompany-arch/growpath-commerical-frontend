@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type PlanKey = "pro" | "commercial" | "facility";
@@ -111,24 +114,55 @@ function normalizePlan(raw: string): PlanKey {
 
 export default function WalkthroughsScreen() {
   const router = useRouter();
+  const auth = useAuth();
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createWalkthroughStyles(palette);
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ plan?: string | string[] }>();
-  const plan = normalizePlan(singleParam(params.plan));
+  const requestedPlan = singleParam(params.plan);
+  const modePlan: PlanKey =
+    entitlements.mode === "facility"
+      ? "facility"
+      : entitlements.mode === "commercial"
+        ? "commercial"
+        : "pro";
+  const plan = requestedPlan ? normalizePlan(requestedPlan) : modePlan;
   const data = WALKTHROUGHS[plan];
   const isWide = width >= 900;
+  const subscriptionActive = ["active", "trial", "trialing"].includes(
+    String(auth.user?.subscriptionStatus || "").toLowerCase()
+  );
+  const currentWorkspacePlan = plan === modePlan;
+  const openCurrentWorkspace = subscriptionActive && currentWorkspacePlan;
 
   const ctaLabel = useMemo(() => {
+    if (openCurrentWorkspace) {
+      if (plan === "facility") return "Open Facility workspace";
+      if (plan === "commercial") return "Open Commercial workspace";
+      return "Open Personal workspace";
+    }
     if (plan === "facility") return "Continue to Facility checkout";
     if (plan === "commercial") return "Continue to Commercial checkout";
     return "Continue to Pro checkout";
-  }, [plan]);
+  }, [openCurrentWorkspace, plan]);
+
+  const ctaHref = openCurrentWorkspace
+    ? plan === "facility"
+      ? "/home/facility"
+      : plan === "commercial"
+        ? "/home/commercial"
+        : "/home/personal"
+    : "/offers";
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={[styles.shell, isWide && styles.shellWide]}>
         <View style={styles.main}>
           <Text style={styles.kicker}>Before checkout</Text>
-          <Text style={styles.title}>{data.title}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {data.title}
+          </Text>
           <Text style={styles.subtitle}>{data.subtitle}</Text>
 
           <View style={styles.steps}>
@@ -136,7 +170,13 @@ export default function WalkthroughsScreen() {
               <View key={step.title} style={styles.step}>
                 <Text style={styles.stepNumber}>{index + 1}</Text>
                 <View style={styles.stepBody}>
-                  <Text style={styles.stepTitle}>{step.title}</Text>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={2}
+                    style={styles.stepTitle}
+                  >
+                    {step.title}
+                  </Text>
                   <Text style={styles.stepText}>{step.body}</Text>
                 </View>
               </View>
@@ -145,7 +185,11 @@ export default function WalkthroughsScreen() {
         </View>
 
         <View style={styles.side}>
-          <Text style={styles.sideTitle}>Unlocks after payment</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sideTitle}>
+            {openCurrentWorkspace
+              ? "Available in this workspace"
+              : "Unlocks after payment"}
+          </Text>
           {data.preview.map((item) => (
             <View key={item} style={styles.previewRow}>
               <Text style={styles.previewDot}>+</Text>
@@ -153,11 +197,12 @@ export default function WalkthroughsScreen() {
             </View>
           ))}
           <Text style={styles.note}>
-            Your selected plan is saved as intent. Paid tools stay locked until checkout
-            activates the subscription.
+            {openCurrentWorkspace
+              ? "This account already has active or trial access for its current workspace."
+              : "Your selected plan is saved as intent. Paid tools stay locked until checkout activates the subscription."}
           </Text>
           <Pressable
-            onPress={() => router.replace("/offers")}
+            onPress={() => router.replace(ctaHref as any)}
             accessibilityRole="button"
             accessibilityLabel={ctaLabel}
             style={({ pressed }) => [styles.button, pressed && styles.pressed]}
@@ -170,64 +215,67 @@ export default function WalkthroughsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: "#f8fafc", flex: 1 },
-  content: { padding: 18 },
-  shell: { gap: 16, marginHorizontal: "auto", maxWidth: 1120, width: "100%" },
-  shellWide: { flexDirection: "row", alignItems: "stretch" },
-  main: {
-    backgroundColor: "#ffffff",
-    borderColor: "#dbe3ea",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    gap: 14,
-    padding: 22
-  },
-  side: {
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    gap: 12,
-    padding: 22
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#111827", fontSize: 30, fontWeight: "900" },
-  subtitle: { color: "#475569", fontSize: 15, fontWeight: "700", maxWidth: 720 },
-  steps: { gap: 12, marginTop: 6 },
-  step: {
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    padding: 14
-  },
-  stepNumber: {
-    color: "#166534",
-    fontSize: 16,
-    fontWeight: "900",
-    minWidth: 22
-  },
-  stepBody: { flex: 1, gap: 4 },
-  stepTitle: { color: "#111827", fontSize: 16, fontWeight: "900" },
-  stepText: { color: "#475569", fontSize: 14, lineHeight: 20 },
-  sideTitle: { color: "#ffffff", fontSize: 18, fontWeight: "900" },
-  previewRow: { flexDirection: "row", gap: 8 },
-  previewDot: { color: "#86efac", fontWeight: "900" },
-  previewText: { color: "#e2e8f0", fontSize: 14, fontWeight: "800" },
-  note: { color: "#cbd5e1", fontSize: 13, lineHeight: 19, marginTop: 8 },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#22c55e",
-    borderRadius: radius.card,
-    marginTop: 8,
-    paddingVertical: 12
-  },
-  buttonText: { color: "#052e16", fontSize: 14, fontWeight: "900" },
-  pressed: { opacity: 0.86 }
-});
+export const createWalkthroughStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: { backgroundColor: palette.page, flex: 1 },
+    content: { padding: 18 },
+    shell: { gap: 16, marginHorizontal: "auto", maxWidth: 1120, width: "100%" },
+    shellWide: { flexDirection: "row", alignItems: "stretch" },
+    main: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flex: 1,
+      gap: 14,
+      padding: 22
+    },
+    side: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      gap: 12,
+      padding: 22
+    },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 30, fontWeight: "900" },
+    subtitle: { color: palette.textSoft, fontSize: 15, fontWeight: "700", maxWidth: 720 },
+    steps: { gap: 12, marginTop: 6 },
+    step: {
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      padding: 14
+    },
+    stepNumber: {
+      color: palette.accent,
+      fontSize: 16,
+      fontWeight: "900",
+      minWidth: 22
+    },
+    stepBody: { flex: 1, gap: 4 },
+    stepTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    stepText: { color: palette.textSoft, fontSize: 14, lineHeight: 20 },
+    sideTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    previewRow: { flexDirection: "row", gap: 8 },
+    previewDot: { color: palette.success, fontWeight: "900" },
+    previewText: { color: palette.textSoft, fontSize: 14, fontWeight: "800" },
+    note: { color: palette.textMuted, fontSize: 13, lineHeight: 19, marginTop: 8 },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 8,
+      paddingVertical: 12
+    },
+    buttonText: { color: palette.accentText, fontSize: 14, fontWeight: "900" },
+    pressed: { opacity: 0.86 }
+  });
