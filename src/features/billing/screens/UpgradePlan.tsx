@@ -183,7 +183,9 @@ export default function UpgradePlan() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Upgrade Account</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Upgrade Account
+        </Text>
         <Text style={styles.subtitle}>
           Pick a plan, choose monthly or yearly billing, and open Stripe when you are
           ready.

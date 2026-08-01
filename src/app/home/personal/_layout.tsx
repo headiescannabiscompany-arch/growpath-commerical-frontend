@@ -16,6 +16,8 @@ export default function PersonalLayout() {
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="upgrade/index" options={{ headerShown: false }} />
+      <Stack.Screen name="upgrade/[plan]" options={{ headerShown: false }} />
       <Stack.Screen
         name="more/analytics"
         options={{ title: "Grow Analytics", headerShown: false }}

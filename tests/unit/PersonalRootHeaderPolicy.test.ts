@@ -31,6 +31,20 @@ describe("Personal root header policy", () => {
     expect(aiLayout).toContain('options={{ title: "AI Assistant" }}');
   });
 
+  test("uses the Upgrade Account page heading without exposing route-template titles", () => {
+    const personalLayout = read("src/app/home/personal/_layout.tsx");
+    const upgrade = read("src/features/billing/screens/UpgradePlan.tsx");
+
+    expect(personalLayout).toContain(
+      '<Stack.Screen name="upgrade/index" options={{ headerShown: false }} />'
+    );
+    expect(personalLayout).toContain(
+      '<Stack.Screen name="upgrade/[plan]" options={{ headerShown: false }} />'
+    );
+    expect(upgrade).toContain('<Text accessibilityRole="header" style={styles.title}>');
+    expect(upgrade).toContain("Upgrade Account");
+  });
+
   test("uses the loaded grow name as the overview heading instead of a raw id", () => {
     const growLayout = read("src/app/home/personal/(tabs)/grows/[growId]/_layout.tsx");
     const overview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
