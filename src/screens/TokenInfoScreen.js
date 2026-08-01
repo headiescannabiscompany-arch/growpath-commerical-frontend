@@ -5,6 +5,7 @@ import { useLocalSearchParams } from "expo-router";
 import { getTokenBalance } from "../api/tokens";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 import { FREE_POLICY } from "../config/freePolicy";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -38,6 +39,8 @@ const ACTION_COSTS = [
 ];
 
 export default function TokenInfoScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams();
   const workspaceType = String(params?.workspaceType || "").toLowerCase();
   const facilityScoped = workspaceType === "facility";
@@ -89,7 +92,7 @@ export default function TokenInfoScreen() {
     return () => {
       alive = false;
     };
-  }, [facilityId, facilityScoped]);
+  }, [commercialScoped, facilityId, facilityScoped]);
 
   const values = useMemo(() => {
     const current = Number(balance?.aiTokens);
@@ -109,7 +112,9 @@ export default function TokenInfoScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>How GrowPathAI works</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          How GrowPathAI works
+        </Text>
         <Text style={styles.intro}>
           GrowPathAI combines your question with the grow, room, plant, recent log, photo,
           or environmental context you choose. You stay in control of what is saved and
@@ -117,7 +122,7 @@ export default function TokenInfoScreen() {
         </Text>
 
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.balanceLabel}>
             {facilityScoped
               ? "Selected Facility's live AI-credit balance"
               : commercialScoped
@@ -166,7 +171,9 @@ export default function TokenInfoScreen() {
         </View>
 
         <View style={styles.estimatesSection}>
-          <Text style={styles.sectionTitle}>What actions cost</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+            What actions cost
+          </Text>
           <Text style={styles.estimateIntro}>
             Free accounts receive {FREE_POLICY.aiCreditsPerWeek} AI credits each week.
             These are the exact credits deducted; dollar figures are small usage-value
@@ -222,72 +229,103 @@ export default function TokenInfoScreen() {
 }
 
 function Section({ title, children }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+        {title}
+      </Text>
       <Text style={styles.bodyText}>{children}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 48,
-    width: "100%",
-    maxWidth: 820,
-    alignSelf: "center"
-  },
-  title: { fontSize: 28, fontWeight: "800", color: "#16352b", marginBottom: 10 },
-  intro: { fontSize: 16, lineHeight: 24, color: "#374151", marginBottom: 20 },
-  balanceCard: {
-    backgroundColor: "#f0fdf4",
-    borderColor: "#22c55e",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 20,
-    marginBottom: 22
-  },
-  balanceLabel: { color: "#166534", fontWeight: "700", marginBottom: 6 },
-  balanceValue: { color: "#14532d", fontSize: 30, fontWeight: "800", marginBottom: 12 },
-  progressBar: {
-    height: 10,
-    backgroundColor: "#d1d5db",
-    borderRadius: radius.pill,
-    overflow: "hidden"
-  },
-  progressFill: { height: "100%", backgroundColor: "#16a34a" },
-  helpText: { color: "#4b5563", fontSize: 13, lineHeight: 19, marginTop: 10 },
-  estimatesSection: { marginBottom: 24 },
-  estimateIntro: { color: "#4b5563", fontSize: 14, lineHeight: 21, marginBottom: 12 },
-  estimateCard: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d1d5db",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 10
-  },
-  estimateHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  estimateAction: { flex: 1, color: "#1f2937", fontSize: 15, fontWeight: "700" },
-  creditBadge: {
-    color: "#166534",
-    backgroundColor: "#dcfce7",
-    borderRadius: radius.pill,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    fontSize: 12,
-    fontWeight: "700",
-    overflow: "hidden"
-  },
-  estimateNote: { color: "#6b7280", fontSize: 13, lineHeight: 19, marginTop: 5 },
-  estimateFootnote: { color: "#6b7280", fontSize: 12, lineHeight: 18, marginTop: 2 },
-  section: { marginBottom: 20 },
-  sectionTitle: { color: "#1f2937", fontSize: 18, fontWeight: "700", marginBottom: 7 },
-  bodyText: { color: "#4b5563", fontSize: 15, lineHeight: 23 }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    container: {
+      padding: 20,
+      paddingBottom: 48,
+      width: "100%",
+      maxWidth: 820,
+      alignSelf: "center"
+    },
+    title: { fontSize: 28, fontWeight: "800", color: palette.text, marginBottom: 10 },
+    intro: { fontSize: 16, lineHeight: 24, color: palette.textMuted, marginBottom: 20 },
+    balanceCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 20,
+      marginBottom: 22
+    },
+    balanceLabel: { color: palette.text, fontWeight: "700", marginBottom: 6 },
+    balanceValue: {
+      color: palette.success,
+      fontSize: 30,
+      fontWeight: "800",
+      marginBottom: 12
+    },
+    progressBar: {
+      height: 10,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.pill,
+      overflow: "hidden"
+    },
+    progressFill: { height: "100%", backgroundColor: palette.success },
+    helpText: { color: palette.textMuted, fontSize: 13, lineHeight: 19, marginTop: 10 },
+    estimatesSection: { marginBottom: 24 },
+    estimateIntro: {
+      color: palette.textMuted,
+      fontSize: 14,
+      lineHeight: 21,
+      marginBottom: 12
+    },
+    estimateCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 14,
+      marginBottom: 10
+    },
+    estimateHeader: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 12
+    },
+    estimateAction: { flex: 1, color: palette.text, fontSize: 15, fontWeight: "700" },
+    creditBadge: {
+      color: palette.success,
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.pill,
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      fontSize: 12,
+      fontWeight: "700",
+      overflow: "hidden"
+    },
+    estimateNote: {
+      color: palette.textMuted,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 5
+    },
+    estimateFootnote: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18,
+      marginTop: 2
+    },
+    section: { marginBottom: 20 },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 7
+    },
+    bodyText: { color: palette.textMuted, fontSize: 15, lineHeight: 23 }
+  });
+}

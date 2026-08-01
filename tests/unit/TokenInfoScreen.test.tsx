@@ -1,7 +1,8 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-import TokenInfoScreen from "@/screens/TokenInfoScreen";
+import TokenInfoScreen, { createStyles } from "@/screens/TokenInfoScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockGetTokenBalance = jest.fn();
 let mockSearchParams: Record<string, string> = {};
@@ -31,6 +32,28 @@ describe("TokenInfoScreen action costs", () => {
       maxTokens: 5,
       refillDescription: "Refreshes every Monday (UTC)."
     });
+  });
+
+  it("uses the active palette and exposes one page heading", async () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createStyles(palette);
+    const screen = render(<TokenInfoScreen />);
+
+    expect(styles.balanceCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.estimateCard.backgroundColor).toBe(palette.surface);
+    expect(styles.estimateCard.borderColor).toBe(palette.border);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.bodyText.color).toBe(palette.textMuted);
+    expect(
+      screen.getByRole("header", { name: "How GrowPathAI works" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getAllByRole("header").filter((node) => node.props["aria-level"] === 1)
+    ).toHaveLength(1);
+    expect(
+      screen.getByRole("header", { name: "What actions cost" }).props["aria-level"]
+    ).toBe(2);
+    await waitFor(() => expect(screen.getByText("5 / 5")).toBeTruthy());
   });
 
   it("shows the exact customer token cost for each action", async () => {
