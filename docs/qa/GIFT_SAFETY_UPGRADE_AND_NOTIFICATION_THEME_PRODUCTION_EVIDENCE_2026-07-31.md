@@ -2721,6 +2721,32 @@ or data loading.
   command, tab, route, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
 
+## Facility Plants role-aware empty-state guidance
+
+Production Facility Plants already used the active Night palette, exposed a
+truthful zero-plant state, and correctly removed creation controls from Staff
+and Viewers, but its shared empty copy told those roles to `Create a plant
+above` even though no form existed for them. Frontend `cf29ce16` keeps the
+existing writer instruction for authorized roles and gives read-only roles an
+accurate owner/manager handoff without changing capability checks, forms, APIs,
+plant records, or navigation.
+
+- Both focused Facility Plants/layout suites passed, totaling 25 tests and
+  covering Owner/Manager creation, stale-capability Staff/Viewer protection,
+  active-capability gating, exact role-aware copy, and compact navigation.
+  Source lint, forced test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The existing non-failing Expo Go notification
+  warning remained in the layout suite.
+- Production Build Preflight `30717892410` and Frontend CI `30717892388`
+  passed. Clean signed-in Facility Viewer production verification on bundle
+  `index-4d07c0ac...` retained one H1, three H2s, zero fields, zero plant-write
+  actions, and zero opaque white/light page-content surfaces. The accurate
+  owner/manager handoff was present and the misleading `Create a plant above`
+  copy was absent.
+- No plant, grow, room, field, create, link, tab, route, workspace, account,
+  session, billing, audit event, or record action was invoked, and the Viewer
+  session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
