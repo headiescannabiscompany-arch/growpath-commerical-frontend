@@ -105,6 +105,34 @@ describe("AddLessonScreen image uploads", () => {
     mockAddLesson.mockResolvedValue({ _id: "lesson-1" });
   });
 
+  it("uses the active palette, hierarchy, and named lesson fields", () => {
+    const { getThemePalette } = require("@/theme/appTheme");
+    const {
+      default: AddLessonScreen,
+      createStyles
+    } = require("@/screens/AddLessonScreen");
+    const palette = getThemePalette("night", "dark");
+    const styles = createStyles(palette);
+    const screen = render(
+      <AddLessonScreen
+        route={{ params: { courseId: "course-1" } }}
+        navigation={{ goBack: jest.fn() }}
+      />
+    );
+
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.borderColor).toBe(palette.border);
+    expect(styles.input.color).toBe(palette.text);
+    expect(screen.getByRole("header", { name: "Add Lesson" }).props["aria-level"]).toBe(
+      1
+    );
+    expect(screen.getByLabelText("Lesson title")).toBeTruthy();
+    expect(screen.getByLabelText("Lesson order")).toBeTruthy();
+    expect(screen.getByLabelText("Lesson text content")).toBeTruthy();
+    expect(screen.getByLabelText("Lesson PDF URL")).toBeTruthy();
+    expect(screen.getByLabelText("Save lesson")).toBeTruthy();
+  });
+
   it("persists selected lesson images before saving", async () => {
     const AddLessonScreen = require("@/screens/AddLessonScreen").default;
     const navigation = { goBack: jest.fn() };

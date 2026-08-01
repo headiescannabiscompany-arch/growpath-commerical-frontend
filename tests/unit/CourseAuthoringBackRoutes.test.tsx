@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from "react-native";
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 
 jest.mock("@/components/ScreenBoundary", () => ({
   ScreenBoundary: ({ children, showBack, backFallbackHref, title }: any) => {
@@ -77,6 +77,20 @@ describe("legacy course authoring route back behavior", () => {
     expect(screen.getByText("Add lesson form course-123")).toBeTruthy();
 
     screen.getByText("Submit lesson").props.onPress();
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
+  });
+
+  it("requires a course selection before rendering lesson fields", () => {
+    const AddLessonRoute = require("@/app/courses/add-lesson").default;
+
+    render(<AddLessonRoute />);
+
+    expect(
+      screen.getByRole("header", { name: "Select a course before adding a lesson" })
+        .props["aria-level"]
+    ).toBe(1);
+    expect(screen.queryByText("Add lesson form none")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Browse courses"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
   });
 });

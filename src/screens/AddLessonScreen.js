@@ -21,6 +21,7 @@ import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { persistImageUris } from "@/utils/photoUploads";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 import {
   emptyLessonMediaDraft,
@@ -38,6 +39,8 @@ function firstDocumentAsset(result) {
 export default function AddLessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
   const { courseId } = route.params;
 
   const [title, setTitle] = useState("");
@@ -180,7 +183,9 @@ export default function AddLessonScreen({ route, navigation }) {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>Add Lesson</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+        Add Lesson
+      </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_lesson_add" longContent />
       {!access.canCreateCourses ? (
         <View style={styles.lockedCard}>
@@ -194,7 +199,9 @@ export default function AddLessonScreen({ route, navigation }) {
       </Text>
 
       <TextInput
+        accessibilityLabel="Lesson title"
         style={styles.input}
+        placeholderTextColor={palette.textMuted}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
@@ -202,7 +209,9 @@ export default function AddLessonScreen({ route, navigation }) {
       />
 
       <TextInput
+        accessibilityLabel="Lesson order"
         style={styles.input}
+        placeholderTextColor={palette.textMuted}
         placeholder="Order (1, 2, 3...)"
         value={order}
         onChangeText={setOrder}
@@ -212,7 +221,9 @@ export default function AddLessonScreen({ route, navigation }) {
 
       <Text style={styles.label}>Text Content (optional)</Text>
       <TextInput
+        accessibilityLabel="Lesson text content"
         style={[styles.input, styles.textBox]}
+        placeholderTextColor={palette.textMuted}
         placeholder="Write the lesson notes here..."
         value={content}
         onChangeText={setContent}
@@ -246,6 +257,8 @@ export default function AddLessonScreen({ route, navigation }) {
 
       <Text style={styles.label}>PDF Document</Text>
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Upload lesson PDF"
         style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
         onPress={pickPDF}
         disabled={!access.canCreateCourses}
@@ -255,7 +268,9 @@ export default function AddLessonScreen({ route, navigation }) {
         </Text>
       </TouchableOpacity>
       <TextInput
+        accessibilityLabel="Lesson PDF URL"
         style={styles.input}
+        placeholderTextColor={palette.textMuted}
         placeholder="Or paste PDF URL"
         value={pdfUrl}
         onChangeText={setPdfUrl}
@@ -264,6 +279,8 @@ export default function AddLessonScreen({ route, navigation }) {
 
       <Text style={styles.label}>Audio (Optional)</Text>
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Upload lesson audio"
         style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
         onPress={pickAudio}
         disabled={!access.canCreateCourses}
@@ -275,6 +292,8 @@ export default function AddLessonScreen({ route, navigation }) {
 
       <Text style={styles.label}>Images (Optional)</Text>
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Add lesson images"
         style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
         onPress={pickImages}
         disabled={!access.canCreateCourses}
@@ -304,6 +323,8 @@ export default function AddLessonScreen({ route, navigation }) {
       />
 
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Save lesson"
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
         onPress={submit}
         disabled={!access.canCreateCourses}
@@ -324,69 +345,74 @@ export default function AddLessonScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  label: { marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: {
-    backgroundColor: "#eee",
-    padding: 10,
-    borderRadius: radius.card,
-    marginBottom: 8
-  },
-  textBox: {
-    height: 120,
-    textAlignVertical: "top"
-  },
-  uploadBtn: {
-    backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: radius.card,
-    marginBottom: 8,
-    alignItems: "center"
-  },
-  uploadBtnText: {
-    color: "#FFF",
-    fontWeight: "600",
-    fontSize: 15
-  },
-  btn: {
-    marginTop: 16,
-    backgroundColor: "#2ecc71",
-    paddingVertical: 12,
-    borderRadius: radius.card
-  },
-  btnText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "700",
-    fontSize: 16
-  },
-  imageGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12
-  },
-  imageThumb: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.card
-  },
-  helpText: {
-    fontSize: 13,
-    color: "#666",
-    marginTop: 16,
-    textAlign: "center",
-    paddingHorizontal: 20
-  },
-  lockedCard: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: "#f8fafc"
-  },
-  lockedTitle: { fontWeight: "700" },
-  disabled: { opacity: 0.5 }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    header: { color: palette.text, fontSize: 22, fontWeight: "700", marginBottom: 10 },
+    label: { color: palette.text, marginTop: 10, marginBottom: 4, fontWeight: "600" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      color: palette.text,
+      padding: 10,
+      borderRadius: radius.card,
+      marginBottom: 8
+    },
+    textBox: {
+      height: 120,
+      textAlignVertical: "top"
+    },
+    uploadBtn: {
+      backgroundColor: palette.accent,
+      padding: 12,
+      borderRadius: radius.card,
+      marginBottom: 8,
+      alignItems: "center"
+    },
+    uploadBtnText: {
+      color: palette.accentText,
+      fontWeight: "600",
+      fontSize: 15
+    },
+    btn: {
+      marginTop: 16,
+      backgroundColor: palette.accent,
+      paddingVertical: 12,
+      borderRadius: radius.card
+    },
+    btnText: {
+      textAlign: "center",
+      color: palette.accentText,
+      fontWeight: "700",
+      fontSize: 16
+    },
+    imageGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 12
+    },
+    imageThumb: {
+      width: 80,
+      height: 80,
+      borderRadius: radius.card
+    },
+    helpText: {
+      fontSize: 13,
+      color: palette.textMuted,
+      marginTop: 16,
+      textAlign: "center",
+      paddingHorizontal: 20
+    },
+    lockedCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    lockedTitle: { color: palette.text, fontWeight: "700" },
+    disabled: { opacity: 0.5 }
+  });
+}
