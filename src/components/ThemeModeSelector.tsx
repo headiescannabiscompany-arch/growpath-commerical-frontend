@@ -67,7 +67,13 @@ export default function ThemeModeSelector() {
       ]}
     >
       <Text style={[styles.kicker, { color: palette.accent }]}>Appearance</Text>
-      <Text style={[styles.title, { color: palette.text }]}>Day, night, or auto</Text>
+      <Text
+        accessibilityRole="header"
+        aria-level={2}
+        style={[styles.title, { color: palette.text }]}
+      >
+        Day, night, or auto
+      </Text>
       <Text style={[styles.body, { color: palette.textMuted }]}>
         Auto now asks once for location, saves it, and then follows sunrise/sunset. Day
         uses the lighter green UI. Night uses the darker blue-gray UI with bright text and
@@ -120,7 +126,11 @@ export default function ThemeModeSelector() {
             { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
           ]}
         >
-          <Text style={[styles.autoTitle, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={[styles.autoTitle, { color: palette.text }]}
+          >
             Auto theme behavior
           </Text>
           <Text style={[styles.autoBody, { color: palette.textMuted }]}>

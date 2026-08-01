@@ -264,7 +264,9 @@ export default function FacilityProfileRoute() {
 
         <View style={[styles.card, styles.workspaceCard]}>
           <Text style={styles.kicker}>Facility workspace</Text>
-          <Text style={styles.workspaceTitle}>Operational facility identity</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.workspaceTitle}>
+            Operational facility identity
+          </Text>
           <Text style={styles.workspaceText}>
             Facility is for rooms, operational runs, team tasks, sensor streams,
             compliance, and audit history. Commercial storefront outreach and Personal
@@ -296,7 +298,9 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Facility</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+            Facility
+          </Text>
 
           {facility ? (
             <View style={styles.kvWrap}>
@@ -315,7 +319,9 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Notification settings</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+            Notification settings
+          </Text>
           <Text style={styles.mutedText}>
             Choose which inbox items can also reach this device. In-app notifications
             remain available; push delivery requires a registered device.
@@ -359,7 +365,9 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Account</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+            Account
+          </Text>
 
           {me ? (
             <View style={styles.kvWrap}>
@@ -371,7 +379,9 @@ export default function FacilityProfileRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.h1}>AI usage</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+            AI usage
+          </Text>
           <TokenBalanceWidget
             interactive={false}
             workspaceType="facility"
@@ -385,7 +395,9 @@ export default function FacilityProfileRoute() {
         <CannabisContentControls />
 
         <View style={styles.card}>
-          <Text style={styles.h1}>Facility setup</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+            Facility setup
+          </Text>
           <Text style={styles.muted}>
             Manage the people, sensor connections, training, and community attached to
             this workspace.
