@@ -2695,6 +2695,32 @@ permissions.
   field, workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
 
+## Facility Dashboard operational-card hierarchy
+
+Production Facility Dashboard already used the active Night palette, named its
+operational actions, retained truthful live counts, and exposed no fields, but
+its two learning cards, seven summary tiles, four priority rows, and nine
+command cards were plain text beneath their H2 sections. Frontend `d3a9ecf0`
+marks those 22 existing titles as H3s through their four mapped templates
+without changing navigation, refresh, counts, appearance, alerts, role gates,
+or data loading.
+
+- Both focused Facility dashboard-hierarchy/layout suites passed, totaling 22
+  tests and covering page/section/card semantics plus compact navigation.
+  Source lint, forced test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The existing non-failing Expo Go notification
+  warning remained in the layout suite.
+- Production Build Preflight `30717530051` and Frontend CI `30717530022`
+  passed. Clean signed-in Facility Viewer production verification on bundle
+  `index-43b98534...` rendered one Dashboard H1, six existing H2 sections, the
+  existing Auto-theme H3, and all 22 intended learning/summary/priority/command
+  titles as H3s. The real 15 Rooms, 1 SOP, and 67 Audit events counts remained
+  unchanged; 21 operational actions remained named; and the route had zero
+  opaque white/light page-content surfaces.
+- No appearance, location, device-theme, refresh, learning, summary, priority,
+  command, tab, route, workspace, account, session, billing, audit event, or
+  record action was invoked, and the Viewer session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
