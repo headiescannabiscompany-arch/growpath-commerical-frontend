@@ -2385,3 +2385,27 @@ privacy/account data without changing account behavior or palette styling.
 - No field, workspace, account, plan, logout, export, delete, privacy, session,
   billing, audit event, or record action was invoked, and the Viewer session
   remained signed in.
+
+## Shared Schedule semantic hierarchy and Night-theme no-change acceptance
+
+Production `/home/schedule` already rendered the correct Night palette, one
+accurate page H1, named view/workspace/source filters, and truthful empty
+agenda sections. Its Overdue, Today, Upcoming, and Completed section titles
+were visual labels rather than semantic headings. Frontend `ab70607e` marks
+only those existing section titles as level-two headings without changing
+schedule loading, aggregation, filtering, navigation, or records.
+
+- Both focused Schedule tests passed, including the full source aggregation
+  and fallback cases plus an explicit level-two assertion for every agenda
+  section. Source lint, forced test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30712399162` and Frontend CI `30712399183`
+  passed. Clean signed-in Facility Viewer production verification rendered one
+  bright `Schedule / Agenda` H1 and four bright H2s for Overdue, Today,
+  Upcoming, and Completed. All view/workspace/source filters remained present,
+  the four sections truthfully contained zero items, and the page had zero
+  white/light page-content surfaces.
+- No refresh, view, date, workspace, source, task, live, course, campaign,
+  storefront, notification, product, order, alert, recipe, tool run, facility,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
