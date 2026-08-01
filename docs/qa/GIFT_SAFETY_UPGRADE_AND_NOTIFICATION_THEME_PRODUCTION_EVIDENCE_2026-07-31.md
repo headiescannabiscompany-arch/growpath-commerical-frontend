@@ -196,6 +196,30 @@ production acceptance covered:
 
 ## Automated verification
 
+## Facility SOP Library Night theme and heading hierarchy
+
+Production SOP Library retained nearly black headings/copy, white starter and
+active-SOP cards, and a pale day-only Viewer notice on the Night canvas.
+Frontend `baf4f2d7` moved the complete Viewer and owner/manager library/editor
+surface to the active palette. Its first live check also exposed all three
+major headings as level one; follow-up `994f376b` established one level-one
+page heading, two level-two sections, and a level-three supporting-documents
+heading when the editor is available.
+
+- Final Production Build Preflight `30681718327` passed in 3m27s and Frontend
+  CI `30681718326` passed in 5m04s. The color implementation gates also passed:
+  preflight `30681401023` and Frontend CI `30681401052`.
+- Fourteen focused SOP tests passed for back routes, run evidence, pending and
+  completed-run controls, comparison, reviewed authoring, upload, retirement,
+  one-off run creation, Night palette, and heading levels. Targeted ESLint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed all standard starter cards,
+  the read-only permission notice, the active three-step SOP, and the existing
+  Start run link remained readable and present under resolved Night.
+- The existing SOP was not opened or started; no template, upload, checklist,
+  run, task, audit event, or record changed. The session was returned to the
+  Facility dashboard without logout.
+
 ## Facility Analytics Night contrast
 
 Production Facility Analytics used the Night canvas but retained nearly black
