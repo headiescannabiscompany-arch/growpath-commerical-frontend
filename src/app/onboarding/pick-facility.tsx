@@ -13,10 +13,13 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useFacility } from "@/facility/FacilityProvider";
 import { useFacilities } from "@/hooks/useFacilities";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function PickFacilityScreen() {
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = createPickFacilityStyles(palette);
   const router = useRouter();
   const facilityStore = useFacility();
   const facilitiesQuery = useFacilities();
@@ -57,7 +60,9 @@ export default function PickFacilityScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Pick a Facility</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+        Pick a Facility
+      </Text>
       <Text style={styles.subtitle}>Select the facility you want to continue with.</Text>
 
       {loading ? (
@@ -128,55 +133,57 @@ export default function PickFacilityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  content: { padding: 16, gap: 12 },
-  centered: { alignItems: "center", justifyContent: "center", minHeight: 160, gap: 10 },
-  title: { fontSize: 24, fontWeight: "800" },
-  subtitle: { fontSize: 14, color: "#4b5563" },
-  helper: { fontSize: 14, color: "#6b7280" },
-  list: { gap: 10 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#f9fafb",
-    gap: 4
-  },
-  cardDisabled: { opacity: 0.65 },
-  cardTitle: { fontSize: 17, fontWeight: "700" },
-  meta: { fontSize: 13, color: "#4b5563" },
-  pickText: { marginTop: 6, fontSize: 13, color: "#2563eb", fontWeight: "700" },
-  errorBox: {
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    backgroundColor: "#fef2f2",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 10
-  },
-  errorText: { color: "#b91c1c", fontSize: 13 },
-  emptyBox: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 10
-  },
-  primaryButton: {
-    borderRadius: radius.card,
-    backgroundColor: "#111827",
-    paddingVertical: 11,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "700" },
-  secondaryButton: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    paddingVertical: 10,
-    alignItems: "center"
-  },
-  secondaryButtonText: { color: "#111827", fontWeight: "700" }
-});
+export const createPickFacilityStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 16, gap: 12 },
+    centered: { alignItems: "center", justifyContent: "center", minHeight: 160, gap: 10 },
+    title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    subtitle: { fontSize: 14, color: palette.textSoft },
+    helper: { fontSize: 14, color: palette.textMuted },
+    list: { gap: 10 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 4
+    },
+    cardDisabled: { opacity: 0.65 },
+    cardTitle: { fontSize: 17, fontWeight: "700", color: palette.text },
+    meta: { fontSize: 13, color: palette.textSoft },
+    pickText: { marginTop: 6, fontSize: 13, color: palette.accent, fontWeight: "700" },
+    errorBox: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 10
+    },
+    errorText: { color: palette.danger, fontSize: 13 },
+    emptyBox: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 10
+    },
+    primaryButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingVertical: 11,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "700" },
+    secondaryButton: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      paddingVertical: 10,
+      alignItems: "center"
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "700" }
+  });

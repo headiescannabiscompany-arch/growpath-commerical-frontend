@@ -1,7 +1,10 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-import GuildOnboardingScreen from "@/app/onboarding/guilds";
+import GuildOnboardingScreen, {
+  createGuildOnboardingStyles
+} from "@/app/onboarding/guilds";
+import { createPickFacilityStyles } from "@/app/onboarding/pick-facility";
 import WalkthroughsScreen, {
   createWalkthroughStyles
 } from "@/app/onboarding/walkthroughs";
@@ -59,8 +62,8 @@ describe("onboarding Forum/Q&A copy", () => {
 
     await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
     expect(screen.getByText("Forum/Q&A routing")).toBeTruthy();
-    expect(screen.getByText("Select your forum groups")).toBeTruthy();
-    expect(screen.getByText("Recommended forum groups")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Select your forum groups" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Recommended forum groups" })).toBeTruthy();
     expect(screen.getByLabelText("Continue after selecting forum groups")).toBeTruthy();
     expect(screen.queryByText("Community routing")).toBeNull();
     expect(screen.queryByText("Select your guilds")).toBeNull();
@@ -119,5 +122,20 @@ describe("onboarding Forum/Q&A copy", () => {
     expect(styles.side.backgroundColor).toBe(palette.surfaceStrong);
     expect(styles.sideTitle.color).toBe(palette.text);
     expect(styles.button.backgroundColor).toBe(palette.accent);
+  });
+
+  it("uses the active Night palette for forum interests and facility selection", () => {
+    const palette = getThemePalette("night", "dark");
+    const guildStyles = createGuildOnboardingStyles(palette);
+    const facilityStyles = createPickFacilityStyles(palette);
+
+    expect(guildStyles.root.backgroundColor).toBe(palette.page);
+    expect(guildStyles.panel.backgroundColor).toBe(palette.surface);
+    expect(guildStyles.title.color).toBe(palette.text);
+    expect(guildStyles.chip.backgroundColor).toBe(palette.surfaceMuted);
+    expect(facilityStyles.container.backgroundColor).toBe(palette.page);
+    expect(facilityStyles.card.backgroundColor).toBe(palette.surface);
+    expect(facilityStyles.cardTitle.color).toBe(palette.text);
+    expect(facilityStyles.primaryButton.backgroundColor).toBe(palette.accent);
   });
 });

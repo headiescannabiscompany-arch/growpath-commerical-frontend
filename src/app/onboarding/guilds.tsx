@@ -14,6 +14,7 @@ import { joinGuild, listGuilds, type Guild } from "@/api/communitySocial";
 import { updateGrowInterests } from "@/api/users";
 import { useAuth } from "@/auth/AuthContext";
 import { INTEREST_TIERS } from "@/config/interests";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type InterestMap = Record<string, string[]>;
@@ -37,6 +38,8 @@ function toggle(map: InterestMap, tier: string, option: string): InterestMap {
 
 export default function GuildOnboardingScreen() {
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = createGuildOnboardingStyles(palette);
   const router = useRouter();
   const params = useLocalSearchParams<{
     next?: string | string[];
@@ -130,7 +133,9 @@ export default function GuildOnboardingScreen() {
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.main}>
           <Text style={styles.kicker}>Forum/Q&A routing</Text>
-          <Text style={styles.title}>Select your forum groups</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Select your forum groups
+          </Text>
           <Text style={styles.subtitle}>
             Choose what you grow first. This keeps cannabis facility content, fruit-tree
             gardening, houseplants, and other discussion spaces separated.
@@ -138,7 +143,9 @@ export default function GuildOnboardingScreen() {
 
           {cropTier ? (
             <View style={styles.panel}>
-              <Text style={styles.panelTitle}>{cropTier.label}</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.panelTitle}>
+                {cropTier.label}
+              </Text>
               <View style={styles.chips}>
                 {cropTier.options.map((option) => {
                   const active = selectedCrops.includes(option);
@@ -164,7 +171,9 @@ export default function GuildOnboardingScreen() {
 
           {secondaryTiers.map((tier) => (
             <View key={tier.id} style={styles.panel}>
-              <Text style={styles.panelTitle}>{tier.label}</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.panelTitle}>
+                {tier.label}
+              </Text>
               <View style={styles.chips}>
                 {tier.options.map((option) => {
                   const active = (interests[tier.id] || []).includes(option);
@@ -191,7 +200,9 @@ export default function GuildOnboardingScreen() {
 
         <View style={[styles.side, isWide ? styles.sideWide : null]}>
           <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Recommended forum groups</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.panelTitle}>
+              Recommended forum groups
+            </Text>
             <Text style={styles.panelCopy}>
               Optional memberships based on your crop selections.
             </Text>
@@ -240,7 +251,7 @@ export default function GuildOnboardingScreen() {
             style={[styles.button, !canContinue && styles.buttonDisabled]}
           >
             {saving ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.buttonText}>Continue{mode ? ` as ${mode}` : ""}</Text>
             )}
@@ -251,71 +262,77 @@ export default function GuildOnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: "#f4f6f3", flex: 1 },
-  content: { alignItems: "center", padding: 16, paddingBottom: 32 },
-  shell: { gap: 14, maxWidth: 1180, width: "100%" },
-  shellWide: { alignItems: "flex-start", flexDirection: "row", gap: 18 },
-  main: { flex: 1, minWidth: 0 },
-  side: { gap: 12, width: "100%" },
-  sideWide: { width: 390 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 6,
-    textTransform: "uppercase"
-  },
-  title: { color: "#111827", fontSize: 34, fontWeight: "900", marginBottom: 8 },
-  subtitle: {
-    color: "#475569",
-    fontSize: 15,
-    fontWeight: "700",
-    lineHeight: 22,
-    marginBottom: 14,
-    maxWidth: 760
-  },
-  panel: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d7ddd2",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 12,
-    padding: 14
-  },
-  panelTitle: { color: "#111827", fontSize: 17, fontWeight: "900", marginBottom: 8 },
-  panelCopy: { color: "#64748b", fontWeight: "700", lineHeight: 20, marginBottom: 10 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  chipActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  chipTextActive: { color: "#ffffff" },
-  loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
-  muted: { color: "#64748b", fontWeight: "700" },
-  guildRow: {
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 8,
-    padding: 10
-  },
-  guildRowActive: { borderColor: "#166534", borderWidth: 2 },
-  guildTitle: { color: "#111827", fontWeight: "900", marginBottom: 4 },
-  guildMeta: { color: "#64748b", fontSize: 12, fontWeight: "700" },
-  error: { color: "#b91c1c", fontWeight: "800" },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#ffffff", fontWeight: "900" }
-});
+export const createGuildOnboardingStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    root: { backgroundColor: palette.page, flex: 1 },
+    content: { alignItems: "center", padding: 16, paddingBottom: 32 },
+    shell: { gap: 14, maxWidth: 1180, width: "100%" },
+    shellWide: { alignItems: "flex-start", flexDirection: "row", gap: 18 },
+    main: { flex: 1, minWidth: 0 },
+    side: { gap: 12, width: "100%" },
+    sideWide: { width: 390 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 6,
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 34, fontWeight: "900", marginBottom: 8 },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      fontWeight: "700",
+      lineHeight: 22,
+      marginBottom: 14,
+      maxWidth: 760
+    },
+    panel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 12,
+      padding: 14
+    },
+    panelTitle: { color: palette.text, fontSize: 17, fontWeight: "900", marginBottom: 8 },
+    panelCopy: {
+      color: palette.textMuted,
+      fontWeight: "700",
+      lineHeight: 20,
+      marginBottom: 10
+    },
+    chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    chipActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
+    chipTextActive: { color: palette.accentText },
+    loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
+    muted: { color: palette.textMuted, fontWeight: "700" },
+    guildRow: {
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 8,
+      padding: 10
+    },
+    guildRowActive: { borderColor: palette.accent, borderWidth: 2 },
+    guildTitle: { color: palette.text, fontWeight: "900", marginBottom: 4 },
+    guildMeta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    error: { color: palette.danger, fontWeight: "800" },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    buttonDisabled: { opacity: 0.5 },
+    buttonText: { color: palette.accentText, fontWeight: "900" }
+  });
