@@ -63,7 +63,8 @@ const tests = {
 [
   ["shared back fallback", /backFallbackHref/],
   ["shared back button", /BackButton/],
-  ["visible crash fallback", /Screen crashed/],
+  ["safe visible crash fallback", /Screen unavailable/],
+  ["safe crash recovery guidance", /unexpected error[\s\S]*contact support/],
   ["accessible title shell", /title/]
 ].forEach(([description, pattern]) => {
   requireText("ScreenBoundary", screenBoundary, pattern, description);
