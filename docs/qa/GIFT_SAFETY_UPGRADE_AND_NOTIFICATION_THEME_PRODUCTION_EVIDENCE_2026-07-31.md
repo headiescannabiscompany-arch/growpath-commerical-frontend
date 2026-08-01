@@ -1150,6 +1150,36 @@ visible workflow sections without changing campaign permissions or behavior.
   report, hide, publish, analytics, audit event, billing, or record action was
   invoked, and the session remained signed in.
 
+## Facility Task Detail Night theme and persisted evidence hierarchy
+
+Production's genuine completed cross-role Facility task detail rendered both
+evidence cards as white day-only surfaces with black copy and exposed no
+semantic headings. Viewer update controls were correctly absent. Frontend
+`41158ca8` moved loaded/loading/empty, read-only, writer form, assignment,
+linkage, status, feedback, and destructive-action states to the active palette,
+and established one task-title heading plus workflow/record-summary section
+headings without changing task data or permissions.
+
+- Production Build Preflight `30693137826` passed in 3m22s and Frontend CI
+  `30693137824` passed in 6m44s.
+- Twenty-nine focused Facility task list/detail, source-link, assignment,
+  Owner/Manager/Viewer, role-policy, Night-palette, and heading tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  Existing React test-timing and Expo Go warnings did not fail the suites.
+- Signed-in Viewer production acceptance confirmed the real task title as the
+  single level-one heading and level-two `Task Workflow` and `Record Summary`
+  headings. Both evidence cards use Night surface `rgb(21, 29, 39)`, border
+  `rgb(40, 53, 69)`, and bright heading text `rgb(244, 247, 251)`; the separate
+  Report Bug control was the only detected white element.
+- The same persisted record retained `Completed`, its July 22 due date, July 22
+  creation timestamp, July 23 update timestamp, manual/no-linked-record source,
+  no room, assigned-team-member presentation, and optional proof/approval. The
+  Viewer exposed zero title, notes, due-date, assignment, source, room,
+  proof/approval, save, completion/reopen, or deletion controls. No refresh,
+  task, assignment, source, room, status, proof, approval, deletion, audit
+  event, billing, or record action was invoked, and the session remained signed
+  in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
