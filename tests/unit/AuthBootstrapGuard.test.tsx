@@ -63,11 +63,49 @@ describe("auth bootstrap route guards", () => {
     );
 
     expect(screen.getByText("Session check failed")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Session check failed" })).toHaveProp(
+      "aria-level",
+      1
+    );
     expect(screen.getByLabelText("Retry /api/me")).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByLabelText("Retry /api/me"));
     expect(mockRetryMe).toHaveBeenCalledTimes(1);
+  });
+
+  it("presents wrong-workspace denial as an H1 with safe navigation actions", () => {
+    mockPathname = "/home/commercial/orders";
+    mockAuth = {
+      ...mockAuth,
+      user: { id: "viewer-1" },
+      meStatus: "ready",
+      meError: ""
+    };
+    mockEntitlements = {
+      ready: true,
+      bootstrapError: "",
+      mode: "facility",
+      capabilities: {},
+      facilityId: "facility-1"
+    };
+
+    const screen = render(
+      <RouteAccessGuard>
+        <></>
+      </RouteAccessGuard>
+    );
+
+    expect(screen.getByRole("header", { name: "Access denied" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(
+      screen.getByText("This page is only available in commercial mode.")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Go to my dashboard")).toBeTruthy();
+    expect(screen.getByLabelText("Log out")).toBeTruthy();
+    expect(screen.getByLabelText("Contact support")).toBeTruthy();
   });
 
   it("shows the bootstrap error on protected deep routes instead of an infinite spinner", () => {

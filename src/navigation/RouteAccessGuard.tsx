@@ -24,7 +24,11 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
           accessibilityRole="alert"
           style={[styles.centered, { backgroundColor: palette.page }]}
         >
-          <Text style={[styles.title, { color: palette.text }]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={[styles.title, { color: palette.text }]}
+          >
             Session check failed
           </Text>
           <Text style={[styles.message, { color: palette.textMuted }]}>
@@ -76,7 +80,7 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
     }
     return (
       <View style={[styles.centered, { backgroundColor: palette.page }]}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }
@@ -96,7 +100,13 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
         accessibilityRole="alert"
         style={[styles.centered, { backgroundColor: palette.page }]}
       >
-        <Text style={[styles.title, { color: palette.text }]}>Access denied</Text>
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={[styles.title, { color: palette.text }]}
+        >
+          Access denied
+        </Text>
         <Text style={[styles.message, { color: palette.textMuted }]}>
           {wrongMode
             ? `This page is only available in ${modes.join(" or ")} mode.`

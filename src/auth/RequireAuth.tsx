@@ -55,7 +55,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           backgroundColor: palette.page
         }}
       >
-        <Text style={{ color: palette.text, fontSize: 20, fontWeight: "700" }}>
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={{ color: palette.text, fontSize: 20, fontWeight: "700" }}
+        >
           Session check failed
         </Text>
         <Text
