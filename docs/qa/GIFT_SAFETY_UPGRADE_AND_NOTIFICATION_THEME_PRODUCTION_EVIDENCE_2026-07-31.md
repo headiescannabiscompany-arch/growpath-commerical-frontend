@@ -196,6 +196,25 @@ production acceptance covered:
 
 ## Automated verification
 
+## Facility Audit Log Detail Night theme
+
+Production Audit Log Detail retained a dark-on-dark page heading and white
+day-only summary/raw-record cards under resolved Night. Frontend `d0268128`
+moved loaded and status states, metadata, cards, links, and selectable raw JSON
+to the active palette while preserving the immutable payload unchanged.
+
+- Production Build Preflight `30682823366` passed in 3m33s and Frontend CI
+  `30682823363` passed in 6m55s.
+- Eight focused audit/compliance tests passed, including the Night palette,
+  readable audit presentation, raw-identifier boundary, entity drill-in, list
+  semantics, loading state, and compliance back routes. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in production acceptance opened an existing weekly token-reset event
+  read-only and confirmed one level-one heading, readable summary/metadata, the
+  immutable-record disclosure, and the exact raw JSON on the Night palette.
+- No link, filter, audit action, token action, or record mutation was invoked;
+  the session was returned to the Facility dashboard without logout.
+
 ## Facility SOP Start and Compare Night theme
 
 Production Start SOP Run and Compare SOP Runs retained dark-on-dark headings
