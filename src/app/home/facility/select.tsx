@@ -17,6 +17,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -48,6 +49,8 @@ export default function FacilitySelectRoute() {
   const router = useRouter();
   const store: any = useFacility();
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySelectStyles(palette), [palette]);
 
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {
@@ -127,7 +130,9 @@ export default function FacilitySelectRoute() {
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.h1}>Select a Facility</Text>
+              <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+                Select a Facility
+              </Text>
               <Text style={styles.muted}>Choose where you want to work.</Text>
             </View>
             <Pressable
@@ -143,7 +148,7 @@ export default function FacilitySelectRoute() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading facilities...</Text>
           </View>
         ) : null}
@@ -155,6 +160,8 @@ export default function FacilitySelectRoute() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              colors={[palette.accent]}
+              tintColor={palette.accent}
             />
           }
           contentContainerStyle={styles.list}
@@ -222,7 +229,7 @@ export default function FacilitySelectRoute() {
                     {name}
                   </Text>
                   <Text style={styles.muted} numberOfLines={1}>
-                    {id}
+                    Facility workspace
                   </Text>
                 </View>
                 <Text style={styles.chev}>{">"}</Text>
@@ -235,62 +242,64 @@ export default function FacilitySelectRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  headerRow: { gap: 4 },
-  titleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  muted: { opacity: 0.7 },
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
-  list: { paddingVertical: 6, gap: 10 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  rowPressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "800" },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" },
-  emptyActions: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-    marginTop: 8
-  },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "900" },
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  logoutButton: {
-    borderWidth: 1,
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: "#FEF2F2"
-  },
-  logoutText: { color: "#991B1B", fontWeight: "800" }
-});
+export function createFacilitySelectStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 12, backgroundColor: palette.page },
+    headerRow: { gap: 4 },
+    titleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    muted: { color: palette.textMuted },
+    loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    list: { paddingVertical: 6, gap: 10 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      padding: 14,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card
+    },
+    rowPressed: { opacity: 0.85 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    chev: { color: palette.textMuted, fontSize: 22, paddingLeft: 8 },
+    empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    emptyActions: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "center",
+      marginTop: 8
+    },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    logoutButton: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    logoutText: { color: palette.danger, fontWeight: "800" }
+  });
+}
