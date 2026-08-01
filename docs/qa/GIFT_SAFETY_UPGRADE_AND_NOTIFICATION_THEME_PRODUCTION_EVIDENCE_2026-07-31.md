@@ -721,6 +721,35 @@ shipment transitions, recipient details, manifests, or totals.
   tracking, refresh, audit event, billing, or record action was invoked. The
   session returned to the Facility dashboard without logout.
 
+## Facility Rooms heading hierarchy and Viewer read-only state
+
+Production Rooms retained the correct Night palette, all 15 room records, and
+Viewer restrictions, but its tab shell owned the generic `Rooms` level-one
+heading while the accurate page title and room-workflow sections were ordinary
+text. Frontend `a2c40372` established a page-owned Facility Rooms & Workspaces
+heading plus structured room sections without changing loading, room records,
+ordering, equipment, batch cycles, integrations, or role gates.
+
+- Production Build Preflight `30687648716` passed in 3m31s and Frontend CI
+  `30687648717` passed in 7m00s. The production host published the new
+  `index-3eb1408aeeaff8c843d1c6827e8dd953.js` asset.
+- Twenty-five focused Facility Rooms workflow, Viewer route, tab-shell, and
+  canonical API-wrapper tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The suite retained its existing
+  asynchronous React and Expo Go push warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  Facility Rooms & Workspaces heading; Arrange room workspaces, New Room, and
+  Room Workspace level-two headings; active-room, Equipment, and Batch Cycles
+  level-three headings; all 15 rooms; the Night canvas `rgb(14, 20, 27)`;
+  bright heading text `rgb(244, 247, 251)`; and zero white content surfaces.
+- The dashboard and Rooms route both settled at 15 rooms. A zero-room snapshot
+  observed while the route progress indicator was active changed to 15 after
+  the existing requests completed, so no false data or loading fix was made.
+- The Viewer exposed zero create, delete, reorder, add-equipment, or
+  create-cycle controls. No room, grow, integration, tool, equipment, batch
+  cycle, tracking mode, refresh, audit event, billing, or record action was
+  invoked. The session returned to the Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
