@@ -490,7 +490,11 @@ export default function FacilityDashboardTab() {
                 ]}
               >
                 <View style={styles.learningCopy}>
-                  <Text style={[styles.learningTitle, { color: palette.text }]}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={[styles.learningTitle, { color: palette.text }]}
+                  >
                     {row.label}
                   </Text>
                   <Text style={[styles.learningDetail, { color: palette.textMuted }]}>
@@ -558,7 +562,11 @@ export default function FacilityDashboardTab() {
                     >
                       {String(q.value)}
                     </Text>
-                    <Text style={[styles.tileLabel, { color: palette.text }]}>
+                    <Text
+                      accessibilityRole="header"
+                      aria-level={3}
+                      style={[styles.tileLabel, { color: palette.text }]}
+                    >
                       {q.label}
                     </Text>
                   </View>
@@ -594,7 +602,11 @@ export default function FacilityDashboardTab() {
                 >
                   <View style={[styles.statusDot, dotToneStyle(row.tone)]} />
                   <View style={styles.statusText}>
-                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                    <Text
+                      accessibilityRole="header"
+                      aria-level={3}
+                      style={[styles.rowTitle, { color: palette.text }]}
+                    >
                       {row.label}
                     </Text>
                     <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
@@ -628,7 +640,11 @@ export default function FacilityDashboardTab() {
                   style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
                 >
                   <View>
-                    <Text style={[styles.rowTitle, { color: palette.text }]}>
+                    <Text
+                      accessibilityRole="header"
+                      aria-level={3}
+                      style={[styles.rowTitle, { color: palette.text }]}
+                    >
                       {row.label}
                     </Text>
                     <Text style={[styles.rowMeta, { color: palette.textMuted }]}>

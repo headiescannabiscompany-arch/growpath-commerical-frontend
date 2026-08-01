@@ -21,5 +21,13 @@ describe("Facility dashboard hierarchy", () => {
       expect(precedingMarkup).toContain('accessibilityRole="header"');
       expect(precedingMarkup).toContain("aria-level={2}");
     }
+
+    expect(source.match(/aria-level=\{3\}/g)).toHaveLength(4);
+    for (const styleName of ["learningTitle", "tileLabel", "rowTitle"]) {
+      const styleIndex = source.indexOf(`styles.${styleName}`);
+      const precedingMarkup = source.slice(Math.max(0, styleIndex - 180), styleIndex);
+      expect(precedingMarkup).toContain('accessibilityRole="header"');
+      expect(precedingMarkup).toContain("aria-level={3}");
+    }
   });
 });
