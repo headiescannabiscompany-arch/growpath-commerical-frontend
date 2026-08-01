@@ -35,7 +35,7 @@ const commercialToolsIndex = read("src/app/home/commercial/tools/index.tsx");
 const productionWebExport = read("scripts/export-production-web.cjs");
 const facilityInventory = read("src/app/home/facility/(tabs)/inventory.tsx");
 const facilityCreateInventory = read(
-  "src/app/home/facility/(tabs)/CreateInventoryItemScreen.tsx"
+  "src/screens/facility/FacilityCreateInventoryItemScreen.tsx"
 );
 const commercialInventory = read("src/app/home/commercial/inventory.tsx");
 const commercialInventoryCreate = read("src/app/home/commercial/inventory-create.tsx");
