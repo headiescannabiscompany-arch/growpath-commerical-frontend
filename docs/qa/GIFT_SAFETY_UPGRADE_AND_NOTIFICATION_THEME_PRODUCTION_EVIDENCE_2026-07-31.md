@@ -1564,6 +1564,37 @@ facility creation behavior did not change.
   facility, workspace, account, session, billing, or record action was invoked,
   and the Viewer session remained signed in.
 
+## Facility grow-onboarding direct-route protection
+
+Production `/onboarding/start-grow` exposed all 15 rooms preselected plus an
+enabled Start Grow action to this Facility Viewer, and direct Assign Plants
+exposed quick-add and assignment controls. Both routes retained light-only
+cards/fields and lacked a semantic page heading. Frontend `afe5c660` applies the
+central Facility role matrix to both routes: only Owner/Manager may create a
+grow or create/update plant assignments, while other roles receive a fully
+read-only, page-owned protected state. Complete authorized loading, empty,
+selection, validation, mutation, feedback, and action states also use the active
+palette. Owner/Manager workflow behavior did not change.
+
+- Production Build Preflight `30699109390` and Frontend CI `30699109405`
+  passed. Seven focused room-scoped grow creation, stale-room, Viewer direct-
+  route, plant-assignment, and Night-palette tests passed. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. The existing Expo Go
+  notification warning did not fail the suites.
+- Signed-in Viewer acceptance on the ordinary clean production URLs confirmed
+  one bright Night H1 per route, zero inputs, zero room/plant selection controls,
+  and zero create/add/assign actions. Start Grow exposes only Back to facility
+  grows; Assign Plants exposes only Continue to facility grows. Report Bug was
+  the only white element on either route.
+- The first Assign Plants retest caught Cloudflare's documented five-minute
+  per-route HTML cache still serving the preceding asset. Acceptance was held
+  until `s-maxage=300` expired, the clean route changed from the old asset to
+  `index-27c74d06129636aacdfaa7e0517bb631.js`, and a fresh browser reload proved
+  the protected state without a cache-busting query.
+- No room, field, date, selection, grow, plant, task, log, AI context, facility,
+  membership, account, session, billing, or record action was invoked, and the
+  Viewer session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
