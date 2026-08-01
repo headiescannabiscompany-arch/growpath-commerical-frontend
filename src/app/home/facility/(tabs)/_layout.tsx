@@ -41,7 +41,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "grows",
     "inventory",
     "plants",
-    "logs"
+    "logs",
+    "tools/environment"
   ].includes(routeName);
 }
 
@@ -249,7 +250,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="tools/environment"
-        options={{ title: "Environment Review", tabBarButton: () => null }}
+        options={{
+          title: "Environment Review",
+          headerShown: shouldShowFacilityRouteHeader("tools/environment"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="tools/pulse"

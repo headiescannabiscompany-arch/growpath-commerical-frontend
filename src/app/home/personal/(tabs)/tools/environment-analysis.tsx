@@ -271,7 +271,9 @@ export default function EnvironmentAnalysisToolScreen() {
       backFallbackHref="/home/personal/tools"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Environment Review</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Environment Review
+        </Text>
         <Text style={styles.subtitle}>
           Review grow-room readings with GrowPath rules, then save the result or create a
           linked follow-up task. This review uses no AI credits.

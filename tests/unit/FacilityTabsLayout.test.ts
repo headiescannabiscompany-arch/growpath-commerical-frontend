@@ -54,6 +54,11 @@ describe("Facility tabs layout", () => {
     expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
+  it("lets Environment Review own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("tools/environment")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("tools/pulse")).toBe(true);
+  });
+
   it("lets Licensed Sales & Transfers own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("transfers")).toBe(false);
     expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);

@@ -106,6 +106,15 @@ describe("EnvironmentAnalysisToolScreen", () => {
     expect(styles.button.backgroundColor).toBe(palette.accent);
   });
 
+  it("owns one accurate semantic page heading", () => {
+    const screen = render(<EnvironmentAnalysisToolScreen />);
+
+    expect(screen.getByRole("header", { name: "Environment Review" })).toHaveProp(
+      "aria-level",
+      1
+    );
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockAnalyzeEnvironment.mockResolvedValue({
