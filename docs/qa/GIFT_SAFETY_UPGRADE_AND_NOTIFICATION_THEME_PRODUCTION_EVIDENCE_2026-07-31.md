@@ -1432,6 +1432,33 @@ changing metrics, refresh, navigation, role visibility, or theme behavior.
   navigation, room, grow, SOP, audit, task, compliance, AI, export, billing, or
   record action was invoked, and the session remained signed in.
 
+## Facility Profile and shared Appearance hierarchy
+
+Production Facility Profile used the correct Night palette after the parental-
+control repair, but its workspace, facility, notification, account, AI, and
+setup visual titles were not represented as headings. The shared Appearance
+selector similarly exposed no structure for its title or Auto behavior panel.
+Frontend `54fbd163` establishes six Profile level-two headings plus a shared
+Appearance level-two and Auto-behavior level-three heading beneath the existing
+page title. It does not change theme/location behavior, notification settings,
+profile actions, billing, logout, or content controls.
+
+- Production Build Preflight `30696604582` and Frontend CI `30696604562`
+  passed.
+- Four focused Profile rendering and hierarchy tests passed. Targeted ESLint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed. Existing Profile
+  React test-timing warnings did not fail the suites.
+- Signed-in Viewer production acceptance confirmed one level-one `Profile`
+  heading, eight level-two headings (`Operational facility identity`,
+  `Facility`, `Day, night, or auto`, `Notification settings`, `Account`, `AI
+  usage`, `Cannabis content and parental lock`, and `Facility setup`), and one
+  level-three `Auto theme behavior` heading. All are readable in Night mode;
+  the separate Report Bug control was the only detected white element.
+- Auto remained resolved to Night and all seven notification controls remained
+  present. No theme, location, notification, workspace, profile, plan, logout,
+  PIN, content-control, audit event, billing, or record action was invoked, and
+  the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
