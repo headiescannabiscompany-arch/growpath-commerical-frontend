@@ -547,8 +547,8 @@ export default function FacilitySopRunsPresetsRoute() {
               <View style={styles.readOnlyCard}>
                 <Text style={styles.readOnlyTitle}>Read-only SOP access</Text>
                 <Text style={styles.sub}>
-                  Facility owners and managers create and revise templates. You can open
-                  active procedures and perform assigned runs.
+                  Facility owners and managers create procedures and start runs. You can
+                  review active procedure summaries and completed evidence from SOP Runs.
                 </Text>
               </View>
             )}
@@ -610,17 +610,19 @@ export default function FacilitySopRunsPresetsRoute() {
                 </Pressable>
               ))}
               <View style={styles.savedActions}>
-                <Link
-                  accessibilityRole="button"
-                  accessibilityLabel={`Start run from SOP ${titleText}`}
-                  href={{
-                    pathname: "/home/facility/sop-runs/start",
-                    params: { templateId: id, templateTitle: titleText }
-                  }}
-                  style={styles.startLink}
-                >
-                  Start run
-                </Link>
+                {canManage ? (
+                  <Link
+                    accessibilityRole="button"
+                    accessibilityLabel={`Start run from SOP ${titleText}`}
+                    href={{
+                      pathname: "/home/facility/sop-runs/start",
+                      params: { templateId: id, templateTitle: titleText }
+                    }}
+                    style={styles.startLink}
+                  >
+                    Start run
+                  </Link>
+                ) : null}
                 {canManage ? (
                   <>
                     <Pressable

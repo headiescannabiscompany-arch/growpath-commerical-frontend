@@ -198,6 +198,20 @@ describe("facility SOP run nested back behavior", () => {
     );
   });
 
+  it("keeps the SOP Library start action read-only for viewers", () => {
+    mockCanWriteSopRuns = false;
+
+    const screen = render(<FacilitySopRunsPresetsRoute />);
+
+    expect(screen.getByText("Read-only SOP access")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Facility owners and managers create procedures and start runs. You can review active procedure summaries and completed evidence from SOP Runs."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText("Start run")).toBeNull();
+  });
+
   it("blocks the direct SOP start route for viewers", () => {
     mockCanWriteSopRuns = false;
 
