@@ -750,6 +750,37 @@ ordering, equipment, batch cycles, integrations, or role gates.
   cycle, tracking mode, refresh, audit event, billing, or record action was
   invoked. The session returned to the Facility dashboard without logout.
 
+## Facility Tasks heading hierarchy, compact tab label, and Viewer state
+
+Production Tasks retained the correct Night palette, one genuine completed
+cross-role task, and Viewer restrictions, but its tab shell owned the generic
+`Tasks` level-one heading while Task access, Task queue, Status, and Source were
+ordinary text. Frontend `e602d9dd` established one page-owned Facility Tasks
+heading and structured queue sections without changing task creation, links,
+filters, assignment, completion, or persistence. Live verification then caught
+that the route title had expanded the bottom tab label to `Facility Tasks`;
+frontend `181a9034` restored the compact `Tasks` tab label before evidence
+closure.
+
+- Final Production Build Preflight `30688277902` passed in 3m36s and Frontend
+  CI `30688277911` passed in 5m21s. The production host published the new
+  `index-b8472b218fa3cab616d35f3498a6ded4.js` asset. The preceding hierarchy
+  build also passed Preflight `30688007741` in 3m22s and Frontend CI
+  `30688007745` in 6m37s.
+- Thirty focused Facility Tasks workflow, role-access, canonical API-wrapper,
+  and tab-shell tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The suite retained its existing VirtualizedList
+  timing and Expo Go push warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  Facility Tasks heading; Task access and Task queue level-two headings;
+  Status and Source level-three headings; the compact selected `Tasks` tab;
+  one genuine completed cross-role task; the Night canvas `rgb(14, 20, 27)`;
+  bright heading text `rgb(244, 247, 251)`; and zero white content surfaces.
+- The Viewer exposed zero task-creator or create-task controls. No filter, task
+  link, task, assignment, completion, source, refresh, audit event, billing, or
+  record action was invoked. The session returned to the Facility dashboard
+  without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
