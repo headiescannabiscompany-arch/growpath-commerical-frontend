@@ -207,7 +207,9 @@ export default function Profile() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Account</Text>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
+            Profile
+          </Text>
           <Text style={styles.headerSubtitle}>
             Manage sign-in, plan status, and account access.
           </Text>
@@ -216,7 +218,9 @@ export default function Profile() {
     >
       <View style={styles.grid}>
         <AppCard style={styles.card}>
-          <Text style={styles.cardTitle}>Sign-in email</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Sign-in email
+          </Text>
           <Text style={styles.cardText}>
             This is the email used for login and account recovery.
           </Text>
@@ -282,7 +286,9 @@ export default function Profile() {
         </AppCard>
 
         <AppCard style={styles.card}>
-          <Text style={styles.cardTitle}>Plan status</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Plan status
+          </Text>
           <View style={styles.factGrid}>
             <View style={styles.fact}>
               <Text style={styles.factLabel}>Mode</Text>
@@ -314,7 +320,9 @@ export default function Profile() {
 
         {isCommercial ? (
           <AppCard style={styles.card}>
-            <Text style={styles.cardTitle}>Commercial brand identity</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Commercial brand identity
+            </Text>
             <Text style={styles.cardText}>
               Manage the public brand details users see from storefronts, Feed/Campaigns,
               Forum/Q&A replies, courses, and product pages.
@@ -355,7 +363,9 @@ export default function Profile() {
         ) : null}
 
         <AppCard style={styles.card}>
-          <Text style={styles.cardTitle}>Account type</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Account type
+          </Text>
           <Text style={styles.cardText}>
             Free, Pro, Commercial, and Facility accounts keep separate workflows so each
             account only sees the grow interests and workspace tools it needs.
@@ -389,7 +399,9 @@ export default function Profile() {
         </AppCard>
 
         <AppCard style={styles.card}>
-          <Text style={styles.cardTitle}>Session</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Session
+          </Text>
           <Text style={styles.cardText}>
             Use Switch workspace to move between eligible Personal, Commercial, and
             Facility work without signing out. Sign out only when changing email accounts.
@@ -408,7 +420,9 @@ export default function Profile() {
         </AppCard>
 
         <AppCard style={styles.card}>
-          <Text style={styles.cardTitle}>Privacy and account data</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Privacy and account data
+          </Text>
           <Text style={styles.cardText}>
             Export your account data or delete your account from inside the app. Deletion
             anonymizes the account and archives active personal records instead of blindly
