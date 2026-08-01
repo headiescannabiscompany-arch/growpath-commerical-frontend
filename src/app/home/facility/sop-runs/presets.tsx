@@ -302,7 +302,7 @@ export default function FacilitySopRunsPresetsRoute() {
         contentContainerStyle={styles.container}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.h1}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
               SOP Library
             </Text>
             <Text style={styles.lead}>
@@ -311,7 +311,7 @@ export default function FacilitySopRunsPresetsRoute() {
               executable checklist—it does not replace it.
             </Text>
 
-            <Text accessibilityRole="header" style={styles.h2}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Standard starter templates
             </Text>
             <Text style={styles.sub}>
@@ -349,7 +349,7 @@ export default function FacilitySopRunsPresetsRoute() {
               <View style={styles.editorCard}>
                 <View style={styles.editorHeadingRow}>
                   <View style={styles.flex}>
-                    <Text accessibilityRole="header" style={styles.h2}>
+                    <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
                       {editingId ? "Create a revised version" : "Create facility SOP"}
                     </Text>
                     <Text style={styles.sub}>
@@ -443,7 +443,7 @@ export default function FacilitySopRunsPresetsRoute() {
                   keyboardType="number-pad"
                 />
 
-                <Text accessibilityRole="header" style={styles.h3}>
+                <Text accessibilityRole="header" aria-level={3} style={styles.h3}>
                   Supporting documents
                 </Text>
                 <Text style={styles.help}>
@@ -554,7 +554,7 @@ export default function FacilitySopRunsPresetsRoute() {
             )}
 
             {message ? <Text style={styles.message}>{message}</Text> : null}
-            <Text accessibilityRole="header" style={styles.h2}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Active facility SOPs
             </Text>
             {isLoading ? <Text style={styles.sub}>Loading SOPs...</Text> : null}

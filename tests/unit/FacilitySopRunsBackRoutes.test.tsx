@@ -214,6 +214,9 @@ describe("facility SOP run nested back behavior", () => {
     const presets = render(<FacilitySopRunsPresetsRoute />);
     expect(presets.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy();
     expect(presets.getByText("SOP Library")).toBeTruthy();
+    expect(presets.getByText("SOP Library").props["aria-level"]).toBe(1);
+    expect(presets.getByText("Standard starter templates").props["aria-level"]).toBe(2);
+    expect(presets.getByText("Active facility SOPs").props["aria-level"]).toBe(2);
   });
 
   it("uses the active Night palette for the SOP library and editor surfaces", () => {
