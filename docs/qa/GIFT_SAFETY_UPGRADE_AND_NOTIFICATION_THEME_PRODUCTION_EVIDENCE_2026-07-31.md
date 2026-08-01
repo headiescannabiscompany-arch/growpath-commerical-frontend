@@ -813,6 +813,34 @@ Owner/Manager/Staff writer behavior.
   event, billing, or record action was invoked. The session returned to the
   Facility dashboard without logout.
 
+## Facility Grows hierarchy and Viewer grow-write permission gate
+
+Production Facility Grows used the correct Night palette and truthful empty
+state, but the tab shell owned the generic `Grows` level-one heading while the
+accurate page title was ordinary text. More importantly, the Viewer saw a
+`Start a facility grow` action even though the shared role policy reserves
+facility grow writes for Owners and Managers. Frontend `05c41bda` established
+one page-owned Facility Grows heading, preserved the compact `Grows` tab label,
+and applied the existing grow-write entitlement plus Owner/Manager role gate
+without changing Manager behavior.
+
+- Production Build Preflight `30688958541` passed in 3m13s and Frontend CI
+  `30688958532` passed in 6m44s.
+- Fifty-four focused Facility Grows route, tab-shell, role-policy, and
+  mode-access tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The suite retained its existing VirtualizedList
+  timing and Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  `Facility Grows` heading; one level-two `No facility grows yet` heading; the
+  compact selected `Grows` tab; the truthful `0 grows` count; the Night canvas
+  `rgb(14, 20, 27)`; and bright heading text `rgb(244, 247, 251)`. No white
+  page-content surface remained; the separate Report Bug control was the only
+  detected white element.
+- The Viewer exposed zero start-grow controls and received the explicit
+  Owner/Manager access notice. No grow, room, plant, task, refresh, navigation,
+  audit event, billing, or record action was invoked, and the session remained
+  signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
