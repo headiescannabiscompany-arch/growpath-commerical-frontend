@@ -31,7 +31,27 @@ import {
   type StandardSopTemplate
 } from "@/features/sops/standardSopLibrary";
 import { radius } from "@/theme/theme";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+
+export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    workspaceChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent
+    },
+    workspaceChipOn: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    workspaceChipText: { color: palette.link },
+    workspaceChipTextOn: { color: palette.accentText },
+    creditNotice: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18,
+      marginBottom: 8
+    }
+  });
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -455,6 +475,10 @@ export default function AiScreen({
 }: AiScreenProps = {}) {
   const router = useRouter();
   const { palette } = useAppTheme();
+  const workspaceThemeStyles = useMemo(
+    () => createAiWorkspaceThemeStyles(palette),
+    [palette]
+  );
   const params = useLocalSearchParams<{
     prompt?: string | string[];
     growId?: string | string[];
@@ -881,12 +905,19 @@ export default function AiScreen({
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${item.label} AI`}
                 onPress={() => router.push(item.href as any)}
-                style={[styles.workspaceChip, item.active && styles.workspaceChipOn]}
+                style={[
+                  styles.workspaceChip,
+                  workspaceThemeStyles.workspaceChip,
+                  item.active && styles.workspaceChipOn,
+                  item.active && workspaceThemeStyles.workspaceChipOn
+                ]}
               >
                 <Text
                   style={[
                     styles.workspaceChipText,
-                    item.active && styles.workspaceChipTextOn
+                    workspaceThemeStyles.workspaceChipText,
+                    item.active && styles.workspaceChipTextOn,
+                    item.active && workspaceThemeStyles.workspaceChipTextOn
                   ]}
                 >
                   {item.label}
@@ -1211,6 +1242,11 @@ export default function AiScreen({
           { borderTopColor: palette.border, backgroundColor: palette.page }
         ]}
       >
+        <Text style={workspaceThemeStyles.creditNotice}>
+          Sending a request uses {workspaceType === "facility" ? "Facility " : ""}AI
+          credits when the server accepts it for billing. Adding evidence alone does not
+          use a credit.
+        </Text>
         <MediaEvidencePicker
           aiUsable
           maxPhotos={10}
