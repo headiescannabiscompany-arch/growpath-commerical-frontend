@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { updateContentControls } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export default function CannabisContentControls() {
   const auth = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCannabisContentControlStyles(palette), [palette]);
   const [busy, setBusy] = useState(false);
   const [pin, setPin] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -46,7 +49,9 @@ export default function CannabisContentControls() {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Cannabis content and parental lock</Text>
+      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+        Cannabis content and parental lock
+      </Text>
       <Text style={styles.copy}>
         Hide cannabis posts, courses, recommendations, and related tools without affecting
         fruit, vegetable, flower, tree, or general gardening content.
@@ -61,6 +66,7 @@ export default function CannabisContentControls() {
       <TextInput
         accessibilityLabel="Parental content control PIN"
         style={styles.input}
+        placeholderTextColor={palette.textMuted}
         value={pin}
         onChangeText={setPin}
         placeholder={
@@ -79,12 +85,14 @@ export default function CannabisContentControls() {
           label="Hide cannabis"
           accessibilityLabel="Hide cannabis content"
           disabled={busy}
+          styles={styles}
           onPress={() => void save({ cannabisVisibility: "hide" })}
         />
         <Action
           label="Show cannabis"
           accessibilityLabel="Show cannabis content"
           disabled={busy || !auth.user?.cannabisEligible}
+          styles={styles}
           onPress={() => void save({ cannabisVisibility: "show" })}
         />
         <Action
@@ -95,6 +103,7 @@ export default function CannabisContentControls() {
               : "Enable parental lock"
           }
           disabled={busy || pin.length < 4}
+          styles={styles}
           onPress={() =>
             void save({
               cannabisVisibility: "hide",
@@ -113,12 +122,14 @@ function Action({
   label,
   accessibilityLabel,
   disabled,
-  onPress
+  onPress,
+  styles
 }: {
   label: string;
   accessibilityLabel: string;
   disabled: boolean;
   onPress: () => void;
+  styles: ReturnType<typeof createCannabisContentControlStyles>;
 }) {
   return (
     <Pressable
@@ -133,36 +144,38 @@ function Action({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "white",
-    borderColor: "#dbe5d4",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 14
-  },
-  title: { color: "#172317", fontSize: 17, fontWeight: "900" },
-  copy: { color: "#64748b", lineHeight: 20 },
-  value: { color: "#172317", fontWeight: "800" },
-  input: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  action: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  actionText: { color: "#166534", fontWeight: "900" },
-  disabled: { opacity: 0.45 },
-  feedback: { color: "#166534", fontWeight: "700" }
-});
+export const createCannabisContentControlStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 14
+    },
+    title: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    copy: { color: palette.textMuted, lineHeight: 20 },
+    value: { color: palette.text, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: palette.text
+    },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    action: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    actionText: { color: palette.link, fontWeight: "900" },
+    disabled: { opacity: 0.45 },
+    feedback: { color: palette.success, fontWeight: "700" }
+  });

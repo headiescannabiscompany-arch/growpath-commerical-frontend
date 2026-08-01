@@ -2,6 +2,8 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityProfileRoute from "@/app/home/facility/(tabs)/profile";
+import { createCannabisContentControlStyles } from "@/components/account/CannabisContentControls";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockLogout = jest.fn();
@@ -90,6 +92,17 @@ describe("FacilityProfileRoute", () => {
           : {}
       )
     );
+  });
+
+  it("uses the active Night palette for cannabis and parental controls", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createCannabisContentControlStyles(palette);
+
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.actionText.color).toBe(palette.link);
   });
 
   it("shows workspace boundaries and opens account mode routes", async () => {
