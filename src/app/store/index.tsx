@@ -6,6 +6,7 @@ import { searchPublicStorefronts } from "@/api/storefront";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { PublicCoordinates, requestCurrentCoordinates } from "@/utils/locationSearch";
 
@@ -40,6 +41,8 @@ function dispensaryLocation(row: any) {
 
 export default function StoreIndex() {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams<{ similarTo?: string; q?: string }>();
   const similarTo = useMemo(
@@ -154,7 +157,9 @@ export default function StoreIndex() {
       routeKey="store"
       header={
         <View>
-          <Text style={styles.title}>Store</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Store
+          </Text>
           <Text style={styles.subtitle}>
             Open public storefronts or manage your commercial storefront.
           </Text>
@@ -162,7 +167,9 @@ export default function StoreIndex() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Public storefronts</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Public storefronts
+        </Text>
         <Text style={styles.cardText}>
           Commercial storefronts are the public brand home base for products, courses,
           lives, campaigns, and Q&A links. Legacy brand profiles remain available as a
@@ -174,6 +181,7 @@ export default function StoreIndex() {
           autoCorrect={false}
           onChangeText={setSlug}
           placeholder="brand-slug"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={slug}
         />
@@ -198,7 +206,7 @@ export default function StoreIndex() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           {similarTo ? "Similar Storefronts" : "Find Storefronts"}
         </Text>
         <Text style={styles.cardText}>
@@ -212,6 +220,7 @@ export default function StoreIndex() {
           autoCorrect={false}
           onChangeText={setBrandQuery}
           placeholder="soil, nutrients, seeds, garden center..."
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={brandQuery}
         />
@@ -234,7 +243,7 @@ export default function StoreIndex() {
           return (
             <View key={publicSlug || brand?.id || brand?.name} style={styles.brandRow}>
               <View style={styles.brandBody}>
-                <Text style={styles.brandName}>
+                <Text accessibilityRole="header" aria-level={3} style={styles.brandName}>
                   {brand?.businessName || brand?.name || "Public brand"}
                 </Text>
                 {brand?.description || brand?.bio ? (
@@ -261,7 +270,9 @@ export default function StoreIndex() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Find Dispensaries</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Find Dispensaries
+        </Text>
         <Text style={styles.cardText}>
           Search dispensary inventory by state or distance from your current location.
           GrowPath does not sell cannabis or take payment. A dispensary can direct you to
@@ -277,6 +288,7 @@ export default function StoreIndex() {
           maxLength={2}
           onChangeText={(value) => setDispensaryState(value.toUpperCase())}
           placeholder="State code, e.g. MA"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={dispensaryState}
         />
@@ -348,7 +360,7 @@ export default function StoreIndex() {
               style={styles.brandRow}
             >
               <View style={styles.brandBody}>
-                <Text style={styles.brandName}>
+                <Text accessibilityRole="header" aria-level={3} style={styles.brandName}>
                   {dispensary?.businessName || dispensary?.name || "Licensed dispensary"}
                 </Text>
                 {location ? <Text style={styles.meta}>{location}</Text> : null}
@@ -376,7 +388,9 @@ export default function StoreIndex() {
 
       {entitlements.mode === "commercial" ? (
         <AppCard>
-          <Text style={styles.cardTitle}>Commercial storefront</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Commercial storefront
+          </Text>
           <Text style={styles.cardText}>
             Manage your published storefront and products.
           </Text>
@@ -391,131 +405,133 @@ export default function StoreIndex() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    color: "#111827",
-    fontSize: 26,
-    fontWeight: "800"
-  },
-  subtitle: {
-    color: "#64748B",
-    marginTop: 4
-  },
-  cardTitle: {
-    color: "#111827",
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  cardText: {
-    color: "#475569",
-    lineHeight: 20,
-    marginBottom: 14
-  },
-  brandActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  brandBody: {
-    flex: 1,
-    gap: 4
-  },
-  brandName: {
-    color: "#111827",
-    fontWeight: "800"
-  },
-  brandRow: {
-    borderTopColor: "#E2E8F0",
-    borderTopWidth: 1,
-    gap: 10,
-    marginTop: 12,
-    paddingTop: 12
-  },
-  buttonRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  disabled: {
-    opacity: 0.55
-  },
-  distance: {
-    color: "#166534",
-    fontWeight: "800"
-  },
-  fieldLabel: {
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  handoff: {
-    color: "#92400E",
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    marginBottom: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  privacyNote: {
-    color: "#64748B",
-    fontSize: 12,
-    marginBottom: 10
-  },
-  primaryButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "800"
-  },
-  radiusButton: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  radiusButtonSelected: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#166534"
-  },
-  radiusButtonText: {
-    color: "#475569",
-    fontWeight: "800"
-  },
-  radiusButtonTextSelected: {
-    color: "#166534"
-  },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#F1F5F9",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  secondaryButtonText: {
-    color: "#166534",
-    fontWeight: "800"
-  },
-  meta: {
-    color: "#64748B",
-    lineHeight: 19,
-    marginTop: 8
-  }
-});
+export const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    title: {
+      color: palette.heroText,
+      fontSize: 26,
+      fontWeight: "800"
+    },
+    subtitle: {
+      color: palette.textMuted,
+      marginTop: 4
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    cardText: {
+      color: palette.textMuted,
+      lineHeight: 20,
+      marginBottom: 14
+    },
+    brandActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    brandBody: {
+      flex: 1,
+      gap: 4
+    },
+    brandName: {
+      color: palette.text,
+      fontWeight: "800"
+    },
+    brandRow: {
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      gap: 10,
+      marginTop: 12,
+      paddingTop: 12
+    },
+    buttonRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    disabled: {
+      opacity: 0.55
+    },
+    distance: {
+      color: palette.accent,
+      fontWeight: "800"
+    },
+    fieldLabel: {
+      color: palette.text,
+      fontSize: 12,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    handoff: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginBottom: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    privacyNote: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginBottom: 10
+    },
+    primaryButtonText: {
+      color: palette.accentText,
+      fontWeight: "800"
+    },
+    radiusButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    radiusButtonSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    radiusButtonText: {
+      color: palette.textMuted,
+      fontWeight: "800"
+    },
+    radiusButtonTextSelected: {
+      color: palette.accent
+    },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    secondaryButtonText: {
+      color: palette.link,
+      fontWeight: "800"
+    },
+    meta: {
+      color: palette.textMuted,
+      lineHeight: 19,
+      marginTop: 8
+    }
+  });

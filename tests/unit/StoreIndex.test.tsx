@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import StoreIndex from "@/app/store";
+import StoreIndex, { createStyles } from "@/app/store";
 
 const mockPush = jest.fn();
 const mockSearchPublicStorefronts = jest.fn();
@@ -67,6 +67,36 @@ describe("StoreIndex", () => {
       latitude: 42.3601,
       longitude: -71.0589
     });
+  });
+
+  it("uses the active palette for the public directory and search controls", () => {
+    const palette = {
+      heroText: "#F4F7FB",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      border: "#283545",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      link: "#78AAFF",
+      warning: "#E3BE63"
+    } as any;
+
+    const styles = createStyles(palette);
+
+    expect(styles.title.color).toBe(palette.heroText);
+    expect(styles.cardTitle.color).toBe(palette.text);
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.secondaryButton.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.radiusButtonSelected.backgroundColor).toBe(palette.accentSoft);
   });
 
   it("opens public storefront first and keeps profile secondary from a slug", () => {
