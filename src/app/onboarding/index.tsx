@@ -4,15 +4,17 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useFacility } from "@/facility/FacilityProvider";
 import { useOnboarding } from "../../onboarding/useOnboarding";
+import { useAppTheme } from "@/theme/appTheme";
 
 function Splash() {
+  const { palette } = useAppTheme();
   return (
     <View
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#fff"
+        backgroundColor: palette.page
       }}
     >
       <ActivityIndicator size="large" />
