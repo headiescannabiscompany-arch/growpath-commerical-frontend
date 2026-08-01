@@ -1,7 +1,12 @@
+import fs from "fs";
+import path from "path";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import DewPointGuard from "@/app/home/personal/(tabs)/tools/dew-point-guard";
+import DewPointGuard, {
+  createDewPointGuardStyles
+} from "@/app/home/personal/(tabs)/tools/dew-point-guard";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockSaveToolRunAndOpenJournal = jest.fn(async () => ({
   ok: true,
@@ -128,6 +133,63 @@ describe("Dew Point Guard CSV flow", () => {
       isActive: true,
       config: { pulse: { deviceId: "pulse-1" } }
     });
+  });
+
+  it("themes every Dew Point Guard surface and input in Night and Day modes", () => {
+    const nightPalette = getThemePalette("night", "dark");
+    const dayPalette = getThemePalette("day", "light");
+    const nightStyles = createDewPointGuardStyles(nightPalette);
+    const dayStyles = createDewPointGuardStyles(dayPalette);
+
+    expect(nightStyles.screen.backgroundColor).toBe(nightPalette.page);
+    expect(nightStyles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: nightPalette.surface,
+        borderColor: nightPalette.border,
+        color: nightPalette.text
+      })
+    );
+    expect(nightStyles.panel).toEqual(
+      expect.objectContaining({
+        backgroundColor: nightPalette.surfaceMuted,
+        borderColor: nightPalette.border
+      })
+    );
+    expect(nightStyles.chip.backgroundColor).toBe(nightPalette.surface);
+    expect(nightStyles.chipActive.backgroundColor).toBe(nightPalette.accent);
+    expect(nightStyles.chipTextActive.color).toBe(nightPalette.accentText);
+    expect(nightStyles.primaryButton.backgroundColor).toBe(nightPalette.accent);
+    expect(nightStyles.primaryButtonText.color).toBe(nightPalette.accentText);
+    expect(nightStyles.secondaryButton.backgroundColor).toBe(nightPalette.surface);
+    expect(nightStyles.secondaryButtonText.color).toBe(nightPalette.link);
+    expect(nightStyles.selectCardActive.backgroundColor).toBe(nightPalette.accentSoft);
+    expect(nightStyles.summaryPanel.backgroundColor).toBe(nightPalette.surfaceMuted);
+    expect(nightStyles.successText.color).toBe(nightPalette.success);
+    expect(nightStyles.warningText.color).toBe(nightPalette.warning);
+    expect(nightStyles.errorText.color).toBe(nightPalette.danger);
+
+    expect(dayStyles.screen.backgroundColor).toBe(dayPalette.page);
+    expect(dayStyles.input.backgroundColor).toBe(dayPalette.surface);
+    expect(dayStyles.sectionTitle.color).toBe(dayPalette.text);
+    expect(dayStyles.mutedText.color).toBe(dayPalette.textMuted);
+    expect(dayStyles.primaryButton.backgroundColor).toBe(dayPalette.accent);
+  });
+
+  it("keeps every Dew Point Guard input and source color palette-aware", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/personal/(tabs)/tools/dew-point-guard.tsx"),
+      "utf8"
+    );
+    const inputs = source.match(/<TextInput\b/g) || [];
+
+    expect(inputs).toHaveLength(3);
+    expect(source.match(/placeholderTextColor={palette\.textMuted}/g) || []).toHaveLength(
+      inputs.length
+    );
+    expect(source.match(/selectionColor={palette\.accent}/g) || []).toHaveLength(
+      inputs.length
+    );
+    expect(source).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(|\b(?:white|black)\b/i);
   });
 
   it("parses pasted CSV, maps columns, ingests, and refreshes window", async () => {

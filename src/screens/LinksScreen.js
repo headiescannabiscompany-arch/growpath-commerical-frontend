@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { addLink, getLinks, removeLink, updateLink } from "../api/links.js";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
 function linkId(link, idx = 0) {
@@ -20,6 +21,8 @@ function linkId(link, idx = 0) {
 }
 
 export default function LinksScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createLinksStyles(palette), [palette]);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,7 +109,9 @@ export default function LinksScreen() {
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.header}>Links</Text>
-          <Text style={styles.subtitle}>Manage public links for the commercial profile.</Text>
+          <Text style={styles.subtitle}>
+            Manage public links for the commercial profile.
+          </Text>
         </View>
         <Pressable style={styles.button} onPress={openAddModal}>
           <Text style={styles.buttonText}>Add Link</Text>
@@ -117,7 +122,7 @@ export default function LinksScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading links...</Text>
         </View>
       ) : (
@@ -140,11 +145,14 @@ export default function LinksScreen() {
                 >
                   <Text style={styles.secondaryButtonText}>Open</Text>
                 </Pressable>
-                <Pressable style={styles.secondaryButton} onPress={() => openEditModal(item)}>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => openEditModal(item)}
+                >
                   <Text style={styles.secondaryButtonText}>Edit</Text>
                 </Pressable>
                 <Pressable style={styles.dangerButton} onPress={() => handleDelete(item)}>
-                  <Text style={styles.buttonText}>Remove</Text>
+                  <Text style={styles.dangerButtonText}>Remove</Text>
                 </Pressable>
               </View>
             </View>
@@ -164,14 +172,16 @@ export default function LinksScreen() {
             <TextInput
               style={styles.input}
               placeholder="Label"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={label}
               onChangeText={setLabel}
             />
             <TextInput
               style={styles.input}
               placeholder="URL, for example https://example.com"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={url}
               onChangeText={setUrl}
               autoCapitalize="none"
@@ -196,79 +206,95 @@ export default function LinksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { backgroundColor: "#fff", flex: 1, padding: 16 },
-  headerRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16
-  },
-  header: { color: "#111827", fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#64748B", marginTop: 4 },
-  error: {
-    backgroundColor: "#FEE2E2",
-    borderRadius: radius.card,
-    color: "#991B1B",
-    marginBottom: 10,
-    padding: 10
-  },
-  center: { alignItems: "center", gap: 8, padding: 32 },
-  meta: { color: "#64748B" },
-  empty: { color: "#64748B", paddingTop: 8 },
-  linkRow: {
-    alignItems: "center",
-    borderBottomColor: "#E2E8F0",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 12
-  },
-  linkText: { flex: 1 },
-  linkLabel: { color: "#111827", fontSize: 16, fontWeight: "800" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
-  button: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  secondaryButtonText: { color: "#334155", fontWeight: "800" },
-  dangerButton: {
-    backgroundColor: "#991B1B",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  modalOverlay: {
-    alignItems: "center",
-    backgroundColor: "rgba(15,23,42,0.5)",
-    flex: 1,
-    justifyContent: "center",
-    padding: 16
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    gap: 12,
-    padding: 16,
-    width: "100%",
-    maxWidth: 420
-  },
-  modalTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    padding: 10
-  },
-  modalActions: { flexDirection: "row", gap: 10, justifyContent: "flex-end" }
-});
+export const createLinksStyles = (palette) =>
+  StyleSheet.create({
+    container: { backgroundColor: palette.page, flex: 1, padding: 16 },
+    headerRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 16
+    },
+    header: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, marginTop: 4 },
+    error: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.danger,
+      marginBottom: 10,
+      padding: 10
+    },
+    center: { alignItems: "center", gap: 8, padding: 32 },
+    meta: { color: palette.textMuted },
+    empty: { color: palette.textMuted, paddingTop: 8 },
+    linkRow: {
+      alignItems: "center",
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      paddingVertical: 12
+    },
+    linkText: { flex: 1 },
+    linkLabel: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "flex-end"
+    },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    dangerButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    dangerButtonText: { color: palette.danger, fontWeight: "800" },
+    modalOverlay: {
+      alignItems: "center",
+      backgroundColor: palette.shadow,
+      flex: 1,
+      justifyContent: "center",
+      padding: 16
+    },
+    modalContent: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      maxWidth: 420,
+      padding: 16,
+      width: "100%"
+    },
+    modalTitle: { color: palette.text, fontSize: 20, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      padding: 10
+    },
+    modalActions: { flexDirection: "row", gap: 10, justifyContent: "flex-end" }
+  });

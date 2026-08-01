@@ -1,7 +1,9 @@
 import React from "react";
+import { ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import AnalyticsScreen from "@/screens/AnalyticsScreen";
+import AnalyticsScreen, { createAnalyticsStyles } from "@/screens/AnalyticsScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
@@ -10,6 +12,7 @@ const mockListPersonalTasks = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockUseEntitlements = jest.fn();
 const mockFetchPersonalAnalyticsOverview = jest.fn();
+let mockThemeMode = "night";
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args) => mockListPersonalGrows(...args)
@@ -39,9 +42,23 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockUseEntitlements()
 }));
 
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({
+      palette: actual.getThemePalette(
+        mockThemeMode,
+        mockThemeMode === "night" ? "dark" : "light"
+      )
+    })
+  };
+});
+
 describe("AnalyticsScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockThemeMode = "night";
     jest
       .spyOn(Date, "now")
       .mockReturnValue(new Date("2026-06-29T12:00:00.000Z").getTime());
@@ -138,6 +155,54 @@ describe("AnalyticsScreen", () => {
     expect(screen.getByText("Water plant")).toBeTruthy();
     expect(screen.getByText("No journal entry in the last 10 days.")).toBeTruthy();
   });
+
+  it.each(["day", "night"])(
+    "uses the active %s palette for analytics states and record cards",
+    async (mode) => {
+      mockThemeMode = mode;
+      const palette = getThemePalette(mode, mode === "night" ? "dark" : "light");
+      const styles = createAnalyticsStyles(palette);
+      const screen = render(<AnalyticsScreen />);
+
+      expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
+      await waitFor(() => expect(screen.getByText("Flower Room")).toBeTruthy());
+
+      expect(
+        StyleSheet.flatten(
+          screen.UNSAFE_getByType(ScrollView).props.contentContainerStyle
+        ).backgroundColor
+      ).toBe(palette.page);
+      expect(
+        StyleSheet.flatten(screen.getByText("Grow Analytics").props.style).color
+      ).toBe(palette.text);
+      expect(
+        StyleSheet.flatten(screen.getByLabelText("Active grows: 2").props.style)
+      ).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        })
+      );
+      expect(StyleSheet.flatten(styles.errorBox)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.danger
+        })
+      );
+      expect(StyleSheet.flatten(styles.warningBox)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surfaceMuted,
+          borderColor: palette.warning
+        })
+      );
+      expect(StyleSheet.flatten(styles.emptyNotice)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.accentSoft,
+          borderColor: palette.accent
+        })
+      );
+    }
+  );
 
   it("keeps record-backed analytics usable when the supplemental summary fails", async () => {
     mockFetchPersonalAnalyticsOverview.mockRejectedValueOnce(

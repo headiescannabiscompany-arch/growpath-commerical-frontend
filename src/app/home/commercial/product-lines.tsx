@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
+  TextInput as NativeTextInput,
+  type TextInputProps,
   View
 } from "react-native";
 import { Link } from "expo-router";
@@ -18,9 +19,21 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
+
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
 
 function idOf(item: AnyRec, index: number) {
   return String(item.id ?? item._id ?? `line-${index}`);
@@ -34,6 +47,8 @@ function splitList(value: string) {
 }
 
 export default function CommercialProductLinesRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialProductLinesStyles(palette), [palette]);
   const [lines, setLines] = useState<ProductLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -293,64 +308,79 @@ export default function CommercialProductLinesRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 8 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#475569", lineHeight: 21 },
-  headerActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  outlineButton: {
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  outlineText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  body: { color: "#475569", lineHeight: 20, marginTop: 8 },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(15,23,42,0.14)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: { minHeight: 82, textAlignVertical: "top" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingVertical: 12
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
-  muted: { color: "#64748B", fontWeight: "700" },
-  tags: { color: "#166534", fontSize: 12, fontWeight: "900", marginTop: 6 },
-  list: { gap: 10, marginTop: 10 },
-  lineRow: {
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  lineTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  bullets: { gap: 6, marginTop: 10 },
-  bullet: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19 },
-  feedback: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "900",
-    padding: 10
-  }
-});
+export function createCommercialProductLinesStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: { gap: 8 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textSoft, lineHeight: 21 },
+    headerActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 6
+    },
+    outlineButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    outlineText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    body: { color: palette.textSoft, lineHeight: 20, marginTop: 8 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: { minHeight: 82, textAlignVertical: "top" },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingVertical: 12
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
+    muted: { color: palette.textMuted, fontWeight: "700" },
+    tags: { color: palette.link, fontSize: 12, fontWeight: "900", marginTop: 6 },
+    list: { gap: 10, marginTop: 10 },
+    lineRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    lineTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    bullets: { gap: 6, marginTop: 10 },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.card,
+      color: palette.success,
+      fontWeight: "900",
+      padding: 10
+    }
+  });
+}

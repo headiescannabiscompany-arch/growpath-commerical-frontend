@@ -1,7 +1,15 @@
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput as NativeTextInput,
+  type TextInputProps,
+  View
+} from "react-native";
 
 import { Campaign, createCampaign, fetchCampaigns } from "@/api/campaigns";
 import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
@@ -9,6 +17,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import { radius } from "@/theme/theme";
 
@@ -52,7 +61,22 @@ const EMPTY_FORM: CampaignForm = {
   platformNotes: ""
 };
 
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialMarketingStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -120,6 +144,8 @@ function productLineId(line: ProductLine) {
 }
 
 export default function CommercialMarketingRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialMarketingStyles(palette), [palette]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<CampaignForm>(EMPTY_FORM);
@@ -620,237 +646,249 @@ export default function CommercialMarketingRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 16
-  },
-  headerText: {
-    gap: 6
-  },
-  kicker: {
-    color: "#5f6f5f",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#172317",
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: 0
-  },
-  subtitle: {
-    color: "#4b5a4b",
-    fontSize: 15,
-    lineHeight: 22,
-    maxWidth: 780
-  },
-  headerActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12
-  },
-  action: {
-    alignItems: "center",
-    borderColor: "#b9c8b9",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  selectedAction: { backgroundColor: "#e0f2df", borderColor: "#3f7f4f" },
-  actionText: {
-    color: "#1f4d2c",
-    fontSize: 14,
-    fontWeight: "700"
-  },
-  cardTitle: {
-    color: "#182618",
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  body: {
-    color: "#4b5a4b",
-    fontSize: 14,
-    lineHeight: 21
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 14
-  },
-  metric: {
-    borderColor: "#d6e1d5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 140,
-    padding: 12
-  },
-  metricValue: {
-    color: "#172317",
-    fontSize: 24,
-    fontWeight: "800"
-  },
-  metricLabel: {
-    color: "#5f6f5f",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 2
-  },
-  formGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12
-  },
-  input: {
-    borderColor: "#c8d6c7",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#172317",
-    flexBasis: 240,
-    flexGrow: 1,
-    fontSize: 14,
-    minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  lineSelector: {
-    borderColor: "#b9d7ba",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: 240,
-    flexGrow: 1,
-    minHeight: 44,
-    padding: 10
-  },
-  selectorLabel: {
-    color: "#1f4d2c",
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase"
-  },
-  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  textArea: {
-    minHeight: 88,
-    textAlignVertical: "top"
-  },
-  submit: {
-    alignItems: "center",
-    backgroundColor: "#1f4d2c",
-    borderRadius: radius.card,
-    marginTop: 14,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12
-  },
-  submitDisabled: {
-    opacity: 0.55
-  },
-  creativeTools: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12
-  },
-  uploadButton: {
-    alignItems: "center",
-    borderColor: "#b9c8b9",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  uploadButtonText: { color: "#1f4d2c", fontSize: 14, fontWeight: "800" },
-  clearButton: {
-    alignItems: "center",
-    borderColor: "#e2c4c4",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  clearButtonText: { color: "#8a2d2d", fontSize: 14, fontWeight: "800" },
-  creativePreview: {
-    width: "100%",
-    maxWidth: 520,
-    aspectRatio: 16 / 7,
-    borderRadius: radius.card,
-    marginTop: 12,
-    backgroundColor: "#edf5ec"
-  },
-  submitText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  muted: {
-    color: "#6b7a6b",
-    fontSize: 13,
-    marginTop: 10
-  },
-  list: {
-    gap: 10
-  },
-  row: {
-    borderColor: "#d6e1d5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    padding: 12
-  },
-  rowImage: {
-    width: 128,
-    height: 82,
-    borderRadius: radius.card,
-    backgroundColor: "#edf5ec"
-  },
-  rowMain: {
-    flex: 1,
-    gap: 4
-  },
-  rowTitle: {
-    color: "#172317",
-    fontSize: 15,
-    fontWeight: "800"
-  },
-  rowBody: {
-    color: "#4b5a4b",
-    fontSize: 13,
-    lineHeight: 19
-  },
-  rowMeta: {
-    color: "#6b7a6b",
-    fontSize: 12,
-    lineHeight: 18
-  },
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#edf5ec",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  badgeText: {
-    color: "#1f4d2c",
-    fontSize: 12,
-    fontWeight: "800"
-  }
-});
+export function createCommercialMarketingStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      gap: 16
+    },
+    headerText: {
+      gap: 6
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0,
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "800",
+      letterSpacing: 0
+    },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      maxWidth: 780
+    },
+    headerActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12
+    },
+    action: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    selectedAction: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 14,
+      fontWeight: "700"
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    body: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 21
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 14
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 140,
+      padding: 12
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 24,
+      fontWeight: "800"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 2
+    },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexBasis: 240,
+      flexGrow: 1,
+      fontSize: 14,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    lineSelector: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: 240,
+      flexGrow: 1,
+      minHeight: 44,
+      padding: 10
+    },
+    selectorLabel: {
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "800",
+      textTransform: "uppercase"
+    },
+    selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    textArea: {
+      minHeight: 88,
+      textAlignVertical: "top"
+    },
+    submit: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 14,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 12
+    },
+    submitDisabled: {
+      opacity: 0.55
+    },
+    creativeTools: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12
+    },
+    uploadButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    uploadButtonText: { color: palette.link, fontSize: 14, fontWeight: "800" },
+    clearButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    clearButtonText: { color: palette.danger, fontSize: 14, fontWeight: "800" },
+    creativePreview: {
+      width: "100%",
+      maxWidth: 520,
+      aspectRatio: 16 / 7,
+      borderRadius: radius.card,
+      marginTop: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    submitText: {
+      color: palette.accentText,
+      fontSize: 14,
+      fontWeight: "800"
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 10
+    },
+    list: {
+      gap: 10
+    },
+    row: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      padding: 12
+    },
+    rowImage: {
+      width: 128,
+      height: 82,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    rowMain: {
+      flex: 1,
+      gap: 4
+    },
+    rowTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "800"
+    },
+    rowBody: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19
+    },
+    rowMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18
+    },
+    badge: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    badgeText: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "800"
+    }
+  });
+}

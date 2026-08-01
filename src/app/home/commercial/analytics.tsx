@@ -10,6 +10,7 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function valueOf(metrics: CommercialAnalyticsOverview, keys: string[]) {
@@ -37,6 +38,9 @@ function MetricCard({
   value: number;
   helper: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialAnalyticsStyles(palette), [palette]);
+
   return (
     <View
       accessible
@@ -59,6 +63,9 @@ function BreakdownList({
   rows: CommercialAnalyticsBreakdownRow[];
   emptyText: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialAnalyticsStyles(palette), [palette]);
+
   return (
     <View style={styles.breakdownBox}>
       <Text accessibilityRole="header" aria-level={2} style={styles.breakdownTitle}>
@@ -90,6 +97,9 @@ function BreakdownList({
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialAnalyticsStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="link" style={styles.outlineButton}>
@@ -113,6 +123,8 @@ function formatCurrency(cents: number, currency: string) {
 }
 
 export default function CommercialAnalyticsRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialAnalyticsStyles(palette), [palette]);
   const [metrics, setMetrics] = useState<CommercialAnalyticsOverview>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
@@ -202,7 +214,7 @@ export default function CommercialAnalyticsRoute() {
             onPress={() => void load()}
             style={[styles.refreshButton, loading && styles.disabledButton]}
           >
-            {loading ? <ActivityIndicator color="#166534" /> : null}
+            {loading ? <ActivityIndicator color={palette.accent} /> : null}
             <Text style={styles.refreshText}>{loading ? "Loading" : "Refresh"}</Text>
           </Pressable>
         </View>
@@ -442,96 +454,110 @@ export default function CommercialAnalyticsRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 8 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#475569", lineHeight: 21 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  outlineButton: {
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  outlineText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  refreshButton: {
-    alignItems: "center",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 6,
-    minHeight: 36,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  refreshText: { color: "#166534", fontSize: 12, fontWeight: "900" },
-  disabledButton: { opacity: 0.65 },
-  emptyNotice: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 12,
-    padding: 12
-  },
-  emptyNoticeTitle: { color: "#166534", fontSize: 14, fontWeight: "900" },
-  emptyNoticeBody: { color: "#365E3D", fontSize: 13, lineHeight: 19, marginTop: 4 },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  body: { color: "#475569", lineHeight: 20, marginTop: 8 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
-  metricCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "23%",
-    flexGrow: 1,
-    minWidth: 160,
-    padding: 12
-  },
-  metricLabel: { color: "#475569", fontSize: 12, fontWeight: "900" },
-  metricValue: { color: "#0F172A", fontSize: 24, fontWeight: "900", marginTop: 4 },
-  metricHelper: { color: "#64748B", fontSize: 12, lineHeight: 17, marginTop: 4 },
-  breakdownGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
-  breakdownBox: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "48%",
-    flexGrow: 1,
-    minWidth: 240,
-    padding: 12
-  },
-  breakdownTitle: { color: "#0F172A", fontSize: 13, fontWeight: "900" },
-  breakdownRow: {
-    alignItems: "center",
-    borderTopColor: "rgba(15,23,42,0.08)",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    marginTop: 8,
-    paddingTop: 8
-  },
-  breakdownCopy: { flex: 1, minWidth: 0 },
-  breakdownLabel: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  breakdownMeta: { color: "#64748B", fontSize: 11, marginTop: 2 },
-  breakdownCount: { color: "#166534", fontSize: 15, fontWeight: "900" },
-  emptyBreakdown: { color: "#64748B", fontSize: 12, marginTop: 8 },
-  bullets: { gap: 6, marginTop: 10 },
-  bullet: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19 }
-});
+export function createCommercialAnalyticsStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: { gap: 8 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textSoft, lineHeight: 21 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    outlineButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    outlineText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    refreshButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 6,
+      minHeight: 36,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    refreshText: { color: palette.link, fontSize: 12, fontWeight: "900" },
+    disabledButton: { opacity: 0.65 },
+    emptyNotice: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 12
+    },
+    emptyNoticeTitle: { color: palette.success, fontSize: 14, fontWeight: "900" },
+    emptyNoticeBody: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 4
+    },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    body: { color: palette.textSoft, lineHeight: 20, marginTop: 8 },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+    metricCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "23%",
+      flexGrow: 1,
+      minWidth: 160,
+      padding: 12
+    },
+    metricLabel: { color: palette.textSoft, fontSize: 12, fontWeight: "900" },
+    metricValue: { color: palette.text, fontSize: 24, fontWeight: "900", marginTop: 4 },
+    metricHelper: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 4
+    },
+    breakdownGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+    breakdownBox: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "48%",
+      flexGrow: 1,
+      minWidth: 240,
+      padding: 12
+    },
+    breakdownTitle: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    breakdownRow: {
+      alignItems: "center",
+      borderTopColor: palette.borderSoft,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between",
+      marginTop: 8,
+      paddingTop: 8
+    },
+    breakdownCopy: { flex: 1, minWidth: 0 },
+    breakdownLabel: { color: palette.textSoft, fontSize: 13, fontWeight: "800" },
+    breakdownMeta: { color: palette.textMuted, fontSize: 11, marginTop: 2 },
+    breakdownCount: { color: palette.link, fontSize: 15, fontWeight: "900" },
+    emptyBreakdown: { color: palette.textMuted, fontSize: 12, marginTop: 8 },
+    bullets: { gap: 6, marginTop: 10 },
+    bullet: { color: palette.textSoft, fontSize: 13, fontWeight: "700", lineHeight: 19 }
+  });
+}

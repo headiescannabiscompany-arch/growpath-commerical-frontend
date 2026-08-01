@@ -1,11 +1,19 @@
 import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput as NativeTextInput,
+  type TextInputProps,
+  View
+} from "react-native";
 
 import { createPost, getLatestPosts } from "@/api/forum";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SupportForm = {
@@ -49,6 +57,17 @@ const EMPTY_FORM: SupportForm = {
   tags: "support"
 };
 
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
+
 function splitTags(value: string) {
   return value
     .split(",")
@@ -82,6 +101,9 @@ function postStorefrontSlug(post: BrandForumPost) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialCommunityStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -131,6 +153,8 @@ function postActionLinks(post: BrandForumPost) {
 }
 
 export default function CommercialCommunityRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialCommunityStyles(palette), [palette]);
   const [posts, setPosts] = useState<BrandForumPost[]>([]);
   const [form, setForm] = useState<SupportForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
@@ -430,169 +454,174 @@ export default function CommercialCommunityRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    justifyContent: "space-between"
-  },
-  headerText: {
-    flex: 1,
-    minWidth: 260
-  },
-  headerActions: {
-    alignContent: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    maxWidth: 440
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  subtitle: {
-    color: "#475569",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 6
-  },
-  cardTitle: {
-    color: "#0F172A",
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  body: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 150,
-    padding: 9
-  },
-  metricValue: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  metricLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    marginTop: 2
-  },
-  formGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 8
-  },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flexGrow: 1,
-    fontSize: 14,
-    minWidth: 220,
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    marginTop: 8
-  },
-  textArea: {
-    minHeight: 96,
-    textAlignVertical: "top"
-  },
-  primaryAction: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryActionText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  disabled: {
-    opacity: 0.5
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  list: {
-    gap: 10,
-    marginTop: 12
-  },
-  postRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  postTitle: {
-    color: "#0F172A",
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  postBody: {
-    color: "#475569",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  postMeta: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 6
-  },
-  bullet: {
-    color: "#334155",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  muted: {
-    color: "#64748B",
-    fontSize: 13,
-    marginTop: 10
-  }
-});
+export function createCommercialCommunityStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      justifyContent: "space-between"
+    },
+    headerText: {
+      flex: 1,
+      minWidth: 260
+    },
+    headerActions: {
+      alignContent: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      maxWidth: 440
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 6
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "900"
+    },
+    body: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 8
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 150,
+      padding: 9
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginTop: 2
+    },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 8
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexGrow: 1,
+      fontSize: 14,
+      minWidth: 220,
+      paddingHorizontal: 10,
+      paddingVertical: 9,
+      marginTop: 8
+    },
+    textArea: {
+      minHeight: 96,
+      textAlignVertical: "top"
+    },
+    primaryAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryActionText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    disabled: {
+      opacity: 0.5
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    list: {
+      gap: 10,
+      marginTop: 12
+    },
+    postRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    postTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "900"
+    },
+    postBody: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    postMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 6
+    },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 10
+    }
+  });
+}

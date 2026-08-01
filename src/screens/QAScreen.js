@@ -2,10 +2,13 @@ import React, { useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 import { personalToolFeatures } from "../config/featureStatus";
 import { useEntitlements } from "../entitlements";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
 export default function QAScreen() {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createQAStyles(palette), [palette]);
   const diagnostics = useMemo(
     () => [
       ["Entitlements ready", entitlements.ready ? "Yes" : "No"],
@@ -69,93 +72,97 @@ export default function QAScreen() {
   );
 }
 
-const shadow = Platform.select({
-  web: { boxShadow: "0px 2px 4px rgba(15, 23, 42, 0.06)" },
-  default: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1
-  }
-});
+export const createQAStyles = (palette) => {
+  const shadow = Platform.select({
+    web: { boxShadow: `0px 2px 4px ${palette.shadow}` },
+    default: {
+      elevation: 1,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 2
+    }
+  });
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    backgroundColor: "#F9FAFB"
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1D4ED8",
-    marginBottom: 8
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#444",
-    marginBottom: 16
-  },
-  section: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 16,
-    marginBottom: 16,
-    ...shadow
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1D4ED8",
-    marginBottom: 10
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB"
-  },
-  rowLabel: {
-    color: "#374151",
-    fontWeight: "700"
-  },
-  rowValue: {
-    color: "#111827",
-    flexShrink: 1,
-    fontWeight: "800",
-    textAlign: "right"
-  },
-  capability: {
-    color: "#111827",
-    fontWeight: "700",
-    paddingVertical: 4
-  },
-  muted: {
-    color: "#64748B"
-  },
-  featureRow: {
-    alignItems: "flex-start",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    paddingVertical: 10
-  },
-  featureTitle: {
-    color: "#111827",
-    fontWeight: "800"
-  },
-  featureDescription: {
-    color: "#64748B",
-    marginTop: 3,
-    maxWidth: 520
-  },
-  status: {
-    color: "#1D4ED8",
-    fontWeight: "800",
-    textTransform: "capitalize"
-  }
-});
+  return StyleSheet.create({
+    container: {
+      backgroundColor: palette.page,
+      padding: 24
+    },
+    title: {
+      color: palette.link,
+      fontSize: 28,
+      fontWeight: "bold",
+      marginBottom: 8
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 16,
+      marginBottom: 16
+    },
+    section: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 16,
+      padding: 16,
+      ...shadow
+    },
+    sectionTitle: {
+      color: palette.link,
+      fontSize: 18,
+      fontWeight: "bold",
+      marginBottom: 10
+    },
+    row: {
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      paddingVertical: 8
+    },
+    rowLabel: {
+      color: palette.textSoft,
+      fontWeight: "700"
+    },
+    rowValue: {
+      color: palette.text,
+      flexShrink: 1,
+      fontWeight: "800",
+      textAlign: "right"
+    },
+    capability: {
+      color: palette.text,
+      fontWeight: "700",
+      paddingVertical: 4
+    },
+    muted: {
+      color: palette.textMuted
+    },
+    featureRow: {
+      alignItems: "flex-start",
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      paddingVertical: 10
+    },
+    featureTitle: {
+      color: palette.text,
+      fontWeight: "800"
+    },
+    featureDescription: {
+      color: palette.textMuted,
+      marginTop: 3,
+      maxWidth: 520
+    },
+    status: {
+      color: palette.link,
+      fontWeight: "800",
+      textTransform: "capitalize"
+    }
+  });
+};

@@ -15,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -26,7 +27,11 @@ function getId(params: Record<string, any>): string {
   return String(raw ?? "");
 }
 
-function renderKV(obj: AnyRec | null, key: string) {
+function renderKV(
+  obj: AnyRec | null,
+  key: string,
+  styles: ReturnType<typeof createCommercialAlertDetailStyles>
+) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
@@ -137,6 +142,8 @@ function alertSourcePath(item: AnyRec | null) {
 }
 
 export default function CommercialAlertDetailRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialAlertDetailStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = getId(params as any);
@@ -237,10 +244,14 @@ export default function CommercialAlertDetailRoute() {
   return (
     <ScreenBoundary title="Alert" showBack backFallbackHref="/home/alerts">
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
             refreshing={refreshing}
+            tintColor={palette.accent}
             onRefresh={() => load({ refresh: true })}
           />
         }
@@ -255,7 +266,7 @@ export default function CommercialAlertDetailRoute() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading alert...</Text>
           </View>
         ) : null}
@@ -294,7 +305,9 @@ export default function CommercialAlertDetailRoute() {
 
         <View style={styles.card}>
           {item ? (
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            <View style={styles.kvWrap}>
+              {keys.map((k) => renderKV(item, k, styles))}
+            </View>
           ) : (
             <Text style={styles.muted}>
               {id ? "No alert returned." : "Missing alert id in route params."}
@@ -306,64 +319,77 @@ export default function CommercialAlertDetailRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  headerRow: { gap: 4 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  muted: { opacity: 0.7 },
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white"
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 },
-  cardText: { color: "#334155", lineHeight: 20, marginBottom: 10 },
-  feedback: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    color: "#047857",
-    fontWeight: "800",
-    padding: 10
-  },
-  metaRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
-  badge: {
-    backgroundColor: "#EEF2FF",
-    borderRadius: 999,
-    color: "#3730A3",
-    fontSize: 12,
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    textTransform: "uppercase"
-  },
-  primaryBtn: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  primaryText: { color: "white", fontWeight: "900" },
-  secondaryBtn: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  kvWrap: { marginTop: 6 },
-  kv: { gap: 4, marginBottom: 10 },
-  k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 }
-});
+export function createCommercialAlertDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    scroll: { backgroundColor: palette.page },
+    container: { backgroundColor: palette.page, padding: 16, gap: 12 },
+    headerRow: { gap: 4 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    muted: { color: palette.textMuted },
+    loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.card
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 6
+    },
+    cardText: { color: palette.textSoft, lineHeight: 20, marginBottom: 10 },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      color: palette.success,
+      fontWeight: "800",
+      padding: 10
+    },
+    metaRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: 8
+    },
+    badge: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      textTransform: "uppercase"
+    },
+    primaryBtn: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondaryBtn: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    secondaryText: { color: palette.link, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    kvWrap: { marginTop: 6 },
+    kv: { gap: 4, marginBottom: 10 },
+    k: { color: palette.textMuted, fontSize: 12 },
+    v: { color: palette.text, fontSize: 14 }
+  });
+}

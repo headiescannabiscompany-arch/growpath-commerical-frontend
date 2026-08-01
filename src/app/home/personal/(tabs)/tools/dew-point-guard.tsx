@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text as NativeText,
+  TextInput,
+  View,
+  type TextProps
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,7 +47,13 @@ import {
   suggestedTelemetryMapping
 } from "@/features/personal/tools/dewPointGuard/engine";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+
+function Text({ style, ...props }: TextProps) {
+  const { palette } = useAppTheme();
+  return <NativeText {...props} style={[{ color: palette.text }, style]} />;
+}
 
 function asString(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
@@ -93,24 +108,20 @@ function Field(props: {
   keyboardType?: "default" | "numeric";
   testID?: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
   return (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={{ fontSize: 14, fontWeight: "600", marginBottom: 6 }}>
-        {props.label}
-      </Text>
+    <View style={styles.field}>
+      <Text style={styles.fieldLabel}>{props.label}</Text>
       <TextInput
         testID={props.testID}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
+        placeholderTextColor={palette.textMuted}
+        selectionColor={palette.accent}
         keyboardType={props.keyboardType ?? "numeric"}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ddd",
-          borderRadius: radius.card,
-          paddingHorizontal: 12,
-          paddingVertical: 10
-        }}
+        style={styles.input}
       />
     </View>
   );
@@ -127,22 +138,15 @@ function Chip({
   onPress: () => void;
   testID?: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
   return (
     <Pressable
       testID={testID}
       onPress={onPress}
-      style={{
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor: active ? "#111" : "#ddd",
-        backgroundColor: active ? "#111" : "transparent",
-        marginRight: 8,
-        marginBottom: 8
-      }}
+      style={[styles.chip, active && styles.chipActive]}
     >
-      <Text style={{ color: active ? "white" : "#111", fontWeight: "700" }}>{label}</Text>
+      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     </Pressable>
   );
 }
@@ -196,6 +200,8 @@ export default function DewPointGuardTool({
 }: {
   historyImportMode?: boolean;
 } = {}) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams();
   const growId = asString(params.growId);
@@ -1172,7 +1178,7 @@ export default function DewPointGuardTool({
   const resultNeedsSource = mode === "source" && !selectedSourceId;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 28 }}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {!historyImportMode ? (
         <PersonalFeedPlacement
           placement="top"
@@ -1180,10 +1186,10 @@ export default function DewPointGuardTool({
           longContent
         />
       ) : null}
-      <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 6 }}>
+      <Text style={styles.title}>
         {historyImportMode ? "Import controller and grow history" : "Dew Point Guard"}
       </Text>
-      <Text style={{ marginBottom: 16, color: "#444" }}>
+      <Text style={styles.subtitle}>
         {historyImportMode
           ? "Preview and map an exported controller CSV, then save duplicate-safe environment readings to this grow. Manufacturer passwords are never required."
           : "Manual estimate default; telemetry-backed window analysis available (source creation + manual ingest included)."}
@@ -1199,7 +1205,7 @@ export default function DewPointGuardTool({
 
       {!historyImportMode ? (
         <>
-          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Data mode</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Data mode</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
             <Chip
               testID="dpg-mode-manual"
@@ -1219,84 +1225,79 @@ export default function DewPointGuardTool({
 
       {mode === "source" ? (
         <View
-          style={{
-            marginBottom: 16,
-            padding: 12,
-            borderWidth: 1,
-            borderColor: "#eee",
-            borderRadius: radius.card
-          }}
+          style={[
+            styles.panel,
+            {
+              marginBottom: 16,
+              padding: 12
+            }
+          ]}
         >
-          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Telemetry source</Text>
-          <Text style={{ color: "#444", marginBottom: 5 }}>Grow timezone</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Telemetry source</Text>
+          <Text style={[styles.mutedText, { marginBottom: 5 }]}>Grow timezone</Text>
           <TextInput
             testID="dpg-source-timezone"
             value={sourceTimezone}
             onChangeText={setSourceTimezone}
             autoCapitalize="none"
             placeholder="America/New_York"
-            style={{
-              borderWidth: 1,
-              borderColor: "#ddd",
-              borderRadius: radius.card,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              marginBottom: 10
-            }}
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+            style={[styles.input, { marginBottom: 10 }]}
           />
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
             <Pressable
               testID="dpg-load-sources"
               onPress={loadSources}
               disabled={loadingSources}
-              style={{
-                opacity: loadingSources ? 0.6 : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginRight: 8,
-                marginBottom: 8
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: loadingSources ? 0.6 : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginRight: 8,
+                  marginBottom: 8
+                }
+              ]}
             >
-              <Text style={{ fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {loadingSources ? "Loading..." : "Load Sources"}
               </Text>
             </Pressable>
             <Pressable
               onPress={() => createSourceInline("manual")}
               disabled={creatingSource}
-              style={{
-                opacity: creatingSource ? 0.6 : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginRight: 8,
-                marginBottom: 8
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: creatingSource ? 0.6 : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginRight: 8,
+                  marginBottom: 8
+                }
+              ]}
             >
-              <Text style={{ fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {creatingSource ? "Creating..." : "Create Manual Source"}
               </Text>
             </Pressable>
             <Pressable
               onPress={() => createSourceInline("upload")}
               disabled={creatingSource}
-              style={{
-                opacity: creatingSource ? 0.6 : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginRight: 8,
-                marginBottom: 8
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: creatingSource ? 0.6 : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginRight: 8,
+                  marginBottom: 8
+                }
+              ]}
             >
-              <Text style={{ fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {creatingSource ? "Creating..." : "Create Upload Source"}
               </Text>
             </Pressable>
@@ -1308,22 +1309,22 @@ export default function DewPointGuardTool({
                 !selectedPulseDeviceId ||
                 !String(pulseApiKey || "").trim()
               }
-              style={{
-                opacity:
-                  creatingSource ||
-                  !selectedPulseDeviceId ||
-                  !String(pulseApiKey || "").trim()
-                    ? 0.6
-                    : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginBottom: 8
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity:
+                    creatingSource ||
+                    !selectedPulseDeviceId ||
+                    !String(pulseApiKey || "").trim()
+                      ? 0.6
+                      : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginBottom: 8
+                }
+              ]}
             >
-              <Text style={{ fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {creatingSource ? "Creating..." : "Create Pulse Source"}
               </Text>
             </Pressable>
@@ -1341,18 +1342,18 @@ export default function DewPointGuardTool({
               testID="dpg-pulse-verify-devices"
               onPress={verifyPulseAndLoadDevices}
               disabled={verifyingPulse || loadingPulseDevices}
-              style={{
-                opacity: verifyingPulse || loadingPulseDevices ? 0.6 : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginBottom: 8,
-                alignItems: "center"
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: verifyingPulse || loadingPulseDevices ? 0.6 : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginBottom: 8,
+                  alignItems: "center"
+                }
+              ]}
             >
-              <Text style={{ fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {verifyingPulse
                   ? "Verifying..."
                   : loadingPulseDevices
@@ -1366,17 +1367,14 @@ export default function DewPointGuardTool({
                     testID={`dpg-pulse-device-${String(d.id)}`}
                     key={String(d.id)}
                     onPress={() => setSelectedPulseDeviceId(String(d.id))}
-                    style={{
-                      padding: 10,
-                      borderRadius: radius.card,
-                      borderWidth: 1,
-                      borderColor:
-                        String(d.id) === selectedPulseDeviceId ? "#111" : "#ddd",
-                      marginBottom: 8
-                    }}
+                    style={[
+                      styles.selectCard,
+                      String(d.id) === selectedPulseDeviceId && styles.selectCardActive,
+                      { padding: 10, marginBottom: 8 }
+                    ]}
                   >
-                    <Text style={{ fontWeight: "800" }}>{d.name || String(d.id)}</Text>
-                    <Text style={{ color: "#444" }}>
+                    <Text style={styles.sectionTitle}>{d.name || String(d.id)}</Text>
+                    <Text style={styles.mutedText}>
                       {d.model || "Pulse device"} {String(d.id)}
                     </Text>
                   </Pressable>
@@ -1390,70 +1388,66 @@ export default function DewPointGuardTool({
                 testID={`dpg-source-${s.id}`}
                 key={s.id}
                 onPress={() => setSelectedSourceId(s.id)}
-                style={{
-                  padding: 10,
-                  borderRadius: radius.card,
-                  borderWidth: 1,
-                  borderColor: s.id === selectedSourceId ? "#111" : "#ddd",
-                  marginBottom: 8
-                }}
+                style={[
+                  styles.selectCard,
+                  s.id === selectedSourceId && styles.selectCardActive,
+                  { padding: 10, marginBottom: 8 }
+                ]}
               >
-                <Text style={{ fontWeight: "800" }}>{s.name || s.id}</Text>
-                <Text style={{ color: "#444" }}>
+                <Text style={styles.sectionTitle}>{s.name || s.id}</Text>
+                <Text style={styles.mutedText}>
                   {s.type} {s.timezone}
                 </Text>
               </Pressable>
             ))
           ) : (
-            <Text style={{ color: "#444", marginBottom: 10 }}>
+            <Text style={[styles.mutedText, { marginBottom: 10 }]}>
               No sources loaded yet. Create one before using telemetry mode.
             </Text>
           )}
 
           <View
-            style={{
-              marginTop: 8,
-              marginBottom: 10,
-              paddingTop: 8,
-              borderTopWidth: 1,
-              borderTopColor: "#eee"
-            }}
+            style={[
+              styles.separator,
+              {
+                marginTop: 8,
+                marginBottom: 10,
+                paddingTop: 8,
+                borderTopWidth: 1
+              }
+            ]}
           >
-            <Text style={{ fontWeight: "800", marginBottom: 8 }}>
+            <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>
               CSV upload / paste (ingest)
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
               <Pressable
                 onPress={pickCsvFile}
                 disabled={parsingCsv}
-                style={{
-                  opacity: parsingCsv ? 0.6 : 1,
-                  borderWidth: 1,
-                  borderColor: "#ddd",
-                  borderRadius: radius.card,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginRight: 8,
-                  marginBottom: 8
-                }}
+                style={[
+                  styles.secondaryButton,
+                  {
+                    opacity: parsingCsv ? 0.6 : 1,
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    marginRight: 8,
+                    marginBottom: 8
+                  }
+                ]}
               >
-                <Text style={{ fontWeight: "800" }}>
+                <Text style={styles.secondaryButtonText}>
                   {parsingCsv ? "Loading CSV..." : "Pick CSV File"}
                 </Text>
               </Pressable>
               <Pressable
                 testID="dpg-csv-parse"
                 onPress={parsePastedCsv}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ddd",
-                  borderRadius: radius.card,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginBottom: 8
-                }}
+                style={[
+                  styles.secondaryButton,
+                  { paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8 }
+                ]}
               >
-                <Text style={{ fontWeight: "800" }}>Parse Pasted CSV</Text>
+                <Text style={styles.secondaryButtonText}>Parse Pasted CSV</Text>
               </Pressable>
             </View>
             <TextInput
@@ -1461,23 +1455,17 @@ export default function DewPointGuardTool({
               value={csvText}
               onChangeText={setCsvText}
               placeholder={"timestamp,temp,rh\n2026-02-27T03:00:00.000Z,70.2,58"}
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               multiline
-              style={{
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                minHeight: 90,
-                marginBottom: 8
-              }}
+              style={[styles.input, styles.multilineInput]}
             />
             {csvHeaders.length ? (
               <View style={{ marginBottom: 10 }}>
                 {csvImportSummary ? (
                   <Text
                     testID="dpg-csv-import-summary"
-                    style={{ color: "#166534", fontWeight: "800", marginBottom: 6 }}
+                    style={[styles.successText, { fontWeight: "800", marginBottom: 6 }]}
                   >
                     {csvImportSummary}
                   </Text>
@@ -1486,7 +1474,7 @@ export default function DewPointGuardTool({
                   <Text
                     key={warning}
                     testID="dpg-csv-warning"
-                    style={{ color: "#92400e", lineHeight: 19, marginBottom: 6 }}
+                    style={[styles.warningText, { lineHeight: 19, marginBottom: 6 }]}
                   >
                     {warning}
                   </Text>
@@ -1496,16 +1484,17 @@ export default function DewPointGuardTool({
                     testID="dpg-create-source-from-csv"
                     disabled={creatingSource}
                     onPress={() => void createSourceInline("upload")}
-                    style={{
-                      alignItems: "center",
-                      backgroundColor: "#166534",
-                      borderRadius: radius.card,
-                      marginBottom: 10,
-                      opacity: creatingSource ? 0.6 : 1,
-                      paddingVertical: 11
-                    }}
+                    style={[
+                      styles.primaryButton,
+                      {
+                        alignItems: "center",
+                        marginBottom: 10,
+                        opacity: creatingSource ? 0.6 : 1,
+                        paddingVertical: 11
+                      }
+                    ]}
                   >
-                    <Text style={{ color: "white", fontWeight: "900" }}>
+                    <Text style={[styles.primaryButtonText, { fontWeight: "900" }]}>
                       {creatingSource
                         ? "Creating history source..."
                         : "Create source from this export"}
@@ -1566,7 +1555,7 @@ export default function DewPointGuardTool({
                     onPress={() => setCsvTempUnit("C")}
                   />
                 </View>
-                <Text style={{ color: "#444", marginBottom: 8 }}>
+                <Text style={[styles.mutedText, { marginBottom: 8 }]}>
                   Parsed rows:{" "}
                   <Text testID="dpg-csv-preview-count" style={{ fontWeight: "800" }}>
                     {csvRows.length}
@@ -1618,7 +1607,10 @@ export default function DewPointGuardTool({
                     {csvPreviewRows.map((r, idx) => (
                       <Text
                         key={`preview-${idx}`}
-                        style={{ color: r.valid ? "#444" : "#b00020", marginBottom: 2 }}
+                        style={[
+                          r.valid ? styles.mutedText : styles.errorText,
+                          { marginBottom: 2 }
+                        ]}
                       >
                         {r.ts} | {r.temp}
                         {csvTempUnit} | {r.rh}% {r.valid ? "" : "(invalid)"}
@@ -1630,53 +1622,57 @@ export default function DewPointGuardTool({
                   testID="dpg-csv-ingest"
                   onPress={ingestCsvRows}
                   disabled={ingesting || !csvRows.length}
-                  style={{
-                    opacity: ingesting || !csvRows.length ? 0.6 : 1,
-                    backgroundColor: "#111",
-                    borderRadius: radius.card,
-                    paddingVertical: 12,
-                    alignItems: "center"
-                  }}
+                  style={[
+                    styles.primaryButton,
+                    {
+                      opacity: ingesting || !csvRows.length ? 0.6 : 1,
+                      paddingVertical: 12,
+                      alignItems: "center"
+                    }
+                  ]}
                 >
-                  <Text style={{ color: "white", fontWeight: "800" }}>
+                  <Text style={styles.primaryButtonText}>
                     {ingesting ? "Ingesting..." : "Ingest CSV Rows"}
                   </Text>
                 </Pressable>
                 {csvLimitNotice ? (
-                  <Text style={{ color: "#444", marginTop: 6 }}>{csvLimitNotice}</Text>
+                  <Text style={[styles.mutedText, { marginTop: 6 }]}>
+                    {csvLimitNotice}
+                  </Text>
                 ) : null}
               </View>
             ) : null}
 
-            <Text style={{ fontWeight: "800", marginBottom: 8 }}>
+            <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>
               Manual readings (ingest)
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
               <Pressable
                 onPress={() => setReadingTs(new Date().toISOString())}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ddd",
-                  borderRadius: radius.card,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginRight: 8,
-                  marginBottom: 8
-                }}
+                style={[
+                  styles.secondaryButton,
+                  {
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    marginRight: 8,
+                    marginBottom: 8
+                  }
+                ]}
               >
-                <Text style={{ fontWeight: "800" }}>Now</Text>
+                <Text style={styles.secondaryButtonText}>Now</Text>
               </Pressable>
               <Pressable
                 onPress={addReadingToQueue}
-                style={{
-                  backgroundColor: "#111",
-                  borderRadius: radius.card,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginBottom: 8
-                }}
+                style={[
+                  styles.primaryButton,
+                  {
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    marginBottom: 8
+                  }
+                ]}
               >
-                <Text style={{ color: "white", fontWeight: "800" }}>Add reading</Text>
+                <Text style={styles.primaryButtonText}>Add reading</Text>
               </Pressable>
             </View>
             <CalendarDateField
@@ -1704,7 +1700,7 @@ export default function DewPointGuardTool({
                     marginBottom: 6
                   }}
                 >
-                  <Text style={{ color: "#444" }}>
+                  <Text style={styles.mutedText}>
                     {r.ts} {r.tempF}F {r.rh}%
                   </Text>
                   <Pressable
@@ -1713,38 +1709,39 @@ export default function DewPointGuardTool({
                     }
                     style={{ paddingHorizontal: 10, paddingVertical: 6 }}
                   >
-                    <Text style={{ fontWeight: "800" }}>Remove</Text>
+                    <Text style={styles.secondaryButtonText}>Remove</Text>
                   </Pressable>
                 </View>
               ))
             ) : (
-              <Text style={{ color: "#444", marginBottom: 10 }}>
+              <Text style={[styles.mutedText, { marginBottom: 10 }]}>
                 No queued readings yet.
               </Text>
             )}
             <Pressable
               onPress={ingestQueuedReadings}
               disabled={ingesting || !pendingReadings.length}
-              style={{
-                opacity: ingesting || !pendingReadings.length ? 0.6 : 1,
-                backgroundColor: "#111",
-                borderRadius: radius.card,
-                paddingVertical: 12,
-                alignItems: "center"
-              }}
+              style={[
+                styles.primaryButton,
+                {
+                  opacity: ingesting || !pendingReadings.length ? 0.6 : 1,
+                  paddingVertical: 12,
+                  alignItems: "center"
+                }
+              ]}
             >
-              <Text style={{ color: "white", fontWeight: "800" }}>
+              <Text style={styles.primaryButtonText}>
                 {ingesting ? "Ingesting..." : "Ingest queued readings"}
               </Text>
             </Pressable>
             {ingestStatus ? (
-              <Text style={{ marginTop: 8, color: "#444" }}>
+              <Text style={[styles.successText, { marginTop: 8 }]}>
                 Ingest result: <Text style={{ fontWeight: "800" }}>{ingestStatus}</Text>
               </Text>
             ) : null}
           </View>
 
-          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Window</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Window</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
             <Chip
               label="Last night"
@@ -1782,7 +1779,7 @@ export default function DewPointGuardTool({
               />
             </>
           ) : (
-            <Text style={{ color: "#444", marginBottom: 10 }}>
+            <Text style={[styles.mutedText, { marginBottom: 10 }]}>
               Window preview: {defaultWindow(windowMode).startIso}{" "}
               {defaultWindow(windowMode).endIso}
             </Text>
@@ -1790,16 +1787,17 @@ export default function DewPointGuardTool({
           <Pressable
             onPress={fetchWindowPoints}
             disabled={fetchingPoints || !selectedSourceId}
-            style={{
-              opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
-              backgroundColor: "#111",
-              borderRadius: radius.card,
-              paddingVertical: 12,
-              alignItems: "center",
-              marginBottom: selectedSource?.type === "pulse" ? 8 : 0
-            }}
+            style={[
+              styles.primaryButton,
+              {
+                opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
+                paddingVertical: 12,
+                alignItems: "center",
+                marginBottom: selectedSource?.type === "pulse" ? 8 : 0
+              }
+            ]}
           >
-            <Text style={{ color: "white", fontWeight: "800" }}>
+            <Text style={styles.primaryButtonText}>
               {fetchingPoints ? "Fetching..." : "Fetch Telemetry Window"}
             </Text>
           </Pressable>
@@ -1807,21 +1805,21 @@ export default function DewPointGuardTool({
             <Pressable
               onPress={pullAndFetchWindowPoints}
               disabled={fetchingPoints || !selectedSourceId}
-              style={{
-                opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: radius.card,
-                paddingVertical: 12,
-                alignItems: "center"
-              }}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
+                  paddingVertical: 12,
+                  alignItems: "center"
+                }
+              ]}
             >
-              <Text style={{ color: "#111", fontWeight: "800" }}>
+              <Text style={styles.secondaryButtonText}>
                 {fetchingPoints ? "Pulling..." : "Pull + Fetch Window"}
               </Text>
             </Pressable>
           ) : null}
-          <Text style={{ marginTop: 10, color: "#444" }}>
+          <Text style={[styles.mutedText, { marginTop: 10 }]}>
             Loaded points:{" "}
             <Text style={{ fontWeight: "800" }}>{telemetryPoints.length}</Text>
           </Text>
@@ -1834,16 +1832,16 @@ export default function DewPointGuardTool({
         onChangeText={setAssumedLeafAirDeltaF}
       />
       <View
-        style={{
-          marginTop: 8,
-          marginBottom: 12,
-          padding: 12,
-          borderWidth: 1,
-          borderColor: "#eee",
-          borderRadius: radius.card
-        }}
+        style={[
+          styles.panel,
+          {
+            marginTop: 8,
+            marginBottom: 12,
+            padding: 12
+          }
+        ]}
       >
-        <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+        <Text style={[styles.sectionTitle, { fontWeight: "700", marginBottom: 6 }]}>
           Event Flags (0 = no, 1 = yes)
         </Text>
         <Field
@@ -1889,16 +1887,18 @@ export default function DewPointGuardTool({
       ) : null}
 
       <View
-        style={{
-          marginTop: 8,
-          marginBottom: 18,
-          padding: 12,
-          borderWidth: 1,
-          borderColor: "#eee",
-          borderRadius: radius.card
-        }}
+        style={[
+          styles.summaryPanel,
+          {
+            marginTop: 8,
+            marginBottom: 18,
+            padding: 12
+          }
+        ]}
       >
-        <Text style={{ fontWeight: "700", marginBottom: 6 }}>Estimated Output</Text>
+        <Text style={[styles.sectionTitle, { fontWeight: "700", marginBottom: 6 }]}>
+          Estimated Output
+        </Text>
         {mode === "manual" ? (
           <>
             <Text>
@@ -1975,7 +1975,7 @@ export default function DewPointGuardTool({
                 </Text>
               </>
             ) : (
-              <Text style={{ color: "#444" }}>
+              <Text style={styles.mutedText}>
                 Fetch telemetry points to compute a source-backed risk summary.
               </Text>
             )}
@@ -2073,3 +2073,84 @@ export default function DewPointGuardTool({
     </ScrollView>
   );
 }
+
+export const createDewPointGuardStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 16, paddingBottom: 28 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "800", marginBottom: 6 },
+    subtitle: { color: palette.textMuted, marginBottom: 16, lineHeight: 20 },
+    field: { marginBottom: 12 },
+    fieldLabel: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "600",
+      marginBottom: 6
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    multilineInput: { minHeight: 90, marginBottom: 8 },
+    chip: {
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      marginRight: 8,
+      marginBottom: 8
+    },
+    chipActive: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accent
+    },
+    chipText: { color: palette.text, fontWeight: "700" },
+    chipTextActive: { color: palette.accentText },
+    panel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    sectionTitle: { color: palette.text, fontWeight: "800" },
+    mutedText: { color: palette.textMuted },
+    successText: { color: palette.success },
+    warningText: { color: palette.warning },
+    errorText: { color: palette.danger },
+    separator: { borderTopColor: palette.border },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    primaryButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    selectCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface
+    },
+    selectCardActive: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft
+    },
+    summaryPanel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    }
+  });

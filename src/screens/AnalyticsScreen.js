@@ -16,6 +16,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import { fetchPersonalAnalyticsOverview } from "@/api/personalAnalytics";
 import { useEntitlements } from "@/entitlements";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -157,6 +158,8 @@ function buildAnalytics({ grows, logs, plants, tasks, toolRuns }) {
 
 export default function AnalyticsScreen() {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createAnalyticsStyles(palette), [palette]);
   const [rows, setRows] = useState({
     grows: [],
     logs: [],
@@ -240,7 +243,9 @@ export default function AnalyticsScreen() {
         </Pressable>
       </View>
 
-      {loading ? <ActivityIndicator style={styles.loading} /> : null}
+      {loading ? (
+        <ActivityIndicator color={palette.accent} style={styles.loading} />
+      ) : null}
       {error ? (
         <View accessibilityRole="alert" style={styles.errorBox}>
           <Text style={styles.error}>{error}</Text>
@@ -420,6 +425,9 @@ export default function AnalyticsScreen() {
 }
 
 function Metric({ label, value }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createAnalyticsStyles(palette), [palette]);
+
   return (
     <View
       accessible
@@ -432,161 +440,162 @@ function Metric({ label, value }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 36,
-    backgroundColor: "#F8FAFC"
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 12,
-    marginBottom: 16
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#0F172A",
-    marginBottom: 4
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#475569",
-    textTransform: "capitalize"
-  },
-  refreshButton: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF"
-  },
-  refreshText: { color: "#166534", fontWeight: "800" },
-  disabledButton: { opacity: 0.65 },
-  loading: { marginBottom: 12 },
-  errorBox: {
-    alignItems: "flex-start",
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FCA5A5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    marginBottom: 12,
-    padding: 12
-  },
-  error: {
-    color: "#B91C1C",
-    fontWeight: "700"
-  },
-  retryButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#B91C1C",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 7
-  },
-  retryText: { color: "#B91C1C", fontWeight: "800" },
-  warningBox: {
-    backgroundColor: "#FFFBEB",
-    borderColor: "#FCD34D",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 12,
-    padding: 12
-  },
-  warningText: { color: "#92400E", fontWeight: "700", lineHeight: 19 },
-  emptyNotice: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 14
-  },
-  emptyNoticeTitle: { color: "#166534", fontSize: 15, fontWeight: "900" },
-  emptyNoticeBody: { color: "#365E3D", lineHeight: 19, marginTop: 4 },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 16
-  },
-  metric: {
-    minWidth: 128,
-    flexGrow: 1,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14
-  },
-  metricValue: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#0F172A"
-  },
-  metricLabel: {
-    marginTop: 4,
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    textTransform: "uppercase"
-  },
-  section: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 12
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#0F172A",
-    marginBottom: 8
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEF2F7"
-  },
-  rowLabel: {
-    flex: 1,
-    color: "#334155",
-    fontWeight: "700",
-    textTransform: "capitalize"
-  },
-  rowValue: {
-    color: "#0F172A",
-    fontWeight: "800"
-  },
-  warn: { color: "#B91C1C" },
-  attentionRow: {
-    paddingVertical: 9,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEF2F7"
-  },
-  featureTitle: {
-    color: "#0F172A",
-    fontWeight: "800"
-  },
-  featureDescription: {
-    color: "#64748B",
-    marginTop: 3,
-    lineHeight: 19
-  },
-  empty: { color: "#64748B", lineHeight: 20 },
-  measurementNote: {
-    color: "#64748B",
-    lineHeight: 19,
-    marginTop: 10
-  }
-});
+export const createAnalyticsStyles = (palette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.page,
+      padding: 20,
+      paddingBottom: 36
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 12,
+      marginBottom: 16
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      textTransform: "capitalize"
+    },
+    refreshButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    refreshText: { color: palette.link, fontWeight: "800" },
+    disabledButton: { opacity: 0.65 },
+    loading: { marginBottom: 12 },
+    errorBox: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      marginBottom: 12,
+      padding: 12
+    },
+    error: {
+      color: palette.danger,
+      fontWeight: "700"
+    },
+    retryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 7
+    },
+    retryText: { color: palette.danger, fontWeight: "800" },
+    warningBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 12,
+      padding: 12
+    },
+    warningText: { color: palette.warning, fontWeight: "700", lineHeight: 19 },
+    emptyNotice: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 16,
+      padding: 14
+    },
+    emptyNoticeTitle: { color: palette.link, fontSize: 15, fontWeight: "900" },
+    emptyNoticeBody: { color: palette.textSoft, lineHeight: 19, marginTop: 4 },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginBottom: 16
+    },
+    metric: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 128,
+      padding: 14
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "800"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      marginTop: 4,
+      fontSize: 12,
+      fontWeight: "700",
+      textTransform: "uppercase"
+    },
+    section: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 12,
+      padding: 14
+    },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    row: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: 12,
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.borderSoft
+    },
+    rowLabel: {
+      flex: 1,
+      color: palette.textSoft,
+      fontWeight: "700",
+      textTransform: "capitalize"
+    },
+    rowValue: {
+      color: palette.text,
+      fontWeight: "800"
+    },
+    warn: { color: palette.danger },
+    attentionRow: {
+      paddingVertical: 9,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.borderSoft
+    },
+    featureTitle: {
+      color: palette.text,
+      fontWeight: "800"
+    },
+    featureDescription: {
+      color: palette.textMuted,
+      marginTop: 3,
+      lineHeight: 19
+    },
+    empty: { color: palette.textMuted, lineHeight: 20 },
+    measurementNote: {
+      color: palette.textMuted,
+      lineHeight: 19,
+      marginTop: 10
+    }
+  });
