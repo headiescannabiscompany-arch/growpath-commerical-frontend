@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -18,6 +18,7 @@ import {
   searchContent
 } from "../api/marketplace";
 import ScreenContainer from "../components/ScreenContainer";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { getCreatorName } from "../utils/creator";
 
@@ -50,6 +51,8 @@ function priceLabel(item) {
 }
 
 export default function MarketplaceScreen({ navigation }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [items, setItems] = useState([]);
@@ -155,7 +158,9 @@ export default function MarketplaceScreen({ navigation }) {
     <ScreenContainer scroll={false}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Storefront Offers</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+            Storefront Offers
+          </Text>
           <Text style={styles.subtitle}>
             Browse storefront offers from compatibility offer endpoints.
           </Text>
@@ -163,9 +168,10 @@ export default function MarketplaceScreen({ navigation }) {
       </View>
 
       <TextInput
+        accessibilityLabel="Search storefront offers"
         style={styles.search}
         placeholder="Search storefront offers..."
-        placeholderTextColor="#999"
+        placeholderTextColor={palette.textMuted}
         value={query}
         onChangeText={setQuery}
         returnKeyType="search"
@@ -179,6 +185,8 @@ export default function MarketplaceScreen({ navigation }) {
       >
         {["", "courses", "guides", "templates", "tools"].map((value) => (
           <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: category === value }}
             key={value || "all"}
             style={[styles.filterBtn, category === value && styles.filterBtnOn]}
             onPress={() => setCategory(value)}
@@ -194,14 +202,16 @@ export default function MarketplaceScreen({ navigation }) {
 
       {loading && !refreshing ? (
         <View style={styles.emptyState}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.emptyText}>Loading storefront offers...</Text>
         </View>
       ) : null}
 
       {!loading && items.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No storefront offers found.</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.emptyText}>
+            No storefront offers found.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -247,10 +257,14 @@ export default function MarketplaceScreen({ navigation }) {
 }
 
 export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const paid = Number(item?.priceCents || 0) > 0 || Number(item?.price || 0) > 0;
   return (
     <View style={styles.detail}>
-      <Text style={styles.header}>{item?.title || item?.name || "Storefront offer"}</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+        {item?.title || item?.name || "Storefront offer"}
+      </Text>
       <Text style={styles.creator}>
         By {getCreatorName(item?.creator || item?.author)}
       </Text>
@@ -278,7 +292,7 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
           style={[styles.purchaseButton, purchasing && styles.purchaseButtonDisabled]}
         >
           {purchasing ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.purchaseText}>
               {paid ? "Start Checkout" : "Get Item"}
@@ -291,78 +305,90 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
   );
 }
 
-const styles = StyleSheet.create({
-  headerRow: { marginBottom: 12 },
-  header: { fontSize: 26, fontWeight: "800", color: "#111827" },
-  subtitle: { color: "#64748B", marginTop: 4 },
-  search: {
-    padding: 12,
-    backgroundColor: "#f8fafc",
-    borderRadius: radius.card,
-    marginBottom: 12,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  filters: { marginBottom: 12 },
-  filterBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.pill,
-    marginRight: 10
-  },
-  filterBtnOn: { backgroundColor: "#166534" },
-  filterText: { color: "#334155", fontWeight: "700" },
-  filterTextOn: { color: "#FFFFFF" },
-  listContent: { paddingBottom: 80 },
-  card: {
-    padding: 14,
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  title: { flex: 1, fontSize: 16, fontWeight: "800", color: "#111827" },
-  creator: { fontSize: 12, color: "#64748B", marginTop: 6 },
-  category: {
-    alignSelf: "flex-start",
-    fontSize: 11,
-    backgroundColor: "#ECFDF5",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    color: "#166534",
-    fontWeight: "700",
-    marginTop: 6
-  },
-  body: { color: "#475569", lineHeight: 19, marginTop: 8 },
-  price: { fontWeight: "800", color: "#166534" },
-  link: { color: "#166534", fontWeight: "800", marginTop: 10 },
-  meta: { color: "#64748B", marginTop: 10 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 8,
-    marginBottom: 10
-  },
-  emptyState: { alignItems: "center", justifyContent: "center", minHeight: 200, gap: 8 },
-  emptyText: { fontSize: 16, color: "#64748B", fontWeight: "700" },
-  detail: { gap: 8 },
-  detailBody: { color: "#334155", lineHeight: 21, marginTop: 8 },
-  purchaseButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    marginTop: 12,
-    minHeight: 44,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  purchaseButtonDisabled: { opacity: 0.6 },
-  purchaseText: { color: "#FFFFFF", fontWeight: "900" }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    headerRow: { marginBottom: 12 },
+    header: { fontSize: 26, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, marginTop: 4 },
+    search: {
+      padding: 12,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      marginBottom: 12,
+      fontSize: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      color: palette.text
+    },
+    filters: { marginBottom: 12 },
+    filterBtn: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      marginRight: 10
+    },
+    filterBtnOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    filterText: { color: palette.textSoft, fontWeight: "700" },
+    filterTextOn: { color: palette.accentText },
+    listContent: { paddingBottom: 80 },
+    card: {
+      padding: 14,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    title: { flex: 1, fontSize: 16, fontWeight: "800", color: palette.text },
+    creator: { fontSize: 12, color: palette.textMuted, marginTop: 6 },
+    category: {
+      alignSelf: "flex-start",
+      fontSize: 11,
+      backgroundColor: palette.accentSoft,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: radius.pill,
+      color: palette.accent,
+      fontWeight: "700",
+      marginTop: 6
+    },
+    body: { color: palette.textSoft, lineHeight: 19, marginTop: 8 },
+    price: { fontWeight: "800", color: palette.accent },
+    link: { color: palette.link, fontWeight: "800", marginTop: 10 },
+    meta: { color: palette.textMuted, marginTop: 10 },
+    feedback: {
+      color: palette.textSoft,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 8,
+      marginBottom: 10
+    },
+    emptyState: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 200,
+      gap: 8
+    },
+    emptyText: { fontSize: 16, color: palette.textMuted, fontWeight: "700" },
+    detail: { gap: 8 },
+    detailBody: { color: palette.textSoft, lineHeight: 21, marginTop: 8 },
+    purchaseButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      marginTop: 12,
+      minHeight: 44,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    purchaseButtonDisabled: { opacity: 0.6 },
+    purchaseText: { color: palette.accentText, fontWeight: "900" }
+  });
+}
