@@ -2340,3 +2340,26 @@ valid upload or save payload behavior.
 - No Browse Courses, field, video, upload, attachment, media, lesson, course,
   workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
+
+## Legacy Facility selector Night theme and hierarchy
+
+Production `/facilities` remained reachable as a legacy single-Facility
+selector and rendered a fixed-white page/card with day-only text and no
+semantic heading under the signed-in Viewer's resolved Night mode. It already
+showed only the one attached Facility and exposed no create/edit/delete/invite
+controls. Frontend `6c4c8444` moves loaded/loading/empty/error/selection states
+to the active palette and establishes one H1 without changing selection,
+navigation, onboarding, or Facility membership behavior.
+
+- The focused selector test passed, covering Night page/card/selected/text
+  styles, one H1, the selected Facility, active badge, and absence of create
+  access. Targeted source lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30711605521` and Frontend CI `30711605517`
+  passed. Clean signed-in production verification measured one bright H1, the
+  selected card at Night muted surface `rgb(26, 35, 48)` with accent border
+  `rgb(120, 170, 255)` and bright text `rgb(244, 247, 251)`, zero white/light
+  page-content surfaces, and zero create/edit/delete/invite/save actions.
+- No Facility selection, navigation, onboarding, membership, create, edit,
+  delete, invite, save, workspace, account, session, billing, audit event, or
+  record action was invoked, and the Viewer session remained signed in.
