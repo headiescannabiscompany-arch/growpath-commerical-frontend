@@ -1,5 +1,5 @@
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { FieldObservation, FieldStudy, getPublicFieldStudy } from "@/api/fieldStudies";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function observationName(observation: FieldObservation) {
@@ -22,6 +23,8 @@ function observationName(observation: FieldObservation) {
 }
 
 export default function PublicFieldStudyScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{ slug?: string }>();
   const slug = String(params.slug || "");
   const [study, setStudy] = useState<FieldStudy | null>(null);
@@ -30,15 +33,21 @@ export default function PublicFieldStudyScreen() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    if (!slug) return;
+    if (!slug) {
+      setLoading(false);
+      setStudy(null);
+      setObservations([]);
+      setError("Choose a published Field Study from the observation map.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       const response = await getPublicFieldStudy(slug);
       setStudy(response.study);
       setObservations(response.observations);
-    } catch (loadError: any) {
-      setError(loadError?.message || "This Field Study could not be loaded.");
+    } catch {
+      setError("This published Field Study is unavailable.");
     } finally {
       setLoading(false);
     }
@@ -51,7 +60,7 @@ export default function PublicFieldStudyScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
         <Text style={styles.muted}>Loading published Field Study...</Text>
       </View>
     );
@@ -60,7 +69,7 @@ export default function PublicFieldStudyScreen() {
   if (!study) {
     return (
       <View style={styles.centered}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Field Study unavailable
         </Text>
         <Text style={styles.error}>{error}</Text>
@@ -80,7 +89,7 @@ export default function PublicFieldStudyScreen() {
           <Text style={styles.link}>← Public observation map</Text>
         </Pressable>
       </Link>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         {study.title}
       </Text>
       <Text style={styles.meta}>
@@ -92,14 +101,16 @@ export default function PublicFieldStudyScreen() {
       ) : null}
 
       <View style={styles.privacy}>
-        <Text style={styles.privacyTitle}>Location privacy</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.privacyTitle}>
+          Location privacy
+        </Text>
         <Text style={styles.privacyText}>
           Only intentionally published observations appear here. Approximate and regional
           coordinates do not represent the contributor&apos;s exact saved location.
         </Text>
       </View>
 
-      <Text accessibilityRole="header" style={styles.sectionTitle}>
+      <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
         {observations.length} published observation
         {observations.length === 1 ? "" : "s"}
       </Text>
@@ -114,7 +125,9 @@ export default function PublicFieldStudyScreen() {
           const location = observation.location as any;
           return (
             <View key={String(observation.id || observation._id)} style={styles.card}>
-              <Text style={styles.cardTitle}>{observationName(observation)}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                {observationName(observation)}
+              </Text>
               {observation.identity?.scientificName ? (
                 <Text style={styles.scientificName}>
                   {observation.identity.scientificName}
@@ -155,52 +168,59 @@ export default function PublicFieldStudyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { gap: 13, padding: 20, paddingBottom: 56 },
-  centered: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    flex: 1,
-    gap: 10,
-    justifyContent: "center",
-    padding: 24
-  },
-  link: { color: "#166534", fontWeight: "800" },
-  title: { color: "#0F172A", fontSize: 29, fontWeight: "800" },
-  sectionTitle: { color: "#0F172A", fontSize: 20, fontWeight: "800", marginTop: 4 },
-  meta: { color: "#64748B", lineHeight: 20, textTransform: "capitalize" },
-  description: { color: "#334155", fontSize: 15, lineHeight: 22 },
-  muted: { color: "#64748B", lineHeight: 20 },
-  error: { color: "#B91C1C", lineHeight: 20, textAlign: "center" },
-  privacy: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 14
-  },
-  privacyTitle: { color: "#1E3A8A", fontWeight: "800" },
-  privacyText: { color: "#1E40AF", lineHeight: 20 },
-  empty: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    padding: 16
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1D5DB",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 15
-  },
-  cardTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  scientificName: { color: "#334155", fontStyle: "italic" },
-  evidence: { color: "#166534", lineHeight: 20, marginTop: 4 },
-  counterEvidence: { color: "#9A3412", lineHeight: 20 },
-  missing: { color: "#92400E", lineHeight: 20 }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { gap: 13, padding: 20, paddingBottom: 56 },
+    centered: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      gap: 10,
+      justifyContent: "center",
+      padding: 24
+    },
+    link: { color: palette.link, fontWeight: "800" },
+    title: { color: palette.text, fontSize: 29, fontWeight: "800" },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 20,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    meta: { color: palette.textMuted, lineHeight: 20, textTransform: "capitalize" },
+    description: { color: palette.textSoft, fontSize: 15, lineHeight: 22 },
+    muted: { color: palette.textMuted, lineHeight: 20 },
+    error: { color: palette.danger, lineHeight: 20, textAlign: "center" },
+    privacy: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 14
+    },
+    privacyTitle: { color: palette.text, fontWeight: "800" },
+    privacyText: { color: palette.textSoft, lineHeight: 20 },
+    empty: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderStyle: "dashed",
+      borderWidth: 1,
+      padding: 16
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 15
+    },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    scientificName: { color: palette.textSoft, fontStyle: "italic" },
+    evidence: { color: palette.success, lineHeight: 20, marginTop: 4 },
+    counterEvidence: { color: palette.danger, lineHeight: 20 },
+    missing: { color: palette.warning, lineHeight: 20 }
+  });
+}
