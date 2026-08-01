@@ -1958,3 +1958,32 @@ storage behavior.
   follow, edit, publish, delete, storage, storefront, course, workspace,
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
+
+## Loaded video detail and shared lesson-media Night theme
+
+The genuine production video detail exposed a second layer of fixed day
+styling beneath the already-correct page shell: the H1, owner, description,
+report action, Topics title/chips, and the shared `LessonMediaCard` used dark
+copy on Night surfaces. The media card and provider action were bright white,
+while summary, availability, consent, playback, accessibility, and progress
+treatments were also fixed to day colors. Frontend `9d88ae0a` moves both the
+standalone detail route and reusable lesson/video media component to the active
+palette and establishes the video title as H1 plus Topics as H2. Playback URL
+resolution, click-to-load consent, provider handoff, reporting, following,
+visibility, and owner behavior do not change.
+
+- Ten focused video-detail/reporting/protected-playback/lesson-media/theme tests
+  passed. Source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The new test-file lint warning is the repository's
+  intentional test ignore; the existing non-failing Expo Go warning remains
+  unrelated.
+- Production Build Preflight `30705641746` and Frontend CI `30705641769`
+  passed. The signed-in Facility Viewer reopened real public video
+  `6a6a52f42ac7c03b4303a7d6` through its visible Watch navigation control.
+  The loaded route measured one white H1, one bright Topics H2, zero white
+  surfaces, and zero near-black-on-dark text. The media card used Night surface
+  and border; its summary used accent-soft, while provider/report actions used
+  muted Night surface, Night border, and link text.
+- No playback, provider link, follow, report, topic, search, filter, edit,
+  publication, deletion, workspace, account, session, billing, audit event, or
+  record action was invoked, and the Viewer session remained signed in.
