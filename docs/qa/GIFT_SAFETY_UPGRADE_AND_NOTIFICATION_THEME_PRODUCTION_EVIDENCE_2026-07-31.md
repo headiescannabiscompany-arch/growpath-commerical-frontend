@@ -1352,6 +1352,34 @@ The Owner workflow and API handlers remain intact.
   feedback, training export, AI request, credit, audit event, billing, or record
   action was invoked, and the Viewer session remained signed in.
 
+## Shared Videos library Night theme and Facility Viewer acceptance
+
+Production `/videos?tab=library`, reached from Facility More, retained a nearly
+black page heading and four white day-only storage metric cards under resolved
+Night mode. The Facility Viewer upload/publish/manage restrictions were already
+correct. Frontend `e2f2b332` moved the complete shared Personal, Commercial, and
+Facility route—including discovery, tabs, search/writer fields, visibility and
+scope choices, storage metrics/meter, upload progress, warnings, empty states,
+feedback, and deletion confirmation—to the active palette without changing
+video permissions or persistence behavior.
+
+- Production Build Preflight `30695649963` and Frontend CI `30695649964`
+  passed.
+- Six focused Personal Free, Commercial, Facility Viewer, Facility Staff,
+  workspace-scope, storage, removal, and Night-palette tests passed. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance confirmed one level-one
+  `Videos` heading in bright Night text `rgb(244, 247, 251)`. All four zero-count
+  storage metrics use Night surface `rgb(21, 29, 39)`, border
+  `rgb(40, 53, 69)`, and readable muted labels `rgb(201, 212, 223)`. No white
+  page-content surface remained; the separate Report Bug control was the only
+  detected white element.
+- The route retained 0 B of 100 GB used, zero workspace/mine/published/draft
+  records, the truthful Viewer watch/follow-only notice, four library filters,
+  and zero upload fields. No tab, scope, upload, media, draft, publish, follow,
+  removal, storage, audit event, billing, or record action was invoked, and the
+  session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
