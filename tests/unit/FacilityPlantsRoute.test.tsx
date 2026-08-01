@@ -109,6 +109,12 @@ describe("FacilityPlantsRoute", () => {
       expect(
         screen.getByText("Only facility owners and managers can create plants.")
       ).toBeTruthy();
+      expect(
+        screen.getByText(
+          "Ask a facility owner or manager to create or link plants from a grow or room to start tracking room and batch coverage."
+        )
+      ).toBeTruthy();
+      expect(screen.queryByText(/Create a plant above/)).toBeNull();
       expect(screen.queryByLabelText("Plant name")).toBeNull();
       expect(screen.queryByLabelText("Create facility plant")).toBeNull();
       expect(mockCreatePlant).not.toHaveBeenCalled();

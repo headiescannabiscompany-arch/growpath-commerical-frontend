@@ -426,8 +426,9 @@ export default function FacilityPlantsTab() {
                   No plants yet
                 </Text>
                 <Text style={styles.muted}>
-                  Create a plant above or link plants from a grow/room to start tracking
-                  room and batch coverage.
+                  {canWritePlants
+                    ? "Create a plant above or link plants from a grow or room to start tracking room and batch coverage."
+                    : "Ask a facility owner or manager to create or link plants from a grow or room to start tracking room and batch coverage."}
                 </Text>
               </View>
             ) : null
