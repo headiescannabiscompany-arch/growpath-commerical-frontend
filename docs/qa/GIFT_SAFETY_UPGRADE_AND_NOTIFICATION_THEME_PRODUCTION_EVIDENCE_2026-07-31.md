@@ -1595,6 +1595,50 @@ palette. Owner/Manager workflow behavior did not change.
   membership, account, session, billing, or record action was invoked, and the
   Viewer session remained signed in.
 
+## Onboarding walkthrough workspace truth and Night theme
+
+Production `/onboarding/walkthroughs` defaulted a signed-in Facility Viewer to a
+Pro grower walkthrough and exposed an enabled Pro checkout action even though
+the account's canonical mode was Facility and its Facility subscription was
+trialing. The route also retained light-only content and lacked structured
+section headings. Frontend `c2de5ec9` derives the default walkthrough from the
+canonical workspace mode, recognizes active/trial access, opens the current
+workspace instead of advertising checkout, applies the active palette, and
+establishes one H1 plus H2 step/availability headings. Explicit plan-preview
+links and inactive-plan checkout behavior remain available and unchanged.
+
+- Production Build Preflight `30699538048` and Frontend CI `30699538050`
+  passed. Five focused workspace-truth, Forum/Q&A copy, and Night-palette tests,
+  targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer acceptance on the clean production URL confirmed
+  one `Facility walkthrough` H1, six step H2s, one `Available in this workspace`
+  H2, and only `Open Facility workspace`; no Pro walkthrough or checkout action
+  remained.
+- No workspace, plan, checkout, Forum/Q&A preference, membership, account,
+  session, billing, or record action was invoked, and the Viewer session
+  remained signed in.
+
+## Remaining onboarding-route Night theme and hierarchy
+
+Production Forum/Q&A interests and Pick Facility retained fixed light canvases,
+white/day-only panels and cards, dark copy, and no semantic page H1 under the
+signed-in account's resolved Night mode. Frontend `e58a9967` moves both complete
+route surfaces to the active palette and establishes one H1 per page plus H2s
+for each Forum/Q&A interest/recommendation section. Interest selection, optional
+forum membership, facility selection, loading/error/empty states, and save or
+navigation behavior did not change.
+
+- Production Build Preflight `30699875048` and Frontend CI `30699875038`
+  passed. Six focused copy, hierarchy, workspace-truth, and Night-palette tests,
+  targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer acceptance on both clean production URLs confirmed
+  `Select your forum groups` as the single H1 with five structured H2 sections,
+  and `Pick a Facility` as the single H1 with the existing facility choice still
+  present. The Forum continue action remained disabled with no crop selected.
+- No interest, forum membership, facility selection, workspace, account,
+  session, billing, or record action was invoked, and the Viewer session
+  remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
