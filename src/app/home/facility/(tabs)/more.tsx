@@ -169,7 +169,13 @@ function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
           { backgroundColor: palette.surface, borderColor: palette.border }
         ])}
       >
-        <Text style={[styles.destinationTitle, { color: palette.text }]}>{label}</Text>
+        <Text
+          accessibilityRole="header"
+          aria-level={3}
+          style={[styles.destinationTitle, { color: palette.text }]}
+        >
+          {label}
+        </Text>
         <Text style={[styles.destinationDescription, { color: palette.textMuted }]}>
           {description}
         </Text>

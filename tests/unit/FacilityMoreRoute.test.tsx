@@ -10,13 +10,17 @@ jest.mock("expo-router", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 jest.mock("@/entitlements", () => ({
@@ -46,5 +50,15 @@ describe("FacilityMoreRoute", () => {
     expect(
       screen.queryByText("Invite members, manage roles, and assign work.")
     ).toBeNull();
+    expect(
+      screen.getByRole("header", { name: "More Facility Workspaces" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Facility operations" }).props["aria-level"]
+    ).toBe(2);
+    expect(screen.getByRole("header", { name: "Dashboard" }).props["aria-level"]).toBe(3);
+    expect(
+      screen.getByRole("header", { name: "Switch workspace" }).props["aria-level"]
+    ).toBe(3);
   });
 });
