@@ -2281,3 +2281,31 @@ attachment, or detachment behavior.
 - No filter, field, video, upload, attachment, detachment, media, lesson,
   course, workspace, account, session, billing, audit event, or record action
   was invoked, and the Viewer session remained signed in.
+
+## Shared screen-crash detail safety
+
+The production Course Builder crash previously proved that the shared
+`ScreenBoundary` exposed the exception message, raw `TypeError`, asset path,
+line/column locations, and complete browser stack to signed-in users. Frontend
+`4f18d9cb` replaces that user-facing output with one `Screen unavailable` H1
+and generic back/support recovery guidance while retaining internal console and
+monitoring capture. Corrective `5e948390` updates the enforced visual contract
+from the obsolete unsafe phrase to the safe fallback and guidance requirement.
+
+- Twelve focused boundary and full Course Builder tests passed, including a
+  deliberately thrown internal-detail fixture that proves neither its message
+  nor a Stack label reaches the rendered crash state. The visual-polish
+  contract, six release-preflight/boundary contract tests, targeted source
+  lint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- The first Production Build Preflight `30710783381` and matching Frontend CI
+  correctly failed because the prior contract still required `Screen crashed`.
+  Final Production Build Preflight `30710870287` and Frontend CI `30710870292`
+  passed for corrective `5e948390`.
+- Clean signed-in production regression verified both Create Course and Add
+  Lesson still render their normal field-complete states under the deployed
+  boundary with no crash title, TypeError, or Stack output. A new production
+  exception was not manufactured solely to display the fallback; the exact
+  safe error-state presentation is regression-tested instead.
+- No field, upload, course, lesson, exception, report, support, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
