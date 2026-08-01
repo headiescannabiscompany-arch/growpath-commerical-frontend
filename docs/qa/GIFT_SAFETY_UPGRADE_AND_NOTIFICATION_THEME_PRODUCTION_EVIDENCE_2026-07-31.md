@@ -1091,6 +1091,33 @@ journal/task writebacks.
   ToolRun, Saved Run, journal, task, grow, audit event, billing, or record action
   was invoked, and the session remained signed in.
 
+## Facility Dry Amendment Mix Night-theme no-change acceptance
+
+Production Facility Dry Amendment Mix was audited after the shared calculator
+and result-surface releases. The reported color problem was not reproducible on
+this route: its complete builder already used the active Night palette, its
+shell and visible calculator/guidance titles had semantic structure, and its
+AI-guided control only prepares a local calculator brief rather than calling a
+provider. No speculative route-specific code change was made.
+
+- Fourteen focused Dry Amendment calculation, saved-run, batch-task,
+  production-batch, product-draft, AI-brief, shared-back, and shared-result
+  palette tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one `Dry
+  Amendment Mix` heading; level-two `Dry Amendment Mix Builder` and `How this
+  tool works` headings; all 21 inspected inputs on Night surface
+  `rgb(21, 29, 39)` with border `rgb(40, 53, 69)` and bright text
+  `rgb(244, 247, 251)`; themed local-brief and calculation actions; and zero
+  white page-content surfaces. The separate Report Bug control was the only
+  detected white element.
+- The page retained its truthful no-credit calculator disclosure, default
+  recipe/ingredient values, no-grow state, and disabled downstream writebacks
+  until a successful run supplies their required context. No field, AI brief,
+  calculation, ToolRun, Saved Run, batch task, production batch, product draft,
+  grow, log, task, plant history, credit, audit event, billing, or record action
+  was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
