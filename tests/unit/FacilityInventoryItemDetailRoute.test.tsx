@@ -3,6 +3,8 @@ import { Alert } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import InventoryItemDetailScreen from "@/app/home/facility/inventory/[id]";
+import { createFacilityInventoryDetailStyles } from "@/app/home/facility/(tabs)/InventoryItemDetailScreen";
+import type { ThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
@@ -40,6 +42,25 @@ jest.mock("@/state/useFacility", () => ({
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { INVENTORY_WRITE: "inventory_write" },
   useEntitlements: () => ({ can: () => true })
+}));
+
+const mockNightPalette = {
+  card: "#151D27",
+  surface: "#151D27",
+  surfaceMuted: "#1B2532",
+  surfaceStrong: "#223044",
+  border: "#283545",
+  text: "#F4F7FB",
+  textMuted: "#AAB6C5",
+  textSoft: "#CDD6E1",
+  accentSoft: "#163D2A",
+  success: "#4ADE80",
+  warning: "#FBBF24",
+  danger: "#F87171"
+} as ThemePalette;
+
+jest.mock("@/theme/appTheme", () => ({
+  useAppTheme: () => ({ palette: mockNightPalette })
 }));
 
 jest.mock("@/hooks/useApiErrorHandler", () => ({
@@ -96,6 +117,31 @@ describe("InventoryItemDetailScreen", () => {
     expect(screen.queryByText("id: input-1")).toBeNull();
     expect(screen.getByText("Record information")).toBeTruthy();
     expect(screen.getByText("KELP-001")).toBeTruthy();
+  });
+
+  it("uses the active palette for cards, fields, copy, and destructive states", () => {
+    const styles = createFacilityInventoryDetailStyles(mockNightPalette);
+
+    expect(styles.card.backgroundColor).toBe(mockNightPalette.card);
+    expect(styles.input.backgroundColor).toBe(mockNightPalette.surface);
+    expect(styles.input.color).toBe(mockNightPalette.text);
+    expect(styles.cardTitle.color).toBe(mockNightPalette.text);
+    expect(styles.recordLabel.color).toBe(mockNightPalette.textMuted);
+    expect(styles.dangerButton.backgroundColor).toBe(mockNightPalette.danger);
+  });
+
+  it("shows one clear read-only state when the inventory record is unavailable", async () => {
+    mockApiRequest.mockResolvedValueOnce(null);
+    const screen = render(<InventoryItemDetailScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Inventory item not found")).toBeTruthy()
+    );
+
+    expect(screen.queryByLabelText("Inventory detail item name")).toBeNull();
+    expect(screen.queryByLabelText("Inventory adjustment quantity")).toBeNull();
+    expect(screen.queryByLabelText("Save inventory details")).toBeNull();
+    expect(screen.queryByText("Record information")).toBeNull();
   });
 
   it("confirms and removes an inventory item through the canonical endpoint", async () => {
