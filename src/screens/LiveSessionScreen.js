@@ -16,18 +16,21 @@ import { apiRequest } from "../api/apiRequest";
 import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
 
 export default function LiveSessionScreen({ route }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
   const routeParams = route?.params || {};
   const params = { ...routerParams, ...routeParams };
 
   const sessionId = useMemo(() => {
-    const raw = params.sessionId ?? params.id ?? "session-1";
-    return String(raw || "session-1");
+    const raw = params.sessionId ?? params.id ?? "";
+    return String(raw || "").trim();
   }, [params.sessionId, params.id]);
 
   const entitlements = useEntitlements();
@@ -48,6 +51,12 @@ export default function LiveSessionScreen({ route }) {
     let alive = true;
 
     async function load() {
+      if (!sessionId) {
+        setLoading(false);
+        setErr("Choose a live session from Lives.");
+        setSession(null);
+        return;
+      }
       setLoading(true);
       setErr("");
       setSession(null);
@@ -61,8 +70,11 @@ export default function LiveSessionScreen({ route }) {
       } catch (e) {
         const msg = String(e?.message || e || "No session found");
         if (!alive) return;
-        if (/no session found/i.test(msg)) setErr("No session found");
-        else setErr(msg);
+        if (/no session found|not found|objectid|cast to/i.test(msg)) {
+          setErr("This live session is unavailable.");
+        } else {
+          setErr("Unable to load this live session. Try again from Lives.");
+        }
       } finally {
         if (alive) setLoading(false);
       }
@@ -75,6 +87,7 @@ export default function LiveSessionScreen({ route }) {
   }, [sessionId]);
 
   useEffect(() => {
+    if (!sessionId) return undefined;
     let alive = true;
     apiRequest(`/api/lives/${encodeURIComponent(sessionId)}/rsvp`, { method: "GET" })
       .then((result) => {
@@ -233,7 +246,9 @@ export default function LiveSessionScreen({ route }) {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.kicker}>GrowPath live</Text>
-        <Text style={styles.title}>Live Session</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Live Session
+        </Text>
         <Text style={styles.subtitle}>
           Watch the stream, open replay links, and keep related product, course, and
           Forum/Q&A context in one place.
@@ -242,17 +257,29 @@ export default function LiveSessionScreen({ route }) {
 
       {loading ? (
         <View style={styles.row}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading...</Text>
         </View>
       ) : null}
 
-      {err ? <Text style={styles.error}>{err}</Text> : null}
+      {err ? (
+        <View style={styles.errorCard}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.errorTitle}>
+            Live session unavailable
+          </Text>
+          <Text style={styles.error}>{err}</Text>
+          <Link href="/lives" asChild>
+            <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+              <Text style={styles.secondaryBtnText}>Browse Lives</Text>
+            </Pressable>
+          </Link>
+        </View>
+      ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {session ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(session.title || "Untitled Session")}
           </Text>
           {session.description ? (
@@ -449,91 +476,117 @@ export default function LiveSessionScreen({ route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 18, backgroundColor: "#F8FAFC" },
-  hero: {
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    padding: 18,
-    marginBottom: 14
-  },
-  kicker: {
-    color: "#86EFAC",
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  title: { color: "#F8FAFC", fontSize: 26, fontWeight: "900", marginTop: 6 },
-  subtitle: { color: "#CBD5E1", fontSize: 14, fontWeight: "700", marginTop: 8 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
-  error: { color: "crimson", marginBottom: 10 },
-  feedback: {
-    backgroundColor: "#F0FDF4",
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "700",
-    marginBottom: 10,
-    padding: 10
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: radius.card,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  cardTitle: { color: "#0F172A", fontSize: 22, fontWeight: "900" },
-  description: { color: "#334155", fontSize: 14, fontWeight: "600", marginTop: 8 },
-  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  badge: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#BBF7D0",
-    borderWidth: 1,
-    borderRadius: 999,
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 5
-  },
-  embedWrap: {
-    minHeight: 360,
-    overflow: "hidden",
-    borderRadius: radius.card,
-    marginTop: 14,
-    backgroundColor: "#020617"
-  },
-  linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  contextPill: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE",
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    color: "#1D4ED8",
-    fontSize: 12,
-    fontWeight: "900",
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  btn: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    alignItems: "center",
-    marginTop: 14,
-    paddingVertical: 12
-  },
-  btnText: { color: "#FFFFFF", fontWeight: "900" },
-  secondaryBtn: {
-    borderColor: "#CBD5E1",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    alignItems: "center",
-    marginTop: 10,
-    paddingVertical: 11
-  },
-  secondaryBtnText: { color: "#0F172A", fontWeight: "900" },
-  completedBtn: { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    container: { flexGrow: 1, padding: 18, backgroundColor: palette.page },
+    hero: {
+      backgroundColor: palette.hero,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 18,
+      marginBottom: 14
+    },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 0,
+      textTransform: "uppercase"
+    },
+    title: { color: palette.heroText, fontSize: 26, fontWeight: "900", marginTop: 6 },
+    subtitle: {
+      color: palette.heroMuted,
+      fontSize: 14,
+      fontWeight: "700",
+      marginTop: 8
+    },
+    row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+    meta: { color: palette.textMuted, marginTop: 6, fontSize: 13 },
+    errorCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 14
+    },
+    errorTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    error: { color: palette.danger },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      color: palette.textSoft,
+      fontWeight: "700",
+      marginBottom: 10,
+      padding: 10
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    cardTitle: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    description: {
+      color: palette.textSoft,
+      fontSize: 14,
+      fontWeight: "600",
+      marginTop: 8
+    },
+    badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    badge: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: 999,
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 5
+    },
+    embedWrap: {
+      minHeight: 360,
+      overflow: "hidden",
+      borderRadius: radius.card,
+      marginTop: 14,
+      backgroundColor: palette.surfaceStrong
+    },
+    linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    contextPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      color: palette.info,
+      fontSize: 12,
+      fontWeight: "900",
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    btn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      alignItems: "center",
+      marginTop: 14,
+      paddingVertical: 12
+    },
+    btnText: { color: palette.accentText, fontWeight: "900" },
+    secondaryBtn: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      alignItems: "center",
+      marginTop: 10,
+      paddingVertical: 11
+    },
+    secondaryBtnText: { color: palette.link, fontWeight: "900" },
+    completedBtn: { backgroundColor: palette.accentSoft, borderColor: palette.accent }
+  });
+}

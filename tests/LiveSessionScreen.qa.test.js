@@ -66,7 +66,7 @@ jest.mock("expo-router", () => {
   };
 });
 
-import LiveSessionScreen from "../src/screens/LiveSessionScreen.js";
+import LiveSessionScreen, { createStyles } from "../src/screens/LiveSessionScreen.js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function renderWithNav(params = { sessionId: "session-1" }) {
@@ -103,6 +103,54 @@ describe("LiveSessionScreen QA", () => {
     jest.restoreAllMocks();
   });
 
+  it("does not request a synthetic session when the route has no id", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "viewer-1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+
+    const { getByTestId, getByText } = renderWithNav({});
+
+    await waitFor(() =>
+      expect(getByText("Choose a live session from Lives.")).toBeTruthy()
+    );
+    expect(getByTestId("live-link-/lives")).toBeTruthy();
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("uses the active palette for unavailable and loaded session states", () => {
+    const palette = {
+      page: "#0E141B",
+      hero: "#101823",
+      heroText: "#FFFFFF",
+      heroMuted: "#E4ECF5",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      surfaceStrong: "#202B39",
+      border: "#283545",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      textSoft: "#DEE7F0",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      danger: "#E29B9B",
+      info: "#78AAFF",
+      link: "#78AAFF"
+    };
+    const styles = createStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.hero.backgroundColor).toBe(palette.hero);
+    expect(styles.card.backgroundColor).toBe(palette.surface);
+    expect(styles.errorCard).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.danger
+      })
+    );
+    expect(styles.secondaryBtn.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.cardTitle.color).toBe(palette.text);
+  });
+
   it("renders moderation UI for admin", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "admin" } });
     mockUseEntitlements.mockReturnValue({
@@ -126,7 +174,7 @@ describe("LiveSessionScreen QA", () => {
       replayUrl: "https://www.twitch.tv/videos/123"
     });
 
-    const { getByTestId, getByText, queryByText } = renderWithNav({
+    const { getByRole, getByTestId, getByText, queryByText } = renderWithNav({
       sessionId: "abc123"
     });
 
@@ -137,6 +185,8 @@ describe("LiveSessionScreen QA", () => {
       method: "GET"
     });
     expect(getByText(/Watch on Twitch/i)).toBeTruthy();
+    expect(getByRole("header", { name: "Live Session" })).toHaveProp("aria-level", 1);
+    expect(getByRole("header", { name: "Session 1" })).toHaveProp("aria-level", 2);
     expect(getByText("Live soil mix walkthrough.")).toBeTruthy();
     expect(getByText("scheduled")).toBeTruthy();
     expect(getByText("public")).toBeTruthy();
@@ -346,10 +396,29 @@ describe("LiveSessionScreen QA", () => {
 
     mockApiRequest.mockRejectedValueOnce(new Error("No session found"));
 
-    const { queryByText } = renderWithNav();
+    const { getByRole, queryByText } = renderWithNav();
 
     await waitFor(() => {
-      expect(queryByText(/No session found/i)).toBeTruthy();
+      expect(queryByText("This live session is unavailable.")).toBeTruthy();
     });
+    expect(getByRole("header", { name: "Live session unavailable" })).toHaveProp(
+      "aria-level",
+      2
+    );
+  });
+
+  it("does not expose backend cast errors", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockRejectedValueOnce(
+      new Error('Cast to ObjectId failed for value "session-1" at path "_id"')
+    );
+
+    const { queryByText } = renderWithNav({ sessionId: "bad-id" });
+
+    await waitFor(() =>
+      expect(queryByText("This live session is unavailable.")).toBeTruthy()
+    );
+    expect(queryByText(/Cast to ObjectId/i)).toBeNull();
   });
 });
