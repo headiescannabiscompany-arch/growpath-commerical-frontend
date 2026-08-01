@@ -1468,3 +1468,30 @@ profile actions, billing, logout, or content controls.
   evidence in their separately authorized acceptance cases.
 - Obtain a real device push receipt; visible preferences and in-app category
   controls do not prove external device delivery.
+
+## Shared account Profile Night theme
+
+Production `/profile` retained a legacy light-only style sheet under resolved
+Night mode: both email/delete-confirmation fields and the workspace, account,
+logout, export, and delete controls rendered as bright white islands with light
+borders. Frontend `d5bb49e4` moved the complete shared account Profile surface
+to the active palette, including headings, explanatory copy, status and plan
+facts, fields and placeholders, primary/secondary/destructive actions, borders,
+disabled states, and feedback. Account, plan, privacy, export, deletion, session,
+and navigation behavior did not change.
+
+- Production Build Preflight `30696999454` and Frontend CI `30696999418`
+  passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance confirmed both untouched
+  fields use Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and
+  bright text `rgb(244, 247, 251)`. Workspace, account, logout, and export
+  controls use the same dark surface; no white page-content surface remained,
+  and the separate Report Bug control was the only detected white element.
+- The live account retained Facility mode, Facility access, Pro requested plan,
+  and Trialing subscription state. No email, workspace, account, interests,
+  plan, checkout, logout, export, delete, privacy, billing, or record action was
+  invoked, and the session remained signed in.
+- The adjacent `/offers` route was verified as already Night-correct and was not
+  changed. `/storefront` truthfully remained Commercial-only for this Facility
+  account, so no inaccessible loaded-state styling claim was made.
