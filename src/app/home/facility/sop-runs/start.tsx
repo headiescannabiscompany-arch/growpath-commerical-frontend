@@ -6,6 +6,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import type { SOPTemplate } from "@/api/sop";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
@@ -31,6 +32,8 @@ export default function FacilitySopRunsStartRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopStartStyles(palette), [palette]);
   const router = useRouter();
+  const ent = useEntitlements();
+  const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const params = useLocalSearchParams<{ templateId?: string; templateTitle?: string }>();
   const { selectedId: facilityId } = useFacility();
   const { templates, isLoading } = useSopTemplates(facilityId);
@@ -62,10 +65,15 @@ export default function FacilitySopRunsStartRoute() {
     .map((step) => step.replace(/^[-*0-9.)\s]+/, "").trim())
     .filter(Boolean);
   const canStart = Boolean(
-    facilityId && title.trim() && (templateId || parsedOneOffSteps.length) && !saving
+    canWriteSopRuns &&
+    facilityId &&
+    title.trim() &&
+    (templateId || parsedOneOffSteps.length) &&
+    !saving
   );
 
   const submit = async () => {
+    if (!canWriteSopRuns) return;
     if (!facilityId) {
       setMsg("Select a facility first.");
       return;
@@ -104,6 +112,33 @@ export default function FacilitySopRunsStartRoute() {
       setSaving(false);
     }
   };
+
+  if (!canWriteSopRuns) {
+    return (
+      <ScreenBoundary
+        title="Start SOP Run"
+        showBack
+        backFallbackHref="/home/facility/sop-runs"
+      >
+        <View accessibilityRole="alert" style={styles.container}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            SOP runs are read-only
+          </Text>
+          <Text style={styles.readOnlyText}>
+            Only facility owners and managers can start SOP runs.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Return to facility SOP runs"
+            onPress={() => router.replace("/home/facility/sop-runs")}
+            style={styles.btn}
+          >
+            <Text style={styles.btnText}>Return to SOP Runs</Text>
+          </Pressable>
+        </View>
+      </ScreenBoundary>
+    );
+  }
 
   return (
     <ScreenBoundary
@@ -262,6 +297,7 @@ export function createFacilitySopStartStyles(palette: ThemePalette) {
       marginTop: 4
     },
     muted: { color: palette.textMuted, fontWeight: "700" },
+    readOnlyText: { color: palette.warning, fontWeight: "800" },
     emptyPanel: { gap: 8 },
     libraryBtn: {
       alignSelf: "flex-start",

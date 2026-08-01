@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -6,7 +6,9 @@ import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SopRunDetail = {
@@ -69,9 +71,13 @@ function stepStatus(step: SopRunStep) {
 }
 
 export default function FacilitySopRunDetailRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySopRunDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
+  const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const [run, setRun] = useState<SopRunDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
@@ -86,7 +92,11 @@ export default function FacilitySopRunDetailRoute() {
   ).length;
   const runComplete = runIsComplete(run);
   const canComplete = Boolean(
-    !runComplete && steps.length > 0 && reviewedSteps === steps.length && !savingStep
+    canWriteSopRuns &&
+    !runComplete &&
+    steps.length > 0 &&
+    reviewedSteps === steps.length &&
+    !savingStep
   );
 
   const renderBoundary = (children: React.ReactNode) => (
@@ -128,7 +138,7 @@ export default function FacilitySopRunDetailRoute() {
   }, [load]);
 
   const completeRun = async () => {
-    if (!facilityId || !id || !canComplete) return;
+    if (!canWriteSopRuns || !facilityId || !id || !canComplete) return;
     setMessage(null);
     try {
       await apiRequest(endpoints.sopRunComplete(facilityId, String(id)), {
@@ -146,7 +156,7 @@ export default function FacilitySopRunDetailRoute() {
     status: "pending" | "done" | "skipped",
     opts?: { title?: string; note?: string }
   ) => {
-    if (!facilityId || !id || !stepId || runComplete) return;
+    if (!canWriteSopRuns || !facilityId || !id || !stepId || runComplete) return;
     setSavingStep(stepId);
     setMessage(null);
     try {
@@ -171,7 +181,7 @@ export default function FacilitySopRunDetailRoute() {
   };
 
   const addStep = async () => {
-    if (runComplete) return;
+    if (!canWriteSopRuns || runComplete) return;
     const title = stepTitle.trim();
     if (!title) {
       setMessage("Step title is required.");
@@ -212,7 +222,9 @@ export default function FacilitySopRunDetailRoute() {
 
   return renderBoundary(
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>{String(run?.title || run?.name || "SOP Run")}</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+        {String(run?.title || run?.name || "SOP Run")}
+      </Text>
       <View style={styles.metaRow}>
         <View style={styles.metaCard}>
           <Text style={styles.metaLabel}>Status</Text>
@@ -239,7 +251,9 @@ export default function FacilitySopRunDetailRoute() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Checklist evidence</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Checklist evidence
+        </Text>
         {steps.length ? (
           steps.map((step, index) => {
             const stepId = String(step.stepId || `step-${index + 1}`);
@@ -263,50 +277,52 @@ export default function FacilitySopRunDetailRoute() {
                 {step.note ? (
                   <Text style={styles.stepNote}>{String(step.note)}</Text>
                 ) : null}
-                <View style={styles.stepActions}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Mark SOP step ${title} done`}
-                    accessibilityState={{ disabled: busy || runComplete }}
-                    onPress={() => updateStep(stepId, "done", { title })}
-                    disabled={busy || runComplete}
-                    style={[
-                      styles.stepBtn,
-                      styles.doneBtn,
-                      (busy || runComplete) && styles.disabled
-                    ]}
-                  >
-                    <Text style={styles.stepBtnText}>Done</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Reset SOP step ${title} pending`}
-                    accessibilityState={{ disabled: busy || runComplete }}
-                    onPress={() => updateStep(stepId, "pending", { title })}
-                    disabled={busy || runComplete}
-                    style={[
-                      styles.stepBtn,
-                      styles.pendingBtn,
-                      (busy || runComplete) && styles.disabled
-                    ]}
-                  >
-                    <Text style={styles.stepBtnText}>Pending</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Skip SOP step ${title}`}
-                    accessibilityState={{ disabled: busy || runComplete }}
-                    onPress={() => updateStep(stepId, "skipped", { title })}
-                    disabled={busy || runComplete}
-                    style={[
-                      styles.stepBtn,
-                      styles.skipBtn,
-                      (busy || runComplete) && styles.disabled
-                    ]}
-                  >
-                    <Text style={styles.stepBtnText}>Skip</Text>
-                  </Pressable>
-                </View>
+                {canWriteSopRuns ? (
+                  <View style={styles.stepActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark SOP step ${title} done`}
+                      accessibilityState={{ disabled: busy || runComplete }}
+                      onPress={() => updateStep(stepId, "done", { title })}
+                      disabled={busy || runComplete}
+                      style={[
+                        styles.stepBtn,
+                        styles.doneBtn,
+                        (busy || runComplete) && styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.stepBtnText}>Done</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Reset SOP step ${title} pending`}
+                      accessibilityState={{ disabled: busy || runComplete }}
+                      onPress={() => updateStep(stepId, "pending", { title })}
+                      disabled={busy || runComplete}
+                      style={[
+                        styles.stepBtn,
+                        styles.pendingBtn,
+                        (busy || runComplete) && styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.stepBtnText}>Pending</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Skip SOP step ${title}`}
+                      accessibilityState={{ disabled: busy || runComplete }}
+                      onPress={() => updateStep(stepId, "skipped", { title })}
+                      disabled={busy || runComplete}
+                      style={[
+                        styles.stepBtn,
+                        styles.skipBtn,
+                        (busy || runComplete) && styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.stepBtnText}>Skip</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             );
           })
@@ -315,9 +331,11 @@ export default function FacilitySopRunDetailRoute() {
         )}
       </View>
 
-      {!runComplete ? (
+      {canWriteSopRuns && !runComplete ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Add evidence step</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Add evidence step
+          </Text>
           <TextInput
             accessibilityLabel="SOP step title"
             placeholder="Step title"
@@ -346,25 +364,31 @@ export default function FacilitySopRunDetailRoute() {
             <Text style={styles.btnText}>Add Step</Text>
           </Pressable>
         </View>
-      ) : (
+      ) : runComplete ? (
         <Text style={styles.lockedCopy}>
           This completed run is locked so its checklist remains reliable evidence.
         </Text>
+      ) : (
+        <Text style={styles.readOnlyCopy}>
+          SOP run evidence is read-only for this facility role.
+        </Text>
       )}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Mark SOP run complete"
-        accessibilityState={{ disabled: !canComplete }}
-        onPress={completeRun}
-        disabled={!canComplete}
-        style={[styles.btn, !canComplete && styles.disabled]}
-      >
-        <Text style={styles.btnText}>
-          {runComplete ? "Run Completed" : "Mark Complete"}
-        </Text>
-      </Pressable>
-      {!runComplete && !canComplete ? (
+      {canWriteSopRuns ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Mark SOP run complete"
+          accessibilityState={{ disabled: !canComplete }}
+          onPress={completeRun}
+          disabled={!canComplete}
+          style={[styles.btn, !canComplete && styles.disabled]}
+        >
+          <Text style={styles.btnText}>
+            {runComplete ? "Run Completed" : "Mark Complete"}
+          </Text>
+        </Pressable>
+      ) : null}
+      {canWriteSopRuns && !runComplete && !canComplete ? (
         <Text style={styles.completionHelp}>
           Review every checklist step as Done or Skipped before completing this run.
         </Text>
@@ -374,93 +398,97 @@ export default function FacilitySopRunDetailRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { opacity: 0.75 },
-  metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metaCard: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 180,
-    padding: 10
-  },
-  metaLabel: { color: "#64748b", fontSize: 12, fontWeight: "800" },
-  metaValue: { color: "#0f172a", fontWeight: "900", marginTop: 2 },
-  progressCard: {
-    borderWidth: 1,
-    borderColor: "#d1fae5",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#ecfdf5"
-  },
-  progressValue: { color: "#065f46", fontSize: 24, fontWeight: "900" },
-  progressLabel: { color: "#047857", fontWeight: "800" },
-  btn: {
-    backgroundColor: "#2563eb",
-    borderRadius: radius.card,
-    padding: 10,
-    alignItems: "center"
-  },
-  btnText: { color: "#fff", fontWeight: "800" },
-  disabled: { opacity: 0.55 },
-  msg: { fontWeight: "700" },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff",
-    gap: 8
-  },
-  cardTitle: { color: "#111827", fontWeight: "900" },
-  stepCard: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    gap: 8,
-    backgroundColor: "#f8fafc"
-  },
-  stepHeader: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
-  stepTitle: { color: "#111827", flex: 1, fontWeight: "900" },
-  statusPill: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    color: "#334155",
-    backgroundColor: "#e2e8f0",
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  status_done: { color: "#065f46", backgroundColor: "#d1fae5" },
-  status_pending: { color: "#92400e", backgroundColor: "#fef3c7" },
-  status_skipped: { color: "#475569", backgroundColor: "#e2e8f0" },
-  stepNote: { color: "#475569", fontSize: 12, fontWeight: "700" },
-  stepActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  stepBtn: { borderRadius: radius.card, paddingHorizontal: 10, paddingVertical: 8 },
-  doneBtn: { backgroundColor: "#16a34a" },
-  pendingBtn: { backgroundColor: "#ca8a04" },
-  skipBtn: { backgroundColor: "#64748b" },
-  stepBtnText: { color: "#fff", fontWeight: "900" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff"
-  },
-  noteInput: { minHeight: 72, textAlignVertical: "top" },
-  addBtn: {
-    backgroundColor: "#16a34a",
-    borderRadius: radius.card,
-    padding: 10,
-    alignItems: "center"
-  },
-  lockedCopy: { color: "#475569", fontWeight: "700" },
-  completionHelp: { color: "#92400e", fontWeight: "700" }
-});
+export function createFacilitySopRunDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 16, gap: 8 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted },
+    metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metaCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 180,
+      padding: 10
+    },
+    metaLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    metaValue: { color: palette.text, fontWeight: "900", marginTop: 2 },
+    progressCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    progressValue: { color: palette.success, fontSize: 24, fontWeight: "900" },
+    progressLabel: { color: palette.textMuted, fontWeight: "800" },
+    btn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 10,
+      alignItems: "center"
+    },
+    btnText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
+    msg: { color: palette.text, fontWeight: "700" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      gap: 8
+    },
+    cardTitle: { color: palette.text, fontWeight: "900" },
+    stepCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      gap: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    stepHeader: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
+    stepTitle: { color: palette.text, flex: 1, fontWeight: "900" },
+    statusPill: {
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      color: palette.textMuted,
+      backgroundColor: palette.surfaceStrong,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    status_done: { color: palette.success, backgroundColor: palette.surfaceStrong },
+    status_pending: { color: palette.warning, backgroundColor: palette.surfaceStrong },
+    status_skipped: { color: palette.textMuted, backgroundColor: palette.surfaceStrong },
+    stepNote: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    stepActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    stepBtn: { borderRadius: radius.card, paddingHorizontal: 10, paddingVertical: 8 },
+    doneBtn: { backgroundColor: "#16a34a" },
+    pendingBtn: { backgroundColor: "#ca8a04" },
+    skipBtn: { backgroundColor: "#64748b" },
+    stepBtnText: { color: "#fff", fontWeight: "900" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    noteInput: { minHeight: 72, textAlignVertical: "top" },
+    addBtn: {
+      backgroundColor: "#16a34a",
+      borderRadius: radius.card,
+      padding: 10,
+      alignItems: "center"
+    },
+    lockedCopy: { color: palette.textMuted, fontWeight: "700" },
+    readOnlyCopy: { color: palette.warning, fontWeight: "800" },
+    completionHelp: { color: palette.warning, fontWeight: "700" }
+  });
+}

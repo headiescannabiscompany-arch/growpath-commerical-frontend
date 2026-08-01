@@ -2,7 +2,10 @@ import React from "react";
 import * as DocumentPicker from "expo-document-picker";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FacilitySopRunDetailRoute from "@/app/home/facility/sop-runs/[id]";
+import FacilitySopRunDetailRoute, {
+  createFacilitySopRunDetailStyles
+} from "@/app/home/facility/sop-runs/[id]";
+import FacilitySopRunsIndexRoute from "@/app/home/facility/sop-runs";
 import FacilitySopRunsCompareRoute, {
   createFacilitySopCompareStyles
 } from "@/app/home/facility/sop-runs/compare";
@@ -24,6 +27,7 @@ const mockDeleteTemplate = jest.fn();
 const mockUploadSopDocument = jest.fn();
 const mockRefetchTemplates = jest.fn();
 let mockParams: Record<string, string> = {};
+let mockCanWriteSopRuns = true;
 
 jest.mock("expo-document-picker", () => ({
   getDocumentAsync: jest.fn()
@@ -60,7 +64,7 @@ jest.mock("@/state/useFacility", () => ({
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { SOP_RUNS_WRITE: "facility.sop_runs.write" },
-  useEntitlements: () => ({ can: () => true })
+  useEntitlements: () => ({ can: () => mockCanWriteSopRuns })
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -102,6 +106,7 @@ jest.mock("@/hooks/useSopTemplates", () => ({
 describe("facility SOP run nested back behavior", () => {
   beforeEach(() => {
     mockParams = {};
+    mockCanWriteSopRuns = true;
     mockApiRequest.mockReset();
     mockPush.mockReset();
     mockReplace.mockReset();
@@ -168,6 +173,62 @@ describe("facility SOP run nested back behavior", () => {
       expect(screen.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy()
     );
     expect(screen.getByText("Daily room check")).toBeTruthy();
+  });
+
+  it("keeps the SOP Runs index read-only for viewers", async () => {
+    mockCanWriteSopRuns = false;
+
+    const screen = render(<FacilitySopRunsIndexRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+    expect(screen.queryByText("Start Run")).toBeNull();
+    expect(
+      screen.getByText("SOP runs are read-only for this facility role.")
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "SOP Library & Runs" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Run evidence summary" }).props["aria-level"]
+    ).toBe(2);
+    expect(screen.getByRole("header", { name: "Run history" }).props["aria-level"]).toBe(
+      2
+    );
+  });
+
+  it("blocks the direct SOP start route for viewers", () => {
+    mockCanWriteSopRuns = false;
+
+    const screen = render(<FacilitySopRunsStartRoute />);
+
+    expect(screen.getByText("SOP runs are read-only")).toBeTruthy();
+    expect(
+      screen.getByText("Only facility owners and managers can start SOP runs.")
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("SOP run title")).toBeNull();
+    expect(screen.queryByLabelText("Start SOP run")).toBeNull();
+    expect(screen.getByLabelText("Return to facility SOP runs")).toBeTruthy();
+  });
+
+  it("shows active SOP evidence without mutation controls for viewers", async () => {
+    mockCanWriteSopRuns = false;
+    mockParams = { id: "run-1" };
+
+    const screen = render(<FacilitySopRunDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Daily room check" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Checklist evidence" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByText("SOP run evidence is read-only for this facility role.")
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Mark SOP step Inspect room done")).toBeNull();
+    expect(screen.queryByLabelText("Add SOP evidence step")).toBeNull();
+    expect(screen.queryByLabelText("Mark SOP run complete")).toBeNull();
   });
 
   it("shows readable SOP evidence and blocks completion while a step is pending", async () => {
@@ -245,6 +306,18 @@ describe("facility SOP run nested back behavior", () => {
     expect(styles.templatePanel.backgroundColor).toBe(palette.surfaceMuted);
     expect(styles.templateCard.backgroundColor).toBe(palette.card);
     expect(styles.btn.backgroundColor).toBe(palette.accent);
+  });
+
+  it("uses the active Night palette for SOP run detail evidence", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilitySopRunDetailStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.metaCard.backgroundColor).toBe(palette.surface);
+    expect(styles.progressCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.card.backgroundColor).toBe(palette.surface);
+    expect(styles.stepCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
   });
 
   it("uses the active Night palette for the SOP comparison chooser", () => {

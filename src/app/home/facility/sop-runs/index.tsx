@@ -12,6 +12,7 @@ import {
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -74,6 +75,8 @@ export default function FacilitySopRunsIndexRoute() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  const ent = useEntitlements();
+  const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const { selectedId: facilityId } = useFacility();
   const [items, setItems] = useState<SopRunListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,7 +139,7 @@ export default function FacilitySopRunsIndexRoute() {
       refreshing={refreshing}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text accessibilityRole="header" style={styles.h1}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
             SOP Library & Runs
           </Text>
           <Text style={styles.summaryLabel}>
@@ -144,14 +147,16 @@ export default function FacilitySopRunsIndexRoute() {
             grow.
           </Text>
           <View style={styles.links}>
-            <Link
-              accessibilityRole="button"
-              accessibilityLabel="Start SOP run"
-              href="/home/facility/sop-runs/start"
-              style={styles.link}
-            >
-              Start Run
-            </Link>
+            {canWriteSopRuns ? (
+              <Link
+                accessibilityRole="button"
+                accessibilityLabel="Start SOP run"
+                href="/home/facility/sop-runs/start"
+                style={styles.link}
+              >
+                Start Run
+              </Link>
+            ) : null}
             <Link
               accessibilityRole="button"
               accessibilityLabel="Open SOP presets"
@@ -169,7 +174,15 @@ export default function FacilitySopRunsIndexRoute() {
               Compare
             </Link>
           </View>
+          {!canWriteSopRuns ? (
+            <Text style={styles.readOnlyText}>
+              SOP runs are read-only for this facility role.
+            </Text>
+          ) : null}
           <View style={styles.summaryCard}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.summaryHeading}>
+              Run evidence summary
+            </Text>
             <View>
               <Text style={styles.summaryValue}>
                 {completedRuns}/{totalRuns}
@@ -199,6 +212,9 @@ export default function FacilitySopRunsIndexRoute() {
             </View>
           ) : null}
           {error ? <Text style={styles.err}>{error}</Text> : null}
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionHeading}>
+            Run history
+          </Text>
         </View>
       }
       ListEmptyComponent={<Text style={styles.empty}>No SOP runs found.</Text>}
@@ -270,6 +286,14 @@ const createStyles = (palette: ThemePalette) =>
       gap: 16
     },
     summaryValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    summaryHeading: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      width: "100%"
+    },
+    sectionHeading: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    readOnlyText: { color: palette.warning, fontWeight: "800" },
     summaryLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
     warnText: { color: palette.warning },
     alertCard: {
