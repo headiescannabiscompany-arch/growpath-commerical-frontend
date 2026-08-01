@@ -5,7 +5,9 @@ import CommunitiesDirectoryRoute from "@/app/communities";
 import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
 import ForumCodeRoute from "@/app/home/personal/(tabs)/forum/code";
-import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
+import ForumNewPostRoute, {
+  createStyles as createForumNewPostStyles
+} from "@/app/home/personal/(tabs)/forum/new-post";
 
 const mockListForumPosts = jest.fn();
 const mockListVideoLibrary = jest.fn();
@@ -225,6 +227,49 @@ describe("Forum and feed separation copy", () => {
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+    expect(screen.getByText("New Discussion").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 1 })
+    );
+    expect(screen.getByText("Posting as User").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 2 })
+    );
+    expect(screen.getByText("Post audience — Grow Interests").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 2 })
+    );
+    expect(screen.getByText("Tier 1: What You Grow").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 3 })
+    );
+  });
+
+  it("uses the active palette throughout the forum composer", () => {
+    const palette = {
+      page: "#0E141B",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      border: "#283545",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      heroText: "#FFFFFF",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      link: "#78AAFF",
+      warning: "#E3BE63"
+    } as any;
+
+    const styles = createForumNewPostStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.identityCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.primaryBtn.backgroundColor).toBe(palette.accent);
+    expect(styles.secondaryText.color).toBe(palette.link);
   });
 
   it("replaces the Free write form with a truthful read-only recovery", () => {

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
@@ -20,6 +20,7 @@ import { INTEREST_TIERS } from "@/config/interests";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
   buildEmptyTierSelection,
@@ -50,6 +51,8 @@ export default function ForumNewPostRoute() {
   }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
   const workspaceContext = entitlements.mode || "personal";
   const authorType =
@@ -233,7 +236,9 @@ export default function ForumNewPostRoute() {
     <ScreenBoundary name="personal.forum.newPost" showBack backFallbackHref="/forum">
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View>
-          <Text style={styles.title}>New Discussion</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            New Discussion
+          </Text>
           <Text style={styles.subtitle}>
             Create a forum discussion or Q&A post. Product, course, live, and storefront
             promotions belong in Feed / Campaigns.
@@ -246,7 +251,9 @@ export default function ForumNewPostRoute() {
         </View>
 
         <View style={styles.identityCard}>
-          <Text style={styles.identityTitle}>Posting as {identityLabel}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.identityTitle}>
+            Posting as {identityLabel}
+          </Text>
           <Text style={styles.identityText}>Workspace: {workspaceContext}</Text>
           <Text style={styles.identityText}>
             Forum is discussion and Q&A. Feed / Campaigns is commercial and facility
@@ -256,7 +263,7 @@ export default function ForumNewPostRoute() {
 
         {purpose !== "discussion" || growId || plantId || diagnosisId || toolRunId ? (
           <View style={styles.contextCard}>
-            <Text style={styles.contextTitle}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.contextTitle}>
               {purpose === "diagnosis"
                 ? "Diagnosis help request"
                 : purpose === "grow_update"
@@ -282,6 +289,7 @@ export default function ForumNewPostRoute() {
           value={title}
           onChangeText={setTitle}
           placeholder="Title"
+          placeholderTextColor={palette.textMuted}
           editable={!submitting && canPost}
           style={styles.input}
           accessibilityLabel="Forum post title"
@@ -290,6 +298,7 @@ export default function ForumNewPostRoute() {
           value={body}
           onChangeText={setBody}
           placeholder="Write your question or discussion..."
+          placeholderTextColor={palette.textMuted}
           multiline
           editable={!submitting && canPost}
           style={[styles.input, styles.bodyInput]}
@@ -299,6 +308,8 @@ export default function ForumNewPostRoute() {
         <View style={styles.interestCard}>
           <GrowInterestPicker
             title="Post audience — Grow Interests"
+            titleAccessibilityLevel={2}
+            tierAccessibilityLevel={3}
             helperText="Tier 1 is required. Choose from the interests saved in your profile; lower tiers such as Hydroponics or Living Soil narrow who sees this post."
             value={interestSelections}
             onChange={setInterestSelections}
@@ -379,7 +390,7 @@ export default function ForumNewPostRoute() {
           accessibilityLabel="Publish forum post"
         >
           {submitting ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.primaryText}>Post</Text>
           )}
@@ -404,101 +415,101 @@ export default function ForumNewPostRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 36, gap: 12 },
-  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  bodyInput: { minHeight: 150, textAlignVertical: "top" },
-  identityCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  identityTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  identityText: { color: "#475569", fontSize: 13, fontWeight: "700", marginTop: 4 },
-  contextCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  contextTitle: { color: "#166534", fontSize: 15, fontWeight: "900" },
-  interestCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  interestGroup: { gap: 6 },
-  interestLabel: { color: "#334155", fontSize: 13, fontWeight: "900" },
-  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tag: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    backgroundColor: "#FFFFFF"
-  },
-  tagSelected: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
-  tagText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  tagTextSelected: { color: "#166534" },
-  primaryBtn: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryBtn: {
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  attachBtn: { alignSelf: "flex-start" },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  photoTools: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  photoCount: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  photoTile: { width: 118, gap: 6 },
-  photoPreview: {
-    width: 118,
-    height: 88,
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  removePhoto: {
-    alignItems: "center",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingVertical: 6
-  },
-  removePhotoText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+export const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 36, gap: 12 },
+    title: { fontSize: 24, fontWeight: "800", color: palette.heroText },
+    subtitle: { color: palette.textMuted, marginTop: 4 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    bodyInput: { minHeight: 150, textAlignVertical: "top" },
+    identityCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    identityTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    identityText: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "700",
+      marginTop: 4
+    },
+    contextCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    contextTitle: { color: palette.accent, fontSize: 15, fontWeight: "900" },
+    interestCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    primaryBtn: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    attachBtn: { alignSelf: "flex-start" },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    photoTools: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    photoCount: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    photoTile: { width: 118, gap: 6 },
+    photoPreview: {
+      width: 118,
+      height: 88,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    removePhoto: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingVertical: 6
+    },
+    removePhotoText: { color: palette.warning, fontSize: 12, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    feedback: {
+      color: palette.text,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });

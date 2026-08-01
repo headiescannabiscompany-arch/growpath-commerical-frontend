@@ -31,7 +31,9 @@ export default function GrowInterestPicker({
   collapsible = true,
   defaultExpanded = true,
   showEmptyTiers = false,
-  emptyTierText = "No choices are saved for this tier."
+  emptyTierText = "No choices are saved for this tier.",
+  titleAccessibilityLevel = /** @type {number | undefined} */ (undefined),
+  tierAccessibilityLevel = /** @type {number | undefined} */ (undefined)
 }) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -75,7 +77,13 @@ export default function GrowInterestPicker({
         accessibilityState={collapsible ? { expanded } : undefined}
       >
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{title}</Text>
+          <Text
+            accessibilityRole={titleAccessibilityLevel ? "header" : undefined}
+            aria-level={titleAccessibilityLevel}
+            style={styles.title}
+          >
+            {title}
+          </Text>
           {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
         </View>
         {collapsible ? (
@@ -102,7 +110,11 @@ export default function GrowInterestPicker({
             return (
               <View key={tier.id} style={styles.tierBlock}>
                 <View style={styles.tierHeader}>
-                  <Text style={styles.tierLabel}>
+                  <Text
+                    accessibilityRole={tierAccessibilityLevel ? "header" : undefined}
+                    aria-level={tierAccessibilityLevel}
+                    style={styles.tierLabel}
+                  >
                     Tier {tier.tier}: {tier.label}
                   </Text>
                   <Text style={styles.tierCount}>
