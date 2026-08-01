@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -16,8 +16,15 @@ import {
   testIntegrationConnection
 } from "@/api/integrations";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+
+export function canConfigureFacilityIntegration(role: string | null | undefined = "") {
+  const normalized = String(role).toUpperCase();
+  return normalized === "OWNER" || normalized === "MANAGER";
+}
 
 function deviceName(device: any, index: number) {
   return String(
@@ -33,7 +40,11 @@ function deviceName(device: any, index: number) {
 
 export default function FacilityPulseConnectionRoute() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityPulseStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
+  const canConfigure = canConfigureFacilityIntegration(entitlements.facilityRole);
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("Pulse facility telemetry");
   const [devices, setDevices] = useState<any[]>([]);
@@ -78,6 +89,36 @@ export default function FacilityPulseConnectionRoute() {
     } as any);
   }
 
+  if (!canConfigure) {
+    return (
+      <ScreenBoundary
+        title="Connect Pulse"
+        showBack
+        backFallbackHref="/home/facility/integrations"
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.card} accessibilityRole="alert">
+            <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+              Pulse connection setup is read-only
+            </Text>
+            <Text style={styles.body}>
+              Your Facility role can view connected telemetry, but only owners and
+              managers can add or verify provider credentials.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Return to Facility integrations"
+              onPress={() => router.push("/home/facility/integrations" as any)}
+              style={styles.primary}
+            >
+              <Text style={styles.primaryText}>Return to Integrations</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </ScreenBoundary>
+    );
+  }
+
   return (
     <ScreenBoundary
       title="Connect Pulse"
@@ -86,7 +127,7 @@ export default function FacilityPulseConnectionRoute() {
     >
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.title}>
             Pulse read-only telemetry
           </Text>
           <Text style={styles.body}>
@@ -116,7 +157,7 @@ export default function FacilityPulseConnectionRoute() {
             style={[styles.primary, busy && styles.disabled]}
           >
             {busy ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.primaryText}>Verify and discover devices</Text>
             )}
@@ -149,42 +190,44 @@ export default function FacilityPulseConnectionRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 40, gap: 12 },
-  card: {
-    backgroundColor: "#fff",
-    borderColor: "#d8e2d4",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 16
-  },
-  title: { color: "#172317", fontSize: 24, fontWeight: "900", marginBottom: 8 },
-  cardTitle: { color: "#172317", fontSize: 18, fontWeight: "900", marginBottom: 8 },
-  body: { color: "#425044", lineHeight: 21, marginBottom: 14 },
-  input: {
-    backgroundColor: "#fff",
-    borderColor: "#c9d4c6",
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 10,
-    minHeight: 46,
-    paddingHorizontal: 12
-  },
-  primary: {
-    alignItems: "center",
-    backgroundColor: "#176b3a",
-    borderRadius: 10,
-    justifyContent: "center",
-    minHeight: 46,
-    paddingHorizontal: 14
-  },
-  primaryText: { color: "#fff", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  status: { color: "#24462e", marginTop: 12 },
-  device: {
-    borderBottomColor: "#edf1eb",
-    borderBottomWidth: 1,
-    color: "#27342a",
-    paddingVertical: 9
-  }
-});
+export function createFacilityPulseStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { backgroundColor: palette.page, padding: 16, paddingBottom: 40, gap: 12 },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 16
+    },
+    title: { color: palette.text, fontSize: 24, fontWeight: "900", marginBottom: 8 },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "900", marginBottom: 8 },
+    body: { color: palette.textMuted, lineHeight: 21, marginBottom: 14 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 10,
+      borderWidth: 1,
+      marginBottom: 10,
+      minHeight: 46,
+      paddingHorizontal: 12
+    },
+    primary: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: 10,
+      justifyContent: "center",
+      minHeight: 46,
+      paddingHorizontal: 14
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    status: { color: palette.success, marginTop: 12 },
+    device: {
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      color: palette.text,
+      paddingVertical: 9
+    }
+  });
+}

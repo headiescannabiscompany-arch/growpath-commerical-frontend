@@ -1,16 +1,24 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FacilityPulseConnectionRoute from "@/app/home/facility/(tabs)/tools/pulse";
+import FacilityPulseConnectionRoute, {
+  canConfigureFacilityIntegration,
+  createFacilityPulseStyles
+} from "@/app/home/facility/(tabs)/tools/pulse";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
 const mockCreate = jest.fn();
 const mockTest = jest.fn();
 const mockDevices = jest.fn();
+let mockFacilityRole = "OWNER";
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
+}));
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ facilityRole: mockFacilityRole })
 }));
 jest.mock("@/api/integrations", () => ({
   createIntegrationConnection: (...args: any[]) => mockCreate(...args),
@@ -28,9 +36,33 @@ jest.mock("@/components/ScreenBoundary", () => {
 describe("FacilityPulseConnectionRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFacilityRole = "OWNER";
     mockCreate.mockResolvedValue({ id: "connection-1" });
     mockTest.mockResolvedValue({ id: "connection-1", status: "connected" });
     mockDevices.mockResolvedValue([{ id: "device-1", name: "Flower Room Temp/RH" }]);
+  });
+
+  it("uses the active Night palette and restricts setup to owners and managers", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityPulseStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(canConfigureFacilityIntegration("OWNER")).toBe(true);
+    expect(canConfigureFacilityIntegration("MANAGER")).toBe(true);
+    expect(canConfigureFacilityIntegration("VIEWER")).toBe(false);
+  });
+
+  it("does not expose provider credentials or verification to a Viewer", () => {
+    mockFacilityRole = "VIEWER";
+    const screen = render(<FacilityPulseConnectionRoute />);
+
+    expect(screen.getByText("Pulse connection setup is read-only")).toBeTruthy();
+    expect(screen.queryByLabelText("Pulse API key")).toBeNull();
+    expect(screen.queryByText("Verify and discover devices")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Return to Facility integrations"));
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/integrations");
   });
 
   it("verifies a grow-scoped key, discovers devices, and prefills room mapping", async () => {
