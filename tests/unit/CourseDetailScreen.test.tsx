@@ -1,7 +1,9 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
-import CourseDetailScreen from "@/screens/CourseDetailScreen";
+import CourseDetailScreen, { createStyles } from "@/screens/CourseDetailScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
 const mockSaveNote = jest.fn();
@@ -36,6 +38,13 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/features/learning/learningAccess", () => ({
   getLearningAccess: () => mockLearningAccess
 }));
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({ palette: actual.getThemePalette("night", "dark") })
+  };
+});
 jest.mock("@/components/feed/PersonalFeedPlacement", () => () => null);
 jest.mock("@/api/grows", () => ({ listPersonalGrows: jest.fn().mockResolvedValue([]) }));
 jest.mock("@/api/tasks", () => ({ createPersonalTask: jest.fn() }));
@@ -131,6 +140,41 @@ describe("CourseDetailScreen learner player", () => {
     });
     mockOpenCourseDispute.mockResolvedValue({ accepted: true });
     mockRequestCourseRefund.mockResolvedValue({ accepted: true });
+  });
+
+  it("renders a loaded course with Night palette surfaces and keeps Day styles palette-driven", async () => {
+    const nightPalette = getThemePalette("night", "dark");
+    const dayPalette = getThemePalette("day", "light");
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    const title = await screen.findByText("Living Soil Course");
+    const reportTitle = screen.getByText("Report Course");
+    const reportInput = screen.getByLabelText("Course report reason");
+
+    expect(StyleSheet.flatten(title.props.style).color).toBe(nightPalette.text);
+    expect(
+      StyleSheet.flatten(reportTitle.parent?.parent?.props.style).backgroundColor
+    ).toBe(nightPalette.surface);
+    expect(StyleSheet.flatten(reportInput.props.style)).toEqual(
+      expect.objectContaining({
+        backgroundColor: nightPalette.surface,
+        borderColor: nightPalette.border,
+        color: nightPalette.text
+      })
+    );
+    expect(reportInput.props.placeholderTextColor).toBe(nightPalette.textMuted);
+
+    const dayStyles = createStyles(dayPalette);
+    expect(dayStyles.container.backgroundColor).toBe(dayPalette.page);
+    expect(dayStyles.card.backgroundColor).toBe(dayPalette.surface);
+    expect(dayStyles.title.color).toBe(dayPalette.text);
+    expect(dayStyles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: dayPalette.surface,
+        borderColor: dayPalette.border,
+        color: dayPalette.text
+      })
+    );
   });
 
   it("shows progress, resources, discussion, products, AI, and persistent notes", async () => {

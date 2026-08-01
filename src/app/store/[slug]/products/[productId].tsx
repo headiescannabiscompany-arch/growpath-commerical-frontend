@@ -24,6 +24,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
   isDispensaryStorefront,
@@ -114,6 +115,8 @@ function formatSpecValue(value: unknown) {
 }
 
 function SpecRow({ label, value }: { label: string; value?: unknown }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const display = formatSpecValue(value);
   if (!display) return null;
   return (
@@ -173,6 +176,8 @@ function trackCommercialClick(payload: CommercialAnalyticsEvent) {
 }
 
 export default function PublicProductRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{ slug?: string; productId?: string }>();
   const auth = useAuth();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
@@ -378,7 +383,7 @@ export default function PublicProductRoute() {
     >
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading product...</Text>
         </View>
       ) : error ? (
@@ -846,94 +851,96 @@ export default function PublicProductRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { color: "#111827", fontSize: 26, fontWeight: "800" },
-  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 4 },
-  center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
-  error: { color: "#B91C1C", fontWeight: "800" },
-  feedback: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    color: "#334155",
-    marginBottom: 10,
-    padding: 8
-  },
-  cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
-  productImage: {
-    borderRadius: radius.card,
-    height: 260,
-    marginBottom: 14,
-    width: "100%"
-  },
-  bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
-  meta: { color: "#64748B", lineHeight: 19 },
-  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
-  inventory: { color: "#166534", fontSize: 14, fontWeight: "900", marginTop: 4 },
-  pickup: { color: "#166534", fontWeight: "800", lineHeight: 20 },
-  price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
-  warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
-  specGrid: { gap: 8 },
-  specRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  specLabel: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  specValue: { color: "#0F172A", fontWeight: "700", lineHeight: 20, marginTop: 4 },
-  actionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 16,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#F1F5F9",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  disabled: { opacity: 0.6 },
-  relatedRow: {
-    borderTopColor: "#E2E8F0",
-    borderTopWidth: 1,
-    gap: 4,
-    paddingVertical: 10
-  },
-  linkedRow: {
-    alignItems: "center",
-    borderTopColor: "#E2E8F0",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between",
-    paddingVertical: 10
-  },
-  linkedCopy: { flex: 1, gap: 4 },
-  linePanel: {
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    marginTop: 10,
-    padding: 10
-  },
-  relatedName: { color: "#111827", fontWeight: "800" }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    title: { color: palette.text, fontSize: 26, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },
+    center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
+    error: { color: palette.danger, fontWeight: "800" },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      color: palette.textSoft,
+      marginBottom: 10,
+      padding: 8
+    },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800", marginBottom: 8 },
+    productImage: {
+      borderRadius: radius.card,
+      height: 260,
+      marginBottom: 14,
+      width: "100%"
+    },
+    bodyText: { color: palette.textSoft, lineHeight: 20, marginBottom: 10 },
+    meta: { color: palette.textMuted, lineHeight: 19 },
+    interests: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    inventory: { color: palette.success, fontSize: 14, fontWeight: "900", marginTop: 4 },
+    pickup: { color: palette.success, fontWeight: "800", lineHeight: 20 },
+    price: { color: palette.success, fontSize: 18, fontWeight: "800", marginTop: 4 },
+    warning: { color: palette.warning, fontWeight: "700", lineHeight: 20 },
+    specGrid: { gap: 8 },
+    specRow: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    specLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    specValue: { color: palette.text, fontWeight: "700", lineHeight: 20, marginTop: 4 },
+    actionRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 16,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    disabled: { opacity: 0.6 },
+    relatedRow: {
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      gap: 4,
+      paddingVertical: 10
+    },
+    linkedRow: {
+      alignItems: "center",
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between",
+      paddingVertical: 10
+    },
+    linkedCopy: { flex: 1, gap: 4 },
+    linePanel: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      marginTop: 10,
+      padding: 10
+    },
+    relatedName: { color: palette.text, fontWeight: "800" }
+  });
+}

@@ -1,12 +1,17 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CreatorAnalyticsScreen from "@/screens/CreatorAnalyticsScreen";
+import CreatorAnalyticsScreen, {
+  createCreatorAnalyticsStyles
+} from "@/screens/CreatorAnalyticsScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 jest.mock("@/components/ScreenContainer", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockScreenContainer({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 jest.mock("@/api/creator", () => ({
@@ -43,9 +48,27 @@ jest.mock("@/api/creator", () => ({
 }));
 
 describe("CreatorAnalyticsScreen", () => {
+  it("uses the active Night palette for the course list and analytics detail", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createCreatorAnalyticsStyles(palette);
+
+    expect(styles.header.color).toBe(palette.text);
+    expect(styles.courseItem.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.courseItem.borderColor).toBe(palette.border);
+    expect(styles.courseItemText.color).toBe(palette.text);
+    expect(styles.analyticsCard.backgroundColor).toBe(palette.card);
+    expect(styles.analyticsLabel.color).toBe(palette.textSoft);
+  });
+
   it("renders real course funnel and engagement metrics", async () => {
     const screen = render(<CreatorAnalyticsScreen />);
     await waitFor(() => expect(screen.getByText("Living Soil Analytics")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Course Analytics" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "View analytics for Living Soil Analytics"
+      })
+    ).toBeTruthy();
     fireEvent.press(screen.getByText("Living Soil Analytics"));
 
     await waitFor(() => expect(screen.getByText("Views: 14 (8 unique)")).toBeTruthy());

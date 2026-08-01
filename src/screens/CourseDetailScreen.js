@@ -45,6 +45,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { lessonHasMedia } from "@/features/learning/lessonMedia";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
 function rowId(row) {
@@ -94,6 +95,8 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const auth = useAuth();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const initialCourse = route?.params?.course || null;
   const rawId = route?.params?.id || route?.params?.courseId || rowId(initialCourse);
   const courseId = String(rawId || "");
@@ -664,7 +667,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
 
   if (!access.canViewCourses) {
     return (
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Course unavailable</Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_course_detail" />
         <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
@@ -676,7 +679,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   if (loading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
         <Text style={styles.meta}>Loading course...</Text>
       </View>
     );
@@ -711,6 +714,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
                 value={courseFee}
                 onChangeText={setCourseFee}
                 placeholder="0.00"
+                placeholderTextColor={palette.textMuted}
                 keyboardType="decimal-pad"
                 editable={!saving}
                 style={styles.input}
@@ -1073,6 +1077,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             value={lessonNote}
             onChangeText={setLessonNote}
             placeholder="Write notes you want to keep with this lesson"
+            placeholderTextColor={palette.textMuted}
             multiline
             style={[styles.input, styles.noteInput]}
             accessibilityLabel="Private lesson notes"
@@ -1135,6 +1140,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
           value={reportReason}
           onChangeText={setReportReason}
           placeholder="Reason"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           accessibilityLabel="Course report reason"
         />
@@ -1164,6 +1170,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             value={refundReason}
             onChangeText={setRefundReason}
             placeholder="Refund reason"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             editable={canRequestRefund && !saving}
             accessibilityLabel="Course refund reason"
@@ -1189,6 +1196,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             value={disputeReason}
             onChangeText={setDisputeReason}
             placeholder="What is wrong with this payment?"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             editable={canReportPaymentIssue && !saving}
             accessibilityLabel="Course payment issue"
@@ -1246,6 +1254,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             value={salesRange}
             onChangeText={setSalesRange}
             placeholder="last_30_days"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <Pressable disabled={saving} onPress={exportSales} style={styles.secondaryBtn}>
@@ -1262,67 +1271,81 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 18, paddingBottom: 36, gap: 12 },
-  loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
-  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
-  body: { color: "#334155", lineHeight: 20 },
-  meta: { color: "#64748B", fontSize: 13 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 8
-  },
-  badge: { alignSelf: "flex-start", color: "#166534", fontWeight: "800" },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#F8FAFC"
-  },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  row: { borderTopWidth: 1, borderTopColor: "#E2E8F0", paddingTop: 8, gap: 4 },
-  rowTitle: { fontWeight: "800", color: "#0F172A" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    backgroundColor: "#FFFFFF"
-  },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    backgroundColor: "#FFFFFF"
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  link: { color: "#166534", fontWeight: "800" },
-  noteInput: { minHeight: 96, textAlignVertical: "top" },
-  progressTrack: {
-    height: 10,
-    borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "#E2E8F0"
-  },
-  progressFill: { height: "100%", backgroundColor: "#16A34A" },
-  disabled: { opacity: 0.5 }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 18, paddingBottom: 36, gap: 12 },
+    loading: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: palette.page
+    },
+    title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    body: { color: palette.textSoft, lineHeight: 20 },
+    meta: { color: palette.textMuted, fontSize: 13 },
+    feedback: {
+      color: palette.text,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 8
+    },
+    badge: { alignSelf: "flex-start", color: palette.success, fontWeight: "800" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 8,
+      backgroundColor: palette.surface
+    },
+    cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    row: {
+      borderTopWidth: 1,
+      borderTopColor: palette.borderSoft,
+      paddingTop: 8,
+      gap: 4
+    },
+    rowTitle: { fontWeight: "800", color: palette.text },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 9,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      backgroundColor: palette.surface
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    link: { color: palette.link, fontWeight: "800" },
+    noteInput: { minHeight: 96, textAlignVertical: "top" },
+    progressTrack: {
+      height: 10,
+      borderRadius: 999,
+      overflow: "hidden",
+      backgroundColor: palette.surfaceStrong
+    },
+    progressFill: { height: "100%", backgroundColor: palette.success },
+    disabled: { opacity: 0.5 }
+  });
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
@@ -10,6 +10,7 @@ import { uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import {
   emptyLessonMediaDraft,
@@ -25,7 +26,9 @@ import {
 export default function EditLessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
-  const { lessonId } = route.params;
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const { lessonId, lesson: routeLesson } = route.params;
 
   const [lesson, setLesson] = useState(null);
   const [title, setTitle] = useState("");
@@ -40,8 +43,8 @@ export default function EditLessonScreen({ route, navigation }) {
   );
 
   useEffect(() => {
-    if (route.params?.lesson) {
-      const l = route.params.lesson;
+    if (routeLesson) {
+      const l = routeLesson;
       setLesson(l);
       setTitle(l.title);
       setOrder(String(l.order || 1));
@@ -54,7 +57,7 @@ export default function EditLessonScreen({ route, navigation }) {
       Alert.alert("Missing lesson data");
       navigation.goBack();
     }
-  }, []);
+  }, [navigation, routeLesson]);
 
   async function pickVideo() {
     try {
@@ -121,7 +124,7 @@ export default function EditLessonScreen({ route, navigation }) {
     return (
       <ScreenContainer scroll>
         <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" />
-        <Text>Loading...</Text>
+        <Text style={styles.helpText}>Loading...</Text>
         <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" />
       </ScreenContainer>
     );
@@ -146,6 +149,7 @@ export default function EditLessonScreen({ route, navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Title"
+        placeholderTextColor={palette.textMuted}
         value={title}
         onChangeText={setTitle}
         editable={access.canCreateCourses}
@@ -154,6 +158,7 @@ export default function EditLessonScreen({ route, navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Order"
+        placeholderTextColor={palette.textMuted}
         value={order}
         onChangeText={setOrder}
         keyboardType="numeric"
@@ -231,31 +236,46 @@ export default function EditLessonScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  label: { marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: {
-    backgroundColor: "#eee",
-    padding: 10,
-    borderRadius: radius.card,
-    marginBottom: 8
-  },
-  textBox: {
-    height: 120,
-    textAlignVertical: "top"
-  },
-  btn: {
-    marginTop: 16,
-    backgroundColor: "#2ecc71",
-    paddingVertical: 12,
-    borderRadius: radius.card
-  },
-  btnText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "700",
-    fontSize: 16
-  },
-  helpText: { color: "#64748b", fontSize: 12, marginBottom: 8 },
-  disabled: { opacity: 0.5 }
-});
+export function createStyles(palette) {
+  return StyleSheet.create({
+    header: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "700",
+      marginBottom: 10
+    },
+    label: {
+      color: palette.text,
+      marginTop: 10,
+      marginBottom: 4,
+      fontWeight: "600"
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      color: palette.text,
+      padding: 10,
+      borderRadius: radius.card,
+      marginBottom: 8
+    },
+    textBox: {
+      height: 120,
+      textAlignVertical: "top"
+    },
+    btn: {
+      marginTop: 16,
+      backgroundColor: palette.accent,
+      paddingVertical: 12,
+      borderRadius: radius.card
+    },
+    btnText: {
+      textAlign: "center",
+      color: palette.accentText,
+      fontWeight: "700",
+      fontSize: 16
+    },
+    helpText: { color: palette.textMuted, fontSize: 12, marginBottom: 8 },
+    disabled: { opacity: 0.5 }
+  });
+}

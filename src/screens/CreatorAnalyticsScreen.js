@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Pressable
+} from "react-native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { getCreatorCourses, getCourseAnalytics } from "../api/creator.js";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme.js";
 
 export default function CreatorAnalyticsScreen({ navigation = null }) {
+  const { palette } = useAppTheme();
+  const styles = createCreatorAnalyticsStyles(palette);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -40,26 +50,35 @@ export default function CreatorAnalyticsScreen({ navigation = null }) {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>Course Analytics</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+        Course Analytics
+      </Text>
       {loading ? (
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={palette.accent} />
       ) : (
         <FlatList
           data={courses}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <Text style={styles.courseItem} onPress={() => handleSelectCourse(item)}>
-              {item.title}
-            </Text>
+            <Pressable
+              style={styles.courseItem}
+              onPress={() => handleSelectCourse(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`View analytics for ${item.title}`}
+            >
+              <Text style={styles.courseItemText}>{item.title}</Text>
+            </Pressable>
           )}
           ListEmptyComponent={<Text style={styles.empty}>No courses found.</Text>}
         />
       )}
       {selectedCourse && (
         <View style={styles.analyticsCard}>
-          <Text style={styles.analyticsTitle}>Analytics for: {selectedCourse.title}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.analyticsTitle}>
+            Analytics for: {selectedCourse.title}
+          </Text>
           {loadingAnalytics ? (
-            <ActivityIndicator size="small" />
+            <ActivityIndicator size="small" color={palette.accent} />
           ) : analytics ? (
             <>
               <Text style={styles.analyticsLabel}>
@@ -110,43 +129,50 @@ export default function CreatorAnalyticsScreen({ navigation = null }) {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center"
-  },
-  courseItem: {
-    fontSize: 16,
-    padding: 12,
-    backgroundColor: "#f3f4f6",
-    borderRadius: radius.card,
-    marginBottom: 8,
-    color: "#111827"
-  },
-  empty: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: 40
-  },
-  analyticsCard: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 16,
-    marginTop: 24,
-    elevation: 2
-  },
-  analyticsTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10
-  },
-  analyticsLabel: {
-    fontSize: 15,
-    color: "#34495e",
-    marginBottom: 6
-  },
-  lessonRow: { borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 8 },
-  lessonTitle: { fontSize: 15, fontWeight: "700", color: "#111827" }
-});
+export function createCreatorAnalyticsStyles(palette) {
+  return StyleSheet.create({
+    header: {
+      fontSize: 24,
+      fontWeight: "700",
+      marginBottom: 16,
+      textAlign: "center",
+      color: palette.text
+    },
+    courseItem: {
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      marginBottom: 8
+    },
+    courseItemText: { fontSize: 16, color: palette.text },
+    empty: {
+      textAlign: "center",
+      color: palette.textMuted,
+      marginTop: 40
+    },
+    analyticsCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 16,
+      marginTop: 24,
+      elevation: 2
+    },
+    analyticsTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 10,
+      color: palette.text
+    },
+    analyticsLabel: {
+      fontSize: 15,
+      color: palette.textSoft,
+      marginBottom: 6
+    },
+    lessonRow: { borderTopWidth: 1, borderTopColor: palette.border, paddingTop: 8 },
+    lessonTitle: { fontSize: 15, fontWeight: "700", color: palette.text }
+  });
+}

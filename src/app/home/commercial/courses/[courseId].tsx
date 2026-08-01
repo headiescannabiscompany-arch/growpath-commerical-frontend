@@ -27,6 +27,7 @@ import {
   lessonMediaPublishIssues,
   prepareLessonMediaSubmission
 } from "@/features/learning/lessonMedia";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
@@ -89,6 +90,8 @@ function blocksCoursePublish(warning: string) {
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialCourseDetailStyles(palette), [palette]);
   const display = Array.isArray(value)
     ? value.filter(Boolean).join(", ")
     : String(value || "").trim();
@@ -102,6 +105,9 @@ function DetailRow({ label, value }: { label: string; value?: unknown }) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialCourseDetailStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -112,6 +118,8 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialCourseDetailRoute({ route }: { route?: any } = {}) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialCourseDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ courseId?: string; preview?: string }>();
   const learnerPreview = cleanId(params.preview || route?.params?.preview) === "1";
   const courseId = useMemo(
@@ -627,6 +635,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course detail status"
             onChangeText={setStatus}
             placeholder="draft, published, archived"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={status}
           />
@@ -634,6 +643,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course detail access"
             onChangeText={setAccess}
             placeholder="free, paid, followers, customers, private"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={access}
           />
@@ -641,6 +651,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course detail category"
             onChangeText={setCategory}
             placeholder="product_education, live_workshop, facility_training"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={category}
           />
@@ -648,6 +659,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course detail grow interests"
             onChangeText={setGrowInterests}
             placeholder="Grow interests for discovery and campaigns"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={growInterests}
           />
@@ -658,6 +670,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             autoCapitalize="none"
             onChangeText={setThumbnailUrl}
             placeholder="Thumbnail URL for storefront cards"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={thumbnailUrl}
           />
@@ -666,6 +679,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             autoCapitalize="none"
             onChangeText={setBannerUrl}
             placeholder="Banner URL for public course page"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={bannerUrl}
           />
@@ -737,6 +751,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           multiline
           onChangeText={setDescription}
           placeholder="Course description and use case"
+          placeholderTextColor={palette.textMuted}
           style={[styles.input, styles.textArea]}
           value={description}
         />
@@ -746,6 +761,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             keyboardType="decimal-pad"
             onChangeText={setPrice}
             placeholder="Paid course price"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={price}
           />
@@ -754,6 +770,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             autoCapitalize="none"
             onChangeText={setStripeProductId}
             placeholder="Stripe product ID for paid course"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={stripeProductId}
           />
@@ -762,6 +779,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             autoCapitalize="none"
             onChangeText={setStripePriceId}
             placeholder="Stripe price ID for paid course"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={stripePriceId}
           />
@@ -770,6 +788,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           accessibilityLabel="Commercial course detail linked products"
           onChangeText={setLinkedProductIds}
           placeholder="Linked product IDs"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={linkedProductIds}
         />
@@ -777,6 +796,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           accessibilityLabel="Commercial course detail linked product lines"
           onChangeText={setLinkedProductLineIds}
           placeholder="Linked product line IDs, or choose below"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={linkedProductLineIds}
         />
@@ -798,7 +818,14 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                     }
                     style={[styles.action, selected && styles.actionSelected]}
                   >
-                    <Text style={styles.actionText}>{name}</Text>
+                    <Text
+                      style={[
+                        styles.actionText,
+                        selected ? styles.actionTextSelected : null
+                      ]}
+                    >
+                      {name}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -809,6 +836,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           accessibilityLabel="Commercial course detail linked evidence runs"
           onChangeText={setLinkedGrowIds}
           placeholder="Linked evidence run IDs"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={linkedGrowIds}
         />
@@ -816,6 +844,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           accessibilityLabel="Commercial course detail linked lives"
           onChangeText={setLinkedLiveIds}
           placeholder="Linked live IDs"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={linkedLiveIds}
         />
@@ -948,6 +977,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           accessibilityLabel="Commercial course lesson title"
           onChangeText={setLessonTitle}
           placeholder="Lesson title"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
           value={lessonTitle}
         />
@@ -956,6 +986,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           multiline
           onChangeText={setLessonBody}
           placeholder="Lesson body, product instructions, trial evidence, support notes"
+          placeholderTextColor={palette.textMuted}
           style={[styles.input, styles.textArea]}
           value={lessonBody}
         />
@@ -987,6 +1018,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course lesson type"
             onChangeText={setLessonType}
             placeholder="video, article, tool, recipe, live replay, assignment"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonType}
           />
@@ -994,6 +1026,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course lesson related products"
             onChangeText={setLessonRelatedProductIds}
             placeholder="Related product IDs"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonRelatedProductIds}
           />
@@ -1002,6 +1035,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             autoCapitalize="none"
             onChangeText={setLessonDocumentUrls}
             placeholder="Document URLs, comma separated"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonDocumentUrls}
           />
@@ -1009,6 +1043,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course lesson related lives"
             onChangeText={setLessonRelatedLiveIds}
             placeholder="Related live IDs"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonRelatedLiveIds}
           />
@@ -1016,6 +1051,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course lesson Forum Q&A thread"
             onChangeText={setLessonForumThreadId}
             placeholder="Forum/Q&A thread ID"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonForumThreadId}
           />
@@ -1023,6 +1059,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityLabel="Commercial course lesson task title"
             onChangeText={setLessonTaskTitle}
             placeholder="Task created by this lesson"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonTaskTitle}
           />
@@ -1031,6 +1068,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             keyboardType="numeric"
             onChangeText={setLessonTaskDueOffsetDays}
             placeholder="Task due offset days"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={lessonTaskDueOffsetDays}
           />
@@ -1091,187 +1129,201 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 8 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#475569", lineHeight: 21 },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  body: { color: "#475569", fontSize: 14, lineHeight: 21, marginTop: 8 },
-  muted: { color: "#64748B", fontSize: 13, marginTop: 4 },
-  detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  detailRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 170,
-    padding: 10
-  },
-  detailLabel: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  detailValue: { color: "#0F172A", fontSize: 14, fontWeight: "800", marginTop: 4 },
-  formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  mediaTools: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  mediaButton: {
-    backgroundColor: "#111827",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  mediaButtonText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  clearButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  clearButtonText: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  previewGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 10
-  },
-  thumbnailPreview: {
-    aspectRatio: 4 / 3,
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    flex: 1,
-    minWidth: 180
-  },
-  bannerPreview: {
-    aspectRatio: 16 / 7,
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    flex: 2,
-    minWidth: 260
-  },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flexGrow: 1,
-    fontSize: 14,
-    marginTop: 10,
-    minWidth: 220,
-    paddingHorizontal: 10,
-    paddingVertical: 9
-  },
-  textArea: { minHeight: 88, textAlignVertical: "top" },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionSelected: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
-  actionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  lineSelector: {
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 9
-  },
-  selectorLabel: {
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  primaryAction: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
-  secondaryAction: {
-    alignSelf: "flex-start",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryActionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  dangerAction: {
-    alignSelf: "flex-start",
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  dangerActionText: { color: "#B91C1C", fontSize: 13, fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
-  warningBox: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  warningTitle: {
-    color: "#9A3412",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  warningText: {
-    color: "#9A3412",
-    fontSize: 12,
-    fontWeight: "800",
-    marginTop: 4
-  },
-  list: { gap: 10, marginTop: 12 },
-  row: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  rowTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  bullet: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 19,
-    marginTop: 6
-  }
-});
+export function createCommercialCourseDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: { gap: 8 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, lineHeight: 21 },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    body: { color: palette.textMuted, fontSize: 14, lineHeight: 21, marginTop: 8 },
+    muted: { color: palette.textMuted, fontSize: 13, marginTop: 4 },
+    detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    detailRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 170,
+      padding: 10
+    },
+    detailLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    detailValue: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    mediaTools: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    mediaButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    mediaButtonText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    clearButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    clearButtonText: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    previewGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 10
+    },
+    thumbnailPreview: {
+      aspectRatio: 4 / 3,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      flex: 1,
+      minWidth: 180
+    },
+    bannerPreview: {
+      aspectRatio: 16 / 7,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      flex: 2,
+      minWidth: 260
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexGrow: 1,
+      fontSize: 14,
+      marginTop: 10,
+      minWidth: 220,
+      paddingHorizontal: 10,
+      paddingVertical: 9
+    },
+    textArea: { minHeight: 88, textAlignVertical: "top" },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    actionText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    actionTextSelected: { color: palette.accentText },
+    lineSelector: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 9
+    },
+    selectorLabel: {
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+    primaryAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryActionText: { color: palette.accentText, fontSize: 13, fontWeight: "900" },
+    secondaryAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryActionText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    dangerAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    dangerActionText: { color: palette.danger, fontSize: 13, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    success: { color: palette.success, fontSize: 13, fontWeight: "800", marginTop: 8 },
+    warningBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    warningTitle: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    warningText: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    list: { gap: 10, marginTop: 12 },
+    row: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    rowTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19,
+      marginTop: 6
+    }
+  });
+}

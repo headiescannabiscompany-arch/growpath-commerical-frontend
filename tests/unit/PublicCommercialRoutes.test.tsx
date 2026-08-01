@@ -1,13 +1,22 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import PublicBrandProfileRoute from "@/app/brands/[slug]";
-import PublicStorefrontRoute from "@/app/store/[slug]";
+import PublicBrandProfileRoute, {
+  createStyles as createBrandProfileStyles
+} from "@/app/brands/[slug]";
+import PublicStorefrontRoute, {
+  createStyles as createStorefrontStyles
+} from "@/app/store/[slug]";
 import PublicStorefrontAliasRoute from "@/app/storefront/[slug]";
-import PublicProductRoute from "@/app/store/[slug]/products/[productId]";
+import PublicProductRoute, {
+  createStyles as createProductStyles
+} from "@/app/store/[slug]/products/[productId]";
 import PublicStorefrontProductAliasRoute from "@/app/storefront/[slug]/products/[productId]";
-import PublicStorefrontCourseRoute from "@/app/store/[slug]/courses/[courseId]";
+import PublicStorefrontCourseRoute, {
+  createStyles as createCourseStyles
+} from "@/app/store/[slug]/courses/[courseId]";
 import PublicStorefrontCourseAliasRoute from "@/app/storefront/[slug]/courses/[courseId]";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockFetchPublicStorefront = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
@@ -33,13 +42,17 @@ jest.mock("expo-router", () => {
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 jest.mock("@/api/storefront", () => ({
@@ -210,6 +223,55 @@ describe("public commercial routes", () => {
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockStartCourseCheckout.mockResolvedValue({});
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
+  });
+
+  it("uses the active Night palette across public storefront routes", () => {
+    const palette = getThemePalette("night", "light");
+    const brandStyles = createBrandProfileStyles(palette);
+    const storefrontStyles = createStorefrontStyles(palette);
+    const productStyles = createProductStyles(palette);
+    const courseStyles = createCourseStyles(palette);
+
+    expect(brandStyles.title.color).toBe(palette.text);
+    expect(brandStyles.feedback.backgroundColor).toBe(palette.surfaceMuted);
+    expect(brandStyles.secondaryButton).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surfaceMuted,
+        borderColor: palette.border
+      })
+    );
+    expect(brandStyles.primaryButton.backgroundColor).toBe(palette.accent);
+    expect(brandStyles.statusPill.backgroundColor).toBe(palette.accentSoft);
+
+    expect(storefrontStyles.product).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border
+      })
+    );
+    expect(storefrontStyles.profilePanel).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surfaceMuted,
+        borderColor: palette.border
+      })
+    );
+    expect(storefrontStyles.button.backgroundColor).toBe(palette.accent);
+    expect(storefrontStyles.warning.color).toBe(palette.warning);
+
+    expect(productStyles.cardTitle.color).toBe(palette.text);
+    expect(productStyles.feedback.backgroundColor).toBe(palette.surfaceMuted);
+    expect(productStyles.specRow.borderColor).toBe(palette.border);
+    expect(productStyles.primaryButton.backgroundColor).toBe(palette.accent);
+    expect(productStyles.secondaryButton.backgroundColor).toBe(palette.surfaceMuted);
+    expect(productStyles.linePanel.borderColor).toBe(palette.border);
+
+    expect(courseStyles.error.color).toBe(palette.danger);
+    expect(courseStyles.successTitle.color).toBe(palette.success);
+    expect(courseStyles.canceledTitle.color).toBe(palette.warning);
+    expect(courseStyles.statusPill.backgroundColor).toBe(palette.accentSoft);
+    expect(courseStyles.primaryButton.backgroundColor).toBe(palette.info);
+    expect(courseStyles.secondaryButton.backgroundColor).toBe(palette.surfaceMuted);
+    expect(courseStyles.linkedRow.borderColor).toBe(palette.border);
   });
 
   it("loads a public brand profile with a store link", async () => {

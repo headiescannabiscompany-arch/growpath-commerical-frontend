@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useVendorSignup } from "@/hooks/useVendorSignup";
 import { handleApiError } from "@/ui/handleApiError";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const VENDOR_TYPES = [
@@ -24,6 +25,8 @@ const VENDOR_TYPES = [
 ];
 
 const VendorSignup = ({ navigation }) => {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createVendorSignupStyles(palette), [palette]);
   const { signupAsVendor, isPending, error } = useVendorSignup();
   const [vendorType, setVendorType] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -79,7 +82,9 @@ const VendorSignup = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Become a Vendor</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Become a Vendor
+        </Text>
         <Text style={styles.subtitle}>
           Create and sell educational guides for growers using your products
         </Text>
@@ -90,6 +95,9 @@ const VendorSignup = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="e.g., Advanced Nutrients Co."
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          accessibilityLabel="Company name"
           value={companyName}
           onChangeText={setCompanyName}
         />
@@ -100,6 +108,7 @@ const VendorSignup = ({ navigation }) => {
             selectedValue={vendorType}
             onValueChange={setVendorType}
             style={styles.picker}
+            accessibilityLabel="Vendor type"
           >
             {VENDOR_TYPES.map((type) => (
               <Picker.Item key={type.value} label={type.label} value={type.value} />
@@ -111,6 +120,9 @@ const VendorSignup = ({ navigation }) => {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Tell growers about your company and products..."
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          accessibilityLabel="Vendor description"
           value={description}
           onChangeText={setDescription}
           multiline
@@ -121,6 +133,9 @@ const VendorSignup = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="https://..."
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          accessibilityLabel="Website URL"
           value={websiteUrl}
           onChangeText={setWebsiteUrl}
           keyboardType="url"
@@ -130,6 +145,9 @@ const VendorSignup = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="contact@company.com"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          accessibilityLabel="Contact email"
           value={contactEmail}
           onChangeText={setContactEmail}
           keyboardType="email-address"
@@ -139,6 +157,9 @@ const VendorSignup = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="+1 (555) 123-4567"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          accessibilityLabel="Contact phone"
           value={contactPhone}
           onChangeText={setContactPhone}
           keyboardType="phone-pad"
@@ -153,9 +174,11 @@ const VendorSignup = ({ navigation }) => {
           style={[styles.button, isPending && styles.buttonDisabled]}
           onPress={handleSignup}
           disabled={isPending}
+          accessibilityRole="button"
+          accessibilityLabel="Create vendor account"
         >
           {isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.buttonText}>Create Vendor Account</Text>
           )}
@@ -165,87 +188,93 @@ const VendorSignup = ({ navigation }) => {
   );
 };
 
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-    padding: 16
-  },
-  header: {
-    marginBottom: 24
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 4
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6b7280",
-    lineHeight: 20
-  },
-  form: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 16,
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    elevation: 2
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 8,
-    marginTop: 16
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: "#1f2937",
-    backgroundColor: "#f9fafb"
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-    paddingTop: 12
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    backgroundColor: "#f9fafb",
-    overflow: "hidden"
-  },
-  picker: {
-    height: 50
-  },
-  infoText: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginTop: 16,
-    lineHeight: 18,
-    fontStyle: "italic"
-  },
-  button: {
-    backgroundColor: "#0ea5e9",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    marginTop: 20,
-    alignItems: "center"
-  },
-  buttonDisabled: {
-    opacity: 0.6
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600"
-  }
-};
+export function createVendorSignupStyles(palette) {
+  return {
+    container: {
+      flex: 1,
+      backgroundColor: palette.page,
+      padding: 16
+    },
+    header: {
+      marginBottom: 24
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: palette.text,
+      marginBottom: 4
+    },
+    subtitle: {
+      fontSize: 14,
+      color: palette.textMuted,
+      lineHeight: 20
+    },
+    form: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 16,
+      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      elevation: 2
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: palette.text,
+      marginBottom: 8,
+      marginTop: 16
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 14,
+      color: palette.text,
+      backgroundColor: palette.surface
+    },
+    textArea: {
+      height: 100,
+      textAlignVertical: "top",
+      paddingTop: 12
+    },
+    pickerContainer: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      overflow: "hidden"
+    },
+    picker: {
+      height: 50,
+      color: palette.text,
+      backgroundColor: palette.surface
+    },
+    infoText: {
+      fontSize: 13,
+      color: palette.textMuted,
+      marginTop: 16,
+      lineHeight: 18,
+      fontStyle: "italic"
+    },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      marginTop: 20,
+      alignItems: "center"
+    },
+    buttonDisabled: {
+      opacity: 0.6
+    },
+    buttonText: {
+      color: palette.accentText,
+      fontSize: 16,
+      fontWeight: "600"
+    }
+  };
+}
 
 export default VendorSignup;

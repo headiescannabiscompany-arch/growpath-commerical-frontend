@@ -27,6 +27,7 @@ import {
   publicItemTitle
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function normalize(value: string) {
@@ -119,6 +120,8 @@ function trackCommercialClick(payload: CommercialAnalyticsEvent) {
 }
 
 export default function PublicStorefrontCourseRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     slug?: string;
     courseId?: string;
@@ -307,7 +310,7 @@ export default function PublicStorefrontCourseRoute() {
     >
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading course...</Text>
         </View>
       ) : error ? (
@@ -602,6 +605,8 @@ export default function PublicStorefrontCourseRoute() {
 }
 
 function SpecRow({ label, value }: { label: string; value?: unknown }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   if (value === null || value === undefined || value === "" || value === 0) return null;
   const display = Array.isArray(value) ? value.filter(Boolean).join(", ") : String(value);
   if (!display) return null;
@@ -613,76 +618,78 @@ function SpecRow({ label, value }: { label: string; value?: unknown }) {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { color: "#111827", fontSize: 26, fontWeight: "800" },
-  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 4 },
-  center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
-  error: { color: "#B91C1C", fontWeight: "800" },
-  successTitle: { color: "#166534", fontSize: 18, fontWeight: "900" },
-  canceledTitle: { color: "#92400E", fontSize: 18, fontWeight: "900" },
-  feedback: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    color: "#334155",
-    marginBottom: 10,
-    padding: 8
-  },
-  cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
-  bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
-  meta: { color: "#64748B", lineHeight: 19 },
-  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
-  price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
-  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  statusPill: {
-    backgroundColor: "#ECFDF5",
-    borderRadius: 999,
-    color: "#047857",
-    fontSize: 12,
-    fontWeight: "800",
-    paddingHorizontal: 10,
-    paddingVertical: 5
-  },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#2563EB",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#334155", fontWeight: "800" },
-  disabled: { opacity: 0.6 },
-  specGrid: { gap: 8 },
-  specRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    padding: 10
-  },
-  specLabel: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  specValue: { color: "#111827", lineHeight: 19 },
-  linkedRow: {
-    alignItems: "center",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    marginTop: 10,
-    padding: 12
-  },
-  linkedCopy: { flex: 1, gap: 4 },
-  relatedName: { color: "#111827", fontWeight: "800" }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    title: { color: palette.text, fontSize: 26, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },
+    center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
+    error: { color: palette.danger, fontWeight: "800" },
+    successTitle: { color: palette.success, fontSize: 18, fontWeight: "900" },
+    canceledTitle: { color: palette.warning, fontSize: 18, fontWeight: "900" },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      color: palette.textSoft,
+      marginBottom: 10,
+      padding: 8
+    },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800", marginBottom: 8 },
+    bodyText: { color: palette.textSoft, lineHeight: 20, marginBottom: 10 },
+    meta: { color: palette.textMuted, lineHeight: 19 },
+    interests: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    price: { color: palette.success, fontSize: 18, fontWeight: "800", marginTop: 4 },
+    badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    statusPill: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "800",
+      paddingHorizontal: 10,
+      paddingVertical: 5
+    },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.info,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    disabled: { opacity: 0.6 },
+    specGrid: { gap: 8 },
+    specRow: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      padding: 10
+    },
+    specLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    specValue: { color: palette.text, lineHeight: 19 },
+    linkedRow: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginTop: 10,
+      padding: 12
+    },
+    linkedCopy: { flex: 1, gap: 4 },
+    relatedName: { color: palette.text, fontWeight: "800" }
+  });
+}
