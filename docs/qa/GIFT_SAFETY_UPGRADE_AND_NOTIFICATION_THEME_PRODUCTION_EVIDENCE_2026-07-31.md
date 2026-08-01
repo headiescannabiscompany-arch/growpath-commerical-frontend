@@ -2063,3 +2063,31 @@ course, and Forum behavior did not change.
 - No Browse Lives, playback, RSVP, reminder, report, moderation, campaign,
   product, course, Forum, workspace, account, session, billing, audit event, or
   record action was invoked, and the Viewer session remained signed in.
+
+## Public Field Study detail safety, Night theme, and hierarchy
+
+Source inspection found the public Field Study detail retained fixed daytime
+canvas, privacy, empty, observation, scientific-name, and evidence treatments.
+A missing slug left the initial loading state unresolved, backend failure copy
+was passed directly to the public page, and heading roles had no explicit
+levels. Frontend `fe92401c` now stops safely without a slug or API request,
+sanitizes public load failures, moves unavailable and loaded detail states to
+the active palette, and establishes the study title as H1, privacy and
+published-observation sections as H2, and individual observation titles as H3.
+Public privacy filtering and the backend publication contract did not change.
+
+- Five focused Field Studies index/detail/API/theme tests passed. The missing-
+  slug test explicitly proves the route stops loading and makes zero public
+  study API calls. Targeted source ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Production Build Preflight `30707277355` and Frontend CI `30707277333`
+  passed. The clean production Discovery index retained one H1, two H2s, one
+  truthful zero-result H3, and zero white page-content surfaces after deploy.
+- Production truthfully contains zero published Field Studies, so no genuine
+  detail link exists. Browser security policy also rejected direct navigation
+  to an invented nested slug. No workaround was attempted, no public record was
+  manufactured, and rendered unavailable/loaded detail acceptance remains open;
+  those states are currently source-and-test covered only.
+- No search, filter, location, globe, study, observation, workspace, account,
+  session, billing, audit event, or record action was invoked, and the Viewer
+  session remained signed in.
