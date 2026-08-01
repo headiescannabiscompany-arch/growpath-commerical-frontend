@@ -2667,6 +2667,34 @@ changing route targets, descriptions, grouping, compact tabs, or permissions.
   audit event, or record action was invoked, and the Viewer session remained
   signed in.
 
+## Facility Rooms card hierarchy and Viewer gate
+
+Production Facility Rooms already used the active Night palette, named every
+room action, preserved all 15 real rooms, and correctly removed creation,
+reordering, equipment, and batch-cycle writes from the Viewer. Its room-card
+names remained plain text under the `Arrange room workspaces` H2. Frontend
+`0299a2d2` marks those existing names as H3s without changing room selection,
+grow navigation, ordering, workspace controls, equipment, cycles, or role
+permissions.
+
+- Both focused Facility Rooms/layout suites passed, totaling 27 tests and
+  covering Owner reordering, Viewer restrictions, room/workspace hierarchy,
+  controller import, equipment, cycles, and compact navigation. Source lint,
+  forced test lint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+  Existing non-failing React test-timing and Expo Go notification warnings
+  remained in the suites.
+- Production Build Preflight `30717177909` and Frontend CI `30717177899`
+  passed. Clean signed-in Facility Viewer production verification on bundle
+  `index-a84cc9fd...` rendered one `Facility Rooms & Workspaces` H1; the three
+  existing H2 workflow sections; all 15 real room-card names as H3s; and the
+  existing selected-room, Equipment, and Batch Cycles H3s. All 15 names matched
+  their named Open grows actions. The route retained zero fields, zero
+  room/equipment/cycle write actions, and zero white/light page-content
+  surfaces.
+- No room, room selection, reorder, grow, tracking mode, equipment, cycle,
+  field, workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
