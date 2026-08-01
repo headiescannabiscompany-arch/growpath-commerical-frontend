@@ -54,7 +54,12 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Integrations own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("integrations")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("transfers")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("rooms")).toBe(true);
+  });
+
+  it("lets Licensed Sales & Transfers own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("transfers")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("inventory")).toBe(true);
   });
 
   it("lets Facility Team own its semantic page heading", () => {

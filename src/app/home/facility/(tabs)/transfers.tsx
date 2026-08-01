@@ -205,7 +205,9 @@ export default function FacilityTransfersScreen() {
     >
       <ScrollView contentContainerStyle={styles.page}>
         <InlineError error={error} />
-        <Text style={styles.h1}>Licensed sales & transfers</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          Licensed Sales & Transfers
+        </Text>
         <Text style={styles.lead}>
           Track cannabis inventory sold or shipped to licensed commercial recipients. The
           public storefront remains a catalog and inquiry surface—there is no public
