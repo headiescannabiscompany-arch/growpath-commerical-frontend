@@ -1536,6 +1536,34 @@ behavior did not change.
   email, password change, verification, resend, account, session, billing, or
   record action was invoked; the existing session remained signed in.
 
+## Facility invitation and onboarding entry protection
+
+Production invite acceptance, Join Facility, and Create Facility entry routes
+retained light-only cards/fields and exposed no semantic page heading. Direct
+missing-token invite access still showed password/account fields, while this
+already-connected Facility Viewer saw both invite-token and create-facility
+forms despite the product's one-facility-per-account rule. Frontend `a46614a9`
+moved complete loading, missing-token, eligible form, preview, validation,
+feedback, selection, and action states to the active palette; established one
+page H1 per route; replaces missing-token access with a safe explanation; and
+uses canonical entitlement facility membership to remove join/create forms from
+already-connected accounts. Valid invitation acceptance and eligible first-
+facility creation behavior did not change.
+
+- Production Build Preflight `30698747237` and Frontend CI `30698747247`
+  passed. Four focused invitation handoff, missing-token, existing-membership,
+  direct-route, hierarchy, and Night-palette tests passed. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance confirmed the no-token invite
+  route has one bright Night H1, zero fields, a truthful missing-token message,
+  and only Go to sign in. Join and Create each have one bright Night
+  `Facility already connected` H1, zero invite/facility fields, zero joining or
+  creation actions, and only Open facility workspace.
+- No white page-content surface remained on any route; Report Bug was the only
+  detected white element. No token, credential, date, invitation, membership,
+  facility, workspace, account, session, billing, or record action was invoked,
+  and the Viewer session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
