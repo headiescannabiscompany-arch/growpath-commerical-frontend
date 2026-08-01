@@ -196,6 +196,31 @@ production acceptance covered:
 
 ## Automated verification
 
+## Shared Soil Mix Builder Night theme
+
+Production Facility Soil Mix Builder retained a white canvas, dark day-only
+headings and labels, pale guidance card, and white form inputs under resolved
+Night mode. Its science-basis component was already corrected by `391dc109`,
+which isolated the remaining mismatch to the shared backend-calculator shell.
+
+Frontend `aae5e7c6` moved that common shell's canvas, headings, guidance and AI
+cards, grow selectors, labels, option cards, inputs, actions, and feedback to
+the active palette. Production Build Preflight `30680374034` passed in 3m24s
+and Frontend CI `30680374024` passed in 6m55s.
+
+- Twelve focused shared-calculator/Soil Builder tests passed, including an
+  explicit Night-palette regression. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in production checks covered `/home/facility/tools/soil-builder` and
+  `/home/personal/tools/soil-builder`, including the top guidance/science
+  surfaces and the actual labels and populated input region.
+- All expected guidance, prefill state, AI action, recipe fields, and run action
+  remained present. No field value, AI request, calculator run, ToolRun, task,
+  log, batch, product draft, grow, credit, or record changed.
+- The shared-shell conversion benefits its other calculator routes, but this
+  acceptance claim is limited to the Soil Mix Builder routes inspected live.
+- The session was returned to the Facility dashboard without logout.
+
 ## Shared Nutrient Mix Builder Night theme
 
 The shared NPK screen retained a light canvas and day-only form surfaces under
