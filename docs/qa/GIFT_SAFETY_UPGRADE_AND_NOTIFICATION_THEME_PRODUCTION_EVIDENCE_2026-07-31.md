@@ -2445,3 +2445,33 @@ calculation, telemetry, persistence, task, copy, or AI behavior.
   integration, import, report, analytics, tool, workspace, account, session,
   billing, audit event, or record action was invoked, and the Viewer session
   remained signed in.
+
+## Shared Soil and Nutrient Mix Builders chooser hierarchy
+
+Production `/home/facility/tools/recipe-builder` already used the correct Night
+palette, contained no writable fields, and limited the chooser to the two
+canonical science-backed builders plus the reusable Products & Label Library.
+Its visible workflow, builder, and library titles lacked semantic structure.
+Frontend `0bf0b1af` marks the two workflow sections as H2s and the two builder
+choices as H3s without changing destinations or forwarded grow, Facility,
+commercial, product, batch, trial, source, or workspace context.
+
+- All three focused chooser tests passed, covering the active Night palette,
+  exact two-builder model, new H2/H3 hierarchy, Personal destinations, and
+  Facility/commercial record-context forwarding. Production-source lint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30713175778` and Frontend CI `30713175781`
+  passed. Clean signed-in Facility Viewer production verification rendered one
+  bright `Soil & Nutrient Mix Builders` H1, two bright H2 workflow sections,
+  and two bright H3 builder choices. Nutrient Mix Builder, Soil Mix Builder,
+  and Products & Label Library remained the only three content destinations;
+  the page contained zero fields and zero white/light page-content surfaces.
+- Direct-route Viewer audits also verified that
+  `/home/facility/tools/pulse` exposed no API-key/device controls and
+  `/home/facility/tools/history-import` exposed no file/grow/import controls.
+  Each route retained one accurate H1, one clear read-only H2, a return action,
+  and zero white/light page-content surfaces, matching the disabled actions on
+  the parent Integrations page. No speculative change was made to either route.
+- No connector, credential, device, file, grow, import, builder, label library,
+  field, workspace, account, session, billing, audit event, or record action
+  was invoked, and the Viewer session remained signed in.
