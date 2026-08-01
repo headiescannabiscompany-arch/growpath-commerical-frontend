@@ -498,6 +498,30 @@ heading while preserving the corrected palette.
 - No template link was opened and no prompt, AI request, credit, task, audit
   event, or record changed.
 
+## Facility selector Night theme and identifier privacy
+
+Production Facility selector retained black day-only title, guidance, facility
+name, and internal identifier plus a white selection card under resolved Night.
+Frontend `0d3d9361` moved loaded, loading, empty, action, logout, and refresh
+states to the active palette and replaced the user-facing database identifier
+with the accurate `Facility workspace` label without changing selection logic.
+
+- Production Build Preflight `30684827654` passed in 3m24s and Frontend CI
+  `30684827640` passed in 7m13s. The production host published the new
+  `index-823fced4d1104d827177a249b413dd18.js` asset.
+- The focused selector Night-palette test passed. Targeted ESLint completed
+  without errors, full frontend `tsc --noEmit` passed, and `git diff --check`
+  passed. The test runner emitted its existing Expo Go push warning without a
+  test failure.
+- Signed-in Viewer production acceptance confirmed one level-one Select a
+  Facility heading, the correct `Triple Bag Genetics, llc` choice, dark card
+  `rgb(21, 29, 39)`, primary copy `rgb(244, 247, 251)`, supporting copy
+  `rgb(201, 212, 223)`, and no visible internal facility identifier.
+- Select, Log out, refresh, onboarding, account-switch, and support actions were
+  not invoked. Facility selection, authentication, membership, audit events,
+  and records did not change, and the session returned to the Facility
+  dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
