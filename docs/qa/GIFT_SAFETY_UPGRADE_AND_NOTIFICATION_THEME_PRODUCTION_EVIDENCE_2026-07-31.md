@@ -2569,6 +2569,31 @@ guards, and persistence are unchanged.
   account, session, billing, audit event, or record action was invoked, and the
   Viewer session remained signed in.
 
+## Facility Licensed Sales & Transfers workflow hierarchy
+
+Production Sales & Transfers already used the active Night palette and correctly
+restricted the Viewer to read-only transfer history, but its regulatory notice
+and history section were plain text beneath a lone H1. Frontend `6448bd7b`
+marks those existing Viewer-visible titles as H2s, the three conditional writer
+steps as H2s, and loaded transfer-record titles as H3s without changing role
+gates, inventory, calculations, manifests, shipping, or record behavior.
+
+- Both focused Facility transfer/layout suites passed, totaling 22 tests and
+  covering the Viewer gate, page-owned title, compact navigation, and exact
+  new section hierarchy. Source lint, forced test lint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The existing non-failing Expo
+  Go notification warning remained in the layout suite.
+- Production Build Preflight `30715361643` and Frontend CI `30715361646`
+  passed. Clean signed-in Facility Viewer production verification rendered one
+  `Licensed Sales & Transfers` H1 plus the `Verification stays with your
+  facility` and `Transfer history` H2s. The truthful zero-record state retained
+  zero fields, zero transfer-write actions, its explicit Viewer read-only copy,
+  and zero white/light page-content surfaces.
+- No field, inventory lot, recipient, license, jurisdiction, destination,
+  manifest, carrier, tracking, price, total, draft, shipment, transfer, billing,
+  audit event, workspace, account, session, or record action was invoked, and
+  the Viewer session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
