@@ -671,6 +671,31 @@ was reproduced, so no speculative code change was made.
   visibility and current persisted state; it does not claim an external device
   push receipt.
 
+## Facility Team heading hierarchy and Viewer read-only state
+
+Production Facility Team retained the correct Night palette and role gates, but
+its tab shell owned a generic `Team` level-one heading. The accurate `Facility
+Team` title and role-specific Team access notice were ordinary text. Frontend
+`508a69e6` established one accurate page-owned heading and a semantic access
+section heading without changing invitations, assignments, roles, removals, or
+roster data.
+
+- Production Build Preflight `30686819846` passed in 3m36s and Frontend CI
+  `30686819858` passed in 6m44s. The production host published the new
+  `index-2024648f8152a5eb2c2a214cee87fd16.js` asset.
+- Fifteen focused Facility Team role/workflow and tab-shell tests passed,
+  covering Owner invitation/removal, Manager assignment access, Viewer
+  read-only behavior, and heading ownership. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The suite retained its existing
+  asynchronous React and Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one Facility Team
+  heading, one level-two Team access heading, the loaded four-member roster,
+  the correct read-only role notice, zero invite/assign/change/remove actions,
+  the Night canvas `rgb(14, 20, 27)`, and zero white content surfaces.
+- No roster row, refresh, invitation, assignment, role, removal, member,
+  authentication, audit event, or record action was invoked. The session
+  returned to the Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
