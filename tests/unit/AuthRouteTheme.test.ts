@@ -3,6 +3,7 @@ import { createLoginStyles } from "@/app/login";
 import { createRegisterStyles } from "@/app/register";
 import { createResetPasswordStyles } from "@/app/reset-password";
 import { createVerifyEmailStyles } from "@/app/verify-email";
+import { authAutofillCss } from "@/components/auth/AuthAutofillStyle";
 import { getThemePalette } from "@/theme/appTheme";
 
 describe("authentication route Night theme", () => {
@@ -22,6 +23,10 @@ describe("authentication route Night theme", () => {
     expect(verify.panel.backgroundColor).toBe(palette.surface);
     expect(verify.title.color).toBe(palette.text);
     expect(verify.message.color).toBe(palette.textSoft);
+
+    const autofill = authAutofillCss(palette);
+    expect(autofill).toContain(`-webkit-text-fill-color: ${palette.text}`);
+    expect(autofill).toContain(`1000px ${palette.surface} inset`);
   });
 
   it("themes registration plans, form fields, and content choices", () => {

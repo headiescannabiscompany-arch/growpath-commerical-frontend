@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { SignupBody } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import AuthAutofillStyle from "@/components/auth/AuthAutofillStyle";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -160,6 +161,7 @@ export default function RegisterScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <AuthAutofillStyle />
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.planPanel}>
           <Text style={styles.kicker}>Choose account</Text>

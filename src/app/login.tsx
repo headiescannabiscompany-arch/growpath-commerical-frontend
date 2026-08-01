@@ -14,6 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { requestEmailVerification } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import AuthAutofillStyle from "@/components/auth/AuthAutofillStyle";
 import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -93,6 +94,7 @@ export default function LoginScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <AuthAutofillStyle />
       <View style={styles.shell}>
         <View style={styles.visualPanel}>
           <View style={styles.bannerFrame}>
