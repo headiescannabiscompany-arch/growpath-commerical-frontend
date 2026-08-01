@@ -196,6 +196,26 @@ production acceptance covered:
 
 ## Automated verification
 
+## Facility Audit Entity History Night theme
+
+Production entity-scoped audit history retained a dark-on-dark page heading
+and white day-only history cards. Frontend `ee82245c` moved loaded and status
+states, history cards, timestamps, summaries, and detail links to the active
+palette while preserving the filtered immutable event set.
+
+- Production Build Preflight `30683127914` passed in 3m22s and Frontend CI
+  `30683127932` passed in 5m19s.
+- Nine focused audit/compliance tests passed, including Audit Detail and entity
+  history Night palettes, exact readable audit presentation, raw-identifier
+  boundaries, list/loading semantics, and compliance drill-in back routes.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in production acceptance followed an existing task-linked audit event
+  to its read-only entity history and confirmed one level-one heading plus the
+  three expected Created/Updated cards, timestamps, summaries, and detail links.
+- No detail link was opened from the history page and no task, audit event, or
+  record changed. The session was returned to the Facility dashboard without
+  logout.
+
 ## Facility Audit Log Detail Night theme
 
 Production Audit Log Detail retained a dark-on-dark page heading and white
