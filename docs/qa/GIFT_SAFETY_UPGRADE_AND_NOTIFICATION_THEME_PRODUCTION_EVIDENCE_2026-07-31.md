@@ -595,6 +595,31 @@ refresh, export, report loading, or values.
   task, team, automation, audit event, or record changed. The session returned
   to the Facility dashboard without logout.
 
+## Facility Analytics heading hierarchy
+
+Production Facility Analytics retained the previously verified Night contrast
+and truthful unknown/zero metrics, but its tab shell owned a generic `Analytics`
+level-one heading. The accurate `Facility Analytics` title and six operational
+metric titles were ordinary text. Frontend `51966ec6` established one accurate
+page-owned heading and six semantic metric-section headings without changing
+data loading, calculations, campaign placement, or styling.
+
+- Production Build Preflight `30686171456` passed in 3m11s and Frontend CI
+  `30686171460` passed in 6m34s. The production host published the new
+  `index-1bb33297d1267ba1f02a5d89049dfda8.js` asset.
+- Eleven focused Facility Analytics and tab-shell tests passed. Targeted ESLint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed. The test runner
+  emitted its existing Expo Go push warning without a test failure.
+- Signed-in Viewer production acceptance confirmed one level-one Facility
+  Analytics heading and level-two Stable rooms, Task completion, SOP
+  compliance, Sensor alerts, Active batches, and Training completion headings.
+  The truthful zero/unknown values remained unchanged, the Night canvas was
+  `rgb(14, 20, 27)`, the title was `rgb(244, 247, 251)`, and zero white content
+  surfaces remained.
+- No campaign, metric, navigation, refresh, analytics, task, audit event, or
+  record action was invoked. The session returned to the Facility dashboard
+  without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
