@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import EnvironmentAnalysisToolScreen from "@/app/home/personal/(tabs)/tools/environment-analysis";
+import EnvironmentAnalysisToolScreen, {
+  createEnvironmentAnalysisStyles
+} from "@/app/home/personal/(tabs)/tools/environment-analysis";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockAnalyzeEnvironment = jest.fn();
 const mockSaveToolRunAndCreateLog = jest.fn();
@@ -92,6 +95,17 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
 }));
 
 describe("EnvironmentAnalysisToolScreen", () => {
+  it("uses the active Night palette for the shared Personal and Facility tool", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createEnvironmentAnalysisStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.aiCard.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.button.backgroundColor).toBe(palette.accent);
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockAnalyzeEnvironment.mockResolvedValue({

@@ -20,6 +20,7 @@ import {
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
 
@@ -93,6 +94,8 @@ function environmentTaskMetadata(hasRisk: boolean) {
 }
 
 export default function EnvironmentAnalysisToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createEnvironmentAnalysisStyles(palette), [palette]);
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -565,43 +568,47 @@ export default function EnvironmentAnalysisToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  field: { minWidth: 140, flexGrow: 1, flexBasis: "45%" },
-  label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  button: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  aiCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  aiTitle: { color: "#14532D", fontWeight: "800" },
-  aiText: { color: "#475569", lineHeight: 19 },
-  locked: {
-    color: "#991B1B",
-    backgroundColor: "#FEE2E2",
-    borderRadius: radius.card,
-    padding: 9
-  }
-});
+export function createEnvironmentAnalysisStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { padding: 20, paddingBottom: 40, backgroundColor: palette.page, gap: 8 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.link, fontWeight: "800" },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    field: { minWidth: 140, flexGrow: 1, flexBasis: "45%" },
+    label: { color: palette.text, fontWeight: "800", marginTop: 4 },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10
+    },
+    button: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    aiCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    aiTitle: { color: palette.text, fontWeight: "800" },
+    aiText: { color: palette.textMuted, lineHeight: 19 },
+    locked: {
+      color: palette.danger,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      padding: 9
+    }
+  });
+}
