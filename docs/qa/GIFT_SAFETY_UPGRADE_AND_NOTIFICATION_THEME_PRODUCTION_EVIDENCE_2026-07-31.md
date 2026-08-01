@@ -1665,6 +1665,29 @@ transient splash now also follows the active page palette.
   session, audit event, billing, or record action was invoked, and the Viewer
   session remained signed in.
 
+## Facility SOP Library run-action permission alignment
+
+The newer SOP Runs index, direct start route, and run detail correctly enforce
+the centralized `SOP_RUNS_WRITE` boundary for this Facility Viewer, but the SOP
+Library's active-template card still exposed a `Start run` link. That link led
+to a protected destination rather than mutating immediately, but it contradicted
+the visible read-only state and created a dead, misleading action. Frontend
+`8af6c608` applies the same capability to the Library card and corrects its
+read-only explanation. Authorized owners/managers retain template and run
+actions; active procedure summaries remain visible to Viewer.
+
+- Production Build Preflight `30700641960` and Frontend CI `30700641953`
+  passed. All 22 focused SOP Library/index/start/detail/comparison/permission/
+  theme tests passed, along with targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check`.
+- Signed-in Facility Viewer acceptance on the clean production Library URL
+  confirmed one SOP Library H1, two H2 sections, all eight standard starter
+  summaries, the genuine active three-step SOP summary, the corrected read-only
+  explanation, and zero start/revise/retire/upload/editor actions.
+- No template, attachment, checklist, run, step, status, comparison, task,
+  audit event, billing, or record action was invoked, and the Viewer session
+  remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
