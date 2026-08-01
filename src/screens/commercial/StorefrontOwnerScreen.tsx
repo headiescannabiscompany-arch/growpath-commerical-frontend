@@ -8,7 +8,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
+  TextInput as NativeTextInput,
+  type TextInputProps,
   View
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -24,6 +25,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { persistImageUri } from "@/utils/photoUploads";
 import { currentPublicUrl } from "@/utils/publicLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { requestCurrentCoordinates } from "@/utils/locationSearch";
 
@@ -38,6 +40,17 @@ const commercialEndpoints = {
   feed: "/api/commercial/feed",
   inventory: (endpoints as any)?.commercial?.inventory ?? "/api/commercial/inventory"
 };
+
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
 
 function asArray(res: any, key: string) {
   if (Array.isArray(res)) return res;
@@ -233,6 +246,9 @@ function storefrontPublishBlockers(args: {
 }
 
 function PublicPreviewLink({ href, label }: { href?: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
+
   if (!href) {
     return (
       <Pressable
@@ -258,6 +274,9 @@ function PublicPreviewLink({ href, label }: { href?: string; label: string }) {
 }
 
 function ObjectActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="link" style={styles.objectAction}>
@@ -282,6 +301,8 @@ export default function Storefront({
   showBack,
   backFallbackHref
 }: StorefrontOwnerScreenProps = {}) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
   const ent = useEntitlements();
   const canEdit = Boolean(ent?.can?.(CAPABILITY_KEYS.STORE_FRONT_VIEW));
   const apiErr: any = useApiErrorHandler();
@@ -623,7 +644,7 @@ export default function Storefront({
     }
   }
 
-  async function useStorefrontLocation() {
+  async function locateStorefront() {
     if (!canEdit || locatingStorefront) return;
     setLocatingStorefront(true);
     setFeedback("");
@@ -880,13 +901,16 @@ export default function Storefront({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => void load({ refresh: true })}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
+            tintColor={palette.accent}
           />
         }
         contentContainerStyle={styles.inner}
       >
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading storefront...</Text>
           </View>
         ) : null}
@@ -1237,7 +1261,7 @@ export default function Storefront({
                 accessibilityRole="button"
                 accessibilityLabel="Use current location for dispensary"
                 disabled={locatingStorefront || !canEdit}
-                onPress={() => void useStorefrontLocation()}
+                onPress={() => void locateStorefront()}
                 style={[
                   styles.secondaryButton,
                   (locatingStorefront || !canEdit) && styles.disabled
@@ -2159,317 +2183,344 @@ export default function Storefront({
   );
 }
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 4
-  },
-  headerSubtitle: {
-    color: "#64748B",
-    fontSize: 14,
-    lineHeight: 20
-  },
-  inner: { gap: 14 },
-  loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
-  muted: { color: "#64748B", fontWeight: "700" },
-  feedback: {
-    backgroundColor: "#D1FAE5",
-    borderRadius: radius.card,
-    color: "#065F46",
-    fontWeight: "800",
-    padding: 10
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
-  metric: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.1)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 130,
-    padding: 12
-  },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "900", marginTop: 2 },
-  statusPill: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3
-  },
-  livePill: { backgroundColor: "#D1FAE5", color: "#065F46" },
-  input: {
-    backgroundColor: "white",
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  notesInput: { minHeight: 76, textAlignVertical: "top" },
-  imageActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  helperText: {
-    color: "#475569",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 19,
-    marginTop: 8
-  },
-  checklist: { gap: 8, marginTop: 12 },
-  checkItem: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FED7AA",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    padding: 10
-  },
-  checkItemComplete: { backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" },
-  checkIcon: {
-    color: "#0F172A",
-    fontSize: 11,
-    fontWeight: "900",
-    minWidth: 36
-  },
-  checkCopy: { flex: 1, gap: 2 },
-  checkLabel: { color: "#0F172A", fontSize: 13, fontWeight: "900" },
-  checkHelper: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 17 },
-  publicLinkBox: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  publicLinkLabel: { color: "#64748B", fontSize: 12, fontWeight: "900" },
-  publicLinkText: {
-    color: "#0F172A",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 4
-  },
-  previewActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  previewButton: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    minHeight: 42,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  previewButtonText: { color: "white", fontWeight: "900" },
-  previewDisabledText: {
-    color: "#E2E8F0",
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 2
-  },
-  objectActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  objectAction: {
-    alignItems: "center",
-    backgroundColor: "white",
-    borderColor: "rgba(15,23,42,0.16)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 34,
-    justifyContent: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  objectActionText: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
-  discoveryActions: { gap: 6, marginTop: 10 },
-  discoveryAction: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
-  dispensaryPanel: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    marginBottom: 10,
-    marginTop: 10,
-    padding: 12
-  },
-  fieldLabel: {
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  linkInput: { flexBasis: "48%", flexGrow: 1 },
-  logoPreview: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    height: 96,
-    marginTop: 10,
-    width: 96
-  },
-  bannerPreview: {
-    aspectRatio: 16 / 9,
-    backgroundColor: "#F1F5F9",
-    borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    width: "100%"
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingVertical: 12
-  },
-  primaryText: { color: "white", fontWeight: "900" },
-  secondaryButton: {
-    alignItems: "center",
-    borderColor: "rgba(0,0,0,0.16)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 12,
-    paddingVertical: 10
-  },
-  selectedButton: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
-  secondaryText: { color: "#0F172A", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  warningBox: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  warningTitle: {
-    color: "#9A3412",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  chip: {
-    borderColor: "rgba(0,0,0,0.16)",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  chipSelected: { backgroundColor: "#0F172A", borderColor: "#0F172A" },
-  chipText: { color: "#0F172A", fontWeight: "800" },
-  chipTextSelected: { color: "white" },
-  eventList: { gap: 10, marginTop: 12 },
-  eventRow: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 12
-  },
-  eventTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  eventBody: {
-    color: "#475569",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 19,
-    marginTop: 5
-  },
-  campaignRow: {
-    alignItems: "flex-start",
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    padding: 12
-  },
-  campaignThumb: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    height: 72,
-    width: 72
-  },
-  campaignCopy: { flex: 1, gap: 4 },
-  productList: { gap: 10, marginTop: 10 },
-  productRow: {
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    padding: 12
-  },
-  productThumb: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    height: 84,
-    width: 84
-  },
-  productThumbPlaceholder: {
-    alignItems: "center",
-    backgroundColor: "#F8FAFC",
-    borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    height: 84,
-    justifyContent: "center",
-    width: 84
-  },
-  productThumbText: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "900",
-    textAlign: "center"
-  },
-  productCopy: { flex: 1, gap: 5 },
-  productHeaderRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  productTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  rowPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3
-  },
-  goodText: { color: "#047857", fontSize: 12, fontWeight: "900" },
-  readyText: { color: "#047857", fontSize: 12, fontWeight: "900" },
-  warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 3 },
-  warningPill: {
-    backgroundColor: "#FEF3C7",
-    borderRadius: 999,
-    color: "#92400E",
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  }
-});
+export function createStorefrontOwnerStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    headerTitle: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    headerSubtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      lineHeight: 20
+    },
+    inner: { gap: 14 },
+    loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
+    muted: { color: palette.textMuted, fontWeight: "700" },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      fontWeight: "800",
+      padding: 10
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 130,
+      padding: 12
+    },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 2
+    },
+    statusPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3
+    },
+    livePill: { backgroundColor: palette.accentSoft, color: palette.success },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    notesInput: { minHeight: 76, textAlignVertical: "top" },
+    imageActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    helperText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19,
+      marginTop: 8
+    },
+    checklist: { gap: 8, marginTop: 12 },
+    checkItem: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      padding: 10
+    },
+    checkItemComplete: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success
+    },
+    checkIcon: {
+      color: palette.text,
+      fontSize: 11,
+      fontWeight: "900",
+      minWidth: 36
+    },
+    checkCopy: { flex: 1, gap: 2 },
+    checkLabel: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    checkHelper: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 17
+    },
+    publicLinkBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    publicLinkLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    publicLinkText: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    previewActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    previewButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      minHeight: 42,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    previewButtonText: { color: palette.accentText, fontWeight: "900" },
+    previewDisabledText: {
+      color: palette.accentText,
+      fontSize: 11,
+      fontWeight: "700",
+      marginTop: 2
+    },
+    objectActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    objectAction: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 34,
+      justifyContent: "center",
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    objectActionText: { color: palette.link, fontSize: 12, fontWeight: "900" },
+    discoveryActions: { gap: 6, marginTop: 10 },
+    discoveryAction: { color: palette.link, fontSize: 13, fontWeight: "800" },
+    dispensaryPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      marginBottom: 10,
+      marginTop: 10,
+      padding: 12
+    },
+    fieldLabel: {
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    linkInput: { flexBasis: "48%", flexGrow: 1 },
+    logoPreview: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      height: 96,
+      marginTop: 10,
+      width: 96
+    },
+    bannerPreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      width: "100%"
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingVertical: 12
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      paddingVertical: 10
+    },
+    selectedButton: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    secondaryText: { color: palette.text, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    warningBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    warningTitle: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    warningText: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    chip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.text, fontWeight: "800" },
+    chipTextSelected: { color: palette.accentText },
+    eventList: { gap: 10, marginTop: 12 },
+    eventRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    eventTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    eventBody: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19,
+      marginTop: 5
+    },
+    campaignRow: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      padding: 12
+    },
+    campaignThumb: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      height: 72,
+      width: 72
+    },
+    campaignCopy: { flex: 1, gap: 4 },
+    productList: { gap: 10, marginTop: 10 },
+    productRow: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      padding: 12
+    },
+    productThumb: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      height: 84,
+      width: 84
+    },
+    productThumbPlaceholder: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      height: 84,
+      justifyContent: "center",
+      width: 84
+    },
+    productThumbText: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      textAlign: "center"
+    },
+    productCopy: { flex: 1, gap: 5 },
+    productHeaderRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    productTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    rowPill: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3
+    },
+    goodText: { color: palette.success, fontSize: 12, fontWeight: "900" },
+    readyText: { color: palette.success, fontSize: 12, fontWeight: "900" },
+    warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 3 },
+    warningPill: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 999,
+      color: palette.warning,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    }
+  });
+}

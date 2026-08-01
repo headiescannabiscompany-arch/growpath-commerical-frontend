@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { config } from "@/config/config";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type LegalLink = {
   label: string;
@@ -21,6 +22,9 @@ async function openLegalUrl(url: string) {
 }
 
 export default function LegalLinks() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createLegalLinksStyles(palette), [palette]);
+
   return (
     <View style={styles.row} accessibilityLabel="Legal and support links">
       {LINKS.map((link, index) => (
@@ -40,24 +44,26 @@ export default function LegalLinks() {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-    marginTop: 14
-  },
-  link: {
-    color: "#1d4ed8",
-    fontSize: 13,
-    fontWeight: "700",
-    textDecorationLine: "underline"
-  },
-  separator: {
-    color: "#94a3b8",
-    fontSize: 13,
-    fontWeight: "700"
-  }
-});
+export function createLegalLinksStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    row: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "center",
+      marginTop: 14
+    },
+    link: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "700",
+      textDecorationLine: "underline"
+    },
+    separator: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "700"
+    }
+  });
+}

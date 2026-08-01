@@ -1,24 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View, Text, Pressable, Platform } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  Pressable,
+  Platform,
+  StyleSheet
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import PublicLandingPage from "@/components/marketing/PublicLandingPage";
 
 function Center({ label }: { label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createRootIndexStyles(palette), [palette]);
+
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#fff"
-      }}
-    >
-      <ActivityIndicator size="large" />
-      <Text style={{ marginTop: 16 }}>{label}</Text>
+    <View testID="root-index-loading" style={styles.center}>
+      <ActivityIndicator size="large" color={palette.accent} />
+      <Text style={styles.centerLabel}>{label}</Text>
     </View>
   );
 }
@@ -32,45 +36,63 @@ function BootstrapError({
   onRetry: () => void;
   onSignOut: () => void;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createRootIndexStyles(palette), [palette]);
+
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        paddingHorizontal: 20
-      }}
-    >
-      <Text style={{ textAlign: "center", marginBottom: 14 }}>{label}</Text>
-      <Pressable
-        onPress={onRetry}
-        style={{
-          backgroundColor: "#111",
-          paddingHorizontal: 14,
-          paddingVertical: 10,
-          borderRadius: radius.card
-        }}
-      >
-        <Text style={{ color: "#fff", fontWeight: "700" }}>Retry /api/me</Text>
+    <View testID="root-index-bootstrap-error" style={styles.errorCenter}>
+      <Text style={styles.errorLabel}>{label}</Text>
+      <Pressable onPress={onRetry} style={styles.primaryButton}>
+        <Text style={styles.primaryButtonText}>Retry /api/me</Text>
       </Pressable>
-      <Pressable
-        onPress={onSignOut}
-        style={{
-          marginTop: 10,
-          borderColor: "#111",
-          borderWidth: 1,
-          paddingHorizontal: 14,
-          paddingVertical: 10,
-          borderRadius: radius.card
-        }}
-      >
-        <Text style={{ color: "#111", fontWeight: "700" }}>
-          Clear session and sign in
-        </Text>
+      <Pressable onPress={onSignOut} style={styles.secondaryButton}>
+        <Text style={styles.secondaryButtonText}>Clear session and sign in</Text>
       </Pressable>
     </View>
   );
+}
+
+export function createRootIndexStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    center: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      justifyContent: "center"
+    },
+    centerLabel: { color: palette.textMuted, marginTop: 16 },
+    errorCenter: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: 20
+    },
+    errorLabel: {
+      color: palette.danger,
+      marginBottom: 14,
+      textAlign: "center"
+    },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "700" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "700" }
+  });
 }
 
 export default function Index() {

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
@@ -20,12 +20,14 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 import { radius } from "@/theme/theme";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
 type HomeAlert = HomeModel["alerts"][number];
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPersonalHomeStyles(palette), [palette]);
   return (
     <Link href={href} asChild>
       <Pressable style={styles.action} accessibilityRole="button">
@@ -35,7 +37,10 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function alertSeverityStyle(severity: HomeAlert["severity"]) {
+function alertSeverityStyle(
+  severity: HomeAlert["severity"],
+  styles: ReturnType<typeof createPersonalHomeStyles>
+) {
   if (severity === "critical") return styles.alert_critical;
   if (severity === "warning") return styles.alert_warning;
   return styles.alert_info;
@@ -43,6 +48,7 @@ function alertSeverityStyle(severity: HomeAlert["severity"]) {
 
 export default function PersonalHomeTab() {
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createPersonalHomeStyles(palette), [palette]);
   const auth = useAuth();
   const ent = useEntitlements();
   const canCreateGrow = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
@@ -165,7 +171,7 @@ export default function PersonalHomeTab() {
         </View>
       }
     >
-      {loading ? <ActivityIndicator /> : null}
+      {loading ? <ActivityIndicator color={palette.accent} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <PersonalFeaturedFeed />
@@ -333,7 +339,7 @@ export default function PersonalHomeTab() {
                 {model.alerts.map((alert) => (
                   <View
                     key={alert.id}
-                    style={[styles.alertRow, alertSeverityStyle(alert.severity)]}
+                    style={[styles.alertRow, alertSeverityStyle(alert.severity, styles)]}
                   >
                     <View style={styles.alertText}>
                       <Text style={styles.alertTitle}>{alert.title}</Text>
@@ -468,7 +474,9 @@ export default function PersonalHomeTab() {
             from this shared view.
           </Text>
           <View style={styles.globeFrame}>
-            {globeLoading && globeVisible ? <ActivityIndicator /> : null}
+            {globeLoading && globeVisible ? (
+              <ActivityIndicator color={palette.accent} />
+            ) : null}
             {globeVisible ? (
               <FieldObservationGlobe
                 observations={globeObservations}
@@ -509,155 +517,198 @@ export default function PersonalHomeTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 4,
-    textTransform: "uppercase"
-  },
-  headerTitle: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: "#475569" },
-  section: { gap: 10 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#0F172A" },
-  commandCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0"
-  },
-  firstRunCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderWidth: 1
-  },
-  onboardingGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  onboardingCard: {
-    flexBasis: 230,
-    flexGrow: 1
-  },
-  globeCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#D1FAE5"
-  },
-  globeFrame: {
-    minHeight: 280,
-    marginBottom: 8
-  },
-  stepNumber: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: 999,
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900",
-    marginBottom: 8,
-    minWidth: 26,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    textAlign: "center"
-  },
-  commandHeader: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 14,
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
-  commandCopy: { flex: 1, minWidth: 210 },
-  commandEyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0,
-    marginBottom: 4,
-    textTransform: "uppercase"
-  },
-  commandTitle: { color: "#052E16", fontSize: 24, fontWeight: "900", lineHeight: 29 },
-  commandDescription: { color: "#166534", lineHeight: 20, marginTop: 5 },
-  pulseStack: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "flex-end"
-  },
-  pulse: {
-    minWidth: 92,
-    borderWidth: 1,
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF"
-  },
-  pulseValue: { color: "#052E16", fontSize: 17, fontWeight: "900" },
-  pulseLabel: { color: "#166534", fontSize: 11, fontWeight: "800", marginTop: 2 },
-  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 5 },
-  cardDescription: { color: "#475569", lineHeight: 20, marginBottom: 8 },
-  metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
-  metric: {
-    minWidth: 120,
-    padding: 9,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card
-  },
-  metricValue: { fontSize: 17, fontWeight: "800", color: "#0F172A" },
-  metricLabel: { color: "#64748B", fontSize: 12 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  taskList: { gap: 10, marginBottom: 10 },
-  alertList: { gap: 10 },
-  alertRow: {
-    borderWidth: 1,
-    borderRadius: radius.card,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    padding: 10
-  },
-  alert_critical: { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" },
-  alert_warning: { backgroundColor: "#FFFBEB", borderColor: "#FCD34D" },
-  alert_info: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
-  alertText: { flex: 1, minWidth: 0 },
-  alertTitle: { color: "#0F172A", fontWeight: "900" },
-  alertMessage: { color: "#475569", fontSize: 12, lineHeight: 17, marginTop: 3 },
-  taskRow: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#F8FAFC"
-  },
-  taskTitle: { color: "#0F172A", fontWeight: "800" },
-  taskMeta: { marginTop: 4, color: "#64748B", fontSize: 12, lineHeight: 17 },
-  action: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF"
-  },
-  actionText: { color: "#166534", fontWeight: "800" },
-  inlineAction: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    backgroundColor: "#FFFFFF"
-  },
-  inlineActionText: { color: "#0F172A", fontWeight: "800", fontSize: 12 },
-  upgradeNote: { color: "#64748B", fontSize: 12, lineHeight: 17, marginTop: 8 },
-  error: { color: "#B91C1C", fontWeight: "700" }
-});
+export const createPersonalHomeStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      marginBottom: 4,
+      textTransform: "uppercase"
+    },
+    headerTitle: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "700",
+      marginBottom: 4
+    },
+    headerSubtitle: { color: palette.textMuted, fontSize: 14 },
+    section: { gap: 10 },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "700" },
+    commandCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border
+    },
+    firstRunCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderWidth: 1
+    },
+    onboardingGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    onboardingCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      flexBasis: 230,
+      flexGrow: 1
+    },
+    globeCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    globeFrame: {
+      minHeight: 280,
+      marginBottom: 8
+    },
+    stepNumber: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: 999,
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900",
+      marginBottom: 8,
+      minWidth: 26,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      textAlign: "center"
+    },
+    commandHeader: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 14,
+      justifyContent: "space-between",
+      marginBottom: 12
+    },
+    commandCopy: { flex: 1, minWidth: 210 },
+    commandEyebrow: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 0,
+      marginBottom: 4,
+      textTransform: "uppercase"
+    },
+    commandTitle: {
+      color: palette.text,
+      fontSize: 24,
+      fontWeight: "900",
+      lineHeight: 29
+    },
+    commandDescription: { color: palette.textSoft, lineHeight: 20, marginTop: 5 },
+    pulseStack: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "flex-end"
+    },
+    pulse: {
+      minWidth: 92,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface
+    },
+    pulseValue: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    pulseLabel: { color: palette.accent, fontSize: 11, fontWeight: "800", marginTop: 2 },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "700",
+      marginBottom: 5
+    },
+    cardDescription: { color: palette.textMuted, lineHeight: 20, marginBottom: 8 },
+    metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+    metric: {
+      minWidth: 120,
+      padding: 9,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    metricValue: { color: palette.text, fontSize: 17, fontWeight: "800" },
+    metricLabel: { color: palette.textMuted, fontSize: 12 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    taskList: { gap: 10, marginBottom: 10 },
+    alertList: { gap: 10 },
+    alertRow: {
+      borderWidth: 1,
+      borderRadius: radius.card,
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between",
+      padding: 10
+    },
+    alert_critical: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger
+    },
+    alert_warning: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning
+    },
+    alert_info: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.info
+    },
+    alertText: { flex: 1, minWidth: 0 },
+    alertTitle: { color: palette.text, fontWeight: "900" },
+    alertMessage: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 3
+    },
+    taskRow: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    taskTitle: { color: palette.text, fontWeight: "800" },
+    taskMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 4
+    },
+    action: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 11,
+      paddingVertical: 8,
+      backgroundColor: palette.surface
+    },
+    actionText: { color: palette.link, fontWeight: "800" },
+    inlineAction: {
+      marginTop: 8,
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 9,
+      paddingVertical: 6,
+      backgroundColor: palette.surface
+    },
+    inlineActionText: { color: palette.text, fontWeight: "800", fontSize: 12 },
+    upgradeNote: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 8
+    },
+    error: { color: palette.danger, fontWeight: "700" }
+  });

@@ -2,7 +2,8 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { render, waitFor } from "@testing-library/react-native";
 
-import PersonalHomeRoute from "@/app/home/personal/(tabs)";
+import PersonalHomeRoute, { createPersonalHomeStyles } from "@/app/home/personal/(tabs)";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
@@ -45,13 +46,17 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, style }: any) => React.createElement(View, { style }, children);
+  return function MockAppCard({ children, style }: any) {
+    return React.createElement(View, { style }, children);
+  };
 });
 
 jest.mock("@/api/grows", () => ({
@@ -145,6 +150,37 @@ describe("PersonalHomeRoute", () => {
         updatedAt: new Date().toISOString()
       }
     ]);
+  });
+
+  it("uses the active Night palette for command, alert, task, and action surfaces", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createPersonalHomeStyles(palette);
+
+    expect(styles.sectionTitle.color).toBe(palette.text);
+    expect(styles.commandCard.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.commandCard.borderColor).toBe(palette.border);
+    expect(styles.firstRunCard.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.onboardingCard.backgroundColor).toBe(palette.card);
+    expect(styles.stepNumber.backgroundColor).toBe(palette.accent);
+    expect(styles.stepNumber.color).toBe(palette.accentText);
+    expect(styles.commandTitle.color).toBe(palette.text);
+    expect(styles.commandDescription.color).toBe(palette.textSoft);
+    expect(styles.pulse.backgroundColor).toBe(palette.surface);
+    expect(styles.pulse.borderColor).toBe(palette.border);
+    expect(styles.pulseValue.color).toBe(palette.text);
+    expect(styles.cardDescription.color).toBe(palette.textMuted);
+    expect(styles.metric.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.metricValue.color).toBe(palette.text);
+    expect(styles.alert_critical.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.alert_critical.borderColor).toBe(palette.danger);
+    expect(styles.alert_warning.borderColor).toBe(palette.warning);
+    expect(styles.alert_info.borderColor).toBe(palette.info);
+    expect(styles.taskRow.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.action.backgroundColor).toBe(palette.surface);
+    expect(styles.actionText.color).toBe(palette.link);
+    expect(styles.inlineAction.backgroundColor).toBe(palette.surface);
+    expect(styles.inlineActionText.color).toBe(palette.text);
+    expect(styles.error.color).toBe(palette.danger);
   });
 
   it("renders the personal command surface with grow, task, and tool context", async () => {

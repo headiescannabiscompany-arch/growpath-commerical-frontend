@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,6 +12,7 @@ import { Link } from "expo-router";
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { listForumPosts } from "@/api/communitySocial";
 import { listCourses } from "@/api/courses";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -177,6 +178,8 @@ function forumImage(post: any) {
 }
 
 export default function PersonalFeaturedFeed() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPersonalFeaturedFeedStyles(palette), [palette]);
   const [cards, setCards] = useState<HighlightCard[]>(FALLBACK_CARDS);
   const [loading, setLoading] = useState(true);
 
@@ -331,7 +334,12 @@ export default function PersonalFeaturedFeed() {
         </Link>
       </View>
 
-      {loading ? <ActivityIndicator accessibilityLabel="Loading featured feed" /> : null}
+      {loading ? (
+        <ActivityIndicator
+          accessibilityLabel="Loading featured feed"
+          color={palette.accent}
+        />
+      ) : null}
 
       <View style={styles.grid}>
         {cards.map((card) => (
@@ -364,105 +372,107 @@ export default function PersonalFeaturedFeed() {
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: 12,
-    marginBottom: 10
-  },
-  headerRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  headerCopy: {
-    flex: 1,
-    minWidth: 220
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0.2,
-    marginBottom: 4,
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 22,
-    fontWeight: "900",
-    lineHeight: 26
-  },
-  subtitle: {
-    color: "#475569",
-    lineHeight: 20,
-    marginTop: 4,
-    maxWidth: 720
-  },
-  moreButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#ECFDF5",
-    borderColor: "#15803D",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  moreButtonText: {
-    color: "#166534",
-    fontWeight: "800"
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "31%",
-    flexGrow: 1,
-    minHeight: 240,
-    minWidth: 180,
-    padding: 12
-  },
-  cardPressed: { opacity: 0.85 },
-  image: {
-    borderRadius: 12,
-    height: 92,
-    marginBottom: 10,
-    width: "100%"
-  },
-  label: {
-    color: "#0F766E",
-    fontSize: 11,
-    fontWeight: "900",
-    letterSpacing: 0.2,
-    textTransform: "uppercase"
-  },
-  cardTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900",
-    lineHeight: 20,
-    marginTop: 4
-  },
-  cardSummary: {
-    color: "#475569",
-    lineHeight: 18,
-    marginTop: 6
-  },
-  meta: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 8,
-    textTransform: "uppercase"
-  }
-});
+export const createPersonalFeaturedFeedStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    section: {
+      gap: 12,
+      marginBottom: 10
+    },
+    headerRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    headerCopy: {
+      flex: 1,
+      minWidth: 220
+    },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 0.2,
+      marginBottom: 4,
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "900",
+      lineHeight: 26
+    },
+    subtitle: {
+      color: palette.textMuted,
+      lineHeight: 20,
+      marginTop: 4,
+      maxWidth: 720
+    },
+    moreButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    moreButtonText: {
+      color: palette.link,
+      fontWeight: "800"
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "31%",
+      flexGrow: 1,
+      minHeight: 240,
+      minWidth: 180,
+      padding: 12
+    },
+    cardPressed: { opacity: 0.85 },
+    image: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 12,
+      height: 92,
+      marginBottom: 10,
+      width: "100%"
+    },
+    label: {
+      color: palette.accent,
+      fontSize: 11,
+      fontWeight: "900",
+      letterSpacing: 0.2,
+      textTransform: "uppercase"
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      lineHeight: 20,
+      marginTop: 4
+    },
+    cardSummary: {
+      color: palette.textMuted,
+      lineHeight: 18,
+      marginTop: 6
+    },
+    meta: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "700",
+      marginTop: 8,
+      textTransform: "uppercase"
+    }
+  });

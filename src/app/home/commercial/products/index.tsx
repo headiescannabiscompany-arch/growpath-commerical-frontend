@@ -1,7 +1,15 @@
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput as NativeTextInput,
+  type TextInputProps,
+  View
+} from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
 import { createProduct, fetchProducts, Product } from "@/api/products";
@@ -11,6 +19,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
@@ -61,6 +70,17 @@ const EMPTY_FORM: ProductForm = {
   regulatedCannabis: false,
   status: "draft"
 };
+
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
 
 function productId(product: Product) {
   return product.id || (product as any)._id || product.sku || product.name;
@@ -160,6 +180,9 @@ function parsePrice(value: string) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialProductsStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -174,6 +197,8 @@ export default function CommercialProductsRoute({
 }: {
   routeKey?: string;
 } = {}) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialProductsStyles(palette), [palette]);
   const auth = useAuth();
   const ent = useEntitlements();
   const [products, setProducts] = useState<Product[]>([]);
@@ -852,290 +877,301 @@ export default function CommercialProductsRoute({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    justifyContent: "space-between"
-  },
-  headerText: {
-    flex: 1,
-    minWidth: 260
-  },
-  headerActions: {
-    alignContent: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    maxWidth: 440
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  subtitle: {
-    color: "#475569",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 6
-  },
-  accountLine: {
-    color: "#64748B",
-    fontSize: 13,
-    marginTop: 8
-  },
-  cardTitle: {
-    color: "#0F172A",
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  body: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 120,
-    padding: 9
-  },
-  metricValue: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  metricLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    marginTop: 2
-  },
-  formGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flexGrow: 1,
-    fontSize: 14,
-    minWidth: 220,
-    paddingHorizontal: 10,
-    paddingVertical: 9
-  },
-  textArea: {
-    minHeight: 80,
-    marginTop: 8,
-    textAlignVertical: "top"
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  mediaTools: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  mediaButton: {
-    backgroundColor: "#111827",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  mediaButtonText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  clearButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  clearButtonText: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  productPreview: {
-    aspectRatio: 16 / 9,
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    marginTop: 10,
-    width: "100%"
-  },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  primaryAction: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryActionText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  disabled: {
-    opacity: 0.5
-  },
-  classification: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  selected: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#D97706",
-    borderWidth: 2
-  },
-  classificationTitle: { color: "#78350F", fontWeight: "900" },
-  list: {
-    gap: 10,
-    marginTop: 12
-  },
-  productRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between",
-    padding: 10
-  },
-  productThumb: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    height: 82,
-    width: 112
-  },
-  productMain: {
-    flex: 1,
-    minWidth: 240
-  },
-  productTitle: {
-    color: "#0F172A",
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  productMeta: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 3
-  },
-  productDescription: {
-    color: "#475569",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-  warningBox: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 10,
-    padding: 10
-  },
-  warningTitle: {
-    color: "#9A3412",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
-  warningPill: {
-    backgroundColor: "#FEF3C7",
-    borderRadius: 999,
-    color: "#92400E",
-    fontSize: 11,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  },
-  miniAction: {
-    backgroundColor: "#111827",
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 5
-  },
-  miniActionText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "900"
-  },
-  readyText: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    marginTop: 8
-  },
-  rowActions: {
-    alignContent: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  bullet: {
-    color: "#334155",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  muted: {
-    color: "#64748B",
-    fontSize: 13,
-    marginTop: 10
-  },
-  feedback: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 10
-  }
-});
+export function createCommercialProductsStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      justifyContent: "space-between"
+    },
+    headerText: {
+      flex: 1,
+      minWidth: 260
+    },
+    headerActions: {
+      alignContent: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      maxWidth: 440
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 6
+    },
+    accountLine: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 8
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "900"
+    },
+    body: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 8
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 120,
+      padding: 9
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginTop: 2
+    },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexGrow: 1,
+      fontSize: 14,
+      minWidth: 220,
+      paddingHorizontal: 10,
+      paddingVertical: 9
+    },
+    textArea: {
+      minHeight: 80,
+      marginTop: 8,
+      textAlignVertical: "top"
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    mediaTools: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    mediaButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    mediaButtonText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    clearButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    clearButtonText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    productPreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      marginTop: 10,
+      width: "100%"
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    primaryAction: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryActionText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    disabled: {
+      opacity: 0.5
+    },
+    classification: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    selected: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderWidth: 2
+    },
+    classificationTitle: { color: palette.warning, fontWeight: "900" },
+    list: {
+      gap: 10,
+      marginTop: 12
+    },
+    productRow: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between",
+      padding: 10
+    },
+    productThumb: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      height: 82,
+      width: 112
+    },
+    productMain: {
+      flex: 1,
+      minWidth: 240
+    },
+    productTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "900"
+    },
+    productMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 3
+    },
+    productDescription: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+    warningBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      padding: 10
+    },
+    warningTitle: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    warningText: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    warningPill: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 999,
+      color: palette.warning,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    },
+    miniAction: {
+      backgroundColor: palette.accent,
+      borderRadius: 999,
+      paddingHorizontal: 9,
+      paddingVertical: 5
+    },
+    miniActionText: {
+      color: palette.accentText,
+      fontSize: 11,
+      fontWeight: "900"
+    },
+    readyText: {
+      color: palette.success,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 8
+    },
+    rowActions: {
+      alignContent: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 10
+    },
+    feedback: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 10
+    }
+  });
+}

@@ -2,8 +2,10 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import PersonalFeaturedFeed, {
+  createPersonalFeaturedFeedStyles,
   isPublicTestContent
 } from "@/components/home/PersonalFeaturedFeed";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListCampaigns = jest.fn();
 const mockListForumPosts = jest.fn();
@@ -69,6 +71,25 @@ describe("PersonalFeaturedFeed", () => {
         }
       ]
     });
+  });
+
+  it("uses the active Night palette for feed cards and discovery controls", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createPersonalFeaturedFeedStyles(palette);
+
+    expect(styles.kicker.color).toBe(palette.accent);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.subtitle.color).toBe(palette.textMuted);
+    expect(styles.moreButton.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.moreButton.borderColor).toBe(palette.accent);
+    expect(styles.moreButtonText.color).toBe(palette.link);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.card.borderColor).toBe(palette.border);
+    expect(styles.image.backgroundColor).toBe(palette.surfaceStrong);
+    expect(styles.label.color).toBe(palette.accent);
+    expect(styles.cardTitle.color).toBe(palette.text);
+    expect(styles.cardSummary.color).toBe(palette.textMuted);
+    expect(styles.meta.color).toBe(palette.textMuted);
   });
 
   it("recognizes explicit QA and test-only records without blocking normal testing topics", () => {
