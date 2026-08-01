@@ -47,6 +47,16 @@ describe("mix builder chooser", () => {
 
     expect(screen.getByText("Nutrient Mix Builder")).toBeTruthy();
     expect(screen.getByText("Soil Mix Builder")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "What are you building?" })).toHaveProp(
+      "aria-level",
+      2
+    );
+    expect(
+      screen.getByRole("header", { name: "Reusable products and labels" })
+    ).toHaveProp("aria-level", 2);
+    ["Nutrient Mix Builder", "Soil Mix Builder"].forEach((name) => {
+      expect(screen.getByRole("header", { name })).toHaveProp("aria-level", 3);
+    });
     expect(screen.getByText(/only two primary mix builders/)).toBeTruthy();
     expect(
       screen.getByLabelText("link-/home/personal/tools/npk?growId=grow-1")

@@ -53,7 +53,9 @@ export default function UnifiedRecipeBuilderRoute({
   return (
     <ScreenBoundary title="Soil & Nutrient Mix Builders" showBack>
       <View style={styles.body}>
-        <Text style={styles.heading}>What are you building?</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.heading}>
+          What are you building?
+        </Text>
         <Text style={styles.intro}>
           Choose one focused workflow. These are the only two primary mix builders; they
           use different inputs and produce different plans.
@@ -63,14 +65,18 @@ export default function UnifiedRecipeBuilderRoute({
           return (
             <Link key={mode.title} href={href} asChild>
               <Pressable style={styles.card} accessibilityRole="button">
-                <Text style={styles.title}>{mode.title}</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.title}>
+                  {mode.title}
+                </Text>
                 <Text style={styles.description}>{mode.description}</Text>
               </Pressable>
             </Link>
           );
         })}
         <View style={styles.supportSection}>
-          <Text style={styles.supportHeading}>Reusable products and labels</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.supportHeading}>
+            Reusable products and labels
+          </Text>
           <Text style={styles.supportText}>
             Save guaranteed analyses, nutrient forms, label evidence, density, release
             timing, and costs once, then reuse them in either builder. This library stores
