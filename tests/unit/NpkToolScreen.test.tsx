@@ -1,7 +1,8 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import NpkToolScreen from "@/app/home/personal/(tabs)/tools/npk";
+import NpkToolScreen, { createNpkStyles } from "@/app/home/personal/(tabs)/tools/npk";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockRunCalculator = jest.fn();
 const mockListNutrientRecipes = jest.fn();
@@ -120,6 +121,17 @@ async function renderNpkToolScreen() {
 }
 
 describe("NpkToolScreen", () => {
+  it("uses the active Night palette across inputs, cards, results, and saved recipes", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createNpkStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.guidanceCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.resultCard.backgroundColor).toBe(palette.card);
+    expect(styles.savedRecipeOn.backgroundColor).toBe(palette.accentSoft);
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockListNutrientRecipes.mockResolvedValue([]);

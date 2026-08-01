@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -33,6 +33,7 @@ import {
 } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { createProduct } from "@/api/products";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type ProductRow = {
@@ -581,6 +582,8 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
 }
 
 export default function NpkToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createNpkStyles(palette), [palette]);
   const router = useRouter();
   const { growId, plantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -1704,147 +1707,176 @@ export default function NpkToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, gap: 12, paddingBottom: 48 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { fontSize: 13, color: "#64748B", lineHeight: 19 },
-  context: { color: "#166534", fontWeight: "700" },
-  label: { fontWeight: "700", marginTop: 4 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  guidanceCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 12
-  },
-  aiBriefBox: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 8,
-    padding: 10
-  },
-  aiBriefText: { color: "#334155", fontSize: 12, lineHeight: 18, marginTop: 6 },
-  volumeInput: {
-    minWidth: 130,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  product: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 14, gap: 10 },
-  productHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  productTitle: { fontSize: 16, fontWeight: "700" },
-  remove: { color: "#B91C1C", fontWeight: "600" },
-  fullInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  input: {
-    minWidth: 90,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  pill: {
-    minWidth: 44,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  pillOn: { backgroundColor: "#166534", borderColor: "#166534" },
-  pillText: { fontWeight: "700" },
-  pillTextOn: { color: "#FFFFFF" },
-  fieldHint: { color: "#64748B", fontSize: 12, lineHeight: 17 },
-  analysisGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  analysisField: { width: 82 },
-  densityField: { minWidth: 180, flexGrow: 1, gap: 4 },
-  analysisFieldWide: { width: 132 },
-  analysisLabel: { fontSize: 12, fontWeight: "700", marginBottom: 4 },
-  analysisInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 9
-  },
-  selectWrap: {
-    minWidth: 180,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    overflow: "hidden"
-  },
-  selectWrapFull: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    overflow: "hidden"
-  },
-  picker: { height: 44, backgroundColor: "#FFFFFF" },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 11,
-    paddingHorizontal: 14,
-    alignSelf: "flex-start"
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "700" },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    alignSelf: "flex-start"
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "700" },
-  disabled: { opacity: 0.6 },
-  feedback: { color: "#475569", fontSize: 13 },
-  resultCard: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 14,
-    gap: 10,
-    backgroundColor: "#F8FAFC"
-  },
-  resultTitle: { fontSize: 18, fontWeight: "800" },
-  resultGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  resultMetric: { width: 72, borderRightWidth: 1, borderColor: "#CBD5E1" },
-  metricLabel: { color: "#64748B", fontSize: 12 },
-  metricValue: { fontSize: 18, fontWeight: "800" },
-  warning: { color: "#B45309", fontWeight: "600" },
-  recommendation: { color: "#334155", lineHeight: 19 },
-  savedSection: { gap: 8 },
-  savedRecipe: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  savedRecipeOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
-  timelineRow: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 8, gap: 4 },
-  lockedCard: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  timelineLabel: { fontWeight: "700", color: "#166534" }
-});
+export function createNpkStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, gap: 12, paddingBottom: 48 },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { fontSize: 13, color: palette.textMuted, lineHeight: 19 },
+    context: { color: palette.link, fontWeight: "700" },
+    label: { color: palette.text, fontWeight: "700", marginTop: 4 },
+    row: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+    guidanceCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 12
+    },
+    aiBriefBox: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 8,
+      padding: 10
+    },
+    aiBriefText: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 6 },
+    volumeInput: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      minWidth: 130,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    product: {
+      borderTopWidth: 1,
+      borderColor: palette.borderSoft,
+      paddingTop: 14,
+      gap: 10
+    },
+    productHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    productTitle: { color: palette.text, fontSize: 16, fontWeight: "700" },
+    remove: { color: palette.danger, fontWeight: "600" },
+    fullInput: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    input: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      minWidth: 90,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    pill: {
+      minWidth: 44,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    pillOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { color: palette.text, fontWeight: "700" },
+    pillTextOn: { color: palette.accentText },
+    fieldHint: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    analysisGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    analysisField: { width: 82 },
+    densityField: { minWidth: 180, flexGrow: 1, gap: 4 },
+    analysisFieldWide: { width: 132 },
+    analysisLabel: {
+      color: palette.text,
+      fontSize: 12,
+      fontWeight: "700",
+      marginBottom: 4
+    },
+    analysisInput: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 9
+    },
+    selectWrap: {
+      minWidth: 180,
+      flexGrow: 1,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      overflow: "hidden"
+    },
+    selectWrapFull: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      overflow: "hidden"
+    },
+    picker: { height: 44, backgroundColor: palette.surface, color: palette.text },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 11,
+      paddingHorizontal: 14,
+      alignSelf: "flex-start"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "700" },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      alignSelf: "flex-start"
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "700" },
+    disabled: { opacity: 0.6 },
+    feedback: { color: palette.textMuted, fontSize: 13 },
+    resultCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      gap: 10,
+      backgroundColor: palette.card
+    },
+    resultTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    resultGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    resultMetric: { width: 72, borderRightWidth: 1, borderColor: palette.border },
+    metricLabel: { color: palette.textMuted, fontSize: 12 },
+    metricValue: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    warning: { color: palette.warning, fontWeight: "600" },
+    recommendation: { color: palette.textMuted, lineHeight: 19 },
+    savedSection: { gap: 8 },
+    savedRecipe: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.card,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    savedRecipeOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    timelineRow: {
+      borderTopWidth: 1,
+      borderColor: palette.borderSoft,
+      paddingTop: 8,
+      gap: 4
+    },
+    lockedCard: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    timelineLabel: { fontWeight: "700", color: palette.link }
+  });
+}
