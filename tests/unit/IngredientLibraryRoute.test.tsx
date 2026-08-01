@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import IngredientLibraryRoute from "@/app/home/personal/(tabs)/tools/ingredient-library";
+import IngredientLibraryRoute, {
+  createIngredientLibraryStyles
+} from "@/app/home/personal/(tabs)/tools/ingredient-library";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListProductIngredients = jest.fn();
 const mockCreateProductIngredient = jest.fn();
@@ -74,6 +77,18 @@ jest.mock("@/api/productIngredients", () => ({
 }));
 
 describe("IngredientLibraryRoute", () => {
+  it("uses the active Night palette across the shared catalog and form", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createIngredientLibraryStyles(palette);
+
+    expect(styles.screen.backgroundColor).toBe(palette.page);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.secondary.backgroundColor).toBe(palette.surface);
+    expect(styles.label.color).toBe(palette.text);
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockListProductIngredients.mockResolvedValue([

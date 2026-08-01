@@ -22,6 +22,7 @@ import {
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 
@@ -206,6 +207,8 @@ function payloadFromDraft(draft: Draft) {
 }
 
 export default function IngredientLibraryRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createIngredientLibraryStyles(palette), [palette]);
   const [items, setItems] = useState<ProductIngredient[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
@@ -764,6 +767,8 @@ function Field({
   onChangeText: (value: string) => void;
   numeric?: boolean;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createIngredientLibraryStyles(palette), [palette]);
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -778,65 +783,68 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 48, gap: 14 },
-  header: { gap: 6 },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#475569", lineHeight: 20 },
-  list: { gap: 8 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-    gap: 4
-  },
-  cardOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
-  cardTitle: { color: "#0F172A", fontWeight: "800" },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  form: { gap: 10 },
-  sectionTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  field: { gap: 5, flex: 1 },
-  label: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 10,
-    paddingVertical: 9
-  },
-  row: { flexDirection: "row", gap: 8 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  primary: {
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondary: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#166534", fontWeight: "800" },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
-  chipText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
-  chipTextOn: { color: "#FFFFFF" },
-  disabled: { opacity: 0.6 },
-  feedback: { color: "#334155", fontWeight: "700" }
-});
+export function createIngredientLibraryStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 48, gap: 14 },
+    header: { gap: 6 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    list: { gap: 8 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      backgroundColor: palette.card,
+      padding: 12,
+      gap: 4
+    },
+    cardOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    cardTitle: { color: palette.text, fontWeight: "800" },
+    meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    form: { gap: 10 },
+    sectionTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    field: { gap: 5, flex: 1 },
+    label: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      paddingHorizontal: 10,
+      paddingVertical: 9
+    },
+    row: { flexDirection: "row", gap: 8 },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    primary: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondary: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      backgroundColor: palette.surface,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    chipOn: { borderColor: palette.accent, backgroundColor: palette.accent },
+    chipText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    chipTextOn: { color: palette.accentText },
+    disabled: { opacity: 0.6 },
+    feedback: { color: palette.textMuted, fontWeight: "700" }
+  });
+}
