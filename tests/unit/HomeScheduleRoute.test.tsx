@@ -274,6 +274,9 @@ describe("HomeScheduleRoute", () => {
 
     await waitFor(() => expect(screen.getByText("Schedule / Agenda")).toBeTruthy());
     expect(screen.getByRole("header", { name: "Schedule / Agenda" })).toBeTruthy();
+    ["Overdue", "Today", "Upcoming", "Completed"].forEach((name) => {
+      expect(screen.getByRole("header", { name })).toHaveProp("aria-level", 2);
+    });
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/tasks", {
         method: "GET"

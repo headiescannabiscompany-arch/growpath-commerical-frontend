@@ -550,7 +550,9 @@ export default function HomeScheduleRoute() {
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{label}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+            {label}
+          </Text>
           <Text style={styles.countPill}>{rows.length}</Text>
         </View>
         {rows.length ? rows.map(renderItem) : <Text style={styles.empty}>No items.</Text>}
