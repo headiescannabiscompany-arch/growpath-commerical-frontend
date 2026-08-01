@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import AlertCenterRoute from "@/app/home/alerts";
+import AlertCenterRoute, { createStyles } from "@/app/home/alerts";
 
 const mockApiRequest = jest.fn();
 
@@ -280,10 +280,82 @@ describe("AlertCenterRoute", () => {
     });
   });
 
+  it("uses a structured action-free empty state when no alerts exist", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/alerts" && options?.method === "GET") {
+        return Promise.reject(new Error("Alerts route unavailable"));
+      }
+      if (path === "/api/notifications" && options?.method === "GET") {
+        return Promise.resolve({ notifications: [] });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<AlertCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("No alerts in this view.")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Alert Center" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(screen.getByRole("header", { name: "No alerts in this view." })).toHaveProp(
+      "aria-level",
+      2
+    );
+    expect(screen.queryByText("Follow-up Task Schedule")).toBeNull();
+    expect(screen.queryByLabelText("Alert task assignee")).toBeNull();
+    expect(screen.queryByLabelText("Alert filter active")).toBeNull();
+  });
+
+  it("uses the active palette for metrics, scheduling, filters, and cards", () => {
+    const palette = {
+      page: "#0E141B",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      surfaceStrong: "#202B39",
+      border: "#283545",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      textSoft: "#DEE7F0",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      link: "#78AAFF",
+      success: "#8FA06E",
+      danger: "#E29B9B"
+    } as any;
+    const styles = createStyles(palette);
+
+    expect(styles.screen.backgroundColor).toBe(palette.page);
+    expect(styles.panel).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surfaceMuted,
+        borderColor: palette.border
+      })
+    );
+    expect(styles.filterChip.backgroundColor).toBe(palette.surface);
+    expect(styles.card.backgroundColor).toBe(palette.surface);
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.title.color).toBe(palette.text);
+  });
+
   it("loads alerts, creates tasks, resolves, and snoozes", async () => {
     const screen = render(<AlertCenterRoute />);
 
     await waitFor(() => expect(screen.getByText("Alert Center")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Alert Center" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(
+      screen.getByRole("header", { name: "Paid product missing Stripe price" })
+    ).toHaveProp("aria-level", 2);
     expect(screen.getByText("Paid product missing Stripe price")).toBeTruthy();
     expect(screen.getByText(/Publish is blocked/)).toBeTruthy();
     expect(screen.getByLabelText("Focused alert alert-1")).toBeTruthy();

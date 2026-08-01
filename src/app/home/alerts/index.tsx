@@ -13,6 +13,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
@@ -284,6 +285,8 @@ function filterAlert(alert: AlertRow, filter: FilterKey) {
 }
 
 export default function AlertCenterRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const params = useLocalSearchParams<{ alertId?: string | string[] }>();
   const focusedAlertId = Array.isArray(params.alertId)
     ? params.alertId[0]
@@ -464,7 +467,9 @@ export default function AlertCenterRoute() {
         style={[styles.card, isFocused && styles.focusedCard]}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{alert.title || "Alert"}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            {alert.title || "Alert"}
+          </Text>
           <Text style={[styles.badge, isCritical(alert) && styles.badgeCritical]}>
             {alert.severity || "info"}
           </Text>
@@ -572,7 +577,9 @@ export default function AlertCenterRoute() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.kicker}>GrowPath alerts</Text>
-      <Text style={styles.title}>Alert Center</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+        Alert Center
+      </Text>
       <Text style={styles.subtitle}>
         {sourceMode === "notifications"
           ? "Review live notification records, mark them read, or create source-linked follow-up tasks."
@@ -596,196 +603,216 @@ export default function AlertCenterRoute() {
         ))}
       </View>
 
-      <View style={styles.panel}>
-        <Text style={styles.formTitle}>
-          {sourceMode === "notifications"
-            ? "Follow-up Task Schedule"
-            : "Alert Schedule Actions"}
-        </Text>
-        <SchedulePicker
-          dueDate={snoozeUntil}
-          reminder={reminder}
-          recurrence={recurrence}
-          onDueDateChange={setSnoozeUntil}
-          onReminderChange={setReminder}
-          onRecurrenceChange={setRecurrence}
-          accessibilityPrefix="Alert center"
-          dueDatePlaceholder={
-            sourceMode === "notifications"
-              ? "Follow-up task due date"
-              : "Snooze/task due date"
-          }
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Assign created task to team member email"
-          value={assignee}
-          onChangeText={setAssignee}
-          accessibilityLabel="Alert task assignee"
-          autoCapitalize="none"
-        />
-      </View>
-
-      <View style={styles.filterRow}>
-        {(["active", "today", "critical", "resolved"] as FilterKey[]).map((item) => (
-          <Pressable
-            key={item}
-            accessibilityRole="button"
-            accessibilityLabel={`Alert filter ${item}`}
-            style={[styles.filterChip, filter === item && styles.filterChipActive]}
-            onPress={() => setFilter(item)}
-          >
-            <Text style={[styles.filterText, filter === item && styles.filterTextActive]}>
-              {item}
+      {alerts.length ? (
+        <>
+          <View style={styles.panel}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.formTitle}>
+              {sourceMode === "notifications"
+                ? "Follow-up Task Schedule"
+                : "Alert Schedule Actions"}
             </Text>
-          </Pressable>
-        ))}
-      </View>
+            <SchedulePicker
+              dueDate={snoozeUntil}
+              reminder={reminder}
+              recurrence={recurrence}
+              onDueDateChange={setSnoozeUntil}
+              onReminderChange={setReminder}
+              onRecurrenceChange={setRecurrence}
+              accessibilityPrefix="Alert center"
+              dueDatePlaceholder={
+                sourceMode === "notifications"
+                  ? "Follow-up task due date"
+                  : "Snooze/task due date"
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Assign created task to team member email"
+              placeholderTextColor={palette.textMuted}
+              value={assignee}
+              onChangeText={setAssignee}
+              accessibilityLabel="Alert task assignee"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.filterRow}>
+            {(["active", "today", "critical", "resolved"] as FilterKey[]).map((item) => (
+              <Pressable
+                key={item}
+                accessibilityRole="button"
+                accessibilityLabel={`Alert filter ${item}`}
+                accessibilityState={{ selected: filter === item }}
+                style={[styles.filterChip, filter === item && styles.filterChipActive]}
+                onPress={() => setFilter(item)}
+              >
+                <Text
+                  style={[styles.filterText, filter === item && styles.filterTextActive]}
+                >
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      ) : null}
 
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {loading ? (
         <View style={styles.card}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading alerts...</Text>
         </View>
       ) : visibleAlerts.length ? (
         visibleAlerts.map(renderAlert)
       ) : (
-        <Text style={styles.empty}>No alerts in this view.</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.empty}>
+          No alerts in this view.
+        </Text>
       )}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { backgroundColor: "#F8FAFC", flex: 1 },
-  content: { gap: 12, padding: 20, paddingBottom: 44 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 26, fontWeight: "900" },
-  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metricCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
-  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
-  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
-  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
-  panel: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 14
-  },
-  formTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  filterChip: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  filterChipActive: { backgroundColor: "#166534", borderColor: "#166534" },
-  filterText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  filterTextActive: { color: "#FFFFFF" },
-  notice: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#1E3A8A",
-    fontWeight: "800",
-    padding: 10
-  },
-  feedback: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#A7F3D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#047857",
-    fontWeight: "800",
-    padding: 10
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 14
-  },
-  focusedCard: {
-    borderColor: "#166534",
-    borderWidth: 2
-  },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  cardTitle: { color: "#0F172A", flex: 1, fontSize: 16, fontWeight: "900" },
-  badge: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 999,
-    color: "#334155",
-    fontSize: 11,
-    fontWeight: "900",
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    textTransform: "uppercase"
-  },
-  badgeCritical: { backgroundColor: "#FEE2E2", color: "#991B1B" },
-  meta: { color: "#475569", lineHeight: 19 },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "900" },
-  secondaryButton: {
-    backgroundColor: "#0F172A",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryText: { color: "#FFFFFF", fontWeight: "900" },
-  disabledButton: { opacity: 0.45 },
-  input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  ghostButton: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  ghostText: { color: "#0F172A", fontWeight: "900" },
-  empty: { color: "#64748B", fontWeight: "700" }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    screen: { backgroundColor: palette.page, flex: 1 },
+    content: { gap: 12, padding: 20, paddingBottom: 44 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 26, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metricCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    redMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.danger },
+    greenMetric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success
+    },
+    blueMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.accent },
+    slateMetric: { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "900" },
+    panel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 14
+    },
+    formTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    filterChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    filterChipActive: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    filterText: { color: palette.textSoft, fontSize: 12, fontWeight: "900" },
+    filterTextActive: { color: palette.accentText },
+    notice: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.textSoft,
+      fontWeight: "800",
+      padding: 10
+    },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      fontWeight: "800",
+      padding: 10
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 14
+    },
+    focusedCard: {
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    cardHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    cardTitle: { color: palette.text, flex: 1, fontSize: 16, fontWeight: "900" },
+    badge: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      color: palette.textSoft,
+      fontSize: 11,
+      fontWeight: "900",
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+      textTransform: "uppercase"
+    },
+    badgeCritical: { backgroundColor: palette.surfaceMuted, color: palette.danger },
+    meta: { color: palette.textMuted, lineHeight: 19 },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.text, fontWeight: "900" },
+    disabledButton: { opacity: 0.45 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    ghostButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    ghostText: { color: palette.link, fontWeight: "900" },
+    empty: { color: palette.textMuted, fontWeight: "700" }
+  });
+}
