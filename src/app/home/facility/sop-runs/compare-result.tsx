@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SopRunDetail = {
@@ -109,6 +110,8 @@ export default function FacilitySopRunsCompareResultRoute() {
   const leftId = Array.isArray(params.leftId) ? params.leftId[0] : params.leftId;
   const rightId = Array.isArray(params.rightId) ? params.rightId[0] : params.rightId;
   const { selectedId: facilityId } = useFacility();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilitySopCompareResultStyles(palette), [palette]);
   const [left, setLeft] = useState<SopRunDetail | null>(null);
   const [right, setRight] = useState<SopRunDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -168,7 +171,9 @@ export default function FacilitySopRunsCompareResultRoute() {
       backFallbackHref="/home/facility/sop-runs/compare"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.h1}>SOP Compare Result</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          SOP Compare Result
+        </Text>
         <Text style={styles.sub}>
           Compare checklist completion and status changes without exposing internal record
           identifiers.
@@ -179,7 +184,9 @@ export default function FacilitySopRunsCompareResultRoute() {
         {!loading && !error && left && right ? (
           <>
             <View style={styles.summaryCard}>
-              <Text style={styles.title}>Outcome summary</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+                Outcome summary
+              </Text>
               <Text style={styles.summaryValue}>{comparison.outcome}</Text>
               <Text style={styles.sub}>
                 {comparison.changed} checklist{" "}
@@ -194,17 +201,21 @@ export default function FacilitySopRunsCompareResultRoute() {
                 run={left}
                 counts={comparison.leftCounts}
                 fallbackTitle="Reference SOP run"
+                styles={styles}
               />
               <RunSummaryCard
                 label="Comparison run"
                 run={right}
                 counts={comparison.rightCounts}
                 fallbackTitle="Comparison SOP run"
+                styles={styles}
               />
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.title}>Checklist differences</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+                Checklist differences
+              </Text>
               {comparison.rows.length ? (
                 comparison.rows.map((row) => (
                   <View
@@ -233,17 +244,21 @@ function RunSummaryCard({
   label,
   run,
   counts,
-  fallbackTitle
+  fallbackTitle,
+  styles
 }: {
   label: string;
   run: SopRunDetail | null;
   counts: ReturnType<typeof statusCounts>;
   fallbackTitle: string;
+  styles: ReturnType<typeof createFacilitySopCompareResultStyles>;
 }) {
   return (
     <View style={styles.runCard}>
       <Text style={styles.cardLabel}>{label}</Text>
-      <Text style={styles.runTitle}>{runTitle(run, fallbackTitle)}</Text>
+      <Text accessibilityRole="header" aria-level={2} style={styles.runTitle}>
+        {runTitle(run, fallbackTitle)}
+      </Text>
       <Text style={styles.statusText}>Status: {formatLabel(run?.status)}</Text>
       <Text style={styles.statusText}>
         Checklist: {counts.done} done · {counts.skipped} skipped · {counts.pending}{" "}
@@ -260,51 +275,52 @@ function RunSummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { color: "#475569", fontWeight: "700", lineHeight: 19 },
-  err: { color: "#b91c1c", fontWeight: "700" },
-  summaryCard: {
-    backgroundColor: "#eff6ff",
-    borderColor: "#bfdbfe",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 12
-  },
-  summaryValue: { color: "#1e3a8a", fontSize: 16, fontWeight: "900" },
-  runRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  runCard: {
-    backgroundColor: "#fff",
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    gap: 5,
-    minWidth: 260,
-    padding: 12
-  },
-  cardLabel: { color: "#64748b", fontSize: 12, fontWeight: "900" },
-  runTitle: { color: "#0f172a", fontSize: 17, fontWeight: "900" },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff",
-    gap: 8
-  },
-  title: { color: "#0f172a", fontWeight: "900" },
-  stepRow: {
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 9
-  },
-  changedRow: { backgroundColor: "#fffbeb", borderColor: "#fcd34d" },
-  stepTitle: { color: "#0f172a", fontWeight: "900" },
-  statusRow: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  statusText: { color: "#475569", fontWeight: "700" }
-});
+export const createFacilitySopCompareResultStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { padding: 16, gap: 10 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted, fontWeight: "700", lineHeight: 19 },
+    err: { color: palette.danger, fontWeight: "700" },
+    summaryCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 12
+    },
+    summaryValue: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    runRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    runCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      gap: 5,
+      minWidth: 260,
+      padding: 12
+    },
+    cardLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
+    runTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.card,
+      gap: 8
+    },
+    title: { color: palette.text, fontWeight: "900" },
+    stepRow: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 9
+    },
+    changedRow: { backgroundColor: palette.surfaceMuted, borderColor: palette.warning },
+    stepTitle: { color: palette.text, fontWeight: "900" },
+    statusRow: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    statusText: { color: palette.textMuted, fontWeight: "700" }
+  });

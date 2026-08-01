@@ -9,7 +9,9 @@ import FacilitySopRunsIndexRoute from "@/app/home/facility/sop-runs";
 import FacilitySopRunsCompareRoute, {
   createFacilitySopCompareStyles
 } from "@/app/home/facility/sop-runs/compare";
-import FacilitySopRunsCompareResultRoute from "@/app/home/facility/sop-runs/compare-result";
+import FacilitySopRunsCompareResultRoute, {
+  createFacilitySopCompareResultStyles
+} from "@/app/home/facility/sop-runs/compare-result";
 import FacilitySopRunsPresetsRoute, {
   createFacilitySopLibraryStyles
 } from "@/app/home/facility/sop-runs/presets";
@@ -332,6 +334,18 @@ describe("facility SOP run nested back behavior", () => {
     expect(styles.btn.backgroundColor).toBe(palette.accent);
   });
 
+  it("uses the active Night palette for complete SOP comparison evidence", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilitySopCompareResultStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.summaryCard.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.runCard.backgroundColor).toBe(palette.card);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.stepTitle.color).toBe(palette.text);
+    expect(styles.changedRow.borderColor).toBe(palette.warning);
+  });
+
   it("uses shared back behavior on SOP compare routes", async () => {
     const compare = render(<FacilitySopRunsCompareRoute />);
     expect(compare.getByText("Shared Back /home/facility/sop-runs")).toBeTruthy();
@@ -343,6 +357,7 @@ describe("facility SOP run nested back behavior", () => {
       expect(result.getByText("Shared Back /home/facility/sop-runs/compare")).toBeTruthy()
     );
     expect(result.getByText("SOP Compare Result")).toBeTruthy();
+    expect(result.getAllByRole("header").length).toBeGreaterThan(0);
   });
 
   it("compares SOP outcomes with readable summaries instead of ids or JSON", async () => {
