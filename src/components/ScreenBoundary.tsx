@@ -67,6 +67,8 @@ class ScreenBoundaryBase extends React.PureComponent<BoundaryProps, State> {
           />
         ) : null}
         <Text
+          accessibilityRole="header"
+          aria-level={1}
           style={{
             fontSize: 18,
             fontWeight: "700",
@@ -74,16 +76,11 @@ class ScreenBoundaryBase extends React.PureComponent<BoundaryProps, State> {
             color: palette.text
           }}
         >
-          Screen crashed: {this.props.name || this.props.title || "UnknownScreen"}
+          Screen unavailable
         </Text>
         <Text style={{ marginBottom: 12, color: palette.textMuted }}>
-          {String(this.state.error?.message || this.state.error)}
-        </Text>
-        <Text style={{ fontWeight: "700", marginBottom: 6, color: palette.text }}>
-          Stack
-        </Text>
-        <Text selectable style={{ color: palette.textMuted }}>
-          {String(this.state.error?.stack || "(no stack)")}
+          This screen hit an unexpected error. Go back and try again, or contact support
+          if it continues.
         </Text>
       </ScrollView>
     );

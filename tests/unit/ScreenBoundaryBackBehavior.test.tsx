@@ -61,4 +61,25 @@ describe("ScreenBoundary back behavior", () => {
       )
     ).toBeTruthy();
   });
+
+  it("keeps exception details out of the user-facing crash state", () => {
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    function BrokenScreen(): React.ReactNode {
+      throw new Error("secret-internal-object-id stack detail");
+    }
+
+    const screen = render(
+      <ScreenBoundary title="Sensitive screen">
+        <BrokenScreen />
+      </ScreenBoundary>
+    );
+
+    expect(
+      screen.getByRole("header", { name: "Screen unavailable" }).props["aria-level"]
+    ).toBe(1);
+    expect(screen.getByText(/unexpected error.*contact support/i)).toBeTruthy();
+    expect(screen.queryByText(/secret-internal-object-id/i)).toBeNull();
+    expect(screen.queryByText("Stack")).toBeNull();
+    consoleError.mockRestore();
+  });
 });
