@@ -28,7 +28,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "analytics",
     "integrations",
     "team",
-    "transfers"
+    "transfers",
+    "rooms"
   ].includes(routeName);
 }
 
@@ -86,7 +87,14 @@ export default function FacilityTabsLayout() {
         name="dashboard"
         options={{ title: "Dashboard", tabBarLabel: "Dashboard" }}
       />
-      <Tabs.Screen name="rooms" options={{ title: "Rooms", tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="rooms"
+        options={{
+          title: "Facility Rooms & Workspaces",
+          headerShown: shouldShowFacilityRouteHeader("rooms"),
+          tabBarButton: () => null
+        }}
+      />
       <Tabs.Screen name="grows" options={{ title: "Grows" }} />
       <Tabs.Screen
         name="plants"

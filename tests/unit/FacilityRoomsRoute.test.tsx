@@ -16,6 +16,7 @@ const mockDeleteBatchCycle = jest.fn();
 const mockListBatchCycles = jest.fn();
 const mockListEquipment = jest.fn();
 let mockRoomParams: Record<string, string> = {};
+let mockFacilityRole = "OWNER";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRoomParams,
@@ -25,7 +26,7 @@ jest.mock("expo-router", () => ({
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { ROOMS_EQUIPMENT_STAFF: "rooms_equipment_staff" },
   useEntitlements: () => ({
-    facilityRole: "OWNER",
+    facilityRole: mockFacilityRole,
     can: () => true
   })
 }));
@@ -56,6 +57,7 @@ describe("FacilityRoomsTab", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockRoomParams = {};
+    mockFacilityRole = "OWNER";
     mockFetchRooms.mockResolvedValue([
       {
         id: "room-existing",
@@ -101,7 +103,7 @@ describe("FacilityRoomsTab", () => {
     const screen = render(<FacilityRoomsTab />);
 
     await waitFor(() =>
-      expect(screen.getByText("Facility rooms & workspaces")).toBeTruthy()
+      expect(screen.getByText("Facility Rooms & Workspaces")).toBeTruthy()
     );
     expect(screen.getByText("Arrange room workspaces")).toBeTruthy();
     expect(screen.getAllByText("Open grows >")).toHaveLength(2);
@@ -115,6 +117,31 @@ describe("FacilityRoomsTab", () => {
       ])
     );
     expect(screen.getByText("Moved Veg Room. Room order saved.")).toBeTruthy();
+  });
+
+  it("owns an accurate heading hierarchy and remains read-only for a Viewer", async () => {
+    mockFacilityRole = "VIEWER";
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("header", { name: "Facility Rooms & Workspaces" }).props[
+          "aria-level"
+        ]
+      ).toBe(1)
+    );
+    expect(
+      screen.getByRole("header", { name: "Arrange room workspaces" }).props["aria-level"]
+    ).toBe(2);
+    expect(screen.getByRole("header", { name: "New Room" }).props["aria-level"]).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Room Workspace" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByText("Only facility owners and managers can create rooms.")
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Create Room")).toBeNull();
+    expect(screen.queryByLabelText("Move Existing Dry Room up")).toBeNull();
   });
 
   it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {

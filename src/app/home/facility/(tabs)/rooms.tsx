@@ -821,7 +821,9 @@ export default function FacilityRoomsTab() {
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Facility rooms &amp; workspaces</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              Facility Rooms &amp; Workspaces
+            </Text>
             <Text style={styles.muted}>
               {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
             </Text>
@@ -838,7 +840,9 @@ export default function FacilityRoomsTab() {
         />
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Arrange room workspaces</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Arrange room workspaces
+          </Text>
           <Text style={styles.muted}>
             Put rooms in the order your team uses them. The saved order is shared across
             GrowPathAI modes. Open a room to review its grow records; use Room Workspace
@@ -919,7 +923,9 @@ export default function FacilityRoomsTab() {
 
         {canEditRooms && !showRoomImport ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Connect or import room data</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Connect or import room data
+            </Text>
             <Text style={styles.muted}>
               Connect Pulse, request TrolMaster access, or import controller history from
               CSV/PDF in Integrations. Discovered rooms return here for review and
@@ -938,7 +944,9 @@ export default function FacilityRoomsTab() {
 
         {canEditRooms && showRoomImport ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Import controller rooms</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Import controller rooms
+            </Text>
             <Text style={styles.muted}>
               These device names were discovered by an integration. Review GrowPathAI’s
               proposed room mapping before creating anything.
@@ -1006,12 +1014,16 @@ export default function FacilityRoomsTab() {
         ) : null}
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>New Room</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            New Room
+          </Text>
           {!canEditRooms ? (
             <Text style={styles.muted}>{roomAccess.hiddenRoomReason}</Text>
           ) : (
             <View style={styles.form}>
-              <Text style={styles.sectionTitle}>Ask AI to help describe this space</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+                Ask AI to help describe this space
+              </Text>
               <Text style={styles.muted}>
                 Tell us what you know, such as “4 × 8 indoor tent,” “outdoor raised flower
                 bed,” “greenhouse,” or “tissue-culture room.” AI asks for missing facts
@@ -1044,7 +1056,11 @@ export default function FacilityRoomsTab() {
                 <View style={styles.importPreviewList}>
                   {assistantResult.questions.length ? (
                     <View>
-                      <Text style={styles.sectionTitle}>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.sectionTitle}
+                      >
                         Questions before we infer more
                       </Text>
                       {assistantResult.questions.map((question) => (
@@ -1056,7 +1072,13 @@ export default function FacilityRoomsTab() {
                   ) : null}
                   {assistantResult.suggestions.length ? (
                     <View>
-                      <Text style={styles.sectionTitle}>Reviewable suggestions</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.sectionTitle}
+                      >
+                        Reviewable suggestions
+                      </Text>
                       {assistantResult.suggestions.map((suggestion) => (
                         <Text key={suggestion.field} style={styles.rowMeta}>
                           {suggestion.field}: {String(suggestion.value)} ·{" "}
@@ -1124,7 +1146,13 @@ export default function FacilityRoomsTab() {
               </View>
               {roomType === "seedling" ? (
                 <View style={styles.aiPanel}>
-                  <Text style={styles.sectionTitle}>Seedling placement</Text>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.sectionTitle}
+                  >
+                    Seedling placement
+                  </Text>
                   <Text style={styles.rowMeta}>
                     Use a dedicated seedling room, or track a seedling rack/zone inside a
                     veg room. This is a layout choice; GrowPath does not force either one.
@@ -1251,7 +1279,9 @@ export default function FacilityRoomsTab() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Room Workspace</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Room Workspace
+          </Text>
           {rooms.length ? (
             <View style={styles.pillRow}>
               {rooms.map((room) => {
@@ -1278,7 +1308,9 @@ export default function FacilityRoomsTab() {
 
           {activeRoom ? (
             <View style={styles.detailBlock}>
-              <Text style={styles.detailTitle}>{activeRoom.name}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.detailTitle}>
+                {activeRoom.name}
+              </Text>
               <Text style={styles.muted}>
                 Type: {activeRoom.roomType || "n/a"} | Tracking:{" "}
                 {activeRoom.trackingMode || "batch"}
@@ -1328,7 +1360,9 @@ export default function FacilityRoomsTab() {
         {activeRoom ? (
           <>
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Equipment</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                Equipment
+              </Text>
               {canManageEquipmentCycles ? (
                 <View style={styles.form}>
                   <TextInput
@@ -1385,7 +1419,9 @@ export default function FacilityRoomsTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Batch Cycles</Text>
+              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                Batch Cycles
+              </Text>
               <View style={styles.summaryCard}>
                 <View>
                   <Text style={styles.summaryValue}>{activeCycles}</Text>
