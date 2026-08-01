@@ -873,6 +873,36 @@ the accurate route title.
   transfer, AI review, create, return, item, inventory, audit event, billing, or
   record action was invoked, and the session remained signed in.
 
+## Facility Plants hierarchy and centralized write gate
+
+Production Facility Plants already used the correct Night palette, truthful
+zero-plant state, and a read-only Viewer presentation. Its tab shell owned the
+generic `Plants` level-one heading while the accurate route title, coverage,
+creation, and empty-state titles were ordinary text. Source verification also
+found the route's local role check allowed `STAFF` to create plants even though
+the centralized role policy grants `PLANTS_WRITE` only to Owners and Managers.
+Frontend `0a3f2922` established one page-owned Facility Plants heading and three
+structured workflow headings, then replaced the drifting local check with both
+the centralized plants-write capability and an explicit Owner/Manager role
+gate.
+
+- Production Build Preflight `30689901483` passed in 3m06s and Frontend CI
+  `30689901520` passed in 5m26s.
+- Fifty-eight focused Facility Plants Manager/Staff/Viewer, stale-capability,
+  tab-shell, role-policy, and mode-access tests passed. Targeted ESLint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. The suites retained
+  their existing Expo Go warnings without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  `Facility Plants` heading; level-two `Plant coverage`, `Add Plant`, and
+  `No plants yet` headings; truthful zero active/missing-room/missing-batch
+  values; the Night canvas `rgb(14, 20, 27)`; bright heading text
+  `rgb(244, 247, 251)`; and no white page-content surface. The separate Report
+  Bug control was the only detected white element.
+- The Viewer exposed zero plant fields, stage/room/grow controls, plant links,
+  or create actions and received the accurate Owner/Manager access notice. No
+  plant, stage, room, grow, refresh, link, create, audit event, billing, or
+  record action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
