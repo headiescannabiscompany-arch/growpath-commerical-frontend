@@ -1019,6 +1019,42 @@ changing request, evidence, entitlement, or billing behavior.
   credit, task, log, diagnosis, tool run, audit event, billing, or record action
   was invoked, and the session remained signed in.
 
+## Shared Harvest Readiness photo-evidence Night theme and hierarchy
+
+Production Facility Harvest Readiness already used the active Night palette for
+the shared calculator, fields, guidance, media picker, and credit disclosures,
+but its photo checklist and photo-notes field remained white with black text.
+The shell supplied the only heading while the visible estimate title and major
+workflow sections were unstructured. Frontend `f25e6de2` moved the complete
+photo-analysis card, checklist, notes, analysis, warning, feedback, and result
+surfaces to the active palette, and gave the shared calculator title/guidance
+plus Harvest photo sections semantic heading levels. Calculation, media,
+evidence restoration, AI charging/refunds, and save/writeback behavior were not
+changed.
+
+- Production Build Preflight `30691729668` passed in 3m12s and Frontend CI
+  `30691729677` passed in 6m46s.
+- Ten focused Harvest Readiness tests passed, covering the Night palette,
+  headings, complete/incomplete photo guards, no-charge incomplete evidence,
+  saved-evidence restoration, successful analysis, provider-failure recovery,
+  decision tasks, and harvest-batch writeback. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. Existing React test-timing
+  warnings did not fail the suite.
+- Signed-in Viewer production acceptance confirmed one level-one `Harvest
+  Readiness` heading; level-two `Harvest Readiness Estimate`, `How this tool
+  works`, and `AI trichome photo estimate (optional)` headings; and one
+  level-three `Photo checklist before analysis` heading. The checklist and
+  notes now use Night surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and
+  bright text `rgb(244, 247, 251)`. All visible headings use the same bright
+  text, and the separate Report Bug control was the only detected white
+  element.
+- The live route retained zero Facility grows, zero selected grow, zero media,
+  the exact one-credit successful-action/refund disclosures, an aria-disabled
+  photo-analysis action, and a disabled grow-context prefill. No field, grow,
+  media, notes, calculator, AI analysis, prefill, credit, ToolRun, Saved Run,
+  task, log, plant history, harvest batch, audit event, billing, or record
+  action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
