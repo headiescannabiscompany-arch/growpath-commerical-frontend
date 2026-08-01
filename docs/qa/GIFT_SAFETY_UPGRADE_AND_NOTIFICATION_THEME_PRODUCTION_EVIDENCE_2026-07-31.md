@@ -425,6 +425,32 @@ while preserving every value and its source semantics.
   record changed. The session was returned to the Facility dashboard without
   logout.
 
+## Facility Compliance Report Detail Night theme and readable evidence
+
+Production Facility Compliance Report Detail retained a day-only black title
+and white raw-JSON card on the resolved Night canvas. Frontend `2e35c3bc`
+replaced that developer representation with a read-only, palette-aware report
+while preserving the requested report reference and every backend value.
+
+- Production Build Preflight `30683756768` passed in 3m06s and Frontend CI
+  `30683756507` passed in 6m52s. The production host published the new
+  `index-db220078365029fecc1426a0c36a4b91.js` asset.
+- Eleven focused audit/compliance tests passed, including the report-detail
+  headings, readable sections, raw-JSON exclusion, truthful unknown-value
+  handling, and explicit Night-palette regression. Targeted ESLint completed
+  without errors, full frontend `tsc --noEmit` passed, and `git diff --check`
+  passed.
+- Signed-in Viewer production acceptance of the `latest` report confirmed one
+  level-one heading; level-two Tasks, Compliance records, Automation, and Team
+  sections; Tasks `1 / 0 / 0 / 0`; Compliance logs `0` and missed `Unknown`;
+  Automation `0 / 0`; and Team `4` with Staff, Viewer, Owner, and Manager each
+  `1`.
+- The raw JSON and all white cards were absent. The live report canvas rendered
+  `rgb(14, 20, 27)` and both page and section headings rendered
+  `rgb(244, 247, 251)`.
+- No link or mutation control was invoked; no compliance action, task, team,
+  automation, token, audit event, AI call, or record changed.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
