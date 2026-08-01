@@ -2643,6 +2643,30 @@ changing preferences, filters, delivery, marking, or navigation behavior.
   workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
 
+## Facility More workspace-destination hierarchy
+
+Production Facility More already retained the full compact-tab overflow
+inventory, Viewer-safe descriptions, named links, and active Night palette, but
+all 21 destination titles were plain text beneath four semantic group headings.
+Frontend `29b4528c` marks those existing destination titles as H3s without
+changing route targets, descriptions, grouping, compact tabs, or permissions.
+
+- Both focused Facility More/layout suites passed, totaling 22 tests and
+  covering Viewer-safe copy, exact page/group/destination hierarchy, and compact
+  tab behavior. Source lint, forced test lint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed after two pre-existing anonymous test mocks were
+  named. The existing non-failing Expo Go notification warning remained in the
+  layout suite.
+- Production Build Preflight `30716808821` and Frontend CI `30716808806`
+  passed. Clean signed-in Facility Viewer production verification on bundle
+  `index-d32725df...` rendered one `More Facility Workspaces` H1, four H2 group
+  headings, and all 21 destination titles as H3s. All 21 unique destinations
+  retained named links and the route had zero white/light page-content
+  surfaces.
+- No destination, tab, route, field, workspace, account, session, billing,
+  audit event, or record action was invoked, and the Viewer session remained
+  signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
