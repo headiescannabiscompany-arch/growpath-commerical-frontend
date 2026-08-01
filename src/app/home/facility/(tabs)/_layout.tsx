@@ -25,7 +25,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "ai-diagnosis-photo",
     "ai-tools",
     "reports",
-    "analytics"
+    "analytics",
+    "integrations"
   ].includes(routeName);
 }
 
@@ -130,7 +131,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="integrations"
-        options={{ title: "Integrations", tabBarButton: () => null }}
+        options={{
+          title: "Connect rooms and sensor data",
+          headerShown: shouldShowFacilityRouteHeader("integrations"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="ai-tools"

@@ -72,7 +72,24 @@ describe("FacilityIntegrationsRoute", () => {
   it("makes Pulse and TrolMaster selectable and marks planned providers clearly", async () => {
     const screen = render(<FacilityIntegrationsRoute />);
 
-    expect(screen.getByText("Connect rooms and sensor data")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Connect rooms and sensor data" }).props[
+        "aria-level"
+      ]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Pulse read-only telemetry" }).props[
+        "aria-level"
+      ]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Import controller and grow history" }).props[
+        "aria-level"
+      ]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "More providers" }).props["aria-level"]
+    ).toBe(2);
     fireEvent.press(screen.getByLabelText("Select pulse integration"));
     expect(screen.getByText("Pulse read-only telemetry")).toBeTruthy();
     fireEvent.press(screen.getByText("Connect Pulse"));

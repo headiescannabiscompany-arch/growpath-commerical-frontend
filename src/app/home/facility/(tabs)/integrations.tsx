@@ -153,7 +153,9 @@ export default function FacilityIntegrationsRoute() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Text style={styles.kicker}>Facility setup</Text>
-          <Text style={styles.title}>Connect rooms and sensor data</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Connect rooms and sensor data
+          </Text>
           <Text style={styles.subtitle}>
             Start with Pulse or TrolMaster. GrowPath keeps connections read-only and uses
             discovered devices to build room mappings, environment history, alerts, and AI
@@ -185,7 +187,9 @@ export default function FacilityIntegrationsRoute() {
 
         {selected === "pulse" ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Pulse read-only telemetry</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Pulse read-only telemetry
+            </Text>
             <Text style={styles.body}>
               Verify a Pulse API key, choose devices, create telemetry sources, and pull
               environment history.
@@ -208,7 +212,9 @@ export default function FacilityIntegrationsRoute() {
           </View>
         ) : (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>TrolMaster developer access</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              TrolMaster developer access
+            </Text>
             <Text style={styles.body}>
               TrolMaster publishes an official developer portal for API subscriptions,
               credentials, usage, documentation, and live API testing. GrowPath will
@@ -232,7 +238,9 @@ export default function FacilityIntegrationsRoute() {
 
         {connections.length ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Connected sources</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Connected sources
+            </Text>
             {connections.map((connection) => (
               <View key={connection.id} style={styles.connectionRow}>
                 <Text style={styles.connectionTitle}>{connection.label}</Text>
@@ -265,7 +273,9 @@ export default function FacilityIntegrationsRoute() {
             ))}
             {wizardConnectionId ? (
               <View style={styles.wizardPanel}>
-                <Text style={styles.cardTitle}>Import mapping preview</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                  Import mapping preview
+                </Text>
                 <Text style={styles.body}>{wizardStage}</Text>
                 {wizardMappings.map((mapping, index) => (
                   <View key={mapping.deviceId} style={styles.mappingRow}>
@@ -318,7 +328,9 @@ export default function FacilityIntegrationsRoute() {
         ) : null}
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Import controller and grow history</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Import controller and grow history
+          </Text>
           <Text style={styles.body}>
             Upload an exported CSV, map its timestamp, temperature, and humidity columns,
             then save the readings to the selected grow. This works without sharing a
@@ -360,7 +372,9 @@ export default function FacilityIntegrationsRoute() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>More providers</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            More providers
+          </Text>
           <Text style={styles.body}>
             These connectors are visible for planning but disabled until their production
             contract is enabled.
