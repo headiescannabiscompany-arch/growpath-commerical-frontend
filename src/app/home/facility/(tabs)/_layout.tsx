@@ -134,7 +134,10 @@ export default function FacilityTabsLayout() {
         name="ai-diagnosis-photo"
         options={{ title: "Trichome Analysis", tabBarButton: () => null }}
       />
-      <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="ai-template"
+        options={{ title: "AI Templates", tabBarButton: () => null }}
+      />
       <Tabs.Screen
         name="ai-validation"
         options={{ title: "AI QA", tabBarButton: () => null }}

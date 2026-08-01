@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const TEMPLATES = [
@@ -31,9 +32,14 @@ const TEMPLATES = [
 ];
 
 export default function FacilityAiTemplateRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAiTemplateStyles(palette), [palette]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.h1}>AI Templates</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+        AI Templates
+      </Text>
       <Text style={styles.sub}>
         Use predefined workflows for common facility decisions.
       </Text>
@@ -56,19 +62,21 @@ export default function FacilityAiTemplateRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { opacity: 0.75 },
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.15)",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 6,
-    backgroundColor: "#fff"
-  },
-  title: { fontSize: 16, fontWeight: "800" },
-  desc: { opacity: 0.75 },
-  link: { fontWeight: "800", color: "#2563eb" }
-});
+export function createFacilityAiTemplateStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 12, backgroundColor: palette.page },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sub: { color: palette.textMuted },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 6,
+      backgroundColor: palette.card
+    },
+    title: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    desc: { color: palette.textMuted },
+    link: { fontWeight: "800", color: palette.link }
+  });
+}
