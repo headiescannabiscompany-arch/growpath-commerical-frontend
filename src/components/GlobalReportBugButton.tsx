@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { usePathname } from "expo-router";
 
 import ReportBugButton from "@/components/ReportBugButton";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function shouldDockReportBugButton(width: number) {
   return width < 600;
@@ -11,6 +12,8 @@ export function shouldDockReportBugButton(width: number) {
 export default function GlobalReportBugButton() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGlobalReportBugButtonStyles(palette), [palette]);
   const isDocked = shouldDockReportBugButton(width);
   if (pathname === "/support") return null;
   return (
@@ -22,32 +25,33 @@ export default function GlobalReportBugButton() {
   );
 }
 
-const styles = StyleSheet.create({
-  layer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 10000,
-    elevation: 10000
-  },
-  button: {
-    position: "absolute",
-    right: 12,
-    bottom: 76
-  },
-  mobileDock: {
-    position: "relative",
-    zIndex: 10000,
-    elevation: 10000,
-    flexShrink: 0,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#F4F7FB",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#D8DEE8"
-  },
-  mobileButton: {
-    alignSelf: "flex-end"
-  }
-});
+export const createGlobalReportBugButtonStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    layer: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 10000,
+      elevation: 10000
+    },
+    button: {
+      position: "absolute",
+      right: 12,
+      bottom: 76
+    },
+    mobileDock: {
+      position: "relative",
+      zIndex: 10000,
+      elevation: 10000,
+      flexShrink: 0,
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: palette.surfaceStrong,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: palette.border
+    },
+    mobileButton: {
+      alignSelf: "flex-end"
+    }
+  });

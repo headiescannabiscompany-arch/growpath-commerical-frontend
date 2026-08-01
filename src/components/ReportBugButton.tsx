@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { usePathname, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function userName(user: any) {
@@ -70,6 +71,8 @@ export default function ReportBugButton({
   const pathname = usePathname();
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createReportBugButtonStyles(palette), [palette]);
   const email = String(auth.user?.email || "").trim();
   const userId = String(auth.user?.id || (auth.user as any)?._id || "").trim();
   const mode = String(entitlements.mode || "unknown");
@@ -115,17 +118,18 @@ export default function ReportBugButton({
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#B45309",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  text: { color: "#92400E", fontWeight: "900" }
-});
+export const createReportBugButtonStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    text: { color: palette.warning, fontWeight: "900" }
+  });
